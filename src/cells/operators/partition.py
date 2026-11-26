@@ -1,4 +1,4 @@
-"""Operator isopotential_partition@1: prescribed division into fresh daughter slots (stage S5).
+"""Operator cells.operator.isopotential_partition@1: prescribed division into fresh daughter slots (stage S5).
 
 docs/CELL_DIVISION_S5_DESIGN.md §3; the law is docs/CELL_DIVISION_DESIGN.md §5.2. The name is
 general: a cleaving egg is one use (D144).
@@ -67,13 +67,15 @@ from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import pump_composite_adapter as adapter
+from cells.models import surface_tissue as tissue
+from cells.numerics import surface_field
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
 from cells.operators.contract import Operator
 from cells.registry import kind_registry
 
-LAW_ID = "isopotential_partition@1"
+LAW_ID = "cells.operator.isopotential_partition@1"
 FRACTION_TOLERANCE = 1e-12  # Transference numbers sum to 1.
 POTENTIAL_RTOL = 1e-9  # Isopotential check: of the largest |potential| ...
 POTENTIAL_ATOL_V = 1e-15  # ... plus this.
@@ -136,10 +138,12 @@ LEDGER_DIAGNOSTICS = (
 )
 LEDGER_MESSAGE = "Partition accounting failed: "
 READOUT_COLUMNS = ("partition_slot_phase",)  # Per cell: 0 pending, 1 live, 2 retired.
-REFUSED_LAWS = {
-    "scheduled_cell_replacement": "replacement books at the declared layout",
-    "scheduled_membrane_insertion@1": "insertion@1 provides the masks and computes at its own view",
-    "restricted_cleft_lumen@1": "lumen@1 follows one patch; use restricted_cleft_lumen@2",
+REFUSED_LAWS = {  # By the start of an ID: replacement in every version, the others in version 1.
+    "cells.operator.scheduled_cell_replacement@1".partition("@")[
+        0
+    ]: "replacement books at the declared layout",
+    "cells.operator.scheduled_membrane_insertion@1": "insertion@1 provides the masks and computes at its own view",
+    "cells.operator.restricted_cleft_lumen@1": "lumen@1 follows one patch; use cells.operator.restricted_cleft_lumen@2",
 }
 
 
@@ -679,7 +683,7 @@ def check_definition(spec, declaration, schedule, model):
                         "onset patch opening after the daughter's birth may be)"
                     )
     for op, op_declaration, op_schedule in composite_spec.entries(spec):
-        if op.LAW_ID != "electrode_current_injection@1":
+        if op.LAW_ID != "cells.operator.electrode_current_injection@1":
             continue
         for electrode, changes in zip(op_declaration.electrodes, op_schedule, strict=True):
             birth, retirement = living_interval(declaration, schedule, electrode.cell_id)
@@ -825,7 +829,7 @@ def capacitor_state(state, q, *, xp):
     phi = adapter.node_potentials(state, q, xp=xp)
     v = adapter.patch_voltages(phi, q, xp=xp)
     c = xp.where(q.membrane_active, q.membrane_capacitance, 0.0)
-    plates = (q.field_capacitor_matrix @ phi)[n:]
+    plates = surface_field.capacitor_product(tissue.field_layout(q), phi, xp=xp)[n:]
     return phi, v, c, plates, 0.5e12 * entity_sum(c * v * v, axis=None, xp=xp)
 
 

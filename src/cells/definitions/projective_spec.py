@@ -3,10 +3,10 @@
 Absent (the default), a definition, its serialization and its run are those of
 the fine engine, unchanged. Present, cells.execution.runner.run executes the
 definition with cells.execution.projective: bursts of fine checked steps of the
-declared solver, and projective_forward_euler@1 jumps (numerics/projective.py)
+declared solver, and cells.execution.projective_forward_euler@1 jumps (numerics/projective.py)
 inside the declared windows only. Every field is required:
 
-  method        "projective_forward_euler@1"
+  method        "cells.execution.projective_forward_euler@1"
   windows       [{"start_time", "end_time"}, ...]: increasing, disjoint model-time
                 intervals inside the horizon. A jump and the fine burst that
                 verifies it lie inside one window; fine stepping elsewhere.
@@ -37,9 +37,9 @@ from cells.numerics.projective import METHOD_ID
 
 # Model identities with projective readouts (models/surface_pump_projective.py).
 SUPPORTED_MODELS = (
-    "resolved_pump_tissue@1",
-    "resolved_pump_tissue@2",
-    "resolved_pump_tissue@3",
+    "cells.model.resolved_pump_tissue@1",
+    "cells.model.resolved_pump_tissue@2",
+    "cells.model.resolved_pump_tissue@3",
 )
 RULES = ("fixed", "error_controlled")
 TOLERANCE_FIELDS = ("concentration_mM", "membrane_voltage_V", "gate")

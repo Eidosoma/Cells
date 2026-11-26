@@ -28,7 +28,7 @@ At constant rates, the local pool solves dn/dt = P − kn. Production and cleara
 - [CellsProofs.Chemistry.SpeciesTurnover.cohort_survival](../CellsProofs/Chemistry/SpeciesTurnover.lean#L113)
 - [CellsProofs.Chemistry.SpeciesTurnover.half_life](../CellsProofs/Chemistry/SpeciesTurnover.lean#L118)
 
-Direct proof subject `cells.scheduled_species_turnover@1`
+Direct proof subject `cells.operator.scheduled_species_turnover@1`
 
 ## Numerical comparison
 
@@ -54,6 +54,9 @@ Direct proof subject `cells.scheduled_species_turnover@1`
 
 **Open.** Mean labeled-protein puncta per neuron after the label is removed. Absolute production and clearance of the total protein pool remain open.
 
+- [Labelled Lamin B1 turns over on a timescale of days in both cultured rat neuronal preparations.](../WET_LAB_EVIDENCE.md#pair-neuronal-lamin-b1-turnover) · Supported by both studies
+- [GM130 turns over faster than Lamin B1 within a cultured neuronal preparation.](../WET_LAB_EVIDENCE.md#pair-neuronal-gm130-lamin-order) · Supported by both studies
+
 **Unit** puncta per neuron
 
 ### dorrbaum2018_protein_chase@1
@@ -70,5 +73,35 @@ Primary rat hippocampal neurons after a two-hour pulse. Each protein’s day 0 s
 The displayed Lamin B1 day 7 mean is 11.62 ± 3.22 puncta per neuron (SD across 21 cells). The four late groups have 13–32 cells each. These SDs describe cell scatter. The holdouts are retrospective within one study.
 
 For GM130 the early fit predicted 4.99 and 3.85 against means of 4.00 and 3.31 on days 2 and 3. For Lamin B1 it predicted 16.58 against 18.20 on day 3 and 5.07 against 11.62 on day 7. Including measured background raised the day 7 prediction to 5.97. The assay measures retention of labeled protein. [Dataset manifest](../checks/data/dorrbaum2018_protein_chase.json) · [Comparison verdict](../PROGRESS.md#scheduled-species-turnover)
+
+### heo2018_cortical_lmnb1
+
+Primary rat cortical neurons. Whole-cell isotope incorporation was measured at 6 h, 1, 3 and 7 days. Table 2, control Lmnb1, and Fig. 5A. [Heo et al. (2018)](https://doi.org/10.1073/pnas.1720956115)
+
+- **Evidence role** descriptive
+
+No Lamin B1-specific uncertainty is given in the table. Label incorporation and disappearance of labelled puncta have different denominators.
+
+The fitted Lamin B1 half-life was 8.40 days. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### fornasiero2018_cortical_lmnb1
+
+Adult mouse cortical homogenate and NeuN-positive cortical neuronal nuclei, metabolic isotope incorporation. Supplementary Data 1, Data sheet, P14733, row 530, columns E and P. [Fornasiero et al. (2018)](https://doi.org/10.1038/s41467-018-06519-0)
+
+- **Evidence role** descriptive
+
+These fits describe adult mouse tissue and a sorted fraction. Their biological and assay conditions differ from cultured rat neurons.
+
+Fitted half-lives were 46.98 d in control cortical homogenate and 44.94 d in neuronal nuclei. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### mathieson2018_neuron_turnover
+
+Metabolic isotope incorporation in primary embryonic mouse cortical neurons. The raw data accession is PXD008514. Supplementary Data 2, high-quality protein half-lives sheet, rows 1845 and 2429, mouse neuron columns Z and AC. [Mathieson et al. (2018)](https://doi.org/10.1038/s41467-018-03106-1)
+
+- **Evidence role** descriptive
+
+The two columns are biological replicate fits. Their spread is descriptive. Separate pointwise uncertainties are unavailable.
+
+GM130 half-lives of 35.136 and 40.233 h were shorter than Lamin B1 half-lives of 169.008 and 209.115 h in the corresponding replicates. [Dataset manifest](../checks/data/mathieson2018_neuronal_turnover.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

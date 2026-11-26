@@ -3,7 +3,7 @@ import Mathlib.Tactic.Ring
 
 /-! # Passive permeation of a neutral species
 
-For `passive_neutral_permeation@1` the sender is outside and positive flux is
+For `cells.route.passive_neutral_permeation@1` the sender is outside and positive flux is
 inward. The scale is area × permeability × opening divided by mol/fmol. In a
 closed pair a flux `j` adds `j / vIn` to the inside concentration rate and
 subtracts `j / vOut` from the outside concentration rate, with volumes in pL.

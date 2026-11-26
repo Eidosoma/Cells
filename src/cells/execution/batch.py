@@ -29,8 +29,8 @@ from cells.definitions.specs import (
 from cells.execution import blas_threads, phases
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
-from cells.execution.grid import applied_definition, refinement_times
-from cells.execution.resources import trace_bytes
+from cells.execution.grid import applied_definition
+from cells.execution.resources import fixed_bytes, row_bytes, trace_bytes
 from cells.execution.runner import (
     RunResult,
     branch_checkpoint,
@@ -170,7 +170,24 @@ def parse_batch(data):
             s.model
         ) != model.batch_signature(first.model):
             raise ConfigError("A batch requires matching model array axes; use separate batches")
+        if field_pattern_signature(s) != field_pattern_signature(first):
+            raise ConfigError(
+                f"A batch under {s.execution.field_solver} requires one face topology: its "
+                "bound sparsity patterns hold the faces; use separate batches"
+            )
     return BatchSpec(tuple(worlds), maximum, steps, storage)
+
+
+def field_pattern_signature(spec):
+    """The face topology ((sender, receiver), ...) of a world whose declared field solver binds
+    static sparsity patterns (surface_field.SPARSE_SOLVER_ID, FR-17 stage 1, whose patterns hold
+    the faces, so its arrays' shapes follow them); () for every other world, whose batches are
+    admitted as before (the batch signature, BATCH_CAPACITIES and the field solver's equality)."""
+    from cells.numerics.surface_field import SPARSE_SOLVER_ID
+
+    if getattr(spec.execution, "field_solver", None) != SPARSE_SOLVER_ID:
+        return ()
+    return tuple((f.sender, f.receiver) for f in spec.model.faces)
 
 
 def load_batch(path):
@@ -199,13 +216,16 @@ def plan_batch(spec: BatchSpec) -> BatchPlan:
             raise ConfigError(f"World {world.world_id}: nominal grid exceeds max_steps")
         # Before any timeline/control/capacity allocation. Events include zero,
         # so this intentionally overestimates instead of guessing overlap.
-        upper.append(math.ceil(nominal) + len(s.experiment.changes) + len(refinement_times(s)))
+        upper.append(math.ceil(nominal) + len(s.experiment.changes))
     steps = max(upper)
     padded = steps * len(spec.worlds)
     if padded > spec.max_padded_steps:
         raise ConfigError("Conservative padded work exceeds batch max_padded_steps")
-    working = 2 * sum(
-        trace_bytes(w.simulation, steps) + trace_bytes(w.simulation, 0, 0) for w in spec.worlds
+    # Each world's layout once (fixed_bytes, FR-43), its rows in both coexisting copies.
+    working = sum(
+        fixed_bytes(w.simulation)
+        + 2 * (row_bytes(w.simulation, steps) + row_bytes(w.simulation, 0, 0))
+        for w in spec.worlds
     )
     if working > spec.max_working_bytes:
         raise MemoryRefusal(
@@ -254,13 +274,13 @@ def checkpoint_batch_limits(spec):
                 "admission",
                 f"World {world.world_id}: nominal grid exceeds max_steps",
             )
-        upper.append(
-            max(1, math.ceil(nominal)) + len(s.experiment.changes) + len(refinement_times(s))
-        )
+        upper.append(max(1, math.ceil(nominal)) + len(s.experiment.changes))
     bound = len(spec.worlds) * max(upper)
     if bound > spec.max_padded_steps:
         raise ConfigError("Conservative padded work exceeds batch max_padded_steps")
-    storage = 2 * sum(trace_bytes(w.simulation, 0, 0) for w in spec.worlds)
+    storage = sum(
+        fixed_bytes(w.simulation) + 2 * row_bytes(w.simulation, 0, 0) for w in spec.worlds
+    )
     if storage > spec.max_working_bytes:
         raise MemoryRefusal(
             "Checkpoint aggregate arrays exceed batch max_working_bytes",

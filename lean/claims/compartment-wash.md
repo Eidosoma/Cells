@@ -6,7 +6,7 @@ For a finite well of fixed volume V, a wash of fraction f changes free amount n 
 
 ## Assumptions
 
-- The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport.
+- The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport. The landed tissue wash refuses a gene export into the washed node and outside degradation there. A different node remains eligible when its other admission conditions hold.
 - The Lean positivity result assumes 0 < f ≤ 1 and strictly positive free and buffer amounts. Float64 whole-wash storage also requires sufficient resolution at the host’s amount anchor. Version 1 exchanges ions at their own concentration.
 - For the heat, the well is ideal and isothermal with positive volume and concentrations and a nonnegative thermal energy scale.
 
@@ -14,20 +14,20 @@ For a finite well of fixed volume V, a wash of fraction f changes free amount n 
 
 **Proved**
 
-- [CellsProofs.Tissue.CompartmentWash.inventory](../CellsProofs/Tissue/CompartmentWash.lean#L16)
-- [CellsProofs.Tissue.CompartmentWash.positive](../CellsProofs/Tissue/CompartmentWash.lean#L30)
-- [CellsProofs.Tissue.CompartmentWash.whole](../CellsProofs/Tissue/CompartmentWash.lean#L34)
-- [CellsProofs.Tissue.CompartmentWash.repeated](../CellsProofs/Tissue/CompartmentWash.lean#L56)
-- [CellsProofs.Tissue.CompartmentWash.mixingHeat_nonneg](../CellsProofs/Tissue/CompartmentWash.lean#L42)
-- [CellsProofs.Tissue.CompartmentWash.whole_mixing_heat](../CellsProofs/Tissue/CompartmentWash.lean#L51)
+- [CellsProofs.Tissue.CompartmentWash.inventory](../CellsProofs/Tissue/CompartmentWash.lean#L18)
+- [CellsProofs.Tissue.CompartmentWash.positive](../CellsProofs/Tissue/CompartmentWash.lean#L32)
+- [CellsProofs.Tissue.CompartmentWash.whole](../CellsProofs/Tissue/CompartmentWash.lean#L36)
+- [CellsProofs.Tissue.CompartmentWash.repeated](../CellsProofs/Tissue/CompartmentWash.lean#L58)
+- [CellsProofs.Tissue.CompartmentWash.mixingHeat_nonneg](../CellsProofs/Tissue/CompartmentWash.lean#L44)
+- [CellsProofs.Tissue.CompartmentWash.whole_mixing_heat](../CellsProofs/Tissue/CompartmentWash.lean#L53)
 
-Direct proof subject `cells.scheduled_compartment_wash@1`
+Direct proof subject `cells.operator.scheduled_compartment_wash@1`
 
-Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294) · [Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149) · [Cells specialization of the relative-entropy formula](../checks/mixing/KLFun.lean) · [Cells wash heat computed from the retained and supplied concentrations](../../src/cells/operators/wash_schedule.py#L320)
+Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294) · [Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149) · [Cells specialization of the relative-entropy formula](../checks/mixing/KLFun.lean) · [Cells wash heat computed from the retained and supplied concentrations](https://github.com/Eidosoma/Cells/blob/b06158e8a8b2044d92183e8da8d646bf56c4a12b/src/cells/operators/wash_schedule.py#L448)
 
 ## Numerical comparison
 
-**Checked.** Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion.
+**Checked.** Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion. On b06158e8 and again after FR-49 landed at cd3b7b09, all 35 wash tests passed, including named same-node gene-route refusals and a separate-node admission.
 
 **Engine** `resolved_pump_composite@1`
 
@@ -53,9 +53,19 @@ Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](ht
 
 [Tested engine d74f519d40b9](https://github.com/Eidosoma/Cells/commit/d74f519d40b9a9f7488b94b489c6dc4dd865504c) · [Evidence checkpoint ceeca19816ac](https://github.com/Eidosoma/Cells/commit/ceeca19816acd761ab68379d67bb0f7426366a1c)
 
+**Engine** `resolved_pump_composite@1`
+
+**Operators** `cells.scheduled_compartment_wash@1`, `cells.templated_polymerisation@1`
+
+[Gene destinations examined by the wash](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/src/cells/operators/wash_schedule.py#L372) · [Export and degradation fixture](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/validation/gene_regulation/worlds.py) · [Same-node refusals and separate-node control](https://github.com/Eidosoma/Cells/blob/cd3b7b09d8252f445a976f0506767f1aaf38c53d/tests/unit/test_wash_schedule.py#L167) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67/tests/unit/test_wash_schedule.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67/lean/PROGRESS.md#nov24-main-audit)
+
+[Tested engine cd3b7b09d825](https://github.com/Eidosoma/Cells/commit/cd3b7b09d8252f445a976f0506767f1aaf38c53d) · [Evidence checkpoint 73e7e9d7b639](https://github.com/Eidosoma/Cells/commit/73e7e9d7b639ce366d3a9e26d4b6af8b977d7b67)
+
 ## Biological evidence
 
 **Open.** Free tracer after successive known-fraction washes, together with independently measured ligand retained on the surface.
+
+- [Repeated buffer washes lower the signal from a preceding dye exposure in fluid collected or delivered by microfluidic devices.](../WET_LAB_EVIDENCE.md#pair-serial-rinse-carryover) · Supported by both studies
 
 **Unit** µg/mL
 
@@ -70,5 +80,25 @@ Free fluorescein in PBS, successive 10 µL plugs. For the numerical row, use the
 At least three replicates per point, with one SD drawn graphically. The comparison uses rounded printed means. The study notes wall adsorption and a limited instrument range.
 
 The first two 80% washes measured 0.332 and 0.067 µg/mL against 0.3424 and 0.06848. The third mean was 46% above ideal dilution. The experiments address freely dissolved dye. Instantaneous bound-site retention in a biological well remains open. [Dataset manifest](../checks/data/vloemans2024_dilution.json) · [Comparison verdict](../PROGRESS.md#nov21-wash)
+
+### lagoy2018_tubing_wash
+
+Well-to-well fluorescein carryover read in the channel 30 s after a change of well. Fig. 1i, printed bar labels. [Lagoy and Albrecht (2018)](https://doi.org/10.1038/s41598-018-24504-x)
+
+- **Evidence role** descriptive
+
+The last bar follows four wash wells. Each plotted residual already includes the fill delay.
+
+Carryover was 0.23%, 0.07% and 0.02% after 0, 1 and 4 wash wells. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### li2017_multiplexer_wash
+
+A fluorescein-filled reservoir was rinsed with buffer. Drained liquid was collected per outlet and read by fluorometry. Methods and Supplementary Fig. S-6A, also reproduced as Li’s dissertation Fig. 2.7A. [Li et al. (2017)](https://doi.org/10.1039/C6LC01201A)
+
+- **Evidence role** descriptive
+
+Panel A gives no replicate count or definition of the error bars. The volume SD in panel B belongs to a separate experiment.
+
+The authors report under 1% after rinse 2. Rinse 5 is roughly 0.1% on the log inset, a reading of collected effluent. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

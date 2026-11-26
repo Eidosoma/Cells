@@ -30,7 +30,7 @@ Water moves down the hydrostatic-minus-osmotic pressure difference. At frozen so
 - [CellsProofs.Transport.OsmoticWater.ideal_bath_stall](../CellsProofs/Transport/OsmoticWater.lean#L162)
 - [CellsProofs.Transport.OsmoticWater.symport_drive_change](../CellsProofs/Transport/OsmoticWater.lean#L176)
 
-Direct proof subject `cells.ideal_osmosis_linear_compliance_water@1`
+Direct proof subject `cells.operator.ideal_osmosis_linear_compliance_water@1`
 
 ## Numerical comparison
 
@@ -48,7 +48,29 @@ Direct proof subject `cells.ideal_osmosis_linear_compliance_water@1`
 
 **Open.** Equilibrium swelling in vesicles and red cells, water flow after pressure steps in a Chara internode, and the water change accompanying net solute movement in trout red cells. A pathway-specific rate for K–anion cotransport during swelling remains open.
 
+- [A hyperosmotic external bath draws water out of protein-free phospholipid vesicles.](../WET_LAB_EVIDENCE.md#pair-hypertonic-water-efflux) · Supported by both studies
+
 **Unit** % swelling, fL cell volume, nL/s inward flow, g water per g dry cell solids
+
+### mathai2008_osmotic_water@1
+
+Protein-free vesicles under a 50% increase in external osmotic pressure, 30 °C. Entrapped dye self-quenching reported volume loss. Fig. 1A, Table I and water-permeability methods. [Mathai et al. (2008), Fig. 1A and Table I](https://doi.org/10.1085/jgp.200709848)
+
+- **Evidence role** descriptive
+
+8–12 traces averaged for a fluorescence curve. The Table I ± convention is unspecified here.
+
+The hyperosmotic bath induced water efflux. DOPC and POPC water permeability were 15.8 ± 0.58 and 13.0 ± 0.44 in units of 10⁻³ cm/s at 30 °C. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
+
+### frallicciardi2022_osmotic_water@1
+
+Lipid vesicles under an external osmotic upshift, 20 °C. Only stopped-flow fluorescence data are used. Fig. 1A and experimental panels 3A and 4A. [Frallicciardi et al. (2022), Figs. 1A, 3A and 4A](https://doi.org/10.1038/s41467-022-29272-x)
+
+- **Evidence role** descriptive
+
+Figures report SEM. Methods propagate uncertainty in vesicle size distributions. Individual repeated size determinations do not establish independent preparations.
+
+The hyperosmotic stopped-flow experiment detected shrinkage. DOPC and POPC water permeability were 16.0 ± 1.7 and 12.0 ± 1.4 in units of 10⁻³ cm/s at 20 °C. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
 
 ### shibly2016_dopc_swelling@1
 

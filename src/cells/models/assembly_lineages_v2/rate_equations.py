@@ -1,4 +1,4 @@
-"""cells.rate_equations@1: the deterministic representation of the family's laws (OL6, D304).
+"""cells.assembly_representation.rate_equations@1: the deterministic representation of the family's laws (OL6, D304).
 
 The design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag ol6-design-note-2026-11-22).
 A definition chooses it by `execution.representation`, over the same world as exact events: the
@@ -20,14 +20,14 @@ products' law (ii).
 
 **The state** (§1.6): y = [pool, vesicles, supplied, Q, W]. In a single lineage `pool` is the
 world's every place and there is no vesicle block (S1's layout); in a population
-(cells.shared_pool@1, at most 64 slots, §6.9) `pool` holds the pool's places and each slot holds
+(cells.population.shared_pool@1, at most 64 slots, §6.9) `pool` holds the pool's places and each slot holds
 its vesicle's membrane and lumen places. `supplied` is each held place's net supply, Q the heat
 and W the reservoir work (k_BT), all integrated by the same stages; the counts, Q and W under the
 step control, the supplies not (a linear quadrature, kept exactly). Every slot's flux is the
 single assembly's at its vesicle with the pool, the pool's own steps at the pool with an empty
 vesicle (as population.py's rates).
 
-**The integrator** is declared apart (rosenbrock_rodas4_dense@1, numerics/rosenbrock_dense.py),
+**The integrator** is declared apart (cells.solver.rosenbrock_rodas4_dense@1, numerics/rosenbrock_dense.py),
 with its Jacobian the forward derivative of this module's right-hand side, so linear invariants (the
 moieties) are kept to rounding.
 
@@ -61,24 +61,53 @@ at the located crossing). A step whose end state is below min_count/2 is rejecte
 the sinks), to the integrator's tolerance; every moiety to rounding; and the second law per step,
 −J_r ΔF_r ≥ 0, at every accepted state. A run whose books do not close is refused.
 
-**The pore clock** (§3.5, S3; cells.pore_nucleation@1 and cells.tension_hold@1). Each vesicle
+**The pore clock** (§3.5, S3; cells.assembly_hazard.pore_nucleation@1 and cells.operator.tension_hold@1). Each vesicle
 draws E_v = −ln u from domain 7 (its key, counter 0) when the run first holds it: a founder at the
 start, a daughter at its birth, with H_v = 0 then. H_v = ∫ k_v dt, k_v the law's rate at the
 vesicle's real area A = q·W/2 and tension: the hold's over [start_s, end_s) (whose edges are stops),
 or, with no hold, the osmotic lumen's σ(N_L, W) (σ from F; 0 while floppy). H is carried by each
 step's own stages (rosenbrock_dense.quadrature), never appended to y, so it stays out of step
 selection and a pore world takes exactly its pore-free twin's steps until its first opening; its
-embedded error estimate is monitored at every accepted step, and a run where it passes 1e-10 is
-refused. The opening is the crossing H_v = E_v (upward), located as every guard is; Phase A's
-outcome follows, the rupture through the release (cause `pore`), booked as two parts whose ΔF_open
-cancels: the opening q_open = −ΔF_open + w (under a hold w = σ_β/σ, paid by
+embedded error estimate U^H is monitored at every accepted step, per vesicle, and a run where
+|U^H| passes 1e-10 + 2e-3·|ΔH| (ΔH the step's own clock increment; D309, which replaced the
+absolute 1e-10) is refused. The opening is the crossing H_v = E_v (upward), located as every
+guard is; Phase A's outcome follows, the rupture through the release (cause `pore`), booked as two
+parts whose ΔF_open cancels: the opening q_open = −ΔF_open + w (under a hold w = σ_β/σ, paid by
 source:tension_hold/<i>, ΔF_open = 2σ_β/σ − ln(A·n_s); with σ from F w = 0 and
 ΔF_open = σ_β/σ − ln(A·n_s), the note's §2.1) and the release from the open state. The hazard and
 σ_max both stand: whichever crosses first acts. Under a hold, a step that changes a membrane
 place's count is refused (T2); with σ from F, σ_max ≤ σ_β/4 is required at parse.
 
+**FR-47 (D323, D327): the prescribed shell, its washes and E2.**
+- **The shell** (cells.assembly_geometry.prescribed_shell@1): each cells.reaction.shell_permeation@1 step's extent is the
+  shell's constant A_sh·ρ0, dispatched by the geometry kind as the exact kernel does; a shell has
+  no bilayer quantities, closure cost, floor, tension or lysis. Its permeation's limit is its exact
+  form (one molecule a step), and cells.rate_factor.gate_factor@1's is g at m = n. A shell world's own check
+  adds parity with the exact kernel's rates (the extent's dispatch).
+- **The washes** (in a shell's world, version 1), host operators beside the transfer: a
+  replacement is the same map (the sink F_cont of the old pool, the schedule's work column F_cont
+  of the fresh one); a withdrawal is its mean, n → (1 − f)·n + b on the pool's finite places,
+  booked as the exact operator books with F_cont (the sink F(n; V) − F((1 − f)n; (1 − f)V), the
+  work F(b; fV), the mixing heat F((1 − f)n; (1 − f)V) + F(b; fV) − F(after; V)).
+- **E2, true zeros at first-order places** (in a shell's world, version 1): a finite dilute place
+  that every step reading it reads at first order (at most one finite molecule a side, by no excess
+  term) and that some founder holds below min_count or a declared wash acts on. Such a place is
+  outside E1's envelope; each step reading it takes the difference form J = a⁺ − a⁻, each
+  direction its law's at the place's count 1 times that count: the first-order law's linear form,
+  exact at any real count, with an exact derivative at 0 (the factored form gives J = −0 there).
+  A step that starts with an E2 place at or below 0 books its heat by the closure identity, since
+  μ = ln n diverges there (integrably); its heat leaves that step's error control. A step result
+  with an E2 place below −10·atol_count is rejected and retried at h/4, or the run stops
+  `stalled`. A world without E2 places traces its program as before.
+- **Refused by name in version 1,** each until a qualification covers it: washes and the gate
+  factor outside a shell's world, site binding in a shell's world, a gate driven by anything but
+  its own forms (bound states included), and FR-46's inner face.
+- **Status:** admitted, development-only until fr47-shell-exchange's verdict. The registered
+  declaration's `qualified` says so, and each run that uses these paths records it
+  (representation.qualification in run.json).
+
 **Slices:** S1 (OL1's laws), S2 (vesicles: geometry, the osmotic lumen, lysis, the shared pool,
-shear fission, serial transfer) and S3 (the pore clock and held tensions).
+shear fission, serial transfer) and S3 (the pore clock and held tensions); FR-47 (the shell).
 """
 
 import functools
@@ -93,12 +122,15 @@ import numpy as np
 from cells.definitions.specs import ConfigError, SimulationSpec, bounded_integer, require_fields
 from cells.models.assembly_lineages_v2 import (
     BILAYER_GEOMETRY,
+    GATE_FACTOR,
     IDEAL_MIXING,
     MODE,
     MODEL_ID,
     POPULATION,
     PORE_NUCLEATION,
+    PRESCRIBED_SHELL,
     RATE_EQUATIONS,
+    SIZE_THRESHOLD_DIVISION,
     geometry,
     kernel,
     lumen,
@@ -140,8 +172,12 @@ EXACT_ONLY = ("molecule_capacity", "chunk_events", "unroll")
 RTOL_RANGE = (1e-13, 1e-3)
 EPS = float(np.finfo(np.float64).eps)
 MAX_SLOTS = 64  # §6.9: a population's linear algebra is dense in version 1
-REFUSED_SCHEDULES = ("replacement", "withdrawal")  # §1.4: their means come later (0.5 agent-day)
-H_ERROR = 1e-10  # §3.5: the pore clock's embedded error estimate per accepted step, absolute
+WASHES = ("replacement", "withdrawal")  # FR-47: admitted in a prescribed shell's world only
+BELOW_ZERO = 10.0  # FR-47's E2: a step result below −BELOW_ZERO·atol_count is retried at h/4
+FR47_STATUS = "admitted, development-only until fr47-shell-exchange's verdict"  # the lead's words
+FR47_PROTOCOL = "fr47-shell-exchange-registered-2026-11-24"  # FR-47's registered tag (D323)
+H_ERROR = 1e-10  # §3.5: the pore clock's bound per accepted step, its absolute part
+H_RELATIVE = 2e-3  # D309: its relative part, |U^H| <= H_ERROR + H_RELATIVE |dH| per vesicle
 
 FORMULAS = {
     "flux": "J_r = s_r(n) theta+_r(n) (1 - exp(dF_r)), dF_r = nu_r . mu(n) - w_r, mu = grad F_cont",
@@ -151,7 +187,7 @@ FORMULAS = {
     "dQ/dt = -sum_r J_r dF_r >= 0; dW/dt = sum_r J_r w_r",
     "closure": "F_cont(n_t) - F_cont(n_0) = W - Q - S at every row, to the integrator's tolerance",
     "envelope": "every finite place a rate reads holds at least min_count",
-    "geometry": "cells.bilayer_geometry@1 at real W = sum_i k_i n_i: the extents at W(n) (consumed "
+    "geometry": "cells.assembly_geometry.bilayer_geometry@1 at real W = sum_i k_i n_i: the extents at W(n) (consumed "
     "0, so W(m) = W(n)); the closure cost once per living vesicle, in F_cont's value; the floor "
     "refuses a fission with a daughter below W_floor, and a vesicle reaching W_floor stops the run "
     "outside_envelope",
@@ -175,6 +211,21 @@ PORE_LIMIT = {  # the pore law in this representation: the same law at real coun
     "rule": "the same closed form at the vesicle's real area A = q W / 2 and tension (the hold's, "
     "or the osmotic lumen's sigma(N_L, W) at real N_L and W); its clock H integrated with the "
     "state",
+}
+FR47_FORMULAS = {  # FR-47 (D323): written into a run's record only where its world uses them
+    "shell": "cells.assembly_geometry.prescribed_shell@1: each cells.reaction.shell_permeation@1 step's extent is the "
+    "constant A_sh rho0, as the exact kernel's; no bilayer quantities, closure cost, floor, "
+    "tension or lysis",
+    "washes": "cells.operator.pool_replacement@1: the same map, the sink F_cont(old pool), the work "
+    "F_cont(fresh pool); cells.operator.pool_withdrawal@1's mean, n -> (1 - f) n + b on the pool's "
+    "finite "
+    "places: the sink F(n; V) - F((1 - f) n; (1 - f) V), the work F(b; f V), the mixing heat "
+    "F((1 - f) n; (1 - f) V) + F(b; f V) - F((1 - f) n + b; V), with F(c; g V) = F_cont(c) - "
+    "F_cont(0) - (sum c) ln g",
+    "e2": "at a first-order place that some founder holds below min_count or that a wash acts on: "
+    "J_r = a+_r - a-_r, each direction its law's at the place's count 1 times that count, exact at "
+    "any real count; a step from such a place at or below 0 books its heat by closure, Q1 = Q0 + "
+    "(W1 - W0) - (F_cont(y1) - F_cont(y0)); a step result below -10 atol_count is retried at h/4",
 }
 
 REPRESENTATION = law_registry.BUILTIN.register(
@@ -222,6 +273,10 @@ REPRESENTATION = law_registry.BUILTIN.register(
             "error_budget": "Protocol D's criterion B: b = 2 on the mean, c_r = 5 per replica "
             "(docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md §5.1)",
             "record": "development: Protocol D's registered tag is pending (S5)",
+            "fr47": FR47_STATUS + ": the prescribed shell, its washes, E2 and autonomous gates, "
+            "in a prescribed shell's world only, registered for FR-47's protocol (tag "
+            "fr47-shell-exchange-registered-2026-11-24); its independent checker's run is pending, "
+            "and each run that uses them records this status (representation.qualification)",
             "checker": "an independent checker runs each protocol at its tag (D304)",
         },
         methods=METHODS,
@@ -380,12 +435,43 @@ def refusals(world, experiment, execution):
     from cells.models.assembly_lineages_v2 import spec as spec_rules
 
     spec_rules._mode_refusals(world, execution.mode)
+    if world.size_division is not None:  # OL6 S7
+        raise ConfigError(
+            f"{RATE_EQUATIONS}: {SIZE_THRESHOLD_DIVISION} is refused in version 1: its trigger is "
+            "a count reaching a size, and the GARD limit's scale, its first use, lies outside the "
+            "envelope (the note's §6.8)"
+        )
     if world.hazard is not None or experiment.tension_holds:
         _pore_refusals(world, experiment.tension_holds)
-    if world.geometry is not None and world.geometry[0] != BILAYER_GEOMETRY:
+    if world.inner_sites:  # FR-46 (D323): binding from the lumen, until a qualification covers it
         raise ConfigError(
-            f"{RATE_EQUATIONS}: the geometry {world.geometry[0]} is refused in version 1 (FR-21's "
-            "shell, its permeation and its gate: about 0.25 agent-day when a consumer needs them)"
+            f"{RATE_EQUATIONS}: inner-face site binding is refused in version 1 (FR-46): with a "
+            "finite lumen ligand it is bimolecular, and no qualification covers it yet"
+        )
+    shell = world.geometry is not None and world.geometry[0] == PRESCRIBED_SHELL
+    if shell:  # FR-47 (D323, R9): site binding in a shell's world, until W3 or another covers it
+        from cells.models.assembly_lineages_v2 import spec as spec_rules
+
+        by_name = {p.name: p for p in world.places}
+        for step in world.steps:
+            if spec_rules._declared_binding(step, world, by_name):
+                raise ConfigError(
+                    f"{RATE_EQUATIONS}: site binding in a {PRESCRIBED_SHELL} world (step "
+                    f"{step.id}) is refused in version 1 (FR-47, D323), until a qualification "
+                    "covers it: it is bimolecular at the wall, and FR-47's does not cover it"
+                )
+    if world.rate_factor is not None and world.rate_factor[0] == GATE_FACTOR:
+        if not shell:
+            raise ConfigError(
+                f"{RATE_EQUATIONS}: {GATE_FACTOR} is refused in version 1 outside a "
+                f"{PRESCRIBED_SHELL} world, until a qualification covers it: FR-47's covers a "
+                "gate in a shell's world only"
+            )
+        _gate_refusals(world)  # FR-47 (D323, R7): autonomous switching only
+    if world.geometry is not None and world.geometry[0] not in (BILAYER_GEOMETRY, PRESCRIBED_SHELL):
+        raise ConfigError(
+            f"{RATE_EQUATIONS}: the geometry {world.geometry[0]} is refused in version 1: this "
+            f"representation carries {BILAYER_GEOMETRY} and {PRESCRIBED_SHELL} only"
         )
     if world.population is not None and world.population["slots"] > MAX_SLOTS:
         raise ConfigError(
@@ -393,10 +479,11 @@ def refusals(world, experiment, execution):
             f"most {MAX_SLOTS} in version 1 (dense linear algebra, the note's §6.9)"
         )
     for schedule in experiment.schedules:
-        if schedule.kind in REFUSED_SCHEDULES:
+        if schedule.kind in WASHES and not shell:
             raise ConfigError(
-                f"{RATE_EQUATIONS}: a {schedule.kind} schedule is refused in version 1 (its mean "
-                "and booking come later, the note's §1.4)"
+                f"{RATE_EQUATIONS}: a {schedule.kind} schedule is refused in version 1 outside a "
+                f"{PRESCRIBED_SHELL} world, until a qualification covers it: FR-47's covers "
+                "washes in a shell's world only"
             )
     if world.role is not None:
         raise ConfigError(
@@ -418,21 +505,55 @@ def refusals(world, experiment, execution):
                 f"{RATE_EQUATIONS}: {law_id} declares no large-count limit, so it is refused "
                 "in this representation"
             )
-    envelope = enveloped(world)
-    founders = [("the founder", world.founder)]
-    if world.population is not None:
-        pool = np.asarray(world.founder)
-        founders = [(f"founder {i}", pool + np.asarray(v))
-                    for i, v in enumerate(world.population["founders"])]  # fmt: skip
-    for label, counts in founders:
+    envelope = enveloped(world, exempt=e2_places(world, experiment, execution.min_count))
+    for label, counts in _founders(world):
         for i, place in enumerate(world.places):
             if envelope[i] and counts[i] < execution.min_count:
                 raise ConfigError(
                     f"{RATE_EQUATIONS}: {label}'s {place.name} holds {counts[i]}, below the "
                     f"envelope's min_count {execution.min_count:g}: the representation is valid "
                     "only where every count a rate reads is large (a place rising from 0 is "
-                    "refused in version 1)"
+                    "refused in version 1, but at E2's first-order places in a shell's world, "
+                    "until a qualification covers it elsewhere)"
                 )
+
+
+def _founders(world):
+    """[(label, whole-world counts)]: the founder, or each population founder with the pool's."""
+    if world.population is None:
+        return [("the founder", world.founder)]
+    pool = np.asarray(world.founder)
+    return [(f"founder {i}", pool + np.asarray(v))
+            for i, v in enumerate(world.population["founders"])]  # fmt: skip
+
+
+def _gate_refusals(world):
+    """FR-47 (D323, R7): a gate's forms switch autonomously, by steps among themselves. A step
+    that changes a form's count and reads any other place (a bound state, a ligand, another wall
+    species, the form in another phase) couples the gate to what it gates: refused by name, since
+    FR-47 qualifies autonomous switching only."""
+    forms = set(world.rate_factor[1]["forms"])
+    by_name = {p.name: p for p in world.places}
+
+    def form(name):
+        return by_name[name].phase == world_rules.MEMBRANE and by_name[name].species in forms
+
+    for step in world.steps:
+        change = {}
+        for name, k in step.reactants:
+            change[name] = change.get(name, 0) - k
+        for name, k in step.products:
+            change[name] = change.get(name, 0) + k
+        changed = sorted(n for n, c in change.items() if c != 0 and form(n))
+        others = sorted(n for n in change if not form(n))
+        if changed and others:
+            raise ConfigError(
+                f"{RATE_EQUATIONS}: step {step.id} changes the gate's form {changed[0]} and reads "
+                f"{others[0]}: a gate driven by bound states, or by anything but its own forms, is "
+                "refused in version 1 (FR-47, D323), until a qualification covers it: FR-47's "
+                "covers autonomous switching only, forms interconverting by wall steps among "
+                "themselves"
+            )
 
 
 def _pore_refusals(world, holds):
@@ -474,22 +595,116 @@ def _pore_refusals(world, holds):
         )
 
 
-def enveloped(world):
-    """[places] bool: the finite places some rate reads (§1.5): every place of a step, and every
-    membrane place when a step has the membrane locus, a rate factor reads the membrane, or a
-    geometric extent reads the footprint W."""
+def enveloped(world, exempt=None):
+    """[places] bool: the finite places whose count some rate or the geometry reads (§1.5), less
+    `exempt`'s places (E2's, FR-47), when given. Held places hold no count. A place is read:
+    1. **as a step's reactant or product,** by its law's activity (mass_action.limit_log_direction,
+       exchange.geometric_log_direction);
+    2. **through the membrane total N, which sums every finite membrane place,** where a law reads
+       N:
+       - a step with a membrane place on either side: the reverse or forward direction's
+         membrane normalisation 1/ff(N − c, r) (both laws), and ideal mixing's −ln(N − c) in that
+         place's μ, which the step's ΔF reads;
+       - a mass-action step at the membrane locus: its extent (N − c + 1)/(N − c)^r
+         (mass_action.limit_log_direction). A geometric law's extent comes from the geometry
+         instead (kernel.encounter_extent, kernel.shell_extent);
+       - the transition-state factor: its fractions m_j/N over every membrane molecule
+         (transition_state.log_factor);
+    3. **by the gate factor, only its forms' places:** its fractions are over the gate's own forms
+       (gate_factor.log_factor), so no other wall species dilutes or reads it;
+    4. **by a bilayer's footprint W(n) = Σ k_i n_i,** which sums every membrane place: the
+       extents, the floor, the lumen's tension and kink, and the pore law (kernel.encounter_extent,
+       lumen.tension).
+
+    **A prescribed shell reads no wall count.** Its extent is the constant A_sh·ρ0
+    (kernel.shell_extent; prescribed_shell.py: the wall's counts set neither its area nor its
+    lumen), and cells.reaction.shell_permeation@1 moves no membrane molecule. So a wall species that no step,
+    factor or law reads (an inert marker) is outside the envelope (FR-47's inert-wall fix). Every
+    other world's places are enveloped as before."""
     index = {p.name: i for i, p in enumerate(world.places)}
+    membrane = [i for i, p in enumerate(world.places) if p.phase == world_rules.MEMBRANE]
     out = [False] * len(world.places)
-    membrane_read = world.rate_factor is not None or world.geometry is not None
+    total_read = world.geometry is not None and world.geometry[0] == BILAYER_GEOMETRY  # rule 4
     for step in world.steps:
-        for name, _ in (*step.reactants, *step.products):
+        names = [name for name, _ in (*step.reactants, *step.products)]
+        for name in names:  # rule 1
             out[index[name]] = True
-        membrane_read |= step.locus == world_rules.MEMBRANE
+        if any(index[name] in membrane for name in names):  # rule 2: its normalisation and μ
+            total_read = True
+        elif step.locus == world_rules.MEMBRANE and not total_read:
+            # rule 2: a law at the membrane locus reads N through its extent unless the extent is
+            # the geometry's. Only this case reads the registry, so a world whose steps are on a
+            # scoped (planted) law is read the same outside the scope.
+            law = law_registry.active().lookup(step.law)
+            total_read = getattr(law, "extent", "locus") != "geometric"
+    if world.rate_factor is not None:
+        if world.rate_factor[0] == GATE_FACTOR:  # rule 3
+            forms = set(world.rate_factor[1]["forms"])
+            for i in membrane:
+                out[i] |= world.places[i].species in forms
+        else:  # rule 2: a factor over the membrane's composition reads N
+            total_read = True
     for i, place in enumerate(world.places):
-        if place.phase == world_rules.MEMBRANE and membrane_read:
+        if place.phase == world_rules.MEMBRANE and total_read:
             out[i] = True
         if place.held:
             out[i] = False
+    if exempt is not None:
+        out = [on and not e for on, e in zip(out, exempt, strict=True)]
+    return out
+
+
+def first_order(world):
+    """[places] bool (FR-47's E2, D323): a finite dilute place whose every reading step reads it at
+    first order: each step that has it as a reactant or a product carries at most one finite
+    molecule on each side (so the place at coefficient 1, on one side), it lies in no phase that
+    an excess term reads, and a lumen place lies in a declared lumen. The family's laws read a
+    dilute place through its activity n/X alone (a rate factor reads the membrane only, an extent
+    the wall), so such a place's rates are linear in its count; each E2 world's own check confirms
+    it (each direction's linear form equals its law's direction at positive states)."""
+    registry = law_registry.active()
+    excess = set()
+    for law_id, _ in world.terms:
+        term = registry.lookup(law_id)
+        if term.part == "excess":
+            excess |= set(term.phases)
+    by_name = {p.name: p for p in world.places}
+    read, out = set(), []
+    unimolecular = {}
+    for step in world.steps:
+        sides = (step.reactants, step.products)
+        finite = [sum(k for n, k in side if not by_name[n].held) for side in sides]
+        both = {n for n, _ in step.reactants} & {n for n, _ in step.products}
+        for name, _ in (*step.reactants, *step.products):
+            read.add(name)
+            unimolecular[name] = unimolecular.get(name, True) and max(finite) <= 1 and not both
+    osmotic = world.conventions.lumen_volume == "osmotic"
+    for place in world.places:
+        out.append(
+            place.name in read
+            and unimolecular[place.name]
+            and not place.held
+            and place.phase in world_rules.DILUTE
+            and place.phase not in excess
+            and not (place.phase == world_rules.LUMEN and osmotic)
+        )
+    return out
+
+
+def e2_places(world, experiment, min_count):
+    """[places] bool: E2's places (FR-47, D323), in a prescribed shell's world (version 1): the
+    first-order places that some founder holds below min_count and, when a wash is declared, the
+    pool's first-order places. Every other place keeps E1's envelope, so a world without E2 places
+    (every world before FR-47) traces its program as before. None (an exact spec) has none."""
+    out = [False] * len(world.places)
+    if min_count is None or world.geometry is None or world.geometry[0] != PRESCRIBED_SHELL:
+        return out
+    order = first_order(world)
+    washed = any(s.kind in WASHES for s in experiment.schedules)
+    founders = [np.asarray(counts) for _, counts in _founders(world)]
+    for i, place in enumerate(world.places):
+        low = any(counts[i] < min_count for counts in founders)
+        out[i] = order[i] and (low or (washed and place.phase == world_rules.POOL))
     return out
 
 
@@ -527,8 +742,23 @@ class Problem:
         self.held_mu = model.place_arrays(world, self.P)[5]
         self.membrane = np.asarray(self.tables.membrane, dtype=bool)
         self.finite = np.asarray(self.tables.finite, dtype=bool)
+        # FR-47's E2 (D323): its places, out of E1's envelope, and per step its E2 reactant and
+        # product ([R, P] one-hot rows); static, so a world without E2 places is as it was.
+        e2 = np.zeros(self.P, dtype=bool)
+        e2[: len(world.places)] = e2_places(
+            world, spec.experiment, getattr(spec.execution, "min_count", None)
+        )
+        self.e2 = e2
+        self.e2_in, self.e2_out = np.zeros((self.R, self.P)), np.zeros((self.R, self.P))
+        index = {p.name: i for i, p in enumerate(world.places)}
+        for r, step in enumerate(world.steps):
+            for side, rows in ((step.reactants, self.e2_in), (step.products, self.e2_out)):
+                for name, _ in side:
+                    if e2[index[name]]:
+                        rows[r, index[name]] = 1.0
+        self.e2_step = (self.e2_in.sum(axis=1) + self.e2_out.sum(axis=1)) > 0
         mask = np.zeros(self.P, dtype=bool)
-        mask[: len(world.places)] = enveloped(world)
+        mask[: len(world.places)] = enveloped(world, exempt=e2[: len(world.places)])
         self.enveloped = mask
         # Moieties: C = sum_finite m n - sum_held m supplied is conserved (§2.4).
         names = sorted({m for s in world.species for m in s.moiety_counts()})
@@ -547,6 +777,7 @@ class Problem:
                 pool_of[i] = pools.get(place.species, -1)
         self.vesicle, self.pool_of = vesicle, pool_of
         self.bilayer = world.geometry is not None and world.geometry[0] == BILAYER_GEOMETRY
+        self.shell = world.geometry is not None and world.geometry[0] == PRESCRIBED_SHELL
         self.osmotic = self.bilayer and world.conventions.lumen_volume == "osmotic"
         self.closure = geometry.closure_kT(world) if self.bilayer else 0.0
         if self.bilayer:
@@ -594,6 +825,8 @@ class Problem:
         if self.bilayer:
             footprint = jnp.sum(n * self.quanta)
             v = v._replace(log_encounter=kernel.encounter_extent(footprint, self.layout, v, jnp))
+        elif self.shell:  # FR-47: the shell's constant extent, by the geometry kind, as exact's
+            v = v._replace(log_encounter=kernel.shell_extent(self.layout, jnp))
         return v
 
     def log_direction(self, n, forward):
@@ -610,7 +843,7 @@ class Problem:
         return jnp.where(np.asarray(lay.step_active), log_a, -jnp.inf)
 
     def flux(self, n):
-        """(J [R], ΔF [R]) at n: the factored form (i)."""
+        """(J [R], ΔF [R]) at n: the factored form (i); at E2's steps the difference form."""
         lay = self.layout
         mu = self.potentials(n)
         d_f = jnp.asarray(self.nu_finite) @ mu - np.asarray(lay.step_work)
@@ -619,7 +852,40 @@ class Problem:
         safe = jnp.where(active, log_a, 0.0)
         rate = np.asarray(lay.kf) * jnp.exp(safe)
         j = jnp.where(active, rate * -jnp.expm1(d_f), 0.0)
+        if self.e2_step.any():  # FR-47's E2, static: a world without E2 places is as it was
+            forward, reverse = self.difference(n)
+            j = jnp.where(self.e2_step, forward - reverse, j)
         return j, jnp.where(active, d_f, 0.0)
+
+    def difference(self, n):
+        """(a⁺ [R], a⁻ [R]) at n in E2's linear form (FR-47): each direction's law at the state
+        with every E2 place at one molecule, times the count of the direction's E2 place where it
+        has one. The directions are the factored form's own (log_direction, log_reverse), so the
+        identity check and a planted law act on the rates the flux uses; no logarithm or
+        feasibility test sees an E2 count, so the form holds at any real count and its derivative
+        at an empty place is the first-order law's."""
+        lay = self.layout
+        active = np.asarray(lay.step_active)
+        kf = np.asarray(lay.kf)
+        unit = jnp.where(self.e2, 1.0, n)
+
+        def rate(log_a, rows):
+            count = jnp.asarray(rows) @ n + (1.0 - rows.sum(axis=1))
+            return jnp.where(active, kf * jnp.exp(jnp.where(active, log_a, 0.0)) * count, 0.0)
+
+        return (rate(self.log_direction(unit, True), self.e2_in),
+                rate(self.log_reverse(unit), self.e2_out))  # fmt: skip
+
+    def e2_margin(self, n, j, margin):
+        """[R] the second law's margin at n (a sign, §2) with E2's steps read as the difference
+        form needs: a step whose E2 place is at or below 0 holds (its potential is ∓inf there and
+        the linear form's rates are not negative), and |J| within the difference's rounding,
+        8 eps (a⁺ + a⁻), counts as equilibrium, 0."""
+        forward, reverse = self.difference(n)
+        empty = (jnp.asarray(self.e2_in + self.e2_out) @ (n <= 0).astype(n.dtype)) > 0
+        level = jnp.abs(j) <= 8.0 * EPS * (jnp.abs(forward) + jnp.abs(reverse))
+        margin = jnp.where(self.e2_step & level, 0.0, margin)
+        return jnp.where(self.e2_step & empty, 1.0, margin)
 
     def log_reverse(self, n):
         """ln (a⁻ / k_f) of each step from the products' law (ii): the law's limit on the reverse
@@ -700,6 +966,22 @@ def limit_check(problem, rng, states=CHECK_STATES, low=1e2, high=1e4, draw=None)
     worst["dissipation_margin"] = float(np.min(product / (np.abs(product) + 1e-300), initial=1.0))
     worst["states"] = len(drawn)
     failed = []
+    if problem.e2_step.any():  # FR-47's E2: its linear form is each direction's law, at n > 0
+        a_plus, a_minus = (
+            np.asarray(a) for a in _e2_program(problem)(jnp.asarray(np.stack(drawn)))
+        )
+        kf = np.asarray(problem.layout.kf)
+        gaps = [0.0]
+        for rates, logs in ((a_plus, forward), (a_minus, reverse)):
+            on = problem.e2_step[None, :] & (rates > 0) & np.isfinite(logs)
+            with np.errstate(divide="ignore"):
+                gap = np.abs(np.log(np.where(on, rates, 1.0)) - np.log(np.where(on, kf, 1.0))
+                             - np.where(on, logs, 0.0))  # fmt: skip
+            gaps.append(float(gap[on].max(initial=0.0)))
+        worst["e2_linearity"] = max(gaps)
+        if worst["e2_linearity"] > IDENTITY_ATOL:
+            failed.append(f"E2's first-order form is not its law's direction (largest gap "
+                          f"{worst['e2_linearity']:.3g} in ln units)")  # fmt: skip
     if worst["identity"] > IDENTITY_ATOL:
         failed.append(f"the factored flux is not the products' law (largest gap "
                       f"{worst['identity']:.3g} in ln units)")  # fmt: skip
@@ -733,6 +1015,26 @@ def _check_program(problem, finite):
         return j, d_f, forward, reverse, mu, (f_up - f_down) / (2.0 * delta)
 
     return jax.jit(jax.vmap(one))
+
+
+def _e2_program(problem):
+    """E2's two directions at a batch of states [S, P] (FR-47), compiled once per call, as the
+    check's own program is."""
+    return jax.jit(jax.vmap(problem.difference))
+
+
+def shell_parity(spec, rng):
+    """FR-47: a shell world's own parity (item 4) with the exact kernel's forward rates, on its
+    exact twin (the same world and experiment as exact events): the shell's extent is dispatched
+    by the geometry kind in both, and parity reads it, where the identity check does not (the
+    extent cancels between the two directions)."""
+    from cells.models.assembly_lineages_v2 import spec as spec_rules
+
+    raw = spec_rules.to_dict(spec)
+    x = raw["execution"]
+    raw["execution"] = {"backend": x["backend"], "precision": x["precision"], "mode": x["mode"],
+                        "stream": x["stream"], "molecule_capacity": 1 << 20}  # fmt: skip
+    return parity(raw, rng)
 
 
 def vesicle_draw(problem, low=1e3, high=1e5):
@@ -967,11 +1269,22 @@ class Shape:
         full = jnp.where(alive[:, None], self.full(pool, slots), jnp.asarray(self.safe)[None, :])
         return jnp.where(alive, p.pore_rate(full, sigma_hold), 0.0)
 
-    def weight(self):
-        """The step control's weights: the finite counts, Q and W; not the supplies."""
+    def weight(self, heat=True):
+        """The step control's weights: the finite counts, Q and W; not the supplies. `heat`
+        False leaves Q out (FR-47: a step from an E2 zero books its heat by closure)."""
         p = self.problem
         pool = (p.finite & self.pool_place).astype(np.float64)
-        return np.concatenate((pool, np.ones(self.blocks), np.zeros(p.P), np.ones(2)))
+        return np.concatenate((pool, np.ones(self.blocks), np.zeros(p.P),
+                               np.asarray([1.0 if heat else 0.0, 1.0])))  # fmt: skip
+
+    def e2_counts(self, y, alive):
+        """FR-47: the E2 places' counts of the pool and of each living slot, on the host."""
+        p = self.problem
+        pool, slots = self.split(np.asarray(y, dtype=np.float64))[:2]
+        if not self.population:
+            return pool[p.e2] if alive[0] else pool[:0]
+        living = slots[np.asarray(alive, dtype=bool)][:, p.e2[self.places]]
+        return np.concatenate((pool[p.e2 & self.pool_place], living.ravel()))
 
     def free_energy(self, y, alive, f):
         """F_cont of a world state, with the closure cost per living vesicle (host floats); `f` is
@@ -1085,8 +1398,10 @@ def _program(spec):
     from cells.models.assembly_lineages_v2 import spec as spec_rules
 
     x = spec.execution
-    key = (spec_rules.world_id(spec.model.world), x.place_capacity, x.step_capacity, x.rtol,
-           x.atol_count)  # fmt: skip
+    world = spec.model.world
+    e2 = tuple(e2_places(world, spec.experiment, x.min_count))  # FR-47: the mask, in the key
+    key = (spec_rules.world_id(world), x.place_capacity, x.step_capacity, x.rtol,
+           x.atol_count, e2)  # fmt: skip
     if key not in _PROGRAMS:
         problem = Problem(spec)
         shape = Shape(problem)
@@ -1111,10 +1426,18 @@ def _program(spec):
                 j, d_f = jax.vmap(problem.flux)(full)
                 on = alive[:, None] & shape.vesicle_step[None, :]
             product = jnp.where(on, -(j * d_f), 0.0)
-            return jnp.min(jnp.where(on, product / (jnp.abs(product) + 1e-300), 1.0))
+            margin = product / (jnp.abs(product) + 1e-300)
+            if problem.e2_step.any():  # FR-47: E2's steps, as the difference form needs
+                if shape.population:
+                    margin = jax.vmap(problem.e2_margin)(full, j, margin)
+                else:
+                    margin = problem.e2_margin(pool, j, margin)
+            return jnp.min(jnp.where(on, margin, 1.0))
 
         draw = vesicle_draw(problem) if problem.bilayer else None
         own = limit_check(problem, np.random.default_rng(CHECK_SEED), draw=draw)
+        if problem.shell:  # FR-47: the shell's extent against the exact kernel's, in shells only
+            own = {**own, "parity": shell_parity(spec, np.random.default_rng(CHECK_SEED))}
         carry = None
         if problem.pores:
 
@@ -1137,6 +1460,11 @@ def _program(spec):
             "carry": carry,
             "check": own,
         }
+        if problem.e2.any():  # FR-47: a step from an E2 zero keeps its heat out of the control
+            opened = jnp.asarray(shape.weight(heat=False))
+            _PROGRAMS[key]["norm_open"] = jax.jit(
+                lambda err, y0, y1: rd.error_norm(err, y0, y1, rtol, atol, opened)
+            )
     return _PROGRAMS[key]
 
 
@@ -1211,7 +1539,12 @@ class _Run:
         self.draws = []  # (key, counter, u, E, time drawn)
         self.sigma_hold = 0.0
         self.clock_error = 0.0
+        self.clock_fraction = 0.0  # the largest |U^H| / (H_ERROR + H_RELATIVE |dH|), D309
         self.carried = None  # the accepted step's carried clock (a crossing's dense H)
+        # FR-47's E2: whether the world has E2 places, its steps from a zero (heat by closure)
+        # and its step results rejected below zero.
+        self.e2 = bool(self.p.e2.any())
+        self.zero_starts = self.below_rejected = 0
         if self.p.pores:
             for slot in np.flatnonzero(self.alive):
                 self.draw_threshold(int(slot))
@@ -1317,18 +1650,24 @@ class _Run:
                 for name in ("increment", "error", "k1", "k2")}  # fmt: skip
 
     def advance_clock(self, carried):
-        """H += the accepted step's increment; its error estimate monitored (§3.5): a run where it
-        passes H_ERROR is refused, never silently inaccurate."""
+        """H += the accepted step's increment; its error estimate monitored per vesicle (§3.5,
+        D309): a run where |U^H_v| passes H_ERROR + H_RELATIVE |dH_v|, dH_v the step's own
+        increment of that vesicle's clock, is refused, never silently inaccurate."""
         if carried is None:
             return
-        error = float(np.max(np.abs(np.where(self.alive, carried["error"], 0.0)), initial=0.0))
-        self.clock_error = max(self.clock_error, error)
-        if error > H_ERROR:
+        error = np.abs(np.where(self.alive, carried["error"], 0.0))
+        increment = np.abs(np.where(self.alive, carried["increment"], 0.0))
+        bound = H_ERROR + H_RELATIVE * increment
+        self.clock_error = max(self.clock_error, float(np.max(error, initial=0.0)))
+        self.clock_fraction = max(self.clock_fraction, float(np.max(error / bound, initial=0.0)))
+        if np.any(error > bound):
+            slot = int(np.argmax(error - bound))
             raise ConfigError(
-                f"{RATE_EQUATIONS}: the pore clock's error estimate, {error:.3g}, passes "
-                f"{H_ERROR:g} at t = {self.t!r} s: the run is refused, never silently inaccurate "
-                "(the note's §3.5); smaller tolerances (rtol and atol_count together) are the "
-                "remedy"
+                f"{RATE_EQUATIONS}: the pore clock's error estimate, {error[slot]:.3g}, passes "
+                f"its bound {H_ERROR:g} + {H_RELATIVE:g} |dH| = {bound[slot]:.3g} (dH = "
+                f"{increment[slot]:.3g}, slot {slot}; D309) at t = {self.t!r} s: the run is "
+                "refused, never silently inaccurate (the note's §3.5); smaller tolerances (rtol "
+                "and atol_count together) are the remedy"
             )
         self.H = np.where(self.alive, self.H + carried["increment"], self.H)
 
@@ -1413,21 +1752,28 @@ class _Run:
         """Advance to `stop` (or to the run's end), locating every crossing on the way."""
         x, prog = self.x, self.prog
         while self.t < stop and self.status is None:
+            opened = self.e2 and self.at_zero(self.y)  # FR-47: a step from an E2 zero
             if self.h is None:
                 self.h = rd.initial_step(lambda z: self.shape.rhs(z, jnp.asarray(self.alive)),
-                                         self.y, x.rtol, x.atol_count, self.shape.weight(),
+                                         self.y, x.rtol, x.atol_count,
+                                         self.shape.weight(heat=not opened),
                                          stop - self.t)  # fmt: skip
             landing = self.t + self.h >= stop
             hh = stop - self.t if landing else self.h
             alive = jnp.asarray(self.alive)
             result = prog["step"](self.y, hh, alive)
-            err = float(prog["norm"](result.error, self.y, result.y))
+            err = float(prog["norm_open" if opened else "norm"](result.error, self.y, result.y))
             ok = bool(result.finite) and err <= 1.0
             if ok and self._below_half(result.y):
                 ok, err = False, 4.0**rd.ORDER  # inside the envelope's half: retry at h/4
-            if not ok:
+            below = ok and self.e2 and self.below_zero(result.y)
+            if not ok or below:
                 self.rejected += 1
-                self.h = rd.next_step(hh, err if math.isfinite(err) else math.inf, True)
+                self.below_rejected += int(below)
+                if below:  # FR-47's E2: an E2 place below −10 atol_count, retried at h/4
+                    self.h = hh / 4.0
+                else:
+                    self.h = rd.next_step(hh, err if math.isfinite(err) else math.inf, True)
                 if self.h <= 16 * EPS * max(abs(self.t), self.horizon):
                     self.status = "stalled"
                 continue
@@ -1439,7 +1785,8 @@ class _Run:
                 if located is None:
                     self.status = "stalled"
                     break
-                self.y, theta, carried = located
+                y, theta, carried = located
+                self.y = self.closed_heat(self.y, y) if opened else y
                 self.advance_clock(carried)
                 self.t = self.t + theta * hh
                 self.accepted += 1
@@ -1448,7 +1795,7 @@ class _Run:
                 continue
             self.advance_clock(self.carried)
             self.t = stop if landing else self.t + hh
-            self.y = result.y
+            self.y = self.closed_heat(self.y, result.y) if opened else result.y
             self.just = set()
             self.accepted += 1
             self.dissipation = min(self.dissipation,
@@ -1461,6 +1808,28 @@ class _Run:
             if name == "envelope" and g.size and g.min() < -0.5 * self.x.min_count:
                 return True
         return False
+
+    # -- FR-47's E2
+    def at_zero(self, y):
+        """Whether an E2 place of the pool or of a living slot is at or below 0 at y."""
+        return bool(np.any(self.shape.e2_counts(y, self.alive) <= 0.0))
+
+    def below_zero(self, y):
+        """The rule below zero: whether a step result holds an E2 place below −10·atol_count."""
+        counts = self.shape.e2_counts(y, self.alive)
+        return bool(np.any(counts < -BELOW_ZERO * self.x.atol_count))
+
+    def closed_heat(self, y0, y1):
+        """y1 with the step's heat booked by the closure identity (E2, FR-47): the step starts with
+        an E2 place at or below 0, where μ = ln n diverges, integrably, so the heat is not
+        integrated across it. Q1 = Q0 + (W1 − W0) − (F_cont(y1) − F_cont(y0)), with the step's own
+        counts and work (no sink acts within a step)."""
+        y0 = np.asarray(y0, dtype=np.float64)
+        y1 = np.asarray(y1, dtype=np.float64).copy()
+        q, w = self.shape.heat_at, self.shape.heat_at + 1
+        y1[q] = y0[q] + (y1[w] - y0[w]) - (self.world_f(y1) - self.world_f(y0))
+        self.zero_starts += 1
+        return jnp.asarray(y1)
 
     def handle(self, crossing):
         """A located crossing, with any others at the same instant (restarts and stops; two events
@@ -1586,6 +1955,10 @@ class _Run:
             schedule = by_index[event[1]]
             if schedule.kind == "transfer":
                 self.transfer(schedule)
+            elif schedule.kind == "replacement":  # FR-47
+                self.replacement(schedule)
+            elif schedule.kind == "withdrawal":  # FR-47
+                self.withdrawal(schedule)
             else:
                 self.shear(event)
             if self.status is not None:
@@ -1701,7 +2074,7 @@ class _Run:
                     return
 
     def transfer(self, schedule):
-        """cells.serial_transfer@1 (transfer.py's draws on domain 6): the kept sample, the removed
+        """cells.operator.serial_transfer@1 (transfer.py's draws on domain 6): the kept sample, the removed
         vesicles to the sink with the old pool, the fresh pool paid by the schedule's work."""
         from cells.models.assembly_lineages_v2 import transfer
 
@@ -1745,6 +2118,91 @@ class _Run:
         self.row("transfer")
         self.envelope_after(kept)
 
+    # -- FR-47: the washes, every slot kept as it stands
+    def _pool_parts(self):
+        """(y, the pool [P], its finite places [P] bool, F_cont of a pool vector) on the host."""
+        p, shape = self.p, self.shape
+        y = np.asarray(self.y, dtype=np.float64).copy()
+        finite = shape.pool_place & p.finite
+
+        def pool_f(c):
+            return float(self.prog["free_energy"](np.where(shape.pool_place, c, 0.0)))
+
+        return y, y[: p.P].copy(), finite, pool_f
+
+    def _by_place(self, vector):
+        """{place: real amount} over the pool's finite places (no integer cast: the counts are
+        real in this representation)."""
+        finite = self.shape.pool_place & self.p.finite
+        return {self.world.places[i].name: float(vector[i])
+                for i in np.flatnonzero(finite[: len(self.world.places)])}  # fmt: skip
+
+    def _wash_done(self, y, pool, removed, supplied, record, kind):
+        """The pool written back, the removed and supplied moieties booked, the record and the
+        row, then the envelope (E1's places; E2's are outside it)."""
+        p = self.p
+        y[: p.P] = pool
+        self.y = jnp.asarray(y)
+        self.moiety_out += p.moieties @ removed - p.moieties @ supplied
+        self.events.append(record)
+        self.row(kind)
+        self.envelope_after([int(s) for s in np.flatnonzero(self.alive)])
+
+    def replacement(self, schedule):
+        """cells.operator.pool_replacement@1 (replacement.py), the same deterministic map here: the pool's
+        finite places take the declared composition; the sink takes F_cont of the old pool, the
+        schedule's work column F_cont of the fresh one."""
+        from cells.models.assembly_lineages_v2 import transfer
+
+        y, pool, finite, pool_f = self._pool_parts()
+        fresh = transfer.fresh_vector(self.world, schedule, self.p.P).astype(np.float64)
+        new = np.where(finite, fresh, pool)
+        old_f, work = pool_f(pool), pool_f(new)
+        removed, supplied = np.where(finite, pool, 0.0), np.where(finite, fresh, 0.0)
+        self.booked["sink"] += old_f
+        self.booked["transfer"][schedule.index] = (self.booked["transfer"].get(schedule.index, 0.0)
+                                                   + work)  # fmt: skip
+        record = {"kind": "replacement", "time_s": self.t, "schedule": schedule.index,
+                  "removed": self._by_place(removed), "supplied": self._by_place(supplied),
+                  "sink_kT": old_f, "work_kT": work}  # fmt: skip
+        self._wash_done(y, new, removed, supplied, record, "replacement")
+
+    def withdrawal(self, schedule):
+        """cells.operator.pool_withdrawal@1's mean (withdrawal.py): each finite pool place n -> (1 − f)·n
+        + b, b the buffer's counts in the withdrawn volume; booked as the exact operator books,
+        with F_cont and F(c; gV) = F_cont(c) − F_cont(0) − (Σc)·ln g: the sink F(n; V) −
+        F(kept; (1 − f)V), the schedule's work column F(b; fV) and the heat the mixing heat
+        F(kept; (1 − f)V) + F(b; fV) − F(after; V), −(1 − f)·n·ln(1 − f) for an empty buffer."""
+        from cells.models.assembly_lineages_v2 import withdrawal
+
+        f = schedule.fraction
+        y, pool, finite, pool_f = self._pool_parts()
+        before = np.where(finite, pool, 0.0)
+        kept = (1.0 - f) * before
+        removed = before - kept
+        buffer = withdrawal.buffer_vector(self.world, schedule, self.p.P).astype(np.float64)
+        after = kept + buffer
+        zero = pool_f(np.where(finite, 0.0, pool))
+        ln_f, ln_rest = math.log(f), math.log1p(-f)
+
+        def F(c, ln_g):  # F(c; gV), an empty c 0 at any volume
+            total = math.fsum(c[finite])
+            return pool_f(np.where(finite, c, pool)) - zero - (total * ln_g if total else 0.0)
+
+        f_before, f_kept, f_after = F(before, 0.0), F(kept, ln_rest), F(after, 0.0)
+        sink, work = f_before - f_kept, F(buffer, ln_f)
+        heat = f_kept + work - f_after
+        self.booked["sink"] += sink
+        self.booked["heat"] += heat
+        self.booked["transfer"][schedule.index] = (self.booked["transfer"].get(schedule.index, 0.0)
+                                                   + work)  # fmt: skip
+        record = {"kind": "withdrawal", "time_s": self.t, "schedule": schedule.index,
+                  "fraction": f, "before": self._by_place(before),
+                  "removed": self._by_place(removed), "remaining": self._by_place(kept),
+                  "supplied": self._by_place(buffer), "pool_loss_kT": sink, "buffer_F_kT": work,
+                  "mixing_heat_kT": heat}  # fmt: skip
+        self._wash_done(y, np.where(finite, after, pool), removed, buffer, record, "withdrawal")
+
 
 def run(spec):
     """One world in this representation, from its founders to the end of its lifecycle."""
@@ -1755,6 +2213,10 @@ def run(spec):
     state = _Run(spec)
     setup_done = perf_counter()
     plan, draws = runner._plan(spec, state.base_key)  # domain 6's draws, as exact
+    if any(s.kind in WASHES for s in spec.experiment.schedules):  # FR-47: a wash stands alone
+        from cells.models.assembly_lineages_v2 import population
+
+        population._refuse_shared_replacements(spec, plan)
     horizon = state.horizon
     observed = sorted({float(t) for t in spec.experiment.observation_times_s if 0.0 < t <= horizon})
     edges = {float(t) for h in state.holds for t in (h.start, h.end) if 0.0 < t < horizon}
@@ -1792,7 +2254,15 @@ def run(spec):
                     "stop_reason": state.stop_reason, "schedule_draws": [list(d) for d in draws],
                     **({"pores": {"draws": [list(d) for d in state.draws],
                                   "largest_clock_error": state.clock_error,
-                                  "clock_error_bound": H_ERROR}} if state.p.pores else {})},
+                                  "largest_clock_error_fraction": state.clock_fraction,
+                                  "clock_error_bound": H_ERROR,
+                                  "clock_error_relative": H_RELATIVE}} if state.p.pores else {}),
+                    **({"e2": {"places": [pl.name for pl, on in zip(
+                        state.world.places, state.p.e2, strict=False) if on],
+                               "zero_starts": state.zero_starts,
+                               "below_zero_rejections": state.below_rejected,
+                               "below_zero_bound": -BELOW_ZERO * state.x.atol_count}}
+                       if state.e2 else {})},
         ledger=ledger,
         moieties=moiety,
         dissipation={"smallest_margin": state.dissipation, "tolerance": -64 * EPS,
@@ -1907,7 +2377,43 @@ RUN_FORMAT = "cells.rate_equations_run@1"
 NO_LIMIT_HOOK = {  # the representation's rule for what declares no limit kernel (§1.4)
     BILAYER_GEOMETRY: {"rule": FORMULAS["geometry"]},
     PORE_NUCLEATION: PORE_LIMIT,
+    PRESCRIBED_SHELL: {"rule": FR47_FORMULAS["shell"]},  # FR-47
 }
+
+
+def fr47_paths(spec):
+    """The FR-47 paths a (d) run's world uses: the shell, its washes, E2 and the gate."""
+    world, experiment = spec.model.world, spec.experiment
+    out = []
+    if world.geometry is not None and world.geometry[0] == PRESCRIBED_SHELL:
+        out.append("shell")
+    if any(s.kind in WASHES for s in experiment.schedules):
+        out.append("washes")
+    if any(e2_places(world, experiment, spec.execution.min_count)):
+        out.append("e2")
+    if world.rate_factor is not None and world.rate_factor[0] == GATE_FACTOR:
+        out.append("gate")
+    return out
+
+
+def qualification_of(spec):
+    """FR-47's status for one run's record, or None: the newly admitted deterministic shell paths
+    stay unqualified until the registered protocol's verdict (the lead's ruling at the landing).
+    Written only where a world uses them, so no other run's record moves."""
+    paths = fr47_paths(spec)
+    if not paths:
+        return None
+    return {"status": FR47_STATUS, "protocol": FR47_PROTOCOL, "paths": paths}
+
+
+def formulas_of(spec):
+    """The representation's formulas for one run's record: FORMULAS, and FR-47's only where the
+    world uses them (a shell, a wash, an E2 place), so no other run's record moves."""
+    out = dict(FORMULAS)
+    for path in fr47_paths(spec):
+        if path in FR47_FORMULAS:
+            out[path] = FR47_FORMULAS[path]
+    return out
 
 
 def write_run(directory, run, *, provenance=None):
@@ -1931,6 +2437,7 @@ def write_run(directory, run, *, provenance=None):
         laws.append({**exact_records._law(law_id),
                      "limit_formulas": formulas or NO_LIMIT_HOOK[law_id]})  # fmt: skip
     block = execution_to_dict(spec.execution)["representation"]
+    qualification = qualification_of(spec)  # FR-47: development-only until its verdict
     record = {
         "format": RUN_FORMAT,
         "world": spec_rules.world_id(world),
@@ -1939,10 +2446,11 @@ def write_run(directory, run, *, provenance=None):
         "definition_sha256": spec.fingerprint,
         "representation": {
             **block,
-            "formulas": dict(FORMULAS),
+            "formulas": formulas_of(spec),
             "statuses": list(STATUSES),
             "not_applicable": list(NOT_APPLICABLE),
             "statistics": run.statistics,
+            **({"qualification": qualification} if qualification else {}),
         },
         "conventions": conventions_rules.to_dict(world.conventions),
         "laws": laws,

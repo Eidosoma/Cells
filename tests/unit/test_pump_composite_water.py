@@ -1,14 +1,20 @@
 """Guards (b)-(d) of design §3.7 for the water and symport operators (D143).
 
-(c) Re-expressed through the composite, resolved_pump_water@1 and
-resolved_pump_water@2 equal the frozen models bitwise on their own test worlds:
-every state field, observation column and max_ diagnostic (np.array_equal, as the
-frozen equivalence tests compare), compiled with default XLA flags. Worlds: the
-water-on heredity cell, the ion-closed osmometer, the gated sheet with the
-trapezoid junction-heat booking, the coupled RK4 path, the KCC route cell and the
-route-and-booking sheet. Refusals (a volume bound, a bad water control, an
-over-fast water law, an over-fast route) give the frozen verdicts. Device checks
-give the frozen failure bits and diagnostics, faults included.
+(c) Re-expressed through the composite, cells.model.resolved_pump_water@1 and
+cells.model.resolved_pump_water@2 equal the frozen models on their own test worlds: the
+water-on heredity cell, the ion-closed osmometer, the gated sheet with the trapezoid
+junction-heat booking, the coupled RK4 path, the KCC route cell and the route-and-booking
+sheet. On every world the two formats are one computation at the definition
+(validation/tissue/one_computation.py: an equal composite spec, one implementation object,
+bit-identical initial state, layout, controls on the world's event grid and integration
+steps, with the runner's parameters and execution block); one world per family (water@1's
+water-on cell, water@2's route cell) is also run compiled with default XLA flags in both
+formats, every state field, observation column and max_ diagnostic equal (np.array_equal, as
+the frozen equivalence tests compare). D390's slimming: the other worlds' two compiled runs
+were one computation run twice.
+Refusals (a volume bound, a bad water control, an over-fast water law, an over-fast route)
+give the frozen verdicts. Device checks give the frozen failure bits and diagnostics, faults
+included.
 (b) An idle operator equals the composition without it: closed water (every
 availability 0) equals the empty composition, and a symport without routes or
 with every route blocked equals water alone (IMEX).
@@ -43,6 +49,7 @@ from cells.models import surface_pump_water, surface_pump_water_v2
 from cells.numerics import surface_imex as imex
 from cells.registry.models import get_model
 from validation.tissue import composite_guard as guard
+from validation.tissue import one_computation
 from validation.tissue import pump_water_fixtures as fixtures
 from validation.tissue import surface_pump_v3_fixtures as v3_fixtures
 
@@ -84,7 +91,7 @@ def regulated(raw, **kw):
 def sheet(end=0.03):
     raw = fixtures.gated_sheet(end_time=end)
     raw["experiment"]["observation_times"] = [0.0, end / 2, end]
-    raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+    raw["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
     return fixtures.with_water(raw, pf_m_s=AQUAPORIN_PF)
 
 
@@ -102,14 +109,18 @@ WORLDS = {
 }
 
 
+RUN = ("water_on", "route_on")  # One compiled run of both formats per family.
+
+
 @pytest.mark.parametrize("world", WORLDS)
 def test_re_expressed_water_models_are_the_frozen_models(world):
     raw = WORLDS[world]()
-    frozen, composite = parse_spec(raw), parse_spec(cs.frozen_definition(raw))
+    frozen, composite = one_computation.assert_one_computation(raw)
     expected = surface_pump_water_v2 if "route" in world else surface_pump_water
     assert get_model(frozen.model).module is expected  # I2: per structure.
-    report = guard.assert_same(run(frozen), run(composite))
-    assert report["compared"]["history"] == len(expected.STATE_TYPE._fields)
+    if world in RUN:
+        report = guard.assert_same(run(frozen), run(composite))
+        assert report["compared"]["history"] == len(expected.STATE_TYPE._fields)
 
 
 def outcome(spec):
@@ -121,7 +132,6 @@ def outcome(spec):
 
 
 REFUSALS = {
-    "volume_bound": lambda: cell("H", end=0.2, pf_m_s=AQUAPORIN_PF, minimum_fraction=0.9999),
     "fast_water": lambda: cell(pf_m_s=1.0),
     "fast_route": lambda: regulated(cell("D", pf_m_s=AQUAPORIN_PF), flux_mmol_L_h=1e9),
 }

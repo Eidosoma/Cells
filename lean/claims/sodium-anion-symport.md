@@ -24,7 +24,7 @@ A forward cycle imports n sodium ions and one monovalent anion. The two source-s
 - [CellsProofs.Transport.SodiumAnionSymport.capacity_scaling](../CellsProofs/Transport/SodiumAnionSymport.lean#L73)
 - [CellsProofs.Transport.SodiumAnionSymport.external_shift_ratio](../CellsProofs/Transport/SodiumAnionSymport.lean#L80)
 
-Direct proof subject `cells.na_anion_symport_factored@1`
+Direct proof subject `cells.cycle.na_anion_symport_factored@1`
 
 Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 
@@ -42,7 +42,19 @@ Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 
 **Open.** Charge per lactate, particles per charge and the ratio of voltage shifts with external sodium and substrate halving in human SMCT1.
 
+- [Each human SMCT1 cycle imports two Na⁺ per propionate.](../WET_LAB_EVIDENCE.md#pair-smct-propionate-stoichiometry) · Different experimental results
+
 **Unit** net positive charges per lactate
+
+### gopal2004_propionate_charge@1
+
+Human SMCT expressed in Xenopus oocytes. Integrated substrate-induced current and radiolabel uptake. Fig. 9B and accompanying human SLC5A8 results, p. 44530. [Gopal et al. (2004), Fig. 9B](https://doi.org/10.1074/jbc.M405365200)
+
+- **Evidence role** descriptive
+
+The ± is the authors' reported SE. The human series is distinct from the mouse series and from Fig. 9A lactate.
+
+Human SMCT1 gave 2.7 ± 0.2 net charges per propionate. With a monovalent anion and entirely coupled current, the implied sodium count is 3.7 ± 0.2. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
 
 ### coady2007_smct1@1
 

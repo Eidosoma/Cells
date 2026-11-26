@@ -1,4 +1,4 @@
-"""B5, idleness of scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §4).
+"""B5, idleness of cells.operator.scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §4).
 
 The operator declared with no event runs every inner field bitwise equal to the same composition
 without it: the species-only dose leg (validation/tissue/bath_schedule_fixtures) under ARS(2,2,2) at

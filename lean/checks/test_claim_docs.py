@@ -17,6 +17,7 @@ from scripts.generate_claims import (
     coverage,
     experiment_text,
     generate,
+    wet_lab_register,
 )
 
 
@@ -58,6 +59,9 @@ class ClaimDocsTests(unittest.TestCase):
         canonical = first.read_text()
         catalog = self.lane / "COVERAGE.md"
         self.assertIn("[All claims](COVERAGE.md#category-all)", self.readme.read_text())
+        _, summary = wet_lab_register({"first": self.claim})
+        for page in (self.readme, catalog):
+            self.assertIn(summary, page.read_text())
         self.assertIn('<a name="category-all"></a>', catalog.read_text())
         self.assertIn("**Measurement sought.** Amount", catalog.read_text())
         first.write_text(canonical + "stale\n")
@@ -122,6 +126,65 @@ class ClaimDocsTests(unittest.TestCase):
             generate(self.lane)
         self.assertEqual(candidate.read_text(), "Handwritten\n")
         self.assertEqual(self.readme.read_text(), original)
+        candidate.unlink()
+        self.save([self.claim])
+        ledger = self.lane / "WET_LAB_EVIDENCE.md"
+        ledger.write_text("Handwritten review\n")
+        with self.assertRaisesRegex(ValueError, "handwritten"):
+            generate(self.lane)
+        self.assertEqual(ledger.read_text(), "Handwritten review\n")
+
+    def test_pairs_require_distinct_records_and_preserve_source_dependence(self):
+        biology = self.claim["biology"]
+        first = {"dataset_id": "a", "citation": "First group", "doi": "10.1234/same"}
+        other = {"dataset_id": "b", "citation": "Second record", "doi": "10.1234/same#fig2"}
+        biology["evidence"] = [first, other]
+        claims = {"first": self.claim}
+        page, _ = wet_lab_register(claims)
+        self.assertIn("awaiting their first paired review (1)", page)
+        pair = {
+            "id": "uptake",
+            "assumption": "Uptake increases.",
+            "datasets": ["a", "b"],
+            "outcome": "both_support",
+            "independence": "The two groups collected their own data.",
+            "comparison": "The measured rates increased.",
+        }
+        biology["pairs"] = [pair]
+        with self.assertRaisesRegex(ValueError, "publications"):
+            wet_lab_register(claims)
+        pair["outcome"] = "not_independent"
+        page, _ = wet_lab_register(claims)
+        self.assertIn("| Independent replication unconfirmed | 1 |", page)
+        self.assertIn("| Awaiting replay | 1 |", page)
+        pair["replay"] = {"status": "missed", "assessment": "Both calibrated slopes miss."}
+        with self.assertRaisesRegex(ValueError, "conflicts with the paired evidence"):
+            wet_lab_register(claims)
+        other["doi"] = "10.1234/different"
+        pair["outcome"] = "both_support"
+        page, summary = wet_lab_register(claims)
+        self.assertIn('<a id="pair-uptake"></a>', page)
+        self.assertIn("| Supported by both studies | 1 |", page)
+        self.assertIn("| Replay discrepancy | 1 |", page)
+        self.assertIn("[Uptake increases.](#pair-uptake)", page)
+        self.assertIn("support the stated assumption in 1 and challenge it in 0", summary)
+        pair["outcome"] = "both_challenge"
+        _, summary = wet_lab_register(claims)
+        self.assertIn("support the stated assumption in 0 and challenge it in 1", summary)
+        for datasets in (["a", "a"], ["a", "unknown"]):
+            with (
+                self.subTest(datasets=datasets),
+                self.assertRaisesRegex(ValueError, "two distinct"),
+            ):
+                biology["pairs"] = [dict(pair, datasets=datasets)]
+                wet_lab_register(claims)
+        biology["pairs"] = [pair, dict(pair, id="uptake-again", datasets=["b", "a"])]
+        with self.assertRaisesRegex(ValueError, "repeated comparison"):
+            wet_lab_register(claims)
+        del biology["pairs"]
+        biology["evidence"] = [first]
+        page, _ = wet_lab_register(claims)
+        self.assertIn("Seeking a second dataset", page)
 
     def test_held_out_conditions_must_be_disjoint_from_calibration(self):
         evidence = {
@@ -214,19 +277,27 @@ class ClaimDocsTests(unittest.TestCase):
             check_sources(self.lane)
 
     def test_direct_theorems_and_exercised_operators_are_counted_separately(self):
+        law = "cells.cycle.atp_driven_transporter_mass_action_positive@1"
+        operator = "cells.operator.neutral_arrival_labels@1"
         inventory = {
-            "law": {"cells.flux@1": "lean/README.md", "cells.other@1": "lean/README.md"},
-            "operator": {"cells.balance@1": "lean/README.md"},
+            "law": {
+                law: "lean/README.md",
+                "cells.cycle.atp_driven_transporter_mass_action_positive@2": "lean/README.md",
+            },
+            "operator": {operator: "lean/README.md"},
         }
-        self.claim["formal"] = {"status": "proved", "about": ["cells.flux@1"]}
+        self.claim["formal"] = {"status": "proved", "about": [law]}
         check = {
             "kind": "engine",
-            "laws": ["flux@1"],
-            "operators": ["balance@1"],
+            "laws": ["atp_driven_transporter_mass_action_positive@1"],
+            "operators": ["cells.neutral_arrival_labels@1"],
             "record": "lean/README.md",
             "record_revision": "1" * 40,
         }
-        page, _ = coverage(inventory, {"first": self.claim}, {"run": check}, self.lane.parent, [])
+        claims = {"first": self.claim}
+        _, summary = wet_lab_register(claims)
+        inputs = (inventory, claims, {"run": check}, self.lane.parent, [], summary)
+        page, _ = coverage(*inputs)
         rows = [line for line in page.splitlines() if line.startswith("| [")]
         self.assertIn("(claims/first.md) | [run]", rows[0])
         self.assertTrue(rows[1].endswith("| Open | Open |"))
@@ -236,13 +307,15 @@ class ClaimDocsTests(unittest.TestCase):
         target = "(claims/first.md#numerical-comparison)"
         for verdict in ("failed", "checked", "open"):
             self.claim["numerical"]["status"] = verdict
-            page, _ = coverage(
-                inventory, {"first": self.claim}, {"run": check}, self.lane.parent, []
-            )
+            page, _ = coverage(*inputs)
             self.assertEqual(target in page, verdict == "failed")
-        check["laws"].append("balance@1")
+        check["laws"] = [law]
+        check["operators"] = [operator]
+        current, _ = coverage(*inputs)
+        self.assertEqual(current, page)
+        check["laws"].append("cells.neutral_arrival_labels@1")
         with self.assertRaisesRegex(ValueError, "wrong registry type"):
-            coverage(inventory, {"first": self.claim}, {"run": check}, self.lane.parent, [])
+            coverage(*inputs)
 
     def test_live_drift_check_preserves_inventory_until_refresh(self):
         generate(self.lane)

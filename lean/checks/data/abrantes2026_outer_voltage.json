@@ -1,0 +1,10 @@
+{
+  "study": "Abrantes et al. (2026), Mitochondrion, article 102218",
+  "doi": "10.1016/j.mito.2026.102218",
+  "locator": "Figure 1E, equation 1 and accompanying Results",
+  "preparation": "Intact cells from a human cell line. Targeted sensors report bulk intermembrane-space and cytosolic pH.",
+  "cytosol_pH": {"mean": 7.41, "sd": 0.17},
+  "intermembrane_space_pH": {"mean": 7.96, "sd": 0.08},
+  "derived_IMS_minus_cytosol_mV": {"estimate": 33, "reported_plus_minus": 11},
+  "interpretation": "The voltage estimate assumes proton electrochemical equilibrium. The MT-1b anchor refers to the intermembrane space and the external bath of isolated mitochondria. The measurement does not determine that anchor or the total row charge."
+}

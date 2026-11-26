@@ -1,0 +1,870 @@
+validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT.md	tag	fr47-schedule-supplement-2026-11-24	fr47
+validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT_ERRATUM_1.md	tag	fr47-schedule-supplement-erratum-1-2026-11-24	fr47
+validation/assembly_lineages_v2/agreement.py	tag	fr47-shell-exchange-registered-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_judge.py	tag	fr47-shell-exchange-registered-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/check_regeneration.py	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/fr47_exact.py	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/fr47_numeric.py	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/fr47_writer.py	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/generate_fr47_references.py	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/inputs/W1.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/inputs/W1D.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/inputs/W2_Ng1024.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/inputs/W2_Ng256.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/inputs/W2_Ng4096.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/inputs/W2_Ng64.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/inputs/invented_gate.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/inputs/invented_shell.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/accuracy.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/c8_resolution.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/reference_W1.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/reference_W1D.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/reference_W2_Ng1024.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/reference_W2_Ng256.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/reference_W2_Ng4096.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/reference_W2_Ng64.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/reference_invented_gate.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/references/reference_invented_shell.json	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_references/test_fr47_references.py	tag	fr47-references-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_spec/AMENDMENT-2026-11-23.md	tag	fr47-shell-exchange-registered-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_spec/AMENDMENT-2026-11-24.md	tag	fr47-shell-exchange-registered-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_spec/CRITERIA.md	tag	fr47-shell-exchange-registered-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_spec/SPEC.md	tag	fr47-shell-exchange-registered-2026-11-24	fr47
+validation/assembly_lineages_v2/fr47_worlds.py	tag	fr47-shell-exchange-registered-2026-11-24	fr47
+validation/assembly_lineages_v2/protocol_d.json	merge	ol6-protocol-d-registered-2026-11-23	ol6
+validation/assembly_lineages_v2/protocol_d_erratum_2.py	merge	ol6-protocol-d-erratum-2-merged-2026-11-23	ol6
+validation/assembly_lineages_v2/protocol_d_erratum_2.py	tag	ol6-protocol-d-erratum-2-2026-11-23	ol6
+validation/assembly_lineages_v2/protocol_d_erratum_3.py	merge	ol6-protocol-d-erratum-3-merged-2026-11-23	ol6
+validation/assembly_lineages_v2/protocol_d_erratum_3.py	tag	ol6-protocol-d-erratum-3-2026-11-23	ol6
+validation/assembly_lineages_v2/protocol_g.json	merge	ol6-protocol-g-registered-2026-11-23	ol6
+validation/betse/protocols/emulator_p2_barrier_stage2_dense.json	commit	621e2beb	validation/betse
+validation/betse/protocols/physical_default_world_dense.json	declared	pre-registered: its one commit, 3c098911, begins 'Pre-register'	validation/betse
+validation/betse/protocols/physical_default_world_dense_fine.json	declared	pre-registered: its one commit, 3c098911, begins 'Pre-register'	validation/betse
+validation/betse/protocols/physical_default_world_mammal_dense.json	declared	pre-registered: its one commit, 82452a0e, begins 'Pre-register'	validation/betse
+validation/betse/protocols/physical_default_world_mammal_dense_fine.json	declared	pre-registered: its one commit, 82452a0e, begins 'Pre-register'	validation/betse
+validation/betse/protocols/physical_default_world_mammal_dense_fine_v2.json	declared	pre-registered: its one commit, cecfb13d, begins 'Pre-register'	validation/betse
+validation/betse/protocols/physical_default_world_mammal_dense_v2.json	declared	pre-registered: its one commit, cecfb13d, begins 'Pre-register'	validation/betse
+validation/betse/protocols/physical_p2_barrier_direct_dense.json	commit	621e2beb	validation/betse
+validation/betse/protocols/physical_p2_barrier_direct_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p2_barrier_stage1_dense.json	commit	621e2beb	validation/betse
+validation/betse/protocols/physical_p2_barrier_stage1_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p3_k_mem_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p3_na_mem_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p3_na_mem_gj_block_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p3_pump_block_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p4_kleak_dense.json	commit	621e2beb	validation/betse
+validation/betse/protocols/physical_p4_kleak_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p4_kv1p5_kleak_dense.json	commit	621e2beb	validation/betse
+validation/betse/protocols/physical_p4_kv1p5_kleak_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p4b_kir_h_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p4b_kir_navsim_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p4b_nav_kirsim_dense_l4.json	commit	25d0fe97	validation/betse
+validation/betse/protocols/physical_p4b_nav_kleak_dense_l4.json	commit	25d0fe97	validation/betse
+validation/closed_compartment/reference_inputs.json	declared	registered reference inputs, whose git blob FR-1's design pins and a test checks	fr1
+validation/compartment_ph/protocols/fr4_acidification_v1.json	commit	32a1d439	validation/compartment_ph
+validation/compartment_ph/protocols/fr5_transfer_v1.json	commit	32a1d439	validation/compartment_ph
+validation/core_seams/references/README.md	merge	core-seams-references-c5-landed-2026-11-19	core-seams
+validation/core_seams/references/REFERENCES_USAGE.md	merge	core-seams-references-c5-landed-2026-11-19	core-seams
+validation/core_seams/references/__init__.py	merge	core-seams-references-landed-2026-11-18	core-seams
+validation/core_seams/references/api.py	merge	core-seams-references-a2-erratum-landed-2026-11-19	core-seams
+validation/core_seams/references/binding.py	merge	core-seams-references-f4-landed-2026-11-19	core-seams
+validation/core_seams/references/cycles.py	merge	core-seams-references-landed-2026-11-18	core-seams
+validation/core_seams/references/design.py	merge	core-seams-references-c5-landed-2026-11-19	core-seams
+validation/core_seams/references/designs/core_seams_reference_design.json	merge	core-seams-references-c5-landed-2026-11-19	core-seams
+validation/core_seams/references/designs/core_seams_reference_values.json	merge	core-seams-references-c5-landed-2026-11-19	core-seams
+validation/core_seams/references/diagrams.py	merge	core-seams-references-landed-2026-11-18	core-seams
+validation/core_seams/references/envelope.py	merge	core-seams-references-c5-landed-2026-11-19	core-seams
+validation/core_seams/references/exact.py	merge	core-seams-references-f4-landed-2026-11-19	core-seams
+validation/core_seams/references/primal.py	merge	core-seams-references-f4-landed-2026-11-19	core-seams
+validation/core_seams/references/reference_inputs.json	merge	core-seams-references-c5-landed-2026-11-19	core-seams
+validation/core_seams/references/worlds.py	merge	core-seams-references-c5-landed-2026-11-19	core-seams
+validation/division/cleft_egg_protocol.json	commit	486cc60b	validation/division
+validation/division/j1_combination_round.json	commit	1af0d898	validation/division
+validation/division/j1_declared_inputs.json	commit	d7a17971	validation/division
+validation/division/j1_declared_inputs.md	commit	d7a17971	validation/division
+validation/division/s5_protocol.json	commit	30741de5	validation/division
+validation/division/s5_protocol.py	commit	30741de5	validation/division
+validation/energy_step_doubling/RESULTS.md	declared	a record: the results of FR-18's criterion X, in the IDs of their time	fr18
+validation/ensemble_reexpression/judge/README.md	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/README.md	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/__init__.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/__init__.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/__main__.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/__main__.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/bands.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/bands.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/c0.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/c0.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/constants.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/constants.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/fabricate.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/fabricate.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/flag_rows.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/flag_rows.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/identities.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/identities.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/legacy.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/legacy.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/plants.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/plants.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/registration.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/registration.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/rules.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/rules.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/scoring.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/scoring.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/settlements.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/settlements.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/strictjson.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/strictjson.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/structure.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/structure.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/table.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/table.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/test_judge.py	merge	ensemble-reexpression-registered-2026-11-25	ensemble
+validation/ensemble_reexpression/judge/test_judge.py	tag	ensemble-reexpression-judge-2026-11-25	ensemble
+validation/ensemble_reexpression/registered_strings.json	declared	the re-expression's registered strings, Part 1, in the IDs they were registered in (the protocol, section 5: the strings notes are frozen for the move)	the lead
+validation/ensemble_reexpression/registered_strings_part2.json	declared	the re-expression's registered strings, Part 2, in the IDs they were registered in (the protocol, section 5: the strings notes are frozen for the move)	the lead
+validation/ensemble_reexpression/rehearsal/README.md	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/checks.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/closure.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/estimate.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/exclusions.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/inputs_rehearsal.json	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/legacy_arrays.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/legacy_rehearsal.json	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/make_inputs.py	declared	the rehearsal's maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify.py compares the captured definitions with what it writes; the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/make_profile.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/margins_rehearsal.json	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/parse_check.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/plant_driver.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/plants_manifest_rehearsal.json	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/pool_paths.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/profile_rehearsal.json	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/reference.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/reference_paths_rehearsal.json	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/registered_strings_rehearsal.json	declared	the rehearsal's registered strings, in the IDs they were declared with (the protocol, section 5: the strings notes and the rehearsal's files are frozen for the move)	the lead
+validation/ensemble_reexpression/rehearsal/rules.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal/verify.py	declared	Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/README.md	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/checks2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/estimate2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/exclusions2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/inputs_rehearsal_part2.json	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/legacy_arrays2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/legacy_rehearsal_part2.json	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/make_inputs2.py	declared	Part 2's rehearsal maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify2.py compares the captured definitions with what it writes; the protocol freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/make_profile2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/margins_rehearsal_part2.json	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/plant_driver2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/plants_manifest_rehearsal_part2.json	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/pool_paths2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/profile_rehearsal_part2.json	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/reference2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/reference_paths_rehearsal_part2.json	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/rules2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/rehearsal_part2/verify2.py	declared	Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move	ensemble
+validation/ensemble_reexpression/spec/AMENDMENT-1-2026-11-25.md	tag	ensemble-reexpression-criteria-part1-amendment-1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/AMENDMENT-2-2026-11-25.md	tag	ensemble-reexpression-criteria-part1-amendment-2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/AMENDMENT-2-2026-11-25.md	tag	ensemble-reexpression-criteria-part2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/AMENDMENT-2-2026-11-25_EXPORTER.md	tag	ensemble-reexpression-criteria-part1-amendment-2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/AMENDMENT-2-2026-11-25_EXPORTER.md	tag	ensemble-reexpression-criteria-part2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/CRITERIA.md	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/PART2-AMENDMENT-1-2026-11-25.md	tag	ensemble-reexpression-criteria-part2-amendment-1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/PART2.md	tag	ensemble-reexpression-criteria-part1-amendment-2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/PART2.md	tag	ensemble-reexpression-criteria-part2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/PART2_BLOCKS.md	tag	ensemble-reexpression-criteria-part1-amendment-2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/PART2_BLOCKS.md	tag	ensemble-reexpression-criteria-part2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/PART2_EXPORTER.md	tag	ensemble-reexpression-criteria-part1-amendment-2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/PART2_EXPORTER.md	tag	ensemble-reexpression-criteria-part2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/PLANTS.md	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/README.md	tag	ensemble-reexpression-criteria-part2-amendment-1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/READOUTS.md	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/SPEC.md	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/TABLE.md	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/inputs.json	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/inputs_part2.json	tag	ensemble-reexpression-criteria-part1-amendment-2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/inputs_part2.json	tag	ensemble-reexpression-criteria-part2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/legacy_part1.json	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/legacy_part2.json	tag	ensemble-reexpression-criteria-part1-amendment-2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/legacy_part2.json	tag	ensemble-reexpression-criteria-part2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/margins.json	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/margins_part2.json	tag	ensemble-reexpression-criteria-part1-amendment-2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/margins_part2.json	tag	ensemble-reexpression-criteria-part2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/plants_manifest.json	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/plants_manifest_part2.json	tag	ensemble-reexpression-criteria-part1-amendment-2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/plants_manifest_part2.json	tag	ensemble-reexpression-criteria-part2-2026-11-25	ensemble
+validation/ensemble_reexpression/spec/reference_paths.json	tag	ensemble-reexpression-criteria-part1-2026-11-25	ensemble
+validation/fr1/references/reference_inputs.json	declared	registered reference inputs, whose git blob FR-1's design pins and a test checks	fr1
+validation/fr10/references/README.md	declared	a record: the page of FR-10's registered references, in the IDs of their time	fr10
+validation/fr43_part1/PERFORMANCE.md	declared	a record: FR-43 part 1's performance report (C1.4), beside its measured summary, performance.json	fr43
+validation/fr43_part1/performance.json	declared	a record: the measured summary of FR-43 part 1's performance report (C1.4)	fr43
+validation/fr43_part2/references/NOTES.md	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/README.md	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/fr43p2_reference.py	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/out/C2.3-sink-planted.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/out/C2.3-sink.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/out/C2.3-source-planted.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/out/C2.3-source.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/out/C2.6-swelling-cell.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/out/C2.8-swelling-pair-sink.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/run_references.py	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/test_fr43p2_reference.py	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-sink-dt0p25.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-sink-dt0p25.json	tag	fr43-part2-references-c23-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-sink-dt0p25.json	tag	fr43-part2-references-c26-c27-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-sink-dt0p5.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-sink-dt0p5.json	tag	fr43-part2-references-c23-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-sink-dt0p5.json	tag	fr43-part2-references-c26-c27-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-source-dt0p25.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-source-dt0p25.json	tag	fr43-part2-references-c23-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-source-dt0p25.json	tag	fr43-part2-references-c26-c27-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-source-dt0p5.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-source-dt0p5.json	tag	fr43-part2-references-c23-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.3-source-dt0p5.json	tag	fr43-part2-references-c26-c27-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.6-swelling-cell-dt0p005.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.6-swelling-cell-dt0p005.json	tag	fr43-part2-references-c23-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.6-swelling-cell-dt0p005.json	tag	fr43-part2-references-c26-c27-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.6-swelling-cell-dt0p01.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.6-swelling-cell-dt0p01.json	tag	fr43-part2-references-c23-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.6-swelling-cell-dt0p01.json	tag	fr43-part2-references-c26-c27-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.8-swelling-pair-sink-dt0p005.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.8-swelling-pair-sink-dt0p005.json	tag	fr43-part2-references-c23-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.8-swelling-pair-sink-dt0p005.json	tag	fr43-part2-references-c26-c27-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.8-swelling-pair-sink-dt0p01.json	tag	fr43-part2-references-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.8-swelling-pair-sink-dt0p01.json	tag	fr43-part2-references-c23-2026-11-23	fr43
+validation/fr43_part2/references/worlds/C2.8-swelling-pair-sink-dt0p01.json	tag	fr43-part2-references-c26-c27-2026-11-23	fr43
+validation/fr43_part3/REGISTRATION.md	tag	fr43-part3-criteria-2026-11-23	fr43
+validation/fr43_part3/references/README.md	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/results/W1_two_subunits_feedback.json	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/results/W2_four_subunits_feedback.json	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/results/W3_two_way_turnover.json	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/results/W4_four_subunits_node_read.json	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/results/draws_check.json	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/same_draws.py	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/spec/draws.json	tag	fr43-part3-criteria-2026-11-23	fr43
+validation/fr43_part3/references/spec/draws.json	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/spec/make_draws.py	tag	fr43-part3-criteria-2026-11-23	fr43
+validation/fr43_part3/references/spec/make_draws.py	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/spec/part3.json	tag	fr43-part3-criteria-2026-11-23	fr43
+validation/fr43_part3/references/spec/part3.json	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr43_part3/references/stream_draws.py	tag	fr43-part3-references-2026-11-23	fr43
+validation/fr49/JUDGE_ERRATUM-1.md	tag	fr49-compartment-compositions-v1-judge-erratum-1-2026-11-24	fr49
+validation/fr49/REGISTRATION.md	tag	fr49-compartment-compositions-v1-amendment-1-2026-11-24	fr49
+validation/fr49/__init__.py	tag	fr49-compartment-compositions-v1-judge-2026-11-24	fr49
+validation/fr49/judge_l.py	tag	fr49-compartment-compositions-v1-judge-erratum-1-2026-11-24	fr49
+validation/fr49/references/spec/LAWS.md	tag	fr49-compartment-compositions-v1-amendment-1-2026-11-24	fr49
+validation/fr49/references/spec/LAWS.md	tag	fr49-compartment-compositions-v1-judge-2026-11-24	fr49
+validation/fr49/references/spec/LAWS.md	tag	fr49-compartment-compositions-v1-registered-2026-11-23	fr49
+validation/fr49/references/spec/LAWS.md	tag	fr49-references-2026-11-24	fr49
+validation/fr49/references/spec/README.md	tag	fr49-compartment-compositions-v1-amendment-1-2026-11-24	fr49
+validation/fr49/references/spec/README.md	tag	fr49-compartment-compositions-v1-judge-2026-11-24	fr49
+validation/fr49/references/spec/README.md	tag	fr49-compartment-compositions-v1-registered-2026-11-23	fr49
+validation/fr49/references/spec/README.md	tag	fr49-references-2026-11-24	fr49
+validation/fr49/references/spec/cases.json	tag	fr49-compartment-compositions-v1-amendment-1-2026-11-24	fr49
+validation/fr49/references/spec/cases.json	tag	fr49-compartment-compositions-v1-judge-2026-11-24	fr49
+validation/fr49/references/spec/cases.json	tag	fr49-compartment-compositions-v1-registered-2026-11-23	fr49
+validation/fr49/references/spec/cases.json	tag	fr49-references-2026-11-24	fr49
+validation/fr49/worlds.py	tag	fr49-compartment-compositions-v1-judge-2026-11-24	fr49
+validation/fr50/JUDGE_ERRATUM_1.md	tag	fr50-judge-erratum-1-2026-11-24	fr50
+validation/fr50/REGISTRATION.md	tag	fr50-judge-2026-11-24	fr50
+validation/fr50/REGISTRATION.md	tag	fr50-judge-erratum-1-2026-11-24	fr50
+validation/fr50/REGISTRATION.md	tag	fr50-one-way-records-v1-amendment-1-2026-11-24	fr50
+validation/fr50/REGISTRATION.md	tag	fr50-one-way-records-v1-registered-2026-11-23	fr50
+validation/fr50/__init__.py	tag	fr50-judge-2026-11-24	fr50
+validation/fr50/__init__.py	tag	fr50-judge-erratum-1-2026-11-24	fr50
+validation/fr50/judge.py	tag	fr50-judge-2026-11-24	fr50
+validation/fr50/judge.py	tag	fr50-judge-erratum-1-2026-11-24	fr50
+validation/fr50/references/spec/LAWS.md	tag	fr50-judge-2026-11-24	fr50
+validation/fr50/references/spec/LAWS.md	tag	fr50-judge-erratum-1-2026-11-24	fr50
+validation/fr50/references/spec/LAWS.md	tag	fr50-one-way-records-v1-amendment-1-2026-11-24	fr50
+validation/fr50/references/spec/LAWS.md	tag	fr50-one-way-records-v1-registered-2026-11-23	fr50
+validation/fr50/references/spec/LAWS.md	tag	fr50-references-2026-11-24	fr50
+validation/fr50/references/spec/README.md	tag	fr50-judge-2026-11-24	fr50
+validation/fr50/references/spec/README.md	tag	fr50-judge-erratum-1-2026-11-24	fr50
+validation/fr50/references/spec/README.md	tag	fr50-one-way-records-v1-amendment-1-2026-11-24	fr50
+validation/fr50/references/spec/cases.json	tag	fr50-judge-2026-11-24	fr50
+validation/fr50/references/spec/cases.json	tag	fr50-judge-erratum-1-2026-11-24	fr50
+validation/fr50/references/spec/cases.json	tag	fr50-one-way-records-v1-amendment-1-2026-11-24	fr50
+validation/fr50/references/spec/cases.json	tag	fr50-one-way-records-v1-registered-2026-11-23	fr50
+validation/fr50/references/spec/cases.json	tag	fr50-references-2026-11-24	fr50
+validation/fr51/REGISTRATION.md	tag	fr51-channel-block-v1-judge-2026-11-24	fr51
+validation/fr51/REGISTRATION.md	tag	fr51-channel-block-v1-registered-2026-11-23	fr51
+validation/fr51/__init__.py	tag	fr51-channel-block-v1-judge-2026-11-24	fr51
+validation/fr51/judge.py	tag	fr51-channel-block-v1-judge-2026-11-24	fr51
+validation/fr51/references/spec/LAWS.md	tag	fr51-channel-block-v1-judge-2026-11-24	fr51
+validation/fr51/references/spec/LAWS.md	tag	fr51-channel-block-v1-registered-2026-11-23	fr51
+validation/fr51/references/spec/LAWS.md	tag	fr51-references-2026-11-24	fr51
+validation/fr51/references/spec/README.md	tag	fr51-channel-block-v1-judge-2026-11-24	fr51
+validation/fr51/references/spec/README.md	tag	fr51-channel-block-v1-registered-2026-11-23	fr51
+validation/fr51/references/spec/README.md	tag	fr51-references-2026-11-24	fr51
+validation/fr51/references/spec/cases.json	tag	fr51-channel-block-v1-judge-2026-11-24	fr51
+validation/fr51/references/spec/cases.json	tag	fr51-channel-block-v1-registered-2026-11-23	fr51
+validation/fr51/references/spec/cases.json	tag	fr51-references-2026-11-24	fr51
+validation/fr51_two_potassium/REGISTRATION.md	tag	fr51-two-potassium-registered-2026-11-25	fr51
+validation/fr6/references/README.md	declared	a record: the page of FR-6's registered references, in the IDs of their time	fr6
+validation/fr6/references/reference_inputs.json	declared	registered reference inputs, whose git blob FR-6's design pins and a test checks	fr6
+validation/fr6/references/worlds.py	declared	the generator of FR-6's registered inputs, which a test compares with it	fr6
+validation/fr7/compartment_comparison.py	tag	fr7-u2-compartment-registered-2026-11-20	fr7
+validation/fr7/compartment_mapper.py	tag	fr7-u2-compartment-registered-2026-11-20	fr7
+validation/fr7/compartment_registration.json	merge	fr7-u2-judged-2026-11-20	fr7
+validation/fr7/compartment_registration.json	tag	fr7-u2-compartment-registered-2026-11-20	fr7
+validation/fr7/references/__init__.py	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/__init__.py	tag	fr7-references-amendment1-2026-11-19	fr7
+validation/fr7/references/__init__.py	tag	fr7-references-registered-2026-11-19	fr7
+validation/fr7/references/__init__.py	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/chain.py	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/chain.py	tag	fr7-references-amendment1-2026-11-19	fr7
+validation/fr7/references/chain.py	tag	fr7-references-registered-2026-11-19	fr7
+validation/fr7/references/chain.py	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/clearance.py	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/clearance.py	tag	fr7-references-amendment1-2026-11-19	fr7
+validation/fr7/references/clearance.py	tag	fr7-references-registered-2026-11-19	fr7
+validation/fr7/references/clearance.py	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/design.py	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/design.py	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/REFERENCES_USAGE.md	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/REFERENCES_USAGE.md	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/clearance.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/clearance.json	tag	fr7-references-amendment1-2026-11-19	fr7
+validation/fr7/references/interface/clearance.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/inputs.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/inputs.json	tag	fr7-references-amendment1-2026-11-19	fr7
+validation/fr7/references/interface/inputs.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/loop_calibration.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/loop_calibration.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/loop_floor_sensitivity_x5.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/loop_floor_sensitivity_x5.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/loop_inputs.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/loop_inputs.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/loop_plants.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/loop_plants.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/loop_rows.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/loop_rows.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/loop_world_export.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/loop_world_export.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/loop_zero_power.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/loop_zero_power.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/plants.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/plants.json	tag	fr7-references-amendment1-2026-11-19	fr7
+validation/fr7/references/interface/plants.json	tag	fr7-references-registered-2026-11-19	fr7
+validation/fr7/references/interface/plants.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/rows.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/rows.json	tag	fr7-references-amendment1-2026-11-19	fr7
+validation/fr7/references/interface/rows.json	tag	fr7-references-registered-2026-11-19	fr7
+validation/fr7/references/interface/rows.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/interface/zero_power.json	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/interface/zero_power.json	tag	fr7-references-amendment1-2026-11-19	fr7
+validation/fr7/references/interface/zero_power.json	tag	fr7-references-registered-2026-11-19	fr7
+validation/fr7/references/interface/zero_power.json	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/loop.py	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/loop.py	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/loop_design.py	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/loop_design.py	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/loop_floor.py	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/loop_floor.py	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/loop_worlds.py	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/loop_worlds.py	tag	fr7-references-rloop-2026-11-19	fr7
+validation/fr7/references/worlds.py	merge	fr7-references-landed-2026-11-20	fr7
+validation/fr7/references/worlds.py	tag	fr7-references-amendment1-2026-11-19	fr7
+validation/fr7/references/worlds.py	tag	fr7-references-rloop-2026-11-19	fr7
+validation/gap_junction_tissue/bitsey_log.py	tag	gj-linear-registered-2026-11-23	gj
+validation/gap_junction_tissue/bitsey_log.py	tag	gj-neither-registered-2026-11-23	gj
+validation/gap_junction_tissue/bitsey_run.py	tag	gj-linear-registered-2026-11-23	gj
+validation/gap_junction_tissue/bitsey_run.py	tag	gj-neither-registered-2026-11-23	gj
+validation/gap_junction_tissue/linear_judge.py	merge	gj-registrations-merged-2026-11-23	gj
+validation/gap_junction_tissue/linear_judge.py	tag	gj-linear-registered-2026-11-23	gj
+validation/gap_junction_tissue/linear_judge.py	tag	gj-neither-registered-2026-11-23	gj
+validation/gap_junction_tissue/linear_rule.json	merge	gj-registrations-merged-2026-11-23	gj
+validation/gap_junction_tissue/linear_rule.json	tag	gj-linear-registered-2026-11-23	gj
+validation/gap_junction_tissue/linear_rule.json	tag	gj-neither-registered-2026-11-23	gj
+validation/gap_junction_tissue/neither_judge.py	merge	gj-registrations-merged-2026-11-23	gj
+validation/gap_junction_tissue/neither_judge.py	tag	gj-linear-registered-2026-11-23	gj
+validation/gap_junction_tissue/neither_judge.py	tag	gj-neither-registered-2026-11-23	gj
+validation/gap_junction_tissue/neither_rule.json	merge	gj-registrations-merged-2026-11-23	gj
+validation/gap_junction_tissue/neither_rule.json	tag	gj-linear-registered-2026-11-23	gj
+validation/gap_junction_tissue/neither_rule.json	tag	gj-neither-registered-2026-11-23	gj
+validation/gap_junction_tissue/references/README.md	tag	gj-n1-judged-2026-11-25	gj
+validation/gap_junction_tissue/references/README.md	tag	gj-neither-references-2026-11-23	gj
+validation/gap_junction_tissue/references/interface/linear.json	merge	gj-linear-references-merged-2026-11-23	gj
+validation/gap_junction_tissue/references/interface/linear.json	tag	gj-linear-references-2026-11-23	gj
+validation/gap_junction_tissue/references/interface/neither.json	tag	gj-n1-judged-2026-11-25	gj
+validation/gap_junction_tissue/references/interface/neither.json	tag	gj-neither-references-2026-11-23	gj
+validation/gap_junction_tissue/references/linear_reference.py	merge	gj-linear-references-merged-2026-11-23	gj
+validation/gap_junction_tissue/references/linear_reference.py	tag	gj-linear-references-2026-11-23	gj
+validation/gap_junction_tissue/references/neither_reference.py	tag	gj-n1-judged-2026-11-25	gj
+validation/gap_junction_tissue/references/neither_reference.py	tag	gj-neither-references-2026-11-23	gj
+validation/gap_junction_tissue/references/spec/linear.json	merge	gj-registrations-merged-2026-11-23	gj
+validation/gap_junction_tissue/references/spec/linear.json	tag	gj-linear-registered-2026-11-23	gj
+validation/gap_junction_tissue/references/spec/linear.json	tag	gj-neither-registered-2026-11-23	gj
+validation/gap_junction_tissue/references/spec/neither.json	merge	gj-registrations-merged-2026-11-23	gj
+validation/gap_junction_tissue/references/spec/neither.json	tag	gj-linear-registered-2026-11-23	gj
+validation/gap_junction_tissue/references/spec/neither.json	tag	gj-neither-registered-2026-11-23	gj
+validation/gap_junction_tissue/run.py	tag	gj-linear-registered-2026-11-23	gj
+validation/gap_junction_tissue/run.py	tag	gj-neither-registered-2026-11-23	gj
+validation/gard/references/README.md	declared	a record: the page of GARD's references (G2), in the IDs of their time	gard
+validation/gene_regulation/README.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr25_rule.json	merge	fr25-rule-registered-2026-11-22	fr25
+validation/gene_regulation/fr25_rule_retry2.json	merge	fr25-rule-retry2-registered-2026-11-22	fr25
+validation/gene_regulation/fr38_compare.py	tag	fr38-rule-erratum-1-registered-2026-11-23	fr38
+validation/gene_regulation/fr38_rule.json	merge	fr38-rule-registered-2026-11-23	fr38
+validation/gene_regulation/fr38_rule_erratum_1.json	merge	fr38-rule-erratum-1-merged-2026-11-23	fr38
+validation/gene_regulation/fr38_rule_erratum_1.json	tag	fr38-rule-erratum-1-registered-2026-11-23	fr38
+validation/gene_regulation/fr38_v2/README.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/campaign.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/format_sample.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/__init__.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/__main__.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/definitions.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/judge.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/mapping.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/records.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/rules.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/sample.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/shapes.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/spec.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/table_shapes.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/judge/test_judge.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/README.md	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/README.md	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/README.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/README.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/README.md	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/README.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_integrate.py	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_integrate.py	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_integrate.py	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_integrate.py	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_integrate.py	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_integrate.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_model.py	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_model.py	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_model.py	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_model.py	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_model.py	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_model.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_worlds.py	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_worlds.py	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_worlds.py	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_worlds.py	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_worlds.py	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_worlds.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_writer.py	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_writer.py	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_writer.py	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_writer.py	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_writer.py	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/fr38v2_writer.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/SHA256SUMS	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/SHA256SUMS	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/SHA256SUMS	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/SHA256SUMS	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/SHA256SUMS	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/SHA256SUMS	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/provenance.json	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/provenance.json	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/provenance.json	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/provenance.json	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/provenance.json	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/provenance.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AF.json	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AF.json	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AF.json	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AF.json	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AF.json	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AF.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AN.json	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AN.json	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AN.json	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AN.json	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AN.json	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_AN.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_B.json	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_B.json	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_B.json	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_B.json	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_B.json	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_B.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_C.json	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_C.json	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_C.json	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_C.json	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_C.json	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_C.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_D.json	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_D.json	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_D.json	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_D.json	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_D.json	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_D.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_invented.json	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_invented.json	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_invented.json	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_invented.json	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_invented.json	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/reference_invented.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/run_times.json	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/run_times.json	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/run_times.json	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/run_times.json	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/out/run_times.json	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/out/run_times.json	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/regenerate.py	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/regenerate.py	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/regenerate.py	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/regenerate.py	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/regenerate.py	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/regenerate.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/test_fr38v2_references.py	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/test_fr38v2_references.py	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/test_fr38v2_references.py	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/test_fr38v2_references.py	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/references/test_fr38v2_references.py	tag	fr38-v2-references-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/references/test_fr38v2_references.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/smoke.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2-2026-11-24.md	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2-2026-11-24.md	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2-2026-11-24.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2-2026-11-24.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2-2026-11-24.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2-2026-11-24.md	tag	fr38-v2-spec-amendments-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2026-11-24.md	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2026-11-24.md	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2026-11-24.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2026-11-24.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2026-11-24.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-2026-11-24.md	tag	fr38-v2-spec-amendments-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-3-2026-11-24.md	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-3-2026-11-24.md	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-3-2026-11-24.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-3-2026-11-24.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-3-2026-11-24.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-4-2026-11-24.md	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-4-2026-11-24.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-4-2026-11-24.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-4-2026-11-24.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-5-2026-11-25.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-5-2026-11-25.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-5-2026-11-25.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-6-2026-11-25.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/AMENDMENT-6-2026-11-25.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/CRITERIA.md	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/CRITERIA.md	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/CRITERIA.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/CRITERIA.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/CRITERIA.md	tag	fr38-v2-criteria-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/CRITERIA.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/CRITERIA.md	tag	fr38-v2-spec-amendments-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/LAWS.md	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/LAWS.md	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/LAWS.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/LAWS.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/LAWS.md	tag	fr38-v2-criteria-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/LAWS.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/LAWS.md	tag	fr38-v2-spec-amendments-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/README.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/README.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/README.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/READOUTS.md	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/READOUTS.md	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/READOUTS.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/READOUTS.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/READOUTS.md	tag	fr38-v2-criteria-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/READOUTS.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/READOUTS.md	tag	fr38-v2-spec-amendments-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/SPEC.md	tag	fr38-v2-amendment-3-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/SPEC.md	tag	fr38-v2-amendment-4-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/SPEC.md	tag	fr38-v2-amendment-5-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/SPEC.md	tag	fr38-v2-amendment-6-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/SPEC.md	tag	fr38-v2-criteria-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/spec/SPEC.md	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/fr38_v2/spec/SPEC.md	tag	fr38-v2-spec-amendments-2026-11-24	fr38
+validation/gene_regulation/fr38_v2/worlds.py	tag	fr38-v2-registered-2026-11-25	fr38
+validation/gene_regulation/references/__init__.py	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/assemble.py	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/closed_forms.py	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/extract/README.md	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/extract/a1_protein_reference.csv	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/extract/make_extract.py	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/convergence.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/endpoints.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/inputs.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/plants.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/r_account.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/r_chain.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/r_machine.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/r_noise.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/trajectories_edge_sets.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/interface/trajectories_test_instances.json	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/model.py	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/noise.py	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/references/plants.py	tag	gr1-references-2026-11-20	gr1
+validation/gene_regulation/registration.py	merge	fr25-registration-tools-landed-2026-11-22	fr25
+validation/junction_gate_benchmark/revilla1999.py	tag	fr30-revilla1999-registered-2026-11-23	fr30
+validation/junction_gate_benchmark/revilla1999_score.py	tag	fr30-revilla1999-reader-erratum-1-2026-11-23	fr30
+validation/legacy_port/README.md	declared	the deletion's record: the page of its list and tools, as the deletion used them	the deletion
+validation/legacy_port/capture.sh	declared	the captures' runner: it runs the frozen legacy snapshot, whose IDs its worlds spell	the deletion
+validation/legacy_port/capture_worlds.py	declared	the captures' tool: it runs the frozen legacy snapshot, and its four old spellings are comments that name the captured worlds as the snapshot spells them (the plants' manifests quote an earlier version's hash, so no pin holds it)	the deletion
+validation/legacy_port/carrier_plants.json	declared	the deletion's record: the faults planted in the engine before the move, and the rows that failed on each	the deletion
+validation/legacy_port/carrier_plants.py	declared	the deletion's tool that planted faults in the engine before the move; its record is carrier_plants.json	the deletion
+validation/legacy_port/edits-optional.json	declared	the deletion's record: the optional batch's edits, as made at the deletion's head	the deletion
+validation/legacy_port/edits.json	declared	the deletion's record: its edits, with the texts and library pages they replaced, as made at the deletion's head	the deletion
+validation/legacy_port/make_deletion.py	declared	the deletion's tool, as it made the deletion	the deletion
+validation/legacy_port/make_edits.py	declared	the deletion's tool that wrote edits.json: the texts it replaced, and the pages it named, in the IDs of the tree before the move	the deletion
+validation/legacy_port/reach.py	declared	the deletion's tool that read the import graph before the move	the deletion
+validation/long_duration/REGISTRATION_20261118.md	declared	a record: FR-8 stage 0's registration, in the IDs of its time	fr8
+validation/long_duration/RESULTS_20261118.md	declared	a record: FR-8 stage 0's results, in the IDs of their time	fr8
+validation/long_duration/RUNG0_20261119.md	declared	a record: FR-8 rung 0's registration and results, in the IDs of their time	fr8
+validation/long_duration/RUNG1_20261119.md	merge	fr8-n2c-judged-2026-11-21	fr8
+validation/long_duration/registration_20261118.json	declared	registered before any measurement (its status)	fr8
+validation/long_duration/rung0_20261119.json	declared	the registration of rung 0 (its registration field)	fr8
+validation/long_duration/rung0_results_20261119.json	declared	the registered results of rung 0 (its registration field)	fr8
+validation/long_duration/rung1_20261119.json	tag	fr8-rung1-n2c-registered-2026-11-20	fr8
+validation/membrane_trafficking/references/README.md	declared	a record: the page of FR-2's registered references, in the IDs of their time	fr2
+validation/membrane_trafficking/references/__init__.py	merge	fr2-references-landed-2026-11-19	fr2
+validation/membrane_trafficking/references/designs/membrane_trafficking_reference_values.json	merge	fr2-references-landed-2026-11-19	fr2
+validation/membrane_trafficking/references/network.py	merge	fr2-references-landed-2026-11-19	fr2
+validation/membrane_trafficking/references/reference_inputs.json	merge	fr2-references-landed-2026-11-19	fr2
+validation/membrane_trafficking/references/trafficking.py	merge	fr2-references-landed-2026-11-19	fr2
+validation/membrane_trafficking/references/units.py	merge	fr2-references-landed-2026-11-19	fr2
+validation/membrane_trafficking/references/worlds.py	merge	fr2-references-landed-2026-11-19	fr2
+validation/mitochondria/references/README.md	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/README.md	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/__init__.py	merge	mito-references-landed-2026-11-20	mito
+validation/mitochondria/references/__init__.py	tag	mito-references-model-2026-11-19	mito
+validation/mitochondria/references/audit.py	merge	mito-references-landed-2026-11-20	mito
+validation/mitochondria/references/audit.py	tag	mito-references-model-2026-11-19	mito
+validation/mitochondria/references/beard2005_model.json	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/beard2005_model.json	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/components/README.md	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/README.md	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/__init__.py	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/__init__.py	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/checks.py	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/checks.py	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/design.py	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/design.py	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/hp.py	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/hp.py	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/interface/checks.json	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/interface/checks.json	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/interface/inputs.json	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/interface/inputs.json	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/interface/plants.json	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/interface/plants.json	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/interface/rows.json	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/interface/rows.json	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/laws.py	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/laws.py	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/plants.py	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/plants.py	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/components/states.py	merge	mito-components-references-landed-2026-11-22	mito
+validation/mitochondria/references/components/states.py	tag	mito-components-registration-2026-11-20	mito
+validation/mitochondria/references/digitize.py	merge	mito-references-landed-2026-11-20	mito
+validation/mitochondria/references/digitize.py	tag	mito-references-model-2026-11-19	mito
+validation/mitochondria/references/model.py	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/model.py	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/mr1_mt2_registration.json	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/mr1_mt2_registration.json	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/mr1_mt2_registration.md	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/mr1_mt2_registration.md	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/proposal.json	merge	mito-references-landed-2026-11-20	mito
+validation/mitochondria/references/proposal.json	tag	mito-references-model-2026-11-19	mito
+validation/mitochondria/references/published_targets.json	merge	mito-references-landed-2026-11-20	mito
+validation/mitochondria/references/published_targets.json	tag	mito-references-model-2026-11-19	mito
+validation/mitochondria/references/registration.py	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/registration.py	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/repairs.py	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/repairs.py	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/repairs_table.json	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/repairs_table.json	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/repairs_table.md	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/repairs_table.md	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/reproduce.py	merge	mito-references-landed-2026-11-20	mito
+validation/mitochondria/references/reproduce.py	tag	mito-references-model-2026-11-19	mito
+validation/mitochondria/references/sources.py	merge	mito-references-landed-2026-11-20	mito
+validation/mitochondria/references/sources.py	tag	mito-references-model-2026-11-19	mito
+validation/mitochondria/references/xf1_scaling.json	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/xf1_scaling.json	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/xf1_scaling.md	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/xf1_scaling.md	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references/xf1_scaling.py	merge	mito-references-landed-2026-11-22	mito
+validation/mitochondria/references/xf1_scaling.py	tag	mito-mr1-mt2-registration-2026-11-20	mito
+validation/mitochondria/references_r2/protocol.py	merge	mito-r2-reference-landed-2026-11-22	mito
+validation/morphogenesis/protocols/mg0a_gradient_v1.json	declared	pre-registered before the judged run (its status)	mg0a
+validation/morphogenesis/protocols/mg0b_domain_wall_v1.json	commit	f7e8b6bb	validation/morphogenesis
+validation/morphogenesis/protocols/mg0c_turing_v1.json	commit	5ab4326a	validation/morphogenesis
+validation/morphogenesis/protocols/mg0c_turing_v1.json	tag	mg0c-v1-registered-2026-11-15	mg0c
+validation/morphogenesis/protocols/mg1_vertex_mechanics_v1.json	commit	70f54566	validation/morphogenesis
+validation/morphogenesis/protocols/mg1_vertex_mechanics_v2.json	commit	699e96db	validation/morphogenesis
+validation/ool/references/README.md	merge	ool-references-amendment7-landed-2026-11-22	ool
+validation/ool/references/README.md	tag	ool-references-amendment7-2026-11-19	ool
+validation/ool/references/design2.py	merge	ool-references-amendment7-landed-2026-11-22	ool
+validation/ool/references/design2.py	tag	ool-references-amendment7-2026-11-19	ool
+validation/ool/references/designs/ol1_boundary.world.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_boundary_probe_states.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_closed_world_states.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_conventions.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_design.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_kernel_probe_states.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_wa.world.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_wa_closed.world.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_wa_closed_uncatalysed.world.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_wa_closed_x2.world.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_wb_m20.world.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_wb_m320.world.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_wb_m5.world.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol1_wb_m80.world.json	declared	a registered OL1 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_closed.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_closed_states.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_lysis.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_lysis_run.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_ol3_design.json	merge	ool-references-amendment7-landed-2026-11-22	ool
+validation/ool/references/designs/ol2_ol3_design.json	tag	ool-references-amendment7-2026-11-19	ool
+validation/ool/references/designs/ol2_shared.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_shared_run.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_two.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_two_states.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_wa.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_wa_diffusion.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_wa_diffusion_probe_states.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol2_wa_probe_states.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol3_division.json	merge	ool-references-amendment7-landed-2026-11-22	ool
+validation/ool/references/designs/ol3_division.json	tag	ool-references-amendment7-2026-11-19	ool
+validation/ool/references/designs/ol3_lineage.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol3_lineage_run.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol3_parents.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol3_population.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol3_population_run.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol3_shear_probe.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol3_shear_probe_run.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol3_slots_full.world2.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/ol3_slots_full_run.json	declared	a registered OL2 or OL3 design, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_changes_nothing.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_chi_diagonal.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_coefficient.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_dilute_catalyst.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_four_products.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_four_reactants.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_non_integer.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_own_delta_G.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_singular_step_without_probe_role.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals/refuse_wrong_locus.world.json	declared	a registered OL1 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_c_ext_below_pool_solutes.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_count_on_m_cross_phase.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_encounter_without_geometry.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_exit_declared.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_floor_below_one.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_floor_without_kept.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_founder_beyond_sigma_max.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_fresh_pool_above_c_ext.run2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_geometry_without_encounter.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_geometry_without_floor.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_interfacial_reaction.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_join_from_lumen.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_leave_declared.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_lumen_step_two_lumen_reactants.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_lysis_species_without_pool_place.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_membrane_species_without_area.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_membrane_step_lumen_reactant.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_non_integer_area_quanta.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_osmotic_without_sigma_max.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_pool_to_lumen_reaction.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_shear_without_k.run2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/designs/refusals2/refuse_sigma_max_without_source.world2.json	declared	a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's	ool
+validation/ool/references/engine_layout.py	declared	the code-blind reader of the engine's OL1 records, with the references it was committed for	ool
+validation/ool/references/fuel/NOTES.md	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/README.md	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/__init__.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/bistability.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/chem.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/design.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_design.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_d0.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_d0_probe_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_edge.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_edge_beta0.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_edge_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_finite.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_finite_probe_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_finite_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_heldB.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_heldB_probe_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_heldF.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_kernel.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_kernel_probe_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_ness.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_ness_beta0.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_ness_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_null.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_null_probe_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_zero.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fd_zero_beta0.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fv_closed.world2.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fv_closed_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fv_kernel.world2.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/ol4_fv_kernel_probe_states.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/designs/refusals/refuse_factor_on_pool_step.world.json	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/harness.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/kernel.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/law.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/ledger.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/registered.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/standin.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/stationary.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/fuel/vesicle.py	merge	ool-fuel-references-landed-wip-2026-11-22	ool
+validation/ool/references/refusals2.py	declared	the generator of the registered OL2 and OL3 refusals, whose bytes a test compares with it	ool
+validation/ool/references/registered.py	declared	the generator of the registered OL1 designs, whose bytes a test compares with it	ool
+validation/ool/references/registered2.py	merge	ool-references-amendment7-landed-2026-11-22	ool
+validation/ool/references/registered2.py	tag	ool-references-amendment7-2026-11-19	ool
+validation/stationary/protocols/stationary_analysis_e_v1.json	declared	pre-registered before the judged run (its status)	stationary
+validation/tissue/a5pp_acceptance_protocol.json	commit	555d8771	validation/tissue
+validation/tissue/bath_schedule_protocol.json	declared	registered by the lead (its status)	fr10
+validation/tissue/cell_replacement_protocol.json	commit	2cd2b3ad	validation/tissue
+validation/tissue/cell_replacement_q1_predictions.json	commit	70f54566	validation/tissue
+validation/tissue/compartment_acceptance_protocol.json	commit	05a8d193	validation/tissue
+validation/tissue/e07_v1_protocol.json	declared	registered by the lead before any engine run (its status)	e07
+validation/tissue/injection_rm1_protocol.json	commit	dcd95d67	validation/tissue
+validation/tissue/l4_variants/flagged_block_amendment.json	commit	106124c3	validation/tissue
+validation/tissue/l4_variants/g2_backend_variant.json	declared	registered (its status); it goes with cell_replacement_protocol.json, which is frozen	validation/tissue
+validation/tissue/protocols/projective_c_qualification_v1.json	declared	pre-registered before any judged run (its status)	projective
+validation/tissue/pump_water_kcc_predictions.json	commit	05ef6317	validation/tissue
+validation/tissue/pump_water_predictions.json	commit	b0ff7e2d	validation/tissue
+validation/tissue/regulated_availability_judge.py	tag	coupling-v1-registered-2026-11-15	coupling
+validation/tissue/regulated_availability_protocol.json	commit	abe4ef5c	validation/tissue
+validation/tissue/regulated_availability_protocol.json	tag	coupling-v1-registered-2026-11-15	coupling
+validation/tissue/regulated_availability_protocol.py	tag	coupling-v1-registered-2026-11-15	coupling
+validation/tissue/secreted_species_protocol.json	commit	f2785cba	validation/tissue
+validation/tissue/secreted_species_protocol.py	commit	f2785cba	validation/tissue
+validation/tissue/site_occupancy_acceptance_protocol.json	declared	registered by the lead (its status)	fr3
+validation/vesicle_pores/predictions_registered.json	commit	6d718ae2	validation/vesicle_pores
+validation/vesicle_pores/predictions_registered.json	tag	pores-predictions-registered-2026-11-22	pores
+validation/xenopus_bioelectric/__init__.py	commit	16727134	validation/xenopus_bioelectric
+validation/xenopus_bioelectric/references/README.md	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/REFERENCES_USAGE.md	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/__init__.py	commit	16727134	validation/xenopus_bioelectric
+validation/xenopus_bioelectric/references/__init__.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/claims_c5.py	commit	16727134	validation/xenopus_bioelectric
+validation/xenopus_bioelectric/references/claims_c5.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/claims_membrane.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/design.py	commit	16727134	validation/xenopus_bioelectric
+validation/xenopus_bioelectric/references/design.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/designs/xc0_interface_bands.json	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/designs/xc0_reference_values.json	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/exact.py	commit	16727134	validation/xenopus_bioelectric
+validation/xenopus_bioelectric/references/exact.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/local_node.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/model.py	commit	16727134	validation/xenopus_bioelectric
+validation/xenopus_bioelectric/references/model.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/plants.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/reference_inputs.json	commit	16727134	validation/xenopus_bioelectric
+validation/xenopus_bioelectric/references/reference_inputs.json	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/rows.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/references/symporter.py	merge	xc0-references-landed-2026-11-22	xc0
+validation/xenopus_bioelectric/xc0_compare.py	tag	xc0-rule-erratum-1-2026-11-23	xc0
+validation/xenopus_bioelectric/xc0_engine.py	tag	xc0-rule-erratum-1-2026-11-23	xc0
+validation/xenopus_bioelectric/xc0_rule.json	merge	xc0-rule-merged-2026-11-23	xc0
+validation/xenopus_bioelectric/xc0_rule.json	tag	xc0-rule-registered-2026-11-23	xc0
+validation/xenopus_bioelectric/xc0_rule_erratum_1.json	merge	xc0-rule-erratum-1-merged-2026-11-23	xc0
+validation/xenopus_bioelectric/xc0_rule_erratum_1.json	tag	xc0-rule-erratum-1-2026-11-23	xc0
+validation/xenopus_bioelectric/xc0_worlds.py	tag	xc0-rule-registered-2026-11-23	xc0

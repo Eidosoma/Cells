@@ -1,4 +1,4 @@
-"""Prepare apical_vertex_mechanics@1 definitions: periodic honeycomb tissues.
+"""Prepare cells.model.apical_vertex_mechanics@1 definitions: periodic honeycomb tissues.
 
 Preparation geometry only (no physics). A pointy-top honeycomb of nx x ny cells
 (ny even) tiles a rectangular periodic box. Vertices lie on an integer grid in units

@@ -1,4 +1,4 @@
-"""Development worlds of cells.assembly_lineages@2 that combine catalysis with a vesicle's geometry,
+"""Development worlds of cells.model.assembly_lineages@2 that combine catalysis with a vesicle's geometry,
 its osmotic lumen, shear division and the pool (validation: world definitions, not engine physics).
 
 The engine's laws compose as built (the second builder's plan of 20 November 2026: no refusal and
@@ -9,16 +9,16 @@ which the engine's parser checks; it never checks a world itself.
 that consumes a held species to make something that enters the membrane is fuel, and no fueled
 world runs before the user chooses a fuel option and OL5 registers its references. A held
 amphiphile exchanging with its own membrane place is OL2's physics and is allowed. So every step
-here is a join of an amphiphile into the membrane (`cells.phase_exchange@1`) or the entry of a
-permeant solute into the lumen (`cells.membrane_permeation@1`); there is no pool reaction.
+here is a join of an amphiphile into the membrane (`cells.reaction.phase_exchange@1`) or the entry of a
+permeant solute into the lumen (`cells.reaction.membrane_permeation@1`); there is no pool reaction.
 
 **The world.** G amphiphiles A0 .. A{G-1}, each with a pool place (finite, or held at a declared
 concentration) and a membrane place, joined by insertion through the bilayer's area. The lumen
 holds an impermeant solute I (with a pool place, since a lysed vesicle's molecules return to the
 pool) and, when declared, a permeant solute S. Members catalyse the joins through
-`cells.transition_state_factor@1` (catalysts in the membrane, steps that cross the membrane: never a
-pool-only step, whose factor the first builder refuses). The geometry is `cells.bilayer_geometry@1`,
-the lumen `cells.osmotic_lumen@1`, and division `cells.shear_fission@1`.
+`cells.rate_factor.transition_state_factor@1` (catalysts in the membrane, steps that cross the membrane: never a
+pool-only step, whose factor the first builder refuses). The geometry is `cells.assembly_geometry.bilayer_geometry@1`,
+the lumen `cells.free_energy.osmotic_lumen@1`, and division `cells.operator.shear_fission@1`.
 
 **The numbers are the unit tests' small-count scale** (the lumen test's world: a quantum of
 1e-19 m², 60 quanta a molecule, a pool of 1e-22 L, c_ext 1000 mM or twice the pool's solutes, a
@@ -217,7 +217,7 @@ def vesicle_places(the_world):
 
 
 def population(the_world, founders, slots):
-    """The world as `slots` slots on its pool (cells.shared_pool@1): the founder keeps the pool and
+    """The world as `slots` slots on its pool (cells.population.shared_pool@1): the founder keeps the pool and
     every vesicle place 0; `founders` lists each founding vesicle as {place: count} over every
     membrane and lumen place (a missing place is 0)."""
     out = copy.deepcopy(the_world)

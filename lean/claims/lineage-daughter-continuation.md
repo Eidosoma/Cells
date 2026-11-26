@@ -14,12 +14,12 @@ For a positive parent, the fallback always retains a nonempty daughter. When one
 
 **Proved**
 
-- [CellsProofs.Chemistry.LineageFission.nonempty_fallback](../CellsProofs/Chemistry/LineageFission.lean#L125)
-- [CellsProofs.Chemistry.LineageFission.fallback_selection_bias](../CellsProofs/Chemistry/LineageFission.lean#L132)
-- [CellsProofs.Chemistry.LineageFission.zero_quota_at_threshold](../CellsProofs/Chemistry/LineageFission.lean#L140)
-- [CellsProofs.Chemistry.LineageFission.log_weight_jump](../CellsProofs/Chemistry/LineageFission.lean#L148)
+- [CellsProofs.Chemistry.LineageFission.nonempty_fallback](../CellsProofs/Chemistry/LineageFission.lean#L140)
+- [CellsProofs.Chemistry.LineageFission.fallback_selection_bias](../CellsProofs/Chemistry/LineageFission.lean#L147)
+- [CellsProofs.Chemistry.LineageFission.zero_quota_at_threshold](../CellsProofs/Chemistry/LineageFission.lean#L155)
+- [CellsProofs.Chemistry.LineageFission.log_weight_jump](../CellsProofs/Chemistry/LineageFission.lean#L163)
 
-Direct proof subject `cells.daughter_continuation@1`
+Direct proof subject `cells.operator.daughter_continuation@1`
 
 Uses [Size-triggered fission conserves each species under fixed-quota and independent partitions](size-threshold-fission.md)
 

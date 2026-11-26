@@ -1,8 +1,8 @@
 """Protocol G2-Q1 (registered at 70f5456): tolerance pinning (development) and the judged run.
 
-Engine model: resolved_pump_replacement@1 (inner resolved_pump_tissue@3), on the
+Engine model: cells.model.resolved_pump_replacement@1 (inner cells.model.resolved_pump_tissue@3), on the
 frozen definitions of validation/tissue/cell_replacement_q1_predictions.json, IMEX
-ARS(2,2,2), junction_heat_booking trapezoid_nonnegative@1, through core/runner.run
+ARS(2,2,2), junction_heat_booking cells.heat.trapezoid_nonnegative@1, through core/runner.run
 (every host row check). Parts (one JSON each in --output, which must not exist):
 
   dtstudy   engine runs of every case at dt 1 ms and 0.5 ms (development): every
@@ -31,7 +31,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 PREDICTIONS = ROOT / "validation" / "tissue" / "cell_replacement_q1_predictions.json"
 PROTOCOL = ROOT / "validation" / "tissue" / "cell_replacement_protocol.json"
-BOOKING = "trapezoid_nonnegative@1"
+BOOKING = "cells.heat.trapezoid_nonnegative@1"
 STUDY_DTS = (1e-3, 5e-4)
 
 
@@ -99,7 +99,9 @@ def engine_records(raw, dt):
 
 
 def part_dtstudy(args):
-    predictions = json.loads(PREDICTIONS.read_text())
+    from validation import id_table
+
+    predictions = id_table.load(PREDICTIONS)
     out = dict(kind="cells.cell_replacement_q1_dtstudy@1", dts=STUDY_DTS, cases={})
     for name, entry in predictions["cases"].items():
         if args.cases and name not in args.cases:
@@ -113,10 +115,11 @@ def part_dtstudy(args):
 
 
 def part_refterm(args):
+    from validation import id_table
     from validation.tissue import cell_replacement_predictions as pr
     from validation.tissue import cell_replacement_reference as ref
 
-    predictions = json.loads(PREDICTIONS.read_text())
+    predictions = id_table.load(PREDICTIONS)
     out = dict(
         kind="cells.cell_replacement_q1_reference_term@1",
         tolerances=dict(r_full=[1e-12, 1e-16], r_fast=[1e-11, 1e-14]),

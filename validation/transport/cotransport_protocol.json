@@ -1,6 +1,6 @@
 {
   "kind": "cells.cotransport_contracts@1",
-  "kernel_law": "electroneutral_symport_reversible_tanh@1",
+  "kernel_law": "cells.cycle.electroneutral_symport_reversible_tanh@1",
   "named_laws": {
     "kcc_reversible_tanh@1": {"K": 1, "Cl": 1},
     "nkcc_reversible_tanh@1": {"Na": 1, "K": 1, "Cl": 2}

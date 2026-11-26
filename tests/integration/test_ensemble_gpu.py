@@ -121,7 +121,7 @@ def test_gpu_scheduler_signal_checkpoint_resume_and_exact_result(tmp_path, famil
         definition["kind"] = "finite_bond_ensemble@1"
         arm = definition["arms"][0]["definition"]
         arm.pop("free_trimer_M")
-        arm["model"] = "finite_bond_assembly@1"
+        arm["model"] = "cells.model.finite_bond_assembly@1"
     config = tmp_path / "definition.json"
     config.write_text(json.dumps(definition))
 

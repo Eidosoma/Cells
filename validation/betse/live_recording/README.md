@@ -1,5 +1,8 @@
 # Live native recording and matched Cells windows
 
+> **Legacy cleanup (25 November 2026, D386).** This folder's drivers are retired (D374), and their
+> code left the tree; the tag `pre-cleanup-2026-11-25` keeps it. This page stays as a record.
+
 2026-09-17, D125 / REF-005d R0. New validation-side adapter; **no production,
 upstream physics, timestep, duration or scientific tolerance change**. The
 [offline codec is independently closed](../../../reports/REF005D_CODEC_CLOSEOUT.md).

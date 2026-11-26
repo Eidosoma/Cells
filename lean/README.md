@@ -6,35 +6,67 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [52 of 52 laws](COVERAGE.md#registered-laws) and [32 of 32 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [56 of 63 laws](COVERAGE.md#registered-laws) and [35 of 35 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 10 of 10 | 10 checked | 9 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 15 of 15 | 12 checked · 1 failed · 2 open | 11 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 15 of 15 | 34 of 34 | 31 checked · 3 failed | 22 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
-| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 6 of 6 | 11 of 11 | 11 checked | 10 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 16 of 17 | 16 of 16 | 16 checked | 15 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 17 | 9 of 9 | 8 checked · 1 open | 9 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 4 | 18 of 18 | 16 checked · 1 failed · 1 open | 14 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 17 | 46 of 46 | 44 checked · 1 failed · 1 open | 28 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 30 of 30 | 30 checked | 23 |
+| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 4 of 4 | 3 checked · 1 open | 4 |
+
+[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers 49 of 134 claims. Across 74 comparisons, two independent studies support the stated assumption in 42 and challenge it in 10. [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) flag 8 discrepancies. Of the original eight, D351 confirmed three findings and classified five as indications. It found no errors within the laws’ stated domains. [D351 ruling on main](https://github.com/Eidosoma/Cells/blob/main/docs/DECISIONS.md#d351-the-wet-lab-gap-diagnosis-three-rows-confirmed-none-wrong-inside-its-claimed-domain-fr-55-goes-to-normal-the-user)
 
 <!-- /generated -->
 
-Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+Each category opens its detailed claim table on GitHub. A covered law or operator has at least one directly proved property, with its assumptions listed on the claim page. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The generated list tracks each failing numerical comparison. In the Phase A pore clock, a cutoff rounded to the first rupture time changes a founder’s fate in both runners. Earlier comparisons document a reversible GARD v1 refusal, a rapid-binding inventory margin with the wrong sign, and a missing RNA zero-loss record. GARD v2 passed all nine range and capacity checks. [Current failures](COVERAGE.md#failing-numerical-checks) · [Pore endpoint reproducer](PROGRESS.md#fr31-pore-endpoint) · [RNA export and control](PROGRESS.md#fr38-lossless-fate) · [GARD repair](PROGRESS.md#gard-v2-range-repair) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
+The registered FR-51 channel blocker has proofs for changing voltage and for changing ion concentration on either side of a membrane. The compiled engine passed all 6,546 endpoint concentration checks. Two independent nerve studies support the direction of voltage-dependent proton block. The separate Kir2.1 registration stopped under §3 when the 10 mM trace could not be identified. Both the 10 and 20 mM curves remain unread and unscored. [Blocker proof and evidence](claims/fr51-weighted-channel-block.md) · [Concentration replay and fault controls](PROGRESS.md#fr51-concentration-bounds) · [Panama registration stop](PROGRESS.md#fr51-panama-holdouts)
 
-FR-42 has an exact design result for neutral arrival-time labels. Sharing the physical loss preserves the pooled inventory. With quadratic loss, the surviving new cohort is ¼ at time one, while subtraction of a separate blank gives 1/12. The compiled comparison will become possible when Cells implements the share-based labels. [Cohort proof and remaining checks](claims/fr42-cohort-shares.md)
+FR-65 distinguishes solute dilution from a change in amount. In swollen hepatocytes ATP concentration fell while ATP amount rose slightly. Two rat liver studies found different proteolysis responses under different nutrient and preparation conditions. A compiled comparison of scheduled turnover during swelling awaits the engine feature. [FR-65 proof and measurements](claims/fr65-turnover-volume.md) · [Two-lab proteolysis comparison](WET_LAB_EVIDENCE.md#pair-liver-swelling-proteolysis)
 
-FR-38’s development release operator now directs material from an existing template hold to the class active at detachment. The compiled fixture exercised two separate windows with the same label, for both RNA fates. Lean proves that a reused label carries its older survivors and that the chase denominator is the cohort alive at window close. Bellecourt et al. measured released and template-associated RNA separately. Measuring survival of that same released cohort remains open. [Release windows, compiled comparison and biological evidence](claims/release-window-survival.md)
+The original reversible GARD v1 law can refuse an extreme catalyst ratio, and the rapid-binding solver can misclassify a ligand inventory at the limit of binary64 precision. The repaired XC0 initial charge check on main admits all 15 balanced inputs, including the two midpoint cases, and rejects both deliberately mischarged inputs. The repaired FR-38 retention check detects an unresolved export interval. Its separate survival check now accepts the one-step rounding discrepancy and still rejects a changed loss rate. The public pore-clock cutoff and all four lossless RNA fate records also pass their earlier controls. [Current failures](COVERAGE.md#failing-numerical-checks) · [XC0 rounding controls](claims/xc0-charge-anchor.md) · [Retention repair](PROGRESS.md#fr38-retention-window-repair) · [Survival repair](PROGRESS.md#fr38-survival-rounding) · [Pore-clock retest](PROGRESS.md#fr31-pore-endpoint-repair) · [Lossless RNA retest](claims/release-fate-export.md)
+
+FR-42’s neutral arrival-time labels now have a proof and a compiled comparison. With constant loss and arrivals, every positive final amount up to the available supply determines a unique loss exponent. The label amounts sum to the physical pool. Enabling labels preserved all 42 shared history fields and 76 shared observations bit for bit in the tested tissue. With quadratic loss, the new cohort held 0.24999987 fmol at one second, against the exact ¼ fmol. [Finite-step proof and checks](claims/fr42-survival-exponent.md) · [Quadratic cohort and blank](claims/fr42-cohort-shares.md)
+
+FR-38 follows a producer’s RNA from template release through cell replacement. Lean bounds the old producer’s RNA inside a replacement cell by cumulative return. The public development fixture passed all 14 checks. The independent registered comparison **failed R1** and found **R2 inconclusive**. The follow-up traced route 1 to a gross-versus-net loss comparison. [Producer balance and restart](PROGRESS.md#fr38-extracellular-producer) · [Registered verdict D313](https://github.com/Eidosoma/Cells/blob/81a98ca025ee662a0846aa13868dfc93fa87ea22/docs/DECISIONS.md#L9867) · [Route-1 diagnosis D316](https://github.com/Eidosoma/Cells/blob/a8f9810c791986a25a38f8ecb718cbfdf7479fec/docs/DECISIONS.md#L9972)
 
 ## Biological evidence
+
+Each row in the paired wet-lab register names the assumption, what each study measured and whether the groups collected independent data. The Cells replay column records what the law predicts for the shared observable, including fitted or missing inputs. The work lists show which claims have measurements ready to pair and which still need a second dataset. [Paired evidence](WET_LAB_EVIDENCE.md) · [Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) · [Claims awaiting paired review](WET_LAB_EVIDENCE.md#awaiting-paired-review)
+
+Two independent Kir2.1 patch-clamp studies put the steep component of spermine block near five effective charges. In another pair, yeast and plant vacuoles both showed a positive pump-reversal shift when the lumen was acidified. The measured shifts were smaller than the fixed-fuel, tightly coupled prediction. The plant recordings leave the fuel activity quotient open. [Kir block](WET_LAB_EVIDENCE.md#pair-kir-spermine-steep-valence) · [Vacuolar pump](WET_LAB_EVIDENCE.md#pair-vacuolar-pump-lumen-gradient) · [Native replays, measurements and scope](PROGRESS.md#preparation-evidence-review)
+
+Two labs saw both fast and slow closure of wild-type Cx43 at the same −100 mV step. A single relaxation time misses a phase in both preparations. In squid axons, two studies agree that replacing external sodium with potassium depolarizes the membrane, while transferring the original permeability ratios overpredicts the shift in a perfused axon. [Cx43 timing](WET_LAB_EVIDENCE.md#pair-cx43-single-exponential-clamp) · [Squid voltage](WET_LAB_EVIDENCE.md#pair-squid-potassium-substitution) · [Measured values and native comparisons](PROGRESS.md#paired-membrane-physiology)
+
+In two independent albumin experiments, total calcium rose by at least as much as free calcium, as the equilibrium binding proof predicts with other free ligands fixed. The experiments leave free magnesium incompletely controlled. Two fluid POPC studies also found larger molecular areas on warming. A Cells vesicle reproduces that difference when supplied the footprint for each temperature. [Albumin measurements](WET_LAB_EVIDENCE.md#pair-albumin-calcium-buffering) · [POPC measurements](WET_LAB_EVIDENCE.md#pair-popc-temperature-footprint) · [Proofs and CPU results](PROGRESS.md#paired-calibration-and-leaflet-packing)
+
+Two labs measured half-activation of rat SK2 near 0.7 µM calcium. Its timing is harder to reproduce with one closing rate. At low calcium a third study reported an approximately 80 ms rise from 20% to 80%, above the 48.1 ms ceiling inferred from its mean washout at high calcium. A separate study recorded decay after 0.5 and 10 µM pulses into the same nominally calcium-free bath. Closing at two different final calcium levels remains open. [SK2 closing measurements](PROGRESS.md#fr55-sk2-closing) [Dose comparison](WET_LAB_EVIDENCE.md#pair-rsk2-calcium-midpoint) · [Timing proof, CPU replay and measurement limits](PROGRESS.md#paired-transport-and-membrane-measurements)
+
+In a measured nucleotide pool, upstream depletion and downstream product predicted 0.822 mM UTP at seven hours, compared with 0.955 ± 0.350 mM measured (SD). The FR-43 development replay checks how much each of two writers contributed and which volume each used. [Shared-pool proof, native runs and measurements](claims/fr43-shared-writers.md)
+
+Deterministic assembly reactions reverse direction across equilibrium and dissipate free energy. Two measured enzyme time courses show opposite net conversion from opposite starting sugars. In a separate rabbit-muscle preparation the kinetic inputs gave a Cells stall ratio of 0.32, compared with a measured F6P/G6P ratio of 0.30. [Reaction proof, compiled checks and measurement limits](claims/rate-equation-flux.md)
+
+The reaction integrator preserves closed material inventories through its stages and dense output in exact arithmetic. A partially purified enzyme assay recovered 100.2% of the initial G6P + F6P at 30 minutes. In one cell-extract course the measured pair fell by 22.29%, limiting which experiments can test the closed-pool assumption. [Conservation proof, native replay and both assays](claims/rosenbrock-inventory.md)
+
+Mobile carriers can move a ligand even at zero net binder flux. Rabbit heart cells show faster acid arrival with carbonic buffer, and myoglobin increased initial oxygen flux across a polymer film. The Cells comparison follows free and bound ligand separately to both ends of a face. [Measurements, proof and compiled tissue comparison](claims/forms-face-carriage.md)
+
+How long does released RNA survive? A purified bacterial assay measured the fraction detached, a human ACTB time course gave a 3.35 min chromatin-association half-time, and yeast ASH1 counts declined with a reported half-life of 6.1 ± 2.8 min in 21 cells. Each measurement answers a different part of the question. The Cells chase fraction still needs a cohort marked at detachment and counted again after its marking window closes. [Three measurements, denominators and sources](claims/release-window-survival.md#biological-evidence)
+
+After delivery, placental lactogen RNA remained detectable in maternal plasma in 4 of 13 women at two hours. In a separate mouse-cell study, recipients unable to make the assayed RNA carried about 370 donor copies per cell at 24 hours. These results test persistence of a source-specific signal and donor attribution. Gross return rates remain open. [RNA measurements and limits](claims/producer-replacement-rna.md#biological-evidence)
+
+Thirteen mitochondrial recordings provide three measured proton-current reversal voltages. Cells reverses in the measured direction at all three gradients. Each predicted voltage falls within its group’s descriptive 95% interval for the mean. Absolute leak current requires a separate calibration. [Measured voltages, uncertainty and proof](PROGRESS.md#mt1b-buffered-reversal)
+
+In two mock-treated mouse dendritic-cell replicates, heavy-labelled Actn1 accounted for 17.19% and 10.11% of the paired isotope signal at five hours. The two measurements show how to observe a cohort fraction. Amino-acid recycling limits how closely that fraction follows newly made protein. A common loss rate across cohorts remains open. [Measurements and source accessions](claims/fr42-cohort-shares.md#biological-evidence)
 
 Five held-out DOPC rupture rates passed the registered two-sided temperature test. Cells also predicts how the opening and release share the heat. An independent temperature series measured local rotational viscosity, and a nanoscale fluctuation experiment estimated surface viscosity at one temperature. The heat split and the temperature dependence of friction at a critical pore remain open. [Rupture rates and experimental limits](claims/vesicle-pore-rate.md#biological-evidence) · [Heat and viscosity evidence](claims/vesicle-pore-heat.md#biological-evidence)
 
 During mechanical division of a liposome, one daughter can rupture while its sibling survives. Cells now reconciles the returned material in both runners. The experiment measured sibling fluorescence and external dye spreading in separate analyses. A same-event measurement of where the ruptured daughter’s contents went remains open. [Rupture at birth](claims/vesicle-birth-returns.md) · [Sibling fates, Fig. 1d](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=2)
 
-The osmotic volume law has **mixed biological evidence**. Fujiwara and Yanagisawa’s liposomes shrank to about 25% of their starting volume, against 24.56% in Cells without fitting. Wolfisberg’s four later volumes were below prediction. In Bhatia’s vesicle, the uncertainty in the outer contour spans the difference after accounting for the inward tube. [Three preparations side by side](PROGRESS.md#intact-vesicle-deflation) · [Generated claim and primary sources](claims/osmotic-vesicle-volume.md#biological-evidence)
+The osmotic volume law has **mixed biological evidence**. Fujiwara and Yanagisawa’s liposomes shrank to about 25% of their starting volume, against 24.56% predicted without fitting. Viallat’s independent single-vesicle measurement gave 31.4% against 30.9%, with a decrease in apparent membrane area. Wolfisberg’s four later volumes were below prediction. In Bhatia’s vesicle, the outer-contour uncertainty spans the difference after accounting for the inward tube. [Paired deflation measurements](WET_LAB_EVIDENCE.md#pair-vesicle-deflation-direction) · [Claim and primary sources](claims/osmotic-vesicle-volume.md#biological-evidence)
 
 At the same growth rate, measured fractions of mRNA-bound ribosomes in *E. coli* ranged from 31% to 65% across three nutrient limitations. In hamster cells, tracer measurements followed residues in unfinished and released protein separately. These experiments give observables for the two polymerisation balances. A quantitative Cells comparison still needs matched conditions and pool definitions. [Machine occupancy](claims/polymerisation-machines.md) · [Residues in transit and released](claims/polymerisation-residues.md)
 
@@ -42,23 +74,25 @@ In a purified *E. coli* experiment, polymerase remained on DNA after RNA release
 
 In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. Representing a neutral tracer by separate species rows can also change the heat attributed to mixing. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion](claims/neutral-label-diffusion.md) · [Effect on booked heat](claims/label-mixing-power.md)
 
-At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). Applying only the measured midpoint shift to the default Cells gate gives 40.5%. [Kv1.5 pH comparison](claims/kv15-ph-activation.md)
+At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). At +100 mV with the same 10 mM external potassium, acidification had little effect on current. Applying only the measured midpoint shift to the default Cells gate gives 40.5% at 0 mV. With extracellular free H changed in two independent pulse protocols, the native midpoint shift is zero versus measured shifts of +11.7 and +17.3 mV. A second pair tests why the amount of current lost to acidification depends on external potassium. [Kv1.5 pH comparison](claims/kv15-ph-activation.md) · [In-range potassium and pH replays](WET_LAB_EVIDENCE.md#pair-kv15-acid-potassium-interaction)
 
 For Kv1.5 in HEK293 cells, a density-inhibition curve fitted to the two endpoints predicts a conducting fraction of 0.22 at 300 channels/µm². The same figure gives about 0.23 there, without a pointwise uncertainty. An independent channel count lets a fixed-gate current comparison distinguish changes in availability. [Density comparison](claims/channel-density-availability.md) · [Clamp proof](claims/clamped-channel-current.md)
 
-The biological review identifies three engine opportunities with measured targets. It covers the reversal of the yeast vacuolar proton pump, the time to rupture of a vesicle under steady tension, and fast and slow closure of Cx43 gap junctions. [Measurements, current engine results and proposed changes](PROGRESS.md#biological-model-review)
+The 20 November review examined yeast vacuolar pump reversal, vesicle rupture under steady tension, and fast and slow closure of Cx43 gap junctions. [20 November measurements and proposals](PROGRESS.md#biological-model-review) · [Current Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results)
 
 The Cx43 polarity measurements bound the error of the registered single-gate law. The registered two-gate law satisfies the predicted amplitude relation on synthetic clamps and runs in the tissue host under its development flag. Resolving the mixed amplitude in a measured Cx43 trace remains open. [Measurements](PROGRESS.md#cx43-series-gates) · [Compiled comparison and host replay](PROGRESS.md#nov21-registered-series-and-withdrawal)
 
 A serial dilution experiment follows free fluorescein through three successive exchanges, including the discrepancy at the third 80% wash. For uneven sampling, a separate experiment measured approximately 75% and 25% of stock dye concentration in two outlets carrying equal flow. Measuring the dye left in each region after a finite draw would test the Cells remainder prediction. [Measured dilution](PROGRESS.md#nov21-wash) · [Two-region draws and dye measurements](claims/two-region-sampling.md)
 
-For partial pool withdrawal, one passive splitter collected a mean of 45.0% of each droplet’s beads in a nominal one-third branch. Another retained 28.2% of beads at a mean liquid fraction of about 27.2%. A test of count variance still needs particle counts and liquid volume measured on the same split. [Count proof and measurements](claims/pool-withdrawal.md) · [Paired-data search and heat proof](PROGRESS.md#fr35-withdrawal-energy) · [Biological disagreements for Cells](PROGRESS.md#nov21-biological-disagreements)
+For partial pool withdrawal, one passive splitter collected a mean of 45.0% of each droplet’s beads in a nominal one-third branch. Another retained 28.2% of beads at a mean liquid fraction of about 27.2%. Those studies share investigators. An independent lab also observed beads in both daughter droplets. Testing count variance still requires bead counts and liquid volume measured on the same split. [Paired occupancy measurements](WET_LAB_EVIDENCE.md#pair-withdrawal-both-daughters-occupied) · [Count proof, measured fractions and uncertainties](claims/pool-withdrawal.md)
 
-For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence)
+For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. The deterministic shell also reproduces the predicted free-energy drop during refill. A direct experimental measurement of that drop remains open. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence) · [Post-wash tracer counts](claims/fr47-shell-wash-recovery.md) · [Interval heat and experimental scope](PROGRESS.md#fr47-shell-interval-heat)
 
-For a wash of a solid surface, the first saved step can already include tracer released from the wall. An albumin experiment measured both rinse liquid and the final surface residue. The time course of release in that preparation remains open. [Wall retention and measured albumin recovery](claims/wall-wash-retention.md)
+Two independent groups recovered human serum albumin from uncoated expanded PTFE after washing. One group also measured albumin in successive rinses. Estimating a common release rate requires comparable wash times and starting amounts of bound albumin. [Paired surface measurements](WET_LAB_EVIDENCE.md#pair-albumin-washed-eptfe) · [Wall retention proof and replay](claims/wall-wash-retention.md)
 
 Yeast mitochondrial ATP synthase provides a measured example of reversal. The enzyme switched from hydrolysis to synthesis as the proton gradient increased. Cells captures the shift between the lowest and highest ATP loads. The comparison also records the four intermediate measurements outside the combined interpolation limits. [Mitochondrial stall and biological evidence](claims/mitochondrial-stall-heat.md#biological-evidence)
+
+In isolated rat liver mitochondria the intermembrane space was up to 0.5 pH units more acidic than the bath. The three-compartment control shows that substituting bath pH can reverse the predicted leak. The uncoupled mitochondrial gradient remains a separate measurement target. [Proton compartment and experimental scope](PROGRESS.md#mt1b-local-proton-read)
 
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
@@ -78,14 +112,18 @@ In `biology.observable` and `unit`, name the quantity the claim needs. Use `biol
 
 The Search agent collects primary biological references in `claims/incoming/`, with the preparation, protocol, measured quantity, uncertainty and figure or table. The Lean lane checks the corresponding engine observable and records the comparison in the register. Enter a biological verdict when a comparison has a documented outcome. [Reviewed measurements and follow-up](PROGRESS.md#19-november-2026--biological-evidence-review) · [Channel voltage-clamp sources](claims/incoming/channel-gating-evidence.md)
 
-A normal `lake build` checks that each named theorem exists in its declared module, then regenerates the topic overview, claim notes and catalog. With `CELLS_PYTHON` set to the Cells Python interpreter, the build also refreshes the registry inventory from the active checkout. A Lean-only build uses the last exported inventory. Commit the generated files alongside edits to the register. The documentation commands below run from `lean/`.
+To review two experiments together, add a `biology.pairs` entry to the claim and reference its two `biology.evidence` dataset IDs. State the shared assumption, outcome, data origins and comparison at the measured conditions. Use `not_independent` when reused data or a shared model underlying the observable prevent confirmation of an independent result. Use `inconclusive` when the observables or conditions cannot settle the question. A pair that supports one assumption can coexist with an open or mixed whole-claim verdict.
+
+When a pair has been assessed against Cells, record the result in `replay.status` and explain it in `replay.assessment`. Name the shared observable, which inputs came from fitting and which measurements a replay still needs. Pairs awaiting assessment appear as “Awaiting replay”. [Replay verdicts and examples](WET_LAB_EVIDENCE.md#cells-replay-results)
+
+A normal `lake build` checks that each named theorem exists in its declared module, then regenerates the topic overview, claim notes, coverage catalog and paired wet-lab register. With `CELLS_PYTHON` set to the Cells Python interpreter, the build also refreshes the registry inventory from the active checkout. A build using standard-library Python reads the last exported inventory and the checkout’s ID translation table. Commit the generated files alongside edits to the register. The documentation commands below run from `lean/`.
 
 ```bash
 python3 scripts/generate_claims.py
 python3 scripts/generate_claims.py --check
 ```
 
-To compare with today's engine registrations, run the following in the Cells environment. Omit `--check` to refresh the inventory and pages. The inventory contains declaration IDs and locations exported by the engine. [Manifest source](../src/cells/registry/declarations.py#L659)
+To compare with today's engine registrations, run the following in the Cells environment. Omit `--check` to refresh the inventory and pages. The catalog uses the family-qualified IDs from `cells.declarations@3`. Each comparison keeps the IDs and source revision it ran with. The catalog uses the engine's rename table to link those historical runs to today's laws and operators. [Manifest source](../src/cells/registry/declarations.py#L619) · [ID translation for frozen inputs](../validation/id_table.py)
 
 ```bash
 python -B scripts/generate_claims.py --live-registry --check
@@ -102,13 +140,14 @@ python3 -B scripts/generate_claims.py --check-sources --since 8f9bc050
 
 The first command includes historical comparisons. The second checks for changes since the reviewed engine commit. Use the previous landing as the baseline in automation, or `HEAD` for uncommitted edits. Exit 0 means all selected files match, 1 means at least one changed, and 2 means the comparison could not be completed. A changed file identifies a driver to review or rerun. Imports and data omitted from a comparison's citations can also affect its result. A replay establishes the current numerical outcome. [Source review and retests](PROGRESS.md#claim-source-review)
 
-These queries list claims with held-out measurements and claims whose comparison exercised a given law.
+These queries list claims with held-out measurements and claims whose recorded comparisons exercised a law under any of its registered spellings.
 
 ```bash
 jq -r '.claims[] | select(any(.biology.evidence[]; .role == "held_out_from_fitting")) | .id' claims.json
-jq -r --arg law 'logmean_electrodiffusion@1' '
+jq -r --arg law 'cells.route.logmean_electrodiffusion@1' --slurpfile moves ../scripts/moves/id-rename-map.json '
+  ([$law] + [$moves[0].rows[] | select(.new == $law) | .old[]]) as $ids |
   .comparisons as $checks | .claims[]
-  | select(any(.numerical.comparisons[]; $checks[.].laws | index($law))) | .id' claims.json
+  | select(any(.numerical.comparisons[] | $checks[.].laws[]?; . as $id | $ids | index($id))) | .id' claims.json
 ```
 
 ### Reusing a proof
@@ -460,6 +499,7 @@ For proton leak, check the reversal voltage, instantaneous heat, the small-volta
 
 ```bash
 "$cells_python" -B checks/proton_leak.py
+"$cells_python" -B checks/ims_proton_leak.py
 ```
 
 For ATP-driven transport, compare compiled tissue rates against the four frozen proton and neutral cargo panels. The driver reports free energy, cycle flux, heat and work errors, then checks the voltage response and both off switches. It also finds the proton pump's stall voltage for each of the eight yeast vacuole assay conditions at all four supported couplings. [ATP driver](checks/atp_cycle.py) · [Tissue results](PROGRESS.md#19-november-2026--atp-driven-transport) · [Vacuole results](PROGRESS.md#biological-model-review)
@@ -504,12 +544,14 @@ For the original GARD laws, compare both directions of each transfer and each fo
 "$cells_python" -B checks/gard_catalysis.py --controls-only
 ```
 
-For FR-31, run the four synthetic cohort-size checks. For FR-42, run the point-release and interval-counter references, followed by the full comparison on the five-step FR-38 development fixture. [Area bounds](PROGRESS.md#fr31-area-bounds) · [Release windows and label reuse](PROGRESS.md#fr42-release-windows)
+For FR-31, run the four synthetic cohort-size checks. The FR-38 commands compare point releases and interval counters, then run three compiled RNA worlds with marks in [2, 4) and [6, 8) s. The replay saves half-second observations and compares reconstruction on half-second and two-second grids. The last command checks FR-42 in the labelled and unlabelled tissue, tests its finite-step math on NumPy and CPU JAX, and recalculates the paired Actn1 fractions. [Area bounds](PROGRESS.md#fr31-area-bounds) · [Marked RNA windows](PROGRESS.md#fr38-marked-fates) · [Neutral tissue labels](PROGRESS.md#fr42-neutral-survival)
 
 ```bash
 "$cells_python" -B checks/vesicle_area.py
+"$cells_python" -B checks/vesicle_area.py --osmotic-evidence
 "$cells_python" -B checks/arrival_windows.py --reference-only
 "$cells_python" -B checks/arrival_windows.py
+JAX_PLATFORMS=cpu "$cells_python" -B checks/arrival_survival.py
 ```
 
 For the GARD v2 two-word cache, replay the reversible event, signed updates and precision guard. The separate range command checks an admitted finite-rate event, upper and lower exponent boundaries, and explicit capacity on both sides of 4,096. It exits with status 1 if any of its nine expectations fails. For templated polymerisation, check the two balances across every saved row of three compiled worlds, including two chains competing for one machine pool. [Cache precision](PROGRESS.md#gard-v2-cache) · [Repaired and historical range checks](PROGRESS.md#gard-v2-range-repair) · [Polymerisation balances and measurements](PROGRESS.md#polymerisation-balances)
@@ -520,12 +562,14 @@ For the GARD v2 two-word cache, replay the reversible event, signed updates and 
 "$cells_python" -B checks/polymerisation_balances.py
 ```
 
-For a chain with a terminal RNA hold, check both machine-return policies through a change of class and a change of fate fraction. The second command asks the public cohort reader for surviving RNA in both lossless fates. It exits with status 1 if a fate record is unreadable. [Machine and residue balances](PROGRESS.md#fr38-terminal-inventories) · [Lossless fate export](PROGRESS.md#fr38-lossless-fate)
+For a chain with a terminal RNA hold, check both machine-return policies as the completion-marking window closes and the durable fraction changes. The second command asks the public reader for both physical and marked RNA in two lossless controls. [Machine and residue balances](claims/polymerisation-machines.md) · [Four fate records](claims/release-fate-export.md)
 
 ```bash
 "$cells_python" -B checks/terminal_release.py
 "$cells_python" -B checks/terminal_release.py --lossless
 ```
+
+On a Cells revision with the replacement fixture, run `python -m validation.gene_regulation.replace_restart --out NEW_DIRECTORY`. In the same Cells environment, `python checks/producer_replacement.py NEW_DIRECTORY/replace_restart.json` checks the saved counters and labels. Keep the JSON beside the run’s `checkpoint/` directory. [Results and public admission status](PROGRESS.md#fr38-producer-replacement)
 
 For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)
 

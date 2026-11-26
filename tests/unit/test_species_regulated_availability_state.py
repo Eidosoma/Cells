@@ -1,4 +1,4 @@
-"""species_regulated_availability@1, A2: the regulatory state compiled, under refinement.
+"""cells.operator.species_regulated_availability@1, A2: the regulatory state compiled, under refinement.
 
 docs/INVENTORY_COUPLING_DESIGN.md §4.4 A2 and Appendix A.3, with the criterion written before any
 run (inventory-coupling-m2-20261114-01/HANDOFF.md). D150's face-free world with two 1 pL cells,

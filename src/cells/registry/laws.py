@@ -5,11 +5,11 @@ module arrives.
 
 **The template (§8.1).** A law declares one frozen record of its interface's type. Every type is
 built on `Law`, which holds what every law declares:
-- `law_id`, namespaced (`namespace.name@major`; a bare ID is in `cells`), named for its mechanism
+- `law_id`, `namespace.family.name@major` (registry/ids.py), named for its mechanism
   and its form, never for a protein; and its `interface`, a class constant of its type (an ID with
   its major);
-- `host`, the namespaced ID of what runs it: a kind (`cells.transporter@1`), or the inner model
-  for its own populations (`cells.resolved_pump_tissue@3`). This is version 1's restriction: each
+- `host`, the namespaced ID of what runs it: a kind (`cells.kind.transporter@1`), or the inner model
+  for its own populations (`cells.model.resolved_pump_tissue@3`). This is version 1's restriction: each
   law's kernel is written against its host's arrays, so a host finds its laws by (interface, host),
   never in a module tuple, and refuses by name any law of its own that its version-1 code has no
   kernel path for. The cycle kind's general layout is meant to relax it for cycle laws (§3.5).
@@ -64,7 +64,7 @@ fields. An outside package's interfaces are in its own namespace.
 
 **The registry (§8.3)** is build-scoped, as the kinds' is (registry/kind_registry.py):
 - one registration call, `registry.register(law)`. It checks the declaration against the
-  template and refuses a second law under one namespaced ID, whatever the spelling;
+  template and refuses a second law under one ID;
 - BUILTIN holds the built-in laws, each registered from its own home through that call. The homes
   are the static model table's `law_homes` (registry/model_table.py), loaded by name, once, when
   the registry is first used, so the core imports no law module to find a law, and what is
@@ -83,7 +83,6 @@ fields. An outside package's interfaces are in its own namespace.
 
 import importlib
 import math
-import re
 import sys
 from collections.abc import Callable, Mapping
 from contextlib import contextmanager
@@ -92,6 +91,7 @@ from dataclasses import KW_ONLY, dataclass
 from types import MappingProxyType
 from typing import ClassVar, NamedTuple
 
+from cells.registry import ids
 from cells.registry.kind_registry import NAMESPACE, qualified
 from cells.registry.model_table import MODELS
 
@@ -129,14 +129,6 @@ ROUTE_LAW = "cells.route_law@1"
 BINDING_LAW = "cells.binding_law@1"
 JUNCTION_LAW = "cells.junction_law@1"
 PROVENANCES = ("parity", "cited", "calibrated")
-_ID = re.compile(r"(?:[a-z][a-z0-9_]*\.)?[a-z][a-z0-9_]*@[1-9][0-9]*")
-
-
-def _is_id(value, *, namespaced=False):
-    """A law, host or interface ID: [namespace.]name@major."""
-    if not isinstance(value, str) or _ID.fullmatch(value) is None:
-        return False
-    return not namespaced or "." in value.split("@", 1)[0]
 
 
 def _named(value):
@@ -187,6 +179,7 @@ class Law:
     qualified: object = None
 
     interface: ClassVar[str | None] = None
+    FAMILY: ClassVar[str | None] = None  # An outside interface's word; a cells one's is in ids.py.
     # D175's four fields stay reserved, except on an interface that declares itself a level of
     # detail: D304 makes OL6's cells.assembly_representation@1 their first consumer.
     LEVEL_OF_DETAIL: ClassVar[bool] = False
@@ -196,10 +189,14 @@ class Law:
     def errors(self):
         """Why this declaration breaks the template (empty: it keeps it)."""
         out = []
-        if not _is_id(self.law_id):
-            out.append("its law_id is [namespace.]name@major")
-        interface = type(self).interface
-        if not _is_id(interface, namespaced=True):
+        interface, own = type(self).interface, type(self).FAMILY
+        word = ids.LAW_FAMILIES.get(interface, own)
+        why = ids.reason(self.law_id, family=word, what=f"a {interface} law")
+        if why is not None:
+            out.append(why)
+        if interface not in ids.LAW_FAMILIES and not ids.own_word(own):
+            out.append("its type declares its laws' family, its own word, beside its interface")
+        if not ids.interface(interface):
             out.append("its type declares a namespaced interface ID with its major")
         elif interface in INTERFACES:
             if not isinstance(self, INTERFACES[interface]):
@@ -214,8 +211,8 @@ class Law:
                 + ", ".join(INTERFACES)
                 + " nor one a family declares in the model table"
             )
-        if not _is_id(self.host):
-            out.append("its host is the ID of the kind or model that runs it")
+        if (why := ids.reason(self.host)) is not None:
+            out.append(f"its host, the kind or model that runs it: {why}")
         out += source_errors(self.provenance, self.source, self.test, "law")
         reserved = [
             name
@@ -362,18 +359,23 @@ class ChannelLaw(Law):
     """A channel law (docs/INNER_MODEL_V4_DESIGN.md §7.1): gates relax by the exponential stage
     update; leaks have none. A host's codes are distinct. Code 99 is reserved for test plants (the
     lead, 19 November 2026): no registered law takes it, so a planted law never meets one that
-    registers later."""
+    registers later. A law is the one authority for its ions' valences, and @3's parser holds a
+    model's species to it (definitions/surface_pump_v3_spec.parse_channel). `material_term` names
+    the kernel of its material slope per stage, as a cycle's and a route's does (module docstring),
+    or is None. @3 runs one for its populations (surface_pump_v3.CHANNEL_MATERIAL_TERM) and refuses
+    another name; a law that carries an ion other than Na, K and Cl and declares none is refused
+    there too, since the charge rule alone does not hold a scarce ion's amounts."""
 
     code: int
     gates: tuple[str, ...]
     permeant: tuple[tuple[str, int, float], ...]  # (species, valence, relative permeability)
     voltage_domain_V: tuple[float, float]
-    rk4_step_s: float | None  # The reference RK4 step bound; None for gate-free laws.
+    rk4_step_s: float | None  # Its RK4 step bound. None: gate-free, or gated and on no RK4 grid.
     kinetics: Callable | None = None  # (voltage, *, xp) -> (target, tau), [..., gates, n].
     opening: Callable | None = None  # (gates, *, xp) -> [..., n]; None: always open.
     stage_term: str = "constant_field_slope"  # Today's membrane_rate term at the actual opening.
     reads: tuple = ()  # Stage reads (B4): none for today's laws.
-    loop_term: object = None
+    material_term: str | None = None  # Its material slope per stage.
 
     interface: ClassVar[str] = CHANNEL_LAW
     UNITS: ClassVar = MappingProxyType({"voltage_domain_V": "V", "rk4_step_s": "s"})
@@ -423,7 +425,7 @@ class ChannelLaw(Law):
             out.append("a gate-free law gives no kinetics or opening")
         if not _named(self.stage_term) or not isinstance(self.reads, tuple):
             out.append("its stage term is named and its reads are a tuple")
-        return out
+        return out + _named_or_none(self, "material_term")
 
 
 @dataclass(frozen=True)
@@ -434,21 +436,23 @@ class CycleLaw(Law):
     Seam A's general form (`cycle`, a CycleForm) carries the law where it is set: its own errors()
     must hold and its changes() gives its change rows (cycle_changes), so `moves` may be empty and
     kinetics and domain_valid None (the kinds owner's first gap). A law without a form keeps
-    version 1's checks: moves given, both kernels callable."""
+    version 1's checks: moves given, both kernels callable. `electroneutral`: a cycle of it moves no
+    charge from one end to the other whatever species a population binds, so its rate may have no
+    voltage term; its host refuses by name a population that moves charge."""
 
     moves: tuple[tuple[str, object], ...] = ()
     fuel_kinds: tuple[str, ...] = ()
     kinetics: Callable | None = None
     domain_valid: Callable | None = None
-    reads: tuple = ()  # Stage reads, such as rapid_proton_buffer@1's free h.
+    reads: tuple = ()  # Stage reads, such as cells.kind.rapid_proton_buffer@1's free h.
     stage_term: str | None = None  # Its charge slope in the stage rule, where its host takes one.
-    loop_term: str | None = None
     # Its other step terms (module docstring), each its kernel's name or None.
     material_term: str | None = None  # Its material slope per stage.
     charge_bound: str | None = None  # Its definition-time bound on a charged row.
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
     forms: str | None = None  # "base": its moves are in base forms (CORE_SEAMS §5.2), or None.
     cycle: object = None  # Its general form: seam A's CycleForm, or None (module docstring).
+    electroneutral: bool = False  # Its host refuses a population that moves charge (docstring).
 
     interface: ClassVar[str] = CYCLE_LAW
     SIGNS: ClassVar = MappingProxyType({"moves": "inward-positive, per forward cycle"})
@@ -478,7 +482,9 @@ class CycleLaw(Law):
             out.append("its fuel kinds are a tuple of IDs")
         if not isinstance(self.reads, tuple):
             out.append("its reads are a tuple")
-        out += _named_or_none(self, *STEP_TERMS, "loop_term") + _forms_errors(self)
+        if not isinstance(self.electroneutral, bool) or (self.electroneutral and not formed):
+            out.append("its electroneutral is true or false, and true only with a general form")
+        out += _named_or_none(self, *STEP_TERMS) + _forms_errors(self)
         return out + _cycle_errors(self.cycle)
 
 
@@ -498,7 +504,7 @@ class RouteLaw(Law):
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
     forms: str | None = None  # "base": it moves base forms (CORE_SEAMS §5.2), or None.
     # The stage reads it reads its rows through, as a cycle law's reads: () for every route law but
-    # one that reads a closure's free forms (MT-1b's leak @2 reads rapid_binding@1; host side).
+    # one that reads a closure's free forms (MT-1b's leak @2 reads cells.binding.rapid_binding@1; host side).
     reads: tuple = ()
 
     interface: ClassVar[str] = ROUTE_LAW
@@ -604,9 +610,9 @@ class LawRegistry:
         self._modules = {}  # {namespaced ID: the module that registered it}
 
     def register(self, law):
-        """The one registration call: `law` checked against the template, then held under its
-        namespaced ID, with the module that called this (its declaring module, for the
-        declarations manifest). Returns the law."""
+        """The one registration call: `law` checked against the template, then held under its ID,
+        with the module that called this (its declaring module, for the declarations manifest).
+        Returns the law."""
         return self._register(law, sys._getframe(1).f_globals.get("__name__"))
 
     def _register(self, law, module):
@@ -657,7 +663,7 @@ class LawRegistry:
         return self._laws[key]
 
     def __contains__(self, law_id):
-        return _named(law_id) and qualified(law_id) in self._laws
+        return isinstance(law_id, str) and law_id in self._laws
 
     def laws(self, interface, host):
         """The laws of `interface` that `host` runs, in canonical (sorted namespaced ID) order:
@@ -703,8 +709,8 @@ def _load_builtins():
     outside package uses has registered its laws by then. An inert law module (docs/
     CORE_SEAMS_DESIGN.md §8.2; the lead's ruling R1, 18 November 2026) declares its one law as a
     module-level `LAW` and registers nothing at import; it is registered here, with that module
-    as its declarer, so importing a law module, as the older families' kernel modules do, changes
-    no registry."""
+    as its declarer, so importing a law module, as the shared kernel modules do, changes no
+    registry."""
     global _builtins_loaded
     if not _builtins_loaded:
         for name in BUILTIN_PACKAGES:

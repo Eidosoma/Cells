@@ -26,7 +26,7 @@ directory (e.g. ``betse/data/yaml`` of the BETSE source). Without options it
 is a byte copy. ``--replace OLD NEW`` edits exactly one occurrence of a text in
 the copied YAML and records the parsed keys that changed. ``--overrides``
 applies declared ``[key path, value]`` pairs using the ruamel safe load/dump
-procedure of validation/betse/alignment.py (asset paths ``geo/...`` and
+procedure of validation/betse/native_hooks.py (asset paths ``geo/...`` and
 ``extra_configs/...`` are re-expressed relative to the written YAML). It needs
 ruamel.yaml, so run it with the BETSE environment's Python::
 
@@ -719,7 +719,7 @@ def cmd_prepare(args):
             declared = json.loads(overrides_path.read_text())
             overrides = declared[args.overrides_key] if args.overrides_key else declared
             yaml = YAML(typ="safe")
-            # As alignment.py: block style, so BETSE's round-trip loader accepts the keys.
+            # Block style, so BETSE's round-trip loader accepts the keys.
             yaml.default_flow_style = False
             with (base / yaml_name).open() as handle:
                 conf = _apply_overrides(yaml.load(handle), overrides)

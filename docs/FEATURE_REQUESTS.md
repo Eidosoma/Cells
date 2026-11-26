@@ -22,7 +22,7 @@ and a general feature, never one built for one study (D144).
 | [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped. No declared extends link, inherited checks or version rule on main (a search of `src/cells/registry`, unverified beyond that); D205's check stands | Covered by FR-13's design note (U6 open, D209): options for a declared extends link, inherited checks and version rules |
 | [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Landed in two parts; F2 designed.** S1, charged species in `local_species_reactions@1` (merge ddb52790, tag `fr15-s1-landed-2026-11-19`, D148). P2, `passive_constant_field_permeation@1` on the passive-routes kind, on patches (merge ce39c904, tag `fr15-p2-landed-2026-11-20`). F2, charged trace species on junctions: design note landed (7f3f6ccd, [note](CHARGED_TRACE_SPECIES_DESIGN.md)) and ruled in D310: option A, the charged law hosted on junctions; junctions crossing a floating component refused in version 1; the two-end material term; @1 widened in place | F2's build, A1 (about 2.25 to 2.75 agent-days, gated), at the next free agent slot; charged turnover routes (`scheduled_species_turnover@2`) when a consumer needs them; crossing junctions (A2, +1 to 1.5 days) when one does |
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go (D219: not started). **F3 partly met through FR-30:** the series gates (merge 12c18db1: threshold_relaxation and boltzmann_eyring) landed. F4 (a per-species floor) and F5 (min and mean combination): not found on main (unverified) | F4 and F5 unscheduled; F3's held-out voltage test is FR-30's. A short design before any build |
-| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go (D219: not started). The cap stands: `FACTORED_MAX_NODES` is 2048 in `numerics/surface_field.py` (21 November) | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
+| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | **Stage 1 landed** 24 November 2026 at 8760d5b3 (D317): the sparse field solver `sparse_capacitive_reduction_gauged_damped_newton@1`. The composite's GPU placement closed as failed, and the vector path refuses it (D336, 72893c2a) | GJ-N1's 2D field, running on CPUs (D337); nested dissection for faced worlds follows |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | **X2 landed** (merge fd894b91, `step_doubled_energy@1`, D224): an opt-in step-doubled energy check; criterion X registered (570df4fd). The default check is not loosened for one experiment; any review of its default tolerance: unverified | None unless the core reviews the default tolerance or the step-size advice (unverified) |
 | [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Fixed on main** (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too (merge a7122a43, 18 November) | None: closed |
 | [FR-20](#fr-20--a-pulse-and-washout-for-assembly-populations) | A pulse and washout: replace an assembly population's exterior at a declared time, with the material and energy exchanged recorded | **High** (user, 20 November 2026; D237) | **Landed** (merge 3af9ce38, tag `fr20-washout-landed-2026-11-20`): `cells.pool_replacement@1`, with Q3 as a declared version-1 limit. A Lean finding (21 November): a fresh count above `molecule_capacity` was accepted and booked with a clamped table (ln 32! for 33) | None. The capacity fix landed (e289dfd9); the D263 tracer-source fix landed (c6f8d60f) |
@@ -43,12 +43,37 @@ and a general feature, never one built for one study (D144).
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
-| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Accepted (D306)** with its steps 4 and 5: replacement and restart with derived producer labels (amendments S and G, erratum E); export and retention at the node (amendment T, erratum H; merge 487ab941); the retention check fails closed where the grid error cannot be estimated (fd2bb88c). The comparison's rule and reader are registered (erratum 1, tag `fr38-rule-erratum-1-registered-2026-11-23`, D308) | The judged comparison against the code-blind references is running: R1's 12 runs and R2's 2, each at 2, 1 and 0.5 s |
+| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Accepted functionally (D306).** The first registered comparison failed (D313: R1 failed, R2 inconclusive). **The second, registered comparison passes** (D381; tag `fr38-v2-registered-2026-11-25`), judged and independently checked, beside the first's failed verdict; a weaker test than a first-time pass would have been, since its author had read the diagnosis. Landed (4039dcba, D382) | Three readout controls in a later registration, FR-38 v3 (D354) |
 | [FR-39](#fr-39--a-vesicle-that-survives-transient-pores) | A vesicle that survives transient pores: repeated opening and resealing with partial cargo loss | **High** (user, via the Lean lane, 22 November 2026; D286) | **Requested.** Cells ends a lineage at terminal lysis | A design note shared with FR-31: tension-driven pore opening that either reseals after leaking or ruptures |
 | [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Desk note landed** (022a5d2a). With only the paper's own speeds, which conflict, a comparison is a calibration, not a validation | A metadata-only search for a matched-condition speed or a multi-length reporter series; the spread test needs no speed |
 | [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement, retention open:** shrinkage matches (24.56% against about 25%). The data-only retention check is undetermined for all three sources; the one point estimate (gel-phase LUVs) suggests partial release | Parked until a study with paired, tabulated volume and small-solute retention appears |
 | [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Landed and accepted (D306):** labels as share vectors on the physical row (option A, D289; the label owner, D296), across kinds, pools and sources, with the kinds hook (`label_refusals`, `label_transfers`) | Done for its consumers; FR-38's comparison reads its shares |
-| [FR-43](#fr-43--shared-inventories-larger-networks-shared-pools-and-low-count-populations) | Shared inventories: larger sparse reaction networks; one pool spent and replenished by separate processes, at fixed and changing volume; a low-count integer population coupled to continuous chemistry | **Very high** (logged by the user, 23 November 2026) | **Design in progress:** one note for all three parts, with part 1's probe and timings | The lead's ruling on parts 1 and 2; part 3's host, a new system, goes to the user with options before any build |
+| [FR-43](#fr-43--shared-inventories-larger-networks-shared-pools-and-low-count-populations) | Shared inventories: larger sparse reaction networks; one pool spent and replenished by separate processes, at fixed and changing volume; a low-count integer population coupled to continuous chemistry | **Very high** (logged by the user, 23 November 2026) | **All three parts on main (D328):** part 1 (bbc99163), part 2A (c9687d68) and 2B (2ca07dcb), part 3 (7fb0ad87); part 3's registered check passes (D319), and part 2's (D324) | The factor-width term, and the request's item-by-item check (A1: turnover in swelling cells) |
+| [FR-44](#fr-44--labels-across-a-wash-arrival-time-labels-through-scheduled-compartment-washes) | Labels across a wash: neutral arrival-time labels through scheduled compartment washes | **High** (logged by the user, 23 November 2026) | **Core landed** 24 November 2026 at a6f7a0f4 (tag `fr44-landed-2026-11-24`; D327): the wash reports a typed exchange and the label owner dilutes each label exactly | Admission by species (D327's step 3) |
+| [FR-45](#fr-45--several-ligands-competing-for-one-shared-wash-retained-site-capacity) | Several ligands competing for one shared, wash-retained site capacity | **High** (logged by the user, 23 November 2026) | **Registered** (`fr45-site-competition-v1-registered-2026-11-24`, amendments 1 to 3; references v2 tagged, D375 and D376). No engine code on main | The judge after the rename; the build; its washed worlds W2 and W7 hold the wash's retirement (D364) |
+| [FR-46](#fr-46--binding-from-a-shells-inner-face-lumen-ligands-on-membrane-sites) | Binding from a shell's inner face: lumen ligands on membrane sites | **High** (logged by the user, 23 November 2026) | **Landed** (merge d702f13a, D323): a site pair declares its face; an inner pair binds a lumen ligand in a prescribed shell; the face rule refuses carriers by name | Inner-face binding stays refused in the deterministic representation until a qualification covers it |
+| [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Landed; the registered comparison passes and the schedule supplement passes separately (D373),** so it is no longer development-only: `cells.rate_equations@1` runs the prescribed shell, its full and fractional washes, E2's true zeros and autonomous gates in a prescribed shell's world; each is refused by name elsewhere, until a qualification covers it | A small ledger fix: an atol term for counts (D371) |
+| [FR-48](#fr-48--a-lumen-standard-potential-a-reversible-free-energy-difference-across-a-prescribed-shell) | A lumen standard potential: a reversible free-energy difference for one neutral solute across a prescribed shell | **High** (logged by the user, 23 November 2026) | **Landed** (merge d702f13a, D323): an absolute lumen standard potential per species in a prescribed shell, read by every law through the lumen place's standard potential | None open |
+| [FR-49](#fr-49--compartment-composition-qualifications-expression-site-occupancy-and-labels-beside-cell-owned-compartments) | Compartment composition qualifications: expression, site occupancy and labels beside cell-owned compartments | **High** (logged by the user, 23 November 2026) | **Parts H and L landed** (merge 7d021548): the gene unit and neutral arrival labels beside cell-owned compartments; World L's registered judgement passes (D331) | World B and the combination checks C1 and C2, after FR-49's site pairing (following FR-45) and its wash narrowing (following FR-44); C4's four-way form by amendment, once admission by species lands |
+| [FR-50](#fr-50--one-way-cumulative-transfer-records-per-route) | One-way cumulative transfer records per route | **High** (logged by the user, 23 November 2026) | **Phase 1 landed** 24 November 2026 at 1939563e (tag `fr50-phase1-landed-2026-11-24`); judged against fr50-one-way-records-v1, passing (D363) | Opt-in one-way records from the existing one-way kernels, closing to the net |
+| [FR-51](#fr-51--two-voltage-dependent-blocking-modes-on-one-channel-population) | Two voltage-dependent blocking modes on one channel population | **High** (logged by the user, 23 November 2026) | **Landed** 24 November 2026 at 955765ef (tag `fr51-landed-2026-11-24`); judged against fr51-channel-block-v1, every criterion passing | The slot-refusal follow-up; the law's registration after FR-64's note; the two-arm registration (D353, D356) |
+| [FR-52](#fr-52--passive-cohort-observations-for-integer-functional-units) | Passive cohort observations for integer functional units: the expected surviving initial and newly assembled units at one site | **High** (logged by the user, 24 November 2026) | **Logged:** `integer_unit_population@1` records its events in a bounded trace, with no cohort readout; labels follow species rows, not units | A design note: a validation reader or a statically absent in-engine expected-cohort record, with classes that partition the count and fail-closed truncation |
+| [FR-53](#fr-53--a-rounding-allowance-for-global-ledgers-at-every-row) | A rounding allowance for global ledgers at every row: the first window's bound no tighter than the sum's own rounding | Normal (logged by the user, 24 November 2026 as high; lowered by the user, D371) | **Logged:** at steps 0 and 1 the bound is the bare atol, and the host reads 0.28 of it on 625 cells, growing about as √N | A design note: a derived summation allowance per row, or compensated global sums, with the planted faults still caught |
+| [FR-54](#fr-54--passive-neutral-diffusion-between-two-finite-liquid-regions-qualified-against-the-exact-two-well-solution-then-a-wash-at-a-diffusion-connected-node) | Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node | **High** (logged by the user, 24 November 2026; D341) | **Logged:** a wash at a diffusion-connected node stays refused (D246) until measured | A design note: closed-form, code-blind references; a stopped run reports its residual and tolerance; then the wash's qualification |
+| [FR-55](#fr-55--an-input-dependent-closing-rate-for-regulated-availability) | An input-dependent closing rate for regulated availability (dose-dependent deactivation) | Normal (logged by the user, 24 November 2026; D344; lowered by D351) | **Logged:** one fixed closing rate; two groups' SK2 records contradict carrying it, in opposite directions (an indication pair, D351) | A design note, then qualification against both groups' records |
+| [FR-56](#fr-56--a-temperature-dependent-molecular-footprint) | A temperature-dependent molecular footprint with a declared, sourced expansion coefficient | Normal (logged by the user, 24 November 2026; D344) | **Logged:** a fixed footprint per species; two methods confirm POPC's expansion on warming | A design note |
+| [FR-57](#fr-57--passive-tracer-carried-by-a-prescribed-liquid-flow-between-finite-liquid-regions) | Passive tracer carried by a prescribed liquid flow between finite liquid regions | **High** (logged by the user, 24 November 2026) | **Logged:** a wash's sample goes to a record; no operator carries one region's liquid into another | A design note with FR-54's: one mechanism, rows only a flow passes |
+| [FR-58](#fr-58--a-label-on-an-exchangeable-group-carried-through-reversible-conversions) | A label on an exchangeable group, carried through reversible conversions | Normal (logged by the user, 24 November 2026; D365) | **Logged:** labels follow species rows; nothing names the group that crosses | A design note, after FR-50 and FR-44 |
+| [FR-59](#fr-59--reversible-transport-into-an-initially-empty-finite-ion-pool) | Reversible transport into an initially empty finite ion pool | Normal (logged by the user, 24 November 2026; D365) | **Logged:** positive-domain laws; species kept positive by a declared trace | A design note: a boundary-capable path, refined in step |
+| [FR-60](#fr-60--work-at-a-scheduled-change-of-a-states-energy) | Work at a scheduled change of a state's energy | Normal (logged by the user, 24 November 2026; D365) | **Logged:** no level change books its work | A design note: exact events, an ensemble spread class |
+| [FR-61](#fr-61--an-overdamped-rotational-load-angle-speed-work-and-dissipation) | An overdamped rotational load: angle, speed, work and dissipation | Normal (logged by the user, 24 November 2026; D365) | **Logged:** no torque ledger (MODULE_SYSTEM §7 rule (a)) | One design note with FR-62 |
+| [FR-62](#fr-62--ion-transfer-coupled-to-a-rotary-step) | Ion transfer coupled to a rotary step | Normal (logged by the user, 24 November 2026; D365) | **Logged:** cycles book ions, not angle or load work | One design note with FR-61 |
+| [FR-63](#fr-63--a-ph-dependent-kv15-activation) | A pH-dependent Kv1.5 activation, re-formed as a declared pH shift on its population (FR-64, D356) | Normal (logged by the user, 24 November 2026; D353) | **Logged:** three labs confirm the acid shift's direction; `kv1p5_mh@1` has no pH input | A design note |
+| [FR-64](#fr-64--a-declared-voltage-shift-on-a-channel-population) | A declared voltage shift on a channel population: an ion's reversal or a sourced shift per pH unit, read by its gates or its block | Normal (logged by the user, 24 November 2026; D356, D361) | **Logged:** one mechanism for FR-51's reversal reference and FR-63's pH shift | A design note, before FR-51's law is registered |
+| [FR-65](#fr-65--turnover-beside-a-changing-volume) | Turnover beside a changing volume: reading the current volume and masks beside water, partition or insertion | **High** (logged by the user, 24 November 2026, as part of FR-43; D365) | **Logged:** refused at parse today (D347's gap 4); D301's composition M3 | A design note |
+| [FR-66](#fr-66--a-passive-fluorescence-reader-over-regional-amount-exports) | A passive fluorescence reader over regional amount exports: several masks over one trajectory, against a prebleach state | Medium (logged by the user, 24 November 2026; D372) | **Logged:** nothing on main reads fluorescence or a prebleach state | A short design note |
+| [FR-67](#fr-67--pressure-driven-flow-on-a-network-of-compliant-tubes) | Pressure-driven flow on a network of compliant tubes: Poiseuille edges, compliant nodes, advection and shear remodelling | Normal (logged by the user, 26 November 2026; D393) | **Logged:** no tube network on main | A design note, after FR-57's tagged spec is read for overlap |
+| [FR-68](#fr-68--a-consistency-check-on-standard-potentials) | A consistency check on standard potentials: each potential's source and conditions, and cited reaction values, at check time | Normal (logged by the user, 26 November 2026; D393) | **Logged:** cycles close by construction; no check ties a potential to its source | A design note |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -162,7 +187,8 @@ two operators. It has no reactions inside, no binding sites and no pH.
   - a compartment node with a face, or one that is a held bath or the gauge;
   - more than one patch facing it, or a patch whose inside is not the owner;
   - an ion route on the bounding patch, or a nonzero charge anchor;
-  - an owner whose capacitor component holds no held bath;
+  - a compartment that is its capacitor component's representative (refusal 6, version 1.1 since
+    25 November 2026; before it, an owner whose component holds no held bath);
   - any operator outside its admitted list;
   - a replacement event on an owner's slot, or with an owner as its donor.
 - **The bath schedule:** a target that is not a held bath; a net-charged formula unit; an event at
@@ -719,6 +745,10 @@ cross-world bitwise identity.
 **Landed 14 November 2026** (merge 2161f39, tier 1 and 2 with no changed outcome). `MAX_SPECIES` is 16.
 The tier-1 guard is host-side (`tests/unit/test_species_cap.py`). The runner world `cell_charged_9`
 is in tier 2 (`tests/unit/test_species_cap_runs.py`), since compilation alone takes about 15 s.
+
+**Raised again by FR-43 (D315, 23 November 2026):** `MAX_SPECIES` is 1,024, on FR-43's probe, with
+the species sums folding by `lax.scan` above 16 terms so that every world at 16 or fewer keeps its
+program (FR-43's part 1; D150 §14).
 
 **The lead's decision (D165): accepted, and queued now.** The requester is the consumer that
 PROGRESS's "when a consumer needs it" waited for.
@@ -1349,6 +1379,10 @@ admission. Ek-Vitorín et al. 2018 is undetermined under rule 1, with one magnit
 candidates are exhausted. The next step is the user's: FR-30 stays development-only, or a further
 metadata-only search.
 
+**Status (24 November, D343): parked, development-only (D262).** Two relaxation times at the cited voltages; the voltage dependence is unvalidated. Twelve papers have been tested: one qualified (Revilla 1999) and failed (D320), and the rest were undetermined by their data's structure. It reopens when an experiment needs the series-gate law beyond development, or when a source with per-voltage τ_fast and τ_slow at two or more magnitudes is in hand. One labelled, non-blind diagnostic follows: a joint fit to Revilla's six voltages.
+
+**Status (24 November, later, D344): reopened narrowly (the user).** Two labs confirm two decay phases at −100 mV, which the shipped single gate cannot produce. `junction_series_gates@1` becomes usable for two phases at a declared voltage, calibrated per preparation. Its voltage dependence stays unvalidated, and its predicted third amplitude stays unmeasured. First, a labelled, non-blind joint fit to Revilla's six voltages; then a design note and a gated landing narrow D262.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
@@ -1750,6 +1784,11 @@ exporter's zero-loss rule covered chain products but not release-fate rows. The 
 eligible local release-fate rows, class rows included, and the reader keeps requiring an explicit loss
 series. The physical balances were unaffected.
 
+**Status (24 November, later, D354):** the second comparison's amendment 3 is tagged. Three readout controls go to a later registration, FR-38 v3, with its own verdict: producers reordered and replaced; the same molecule leaving and returning through export; and zero loss, two loss routes on one row, and a constant-stock control.
+
+**Status (25 November, D381, D382):** the second comparison has passed as registered, with an independent checker agreeing,
+and is landed at 4039dcba (`fr38-v2-landed-2026-11-25`). FR-38 v3 is open.
+
 ## FR-39 — A vesicle that survives transient pores
 
 - **The request (the Lean lane's evidence, relayed by the user, 22 November 2026; D286).** One study imaged the
@@ -1939,3 +1978,1080 @@ cases below are the request's own, condensed.
   - the matrix exponential is a closed form, inside the test;
   - part 2's coupled calculation and part 3's same-draws integration come from a code-blind references
     agent, started at the design ruling.
+- **Part 3's version 1 is refused beside a wash.** `scheduled_compartment_wash@1` reads none of
+  `integer_unit_population@1`'s transfers across a washed surface, so it refuses the operator
+  (fail-closed). Lifting that is its own qualified extension.
+
+**Status (24 November):** all three parts are on main (D328): part 1 (bbc99163), part 2A (c9687d68) and 2B (2ca07dcb), and part 3 (7fb0ad87). Part 3's registered check passes (D319), and so does part 2's (D324). Still open: the factor-width term, and the request's item-by-item check (A1, turnover in swelling cells).
+
+**Status (24 November, later, D347):** checked item by item against the request. Judged: C2.3, C2.6, C2.7 and C2.8 (D324), and C3.3, C3.4 and C3.5 (D319). The rest are covered by the builder's tests only. Gaps: part 1's 16-row and 256-row cases have no test at main; part 1's performance report lives only in the design note, and its L4 path is now refused (D336); part 1 has no registered criterion; turnover in a swelling cell is still refused at parse.
+
+**Next (24 November, D365; the user):**
+- part 1's 16-row control and 256-row case, as rows in the existing species-cap tests;
+- part 1's performance report, measured on CPU on the timed cores;
+- turnover in a swelling cell, logged as FR-65.
+
+No registered criterion for part 1 now.
+
+**Status (24 November, late; D376):** part 1's two gaps landed at 14f19f9f (tag `fr43-part1-gaps-landed-2026-11-25`): the 16-row control and the 256-row case as rows with plants, and the CPU performance report in `validation/fr43_part1/`. Turnover in a swelling cell is FR-65.
+
+## FR-44 — Labels across a wash: arrival-time labels through scheduled compartment washes
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Labelled-cohort experiments often mark newly made molecules for a while, wash the
+extracellular compartment, and expose the cells again. Following the labelled cohort through a wash
+needs the label owner (FR-42) and the wash (FR-27) in one world. Today they refuse each other at
+parse (`operators/wash_schedule.py`, `operators/species_labels.py`).
+- **A related constraint:** the wash's `buffer_mM` must name every neutral species in the world,
+  including trace rows that stay in the cells. So a wash also touches those rows' extracellular
+  increments.
+
+**The proposed path.** The wash accepts labels.
+- At a washed node, each label's share is diluted exactly by the unlabelled buffer:
+  n_after × share_after = (1 − f) × n_before × share_before, and the buffer carries the base label.
+- Label shares inside cells are untouched, and every label's books close.
+
+**Acceptance cases:**
+- a labelled cohort at a washed node scales by (1 − f), and the base label takes the buffer's amount;
+- the cells' shares are unchanged;
+- labels leave the physical rows bitwise unchanged through a wash (FR-42's promise);
+- a restart through a wash reproduces the run.
+
+**Status (23 November):** logged. A design note comes first.
+
+**Status (24 November): the core is built** (D327; `docs/NEUTRAL_LABELS_DESIGN.md` §13), on
+branch `fr44-labels-wash` for its gate and landing.
+- **The report.** The wash reports a typed `LiquidExchange`, read from each event's own sample and
+  supply records, never from a cumulative record's gain.
+- **The map.** The label owner dilutes each label exactly. The buffer joins the base, even inside
+  an open window.
+- **Labelled ions** keep their amount while their shares dilute.
+- **The record** `label_outside_removed_fmol` holds what left, by label.
+- **The acceptance cases are rows:**
+  - the cohort scaled by (1 − f), with the base taking the buffer;
+  - the cells unchanged;
+  - the physical rows bitwise, in compiled twins washed five times;
+  - a restart across a wash, bitwise, with the redo and skip planted.
+- **The version-1 limit** (approved): the report's axis is the outside nodes, so an exchange of a
+  cell's own liquid cannot be expressed.
+- **Combinations (D327):** FR-49's C1 world, labels beside a compartment with a wash at another
+  node, stays refused by the compartments' admitted list until FR-49's wash narrowing.
+
+**Acceptance targets (24 November 2026, later; checked against the build after landing):**
+- **The example.** A 1 µL well holds 12 fmol of solute: 3 tagged and 9 base. A half-volume wash supplies 2 fmol of
+  unlabelled solute, so the tagged share falls from 25% to 18.75%.
+
+  | fmol | Before | Collected | Supplied | After |
+  | --- | ---: | ---: | ---: | ---: |
+  | Tagged | 3 | 1.5 | 0 | 1.5 |
+  | Base | 9 | 4.5 | 2 | 6.5 |
+  | Total | 12 | 6 | 2 | 8 |
+
+- **The checks:**
+  - label shares inside the cell are unchanged at the exchange;
+  - enabling labels leaves the physical trajectory bitwise identical;
+  - a no-event control;
+  - a full wash;
+  - a checkpoint immediately before the event, with the resume booking the sample exactly once.
+- **What the build has:** a resume through a wash with planted redo and skip, a full wash after an earlier wash, and
+  no-wash worlds unchanged. The example's numbers become a row in an existing test after FR-44 lands.
+
+## FR-45 — Several ligands competing for one shared, wash-retained site capacity
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Extracellular matrix and surface sites are often shared by more than one ligand, and the
+sites stay in place when the fluid is washed.
+- FR-28's owner `{"node": N}` gives `site_occupancy@1` wash-retained sites, but each population
+  binds one ligand with its own capacity, so two ligands cannot compete for one pool.
+- Sites modelled instead as dissolved species in `local_species_reactions@1` are removed with the
+  fluid: a wash of half the volume removes half the sites.
+
+**The proposed paths:**
+- (a) `site_occupancy@1` populations admit several ligands, each with its own binding constants,
+  competing for one pool of copies × sites per copy;
+- (b) immobile anchored species, which `scheduled_compartment_wash@1` leaves in place (wash fraction
+  0 for anchored moieties) while conserving moieties.
+
+**Acceptance cases:**
+- a wash removes only the fluid's ligand, and the shared capacity is conserved across it;
+- the competition at equilibrium matches an independent closed form for two ligands and one site
+  pool;
+- the books close through bind, wash and unbind.
+
+**Status (23 November):** logged. A design note comes first, weighing (a) and (b).
+
+**Acceptance targets (24 November 2026, later):**
+- **The example.** The liquid holds 8 fmol of free A and 4 fmol of free B. The surface holds 3 fmol of empty sites,
+  2 fmol occupied by A and 1 fmol occupied by B.
+- **The wash.** A half-volume wash collects 4 fmol of A, 2 fmol of B and no sites. All 6 fmol of sites keep their
+  pre-wash occupancy at the instant of exchange.
+  - Event counters are read before a later sample is interpreted, since bound ligand can dissociate after the wash.
+  - Buffer-supplied solute is accounted separately.
+- **The single-ligand limit,** and competition after re-equilibration. For independent 1:1 sites, A's occupied fraction
+  is (c_A/K_A)/(1 + c_A/K_A + c_B/K_B), and B's is the analogue. The c are the free equilibrium concentrations, solved
+  from each ligand's conserved amount in the finite volume.
+- **Conservation** of each ligand and of the shared site total holds across binding, washing and release.
+
+**Status (24 November, late; D376):** the references' version 2 is tagged (`fr45-references-v2-2026-11-24`, with W7 and W7s under amendments 2 and 3). The judge comes after the rename.
+
+## FR-46 — Binding from a shell's inner face: lumen ligands on membrane sites
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Compartments bind ligands from the inside as well as the outside. `cells.prescribed_shell@1`
+(FR-21) admits a pool ligand binding a declared membrane site from the outer face. It refuses a ligand
+in the lumen binding the same site, with the site and the complex on the membrane.
+
+**The request:** reversible binding from the inner face.
+- Association reads the lumen's concentration, and dissociation returns the ligand to the lumen.
+- Ligand and site counts are conserved.
+- The occupied wall state can take part in a declared gate rule.
+- The new reaction pair has detailed-balance coverage (the event-pair rule).
+- The outer-face case is kept as a regression.
+- It is verified on a synthetic neutral ligand.
+
+**Status (23 November):** logged. A design note comes first.
+
+**Status (24 November):** landed with FR-48 at the merge d702f13a (D323). Inner-face binding stays refused in the deterministic representation until a qualification covers it.
+
+## FR-47 — Shell exchange and scheduled washes in the deterministic representation
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** `cells.rate_equations@1`, OL6's deterministic representation (D304), refuses some worlds by its
+refusal 1:
+- prescribed-shell geometry: FR-21's shell, its permeation and its gate;
+- replacement and withdrawal schedules: FR-20 and FR-35 (`rate_equations.REFUSED_SCHEDULES`).
+
+So large-count vesicle worlds with a shell and washes can run only as exact events.
+
+**The request:**
+- Qualify passive shell exchange, and scheduled full and fractional washes, in a finite two-compartment
+  example.
+- Compare concentrations and removed amounts with an analytical mass balance and with a large-count
+  exact-event ensemble.
+- Qualify switching gates separately.
+
+**Notes.**
+- OL6's design priced the replacement and withdrawal means at about half an agent-day.
+- The qualification follows Protocol D's pattern: registered before reading, with an independent
+  checker.
+
+**Status (23 November):** logged. A design note comes first.
+
+**Status (24 November): built; admitted, development-only until fr47-shell-exchange's verdict.**
+- The build (D323, D327) admits, in a prescribed shell's world only: the shell's limits, the washes
+  as operators of the deterministic representation, E2's true zeros at first-order places and
+  autonomous switching gates. Outside a shell's world each is refused by name, until a
+  qualification covers it; site binding in a shell's world and gates driven by bound states are
+  refused too.
+- The qualification is registered (tag `fr47-shell-exchange-registered-2026-11-24`), with its
+  code-blind references (tag `fr47-references-2026-11-24`). Its independent checker writes the
+  driver and runs it after the landing. Until that verdict, these paths are development-only: the
+  representation's registered `qualified` field says so, and each run that uses them records it
+  (`representation.qualification` in its run.json).
+
+**Status (24 November, later):** a reviewer found that the frozen scorer does not check the washes against the registered schedule. The frozen scorer stays official, and a separate schedule supplement is registered before any judged run (`validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT.md`, D339). FR-47 stays development-only unless both pass. A fix for inert wall places, which no rate or geometry reads, is in its gate.
+
+**Status (24 November, late; D373):** the independent check passes, under the frozen scorer, and the schedule supplement passes separately. FR-47's development-only status is lifted.
+
+## FR-48 — A lumen standard potential: a reversible free-energy difference across a prescribed shell
+
+**Logged 23 November 2026 by the user, priority high** (raised the same day, with FR-46 and FR-47).
+
+**Why.** In `cells.assembly_lineages@2`, the pool and the lumen share one solution standard potential
+per species, because `place_arrays` takes μ° from the species and the place's phase alone. So a solute
+cannot hold a free-energy difference across `cells.prescribed_shell@1`, and its equilibrium is always
+equal concentrations at equal volumes.
+
+**The request:** a reversible free-energy difference for the same neutral solute across the shell, at
+fixed volumes.
+- At equal volumes, a lumen cost of ln 2 kT gives an equilibrium inside/outside concentration ratio of
+  0.5, and a zero cost gives 1.
+- The tracer is conserved, and detailed balance holds from either starting side.
+- Changing the permeability changes the equilibration time but preserves the ratio.
+
+**First reading (the lead, with the advisor).**
+- The layout already carries μ° per place.
+- The shell law's exit is derived from μ° (k⁻ = P_s exp(Σν μ°)). So a lumen offset Δ gives
+  c_in/c_out = e^−Δ with no change to the law's text.
+- The equilibration rate then depends on Δ as well as on P_s.
+- **For the design note to settle:**
+  - one authority for μ°: a lumen phase the species declares, or a per-species transfer term the shell
+    owns;
+  - every reader of a lumen μ°: F and the heat per crossing, a held pool's work, the gate, and FR-46's
+    inner-face binding;
+  - version 1's scope: neutral solutes, a prescribed shell, fixed volume. Osmotic lumens, lysis and
+    rupture returns, division, and `rate_equations@1` until FR-47 are refused by name;
+  - D148: statically absent unless declared.
+
+**Acceptance, in exact-event terms:**
+- at equal volumes the inside count is binomial, n_in ~ Binomial(N, 1/(1 + e^Δ)): one third at ln 2 and
+  one half at 0, as a closed form, with a planted flipped sign;
+- detailed balance on the kernel's identity, from both founders;
+- doubling P_s gives the same event sequence with every time exactly halved, under the same draws;
+- the tracer count is constant, and the ledger closes with Δ per crossing.
+
+**Status (23 November):** logged. A design note comes first, with FR-46 and FR-47.
+
+**Status (24 November):** landed with FR-46 at the merge d702f13a (D323).
+
+## FR-49 — Compartment composition qualifications: expression, site occupancy and labels beside cell-owned compartments
+
+**Logged 23 November 2026 by the user, priority high.** This comes from a review of which fixed-volume
+compartment combinations are qualified. The answers are in
+/mnt/workspaces/Cells/review-answers-20261123/ANSWERS.md, read at main 61b418fc.
+
+**Why.** `cell_owned_compartments@1` admits a fixed list of operators (refusal 7, `compartments.ADMITTED`,
+failing closed). Expression, site occupancy and neutral arrival labels are each refused by that list
+alone; nothing in their declarations conflicts.
+
+**The smallest feature for each pairing:**
+- **Expression (`templated_polymerisation@1`):**
+  - add it to the list;
+  - refuse exports and outside degradations at a compartment's node;
+  - qualify with one silence world, its ledgers closing.
+- **Site occupancy:** the closed-compartment design's §4 door.
+  - Add the list entry.
+  - Admit only outward-facing populations on a bounding patch, and populations owned by the
+    compartment's node (FR-28).
+  - Add a host check for both.
+  - Qualify with one lumen-binding world against its closed-form depletion equilibrium.
+- **Labels (`neutral_arrival_labels@1`):**
+  - add the list entry;
+  - qualify with one world whose physics stays bitwise unchanged, whose label shares meet their closed
+    forms, and which restarts exactly.
+  - Membrane state stays out of a labelled compartment world.
+- **The wash** stays a version-1 restriction (ruled 20 November; COMPARTMENT_WASH_DESIGN.md §4.7). One
+  narrowing is worth having: because the list refuses the whole composition, a world that declares a
+  compartment cannot wash any other node either. A wash that names no compartment node could be
+  admitted.
+
+**Status (23 November):** logged.
+
+**Status (24 November):** parts H and L landed at the merge 7d021548, and World L's registered judgement passes (D331). Still to come: World B and the combination checks C1 and C2, after FR-49's site pairing (following FR-45) and its wash narrowing (following FR-44), and C4's four-way form by amendment, once admission by species lands.
+
+## FR-50 — One-way cumulative transfer records per route
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Most transfer records are net: a passive route's cumulative inward transfer, a channel's
+outward flux, and the face and junction records. So equal flows in opposite directions cancel.
+- One-way records exist only for exchange, turnover and expression's export, as forward and backward
+  counters.
+- D152's produced and consumed records split each half-step's net change by sign. They are not one-way.
+
+**The request.** Opt-in one-way cumulative records per route, built from the existing one-way kernels.
+- Each pair closes to the net record at rounding.
+- They are statically absent unless declared, so unchanged worlds stay bitwise.
+
+**Status (23 November):** logged.
+
+**Status (24 November, evening; D363):** phase 1's registered comparison passes at 4872266d. Every criterion passes, and all five plants are caught. The gate follows after FR-51's follow-up lands.
+
+## FR-51 — Two voltage-dependent blocking modes on one channel population
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** It is not expressible today.
+- A channel population's flux is permeation × abundance × its law's opening × availability.
+- `ChannelLaw` kinetics read the voltage only, with fixed coefficients, and there is no block law.
+- The routing door's factors and the coupling operator multiply, and get no voltage.
+- Two populations would mean two counts.
+
+**The request:** an optional `block` on a channel population.
+- It has weighted modes summing to one, each with its own K(0) and δ, against the membrane voltage or
+  V − E.
+- It applies in `channel_rates`, so the clamped entry points inherit it.
+- A blocker concentration of zero gives exactly the unblocked population.
+
+**The qualification:**
+- permeation first, without the blocker: currents at equal and at unequal ion concentrations against
+  GHK;
+- then block: the blocked-to-free current ratio against voltage, at two reversal potentials;
+- then one-count scaling, and a run.
+
+This lets consumers check permeation and block separately.
+
+**Status (23 November):** logged.
+
+**Next, after landing (D353, the user):** a registration tests the block's reference voltage against Lean's
+two-potassium rows, read at their commit. It has two arms:
+- **external:** Panama and Lopatin's 0.98 ± 0.01 mV per mV of reversal; Ishihara and Yan's curves at 150, 50 and 20 mM;
+- **internal:** Lopatin and Nichols' −0.15.
+
+It is non-blind, since the lead has seen 0.98. Also queued: one admitted row with an effective valence above |z_B|
+(D352).
+
+**Lean's evidence (D355).**
+- **External arm:** it meets D351 in direction and rough size, on Lean's half-conductance reading: slopes of 0.97 for
+  Panama, and 0.97 and 0.98 for Ishihara. Panama's 0.98 ± 0.01, quoted above, is a fitted steep component, a different
+  observable.
+- **Internal arm:** an indication (+5 mV observed, against −36.3 for the reversal reference).
+- **Scope lines,** in the landing message and the block law's docstring on the follow-up branch: the reversal
+  reference is supported for external-K changes only; `kir2p1_mh2@1`'s gates read absolute voltage.
+
+**Kir2.1 and the holdouts (D356).**
+- **Kir2.1** is this block on an always-open K population with a K reversal reference. It stays development-only until
+  the registration passes.
+- **Holdouts:** Panama's 10 and 20 mM levels are unscored, and become within-study holdouts. The 5.4 mM fit, the
+  readout and the scoring rule are frozen before they are extracted.
+- **After landing,** the `reference` key moves into FR-64's declared voltage shift.
+
+**Status (24 November, evening): landed** at 955765ef (tag `fr51-landed-2026-11-24`). The landing trial passed: 494
+tests in 601 s. Next:
+- the follow-up on `fr51-slot-refusal`: the slot refusal, one admitted row with an effective valence above |z_B|, and
+  the docstring scope lines;
+- the law's registration, after FR-64's design note;
+- the two-arm registration (D353, D356).
+
+**Correction (D360):** the admitted row already existed: B5 is the spermine case, with B4, G1, G3 and G5 also admitted. The follow-up adds a plant that caps the valence at |z_B| and fails B5, plus B5's round trip.
+
+## FR-52 — Passive cohort observations for integer functional units
+
+**Logged 24 November 2026 by the user, priority high.**
+
+**Why.** A population can keep the same number of active units while its members turn over. A general
+observation reports how many of a site's original units still contribute to transport, and how many formed
+during a named window. It leaves the physical trajectory unchanged for the same random stream.
+- `integer_unit_population@1` (FR-43 part 3) records integer assembly and disassembly events per site.
+- Its route conductance sums unit counts weighted by per-unit, per-state conductance.
+- FR-42's neutral labels follow species rows, not units, and the operator refuses a label owner.
+
+**The request.** For one exchangeable active-unit class at one fixed site, return the expected surviving initial
+count and the expected newly assembled count, conditional on the recorded events.
+- Each is given with its unit and labelled as an expectation.
+- A documented postprocessing reader over complete event traces would satisfy it.
+- The operator keeps the first `trace_events` events per site, and `integer_events` counts them all. An interval
+  beyond a truncated trace is flagged unresolved.
+- At one declared driving difference and additive per-unit conductance, each expected count gives a checkable
+  expected contribution to the route flux.
+
+**Acceptance example** (one site, identical activity, exchangeable removal within one class):
+
+| Event at the site | Total active | Expected initial | Expected newly assembled |
+| --- | ---: | ---: | ---: |
+| Start with two identical active units | 2 | 2 | 0 |
+| Assemble one during the observation window | 3 | 2 | 1 |
+| Disassemble one, chosen uniformly from the three | 2 | 4/3 | 2/3 |
+| Disassemble both remaining units | 0 | 0 | 0 |
+| Assemble one more inside the same window | 1 | 0 | 1 |
+
+- The mixed-cohort result is compared against the three equally likely choices of removed unit.
+- The cohort contributions sum to the route flux at every observation.
+- Event times, channel choices, physical inventories, fluxes and energy records are unchanged by observing.
+
+**First reading (the lead, with the advisor), for the design note to settle:**
+- **Classes partition the count.** "Initial" and "inside the window" alone leave out units that assemble outside
+  the window. The membership classes follow FR-38 erratum I's pattern: initial, and before, inside or after the
+  window. A re-assembled unit is new, a gross reading, not a net one.
+- **Sum-to-flux needs teeth.** Each contribution is the expected count times the declared per-unit conductance
+  times the recorded driving difference, and their sum is compared with the engine's flux. Shares of the flux
+  would sum to it by construction.
+- **Integrity:** the total rebuilt from the trace must equal the engine's saved integer count at every row,
+  exactly. A mismatch means unresolved.
+- **Fail closed on truncation:** return unresolved, never a number. No caller may read it as zero or infinity,
+  following the cohort readers' precedent.
+- **Carry expected counts, not shares.** E <- E*(n - d)/n gives an exact zero at an emptied site and avoids 0/0.
+  Any tolerance is derived from the event count.
+- **The bitwise test.** "Observation enabled against disabled" is vacuous for a pure reader. The real check is
+  the trace capacity raised against its default: events, inventories, fluxes and energy all bitwise, in a fresh
+  process, for scalar and batch runs.
+- **Two options to weigh:**
+  - a validation reader, limited by the trace's capacity;
+  - an in-engine expected-cohort record, statically absent unless declared. Uniform removal leaves shares
+    unchanged, so this is FR-42's share rule applied to the unit count.
+
+  The note says which side of AGENTS.md's "no physics in validation" line a reader falls on.
+- **Version-1 refusals by name:** several states with transitions between them, and division or retirement at the
+  site.
+- **Mutants:** oldest-first and newest-first removal both conserve totals, but must fail the 4/3 and 2/3 row,
+  checked in exact rationals. A window-edge tie row uses the cohort readers' half-open convention.
+- **Wording:** exchangeability is the operator's own law, one hazard per unit of a class. The output is an
+  expectation, not a realization. The operator's library page already states its scope.
+- **Premises checked at main by name:**
+  - the trace's capacity (`trace_events`, first T events per site, with channel -1 meaning not recorded);
+  - the total-event counter (`integer_events`);
+  - the additive per-state conductance;
+  - the label-owner refusal.
+
+  Still to verify in the note: that the trace survives windows and a same-seed restart, and that one event moves
+  exactly one unit.
+
+**Status (24 November):** logged. A design note comes first.
+
+**Correction (24 November, later):** one event can move several units, so the first reading's open premise is settled the other way. A channel carries integer stoichiometry over the unit states (up to `MAX_ORDER` per state), and `integer_change` is products minus reactants.
+- **The reader uses each event's declared change.** Removing d of n exchangeable units uniformly gives E <- E*(n - d)/n. Restricting version 1 to single-unit events, by name, is the fallback.
+- **An acceptance row:** start with two original units and one new unit. One event removes two, chosen uniformly. The expected survivors are 2/3 original and 1/3 new, and a truncated trace returns unresolved.
+- **A mutant:** a reader that assumes one unit per event gives 4/3 and 2/3, a total of 2 against the engine's 1. It must fail the integrity check.
+- **For the design note:** whether a channel may list the active state on both sides. If it may, the stored change is net there, which conflicts with the gross reading.
+
+**Design (D371; the user):** an engine record kept at each event, with the trace reader as the independent check. Version 1 covers chains (dimer to tetramer) and single-subunit activation, through a declared identity map across states. The note on `fr52-design` is being revised accordingly.
+
+**Splits (D375; the user):** a split makes a new unit. One half keeps the original identity, and the other counts as newly assembled, so "initial" stays a survival count.
+
+## FR-53 — A rounding allowance for global ledgers at every row
+
+**Logged 24 November 2026 by the user, priority high.**
+
+**Why.** FR-17's GPU qualification (D330, D336) found a limit that applies on every device.
+- **Where the bound is thin.** At a run's first rows, a balance check's bound is the bare absolute tolerance: the
+  rounding allowance grows with the accepted steps, and is zero at steps 0 and 1.
+- **A global ledger sums every cell's terms,** and that sum's own rounding takes a growing share of the bare
+  tolerance. On the host (CPU), the first window's "total" ledger reads:
+
+  | World | Junction routes | Share of the bound |
+  | --- | ---: | ---: |
+  | 25-cell line | 24 | 0.044 |
+  | 9 × 9 sheet | 144 | 0.122 |
+  | 25 × 25 field | 1,200 | 0.281 |
+
+  That growth is about √N (exponents 0.40–0.48), as a sum's random rounding grows.
+- **Extrapolated,** the first window refuses on rounding alone at about 15,000–29,000 routes, roughly 90 × 90 to
+  120 × 120 cells, on any device. By the second window the allowance dominates, and the share falls.
+- **The organism targets are far larger,** so this limits tissue size before any physics does.
+
+**The request.** Give a global ledger's own summation a rounding allowance at every row. It is derived from the sum's
+term count and magnitudes, so that the bound at steps 0 and 1 is no tighter than float64 can resolve the sum. It
+loosens no bound beyond what that rounding requires. Every planted fault the checks catch today is still caught.
+
+**First reading (the lead), for the design note to settle:**
+- **Derive the allowance from the sum itself,** per row: for n terms, a bound of the form γ_n·Σ|x_i|. It is not a
+  constant.
+- **Or make the global sums compensated (Neumaier),** on the host and the device, which brings their rounding to
+  about one ulp of the total. That might also close D330's GPU gap. The two approaches can combine.
+- **Bitwise:** only a check-side quantity changes, so a world's state path does not move.
+- **The test:**
+  - the line's, the sheet's and the field's first-window shares, before and after;
+  - the existing seeded-fault rows.
+- **A new GPU qualification is separate,** and the user's decision (D336).
+
+**Status (24 November):** logged. A design note comes first.
+
+**Correction and design note (24 November, D370):** in the `ledger_limits` family the row-1 bound is not the bare atol, since the running allowance is already about 98% to 99.9% of it. What grows with the cell count is the check's own summation. Design note: `docs/LEDGER_ROUNDING_DESIGN.md` on `fr53-design`, recommending one compensated sum and one bound form with declared classes.
+
+**Priority (D371):** normal, by the user, after D370's correction.
+
+## FR-54 — Passive neutral diffusion between two finite liquid regions, qualified against the exact two-well solution; then a wash at a diffusion-connected node
+
+**Logged 24 November 2026 by the user, priority high (D341).**
+
+**The request:**
+1. **Qualify the diffusion.** Passive neutral diffusion between two finite liquid regions in
+   `resolved_pump_composite@1` is compared with the exact two-well solution: the first step's mass transfer and
+   dissipated free energy, across positive background concentrations and time steps.
+2. **Explain a stopped run.** When the energy check stops a run, it reports the residual it computed and the
+   tolerance it allowed.
+3. **Qualify the wash on that basis.** Use the diffusion benchmark to qualify withdrawal and refill on a
+   diffusion-connected finite node: `scheduled_compartment_wash@1`'s liquid exchange (D246), with FR-10's
+   schedule.
+
+**First reading (the lead), for the design note to settle:**
+- **The reference is a closed form.** For permeance PA between volumes V₁ and V₂, a step h moves
+  Δn = (c₁ − c₂)(1 − e^(−kh))/(1/V₁ + 1/V₂), with k = PA(1/V₁ + 1/V₂). The dissipated free energy is the drop in
+  the two wells' ideal free energy. Both can be evaluated exactly, so the references are code-blind and tagged
+  before any engine reading.
+- **Tolerances come from the integrator's order and the step,** by derivation. Each case is compared at the step
+  sizes declared in advance.
+- **The background concentrations:** the note states what a positive background changes in the composite's
+  neutral route (activity, volume or nothing) before the cases are fixed.
+- **The stopped-run report is a small engine change.** It is tested by a refusal row whose message carries both
+  numbers.
+- **The wash at a diffusion-connected node** stays refused today (D246: faces at an exchanged node stay refused until
+  measured). This qualification is that measurement. It lifts the refusal only for the qualified form.
+
+**Status (24 November):** logged. A design note comes first.
+
+**Addition (24 November 2026, later; items 1 and 2 stand):**
+- **Two heat laws, one reference.** The default face heat and `exact_free_energy_heat@1` (D280's exact choice for
+  faces) both run against the closed form.
+  - **The reference** is the closed form's dissipated free energy.
+  - **The subject** is the default face heat, held to its derived tolerance.
+  - **The control** is `exact_free_energy_heat@1`, held to rounding alone. A miss there points at the harness, not
+    the law.
+- **Item 3 is one native run:** diffusion, then a withdrawal and a refill at a connected finite node. It has three
+  separate checks, each against its own independent expected value:
+  - the tracer removed: the fraction f of the node's amount just before the wash;
+  - the tracer supplied: the buffer's amount in the refilled volume;
+  - the heat released during the refill: the mixing heat in D246's small-ratio form.
+- **The refusal it lifts.** `scheduled_compartment_wash@1` version 1 refuses a node that a face touches (D246 item 5),
+  and any neutral species crossing the node's surface by a declared path. The qualification lifts that refusal only
+  for the qualified form: one neutral species crossing by a passive route.
+
+**Acceptance target (24 November 2026, later):**
+- **The setup:** equal volumes holding 8 and 2 fmol of free solute just before the withdrawal.
+- **The wash:** half the volume of the first compartment collects 4 fmol.
+- **At the exchange:**
+  - the first compartment keeps 4 fmol, plus any solute in the refill;
+  - the second still holds 2 fmol.
+- **The diffusion** before and after the event is compared with the analytical solution at successively smaller steps.
+
+## FR-55 — An input-dependent closing rate for regulated availability
+
+**Logged 24 November 2026 by the user, priority high (D344); lowered to normal by the user (D351).**
+
+**Why.** Two separate groups' recordings each contradict carrying one closing rate across calcium doses for SK2
+(D338).
+- Hirschberg's plateau and washout predict a 10.63 ms activation, against 4.1 ± 0.6 ms measured.
+- Oliver's high-dose washout bounds the low-dose rise at 48.1 ms, against about 80 ms reported.
+
+`cells.species_regulated_availability`'s closing rate is fixed and input-independent. D351 reads the two records as an
+indication pair in opposite directions, not a confirmed finding; the design note checks the plateau condition first.
+
+**The request.** An opt-in closing rate that depends on the input, for dose-dependent deactivation.
+- It keeps the state in [0, 1], with no overshoot and detailed balance where it applies.
+- It keeps the current form exactly when not declared, statically absent (D148).
+
+**First reading:**
+- The design note chooses the closing rate's form from the cited data, not from one study.
+- It is qualified against both groups' records with each preparation's own inputs.
+- The Lean lane's rise-time bound, ln 4 × the washout time constant, holds only for a fixed b. The new form states its
+  own bound.
+
+**Status (24 November):** logged. A design note comes first.
+
+**For the design note (D351):** under the confirmed-means-replicated definition, SK2 is an indication pair with opposite signs. Hirschberg's rise is faster than one rate allows, and Oliver's low-dose rise is slower; the one shared quantity, the high-dose rise, agrees (4.1 against 4.46 ms). A monotone input-dependent closing rate fits both only if the macropatch plateau is at least 0.93. A same-patch rise and washout would settle it.
+
+## FR-56 — A temperature-dependent molecular footprint
+
+**Logged 24 November 2026 by the user, priority normal (D344).**
+
+**Why.** Two independent methods confirm that fluid POPC expands on warming (D340).
+- Scattering gave +4.7% over 30–50 °C.
+- Solid-state NMR gave +16.7% over 28–48 °C.
+
+`cells.bilayer_geometry@1` takes a fixed footprint per species. A world compared across temperatures shows the expansion
+only through footprints declared per temperature.
+
+**The request.** An opt-in footprint law, a(T) = a(T_ref)(1 + α(T − T_ref)) or a sourced form, with α declared and
+sourced per lipid. The two methods disagree on its size, so α is a declaration, never a constant of the law. It is
+statically absent unless declared.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-57 — Passive tracer carried by a prescribed liquid flow between finite liquid regions
+
+**Logged 24 November 2026 by the user, priority high.**
+
+**Why.** This follows FR-37. Today a wash (`scheduled_compartment_wash@1`) exchanges a node's liquid with a declared
+buffer, and its sample goes to a record (D246). No operator carries one finite region's liquid into another, so a
+prescribed flow cannot be expressed: buffer in at Q, through chambers in series, and out to a collector.
+
+**The acceptance example:**
+- **The setup:**
+  - two equal, internally well-mixed chambers A and B, of volume V each;
+  - all the tracer starts in A;
+  - clean buffer enters at a constant flow Q, and the outlet is collected at the same rate;
+  - no diffusion and no binding.
+- **The targets,** after one residence time V/Q:
+  - flow A → B → collector collects 1 − 2/e = 26.42% of the tracer;
+  - in a fresh run, flow B → A → collector collects 1 − 1/e = 63.21%.
+- **The report:** the tracer in each chamber and in the collector. Their sum equals the starting amount.
+- **Both targets follow from the fluid balance,** with no fitting.
+
+**First reading (the lead, with the advisor), for the design note to settle:**
+- **The two targets alone do not test a flow.** Any two-stage first-order chain gives them, so a first-order transfer
+  between two nodes would reach them with no liquid moving. That does not count as shown. The note adds rows that
+  only a flow passes:
+  - unequal volumes, so the rates come from Q/V;
+  - two dissolved species carried by one declared Q, while a bound species stays;
+  - a plant reversing the order, which must give the other row's number;
+  - a plant that skips the mixing in B, which must fail.
+- **One mechanism.** A flow is D246's liquid exchange, with the sample routed into a node and the supply drawn from a
+  node or a declared inlet. It is written as a general operator, not a one-experiment one, with FR-54's note, after
+  FR-44 lands.
+- **The inlet and the collector** are records or nodes. A collector node grows in volume.
+- **Volume:** at every chamber, inflow equals outflow. Anything else is refused by name.
+- **Scheme and tolerance.**
+  - The references are closed forms, and a train of small exchanges reaches them only in the limit. So the note
+    states an exact coupled step, or a split with its order.
+  - It derives the tolerance at the declared steps.
+  - The sum closes to a derived rounding bound.
+- **Energy:** the note says what mixing dissipation the flow books. Otherwise the composite's energy check stops the
+  run.
+- **Version-1 refusals:**
+  - ions, since D246 requires same-composition ions;
+  - a flow beside diffusion or binding at the same node.
+- **Wording:** "one residence time" is V/Q of one chamber, and "clean buffer" is D246's trace-level buffer.
+- **D148:** statically absent unless declared. Existing washed worlds stay bitwise unchanged, and a restart mid-flow
+  is bitwise.
+
+**Status (24 November):** logged. A design note comes first, with FR-54's.
+
+**Addition (24 November 2026, later): a free-energy check for the flow.**
+- **The check.** At volume flow Q, incoming concentration x and resident concentration y, the ideal mixing loss rate
+  over RT is Q[x ln(x/y) − x + y]. It is checked against the chambers' storage and the inlet and outlet free-energy
+  fluxes.
+- **The cases:**
+  - a uniform stream (x = y) carries tracer with zero mixing loss;
+  - flow off gives zero flow contribution while diffusion continues.
+- **First reading (the lead, with the advisor):**
+  - **The one-mechanism link.** Expanding D246's per-event mixing heat to first order in f, with fV = QΔt, should give
+    this rate. The remainder sets the scheme's order.
+  - **The identity closes only with the −n term** in the free energy. The note names the engine's convention.
+  - **"Flow off while diffusion continues"** meets the version-1 refusal of flow beside diffusion, so it arrives with
+    FR-54's qualification. At Q = 0, the run equals its diffusion-only twin, bitwise.
+  - **In an initially empty chamber,** x ln(x/y) reads the trace level. The note states the trace and the expected
+    refinement, as FR-59 must.
+
+**Addition (24 November 2026, later): a growing collector.**
+- **The case.** Start with an empty tube at zero volume. Deliver 1 pL of 1 mM neutral tracer, then 1 pL of 3 mM.
+  - The tube ends with 4 fmol in 2 pL, at 2 mM.
+  - The first portion has zero pooling loss.
+  - After both, the total ideal mixing loss is 0.523248 RT·fmol, which is 1 fmol·ln(1/2) + 3 fmol·ln(3/2).
+- **The reversed order** gives the same total, with different per-portion losses.
+- **This settles the collector's form:** a tube at zero volume holds no trace, so the collector starts as a record and
+  grows in volume.
+
+**Correction (24 November, later; D362):** two deliveries book (0, 0.523248) RT·fmol in either order; only the second
+delivery's split between resident and arriving liquid differs. The order-dependence check uses a third delivery: 1, 3
+and 3 mM gives (0, 0.523248, 0.137341), and 3, 3 and 1 mM gives (0, 0, 0.660589). Design note: `docs/LIQUID_ROUTING_DESIGN.md`
+on `fr54-57-design`, one router that takes over the wash.
+
+## FR-58 — A label on an exchangeable group, carried through reversible conversions
+
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
+
+**Why.** A selective tracer, an exchangeable chemical group, can move between species at chemical equilibrium while
+every concentration stays constant.
+- Today's labels follow species rows (FR-42).
+- The transporter's label contract refuses a species changed at only one end (`docs/NEUTRAL_LABELS_DESIGN.md`).
+- `local_species_reactions@1` returns one-way moves for labelled rows, but no declaration names which group crosses
+  each conversion.
+
+**The request.** For a law with physically specified one-way rates, a definition names the exchangeable group on each
+side.
+- It reports the expected labelled group on each species.
+- Each direction carries its donor's label fraction.
+- The physical trajectory is preserved.
+- A law that gives only a net rate needs a separate kinetic basis, and is refused by name.
+
+**The acceptance example.**
+- **The setup:** A−X + B ⇌ A + B−X, with 1 fmol of each of the four species and forward and reverse rates of 1
+  fmol/s. Initially all the X is labelled, on A−X.
+- **The targets:**
+  - label arrives in B−X at 1 fmol/s at first;
+  - after 1 s, B−X holds (1 − e⁻²)/2 = 0.43233 fmol of label;
+  - total label stays at 1 fmol, and the net extent at zero.
+- **Disabling the observation** preserves the amounts, heat and work.
+
+**First reading (the lead, with the advisor):**
+- The target is any two-pool exchange, so the plant with teeth is a net-rate reader, which gives zero.
+- Add unequal pool sizes, and a second group that does not cross.
+- Check which reaction laws expose forward and reverse rates separately.
+- It follows FR-50, the one-way records, and FR-44, labels across a wash.
+
+**Status (24 November):** logged. A design note comes first.
+
+**Status (25 November, D385):** the note's question 2 is ruled (b): a flux-force cycle law carries the label in complete cycles, with a limited
+claim (a lower bound where partial steps exchange it). Label on ATP through the Na/K pump also needs row fuel for that pump, a
+candidate request. On hold with the other builds (D383).
+
+## FR-59 — Reversible transport into an initially empty finite ion pool
+
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
+
+**Why.**
+- `nak_atp_mass_action_positive@1` is a positive-domain law: no floor, and invalid trials are refused. Its rate stays
+  finite as the outside potassium goes to zero while the other substrates stay positive.
+- A finite receiving pool that starts empty can gain ions on the first reverse transfer.
+- The chemical potential of an empty ideal pool is singular. Evaluating the initial logarithm, or inserting a
+  numerical floor, changes the accounting problem.
+- Today Cells keeps every species positive at an active node through a declared trace.
+
+**The request.** A boundary-capable law or integration path, qualified for a finite receiver.
+- **The start:** positive inside potassium, and positive sodium and fuel.
+- **The comparison:** the initial signed current at zero outside potassium, against the analytic one-sided limit from
+  the positive domain.
+- **Over a finite interval, under step refinement:** a positive potassium gain, the 3 Na / 2 K cycle stoichiometry,
+  the capacitor charge, and the integrated work and heat.
+- **The limit used:** the ideal mixing free energy's n ln n → 0 at zero amount.
+- **Documentation:** the separate boundary physics needed to hold a reservoir at zero activity.
+
+**First reading (the lead, with the advisor):**
+- The hardest of this group. It runs against @3's standing rule that every species stays positive at an active node.
+- The first step's free energy per ion diverges, so the note must state the refinement order it expects.
+- A held zero bath stays refused.
+- FR-47's true zeros in the deterministic representation (E2) are the nearest precedent.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-60 — Work at a scheduled change of a state's energy
+
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
+
+**Why.** An external controller can change a molecular state's energy while every molecule stays in place.
+- The assembly family carries per-phase standard potentials in the world definition.
+- Its events report the state free energy, heat and reservoir work.
+- No scheduled level change books its own work.
+
+**The request.**
+- The finite state is carried through a switch at a declared time.
+- The externally supplied work is recorded as the new state free energy minus the old, at identical counts.
+- This stays distinct from chemical exchange, and from the heat of the relaxation that follows.
+- An interval with frozen reactions isolates the two switch records.
+
+**The acceptance example.**
+- **The setup:** one carrier, in either of two neutral, equal-energy states, with probability 1/2 each.
+  1. Raise the second state's energy by k_BT ln 3.
+  2. Let it equilibrate with a heat bath: its probability falls to 1/4.
+  3. Restore the original levels.
+- **The ensemble-mean switch works** are +k_BT ln(3)/2 and −k_BT ln(3)/4.
+- **The net input and the bath heat** are both 0.27465 k_BT.
+- **A finite-time check** uses the actual occupancy at the second switch.
+- **Both switches** preserve every count.
+
+**First reading (the lead, with the advisor):**
+- One carrier is below the deterministic envelope, so the note names the representation: exact events.
+- Ensemble means take `agreement.py`'s spread class, with a derived ensemble size.
+- A new schedule kind gets D339's checks of count, time and kind from the start.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-61 — An overdamped rotational load: angle, speed, work and dissipation
+
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
+
+**Why.** No torque or momentum ledger exists. MODULE_SYSTEM §7's version-1 rule (a) folds every kind's ledger terms
+into today's ten ledgers by role. A mechanical work ledger reopens that limit, which is a decision for the design note
+and the user.
+
+**The request.** A rigid rotor in the overdamped regime takes a positive rotational drag and a signed applied torque.
+- It reports the angle in radians, the signed angular speed, the mechanical work the torque's source supplies, and the
+  viscous dissipation.
+- The declaration says who supplies the torque. For a chemical source, it names the ion or fuel current that closes
+  the source's energy balance.
+
+**The acceptance example.**
+- **Constant torque.** 12 pN·nm for 0.5 s against a drag of 3 pN·nm·s/rad gives:
+  - a speed of 4 rad/s;
+  - an angle of 2 rad;
+  - 24 pN·nm dissipated.
+- **Variations:**
+  - doubling the drag halves the speed and the work;
+  - reversing the torque reverses the displacement, and the dissipation stays positive;
+  - a locked rotor has zero displacement and zero work.
+- **Variable torque.** Zero torque for 0.5 s, then 12 pN·nm for 0.5 s:
+  - the mean speed is 2 rad/s;
+  - the integrated viscous work is 24 pN·nm;
+  - the mean-speed shortcut gives 12 pN·nm, which is wrong.
+- **Angular units.** A load calibrated per revolution per second (Hz) and one per rad/s give the same torque and work:
+  - 20 pN·nm/Hz at 5 Hz gives 100 pN·nm;
+  - 20/(2π) pN·nm·s/rad at 10π rad/s gives the same 100 pN·nm;
+  - one revolution takes 200π pN·nm of work.
+
+**First reading (the lead, with the advisor):**
+- On its own this is ω = τ/γ. Its teeth are planted errors: the mean-speed shortcut, and a 2π factor.
+- It shares one design note and one mechanical ledger with FR-62.
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-62 — Ion transfer coupled to a rotary step
+
+**Logged 24 November 2026 by the user; priority normal (the user, D365).**
+
+**Why.** Cycle laws account for proton transfer and membrane voltage (`proton_coupled_atp_synthesis_cycle`), but no
+transition books angular displacement and load work.
+
+**The request.** A reusable rotary step: one transition books signed ion transfer, angular displacement, the work
+exchanged with an external load, and the electrochemical free energy drawn from the reservoirs.
+
+**The acceptance example.**
+- **The setup:** a homogeneous, isothermal rotor with energetically identical angular positions and exactly one ion
+  per forward step. The reservoirs supply 3 k_BT per forward transfer, against a constant opposing torque.
+- **Local detailed balance, by the load work per forward step:**
+
+  | Load work per step | Forward-to-reverse rate ratio | Mean currents |
+  | --- | --- | --- |
+  | 2 k_BT | e | Forward |
+  | 3 k_BT | 1 | Zero |
+  | 4 k_BT | e⁻¹ | Reversed |
+- **One reverse ion transfer** is counted for every backward step.
+- **Over a stationary interval,** the reservoir free energy drawn, minus the load work delivered, equals temperature
+  times the total entropy production, on average.
+- **It assumes** tight coupling and one reversible transition type.
+
+**Also requested:**
+- **A reference implementation with existing reactions.**
+  - A three-state cyclic register distinguishes every forward and reverse step.
+  - Each transition couples to two pairs of held species: one pair supplies the ion free energy, and the other
+    receives the load work.
+  - The angle is unwrapped from the signed events.
+  - Both one-way counts are reported, even at zero mean current.
+  - A finite-reservoir version updates ion inventories and the capacitor charge at each event.
+- **A viscous-load check.**
+  - The drag declares its convention: Hz or rad/s.
+  - Torque balance and the mechanical work over time are checked.
+  - A fluctuating torque integrates drag × ω² over the residence times.
+  - Reversing both the voltage and the log activity ratio reverses the drive. The rotation changes sign, and the
+    dissipated work stays positive.
+- **A calibration-range readout for mechanical feedback.** Where a rate reads a measured force table, report:
+  - the force per engaged unit;
+  - the rate applied;
+  - the time spent below, inside and above the table's range;
+  - the time at zero occupancy, separately.
+
+**First reading (the lead, with the advisor):**
+- The entropy identity holds on average, so it needs an ensemble size and a derived tolerance.
+- Check that the existing-reactions benchmark parses today, and which side of the "no physics in validation" line its
+  host-side angle falls on.
+- The force-table readout may have no host law yet. If so, it is logged as waiting.
+- It shares one design note with FR-61, and so reopens MODULE_SYSTEM §7 rule (a).
+
+**Status (24 November):** logged. A design note comes first.
+
+## FR-63 — A pH-dependent Kv1.5 activation
+
+**Logged 24 November 2026 by the user, priority normal (D353).**
+
+**Why.** Three labs agree in direction that acidification shifts Kv1.5's activation positive. Under D351's definition
+this is confirmed in direction.
+
+| Lab | System | n | Shift |
+| --- | --- | --- | --- |
+| Trapani | HEK293 | 5/3 | +11.7 mV |
+| Longobardo | Ltk− | 38/27 | +17.3 mV |
+| Kehl | — | 6 | +7.8 mV |
+
+The sizes differ. `kv1p5_mh@1` is a parity law with no pH input.
+
+**The request.** A new law, leaving the parity law unchanged: Kv1.5's activation reads the local proton activity, with
+a declared and sourced shift per pH unit. The size is a declaration, since the labs differ.
+
+**First reading:**
+- **pH comes from the cell's proton row,** through the existing pH machinery.
+- **Qualification:** against the three labs' direction, with each preparation's own solutions. The size is calibrated
+  per preparation.
+- **The K–pH interaction** (external K protecting the available current under acid) is an indication pair. It is
+  reported, not judged.
+
+**Status (24 November):** logged. A design note comes first.
+
+**Re-formed (24 November, later; the user's decision, D356):** the request becomes a declared pH shift on Kv1.5's
+population, in FR-64's general mechanism, instead of a new law. The parity law stays untouched, and the shift's size per
+pH unit is still declared and sourced per preparation.
+
+## FR-64 — A declared voltage shift on a channel population
+
+**Logged 24 November 2026 by the user (D356); priority normal (the user, D361).**
+
+**Why.** Two confirmed findings have one shape:
+- Kir2.1's block shifts with external K (D355);
+- Kv1.5's activation shifts with acid (D351).
+
+In each, the voltage a factor reads is moved by a declared function of a local activity. FR-51 gives a reversal
+reference to its block alone, and FR-63 asked for a new Kv1.5 law. One mechanism serves both, and later channels,
+without a new law per channel.
+
+**The request.** A channel population declares, for each factor that reads voltage (its gates, its block), the shift
+that factor reads:
+- **none:** the membrane voltage, the default;
+- **an ion's reversal:** V − E, with E from that ion's compartment concentrations;
+- **a sourced shift per pH unit,** from the local proton activity.
+
+The set is closed: a new kind of shift is a new request.
+
+**Constraints:**
+- **Parity laws are untouched.** A population with no declared shift runs bit for bit as now.
+- **FR-51's block** moves its `reference` key into this mechanism after FR-51 lands, with no aliases.
+- **FR-63** is served by this mechanism.
+
+**First reading (the lead's read of `fr51-slot-refusal`):**
+- `channel_block` computes V − E for the block only;
+- `channel_kinetics` hands the gating laws the plain membrane voltage;
+- the block law already takes any reference voltage.
+
+So the change is in the model's plumbing, one reference voltage per factor computed in `channel_rates`, and in no law.
+
+**Status (24 November):** logged. A design note comes first, before FR-51's block law is registered and before the
+rename's design note.
+
+**Design note (24 November, D361):** `docs/VOLTAGE_SHIFT_DESIGN.md` on `fr64-design`.
+- **Version 1** admits all four reader and kind pairings, and claims two: the block on reversal, and the gates on pH.
+- **The build** comes after FR-51's follow-up and the rename.
+
+## FR-65 — Turnover beside a changing volume
+
+**Logged 24 November 2026 by the user, high, as part of FR-43's request (D365).**
+
+**Why.** FR-43 asks for shared pools at fixed and at changing volume. Turnover in a swelling cell is still refused at
+parse ("reads volume as declared"; D347's gap 4), so a cell whose volume changes cannot carry turnover. This is D301's
+composition M3.
+
+**The request.** Turnover reads the current volume and the activity masks, rather than the declared ones, so that it
+composes with:
+- water (a swelling or shrinking cell);
+- partition;
+- membrane insertion.
+
+Concentrations then follow amounts over the current volume, with the material and energy ledgers closed.
+
+**First reading (D301):** the cheapest case with a changing volume, with declared reads only, at 2 to 2.5 agent-days
+plus references.
+
+**Status (24 November):** logged. A design note comes first.
+
+**Design note and scope (D375):** `docs/TURNOVER_CHANGING_VOLUME_DESIGN.md` on `fr65-design`. The first build covers turnover beside water, partition or insertion, pairwise, and admits a lumen at nodes turnover does not read (the user). It is followed by the coupling's reads of the current volume, so that A1 in a swelling cell is admitted.
+
+## FR-66 — A passive fluorescence reader over regional amount exports
+
+**Logged 24 November 2026 by the user, priority medium.**
+
+**Why.** Imaging reads a labelled amount through a microscope's collection, region by region, against a prebleach
+reference. Several masks may read the same accepted trajectory. FR-33's regional exports give the amounts, but no reader
+turns them into a mask's signal and its ratio to prebleach.
+
+**The request.** A passive reader beside FR-33's regional amount exports.
+- **Inputs:**
+  - the ordered region IDs;
+  - the bright-label amounts per region, in fmol;
+  - one collection fraction per region and mask, from 0 to 1;
+  - a separately supplied prebleach state.
+- **The output, per mask:**
+  - the weighted bright amount, Σ_r w_r a_r;
+  - its weighted prebleach amount, Σ_r w_r p_r;
+  - their ratio.
+- **Concentration exports** are converted once, as mM × the region's volume in pL to fmol.
+- **A trajectory starting at light-off** needs its own prebleach reference; none is taken from the trajectory by
+  default.
+
+**The acceptance case, with three unequal regions:**
+
+| | Region 1 | Region 2 | Region 3 |
+| --- | ---: | ---: | ---: |
+| Prebleach (fmol) | 1 | 2 | 1 |
+| Later (fmol) | 0.25 | 1.50 | 0.75 |
+
+- Mask [1, 1, 1] gives 2.50 / 4.00 = 62.5%.
+- Mask [1, 0.5, 0] gives 1.00 / 2.00 = 50.0%.
+
+**Also checked:**
+- uniform 50% dimming reads 50% through either mask;
+- subdividing a region, at the same weight, preserves its signal;
+- observation leaves the trajectory unchanged, bit for bit.
+
+**Refused:**
+- a region order that does not match the export's;
+- invalid weights: outside [0, 1], or not finite;
+- a zero selected prebleach signal.
+
+**First reading (the lead).** Nothing on main reads fluorescence, collection fractions or a prebleach state today. The
+reader is a host computation over saved regional amounts, with no engine state. It belongs in `src` as a readout,
+since it computes a consequence for users, with a closed-form check in the tests.
+
+**Status (24 November):** logged. A short design note comes first.
+
+## FR-67 — Pressure-driven flow on a network of compliant tubes
+
+**Logged 26 November 2026 by the user, priority normal. Design first; no build is scheduled (D393).**
+
+**Why.** Liquid driven through a network of tubes by pressure carries its solutes along, stretches compliant walls,
+and over time reshapes the tubes it flows through. Cells moves water across membranes and moves declared volumes
+between places (FR-27's washes; FR-54 and FR-57's liquid routing), but it has no network of tubes: no edge law gives a
+volume flow along a tube from the pressures at its ends, no wall stores volume against pressure, and no conductance
+adapts to the flow it carries.
+
+**The request.** Four parts, each a general law or operator with conserved accounting:
+1. **Flow on a graph.** Each edge is a tube with a Hagen–Poiseuille conductance, G = πr⁴/(8μL). Volume is conserved at
+   each node (Kirchhoff's current law). Boundary pressures or inflows are declared.
+2. **Compliant compartments.** A node's volume follows its pressure through a declared compliance. A prescribed wall
+   activation (a time course of rest volume) drives flow, peristaltic pumping being one case. The wall's work and the
+   viscous dissipation are booked.
+3. **Advection.** Solutes move with the edge flows, upwind, with amounts conserved to rounding, beside diffusion where
+   it is declared.
+4. **Remodelling.** Each tube's radius adapts slowly to its wall shear stress by a declared, sourced law with its own
+   time scale, separate from the fast flow.
+
+**Acceptance (a proposal for the design note):**
+- one tube against Poiseuille's closed form;
+- a two-loop network against its Kirchhoff solution;
+- solute amounts conserved under advection to rounding;
+- one compliant chamber's pressure relaxation against its closed form;
+- remodelling's steady state at a junction against its analytic fixed point, where the declared law has one.
+
+**First reading (the lead).** None of the four is on main. Before the design, FR-57's tagged spec is read for
+overlap: whether liquid routing's edge flows can carry a time-varying flow from part 1, so that solute transport is
+built once.
+
+**Status (26 November):** logged. A design note comes first.
+
+## FR-68 — A consistency check on standard potentials
+
+**Logged 26 November 2026 by the user, priority normal. Design first; no build is scheduled (D393).**
+
+**Why.** A reaction network's equilibria come from its species' standard potentials. A slip in one entry (a sign, a
+unit, a factor of ten, a value left at zero) gives wrong equilibria without any run failing, and no check catches it
+today. Each mass-action reaction takes its reverse constant from its species' potentials
+(`laws/reactions/mass_action.py`), so every cycle closes whatever the values are, and transporter diagrams check
+Wegscheider's condition at the registry's own potentials (`kinds/transporter.py`).
+
+**The request.** At check time, before a run:
+- each standard potential a world uses states its source and the conditions it holds at (temperature, pH, ionic
+  strength, free magnesium); tables held at different conditions are refused by name unless a declared transform
+  joins them;
+- where a cited source gives a reaction's standard free energy or equilibrium constant, the value from the species'
+  potentials is compared with it, and a difference beyond a stated tolerance is named with its residual;
+- a reaction whose constant is declared on its own, outside the species' potentials, joins a cycle-closure check:
+  Σ_r v_r ln K_r = 0 over each independent cycle of the stoichiometry.
+
+**Acceptance (a proposal):** a consistent table passes; one planted slip (a sign, a factor of ten, a value left at
+zero) is caught and named against its cited reaction value; tables at two pH values are refused unless a transform is
+declared.
+
+**First reading (the lead).** Closure around a cycle already holds by construction where constants come from the
+species' potentials, so this check's value is in tying each potential to its source and conditions. The design note
+decides whether a failure refuses or warns.
+
+**Status (26 November):** logged. A design note comes first.
+
+## Backlog: external tools to look at (logged by the user, 23 November 2026)
+
+The user logged these suggestions to look at later. None is scheduled or adopted.
+- **How any of them would enter:**
+  - External solvers and simulators run out of process, as references (AGENTS.md).
+  - A new runtime dependency in `src/cells` needs the user's approval. FR-17's stage 1 was approved with none.
+  - Data licences follow D173: permissively licensed data for judged or published results, under the
+    commercial open-source rule.
+- **The licences below are as suggested,** still to be verified.
+
+### B1. eQuilibrator 3.0 for consistent standard potentials at scale (relates to FR-43)
+- **The concern.** The species capacity is now 1,024 (FR-43 part 1). Standard potentials μ°/RT assembled
+  by hand from mixed literature tables can break Wegscheider loop closure, under which the standard free
+  energies around any reaction cycle sum to zero.
+- **The suggestion.**
+  - equilibrator-api (MIT) and equilibrator-cache on Zenodo (CC BY 4.0).
+  - Together they give component-contribution estimates of Δ_fG'° at a given pH, ionic strength,
+    temperature and pMg, with covariances, across KEGG and ChEBI metabolites.
+- **To look at:**
+  - a loop-closure check on the potential registry itself, independent of any data source;
+  - eQuilibrator as an out-of-process source of declared values, with their uncertainties and attribution;
+  - what estimates, rather than measurements, mean for judged runs.
+
+### B2. GPU sparse solves for FR-17's later stages (relates to FR-17 and D317)
+- **The suggestion.**
+  - Lineax (Apache-2.0): pure-JAX, matrix-free, preconditioned conjugate gradients on the CPU and the GPU.
+  - spineax (MIT) and NVIDIA's nvmath-python (Apache-2.0): both wrap NVIDIA cuDSS through XLA's FFI for a
+    float64 direct sparse Cholesky. The analysis is cached once per graph, with factorization and solve
+    each step.
+- **To look at, after FR-17's stage 1.**
+  - Stage 1 is the engine's own sparse reduction, with its own minimum-degree ordering and no new
+    dependency (D317). Later stages could compare against these tools as references.
+  - cuDSS itself ships under NVIDIA's own licence, which needs checking against the commercial
+    open-source rule.
+  - Iterative solves agree only to their tolerance, so qualification would include bitwise and
+    conservation checks.
+
+### B3. XLA command buffers on the GPU (relates to D321), and two Lean libraries
+- **The suggestion.**
+  - `resolved_pump_composite@1` wraps @3's step in `jax.lax.optimization_barrier`, which keeps compile
+    times short (src/cells/models/pump_composite.py). So each scan tick dispatches several sequential GPU
+    kernels.
+  - XLA's CUDA command buffers (CUDA Graphs), for example
+    `XLA_FLAGS=--xla_gpu_enable_command_buffer=FUSION,CUSTOM_CALL,WHILE`, may remove the host's launch
+    overhead without changing the modular compile.
+- **To look at:** a flag only, with no src change. It is a candidate variant for D321's L4 timing of the
+  gap-junction field, checked bitwise against the default.
+- **For the Lean lane:** SciLean and Physlib (Lean 4) offer idioms for ODE discretization and SI
+  thermodynamics. `lean/` is the Lean lane's, so this is passed to it, not acted on here.

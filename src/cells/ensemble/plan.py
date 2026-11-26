@@ -5,7 +5,14 @@ import heapq
 import math
 import re
 
-from cells.ensemble.families import MODELS, bind_definition, model_id, output_bound, population
+from cells.ensemble.families import (
+    MODELS,
+    bind_definition,
+    model_id,
+    output_bound,
+    parked,
+    population,
+)
 from cells.ensemble.families import parse_definition as parse_spec
 
 
@@ -21,7 +28,8 @@ def positive(value, name, *, integer=False):
 
 def plan(data, slots):
     if set(data) != {"kind", "seed", "arms", "execution"} or data["kind"] not in MODELS:
-        raise ValueError("Require a named ensemble with seed, arms and execution")
+        refusal = parked(data.get("kind")) if isinstance(data, dict) else None
+        raise ValueError(refusal or "Require a named ensemble with seed, arms and execution")
     positive(slots, "GPU slots", integer=True)
     if type(data["seed"]) is not int or not 0 <= data["seed"] < 2**32:
         raise ValueError("Seed must be uint32")

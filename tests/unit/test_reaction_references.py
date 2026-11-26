@@ -1,4 +1,4 @@
-"""Self-tests of the independent references for local_species_reactions@1 (validation/reactions/).
+"""Self-tests of the independent references for cells.operator.local_species_reactions@1 (validation/reactions/).
 
 The references are checked against analytic cases, against each other where they overlap, and
 against the numbers that docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §6.4 quotes for MG0c. They

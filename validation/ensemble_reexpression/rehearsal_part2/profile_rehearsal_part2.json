@@ -1,0 +1,243 @@
+{
+ "names": {
+  "inputs": "inputs_rehearsal_part2.json",
+  "legacy": "legacy_rehearsal_part2.json",
+  "paths": "reference_paths_rehearsal_part2.json",
+  "margins": "margins_rehearsal_part2.json",
+  "manifest": "plants_manifest_rehearsal_part2.json"
+ },
+ "captures": {
+  "inv_spatial": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_spatial-{step}"
+  },
+  "inv_plasma": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_plasma-{step}"
+  },
+  "inv_gated": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_gated-{step}"
+  },
+  "inv_ip3": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_ip3-{step}"
+  },
+  "inv_single": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_single-{step}"
+  },
+  "inv_amounts": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_amounts-{step}"
+  },
+  "inv_slow": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_slow-{step}"
+  },
+  "inv_thin": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_thin-{step}"
+  },
+  "inv_capacitor": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_capacitor-{step}"
+  },
+  "inv_fuel": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_fuel-{step}"
+  },
+  "inv_stop": {
+   "set": "captures",
+   "kind": "windows",
+   "folder": "runs/inv_stop-{step}"
+  },
+  "inv_cluster_spatial": {
+   "set": "captures",
+   "kind": "assembly",
+   "folder": "runs/inv_cluster_spatial-{step}-s{seed}",
+   "summaries": "ticks"
+  },
+  "inv_cluster_plasma": {
+   "set": "captures",
+   "kind": "assembly",
+   "folder": "runs/inv_cluster_plasma-{step}-s{seed}",
+   "summaries": "ticks"
+  },
+  "inv_cluster_gated": {
+   "set": "captures",
+   "kind": "assembly",
+   "folder": "runs/inv_cluster_gated-{step}-s{seed}",
+   "summaries": "ticks"
+  },
+  "inv_cluster_ip3": {
+   "set": "captures",
+   "kind": "assembly",
+   "folder": "runs/inv_cluster_ip3-{step}-s{seed}",
+   "summaries": "ticks"
+  }
+ },
+ "paths": {
+  "inv_cluster_spatial": "inv_pools",
+  "inv_cluster_plasma": "inv_pools",
+  "inv_cluster_gated": "inv_pools",
+  "inv_cluster_ip3": "inv_pools"
+ },
+ "engine_plants": {
+  "inv_EP3": {
+   "change": [],
+   "named": [
+    "store_release"
+   ],
+   "planted_run": "P-release inv_ip3",
+   "distance": {
+    "world": "inv_ip3",
+    "entry": "store_release",
+    "power_plant": "release"
+   }
+  },
+  "EP3": {
+   "change": [
+    {
+     "path": [
+      "stores",
+      "*",
+      "membrane",
+      "release",
+      "permeability_m_per_s"
+     ],
+     "multiply": 1.01
+    }
+   ],
+   "named": [
+    "store_release"
+   ],
+   "planted_run": "P-release inv_ip3",
+   "distance": {
+    "world": "inv_ip3",
+    "entry": "store_release",
+    "power_plant": "release"
+   }
+  },
+  "inv_EP4": {
+   "change": [],
+   "named": [
+    "channel_K",
+    "channel_K_summary"
+   ],
+   "planted_run": "SC14 availability on the other cell's channel",
+   "distance": {
+    "world": "inv_cluster_gated",
+    "cluster_structural": "SC14 availability on the other cell's channel",
+    "seed_index": 1,
+    "world_id": 0
+   }
+  },
+  "EP4": {
+   "change": [
+    {
+     "exchange_channels": [
+      "cell_0",
+      "cell_1"
+     ]
+    }
+   ],
+   "named": [
+    "channel_K",
+    "channel_K_summary"
+   ],
+   "planted_run": "SC14 availability on the other cell's channel",
+   "distance": {
+    "world": "inv_cluster_gated",
+    "cluster_structural": "SC14 availability on the other cell's channel",
+    "seed_index": 1,
+    "world_id": 0
+   }
+  }
+ },
+ "not_blind": {
+  "cluster_spatial_calcium": [
+   "inv_cluster_spatial s0 w0",
+   "inv_cluster_spatial s0 w1"
+  ],
+  "cluster_plasma_calcium": [
+   "inv_cluster_plasma s0 w0",
+   "inv_cluster_plasma s0 w1"
+  ],
+  "cluster_gated_calcium": [
+   "inv_cluster_gated s0 w0",
+   "inv_cluster_gated s0 w1"
+  ],
+  "cluster_ip3_calcium": [
+   "inv_cluster_ip3 s0 w0",
+   "inv_cluster_ip3 s0 w1"
+  ]
+ },
+ "not_blind_pool_runs": [
+  "inv_cluster_spatial s0 pool",
+  "inv_cluster_plasma s0 pool",
+  "inv_cluster_gated s0 pool",
+  "inv_cluster_ip3 s0 pool"
+ ],
+ "notes": {},
+ "counts": {},
+ "runs": 0,
+ "off_grid_runs": [],
+ "retry_step_s": {
+  "inv_spatial": 2e-06,
+  "inv_plasma": 2e-06,
+  "inv_gated": 2e-06,
+  "inv_ip3": 2e-06,
+  "inv_single": 6e-06,
+  "inv_amounts": 2.5e-06,
+  "inv_slow": 1.5e-07,
+  "inv_thin": 1.75e-06,
+  "inv_capacitor": 1.875e-06,
+  "inv_fuel": 2.25e-06,
+  "inv_stop": 2e-05,
+  "inv_cluster_spatial": 2e-06,
+  "inv_cluster_plasma": 2e-06,
+  "inv_cluster_gated": 2e-06,
+  "inv_cluster_ip3": 2e-06
+ },
+ "names_of": {
+  "spatial_calcium": "inv_spatial",
+  "plasma_calcium": "inv_plasma",
+  "gated_calcium": "inv_gated",
+  "ip3_calcium": "inv_ip3",
+  "cluster_spatial_calcium": "inv_cluster_spatial",
+  "cluster_plasma_calcium": "inv_cluster_plasma",
+  "cluster_gated_calcium": "inv_cluster_gated",
+  "cluster_ip3_calcium": "inv_cluster_ip3",
+  "ip3_calcium h=1.25e-05 restart": "inv_ip3 h=1.6e-05 restart",
+  "ip3_calcium plant release": "inv_ip3 plant release",
+  "cluster_gated_calcium plant swapped": "inv_cluster_gated plant swapped",
+  "cluster_ip3_calcium s1 pool": "inv_cluster_ip3 s1 pool",
+  "cluster_spatial_calcium s0 w0": "inv_cluster_spatial s0 w0"
+ },
+ "plant_targets": {
+  "ionic": "inv_spatial",
+  "junctions": "inv_spatial",
+  "restart": "inv_ip3 h=1.6e-05 restart",
+  "engine_plant": "inv_ip3 plant release",
+  "engine_plant_swapped": "inv_cluster_gated plant swapped",
+  "pool": "inv_cluster_ip3 s1 pool",
+  "pool_path": [
+   "inv_cluster_spatial s0 pool",
+   "cell_0",
+   "0"
+  ],
+  "not_blind": "inv_cluster_spatial s0 w0",
+  "assembly": "inv_cluster_spatial s1 w0"
+ }
+}

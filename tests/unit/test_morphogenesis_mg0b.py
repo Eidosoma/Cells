@@ -1,9 +1,9 @@
-"""MG0b driver: the independent reduced model and the resolved_pump_tissue@3 chain.
+"""MG0b driver: the independent reduced model and the cells.model.resolved_pump_tissue@3 chain.
 
 The reduced model reproduces the heredity pre-screen's slow states and, at
 several off-steady voltages, the engine's own instantaneous membrane rate
 (gates at steady state, same composition): it transcribes the same laws. The
-chain definition parses as resolved_pump_tissue@3 with open-gated junctions.
+chain definition parses as cells.model.resolved_pump_tissue@3 with open-gated junctions.
 """
 
 import copy

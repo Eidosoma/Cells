@@ -1,4 +1,4 @@
-"""Operator population_unit_turnover@1: a membrane population's units made from a precursor species
+"""Operator cells.operator.population_unit_turnover@1: a membrane population's units made from a precursor species
 through maturation pools, and removed at first order (FR-7's unit producer, F1).
 
 docs/ABUNDANCE_TO_FUNCTION_DESIGN.md §5 item 3 (the unit producer) and §4 item 1 (the unit's own
@@ -14,7 +14,7 @@ and the lead's rulings for F1 (19 November 2026):
   inserts (D232);
 * the assembly and trafficking delay is a chain of m first-order pools (the linear chain trick,
   MacDonald 1978, Time Lags in Biological Models: named from memory and not read);
-* the precursor is a declared pool, which D150's scheduled_species_turnover@1 may also supply.
+* the precursor is a declared pool, which D150's cells.operator.scheduled_species_turnover@1 may also supply.
   Two writers of one row are admitted (the lead, 19 November 2026), provided each is a split part
   with exact half-steps in declared order, books its own moved amounts and the exact ΔG of its own
   move from the state its half-step receives, and refuses a non-positive amount: Strang splitting,
@@ -40,7 +40,7 @@ state that half-step receives, so the scheduled rate is the maximum and the defi
 bounds hold. Its elements are the routes, each at its population's cell.
 
 Law, per route i in cell c with precursor P (n_P fmol in c), c_u = N_A 1e-15 / ν units per fmol,
-κ = m / τ, and the population's units N (membrane_entity_state@1's units: declared plus
+κ = m / τ, and the population's units N (cells.operator.membrane_entity_state@1's units: declared plus
 increment; every unit, the declared ones included, is removed at k_r):
     dn_P/dt = -A n_P,  with A the sum of k_a over the routes on (P, c);
     the route's share q_i = c_u n_P k_a,i / A (units), dq_i/dt = -A q_i;
@@ -87,15 +87,21 @@ registry's; more than the species cap; another writer of population units anywhe
 simulation, even on a population no route names (D232: the refusal is simulation-wide, so it
 excludes FR-2's recycling, membrane insertion and division, whose moves would mix with this
 removal of every unit, the declared ones included, at k_r); a precursor row that a D152 reaction
-writes, another author of the precursor other than turnover, and an in-step mover of it; dt Λ > 1
+writes, another conversion of the precursor than turnover and the gene unit, a precursor made with
+no static bound (a transfer of it among them: R5), a split row writer that declares no ROW_MOVES
+(FR-43 part 3, fails closed), and an in-step mover of it; dt Λ > 1
 anywhere in the schedule; a schedule that does not start at 0, changes off the dt grid or
 outside 0 < t < end, or holds a negative or non-finite rate; and every provider of volumes and
-closer of masks (CONFLICTS_VIEW, D150's static-tissue list). membrane_entity_state@1 precedes it
+closer of masks (CONFLICTS_VIEW, D150's static-tissue list). cells.operator.membrane_entity_state@1 precedes it
 (REQUIRES). At run time: non-finite values, a negative pool, N or rate, and a precursor amount
 that would not stay positive.
 
 Idle: no route, statically idle; no positive flux in a half-step, the start state is selected,
 so zero rates are bitwise idle and @3's other rows are untouched.
+
+Guidance (D344): the operator declares one removal rate per population, so a mixture of lifetimes
+is two declared populations, the fast and the slow cohort. Two studies of receptor turnover confirm
+such a mixture, with a fast fraction of 13 to 20%.
 """
 
 import math
@@ -118,7 +124,7 @@ from cells.operators import species_common as common
 from cells.operators.contract import Operator
 from cells.registry import species_registry
 
-LAW_ID = "population_unit_turnover@1"
+LAW_ID = "cells.operator.population_unit_turnover@1"
 STEP_ID = "exact_unit_chain_half_steps@1"
 EXPERIMENT_KEY = "unit_turnover_controls"
 ROUTE_AXIS, POOL_AXIS = "unit_route", "unit_pool"
@@ -378,14 +384,26 @@ def _population_cells(model):
     return {c.id: inside[c.membrane_id] for c in model.channels}
 
 
-TURNOVER_LAW = "scheduled_species_turnover@1"  # The one admitted second writer of a precursor.
+TURNOVER_LAW = (
+    "cells.operator.scheduled_species_turnover@1"  # An admitted second writer of a precursor.
+)
+GENE_UNIT_LAW = (
+    "cells.operator.templated_polymerisation@1"  # The other (FR-43 / D315), a bounded producer.
+)
 
 
 def check_writers(spec, declaration):
     """Refuse another writer of a population's units, a precursor row that a D152 reaction writes,
-    another author of a precursor other than D150's turnover, and an in-step mover of one (module
-    docstring): every unit here, declared ones included, is removed at k_r, and a precursor's
-    writers are this operator and, at most, turnover's supply."""
+    another conversion of a precursor than D150's turnover and the gene unit, and an in-step mover
+    of one (module docstring): every unit here, declared ones included, is removed at k_r, and a
+    precursor's writers are this operator, turnover's supply and the gene unit
+    (cells.operator.templated_polymerisation@1, FR-43 / D315: the two-writer rule of 19 November
+    2026 extended, with the shared row's potential from the species registry, species_registry
+    .check_shared_rows). The writers of a row are the species registry's rule (check_row_writers,
+    FR-43 part 3), which fails closed on an undeclared split writer. R5 reads every producer's
+    largest rate (supply_bound), so a precursor made without a static bound is refused: by the gene
+    unit's degradation, release fates or export coupling, or by a transfer (exchange, the integer
+    population), whose rate no static bound holds."""
     precursors = {r.precursor for r in declaration.routes}
     rows = {(r.precursor, r.cell) for r in declaration.routes}
     for op, other, _ in composite_spec.entries(spec):
@@ -407,13 +425,26 @@ def check_writers(spec, declaration):
                     f"{hit[0][1]}: one local-kinetics writer per reacting row, D152's rule "
                     "(declare the precursor's supply and use as the network's own reactions)"
                 )
-        elif op.IDENTITY_ROLE == "author" and op.LAW_ID != TURNOVER_LAW:
-            shared = sorted(precursors & {s.id for s in op.species_identities(other)})
+        elif op.ROW_MOVES == "conversion" and op.LAW_ID not in (TURNOVER_LAW, GENE_UNIT_LAW):
+            shared = sorted(precursors & {name for name, _ in op.written_rows(spec, other)})
             if shared:
                 raise ConfigError(
-                    f"{LAW_ID}: {op.LAW_ID} also declares the precursor {shared[0]!r}; besides "
-                    f"this operator only {TURNOVER_LAW}'s supply is admitted as a writer of it"
+                    f"{LAW_ID}: {op.LAW_ID} converts the precursor {shared[0]!r}; besides this "
+                    f"operator only {TURNOVER_LAW}'s supply and {GENE_UNIT_LAW} are admitted as "
+                    "conversions of it"
                 )
+    species_registry.check_row_writers(spec, LAW_ID)
+    for op, other, _ in composite_spec.entries(spec):
+        bound = getattr(op, "production_bound", None)  # A producer that declares its bound.
+        made = {} if bound is None else bound(spec, other)
+        for name, cell in sorted(rows):
+            if not math.isinf(made.get((name, cell), 0.0)):
+                continue
+            raise ConfigError(
+                f"{LAW_ID}: the precursor {name!r} in {cell} is made at a rate with no static "
+                f"bound by {op.LAW_ID} (a degradation, a release's fates, an export's coupling, or "
+                "a transfer), which R5's largest units need (supply_bound; FR-43 / D315)"
+            )
     moved = species_registry.moved_in_step(spec)
     for name in sorted(precursors):
         movers = moved.get(name, {}).get("cell", ())
@@ -425,23 +456,17 @@ def check_writers(spec, declaration):
 
 
 def supply_bound(spec):
-    """{(species, cell): the largest total production rate (fmol/s)} of turnover's cell routes,
-    over every schedule of each route: an upper bound on the supply a cell's precursor gets."""
+    """{(species, cell): the largest total production rate (fmol/s)} of every producer that
+    declares its production_bound: turnover's cell routes over every schedule of each route, the
+    gene unit's laws (FR-43 / D315), and the others' (FR-43 part 3; math.inf where a producer has
+    no static bound): an upper bound on the supply a cell's precursor gets. A rate: check_spec_for
+    multiplies it by the horizon."""
     out = {}
-    for op, block, schedules in composite_spec.entries(spec):
-        if op.LAW_ID != TURNOVER_LAW:
-            continue
-        kind = {r.id: r for r in block.routes}
-        top = {}
-        for s in schedules:
-            route = kind[s.route_id]
-            if route.kind == "production" and route.cell is not None:
-                peak = max(float(v[0]) for _, v in s.changes)
-                top[route.id] = max(top.get(route.id, 0.0), peak)
-        for route_id, peak in top.items():
-            route = kind[route_id]
-            key = (route.species, route.cell)
-            out[key] = out.get(key, 0.0) + peak
+    for op, block, _ in composite_spec.entries(spec):
+        bound = getattr(op, "production_bound", None)
+        if bound is not None:
+            for key, rate in bound(spec, block).items():
+                out[key] = out.get(key, 0.0) + rate
     return out
 
 
@@ -467,7 +492,7 @@ def check_rate_bound(spec, declaration, schedule):
 
 
 def densities(spec):
-    """{channel id: reference density (units/m^2)}, from membrane_entity_state@1's declaration."""
+    """{channel id: reference density (units/m^2)}, from cells.operator.membrane_entity_state@1's declaration."""
     for op, block, _ in composite_spec.entries(spec):
         if op.LAW_ID == membrane_state.LAW_ID:
             return {p.channel_id: p.reference_density_per_m2 for p in block.populations}
@@ -752,6 +777,10 @@ def unit_domain_valid(state, p, *, xp):
 class PopulationUnitTurnover(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # Species registry (D176): it declares the precursor it writes.
+    # FR-43 part 3: a conversion of its precursors into units, and a writer whose shared precursor
+    # needs the species registry's potential (check_shared_rows; FR-43 / D315).
+    ROW_MOVES = "conversion"
+    SHARED_ROW_POTENTIAL = True
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -867,6 +896,17 @@ class PopulationUnitTurnover(Operator):
         """B1′: each route's precursor at its population's cell (assembly consumes it)."""
         return tuple(dict.fromkeys((r.precursor, r.cell) for r in declaration.routes))
 
+    def written_rows(self, spec, declaration):
+        """Each route's precursor at its population's cell, which it consumes: the registry's row
+        rules read them (species_registry.check_row_writers and check_shared_rows; FR-43 / D315,
+        part 3)."""
+        return tuple(dict.fromkeys((r.precursor, r.cell) for r in declaration.routes))
+
+    def production_bound(self, spec, declaration):
+        """{}: it makes no species row; it consumes its precursors into units (FR-43 part 3: the
+        integer population's event-rate bound counts nothing of it)."""
+        return {}
+
     def species_identities(self, declaration):
         return declaration.species
 
@@ -874,6 +914,7 @@ class PopulationUnitTurnover(Operator):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, declaration.species)
         check_writers(spec, declaration)
+        species_registry.check_shared_rows(spec, LAW_ID)
         check_rate_bound(spec, declaration, schedule)
 
     def inner_check_spec(self, check_spec, spec, declaration, schedule):

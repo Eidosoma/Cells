@@ -6,8 +6,8 @@
 # Trees: the head bf4e47e0 (it passed lane A on 19 November at 09:28 UTC) and its base e4f84d4a;
 # G3's controls of 18 November: the unplanted tree e16e26bb, C1's planted tree (selective_flux
 # x (1 + 1e-9)) and C2' (crossrev-base/symport's K+ x (1 + 1e-9)). Engine models: G1's worlds
-# (resolved_pump_composite@1, resolved_pump_replacement@1, resolved_pump_water@1 and @2,
-# resolved_pump_tissue@3), FR-4's and FR-5's compartment-pH worlds on the resolved pump @3 path, and
+# (cells.model.resolved_pump_composite@1, cells.model.resolved_pump_replacement@1, cells.model.resolved_pump_water@1 and @2,
+# cells.model.resolved_pump_tissue@3), FR-4's and FR-5's compartment-pH worlds on the resolved pump @3 path, and
 # the tier suite.
 #
 # The arms, in this order, on the lane's CPUs under its lock:
@@ -77,14 +77,12 @@ PLANTED_REF=${PLANTED_REF:-$T3/g3/c1/merged}
 C2P_ORIGIN=${C2P_ORIGIN:-$T3/g3/c2prime-origin}
 C2P_REF=${C2P_REF:-$T3/g3/c2prime-part}
 FR=$D172/fr45
-FRR=/mnt/workspaces/Cells/global-charge-bound-20261122/fr-baselines-605331c2  # FR's baselines renewed for D307, as fr_landing_holder.sh's.
+FRR=/mnt/workspaces/Cells/fr-baselines/805c48a4-20261126  # FR's baselines renewed for D307 and the ID move (D345), as fr_landing_holder.sh's (D392's copy).
 F4=${F4:-$FRR/fr4-quick} F5=${F5:-$FRR/fr5}
 FR_START=${FR_START:-$FR/rehearsal-20261117/run-e79b4232/fr5/start/start.json}
 FR_BEFORE=${FR_BEFORE:-$FRR/windowed}
 FR_SET=${FR_SET:-full}
-TIER3_FILES=${TIER3_FILES:-"tests/unit/test_integrated_ensemble.py tests/unit/test_vector_windows_bitwise.py
-tests/betse_physiology/integration/test_physiology_loop_checkpoint.py
-tests/betse_physiology/integration/test_physiology_protein_checkpoint.py"}
+TIER3_FILES=${TIER3_FILES:-"tests/unit/test_integrated_ensemble.py tests/unit/test_vector_windows_bitwise.py"}
 DEFAULT_CACHE=${DEFAULT_CACHE:-$W/cache/jax}
 GO=${GO:-$OUT/GO}
 case "${LANE:-B}" in
@@ -162,9 +160,11 @@ EOF
 chmod +x "$OUT/bin/python-rss"
 default_cache "$OUT/default-cache-before.json"
 E=()  # The current arm's environment.
-with_cache() {  # CACHE
-  E=(JAX_COMPILATION_CACHE_DIR="$1" JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS=0
+TCACHE=  # The current arm's cache folder, for a tier runner that takes --jax-cache (empty: off).
+with_cache() {  # CACHE. Enabled explicitly: run_detached.sh units default to it off (D321).
+  E=(JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR="$1" JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS=0
      JAX_PERSISTENT_CACHE_MIN_ENTRY_SIZE_BYTES=0 JAX_RAISE_PERSISTENT_CACHE_ERRORS=true)
+  TCACHE=$1
 }
 entries() { if [ -d "$1" ]; then find "$1" -maxdepth 1 -name '*-cache' | wc -l; else echo 0; fi; }
 anon() { awk '$1 == "anon" {print $2}' "$CG/memory.stat" 2>/dev/null || echo 0; }
@@ -189,10 +189,14 @@ stage() {  # ARM NAME CACHE FUNCTION ARGS...: one stage, recorded in OUT/stages.
   log "$arm $name: $(tail -n 1 "$OUT/stages.jsonl")"
 }
 tiers_run() {  # TREE DIR TIERS WHICH CPUS CAP: one tier run in the arm's environment
-  local tree=$1 d=$2 tiers=$3 which=$4 cpus=$5 cap=$6
+  local tree=$1 d=$2 tiers=$3 which=$4 cpus=$5 cap=$6 cache=()
+  # A tree whose runner disables the cache unless told (D321 R1) is given the arm's folder; an older
+  # tree's runner takes it from the environment, as before.
+  if [ -n "$TCACHE" ] && grep -q -- '--jax-cache' "$tree/scripts/test_tiers.py"; then cache=(--jax-cache "$TCACHE"); fi
   # shellcheck disable=SC2086
   (cd "$tree" && env -u JAX_COMPILATION_CACHE_DIR PYTHONPATH="$tree/src:$tree" "${E[@]}" "$PY" -B \
-    scripts/test_tiers.py run --tiers "$tiers" --tier $which --out "$d" --cpus "$cpus" --cap "$cap" > "$d.log" 2>&1)
+    scripts/test_tiers.py run --tiers "$tiers" --tier $which --out "$d" --cpus "$cpus" --cap "$cap" \
+    "${cache[@]}" > "$d.log" 2>&1)
   log "tiers $d: $(tail -n 1 "$d.log" | cut -c1-200)"
 }
 per_id() {  # RUN RECORD LISTING...: the run read per test ID against OFF's record (test_tiers.py diff)
@@ -205,18 +209,22 @@ freeze() {  # RUN RECORD LISTING: OFF's record of a run, from the IDs collected 
   "$PY" -B "$TT" freeze --run "$1" --collected "$3" --out "$2" > "$2.log" 2>&1
   log "OFF's record $2: $(tail -n 1 "$2.log" | cut -c1-200)"
 }
+# A tree's own table of renamed IDs (D345), where it has one: what was saved under an old spelling is
+# read through it (validation/id_table.py), so a tree before the rename is asked for nothing.
+id_map() { local t=$1/src/cells/registry/renamed_ids.py; [ ! -f "$t" ] || printf '%s\n' --map "$t"; }
 g1() {  # TREE DIR REF [FROM]: G1's worlds by the shared plan, one shard per CPU, each group's peak
         # RSS; merged and compared bit for bit with REF
   local tree=$1 d=$2 ref=$3 from=${4:-$BASELINE} k=0 cpu
-  local -a pids=()
+  local -a pids=() ids=()
   mkdir -p "$d/parts"
+  mapfile -t ids < <(id_map "$tree")
   for cpu in "${CPU[@]}"; do
     (taskset -cp "$cpu" $BASHPID > /dev/null; nproc > "$d/shard-$k.cpus"; j=0
      while IFS=$'\t' read -r set worlds; do
        # shellcheck disable=SC2086
        (cd "$tree" && env -u JAX_COMPILATION_CACHE_DIR PYTHONPATH="$tree/src:$tree" "${E[@]}" /usr/bin/time \
          -f '%M %e' -o "$d/rss-$k-$j.txt" "$PY" -B validation/results_baseline.py save "$d/parts/part-$k-$j" \
-         --sets "$set" --worlds $worlds --from "$from") < /dev/null >> "$d/shard-$k.log" 2>&1
+         --sets "$set" --worlds $worlds --from "$from" "${ids[@]}") < /dev/null >> "$d/shard-$k.log" 2>&1
        echo "$(date -u +%FT%TZ) shard $k group $j $set exit $?" >> "$d/g1.log"
        j=$((j + 1))
      done < <(steps g1-groups "$OUT/g1-plan.json" "$k")) &
@@ -225,17 +233,20 @@ g1() {  # TREE DIR REF [FROM]: G1's worlds by the shared plan, one shard per CPU
   wait "${pids[@]}"
   steps g1-merge "$d/parts" "$d/merged" >> "$d/g1.log" 2>&1
   (cd "$tree" && PYTHONPATH="$tree/src:$tree" taskset -c "$I0" "$PY" -B validation/results_baseline.py compare \
-    "$ref" "$d/merged" --output "$d/compare.json" > "$d/compare.log" 2>&1)
+    "$ref" "$d/merged" "${ids[@]}" --output "$d/compare.json" > "$d/compare.log" 2>&1)
   log "G1 $d: compare exit $?: $(tail -n 1 "$d/compare.log" | cut -c1-160)"
 }
 c2prime() {  # G3's C2' (crossrev-base/symport from its planted definitions) by the unplanted tree, one CPU
   local d=$OUT/negative/c2prime
+  local -a ids=()
   mkdir -p "$d"
+  mapfile -t ids < <(id_map "$UNPLANTED_S")
   (cd "$UNPLANTED_S" && env -u JAX_COMPILATION_CACHE_DIR PYTHONPATH="$UNPLANTED_S/src:$UNPLANTED_S" "${E[@]}" \
     taskset -c "$I0" /usr/bin/time -f '%M %e' -o "$d/rss-c2prime.txt" "$PY" -B validation/results_baseline.py \
-    save "$d/part" --sets crossrev-base --worlds symport --from "$C2P_ORIGIN") > "$d/save.log" 2>&1
+    save "$d/part" --sets crossrev-base --worlds symport --from "$C2P_ORIGIN" "${ids[@]}") > "$d/save.log" 2>&1
   (cd "$UNPLANTED_S" && PYTHONPATH="$UNPLANTED_S/src:$UNPLANTED_S" taskset -c "$I0" "$PY" -B \
-    validation/results_baseline.py compare "$C2P_REF" "$d/part" --output "$d/compare.json" > "$d/compare.log" 2>&1)
+    validation/results_baseline.py compare "$C2P_REF" "$d/part" "${ids[@]}" --output "$d/compare.json" \
+    > "$d/compare.log" 2>&1)
   log "C2' $d: compare exit $?: $(tail -n 1 "$d/compare.log" | cut -c1-160)"
 }
 fr() {  # TREE DIR: FR's four queues (fr_landing_holder.sh's task lists) on the lane's cores, each
@@ -288,7 +299,7 @@ $(cat "$(dirname "$d")/replication/done" 2> /dev/null)"
 }
 
 # off: the reference, with the cache off.
-E=(JAX_ENABLE_COMPILATION_CACHE=false)
+E=(JAX_ENABLE_COMPILATION_CACHE=false); TCACHE=
 mkdir -p "$OUT/off"
 if [ -n "$GATE_RUN" ]; then
   freeze "$GATE_RUN" "$OUT/off/record.json" "$OUT/off/collected.json"

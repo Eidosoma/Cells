@@ -19,16 +19,18 @@ Every world but the run paths runs its first scalar window of at most --max-step
 
 Actions:
   list [--sets ...]
-  save DIR [--sets ...] [--worlds ...] [--max-steps N] [--from BASELINE]
+  save DIR [--sets ...] [--worlds ...] [--max-steps N] [--from BASELINE [--map TABLE]]
       run every world, writing DIR/SET/WORLD.npz (times, history, observations, diagnostics and
       the final checkpoint's state, time and step) and DIR/SET/WORLD.json (the definition run,
       the steps, seconds, a refusal); DIR/manifest.json records the source and environment.
       --from BASELINE runs the definitions saved there (so a later source's world builders
-      cannot change what is compared)
-  compare BASELINE OTHER [--tolerance FILE] [--padding k1] [--output FILE]
+      cannot change what is compared). --map TABLE translates their renamed IDs first
+      (validation/id_table.py; TABLE is the engine's renamed_ids.py or a JSON {old: new})
+  compare BASELINE OTHER [--tolerance FILE] [--padding k1] [--map TABLE] [--output FILE]
       every array of every world: bitwise (default), or within a declared tolerance
       ({"KEY_PATTERN": {"relative": r, "absolute": a}}, fnmatch patterns over SET/WORLD:KEY,
-      first match wins; |x - y| <= a + r max|x| per array); refusals must match exactly.
+      first match wins; |x - y| <= a + r max|x| per array); refusals must match exactly,
+      BASELINE's read through TABLE where one is given.
       --padding k1 (off by default) lets channel_targets and channel_tau_s differ at channel
       slots inactive for the whole run (check K1), for uses such as packed bucketing. It is
       NOT used by D172's dispatch gate (the lead's ruling, 15 November: the host observer keeps
@@ -349,14 +351,34 @@ def source():
     )
 
 
-def save(directory, sets, worlds, max_steps, origin, append=False):
+def id_map_table(path):
+    """The table file of --map, read; {} without one."""
+    if path is None:
+        return {}
+    from validation import id_table
+
+    return id_table.read_table(path)
+
+
+def through(value, table):
+    """`value` with its renamed IDs translated (validation/id_table.py)."""
+    if not table:
+        return value
+    from validation import id_table
+
+    return id_table.translate(value, table)
+
+
+def save(directory, sets, worlds, max_steps, origin, append=False, id_map=None):
     """Run and save every world; with append, add sets (none already there) to an existing
-    baseline from the same source, recording the addition in its manifest."""
+    baseline from the same source, recording the addition in its manifest. With id_map (a table
+    file), the origin's definitions are translated through it first."""
     import jax
 
     from cells.execution import blas_threads
 
     jax.config.update("jax_enable_x64", True)
+    table = id_map_table(id_map)
     if append:
         manifest = json.loads((directory / "manifest.json").read_text())
         if manifest["source"] != source() or manifest["max_steps"] != max_steps:
@@ -367,7 +389,7 @@ def save(directory, sets, worlds, max_steps, origin, append=False):
         manifest.setdefault("appended", []).append(
             dict(sets=list(sets), tool=str(Path(__file__).resolve()), at=time_now())
         )
-        return _save_sets(directory, manifest, sets, worlds, max_steps, origin)
+        return _save_sets(directory, manifest, sets, worlds, max_steps, origin, table)
     directory.mkdir(parents=True, exist_ok=False)
     manifest = dict(
         kind="cells.results_baseline@1",
@@ -388,7 +410,9 @@ def save(directory, sets, worlds, max_steps, origin, append=False):
         definitions_from=str(origin) if origin else "built by this source's validation builders",
         worlds={},
     )
-    return _save_sets(directory, manifest, sets, worlds, max_steps, origin)
+    if id_map:
+        manifest["definitions_through"] = dict(table=str(id_map), renamed_ids=len(table))
+    return _save_sets(directory, manifest, sets, worlds, max_steps, origin, table)
 
 
 def time_now():
@@ -397,7 +421,7 @@ def time_now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def _save_sets(directory, manifest, sets, worlds, max_steps, origin):
+def _save_sets(directory, manifest, sets, worlds, max_steps, origin, table):
     import jax
 
     for set_name in sets:
@@ -405,7 +429,7 @@ def _save_sets(directory, manifest, sets, worlds, max_steps, origin):
             records = [
                 json.loads(p.read_text()) for p in sorted((origin / set_name).glob("*.json"))
             ]
-            built = {r["name"]: r["definition"] for r in records}
+            built = {r["name"]: through(r["definition"], table) for r in records}
         else:
             try:
                 built = SETS[set_name]()
@@ -498,7 +522,7 @@ def tolerance_for(key, tolerances):
     return None
 
 
-def compare(base, other, tolerances, padding=False):
+def compare(base, other, tolerances, padding=False, table=()):
     a_manifest = json.loads((base / "manifest.json").read_text())
     b_manifest = json.loads((other / "manifest.json").read_text())
     rows, problems = [], []
@@ -511,7 +535,12 @@ def compare(base, other, tolerances, padding=False):
         ra = json.loads((base / set_name / f"{stem(name)}.json").read_text()).get("refusal")
         rb = json.loads((other / set_name / f"{stem(name)}.json").read_text()).get("refusal")
         if ra or rb:
-            same = bool(ra and rb and ra["type"] == rb["type"] and ra["message"] == rb["message"])
+            same = bool(
+                ra
+                and rb
+                and ra["type"] == rb["type"]
+                and through(ra["message"], table) == rb["message"]
+            )
             rows.append(dict(world=world, refusal=True, equal=same))
             continue
         x, y = (
@@ -586,6 +615,7 @@ def main(argv=None):
     two.add_argument("--worlds", nargs="*", default=[])
     two.add_argument("--max-steps", type=int, default=MAX_STEPS)
     two.add_argument("--from", dest="origin", type=Path)
+    two.add_argument("--map", dest="id_map", type=Path, help="with --from: renamed IDs' table")
     two.add_argument("--append", action="store_true", help="add sets to an existing baseline")
     three = sub.add_parser("compare")
     three.add_argument("base", type=Path)
@@ -594,8 +624,11 @@ def main(argv=None):
     three.add_argument(
         "--padding", choices=("k1",), help="check K1 padding rule (off for D172 gates)"
     )
+    three.add_argument("--map", dest="id_map", type=Path, help="renamed IDs' table")
     three.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
+    if args.action == "save" and args.id_map and not args.origin:
+        parser.error("--map translates the definitions of --from")
     if args.action == "list":
         for set_name in args.sets:
             try:
@@ -604,7 +637,13 @@ def main(argv=None):
                 print(set_name, "builder error:", repr(error)[:300])
     elif args.action == "save":
         manifest = save(
-            args.directory, args.sets, set(args.worlds), args.max_steps, args.origin, args.append
+            args.directory,
+            args.sets,
+            set(args.worlds),
+            args.max_steps,
+            args.origin,
+            args.append,
+            args.id_map,
         )
         refused = [k for k, v in manifest["worlds"].items() if v.get("refusal")]
         errors = [k for k, v in manifest["worlds"].items() if "builder_error" in v]
@@ -613,7 +652,13 @@ def main(argv=None):
         )
     else:
         tolerances = json.loads(args.tolerance.read_text()) if args.tolerance else {}
-        report = compare(args.base, args.other, tolerances, padding=args.padding == "k1")
+        report = compare(
+            args.base,
+            args.other,
+            tolerances,
+            padding=args.padding == "k1",
+            table=id_map_table(args.id_map),
+        )
         if args.output:
             args.output.write_text(json.dumps(report, indent=1) + "\n")
         print(

@@ -1,4 +1,4 @@
-"""Compare exact binding vertices and held-face minima with rapid_binding@1 and the Lean definition."""
+"""Compare exact vertices and held-face minima with cells.binding.rapid_binding@1 and Lean."""
 
 import argparse
 import json

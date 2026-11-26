@@ -1,4 +1,4 @@
-"""OL2's geometry worlds in cells.assembly_lineages@2: the bilayer geometry, phase exchange and
+"""OL2's geometry worlds in cells.model.assembly_lineages@2: the bilayer geometry, phase exchange and
 permeation (docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1, §5; the design note's §0.2b-§0.2d).
 
 Each claim with a planted error it must catch (D187):
@@ -362,6 +362,8 @@ def test_ol1_worlds_carry_no_geometry():
 
 
 REFUSALS = {
+    "an inner pair outside a shell": (  # FR-46 (R6): refused by name, even with no inner step
+        lambda w: _inner_pair(site_binding(w)), "admits in a cells.assembly_geometry.prescribed_shell@1 world only"),
     "exchange_encounter without a geometry": (
         lambda w: (w.pop("geometry"), w["steps"].pop(0)), "declared only by a world that declares"),
     "a geometry without exchange_encounter": (
@@ -443,6 +445,12 @@ def _two_ligands(w):
     w["founder"]["X2R@membrane"] = 0
     w["sites"] = [{"site": "R", "complex": "X2R"}]
     _bind_step(w).update(reactants={"X@pool": 2, "R@membrane": 1}, products={"X2R@membrane": 1})
+    return w
+
+
+def _inner_pair(w):
+    """FR-46: the fixture's declared pair on the inner face, in a bilayer world."""
+    w["sites"][0]["face"] = "inner"
     return w
 
 
@@ -703,7 +711,26 @@ SHELL_REFUSALS = {
         lambda w: w["rate_factor"].update(forms=["G", "S"]), "not a membrane species"),
     "the shell's permeation on a bilayer": (
         lambda w: w.clear() or w.update(_bilayer_with_shell_entry()), "is a prescribed shell's"),
+    # FR-48 (D323): a lumen potential's version 1 scope, each refused by name
+    "a lumen potential on a species with no lumen place": (
+        lambda w: w["species"][1]["standard_mu_RT"].update(lumen=0.5), "has no lumen place"),
+    "a lumen potential without a solution potential": (
+        lambda w: (w["species"].append(species("Q", {"q": 1}, lumen=0.3)),
+                   w["phases"]["lumen"]["species"].append("Q"),
+                   w["founder"].update({"Q@lumen": 1})),
+        "without a solution potential"),
+    "a lumen potential on a bilayer": (
+        lambda w: w.clear() or w.update(_bilayer_with_lumen_potential()),
+        "admits in a cells.assembly_geometry.prescribed_shell@1 world only"),
 }  # fmt: skip
+
+
+def _bilayer_with_lumen_potential():
+    w = lipid_world(lumen=True)
+    for entry in w["species"]:
+        if entry["id"] == "S":
+            entry["standard_mu_RT"]["lumen"] = entry["standard_mu_RT"].get("solution", 0.0) + 0.5
+    return w
 
 
 def _bilayer_with_shell_entry():

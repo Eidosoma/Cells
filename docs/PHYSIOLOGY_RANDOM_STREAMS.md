@@ -1,5 +1,10 @@
 # Physiological perturbations, random streams and checkpoints
 
+> **Legacy cleanup (25 November 2026, D386).** The physiology stack this page describes is retired
+> (D374), and its code left `validation/betse/physiology/`, `validation/perturbations/` and
+> `validation/temperature/`. This page and the protocols stay as records. The tag
+> `pre-cleanup-2026-11-25` keeps the code.
+
 > Moved to `validation/betse/physiology/` on 9 November 2026 (D132): the BETSE-loop
 > reproduction harness, not engine code.
 

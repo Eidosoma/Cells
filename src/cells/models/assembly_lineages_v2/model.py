@@ -17,7 +17,13 @@ import math
 import numpy as np
 
 from cells.models.assembly_lineages import ledger as v1_ledger
-from cells.models.assembly_lineages_v2 import MODEL_ID, SHEAR_FISSION, TENSION_HOLD, streams
+from cells.models.assembly_lineages_v2 import (
+    MODEL_ID,
+    SHEAR_FISSION,
+    SIZE_THRESHOLD_DIVISION,
+    TENSION_HOLD,
+    streams,
+)
 from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.models.assembly_lineages_v2.kernel import ENTRIES, Layout, Structure, Tables
 from cells.registry import laws as law_registry
@@ -216,7 +222,7 @@ def geometry_layout(world, P, R, place):
 
 def shell_layout(world, P, R):
     """FR-21's prescribed shell in kernel.GEOMETRY_FIELDS' order: no quanta, no floor and no
-    lysis; each cells.shell_permeation@1 step takes the constant extent ln(A_sh·ρ0) (code 3, in
+    lysis; each cells.reaction.shell_permeation@1 step takes the constant extent ln(A_sh·ρ0) (code 3, in
     the log_area slot)."""
     from cells.models.assembly_lineages_v2 import SHELL_PERMEATION, prescribed_shell
 
@@ -293,6 +299,8 @@ def components(spec):
     if world.geometry is not None:
         laws.append(world.geometry[0])
     operators = [] if world.division is None else [SHEAR_FISSION]  # OL3 (division.py)
+    if world.size_division is not None:  # OL6 S7 (size_division.py)
+        operators.append(SIZE_THRESHOLD_DIVISION)
     if world.hazard is not None:  # FR-31: the hazard, and the holds it reads (written only then)
         laws.append(world.hazard[0])
     if spec.experiment.tension_holds:

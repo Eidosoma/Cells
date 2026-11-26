@@ -234,7 +234,7 @@ def test_each_planted_error_fails_its_own_criterion(plant, expected):
     elif plant == "refusal_check":
         p["refusals"]["classes"]["R7_a_faster_face"]["refused"][0]["check"] = "the species cap"
     elif plant == "neighbour":
-        p["refusals"]["classes"]["R9_the_species_cap"]["admitted"][0]["ran"] = False
+        p["refusals"]["classes"]["R8_outside_the_measured_steps"]["admitted"][0]["ran"] = False
     elif plant == "not_admitted":
         p["W7_staircase_rk4"].update(completed=False, refusal="refused at run time")
     elif plant == "compensation":  # 870 x the rounding of W2's 90 fmol of charged dose.

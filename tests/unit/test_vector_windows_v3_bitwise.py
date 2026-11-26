@@ -1,4 +1,4 @@
-"""Vectorized resolved_pump_tissue@3 worlds are bitwise identical to single-world runs
+"""Vectorized cells.model.resolved_pump_tissue@3 worlds are bitwise identical to single-world runs
 on CPU when XLA's algebraic rewrites and fusion are disabled in both (a diagnostic
 compiler setting, in a subprocess). With default flags the programs differ only in
 those rewrites and fused multiply-adds (tests/unit/test_vector_windows_v3.py bounds

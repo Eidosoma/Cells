@@ -1,0 +1,1913 @@
+{
+ "format": "gap_junction_tissue.linear_rule@1",
+ "registration": "docs/GJ_LINEAR_REGISTRATION.md",
+ "proposed_tag": "gj-linear-registered-2026-11-23",
+ "citation": "Grodstein, Mathews and Levin (2026), bioRxiv 10.64898/2026.09.02.748840 v1 (CC-BY 4.0)",
+ "engine_models": {
+  "norton": [
+   "resolved_pump_tissue@3",
+   "constant_field@1 (membranes and junctions)"
+  ],
+  "as_written": [
+   "resolved_pump_composite@1 over resolved_pump_tissue@3",
+   "local_species_reactions@1 (a zeroth-order source and a first-order decay)",
+   "cells.passive_routes@1 with passive_neutral_permeation@1 (junctions and probes)"
+  ],
+  "both": [
+   "junction_voltage_relaxation@1, pinned open",
+   "resolved_capacitor_components_current_continuity@1",
+   "imex_ars222_face_electromigration@1 with capacitive_reduction_gauged_damped_newton@2"
+  ]
+ },
+ "world": {
+  "radius_m": 5e-06,
+  "k_dec_per_s": 0.05,
+  "g_eq1_m3_s": 2.6179938779914952e-17,
+  "end_s": 600.0,
+  "settle_s": 10.0,
+  "base_dt_s": 0.25,
+  "step_rule": "dt = BASE_DT_S halved until dt x @3's explicit rate <= 0.04 (worlds.step); the rate is 2 max_i sum of P A / V_i",
+  "as_written_scale_mM": 0.001,
+  "units": "concentrations in the preprint's [mR] units (1 mM in the Norton form, 1 uM as written); conductances in units of one cell's G_eq,1 = V_cell K_dec"
+ },
+ "networks": {
+  "figure3-g0.5": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 0.5
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g1": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 1.0
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g2": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 2.0
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g5": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 5.0
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g10": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 10.0
+    }
+   ],
+   "probes": []
+  },
+  "figure3-g50": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 10.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 50.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-lumped-g1": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.3333333333333333
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 1.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-network-g1": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "A1",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "A2",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B1",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B2",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B3",
+     "unloaded": 5.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 1.0
+    },
+    {
+     "id": "gj_A1",
+     "a": "A",
+     "b": "A1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_A2",
+     "a": "A",
+     "b": "A2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_B1",
+     "a": "B",
+     "b": "B1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_B2",
+     "a": "B",
+     "b": "B2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_B3",
+     "a": "B",
+     "b": "B3",
+     "g": 1.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-lumped-g10": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.3333333333333333
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 10.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-network-g10": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "A1",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "A2",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B1",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B2",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B3",
+     "unloaded": 5.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 10.0
+    },
+    {
+     "id": "gj_A1",
+     "a": "A",
+     "b": "A1",
+     "g": 10.0
+    },
+    {
+     "id": "gj_A2",
+     "a": "A",
+     "b": "A2",
+     "g": 10.0
+    },
+    {
+     "id": "gj_B1",
+     "a": "B",
+     "b": "B1",
+     "g": 10.0
+    },
+    {
+     "id": "gj_B2",
+     "a": "B",
+     "b": "B2",
+     "g": 10.0
+    },
+    {
+     "id": "gj_B3",
+     "a": "B",
+     "b": "B3",
+     "g": 10.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-lumped-g50": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.3333333333333333
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 50.0
+    }
+   ],
+   "probes": []
+  },
+  "figure5-network-g50": {
+   "cells": [
+    {
+     "id": "A",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "A1",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "A2",
+     "unloaded": 10.0,
+     "size": 1.0
+    },
+    {
+     "id": "B1",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B2",
+     "unloaded": 5.0,
+     "size": 1.0
+    },
+    {
+     "id": "B3",
+     "unloaded": 5.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_AB",
+     "a": "A",
+     "b": "B",
+     "g": 50.0
+    },
+    {
+     "id": "gj_A1",
+     "a": "A",
+     "b": "A1",
+     "g": 50.0
+    },
+    {
+     "id": "gj_A2",
+     "a": "A",
+     "b": "A2",
+     "g": 50.0
+    },
+    {
+     "id": "gj_B1",
+     "a": "B",
+     "b": "B1",
+     "g": 50.0
+    },
+    {
+     "id": "gj_B2",
+     "a": "B",
+     "b": "B2",
+     "g": 50.0
+    },
+    {
+     "id": "gj_B3",
+     "a": "B",
+     "b": "B3",
+     "g": 50.0
+    }
+   ],
+   "probes": []
+  },
+  "figure8-chain1-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c0",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain1-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c0",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain2-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c1",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain2-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c1",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain3-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c2",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain3-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c2",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain4-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c3",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain4-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c3",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain5-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c4",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    },
+    {
+     "id": "gj_3",
+     "a": "c3",
+     "b": "c4",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c4",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain5-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c4",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    },
+    {
+     "id": "gj_3",
+     "a": "c3",
+     "b": "c4",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c4",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain10-held0.5": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c4",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c5",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c6",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c7",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c8",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c9",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    },
+    {
+     "id": "gj_3",
+     "a": "c3",
+     "b": "c4",
+     "g": 1.0
+    },
+    {
+     "id": "gj_4",
+     "a": "c4",
+     "b": "c5",
+     "g": 1.0
+    },
+    {
+     "id": "gj_5",
+     "a": "c5",
+     "b": "c6",
+     "g": 1.0
+    },
+    {
+     "id": "gj_6",
+     "a": "c6",
+     "b": "c7",
+     "g": 1.0
+    },
+    {
+     "id": "gj_7",
+     "a": "c7",
+     "b": "c8",
+     "g": 1.0
+    },
+    {
+     "id": "gj_8",
+     "a": "c8",
+     "b": "c9",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c9",
+     "held": 0.5,
+     "g": 1.0
+    }
+   ]
+  },
+  "figure8-chain10-held2": {
+   "cells": [
+    {
+     "id": "c0",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c1",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c2",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c3",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c4",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c5",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c6",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c7",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c8",
+     "unloaded": 1.0,
+     "size": 1.0
+    },
+    {
+     "id": "c9",
+     "unloaded": 1.0,
+     "size": 1.0
+    }
+   ],
+   "junctions": [
+    {
+     "id": "gj_0",
+     "a": "c0",
+     "b": "c1",
+     "g": 1.0
+    },
+    {
+     "id": "gj_1",
+     "a": "c1",
+     "b": "c2",
+     "g": 1.0
+    },
+    {
+     "id": "gj_2",
+     "a": "c2",
+     "b": "c3",
+     "g": 1.0
+    },
+    {
+     "id": "gj_3",
+     "a": "c3",
+     "b": "c4",
+     "g": 1.0
+    },
+    {
+     "id": "gj_4",
+     "a": "c4",
+     "b": "c5",
+     "g": 1.0
+    },
+    {
+     "id": "gj_5",
+     "a": "c5",
+     "b": "c6",
+     "g": 1.0
+    },
+    {
+     "id": "gj_6",
+     "a": "c6",
+     "b": "c7",
+     "g": 1.0
+    },
+    {
+     "id": "gj_7",
+     "a": "c7",
+     "b": "c8",
+     "g": 1.0
+    },
+    {
+     "id": "gj_8",
+     "a": "c8",
+     "b": "c9",
+     "g": 1.0
+    }
+   ],
+   "probes": [
+    {
+     "id": "probe",
+     "cell": "c9",
+     "held": 2.0,
+     "g": 1.0
+    }
+   ]
+  }
+ },
+ "arms": [
+  {
+   "arm": "figure3-g0.5",
+   "form": "norton",
+   "network": "figure3-g0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.25,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure3-g1",
+   "form": "norton",
+   "network": "figure3-g1",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure3-g2",
+   "form": "norton",
+   "network": "figure3-g2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure3-g5",
+   "form": "norton",
+   "network": "figure3-g5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.0625,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure3-g10",
+   "form": "norton",
+   "network": "figure3-g10",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.03125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure3-g50",
+   "form": "norton",
+   "network": "figure3-g50",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.0078125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure5-lumped-g1",
+   "form": "norton",
+   "network": "figure5-lumped-g1",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure5-network-g1",
+   "form": "norton",
+   "network": "figure5-network-g1",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.0625,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure5-lumped-g10",
+   "form": "norton",
+   "network": "figure5-lumped-g10",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.03125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure5-network-g10",
+   "form": "norton",
+   "network": "figure5-network-g10",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.0078125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure5-lumped-g50",
+   "form": "norton",
+   "network": "figure5-lumped-g50",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.0078125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure5-network-g50",
+   "form": "norton",
+   "network": "figure5-network-g50",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.001953125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain1-held0.5",
+   "form": "norton",
+   "network": "figure8-chain1-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain1-held2",
+   "form": "norton",
+   "network": "figure8-chain1-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain2-held0.5",
+   "form": "norton",
+   "network": "figure8-chain2-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain2-held2",
+   "form": "norton",
+   "network": "figure8-chain2-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain3-held0.5",
+   "form": "norton",
+   "network": "figure8-chain3-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain3-held2",
+   "form": "norton",
+   "network": "figure8-chain3-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain4-held0.5",
+   "form": "norton",
+   "network": "figure8-chain4-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain4-held2",
+   "form": "norton",
+   "network": "figure8-chain4-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain5-held0.5",
+   "form": "norton",
+   "network": "figure8-chain5-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain5-held2",
+   "form": "norton",
+   "network": "figure8-chain5-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain10-held0.5",
+   "form": "norton",
+   "network": "figure8-chain10-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "figure8-chain10-held2",
+   "form": "norton",
+   "network": "figure8-chain10-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "control-planted",
+   "form": "norton",
+   "network": "figure3-g1",
+   "windowed": false,
+   "planted": true,
+   "dt_s": 0.125,
+   "steps": [
+    1.0
+   ]
+  },
+  {
+   "arm": "aw-figure3-g0.5",
+   "form": "as_written",
+   "network": "figure3-g0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.25,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure3-g1",
+   "form": "as_written",
+   "network": "figure3-g1",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure3-g2",
+   "form": "as_written",
+   "network": "figure3-g2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure3-g5",
+   "form": "as_written",
+   "network": "figure3-g5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.0625,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure3-g10",
+   "form": "as_written",
+   "network": "figure3-g10",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.03125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure5-lumped-g1",
+   "form": "as_written",
+   "network": "figure5-lumped-g1",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure5-lumped-g10",
+   "form": "as_written",
+   "network": "figure5-lumped-g10",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.03125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure5-network-g1",
+   "form": "as_written",
+   "network": "figure5-network-g1",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.0625,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure5-network-g10",
+   "form": "as_written",
+   "network": "figure5-network-g10",
+   "windowed": true,
+   "planted": false,
+   "dt_s": 0.0078125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain1-held0.5",
+   "form": "as_written",
+   "network": "figure8-chain1-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain1-held2",
+   "form": "as_written",
+   "network": "figure8-chain1-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain2-held0.5",
+   "form": "as_written",
+   "network": "figure8-chain2-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain2-held2",
+   "form": "as_written",
+   "network": "figure8-chain2-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain3-held0.5",
+   "form": "as_written",
+   "network": "figure8-chain3-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain3-held2",
+   "form": "as_written",
+   "network": "figure8-chain3-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain4-held0.5",
+   "form": "as_written",
+   "network": "figure8-chain4-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain4-held2",
+   "form": "as_written",
+   "network": "figure8-chain4-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain5-held0.5",
+   "form": "as_written",
+   "network": "figure8-chain5-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain5-held2",
+   "form": "as_written",
+   "network": "figure8-chain5-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain10-held0.5",
+   "form": "as_written",
+   "network": "figure8-chain10-held0.5",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-figure8-chain10-held2",
+   "form": "as_written",
+   "network": "figure8-chain10-held2",
+   "windowed": false,
+   "planted": false,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  },
+  {
+   "arm": "aw-control-planted",
+   "form": "as_written",
+   "network": "figure3-g1",
+   "windowed": false,
+   "planted": true,
+   "dt_s": 0.125,
+   "steps": [
+    1.0,
+    0.5,
+    0.25
+   ]
+  }
+ ],
+ "chains": [
+  {
+   "id": "figure8-chain1",
+   "form": "norton",
+   "n": 1,
+   "loads": [
+    "figure8-chain1-held0.5",
+    "figure8-chain1-held2"
+   ]
+  },
+  {
+   "id": "figure8-chain2",
+   "form": "norton",
+   "n": 2,
+   "loads": [
+    "figure8-chain2-held0.5",
+    "figure8-chain2-held2"
+   ]
+  },
+  {
+   "id": "figure8-chain3",
+   "form": "norton",
+   "n": 3,
+   "loads": [
+    "figure8-chain3-held0.5",
+    "figure8-chain3-held2"
+   ]
+  },
+  {
+   "id": "figure8-chain4",
+   "form": "norton",
+   "n": 4,
+   "loads": [
+    "figure8-chain4-held0.5",
+    "figure8-chain4-held2"
+   ]
+  },
+  {
+   "id": "figure8-chain5",
+   "form": "norton",
+   "n": 5,
+   "loads": [
+    "figure8-chain5-held0.5",
+    "figure8-chain5-held2"
+   ]
+  },
+  {
+   "id": "figure8-chain10",
+   "form": "norton",
+   "n": 10,
+   "loads": [
+    "figure8-chain10-held0.5",
+    "figure8-chain10-held2"
+   ]
+  },
+  {
+   "id": "aw-figure8-chain1",
+   "form": "as_written",
+   "n": 1,
+   "loads": [
+    "aw-figure8-chain1-held0.5",
+    "aw-figure8-chain1-held2"
+   ]
+  },
+  {
+   "id": "aw-figure8-chain2",
+   "form": "as_written",
+   "n": 2,
+   "loads": [
+    "aw-figure8-chain2-held0.5",
+    "aw-figure8-chain2-held2"
+   ]
+  },
+  {
+   "id": "aw-figure8-chain3",
+   "form": "as_written",
+   "n": 3,
+   "loads": [
+    "aw-figure8-chain3-held0.5",
+    "aw-figure8-chain3-held2"
+   ]
+  },
+  {
+   "id": "aw-figure8-chain4",
+   "form": "as_written",
+   "n": 4,
+   "loads": [
+    "aw-figure8-chain4-held0.5",
+    "aw-figure8-chain4-held2"
+   ]
+  },
+  {
+   "id": "aw-figure8-chain5",
+   "form": "as_written",
+   "n": 5,
+   "loads": [
+    "aw-figure8-chain5-held0.5",
+    "aw-figure8-chain5-held2"
+   ]
+  },
+  {
+   "id": "aw-figure8-chain10",
+   "form": "as_written",
+   "n": 10,
+   "loads": [
+    "aw-figure8-chain10-held0.5",
+    "aw-figure8-chain10-held2"
+   ]
+  }
+ ],
+ "mapping": {
+  "rule": "an engine arm is compared with the reference network named by its `network`; a chain's Norton conductance and intercept with the reference chain of its n",
+  "engine to reference": "the same id without the as-written prefix 'aw-'; both planted controls with figure3-g1, the unperturbed network",
+  "cells": "by id, never by position: the engine's concentrations are in its network's cell order, which the declaration lists"
+ },
+ "error_terms": {
+  "unit_roundoff": 1.1102230246251565e-16,
+  "transient": "A exp(-K_dec T) x 1.01, A = sqrt(N V_max/V_min) rho",
+  "rounding": "4u (rho/(K_dec dt) + (1 + G_max)(1 + rho) + 1)",
+  "ledger": "2u N (T/S)",
+  "reference": "each value's declared accuracy_rel, at most 1e-13"
+ },
+ "norton": {
+  "judged_step": "dt (the step rule's)",
+  "concentration_tolerance": "F_N (transient + rounding) + accuracy_rel",
+  "factor_of_safety": 2.0,
+  "steady": "the relative change over the last S <= F_N (transient + rounding)",
+  "ledger": "|ledger flux - G_probe (c - held)| / |G_probe (c - held)| <= F_N ledger + 2 (c / |c - held|) F_N (transient + rounding)",
+  "chains": "G and the intercept from the two loads, first-order propagation of the concentrations' floor and the fluxes' (ledger + the concentration's share)"
+ },
+ "as_written": {
+  "steps": "dt, dt/2, dt/4",
+  "judged_step": "dt/4",
+  "estimate": "max over cells |c(dt/2) - c(dt/4)| / |c(dt/4)| / (2^p - 1), p = 2",
+  "order_declared": 2,
+  "order_reason": "Strang's split of the reactions' SSPRK(3,3) halves about @3's ARS(2,2,2) step (resolved_pump_composite@1): second order",
+  "tolerance": "max(F_W est, floor) + accuracy_rel, F_W = 3 (Roache's two-grid factor at an assumed order, as FR-25), floor = the Norton floor at dt/4",
+  "factor_of_safety": 3.0,
+  "order_window": [
+   1.5,
+   3.5
+  ],
+  "at_floor": "where F_W est <= floor the arm is judged against the floor and the order check is skipped",
+  "chains": "G and the intercept at each step from its two loads, by the same rule"
+ },
+ "verdicts": {
+  "arm": "inconclusive if an order falls outside the window; else failed if any judged quantity exceeds its tolerance or the engine refused the run; else passed",
+  "plants": "each planted control must fail by its gap (it ran, and its gap exceeds its tolerance); a plant that passes, is missing, refused or inconclusive makes the comparison 'instrument not validated', whatever the other arms show",
+  "overall": "any failed arm makes the comparison failed; else any inconclusive arm makes it inconclusive; else passed (FR-25's precedence, D308)"
+ },
+ "retry": {
+  "fractions": [
+   0.5,
+   0.25,
+   0.125
+  ],
+  "judged_fraction": 0.125,
+  "once": true,
+  "arms": "inconclusive as-written arms only",
+  "harness": "a run stopped by the harness (memory, runtime limit, machine fault) is rerun once from the same snapshot; an engine refusal is a result, never rerun",
+  "driver": "run.py takes the triple from the step rule's dt and runs every arm: a retry needs a tagged amendment adding the finer base step and the arm filter before it runs (D308)"
+ },
+ "plants": [
+  {
+   "id": "P-N1",
+   "where": "engine (judged run, arm control-planted)",
+   "what": "the Norton form of Figure 3 at G_GJ = G_eq with every junction permeability x1.01, judged against the unperturbed figure3-g1 reference",
+   "expected": "fails: its steady state moves by 8.3e-4 of the reference, about 1e9 times its tolerance"
+  },
+  {
+   "id": "P-W1",
+   "where": "engine (judged run, arm aw-control-planted)",
+   "what": "the same plant as written, every junction route x1.01, with its own triple",
+   "expected": "fails: 8.3e-4 against a tolerance below 1e-5"
+  },
+  {
+   "id": "P-R1",
+   "where": "reader (synthetic interface, tests)",
+   "what": "a reference concentration raised by 1e-9 of itself",
+   "expected": "fails the Norton arm judged against it"
+  },
+  {
+   "id": "P-R2",
+   "where": "reader (synthetic interface, tests)",
+   "what": "Figure 8's printed recursion read as Figure 7's resistance form (P_res) in place of the physical balance",
+   "expected": "fails at n >= 3 (31% at n = 3) and passes at n = 1 and 2, where the two agree"
+  },
+  {
+   "id": "P-R3",
+   "where": "reader (synthetic interface, tests)",
+   "what": "an interface whose echo of a network's declaration differs (unloaded values swapped)",
+   "expected": "refused (ComparisonError) before any value is compared"
+  },
+  {
+   "id": "P-R4",
+   "where": "reader (synthetic interface, tests)",
+   "what": "an interface missing a registered network",
+   "expected": "refused (ComparisonError), never passed"
+  },
+  {
+   "id": "P-O1",
+   "where": "judge (synthetic triple, tests)",
+   "what": "an as-written triple with a step-independent bias of 1e-5 and a second-order error",
+   "expected": "fails: the order is 2, but the gap exceeds 3 est"
+  },
+  {
+   "id": "P-O2",
+   "where": "judge (synthetic triple, tests)",
+   "what": "an as-written triple converging at first order",
+   "expected": "inconclusive: its order, 1, lies outside [1.5, 3.5]"
+  }
+ ],
+ "reported": {
+  "publication_targets": "the references' closed forms against the preprint's printed and read values (paper.REPORTED), with each value's rounding half-unit: findings, never judged",
+  "printed_recursion": "the appendix's chain recursion, literal and read as Figure 7's resistance form, against the physical balances: a finding (D219)"
+ },
+ "interface": {
+  "file": "validation/gap_junction_tissue/references/interface/linear.json",
+  "format": "gap_junction_tissue.linear_references@1",
+  "keys": {
+   "format": "gap_junction_tissue.linear_references@1",
+   "registration": "the tag the references read",
+   "networks": "{network id: {declaration, concentrations, accuracy_rel, method}} for every network id listed under `networks`; declaration echoes that listing's {cells, junctions, probes} exactly as read; concentrations is {cell id: steady concentration} in the preprint's [mR] units",
+   "chains": "{n: {g_eq_ratio, intercept, accuracy_rel, method}} for n in 1, 2, 3, 4, 5, 10: the Norton conductance of a straight chain of n cells at G_GJ = G_eq,1 in units of G_eq,1, sealed at its far end and seen from cell n, and its open-circuit concentration (mR_UL0 = 1)",
+   "limits": "{figure3: the two cells' common limit as G_GJ grows (unloaded 5 and 10), figure5b: the lumped model's (A unloaded 10, B 4/3 of A unloaded 5), chain: the chain's Norton conductance as n grows, in units of G_eq,1}",
+   "printed_recursion": "{literal: [G_eq,1 .. G_eq,10], resistance_form: [...]}: the appendix's recursion taken literally (in units of G_eq,1) and read as Figure 7's resistance form, at G_GJ = G_eq,1"
+  },
+  "accuracy": "every accuracy_rel at most 1e-13"
+ },
+ "not_blind": "The registrant ran the development runs smoke-01 and dev-01 to dev-06 (17-18 November) and read their values: Norton concentrations within 2.7e-14 of the registrant's dense solve, ledgers within 5.8e-13, as written within 1.0e-5 at dt and 2.5e-6 at dt/2 with orders 2.00-2.01. No tolerance is set from them: every tolerance is a stated error term's, from the declaration and the engine's own run. The references' values are not known to the registrant beyond the closed forms the preprint itself implies (equation 2, the chain's golden-ratio limit). A smoke of the registered code paths at a 20 s horizon (probes/smoke-registered-01) ran every arm. Most were far from steady, but Figure 3b and 5b at 10 and 50 G_eq were at or within a few times 1e-9 of their fixed points (no probe, so no uniform mode). For aw-figure3-g10 and aw-figure5-lumped-g10 the smoke's table printed their dt/4 tolerance (7.3e-7) and orders (2.013, 2.011), in effect the judged triple's. No engine value was compared with a reference."
+}

@@ -1,6 +1,6 @@
 """The stored-rate term in the stage energy-rate observation (INNER_MODEL_V4_DESIGN.md §7.4 (m)).
 
-tests/kind_fixtures.py's `tests.conversion@1` converts a neutral S1 into a neutral S2 at a heredity
+tests/kind_fixtures.py's `tests.kind.conversion@1` converts a neutral S1 into a neutral S2 at a heredity
 cell at a constant rate, with declared standard potentials that @3's RT ln c terms leave out and no
 stage read carries: finite fuel's bookkeeping in miniature. It stores the standard part
 (mu°_P - mu°_S) x moved (ledger_terms' stored_pJ) and gives its rate (KindRates.stored_pJ_s):

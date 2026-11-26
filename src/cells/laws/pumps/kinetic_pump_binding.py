@@ -1,9 +1,8 @@
 """The kinetic pump law's binding: declared pump parameters into layout arrays, and the
 law's inputs from them.
 
-Shared by the active pump families (resolved_pump_tissue@1-@3, through surface_kinetic and
-surface_pump*). Moved verbatim from cells.legacy.models.kinetic_finite_extracellular, which
-re-imports these names (D188 R3, as step 0's probe P2 did).
+Shared by the resolved tissues and the pump families (cells.model.resolved_pump_tissue@1-@3), through
+surface_kinetic and surface_pump*.
 """
 
 import numpy as np

@@ -1,5 +1,9 @@
 # Finite cytosol/ER calcium
 
+> **Legacy cleanup (25 November 2026, D386).** `er_calcium@1` left the engine as a model, with its
+> example. Its store is being re-expressed on `cell_owned_compartments@1`, and its two laws stay in
+> `laws/reactions/er_calcium.py`. The tag `pre-cleanup-2026-11-25` keeps the code.
+
 `er_calcium@1` couples one fixed-volume cytosol/ER pair to the existing ideal
 reaction-network chemistry. The [example](../configs/er_calcium_buffered.json)
 has finite free/bound calcium, a two-site buffer in each compartment, potassium

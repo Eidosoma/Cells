@@ -1,4 +1,4 @@
-"""apical_vertex_mechanics@1 checked steps: vmap over worlds and the step bound.
+"""cells.model.apical_vertex_mechanics@1 checked steps: vmap over worlds and the step bound.
 
 Vmapped steps over two worlds equal the single-world steps; an RK4 step whose
 dt * rho exceeds 2 at its start state is refused without changing the state, and

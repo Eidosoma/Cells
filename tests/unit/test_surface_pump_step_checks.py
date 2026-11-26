@@ -1,4 +1,4 @@
-"""Step checks bound to a definition (resolved_pump_tissue@1-@3) and clock validation.
+"""Step checks bound to a definition (cells.model.resolved_pump_tissue@1-@3) and clock validation.
 
 core.grid.checked_grid validates a definition's whole declared clock in chunks of
 at most 1024 steps. The pump family's step checks read each chunk's largest step
@@ -6,11 +6,14 @@ and quantities of the definition alone, so bind_step_checks evaluates those once
 per definition (two of its rate bounds build the layout). These tests pin that the
 bound checks refuse exactly as the step checks did before (reference_* below are
 those functions, unchanged), chunk by chunk in the same order, and that a long
-clock builds the layout once, not once per chunk. No JIT and no device.
+clock builds the layout once, not once per chunk. The charge rule beside a floating node
+(docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3) has its definition's rows here, its stage's in
+test_kind_rules.py. No JIT and no device.
 """
 
 import copy
 from dataclasses import replace
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -20,14 +23,19 @@ from cells.definitions.surface_pump_v3_spec import NAV1P2_LAW_ID, projection
 from cells.execution import grid as grid_module
 from cells.execution.grid import EventGrid, checked_grid, clock_checks
 from cells.execution.schedule import control_values
+from cells.laws.electrochemistry import F, R
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v2 as second
 from cells.models import surface_pump_v3 as third
 from cells.models import surface_tissue as tissue
 from cells.numerics import surface_imex as imex
+from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import species_sum
+from cells.operators import species_common as common
 from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water
+from validation.tissue import secreted_species_fixtures as secreted
 from validation.tissue import surface_pump_fixtures as fixtures_1
 from validation.tissue import surface_pump_v2_fixtures as fixtures_2
 from validation.tissue import surface_pump_v3_fixtures as fixtures_3
@@ -290,3 +298,286 @@ def test_composites_bind_their_step_checks(monkeypatch):
         checked_grid(fast)
     with pytest.raises(ConfigError, match="Water relaxation"):
         clock_checks(fast)(np.full(2, 1e-3), np.array([0.0, 1e-3, 2e-3]))
+
+
+# ------------------------------------------------------------------ the charge rule
+# docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3: a patch that faces a floating node (loose) relaxes
+# a voltage of its own, so a cell's row divides by its other patches' (held) capacitance alone.
+
+STEP = 1e-3
+STORE = 3.3  # A store's capacitance over its cell's wall patch's.
+
+
+def entity(raw, key, name):
+    return next(x for x in raw["model"][key] if x["id"] == name)
+
+
+def plain(**kwargs):
+    """A quiescent secreted-species world as a bare cells.model.resolved_pump_tissue@3 definition."""
+    raw = secreted.world(**kwargs)
+    raw["model"]["id"] = "cells.model.resolved_pump_tissue@3"
+    raw["model"].pop("inner_model")
+    raw["model"].pop("operators")
+    return raw
+
+
+def conduct(raw, route, siemens):
+    """Give a patch or junction the K permeability whose max-side slope F^2/RT P A c is siemens
+    (every node of these worlds holds K at the bath's concentration)."""
+    slope = F * F / (R * raw["model"]["temperature_K"])
+    c = secreted.BATH_mM["K"]
+    route["permeability_m_per_s"]["K"] = siemens / (slope * route["area_m2"] * c)
+
+
+def pair(*, shared, junction, held=True):
+    """Two cells on the bath, each with a contact patch on a floating node, its own or a shared
+    one, and a junction j; held False drops cell_1's wall, so each of its patches floats."""
+    nodes = ("ecs_0", "ecs_0") if shared else ("ecs_0", "ecs_1")
+    raw = plain(
+        cells=(("cell_0", 1.0), ("cell_1", 1.0)),
+        nodes=tuple((n, 1.0) for n in dict.fromkeys(nodes)),
+        contacts=tuple((f"contact_{k}", f"cell_{k}", n) for k, n in enumerate(nodes)),
+        faces=(),
+        junctions=(("j", "cell_0", "cell_1"),) if junction else (),
+    )
+    if not held:
+        m, e = raw["model"], raw["experiment"]
+        m["membranes"] = [p for p in m["membranes"] if p["id"] != "wall_cell_1"]
+        e["membrane_controls"] = [
+            c for c in e["membrane_controls"] if c["membrane_id"] != "wall_cell_1"
+        ]
+        raw["execution"]["membrane_capacity"] = len(m["membranes"])
+    return raw
+
+
+def charge_world(name, value):
+    """The design's worlds A to D, `value` the dt x relaxation rate of their fastest charge mode
+    at 1 ms (D's is the rate of its conducting patch, at least the mode's):
+    - A: one cell, its wall patch (a K leak) on the bath, a silent store of 3.3 times the wall's
+      capacitance;
+    - B: two cells joined by a junction that carries K, a silent store each;
+    - C: A in a closed world, its wall on a node a face joins to the gauge, and the store declared
+      first, so that it is its component's representative;
+    - D: one floating node that patches of two cells face, the small one conducting."""
+    if name in "AC":
+        raw = plain(faces=())
+        if name == "C":
+            raw = plain(
+                nodes=(("ecs_0", 1.0), ("near", 1.0), ("g", 10.0)),
+                faces=(("face_0", "near", "g", 1e-10, 1e-5),),
+            )
+            m = raw["model"]
+            m["extracellular"] = [o for o in m["extracellular"] if o["id"] != "bath"]
+            raw["execution"]["extracellular_capacity"] = 3
+            m["closure"]["gauge_reference"] = "g"
+            entity(raw, "membranes", "wall_cell_0")["outside"] = "near"
+            for s in ("Na", "K", "Cl"):
+                m["faces"][0]["diffusivity_m2_per_s"][s] = 1e-9
+        wall = entity(raw, "membranes", "wall_cell_0")
+        entity(raw, "membranes", "contact_0")["capacitance_F"] = STORE * wall["capacitance_F"]
+        conduct(raw, wall, value * wall["capacitance_F"] / STEP)
+        return raw
+    raw = pair(shared=name == "D", junction=name == "B")
+    if name == "B":
+        for k in (0, 1):
+            store = entity(raw, "membranes", f"contact_{k}")
+            store["capacitance_F"] = STORE * secreted.WALL_C_F
+        conduct(raw, raw["model"]["junctions"][0], value * secreted.WALL_C_F / (2 * STEP))
+        return raw
+    for patch, farads in (("wall_cell_0", 1e-14), ("wall_cell_1", 1e-10), ("contact_0", 1e-12)):
+        entity(raw, "membranes", patch)["capacitance_F"] = farads
+    small = entity(raw, "membranes", "contact_1")
+    small["capacitance_F"] = 1e-13
+    conduct(raw, small, value * small["capacitance_F"] / STEP)
+    return raw
+
+
+@pytest.mark.parametrize("name, refused", [("A", 2.2), ("B", 2.2), ("C", 2.2), ("D", 3.0)])
+def test_the_rule_beside_a_floating_node_is_the_charge_modes_own(monkeypatch, name, refused):
+    """The definition's bound is each world's own relaxation rate, and so is the stage's (B's
+    junction has no row there), so the step checks, and the step where its patches conduct, refuse
+    it above the bound and admit it below. Planted: no node floats, every patch counted in its
+    cell's row, the rule before §8.3 without its node rows, which admits the refused step."""
+    step = np.asarray([STEP])
+    for value in (refused, 0.9):
+        spec = parse_spec(charge_world(name, value))
+        assert first.floating_nodes(spec.model) >= {"ecs_0"}
+        rate = float(first.explicit_rate_bound(projection(spec)))
+        assert STEP * rate == pytest.approx(value, rel=1e-12)
+        model = get_model(spec.model)
+        state, p = model.initial_values(spec)
+        control = model.Control(*(v[0] for v in control_values(spec, [0.0])))
+        stage = 0.0 if name == "B" else value
+        for rule in (model.membrane_rate, third.membrane_rate):  # And with no structure (NumPy).
+            assert STEP * float(rule(state, control, p, xp=np)) == pytest.approx(stage, rel=1e-12)
+        valid = model.imex_step(state, STEP, control, p, xp=np)[1]
+        assert bool(valid) == (stage < 1)
+        if value < 1:
+            third.check_steps(spec, step, None)
+            continue
+        with pytest.raises(ConfigError, match="explicit-rate stability bound"):
+            third.check_steps(spec, step, None)
+        with monkeypatch.context() as plant:
+            plant.setattr(first, "floating_nodes", lambda model: frozenset())
+            third.check_steps(spec, step, None)
+
+
+def test_a_floating_node_is_one_that_nothing_holds():
+    """Not a held bath, not the gauge, and named by no face and no forms face. The definition's
+    bound takes the set a caller gives in place of the definition's own: StepChecks gives the one
+    that knows the forms faces, which its projection does not hold, so the patch of a node that
+    only a forms face names is the cell's (0.27 at 1 ms over both patches, 3 over its own)."""
+    node = {n: SimpleNamespace(id=n, reservoir=n == "bath") for n in ("bath", "g", "f", "x", "s")}
+    model = SimpleNamespace(
+        extracellular=tuple(node.values()),
+        faces=(SimpleNamespace(sender="f", receiver="bath"),),
+        forms_faces=(SimpleNamespace(sender="bath", receiver="x"),),
+        gauge_reference="g",
+    )
+    assert first.floating_nodes(model) == {"s"}
+    raw = plain()  # ecs_0 is joined to the bath by one face.
+    raw["model"]["faces"][0]["law"] = "cells.route.logmean_electrodiffusion_forms@1"
+    contact = entity(raw, "membranes", "contact_0")
+    conduct(raw, contact, 3.0 * contact["capacitance_F"] / STEP)
+    spec = parse_spec(raw)
+    assert [f.id for f in spec.model.forms_faces] == ["face_0"] and not spec.model.faces
+    checks = third.bind_step_checks(spec)
+    cell = 3.0 * secreted.CONTACT_C_F / (secreted.CONTACT_C_F + secreted.WALL_C_F)
+    assert STEP * float(checks.explicit_rate) == pytest.approx(cell, rel=1e-12)
+    with third.forms_return_paths(spec.model):  # The projection alone: its node floats.
+        alone = float(first.explicit_rate_bound(checks.base))
+    assert STEP * alone == pytest.approx(3.0, rel=1e-12)
+
+
+def test_a_cell_with_no_held_patch_is_refused_by_name_where_a_junction_charges_it():
+    """cell_1's only patch faces the floating node it shares with cell_0, so no capacitance bounds
+    what its junction charges: one that carries K is refused, naming the cell and the junction;
+    one that carries nothing or the neutral species alone is not, nor K between two held cells."""
+    for species, held, refused in (
+        ("K", False, True),
+        ("S", False, False),
+        (None, False, False),
+        ("K", True, False),
+    ):
+        raw = pair(shared=True, junction=True, held=held)
+        if species:
+            raw["model"]["junctions"][0]["permeability_m_per_s"][species] = 1e-12
+        spec = parse_spec(raw)
+        assert first.unheld_cells(spec.model) == (set() if held else {"cell_1"})
+        if not refused:
+            third.check_steps(spec, np.asarray([STEP]), None)
+            continue
+        with pytest.raises(ConfigError, match="Cell cell_1 has no held patch.*junction j"):
+            third.check_steps(spec, np.asarray([STEP]), None)
+
+
+def test_a_counter_ions_margin_reads_the_capacitance_the_bound_relaxes_it_over():
+    """species_common.counter_ion_margin is the bound's own charge term over the row's material
+    term, P A / V at the cell: on A's held wall patch, whose bound the store no longer dilutes,
+    and on a loose patch, D's, over its own capacitance (a finite node's volume joins there)."""
+    for name, patch, volumes in (("A", "wall_cell_0", 1.0), ("D", "contact_1", 2.0)):
+        raw = charge_world(name, 0.9)
+        route = entity(raw, "membranes", patch)
+        permeance = route["permeability_m_per_s"]["K"] * route["area_m2"] / 1e-15  # 1/s per pL.
+        margin, where = common.counter_ion_margin(parse_spec(raw), "K")
+        assert where == f"membrane {patch}"
+        assert margin == pytest.approx((0.9 / STEP) / (volumes * permeance), rel=1e-12)
+
+
+def reference_explicit_rate_bound(spec):
+    """surface_pump.explicit_rate_bound before §8.3's rule, verbatim (its node term, in a world
+    with no floating node, is 0)."""
+    _, p = kinetic.initial_values(spec)
+    z2 = p.valence**2
+    volume = np.where(p.outside_active & ~p.reservoir, p.extracellular_volume * 1e-15, np.inf)
+    zero = np.zeros((len(z2), p.outside_active.size))
+    rows = scatter(p.face_factor, zero, (p.face_sender,), xp=np)
+    rows += scatter(p.face_factor, zero, (p.face_receiver,), xp=np)
+    face = 2 * np.max(rows / volume, initial=0.0)
+    ci = np.where(p.active, p.amount_reference / p.volume, 0.0)
+    co = np.where(p.outside_active, p.extracellular_amount_reference / p.extracellular_volume, 0.0)
+    slope = F * F / (R * p.temperature)
+    capacitance = scatter(
+        p.membrane_capacitance, np.zeros(p.active.size), (p.membrane_cell,), xp=np
+    )
+    capacitance = np.where(p.active, capacitance, np.inf)
+    gj = (
+        slope
+        * np.sum(
+            z2
+            * p.junction_permeability
+            * np.maximum(ci[:, p.junction_sender], ci[:, p.junction_receiver]),
+            axis=0,
+        )
+        * np.where(p.junction_active, p.junction_area, 0.0)
+    )
+    cells = scatter(gj, np.zeros(p.active.size), (p.junction_sender,), xp=np)
+    cells += scatter(gj, np.zeros(p.active.size), (p.junction_receiver,), xp=np)
+    gm = (
+        slope
+        * np.sum(
+            z2
+            * p.membrane_permeability
+            * np.maximum(ci[:, p.membrane_cell], co[:, p.membrane_outside]),
+            axis=0,
+        )
+        * np.where(p.membrane_active, p.membrane_area, 0.0)
+    )
+    membranes = scatter(gm, np.zeros(p.active.size), (p.membrane_cell,), xp=np)
+    return max(
+        face,
+        2 * np.max(cells / capacitance),
+        np.max(membranes / capacitance),
+        first.neutral_material_rate(p, volume),
+    )
+
+
+def reference_membrane_rate(state, control, p):
+    """surface_pump_v3.membrane_rate before §8.3's rule, verbatim, without kinds (NumPy)."""
+    ci, co = third.physical_amounts(state, p)
+    ci = np.where(p.active, ci / p.volume, 0.0)
+    co = np.where(p.outside_active, co / p.extracellular_volume, 0.0)
+    slope, n, patch = F * F / (R * p.temperature), p.active.size, p.channel_membranes
+    largest = np.maximum(ci[:, p.membrane_cell], co[:, p.membrane_outside])
+    passive = (
+        species_sum(p.valence**2 * p.membrane_permeability * largest, xp=np) * control.membrane
+    )
+    open_fraction = np.where(
+        p.channel_active,
+        p.channel_abundance * third.channel_opening(state.channel_gate, p.channel_laws, xp=np),
+        0.0,
+    )
+    channel = species_sum(
+        p.valence**2 * p.channel_permeability * p.channel_relative_permeability * largest[:, patch],
+        xp=np,
+    ) * (open_fraction * control.channel)
+    membrane = np.where(p.membrane_active, passive * p.membrane_area, 0.0)
+    membrane += scatter(channel * p.membrane_area[patch], membrane, (patch,), xp=np)
+    total = slope * scatter(membrane, np.zeros(n), (p.membrane_cell,), xp=np)
+    capacitance = scatter(p.membrane_capacitance, np.zeros(n), (p.membrane_cell,), xp=np)
+    return np.max(np.where(p.active, total / np.where(p.active, capacitance, 1.0), 0.0))
+
+
+@pytest.mark.parametrize("version", (1, 2, 3))
+def test_the_rates_of_worlds_with_no_floating_node_are_the_old_rules_bit_for_bit(version):
+    """The definition's bound (each version's, every initial condition of its fixture) and @3's
+    stage rate at the initial state, with the structure and without, beside the functions as they
+    were (reference_*)."""
+    fixture = {1: fixtures_1, 2: fixtures_2, 3: fixtures_3}[version]
+    for name in ("clamped", "release"):
+        spec = parse_spec(fixture.definition(name, solver=imex.ARS222_ID))
+        assert not first.floating_nodes(spec.model)
+        base = projection(spec) if version == 3 else spec
+        bound = float(first.explicit_rate_bound(base))
+        assert bound > 0
+        assert bound == float(reference_explicit_rate_bound(base))
+        if version < 3:
+            continue
+        model = get_model(spec.model)
+        assert model.structure.floating_nodes is False
+        state, p = model.initial_values(spec)
+        control = model.Control(*(v[0] for v in control_values(spec, [0.0])))
+        expected = float(reference_membrane_rate(state, control, p))
+        assert expected > 0
+        assert float(model.membrane_rate(state, control, p, xp=np)) == expected
+        assert float(third.membrane_rate(state, control, p, xp=np)) == expected

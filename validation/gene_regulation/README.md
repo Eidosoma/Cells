@@ -65,6 +65,19 @@ At each output, per cell by ID, under G2's interface names:
   `G_minus_G0`, `H_total` and the routes' sum then cover the cell and its nodes, the checks name
   the nodes (`exported_nodes`), and an exported row is no lossless product (D265). A node that
   another cell's export also feeds is refused, since G over one cell and the node would not close.
+- **Beside a second writer or water** (FR-43 parts 2A and 2B; FR-38's second comparison, families C
+  and D):
+  - with local_species_reactions@1, its own rows (`n_Mx`) and its heat at the cell, `H_store`;
+  - with ideal_osmosis_linear_compliance_water@1, the cell's volume `V`, water's heat `H_water`,
+    the bath's water work `W_bath`, and `n_K` and `n_Y`.
+
+  `G_minus_G0` then adds the network's rows, or under water every species row at the current V.
+  G's identity becomes G − G(0) + H_total + H_store + H_water − W_bath. Water's bookings are second
+  order (FR-43's C2.7), so with water that identity closes at second order, not at rounding.
+
+`release_check.survival`'s agreement of route 2's counts with the net reading applies only where
+k_f (ts − t1) max e^(y_f) is within its own allowance (`net_scope`); elsewhere it is reported out
+of scope (FR-38's second comparison, whose AN family has e^(y_f) of about 0.13).
 
 **Not exported**, though G2 publishes them:
 - each move's ΔG, `dG_tx`, `dG_tl`, `dG_rel_R`, `dG_rel_P`, `dG_deg_R`, `dG_deg_P` and `dG_rc`;

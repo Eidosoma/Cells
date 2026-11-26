@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of scheduled_species_exchange@1 (secreted-species design §2.3).
+"""Tier-1 smoke test of cells.operator.scheduled_species_exchange@1 (secreted-species design §2.3).
 
 The operator's half-step on a bound quiescent world of two cells and two finite nodes, in NumPy (no
 compile): each rate law against its closed form at O(1) fractions (the saturable one against its

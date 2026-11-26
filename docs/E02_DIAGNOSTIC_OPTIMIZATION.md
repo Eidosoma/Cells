@@ -1,5 +1,10 @@
 # E02 bounded diagnostic optimization
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 D038 / NUM-005c2b, 2026-09-09. The user approved the recommendation following
 [D037's checked short profiles](../reports/NUM005C2A_CANDIDATE_ENGINEERING.md).
 Implement cached, bounded batched readouts and qualify/profile them against the

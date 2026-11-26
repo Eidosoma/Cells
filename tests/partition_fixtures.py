@@ -1,14 +1,14 @@
-"""Compact worlds for isopotential_partition@1 (docs/CELL_DIVISION_S5_DESIGN.md §8.1).
+"""Compact worlds for cells.operator.isopotential_partition@1 (docs/CELL_DIVISION_S5_DESIGN.md §8.1).
 
 Nominal values around one heredity cell (validation/tissue/surface_pump_v3_fixtures), built from
 neither J1 input (the J2 bright line, §10.1). The parent is the heredity cell with its pump
 removed: pumps on a dividing cell are later work. It keeps its Kir2.1 and NaV1.2 populations, so
 the partition maps populations too. Daughter slots are written by core/partition_spec.add_division
-(the anchor rule), and membrane_entity_state@1 declares every population.
+(the anchor rule), and cells.operator.membrane_entity_state@1 declares every population.
 
 Variants (§8.1): a neighbour cell (a second heredity cell, its own bath) with a gated contact to
 the parent, so the partition maps a contact; and a bridge between the daughters
-(cytoplasmic_bridge_closure@1, add_bridge) with sigma_cyt at its declared default.
+(cells.operator.cytoplasmic_bridge_closure@1, add_bridge) with sigma_cyt at its declared default.
 """
 
 from cells.definitions import partition_spec as ps
@@ -18,11 +18,11 @@ from tests import membrane_insertion_fixtures as ifx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import surface_pump_v3_fixtures as v3f
 
-PARTITION = "isopotential_partition@1"
-BRIDGE = "cytoplasmic_bridge_closure@1"
-INSERTION2 = "scheduled_membrane_insertion@2"
-LUMEN2 = "restricted_cleft_lumen@2"
-INJECTION = "electrode_current_injection@1"
+PARTITION = "cells.operator.isopotential_partition@1"
+BRIDGE = "cells.operator.cytoplasmic_bridge_closure@1"
+INSERTION2 = "cells.operator.scheduled_membrane_insertion@2"
+LUMEN2 = "cells.operator.restricted_cleft_lumen@2"
+INJECTION = "cells.operator.electrode_current_injection@1"
 DT = 1e-3
 EVENT = 0.002
 # The furrow world (cleft_divided): tests/membrane_insertion_fixtures.cleft_cell's furrow and
@@ -61,7 +61,7 @@ def parent(*, end=0.004, neighbour=False):
         patch["pump"] = None
     base["experiment"]["pump_controls"] = []
     if neighbour:
-        gate = dict(law="junction_voltage_relaxation@1", **CONTACT["gate"])
+        gate = dict(law="cells.junction.junction_voltage_relaxation@1", **CONTACT["gate"])
         base["model"]["junctions"] = [
             dict(
                 id="contact",
@@ -69,7 +69,7 @@ def parent(*, end=0.004, neighbour=False):
                 receiver="cell_1",
                 area_m2=CONTACT["area_m2"],
                 permeability_m_per_s=dict(CONTACT["permeability_m_per_s"]),
-                law="constant_field@1",
+                law="cells.route.constant_field@1",
                 gate=gate,
             )
         ]
@@ -161,7 +161,7 @@ def divided(
 
 
 def inject(raw, cell, current_A, start, *, stop=None):
-    """Append electrode_current_injection@1 into cell from start (until stop) (in place)."""
+    """Append cells.operator.electrode_current_injection@1 into cell from start (until stop) (in place)."""
     raw["model"]["operators"].append(
         dict(law=INJECTION, electrodes=[dict(cell_id=cell, carriers=dict(INJECTION_CARRIERS))])
     )
@@ -192,10 +192,10 @@ def cleft_divided(
     patch into a cleft. The cleft is a finite node, open from the furrow's onset at bath
     composition with a zero charge anchor, joined to the bath by a narrow access face
     (tests/membrane_insertion_fixtures.cleft_cell). Its operators:
-    * scheduled_membrane_insertion@2: the furrow, from its onset until the division, then the
+    * cells.operator.scheduled_membrane_insertion@2: the furrow, from its onset until the division, then the
       daughters' furrows at their shares of the rate;
-    * restricted_cleft_lumen@2 (with lumen): the cleft, faced by the furrow and its daughters;
-    * isopotential_partition@1: cell_0 into d1 and d2 at `at`, each patch split at
+    * cells.operator.restricted_cleft_lumen@2 (with lumen): the cleft, faced by the furrow and its daughters;
+    * cells.operator.isopotential_partition@1: cell_0 into d1 and d2 at `at`, each patch split at
       area_fraction (default f);
     * optionally a bridge (as divided()) and an injection into d1 from injection_start (default
       the division) on.
@@ -448,7 +448,7 @@ class FollowsSplit(Operator):
     version 1 (water provides volume, which the partition refuses), so the composite's step-end
     domain at the view with closers is exercised through this stub."""
 
-    LAW_ID = "stub_follows_split@1"
+    LAW_ID = "cells.operator.stub_follows_split@1"
     SPLIT = True
     RK4 = "split"
     VIEW_FOLLOWS_SPLIT = True

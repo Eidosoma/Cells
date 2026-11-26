@@ -1,4 +1,4 @@
-"""Operator restricted_cleft_lumen@2: lumen@1's fill, with a lumen faced by several patches (S5).
+"""Operator cells.operator.restricted_cleft_lumen@2: lumen@1's fill, with a lumen faced by several patches (S5).
 
 docs/CELL_DIVISION_S5_DESIGN.md §5.2 and Appendix A.5. The law, bookings and observer are
 lumen@1's (restricted_lumen.py), whose helpers are reused unmodified. Bath fluid fills the
@@ -12,7 +12,7 @@ Changed from @1:
   A_on is the onset patches' declared area. In the engine it is computed as
   w/2 sum_live (A_k - A_k,declared): the declared areas of the live facing patches sum to A_on
   exactly by the anchor rule, and each term then reduces to @1's for one patch.
-* Admission. A lumen node is an onset node of scheduled_membrane_insertion@2. Its facing
+* Admission. A lumen node is an onset node of cells.operator.scheduled_membrane_insertion@2. Its facing
   patches are its onset patches, or partition-born descendants of them through the partition's
   patch maps. The declared onset volume is w A_on / 2 (relative 1e-12).
 * Continuity. A birth keeps the live facing area: exactly for a = 1/2, within rounding
@@ -43,7 +43,7 @@ from cells.operators import membrane_state
 from cells.operators import restricted_lumen as v1
 from cells.operators.contract import Operator
 
-LAW_ID = "restricted_cleft_lumen@2"
+LAW_ID = "cells.operator.restricted_cleft_lumen@2"
 STEP_ID = v1.STEP_ID
 SHRINK_ROUNDING = 8.0  # eps x w/2 x the live facing area: a birth's rounding, at most.
 
@@ -297,6 +297,9 @@ def own_valid(state, p, *, xp):
 
 class RestrictedCleftLumenV2(Operator):
     LAW_ID = LAW_ID
+    # FR-43 part 3: a conversion, filling each lumen's node with its source bath's fluid
+    # (written_rows).
+    ROW_MOVES = "conversion"
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -328,6 +331,12 @@ class RestrictedCleftLumenV2(Operator):
 
     def to_dict(self, declaration, base):
         return lumens_to_dict(declaration)
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: every species at each lumen's node, which its fill brings in at the
+        source bath's composition (a scheduled bath may hold any species)."""
+        species = spec.model.species_ids
+        return tuple((s, lumen.node_id) for lumen in declaration.lumens for s in species)
 
     def check_definition(self, spec, declaration, schedule, model):
         check_definition(spec, declaration)

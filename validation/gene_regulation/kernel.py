@@ -1,10 +1,10 @@
-"""templated_polymerisation@1 on its own half-steps in NumPy, for the tests (G4): a world of
+"""cells.operator.templated_polymerisation@1 on its own half-steps in NumPy, for the tests (G4): a world of
 worlds.py advanced without compiling it, two half-steps of dt/2 per step as the composite's split
 step takes them. Every row the operator lists is impermeant and its world has no channel, so the
 inner step leaves them and the operator's fields unchanged: these half-steps are the world's
 dynamics for them. Development, not judged.
 
-A world that declares FR-42's labels (neutral_arrival_labels@1, D289) is advanced as the composite
+A world that declares FR-42's labels (cells.operator.neutral_arrival_labels@1, D289) is advanced as the composite
 advances it: each half-step takes the step's arrival labels and its chains' source labels (D296),
 and the label owner advances the shares of the rows and the holds from its moves
 (species_labels.advance, the operator the only pool reporter), each step's labels resolved as the

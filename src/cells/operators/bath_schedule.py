@@ -1,4 +1,4 @@
-"""Operator scheduled_bath_composition@1: a held bath's composition changed on the dt grid (FR-10).
+"""Operator cells.operator.scheduled_bath_composition@1: a held bath's composition changed on the dt grid (FR-10).
 
 docs/BATH_SCHEDULE_DESIGN.md (accepted by the lead with the advisor, D169). At declared times on the
 dt grid, an event map sets each scheduled held bath's composition to its declared one plus a sum of
@@ -42,14 +42,14 @@ over the schedule (inner_check_spec): the explicit-rate bound's slope term grows
 Refusals. At the definition: a target that is not a held bath; a formula unit with a count that is
 not a positive int, an unknown species, or a nonzero integer charge; an event at or before 0, at or
 beyond the end, off the dt grid, out of time order for a bath, naming an unscheduled bath or an
-undeclared unit, or leaving a species of a bath non-positive; more than 16 species (the shared
-cap, D165); an anisosmotic step beside water@1, whose bath water potential is bound at the
+undeclared unit, or leaving a species of a bath non-positive; more than 1,024 species (the shared
+cap, FR-43 / D315); an anisosmotic step beside water@1, whose bath water potential is bound at the
 definition (the design's door W); and (milestone 2, the design's §8) a step outside the measured
 region: a step is admitted only if a measured passing point of its key (neutral species by class,
 ions by species ID) and direction dominates its ratio and level, under ARS(2,2,2) at dt <= 1 ms or
 RK4 at dt <= 0.1 ms, beside faces at kappa/V <= 10/s. The composite's own
-structure check refuses local_species_reactions@1 (it reads the field as declared, a nominal
-conflict: the design's door S), scheduled_membrane_insertion@1 (a second provider of the field),
+structure check refuses cells.operator.local_species_reactions@1 (it reads the field as declared, a nominal
+conflict: the design's door S), cells.operator.scheduled_membrane_insertion@1 (a second provider of the field),
 the closers (the field is padded beside them) and so the lumens. The stationary analysis does not
 admit the composite (its own ID check). At run time: a target that is not finite and positive.
 
@@ -82,7 +82,7 @@ from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators.contract import Change, Operator
 
-LAW_ID = "scheduled_bath_composition@1"
+LAW_ID = "cells.operator.scheduled_bath_composition@1"
 EVENTS_KEY = "bath_composition_events"
 WATER_LAWS = (water_law.LAW_ID,)  # Their bath water potential is bound at the definition.
 ISOSMOTIC_RTOL = 1e-12  # |sum_s dc_s| against sum_s c0_s beside water@1.
@@ -90,7 +90,7 @@ DOSE_FLOOR_FMOL = 1e-12  # Floors of the own ledgers (plus the per-step rounding
 ENERGY_FLOOR_PJ = 3e-12
 CHARGE_FLOOR_C = 3e-25
 # Milestone 2 (the design's §8): a step is admitted only inside the measured region.
-ARS_LAW = "imex_ars222_face_electromigration@1"
+ARS_LAW = "cells.solver.imex_ars222_face_electromigration@1"
 MEASURED_DT = {ARS_LAW: 1e-3, "rk4": 1e-4}  # Solver: its largest measured step (s).
 MEASURED_FACE_RATE = 10.0  # 1/s: the fastest face (kappa / V of its other node) measured.
 NEUTRAL = "neutral"  # The key of every species of valence 0.

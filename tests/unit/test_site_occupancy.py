@@ -1,4 +1,4 @@
-"""Stage A of FR-3's milestone 1: site_occupancy@1's contract fit, in NumPy (no compile).
+"""Stage A of FR-3's milestone 1: cells.operator.site_occupancy@1's contract fit, in NumPy (no compile).
 
 docs/SITE_OCCUPANCY_DESIGN.md §1, §2, §4.3, §6.2; criteria A1 to A5 in
 /mnt/workspaces/Cells/site-occupancy-m1-20261115-01/HANDOFF.md, fixed before any code:
@@ -23,7 +23,7 @@ from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, species_common
 from cells.operators import site_occupancy as so
 from cells.operators.contract import check_declarations
 from cells.registry.models import get_model
@@ -190,7 +190,7 @@ REFUSALS = {
 }
 
 
-# FR-26 (D244, W): site_occupant_replacement@1 on replaced_sites' world (cell_1 replaced at 5 ms
+# FR-26 (D244, W): cells.operator.site_occupant_replacement@1 on replaced_sites' world (cell_1 replaced at 5 ms
 # from template T), with an outward population o1 on contact_1 and an inward i1 on wall_cell_1,
 # both on cell_1, and o0 on cell_0's contact_0.
 W_POPULATIONS = (
@@ -261,13 +261,13 @@ REFUSALS.update(
         ),
         "W: before the site operator": (
             _w_edit(_w_first),
-            "requires site_occupancy@1 before it",
+            "requires cells.operator.site_occupancy@1 before it",
         ),
         "W: without replacement@1": (
             lambda: sfx.with_occupant(
                 sfx.face_free_sites([sfx.population("r0")]), {"T": {"r0": (0.1, 1.0, None)}}
             ),
-            "requires scheduled_cell_replacement@1 before it",
+            "requires cells.operator.scheduled_cell_replacement@1 before it",
         ),
         "W: an empty newcomer": (
             lambda: w_world({**W_TEMPLATE, "o1": (0.0, 2.0, None)}),
@@ -302,10 +302,12 @@ def test_definition_refusals(name):
 
 def test_populations_on_a_replaced_slot_are_refused_and_elsewhere_admitted():
     """FR-26 (D244, W): a patch population on a replaced slot is admitted with
-    site_occupant_replacement@1 and refused without it, naming it; a contact population incident
+    cells.operator.site_occupant_replacement@1 and refused without it, naming it; a contact population incident
     to a replaced slot stays refused."""
     inward = sfx.population("w1", patch="wall_cell_1", face="inside")
-    with pytest.raises(ConfigError, match="its occupants need site_occupant_replacement@1"):
+    with pytest.raises(
+        ConfigError, match="its occupants need cells.operator.site_occupant_replacement@1"
+    ):
         parse_spec(two_cells([inward], replaced=True))
     parse_spec(sfx.with_occupant(two_cells([inward], replaced=True), {"T": {"w1": (0.2, 1, None)}}))
     on_contact = sfx.population("k0", contact="j0", side="first")
@@ -445,7 +447,9 @@ def test_identities_must_agree_with_d152_in_either_order():
         if first:
             for spec in (refused, admitted):
                 spec["model"]["operators"].reverse()
-        with pytest.raises(ConfigError, match="another identity than local_species_reactions@1"):
+        with pytest.raises(
+            ConfigError, match="another identity than cells.operator.local_species_reactions@1"
+        ):
             parse_spec(refused)
         parse_spec(admitted)
 
@@ -453,11 +457,13 @@ def test_identities_must_agree_with_d152_in_either_order():
 def test_the_stationary_analysis_does_not_admit_the_composite():
     from cells.analysis import stationary
 
-    with pytest.raises(ConfigError, match="not resolved_pump_composite@1"):
+    with pytest.raises(ConfigError, match="not cells.model.resolved_pump_composite@1"):
         stationary.problem(parse_spec(world()))
 
 
-def test_the_species_cap_is_checked():
+def test_the_species_cap_is_checked(monkeypatch):
+    """Its call to the cap (1,024 since FR-43 / D315), set to 16 here so the world stays small."""
+    monkeypatch.setattr(species_common, "MAX_SPECIES", 16)
     raw = world()
     for k in range(13):  # 4 + 13 = 17 species.
         name = f"N{k}"
@@ -471,14 +477,25 @@ def test_the_species_cap_is_checked():
         parse_spec(raw)
 
 
-STATE, WATER = "membrane_entity_state@1", "ideal_osmosis_linear_compliance_water@1"
+STATE, WATER = (
+    "cells.operator.membrane_entity_state@1",
+    "cells.operator.ideal_osmosis_linear_compliance_water@1",
+)
 VIEW_REFUSED = {
     "water": (WATER,),
-    "insertion@1": (STATE, "scheduled_membrane_insertion@1"),
-    "insertion@2": (STATE, "scheduled_membrane_insertion@2"),
-    "the partition": (STATE, "isopotential_partition@1"),
-    "lumen@1": (STATE, "scheduled_membrane_insertion@1", "restricted_cleft_lumen@1"),
-    "lumen@2": (STATE, "scheduled_membrane_insertion@2", "restricted_cleft_lumen@2"),
+    "insertion@1": (STATE, "cells.operator.scheduled_membrane_insertion@1"),
+    "insertion@2": (STATE, "cells.operator.scheduled_membrane_insertion@2"),
+    "the partition": (STATE, "cells.operator.isopotential_partition@1"),
+    "lumen@1": (
+        STATE,
+        "cells.operator.scheduled_membrane_insertion@1",
+        "cells.operator.restricted_cleft_lumen@1",
+    ),
+    "lumen@2": (
+        STATE,
+        "cells.operator.scheduled_membrane_insertion@2",
+        "cells.operator.restricted_cleft_lumen@2",
+    ),
 }
 
 
@@ -496,13 +513,15 @@ def test_the_structure_check_refuses_providers_and_closers_of_what_it_reads(name
 
 def test_the_structure_check_admits_its_neighbours():
     for laws in (
-        ("scheduled_species_exchange@1",),
-        ("scheduled_species_turnover@1",),
-        ("local_species_reactions@1",),
-        ("species_regulated_availability@1",),
-        ("electrode_current_injection@1",),
-        ("scheduled_cell_replacement@1",),
-        ("scheduled_bath_composition@1",),  # FR-23 (D244): both declare their slots (door S).
+        ("cells.operator.scheduled_species_exchange@1",),
+        ("cells.operator.scheduled_species_turnover@1",),
+        ("cells.operator.local_species_reactions@1",),
+        ("cells.operator.species_regulated_availability@1",),
+        ("cells.operator.electrode_current_injection@1",),
+        ("cells.operator.scheduled_cell_replacement@1",),
+        (
+            "cells.operator.scheduled_bath_composition@1",
+        ),  # FR-23 (D244): both declare their slots (door S).
         (STATE,),
     ):
         for order in ((*laws, so.LAW_ID), (so.LAW_ID, *laws)):
@@ -742,9 +761,9 @@ def test_a_nodes_own_sites_are_the_stand_ins_layout_and_round_trip():
     )  # fmt: skip
     raw = rf.with_coupling(raw, species=[], couplings=[entry])
     next(b for b in raw["model"]["operators"] if b["law"] == rf.LAW)["law"] = (
-        "species_regulated_availability@2"
+        "cells.operator.species_regulated_availability@2"
     )
-    rank = {so.LAW_ID: 0, "species_regulated_availability@2": 1, fx.TURNOVER: 2}
+    rank = {so.LAW_ID: 0, "cells.operator.species_regulated_availability@2": 1, fx.TURNOVER: 2}
     raw["model"]["operators"].sort(key=lambda b: rank.get(b["law"], -1))
     with pytest.raises(ConfigError, match="a node's own sites, which belong to no cell"):
         parse_spec(raw)

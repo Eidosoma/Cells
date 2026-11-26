@@ -1,4 +1,4 @@
-"""Self-tests of the independent references for site_occupancy@1 (validation/occupancy/): R-ode,
+"""Self-tests of the independent references for cells.operator.site_occupancy@1 (validation/occupancy/): R-ode,
 R-closed, R-qss, R-eq and R-dG (FR-3).
 
 They are checked against closed forms, against each other where they overlap, and for

@@ -21,7 +21,7 @@ Retrieval carries away source-specific capacitance and leaves each population pr
 - [CellsProofs.Tissue.MembraneTrafficking.round_trip_pool](../CellsProofs/Tissue/MembraneTrafficking.lean#L68)
 - [CellsProofs.Tissue.MembraneTrafficking.round_trip_pool_pos](../CellsProofs/Tissue/MembraneTrafficking.lean#L77)
 
-Direct proof subject `cells.scheduled_membrane_trafficking@1`
+Direct proof subject `cells.operator.scheduled_membrane_trafficking@1`
 
 Uses [Each compartment belongs to one cell and its charge sets its lumen voltage](owned-compartment-inventory.md) · [At fixed channel drive, whole-patch flow tracks the surface unit count](membrane-population-flow.md)
 
@@ -40,6 +40,10 @@ Uses [Each compartment belongs to one cell and its charge sets its lumen voltage
 ## Biological evidence
 
 **Open.** Time-resolved membrane area or capacitance, internal cargo, and surface cargo of the same cohort during retrieval and recycling.
+
+- [Some previously surface-exposed neurotransmitter receptors return to the membrane after internalization.](../WET_LAB_EVIDENCE.md#pair-receptor-return-to-surface) · Supported by both studies
+
+Independent neuronal AMPA and muscle nicotinic receptor preparations both detected previously exposed receptors returning to the surface. Neither closes the full membrane-area and receptor-pool balance.
 
 **Unit** pF and fraction of labelled cargo
 
@@ -62,5 +66,15 @@ Stimulated calyces of Held in brainstem slices at room temperature. Each readout
 Mean ± SEM across seven capacitance and ten fluorescence recordings. Seven were simultaneous. Fluorescence depends on vesicle re-acidification.
 
 After a 1.52 ± 0.21 pF capacitance rise, 0.33 ± 0.06 of peak excess capacitance and 0.47 ± 0.07 of peak fluorescence remained at 60 s. These measurements constrain net retrieval and cargo recovery separately. Absolute internal channel counts remain open. [Dataset manifest](../checks/data/trafficking_division_measurements.json) · [Comparison verdict](../PROGRESS.md#membrane-retrieval-recycling)
+
+### bruneau2005_achr_recycling@1
+
+Adult mouse sternomastoid endplates. Repeat surface labelling distinguishes previously exposed receptors that resurfaced from newly inserted receptors. Figure 7A–B and Results, days 1 and 4 after transient receptor block [Bruneau et al. (2005), Fig. 7A–B](https://doi.org/10.1523/JNEUROSCI.3169-05.2005)
+
+- **Evidence role** descriptive
+
+Four-day values and SDs from Results. The graph shows SEM. The denominator is the initial surface fluorescence. The study did not measure the final size of the internal receptor pool or the area of membrane returned.
+
+At four days, resurfaced receptors contributed 26 ± 5% of the original surface fluorescence and newly inserted receptors 24 ± 5% (SD, 29 junctions). The original and recycled tags were distinguished experimentally. [Dataset manifest](../checks/data/membrane_physiology_pairs.json) · [Comparison verdict](../PROGRESS.md#paired-membrane-physiology)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

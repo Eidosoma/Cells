@@ -30,7 +30,7 @@ POLICY = WindowPolicy(5, "checkpoints")
 
 
 def spec():
-    return load_spec(ROOT / "configs/single_cell_pulse.json")
+    return load_spec(ROOT / "configs/reaction_transport_single.json")
 
 
 def batch():

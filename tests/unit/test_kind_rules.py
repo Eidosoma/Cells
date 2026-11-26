@@ -9,15 +9,20 @@
 - Check-path hooks trace on the device: a domain that branches on a value in Python, a ledger
   term of an unknown role or a non-scalar domain is refused at binding.
 - Declared kinds are refused under RK4 (fail-closed): their step guards are the IMEX step's.
+- The charge rule's rows at a stage beside a floating node (CALCIUM_STORE_AND_CHANNELS_DESIGN.md
+  §8.3): a kind's or a channel's slope counts over the capacitance it relaxes, a loose patch's own
+  or its cell's held patches', and a kind that charges a cell with no held patch is refused by name.
 """
 
 import copy
+import re
 
 import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.definitions.surface_pump_v3_spec import control_values
+from cells.definitions.surface_pump_v3_spec import KLEAK_LAW_ID, control_values
+from cells.laws.electrochemistry import F, R
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
 from cells.registry.models import get_model
@@ -27,7 +32,7 @@ from validation.tissue import pump_water_fixtures as water_fixtures
 def planted(name, key, **hooks):
     """A planted kind with one state field, one layout field and one control, plus hooks."""
     return kind_registry.Kind(
-        kind_id=f"tests.{name}@1",
+        kind_id="tests.kind.planted_kind@1".replace("planted_kind", name),
         model_key=key,
         state_axes=((f"{name}_value", ("cell_slot",)),),
         layout_fields=(f"{name}_rate",),
@@ -80,7 +85,9 @@ def test_stage_reads_on_a_shared_row_are_refused_at_binding():
     shared = (("K", "cell_0"),)
     kinds = registry(reader("alpha", "alpha_block", shared), reader("beta", "beta_block", shared))
     with kind_registry.scope(kinds):
-        with pytest.raises(ConfigError, match=r"tests.alpha@1 and tests.beta@1 both read row"):
+        with pytest.raises(
+            ConfigError, match=r"tests.kind.alpha@1 and tests.kind.beta@1 both read row"
+        ):
             parse_spec(declaring("alpha_block", "beta_block"))
     apart = registry(
         reader("alpha", "alpha_block", (("K", "cell_0"),)),
@@ -243,7 +250,8 @@ def test_declared_kinds_are_refused_under_rk4():
         return planted("alpha", "alpha_block", bound_rate=lambda spec, declaration: rate)
 
     with kind_registry.scope(registry(bounded(2e5))):
-        with pytest.raises(ConfigError, match=r"\(tests\.alpha@1\) require an IMEX solver"):
+        refusal = re.escape("(tests.kind.alpha@1) require an IMEX solver")
+        with pytest.raises(ConfigError, match=refusal):
             parse_spec(rk4(declaring("alpha_block")))
         imex = parse_spec(declaring("alpha_block"))  # Admitted under IMEX ...
         with pytest.raises(ConfigError, match="a declared kind's explicit-rate bound"):
@@ -280,39 +288,203 @@ def test_stage_values_give_running_extrema_over_the_steps_stages():
             impl.imex_step(state, spec.execution.dt, control, p, xp=np)
 
 
+def face_free(*, kind=True, contact_F=None, channel=None):
+    """FR-1's W as a bare @3 definition: cell_0 with its wall patch (patch 0, 1 pF) on the held
+    bath, and contact_0 (patch 1, 0.1 pF or contact_F) alone on the floating node ecs_0. kind: the
+    planted kind's block; channel: (patch ID, S), an always-open K population of that slope."""
+    from validation.tissue import secreted_species_fixtures as fx
+    from validation.tissue import surface_pump_v3_fixtures as v3fx
+
+    raw = fx.face_free(end=0.004)
+    m = raw["model"]
+    m["id"] = "cells.model.resolved_pump_tissue@3"
+    m.pop("inner_model")
+    m.pop("operators")
+    if kind:
+        m["alpha_block"] = {"rate": 1.0}
+    if contact_F is not None:
+        m["membranes"][1]["capacitance_F"] = contact_F
+    if channel is not None:
+        patch, siemens = next(p for p in m["membranes"] if p["id"] == channel[0]), channel[1]
+        slope = F * F / (R * m["temperature_K"]) * patch["area_m2"] * fx.BATH_mM["K"]
+        m["channels"] = [v3fx.channel("leak", 0, KLEAK_LAW_ID, "K", siemens / slope, 1.0, ())]
+        m["channels"][0]["membrane_id"] = patch["id"]
+        raw["experiment"]["channel_controls"] = [
+            dict(channel_id="leak", schedule=[dict(time=0.0, availability=1.0)])
+        ]
+        raw["execution"]["channel_capacity"] = 1
+    return raw
+
+
+def on_patch(k, siemens):
+    """A planted kind with a slope on one patch, at both of the patch's ends."""
+
+    def stage_term(read, potentials, control, p, *, xp):
+        hosted = xp.arange(p.membrane_active.size) == k
+        patches = xp.where(hosted & p.membrane_active, siemens, 0.0)
+        return surface_pump_v3.patch_node_conductance(patches, p, xp=xp)
+
+    return planted("alpha", "alpha_block", stage_term=stage_term)
+
+
+WALL, CONTACT = 0, 1
+
+
 def test_a_face_free_compartments_free_node_is_held_to_the_stage_rule():
-    """Gap 5 per node: a charged slope on a face-free compartment's patch (FR-1's W: cell_0 with
-    1.1 pF of patches, its node ecs_0 with the contact patch's 0.1 pF only) is counted at both
-    ends. At 5e-10 S and dt = 1 ms the cell's row is 0.45, the free node's 5: refused, where
-    the cells-only sum would have passed it; 5e-11 S passes both."""
+    """Gap 5 per patch: a charged slope on a face-free compartment's patch (FR-1's W: cell_0 with
+    1.1 pF of patches, its node ecs_0 with the contact patch's 0.1 pF only) is held to that
+    patch's capacitance. At 5e-10 S and dt = 1 ms the row is 5: refused, where the slope over the
+    cell's patches together (0.45) would have passed it; 5e-11 S is accepted."""
     from validation.tissue import secreted_species_fixtures as fx
 
-    def face_free():
-        raw = fx.face_free(end=0.004)
-        m = raw["model"]
-        m["id"] = "resolved_pump_tissue@3"
-        m.pop("inner_model")
-        m.pop("operators")
-        m["alpha_block"] = {"rate": 1.0}
-        return raw
-
-    def on_contact(siemens):
-        def stage_term(read, potentials, control, p, *, xp):
-            contact = xp.arange(p.membrane_active.size) == 1  # contact_0 (wall_cell_0 first).
-            patches = xp.where(contact & p.membrane_active, siemens, 0.0)
-            return surface_pump_v3.patch_node_conductance(patches, p, xp=xp)
-
-        return planted("alpha", "alpha_block", stage_term=stage_term)
-
     for siemens, accepted in ((5e-11, True), (5e-10, False)):
-        with kind_registry.scope(registry(on_contact(siemens))):
+        with kind_registry.scope(registry(on_patch(CONTACT, siemens))):
             spec = parse_spec(face_free())
             impl, state, p, control = host_inputs(spec)
             assert bool(surface_pump_v3.free_outside_nodes(p, xp=np)[1])  # ecs_0 is free.
             rate = impl.membrane_rate(state, control, p, xp=np, potentials=np.zeros(3))
             _, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
         assert bool(valid) == accepted, (siemens, rate)
-        assert rate == pytest.approx(siemens / fx.CONTACT_C_F, rel=1e-9)  # The node's row.
+        assert rate == pytest.approx(siemens / fx.CONTACT_C_F, rel=1e-9)  # The patch's row.
+
+
+@pytest.mark.parametrize(
+    "mover, host, contact_F",
+    [
+        ("kind", CONTACT, 1e-11),  # Read once, at the cell too, the slope would bind at its wall.
+        ("channel", CONTACT, 1e-13),  # Dropped, or over the cell's patches, it would be admitted.
+        ("kind", WALL, 3.3e-12),  # Beside a store of 3.3 times the wall's capacitance.
+        ("channel", WALL, 3.3e-12),
+    ],
+)
+def test_the_stage_rule_holds_a_slope_over_the_capacitance_it_relaxes(mover, host, contact_F):
+    """Gap 5 per patch (§8.3): a slope on a face-free compartment's patch, the kinds' or an open
+    channel's with no kind declared, relaxes that patch's voltage alone, so its row is the patch's
+    and its cell's is 0; a slope on the cell's held patch relaxes the cell's against the held
+    patch's capacitance, the store's left out. At twice the bound the step is refused, at half
+    admitted."""
+    farads = 1e-12 if host == WALL else contact_F
+    for factor, accepted in ((0.5, True), (2.0, False)):
+        siemens = factor * surface_pump_v3.EXPLICIT_STEP_BOUND * farads / 1e-3
+        kinds = registry(on_patch(host, siemens)) if mover == "kind" else registry()
+        channel = (("wall_cell_0", "contact_0")[host], siemens) if mover == "channel" else None
+        with kind_registry.scope(kinds):
+            raw = face_free(kind=mover == "kind", contact_F=contact_F, channel=channel)
+            impl, state, p, control = host_inputs(parse_spec(raw))
+            assert impl.structure.floating_nodes
+            assert bool(surface_pump_v3.free_outside_nodes(p, xp=np)[1])  # ecs_0 floats.
+            rows = impl.charge_rows(state, control, p, xp=np, potentials=np.zeros(3))
+            rate = impl.membrane_rate(state, control, p, xp=np, potentials=np.zeros(3))
+            _, valid = impl.imex_step(state, 1e-3, control, p, xp=np)
+        expected = siemens / farads
+        assert rate == pytest.approx(expected, rel=1e-12)
+        patches = [0.0, expected] if host == CONTACT else [0.0, 0.0]
+        assert rows.patch == pytest.approx(patches, rel=1e-12, abs=0)
+        assert rows.cell == pytest.approx([0.0 if host == CONTACT else expected], rel=1e-12, abs=0)
+        assert bool(valid) == accepted, factor
+
+
+def test_fr4s_movers_charge_the_lumens_patch_and_not_the_cells_row():
+    """FR-4's world: every mover, the K+ route, the proton pump and the leak, sits on the lumen's
+    bounding patch, and the plasma patch is silent. So the cell's row is exactly 0 and the rate is
+    the bounding patch's; read once, at the cell too, the pump's and the leak's slopes would stand
+    in the cell's row. The pump's own definition-time term is its slope over its patch's
+    capacitance, on the bounding patch (loose) as on the plasma patch (held, the cell's only one),
+    in both of the transporter's layouts."""
+    from cells.kinds import transporter
+    from validation.compartment_ph_engine import definitions as defs
+
+    def world(patch=defs.BOUNDING, general=False):
+        raw = defs.development_world(defs.fr4_world())  # 0.3 s to parse.
+        pump = raw["model"]["transporters"][0]
+        pump["patch"] = patch
+        if general:  # The same pump on the population axis.
+            fuel, fuel_roles = pump.pop("fuel"), ("ATP", "ADP", "Pi")
+            parameters = {k: fuel[k] for k in ("ph_ref", "ph_band")}
+            parameters |= {k: pump.pop(k) for k in ("stoichiometry", "km_role_mM", "km_atp_mM")}
+            pump.update(
+                host=pump.pop("patch"),
+                orientation=dict(N="a"),
+                roles=dict(zip(fuel_roles, fuel["rows"], strict=True), proton=pump.pop("role")),
+                parameters=parameters,
+                held_rows=[[role, "N"] for role in fuel_roles],
+            )
+        return parse_spec(raw)
+
+    spec = world()
+    impl, state, p, control = host_inputs(spec)
+    phi = impl.readouts(state, control, p, xp=np).field.potential_V
+    rows = impl.charge_rows(state, control, p, xp=np, potentials=phi)
+    bounding = [m.id for m in spec.model.membranes].index(defs.BOUNDING)
+    assert rows.cell.tolist() == [0.0]
+    assert np.flatnonzero(rows.patch).tolist() == [bounding]
+    rate = float(impl.membrane_rate(state, control, p, xp=np, potentials=phi))
+    assert rate == float(rows.patch[bounding]) > 0
+
+    def slope(spec, patch):
+        rate = transporter.bound_rate(spec, dict(spec.model.kinds)[transporter.KIND_ID])
+        return rate * next(m.capacitance_F for m in spec.model.membranes if m.id == patch)
+
+    expected = slope(spec, defs.BOUNDING)
+    assert expected > 0
+    for patch, general in ((defs.PLASMA, False), (defs.BOUNDING, True)):
+        found = slope(world(patch, general), patch)
+        assert found == pytest.approx(expected, rel=1e-12, abs=0), (patch, general)
+
+
+def test_a_kind_that_charges_a_cell_with_no_held_patch_is_refused_by_name():
+    """cell_1's only patch faces the floating node it shares with cell_0, so a kind's slope there
+    that is not that patch's (a route on a junction, say) has no capacitance to be held to. It is
+    refused at binding, naming the cell and the kind; a slope that opens later makes the row
+    infinite and refuses the step; a world whose cells are held is not read."""
+    from validation.tissue import secreted_species_fixtures as fx
+
+    def world(*, held):
+        raw = fx.world(
+            cells=(("cell_0", 1.0), ("cell_1", 1.0)),
+            contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_0")),
+            faces=(),
+        )
+        m, e = raw["model"], raw["experiment"]
+        m["id"] = "cells.model.resolved_pump_tissue@3"
+        m.pop("inner_model")
+        m.pop("operators")
+        m["alpha_block"] = {"rate": 1.0}
+        if not held:
+            m["membranes"] = [p for p in m["membranes"] if p["id"] != "wall_cell_1"]
+            e["membrane_controls"] = [
+                c for c in e["membrane_controls"] if c["membrane_id"] != "wall_cell_1"
+            ]
+            raw["execution"]["membrane_capacity"] = len(m["membranes"])
+        return raw
+
+    calls = []
+
+    def charging(opens):
+        def stage_term(read, potentials, control, p, *, xp):
+            calls.append(p)
+            slope = xp.where(read.alpha_value[0] >= opens, 1e-12, 0.0)
+            nodes = p.active.size + p.outside_active.size
+            return xp.where(xp.arange(nodes) == 1, slope, 0.0)  # cell_1, by no patch of its own.
+
+        return planted("alpha", "alpha_block", stage_term=stage_term)
+
+    with kind_registry.scope(registry(charging(0.0))):
+        with pytest.raises(
+            ConfigError, match="Cell cell_1 has no held patch.*kind tests.kind.alpha@1, not through"
+        ):
+            parse_spec(world(held=False))
+        calls.clear()
+        parse_spec(world(held=True))
+        assert calls == []  # A world with no such cell pays nothing for the check.
+    with kind_registry.scope(registry(charging(0.5))):
+        impl, state, p, control = host_inputs(parse_spec(world(held=False)))
+        for value, accepted in ((0.0, True), (1.0, False)):
+            at = state._replace(alpha_value=np.full(state.alpha_value.shape, value))
+            rate = impl.membrane_rate(at, control, p, xp=np, potentials=np.zeros(4))
+            assert rate == (0.0 if accepted else np.inf)
+            _, valid = impl.imex_step(at, 1e-3, control, p, xp=np)
+            assert bool(valid) == accepted
 
 
 def test_a_held_row_has_one_writer():
@@ -333,7 +505,7 @@ def test_a_held_row_has_one_writer():
     with kind_registry.scope(registry(holding("B"))):
         parse_spec(raw)  # Nothing moves B: admitted.
     with kind_registry.scope(kind_fixtures.registry(holding("B"))):
-        with pytest.raises(ConfigError, match="which tests.exchange@1 moves"):
+        with pytest.raises(ConfigError, match="which tests.kind.exchange@1 moves"):
             parse_spec(kind_fixtures.declare(raw))
 
 

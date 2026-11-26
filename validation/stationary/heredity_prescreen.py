@@ -8,8 +8,8 @@ held open and for voltage-gated junctions? Where do E07-v1's four coupling
 arms (x0.3, x1, x3, x10) fall on that map, and is the uniform H state stable
 at each arm (the spontaneous-D validity gate)?
 
-Engine model analysed: resolved_pump_tissue@3, unmodified, through
-stationary_continuation_analysis@1 (cells.analysis.stationary), slow mode,
+Engine model analysed: cells.model.resolved_pump_tissue@3, unmodified, through
+cells.analysis.stationary_continuation_analysis@1 (cells.analysis.stationary), slow mode,
 the law's own derivative (model.rhs), dense Jacobians and spectra.
 
 World: a hexagonal sheet of heredity cells (validation/tissue/
@@ -18,7 +18,7 @@ x0.2, Kir2.1 1e-8 m/s, NaV1.2 2.5e-7 m/s, 310 K, fixed volume; each cell faces
 its own held bath, the F0 surrogate of the design), the cells carrying only P
 as fixed charge (worlds.ionic_background), joined along the sheet's 342 edges
 by E07-v1 junctions (worlds.e07_junction: W225's BETSE gap-junction area and
-permeabilities, junction_voltage_relaxation@1 with threshold 15 mV and
+permeabilities, cells.junction.junction_voltage_relaxation@1 with threshold 15 mV and
 minimum 0.1). Coupling: theta = open junction conductance at the H
 composition / g_H, g_H the fast slope conductance of the slow H cell; the arm
 multiplier s scales every junction permeability (s = 1 is E07-v1 x1).
@@ -940,7 +940,7 @@ def main(argv=None):
         scope="Design input only (development analysis, not judged): written-disc stationary "
         "states, stability and critical couplings for E07-v1 on held-bath sheets.",
         analysis=sa.ANALYSIS_ID,
-        engine_model="resolved_pump_tissue@3",
+        engine_model="cells.model.resolved_pump_tissue@3",
         cells_version=__version__,
         sheet_radius=SHEET_RADIUS,
         theta_range=THETA_RANGE,

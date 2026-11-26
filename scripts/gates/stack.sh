@@ -46,9 +46,15 @@ HOSTPY=${HOSTPY:-python3}
 REPO=${REPO:-$HOME/Cells}
 RESTACK=${RESTACK:-1}
 export JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 JAX_ENABLE_X64=1
+# Cold, as gate.sh (D321 R2): the stack's gate and its bisect's reruns never use a compilation cache.
+export JAX_ENABLE_COMPILATION_CACHE=false
+unset JAX_COMPILATION_CACHE_DIR CELLS_JAX_CACHE
 steps() { "$HOSTPY" -I "$STEPS" "$@"; }
 log() { echo "$(date -u +%FT%TZ) $*" >> "$OUT/stack.log"; }
 short() { tr -d '\n' < "$1" | cut -c1-400; }
+# A tree's own table of renamed IDs (D345), where it has one: what was saved under an old spelling is
+# read through it (validation/id_table.py), so a tree before the rename is asked for nothing.
+id_map() { local t=$1/src/cells/registry/renamed_ids.py; [ ! -f "$t" ] || printf '%s\n' --map "$t"; }
 field() { "$HOSTPY" -I -c "import json,sys; d=json.load(open(sys.argv[1])); v=d.get(sys.argv[2]); \
 print('\n'.join(map(str, v)) if isinstance(v, list) else ('' if v is None else v))" "$1" "$2"; }
 to_nice() { local now; now=$(nice); if [ "$1" -gt "$now" ]; then echo $(( $1 - now )); else echo 0; fi; }
@@ -74,7 +80,7 @@ from_log() {  # WORDS: the path the gate's log gives after "WORDS, " (a cache en
 }
 
 rerun() {  # STAGE K SNAP DIR ITEM...: the failing check alone on one tree.
-  local stage=$1 k=$2 snap=$3 dir=$4 adds= removed= base_ids base_x set j
+  local stage=$1 k=$2 snap=$3 dir=$4 adds= removed= base_ids base_x set j ids
   shift 4
   mkdir -p "$dir"
   if [ "$k" -gt 0 ]; then adds=$(cat "$OUT/decl-$k/additions.txt"); removed=$OUT/decl-$k/removed-ok.txt; fi
@@ -106,11 +112,12 @@ rerun() {  # STAGE K SNAP DIR ITEM...: the failing check alone on one tree.
       steps crossrev-verdict "$base_x" "$dir/head" "$dir/compare" "$dir/verdict.json" --sets "$@" \
         > "$dir/verdict.log" 2>&1 ;;
     g1)
-      j=0
+      j=0; mapfile -t ids < <(id_map "$snap")
       while IFS=$'\t' read -r set worlds; do
         # shellcheck disable=SC2086
         (cd "$snap" && PYTHONPATH="$snap/src:$snap" $RUN "$PY" -B validation/results_baseline.py save \
-          "$dir/parts/part-$j" --sets "$set" --worlds $worlds --from "$BASELINE") < /dev/null >> "$dir/save.log" 2>&1
+          "$dir/parts/part-$j" --sets "$set" --worlds $worlds --from "$BASELINE" "${ids[@]}") \
+          < /dev/null >> "$dir/save.log" 2>&1
         j=$((j + 1))
       done < <("$HOSTPY" -I -c "import sys, collections
 groups = collections.defaultdict(list)
@@ -121,7 +128,7 @@ for s, names in groups.items():
       steps g1-merge "$dir/parts" "$dir/merged" >> "$dir/save.log" 2>&1
       steps g1-view "$C1" "$dir/c1" "$@" >> "$dir/save.log" 2>&1
       (cd "$snap" && PYTHONPATH="$snap/src:$snap" $RUN "$PY" -B validation/results_baseline.py compare \
-        "$dir/c1" "$dir/merged" --output "$dir/compare.json" > "$dir/compare.log" 2>&1) ;;
+        "$dir/c1" "$dir/merged" "${ids[@]}" --output "$dir/compare.json" > "$dir/compare.log" 2>&1) ;;
   esac
 }
 
@@ -167,6 +174,8 @@ PRE_CPU=${PRELOCK_CPU:-23}
 # Until a lock is held, this script and all it starts stay on the pre-lock CPU (as gate.sh).
 taskset -cp "$PRE_CPU" $$ > /dev/null || { log "could not pin to CPU $PRE_CPU"; echo 2 > "$OUT/done"; exit 2; }
 log "stack $DECL into $OUT; repo $REPO; tool $G; restack $RESTACK"
+log "JAX's persistent compilation cache disabled in every process (JAX_ENABLE_COMPILATION_CACHE=false, \
+no cache folder; D321 R2)"
 steps stack-plan "$DECL" "$OUT" > "$OUT/plan.log" 2>&1 || { log "declaration refused: $(short "$OUT/plan.log")"; finish 2; }
 steps stack-build "$OUT" --repo "$REPO" --python "$PY" > "$OUT/build.log" 2>&1
 rc=$?; log "trial merges exit $rc: $(short "$OUT/build.log")"
@@ -212,6 +221,9 @@ else
   RUN="taskset -c $PRELOCK_CPU nice -n $(to_nice "$PRELOCK_NICE")"; RCPUS=$PRELOCK_CPU
   bisect
 fi
+if why=$(steps jax-entries "$OUT/bisect" 2>&1); then log "cold check after the bisect: $why"
+else log "stopped: JAX compilation cache entries appeared in the bisect's reruns (the cold check): $why"
+  finish 1; fi
 steps stack-blame "$OUT/bisect" "$N" "$OUT/blame.json" > "$OUT/blame.log" 2>&1
 log "blame: $(short "$OUT/blame.log")"
 if [ "$RESTACK" = 1 ]; then

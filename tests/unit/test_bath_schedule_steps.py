@@ -1,4 +1,4 @@
-"""Milestone 2 of scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §7, §8), NumPy.
+"""Milestone 2 of cells.operator.scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §7, §8), NumPy.
 
 A step is admitted only if a measured passing point of its key and direction dominates it in both
 ratio and level, and only within the measured conditions: ARS(2,2,2) at dt <= 1 ms or RK4 at
@@ -13,7 +13,8 @@ D (neutral steps down). Here, at the definition:
   washout after it within the down region;
 * M1's tested uses stay admitted: B3's step, the salt substitution and the isosmotic water step lie
   inside the measured regions (probe I's r = 3 arm);
-* the species cap (D165's 16): 8 species admitted, 17 refused.
+* its call to the species cap (1,024 since FR-43 / D315, set to 16 for the test): 8 species
+  admitted, 17 refused.
 """
 
 import copy
@@ -22,6 +23,7 @@ import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.operators import bath_schedule as bs
+from cells.operators import species_common
 from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -149,7 +151,8 @@ def with_neutral_species(raw, count):
     return out
 
 
-def test_the_species_cap_admits_eight_and_refuses_seventeen():
+def test_the_species_cap_admits_eight_and_refuses_seventeen(monkeypatch):
+    monkeypatch.setattr(species_common, "MAX_SPECIES", 16)  # The operator's call, not the value.
     raw = neutral(1e-3, 1.5e-3, face=(1e-10, 1e-5))  # Na, K, Cl and S: 4 species.
     spec = parse_spec(with_neutral_species(raw, 4))
     assert len(spec.model.species_ids) == 8

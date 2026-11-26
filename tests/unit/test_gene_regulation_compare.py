@@ -383,6 +383,10 @@ SURVIVAL = [
     ("resolved lossless", 60, 1 / 360, 0.0, False, "compared"),
     ("empty cohort", 60, 0.0, K_SHORT, False, "empty cohort"),
     ("resolved first-order", 60, 1 / 360, K_SHORT, True, "compared"),
+    # The Lean lane's turnover_roundoff control: constant turnover through the run (releases equal
+    # losses, the amount steady), where the known-rate form is exact on any grid and its grid error
+    # exactly zero; the ratio's own rounding (one ulp above 1/4) once failed a zero bound.
+    ("steady turnover, zero grid error", 60, None, None, True, "compared"),
 ]
 
 
@@ -401,6 +405,19 @@ def test_the_survival_check_fails_closed(case, every, inflow, loss, ok, status, 
     t1, t2 = worlds.R1_WINDOW
     t = [float(x) for x in range(0, int(2 * t2) + 1, every)]
     n0 = 10.0
+    if inflow is None:  # Steady turnover at the definition's gross k, through the whole record.
+        k = release_check.gross_rate({"definition": worlds.r1(0.75), "cell": "cell_0"}, "R_s")
+        made = [n0 * COPY_FMOL * k * s for s in t]
+        readouts = {"n_R_s": [n0 * COPY_FMOL + q - q for q in made],
+                    "int_Q_tx_release_short_lived": made, "int_D_R_s": list(made)}  # fmt: skip
+        path = tmp_path / "record.json"
+        path.write_text(json.dumps(dict(definition=worlds.r1(0.75), cell="cell_0", t=t,
+                                        readouts=readouts)))  # fmt: skip
+        checks = release_check.Checks()
+        release_check.survival(checks, case, path, "R_s", "short_lived")
+        (row,) = checks.rows
+        assert (row["ok"], row["status"]) == (ok, status), row
+        return
 
     def alive(s):
         made = inflow * min(s, t2)
@@ -719,3 +736,44 @@ def test_the_registration_judges_from_step_error_alone(case, offsets, orders, ve
     assert world["effective_factors"]["J_bar_tx"] is None
     if verdict == "passed":  # At the declared order the effective factor is F itself.
         assert world["effective_factors"]["n_R"] == pytest.approx(3.0, rel=1e-6)
+
+
+# ------------------------------------------------------------------ the cohort readers fail closed
+SERIES = dict(t=[0.0, 1.0, 2.0, 3.0], Q=[0.0, 0.5, 1.0, 1.5], k_f=0.1, forward=[0.0, 0.1, 0.2, 0.3],
+              n_c=[1.0, 1.1, 1.2, 1.3], backward=[0.0, 0.0, 0.01, 0.02], n_o=[0.0, 0.1, 0.2, 0.3],
+              k_o=0.05, t1=0.0, t2=2.0, ts=3.0)  # fmt: skip
+
+# (case, the series' edit, the refusal's words; None for the valid case).
+COHORT_READERS = [
+    ("valid series", {}, None),
+    ("a negative fate rate", {"k_f": -0.1}, "k_f = -0.1"),
+    ("a NaN outside rate", {"k_o": float("nan")}, "k_o = nan"),
+    ("a decreasing export counter", {"forward": [0.0, 0.2, 0.1, 0.3]}, "decreases"),
+    ("a return from an empty node", {"n_o": [0.0, 0.0, 0.0, 0.0], "forward": [0.0, 0.0, 0.0, 0.0]},
+     "empty pool"),
+]  # fmt: skip
+
+
+@pytest.mark.parametrize(("case", "edit", "words"), COHORT_READERS,
+                         ids=[c[0] for c in COHORT_READERS])  # fmt: skip
+def test_the_cohort_readers_fail_closed(case, edit, words):
+    """Host only, no world compiled (a validation fix's row, D224):
+    - known_rate_error is None, never 0.0, where the release window holds no output to drop;
+      at a constant rate an output dropped after the window alone changes nothing, so it once
+      reported an exact zero for an unresolved window (on 0, 60, 120, 180, 240 s, the window [60,
+      120] and the sample at 240);
+    - series refuses an invalid rate or counter and an export from an empty pool, and series_error
+      bounds both parts."""
+    t, Q = [0.0, 60.0, 120.0, 180.0, 240.0], [0.0, 0.0, 10.0, 10.0, 10.0]
+    assert cohort.known_rate_error(t, Q, 0.02, 60.0, 120.0, 240.0) is None
+    assert cohort.known_survival(t, Q, 0.02, 60.0, 120.0, 240.0)["grid_error_at_sample"] is None
+    fine_t, fine_Q = [0.0, 30.0, 60.0, 90.0, 120.0, 240.0], [0.0, 0.0, 0.0, 6.0, 10.0, 10.0]
+    assert cohort.known_rate_error(fine_t, fine_Q, 0.02, 60.0, 120.0, 240.0) > 0.0
+    args = dict(SERIES, **edit)
+    if words is None:
+        cell, node = cohort.series(**args)
+        assert 0.0 < node < cell
+        assert cohort.series_error(**args) is None or cohort.series_error(**args) >= 0.0
+    else:
+        with pytest.raises(ValueError, match=words):
+            cohort.series(**args)

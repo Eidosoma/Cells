@@ -19,7 +19,7 @@ For the gate-free Cl⁻ population, outward material flux J produces outward ele
 - [CellsProofs.Transport.IonChannels.other_flux](../CellsProofs/Transport/IonChannels.lean#L202)
 - [CellsProofs.Transport.IonChannels.patch_booking](../CellsProofs/Transport/IonChannels.lean#L211)
 
-Direct proof subject `cells.clleak_always_open@1`
+Direct proof subject `cells.channel.clleak_always_open@1`
 
 Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.md) · [Only boundary transfers change a region’s inventory during transport](transfer-inventory.md)
 
@@ -33,11 +33,31 @@ Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.
 
 [Tested engine d0104950c40b](https://github.com/Eidosoma/Cells/commit/d0104950c40b92860a211c9e2555709d0fd61aed) · [Evidence checkpoint c1e2b733bc4c](https://github.com/Eidosoma/Cells/commit/c1e2b733bc4c54a4fd005b9dedb4697d801855d1)
 
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `clleak_always_open@1`, `passive_constant_field_permeation@1`
+
+**Operators** `cells.species_regulated_availability@1`, `cells.species_regulated_availability@2`
+
+[Held-input state update](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/src/cells/operators/species_regulated_availability.py#L1363) · [Chloride-selective flux kernel](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/src/cells/laws/junctions/selective.py#L19) · [Charged route flux kernel](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/src/cells/laws/routes/constant_field_permeation.py#L59) · [Composite world fixture](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/validation/tissue/secreted_species_fixtures.py#L92) · [Regulatory state fixture](https://github.com/Eidosoma/Cells/blob/afc28d1d200d3f926c831e6216eee8209a763f38/validation/tissue/regulated_availability_fixtures.py#L130) · [Independent chloride and SK2 measurements](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/data/paired_transport_responses.json) · [SK2 calibration measurements](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/data/hirschberg1998_sk2.json) · [Red-cell chloride readings](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/data/freedman1997_chloride.json) · [Bilayer potassium readings](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/data/pfeffermann2026_potassium.json) · [SK2 calcium clamp](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/regulated_availability.py#L337) · [Original chloride protocol](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/chloride_channel.py#L23) · [One-voltage calibrations](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/charged_permeation.py#L152) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/checks/paired_transport.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9/lean/PROGRESS.md#paired-transport-and-membrane-measurements)
+
+[Tested engine afc28d1d200d](https://github.com/Eidosoma/Cells/commit/afc28d1d200d3f926c831e6216eee8209a763f38) · [Evidence checkpoint bb2a42672ba8](https://github.com/Eidosoma/Cells/commit/bb2a42672ba8e3acd6fdb7055e68b4c3f5c5b8d9)
+
 ## Biological evidence
 
 **Open.** Shift in the single-channel reversal potential when the nominal extracellular chloride concentration changes at fixed intracellular chloride and temperature.
 
+- [Lowering extracellular chloride shifts the reversal of a chloride-selective epithelial current in the positive direction.](../WET_LAB_EVIDENCE.md#pair-epithelial-chloride-gradient) · Supported by both studies
+
 **Unit** mV
+
+### bajnath1993_chloride_reversal@1
+
+Forskolin-stimulated, cell-attached patches of human HT-29cl.19A epithelium at 25 °C. Pipette chloride was lowered with osmotic compensation. Methods, Fig. 2 and accompanying Results, closed-to-open single-channel amplitudes. [Bajnath et al. (1993), Fig. 2](https://doi.org/10.1007/BF00374509)
+
+- **Evidence role** descriptive
+
+The high-chloride reversal was 2 ± 1 mV on the −Vₚ scale. The low-chloride endpoint was about 25 mV. No error on their difference was reported.
+
+Lowering external chloride shifted the reversal positive. Cells gives +24.86 mV at 25 °C for a fixed internal chloride concentration. The inside-out control at symmetric chloride was a separate experiment. [Dataset manifest](../checks/data/paired_transport_responses.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
 
 ### Ling 1994 chloride substitution
 

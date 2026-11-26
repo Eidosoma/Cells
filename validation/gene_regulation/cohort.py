@@ -3,7 +3,7 @@ window [t1, t2], how much is still present at a sampling time ts >= t2, as a pul
 it, from the engine's existing outputs alone. Development, not judged.
 
 **What it assumes.** One well-mixed pool whose loss does not depend on a molecule's age: every
-molecule present at time s is lost at the same per-molecule rate k(s). templated_polymerisation@1's
+molecule present at time s is lost at the same per-molecule rate k(s). cells.operator.templated_polymerisation@1's
 degradation is such a loss, J_D = k n (1 - e^y), so k(s) = k (1 - e^(y(s))). Under age- or
 region-selective loss no output identifies which molecules were lost, and this calculation does
 not apply (FR-33).
@@ -62,6 +62,7 @@ import numpy as np
 # D283: the window edges' predicate is the clock's one same-instant predicate (it was a seam here,
 # equal times, until D283 landed), as templated_polymerisation.grid_time reads on_grid.
 from cells.numerics.clock_instants import same_instant
+from validation import id_table
 
 
 def _integral(t, n, i, j):
@@ -187,13 +188,15 @@ def known_rate(t, Q, k, t1, t2, ts=None):
 def known_rate_error(t, Q, k, t1, t2, ts=None):
     """|known_rate on every output - known_rate on every second output|: the known-rate form's
     error on the coarser grid, an upper estimate of its error on the given one, as grid_error's.
-    None where the window holds no output to drop: the time resolution is then insufficient to
-    estimate it, which is never reported as a zero error."""
+    None where the window [t1, t2] holds no output to drop: the time resolution is then
+    insufficient to estimate it, which is never reported as a zero error. At a constant rate the
+    form reads only the window's outputs (outputs after t2 change nothing), so an output dropped
+    between t2 and ts alone would give a false zero; the window's own outputs decide."""
     ts = t2 if ts is None else ts
     check_counters(t, Q=Q)
     i1, i2, i3 = _window(t, t1, t2, ts)
     keep = [i for i in range(len(t)) if i % 2 == 0 or i in (i1, i2, i3)]
-    if all(i in keep for i in range(i1, i3 + 1)):
+    if all(i in keep for i in range(i1, i2 + 1)):
         return None
     fine = known_rate(t, Q, k, t1, t2, ts)
     return abs(fine - known_rate([t[i] for i in keep], [Q[i] for i in keep], k, t1, t2, ts))
@@ -226,18 +229,31 @@ def series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts):
     forward and backward counters' increments over the integral of the row and of the node (the
     trapezoid), held constant over it, and each interval's linear system is solved exactly (the
     matrix exponential of its augmented form). Exact for constant rates in well-mixed pools, up to
-    its grid error (series_error)."""
+    its grid error (series_error). Refused on a negative or non-finite rate, invalid counters or
+    pools (check_counters), and an export from an empty pool. Unlike survivors, the result is not
+    bounded by the pools to rounding: where a pool starts empty its interval-held rates overshoot
+    by the form's O(h^2) error, which series_error estimates, so no pool ceiling is imposed."""
     from scipy.linalg import expm
 
-    check_counters(t, Q=Q)
+    for name, rate in (("k_f", k_f), ("k_o", k_o)):
+        if not (isinstance(rate, (int, float)) and math.isfinite(rate) and rate >= 0):
+            raise ValueError(f"a known rate is a finite number >= 0, not {name} = {rate!r}")
+    check_counters(t, n=n_c, Q=Q, D=forward)
+    check_counters(t, n=n_o, D=backward)
     i1, i2, i3 = _window(t, t1, t2, ts)
     state = np.zeros(2)
     for i in range(i1, i3):
         h = t[i + 1] - t[i]
         held_c = _integral(t, n_c, i, i + 1)
         held_o = _integral(t, n_o, i, i + 1)
-        r_e = (forward[i + 1] - forward[i]) / held_c if held_c > 0 else 0.0
-        r_b = (backward[i + 1] - backward[i]) / held_o if held_o > 0 else 0.0
+        moved_e, moved_b = forward[i + 1] - forward[i], backward[i + 1] - backward[i]
+        for moved, held, where in ((moved_e, held_c, "the fate row"), (moved_b, held_o, "the node")):
+            if moved > 0 and held <= 0:
+                raise ValueError(
+                    f"material is exported from an empty pool ({where}) over [{t[i]}, {t[i + 1]}] s"
+                )
+        r_e = moved_e / held_c if held_c > 0 else 0.0
+        r_b = moved_b / held_o if held_o > 0 else 0.0
         made = (Q[i + 1] - Q[i]) / h if i < i2 else 0.0
         system = np.array([
             [-(k_f + r_e), r_b, made],
@@ -249,17 +265,17 @@ def series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts):
 
 
 def series_error(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts):
-    """|series on every output - series on every second output| at the node: the series form's
-    error on the coarser grid, an upper estimate on the given one (grid_error's form); None where
-    the window holds no output to drop."""
+    """|series on every output - series on every second output|, the larger of the fate row's and
+    the node's: the series form's error on the coarser grid, an upper estimate on the given one
+    for either part (grid_error's form); None where the window holds no output to drop."""
     i1, i2, i3 = _window(t, t1, t2, ts)
     keep = [i for i in range(len(t)) if i % 2 == 0 or i in (i1, i2, i3)]
     if all(i in keep for i in range(i1, i3 + 1)):
         return None
-    fine = series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts)[1]
+    fine = series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts)
     pick = [[seq[i] for i in keep] for seq in (t, Q, forward, n_c, backward, n_o)]
-    coarse = series(pick[0], pick[1], k_f, pick[2], pick[3], pick[4], pick[5], k_o, t1, t2, ts)[1]
-    return abs(fine - coarse)
+    coarse = series(pick[0], pick[1], k_f, pick[2], pick[3], pick[4], pick[5], k_o, t1, t2, ts)
+    return max(abs(fine[0] - coarse[0]), abs(fine[1] - coarse[1]))
 
 
 def grid_error(t, n, Q, D, t1, t2, ts=None):
@@ -329,7 +345,7 @@ def turnover_control(points_per_hour=60):
     return completed, at_1h, at_2h
 
 
-POLYMERISATION = "templated_polymerisation@1"
+POLYMERISATION = "cells.operator.templated_polymerisation@1"
 CSV_CHAINS = {"tx": "R", "tl": "P"}  # The A1 export's chains and the product each makes.
 CSV_COLUMNS = {"P": ("protein_P_fmol", "released_tl_fmol", "degraded_P_fmol"),
                "R": ("mRNA_R_fmol", "released_tx_fmol", "degraded_R_fmol")}  # fmt: skip
@@ -393,7 +409,7 @@ def read(path, product="P", chain=None):
     completions of the chain that makes it (producing_chain)."""
     path = Path(path)
     if path.suffix == ".json":
-        r = json.loads(path.read_text())
+        r = id_table.load(path)
         (block,) = [o for o in r["definition"]["model"]["operators"] if o["law"] == POLYMERISATION]
         cell = exported_cell(r, block)
         inside = {m["id"]: m["inside"] for m in r["definition"]["model"].get("membranes", ())}

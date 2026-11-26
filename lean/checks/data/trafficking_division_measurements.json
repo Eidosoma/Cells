@@ -47,7 +47,7 @@
   "antanaviciute2018_bridge_conductance@1": {
     "doi": "10.3390/medicina54040053",
     "figure": "2A–D, original recordings reported in section 5",
-    "preparation": "Dividing HeLa sisters connected by visible midbody-containing bridges",
+    "preparation": "Dividing sister cells from a human cell line connected by visible midbody-containing bridges",
     "observable": "Electrical conductance between the two daughters",
     "bridges": 15,
     "conductance_nS": {"mean": 32, "reported_error": 6, "lowest_below": 1, "highest": 70},

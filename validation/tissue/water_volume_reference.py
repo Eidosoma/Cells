@@ -15,6 +15,20 @@ from scipy.optimize import brentq
 R = 6.02214076e23 * 1.380649e-23
 
 
+def case():
+    """The checks' world: 300 and 600 fmol of osmolyte in 1 and 3 pL, across one membrane."""
+    return dict(
+        temperature_K=298.15,
+        initial_volume_pL=[1.0, 3.0],
+        reference_volume_pL=[1.0, 3.0],
+        amount_fmol=[[100.0, 300.0], [80.0, 200.0]],
+        impermeant_amount_fmol=[120.0, 100.0],
+        bulk_modulus_Pa=[0.0, 0.0],
+        pressure_offset_Pa=[0.0, 0.0],
+        edges=[dict(sender=0, receiver=1, area_m2=1e-9, hydraulic_permeability_m_per_Pa_s=1e-12)],
+    )
+
+
 def bind(case):
     """Validate an unpadded graph independently of production schemas."""
     c = dict(case)

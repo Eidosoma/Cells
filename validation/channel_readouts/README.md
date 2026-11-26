@@ -8,7 +8,7 @@ availability and signed current today, with the request's control (D251). The co
 
 | Quantity | Field | Units | Sign and meaning |
 | --- | --- | --- | --- |
-| Surface count | `population_units`, membrane_entity_state@1's readout, per channel slot | units | The population's units: its declared count plus every writer's increment. Only where membrane state is composed |
+| Surface count | `population_units`, cells.operator.membrane_entity_state@1's readout, per channel slot | units | The population's units: its declared count plus every writer's increment. Only where membrane state is composed |
 | Relative abundance | `channel_abundance`, @3's view field | 1 | a = N / (A rho_ref). A view field, not an observation column |
 | Availability | `channel_availability`, @3's observation, per channel slot | 1 | The availability the population runs at, **before the routing door**. In a composite it already holds the operators' factors (species_regulated_availability's writes and step-view routes, which that operator also records as `coupling_factor`): **do not multiply it by them again**. `channel_effective_availability` adds only the routing door's factors (D265) |
 | Flux | `channel_flux_fmol_s`, @3's observation, per species and channel slot | fmol/s | **Positive outward:** a positive amount leaves the cell of the population's patch for that patch's outside node |
@@ -17,7 +17,7 @@ availability and signed current today, with the request's control (D251). The co
 
 ## The control
 
-The world holds two gate-free K populations (`kleak_always_open@1`) on one patch of one cell, with
+The world holds two gate-free K populations (`cells.channel.kleak_always_open@1`) on one patch of one cell, with
 the same count:
 - `kir_0` at availability 1;
 - `leak_1` at availability 0.5.
@@ -33,13 +33,13 @@ rounding.
 D265). The rest of this section is the record from before it landed. It covered passive routes and
 transporter populations, not yet @3's channel populations, which this example reads (81a29442,
 D252):
-- `cells.passive_routes@1`: a route with `readout: true` records `passive_flux_fmol_s` (inward) and
+- `cells.kind.passive_routes@1`: a route with `readout: true` records `passive_flux_fmol_s` (inward) and
   `passive_current_A` (outward-positive) at each observed row. `clamped_flux` gives every route's
   flux and current at declared patch voltages.
-- `cells.transporter@1`: a population with `current_readout: true` records `cycle_current_A`
+- `cells.kind.transporter@1`: a population with `current_readout: true` records `cycle_current_A`
   (outward-positive). `clamped_rates` gives each population's rates and current at declared host
   voltages.
-- **Neither runs these twins' channel law** (`kleak_always_open@1`, one of @3's channel laws):
+- **Neither runs these twins' channel law** (`cells.channel.kleak_always_open@1`, one of @3's channel laws):
   - a passive route opens with its patch's availability, times any routed factor, and has no
     population count of its own. So two routes on one patch can't carry their own counts and
     availabilities;
@@ -63,7 +63,7 @@ its providers' layout view. So:
 - **`channel_availability` already holds the operators' factors.** Multiplying it by the
   recorded `coupling_factor` applies the factor twice.
 - **@3's `clamped_channel_flux` given the composite's stored state, controls and layout loses the
-  operators' factors.** A population held at 0.5 by species_regulated_availability@1 read 11.10328
+  operators' factors.** A population held at 0.5 by cells.operator.species_regulated_availability@1 read 11.10328
   pA at -50 mV, where the composite runs at 5.55164 pA. In a composite, call the composition's
   own entry point, `model.clamped_channel_flux(state, control, p, voltages_V)`
   (`cells.models.pump_composite`). It hands @3 the step's views (`clamp_inputs`), and at the
@@ -71,13 +71,37 @@ its providers' layout view. So:
 - **The kinds' clamped evaluations** (`clamped_flux`, `clamped_rates`) take the same views through
   `model.clamped_kind(function, state, control, p, voltages_V)`.
 
-## Not covered here (engine work, in its owners' queues, D251, D252)
+## Not covered here
 
-- **@3's channel populations at a declared voltage:** the @3 owner (above).
-- **One record of the effective availability,** the held value times its routed factors: the @3 or
-  operators owner.
+Both items this section once listed as pending engine work (D251, D252) have landed:
+- **@3's channel populations at a declared voltage:** @3's `clamped_channel_flux` (merge
+  121aca27). In a composite, use the composition's own `model.clamped_channel_flux` and
+  `model.clamped_kind` (merge 07022ddf, D265; above). Tests:
+  - `tests/unit/test_surface_pump_v3_populations.py`:
+    `test_a_population_s_current_at_a_declared_voltage_with_the_halving_control`;
+  - `tests/unit/test_species_regulated_availability.py`:
+    `test_a_composites_clamped_current_runs_at_its_effective_availability` and
+    `test_a_composites_clamped_kinds_are_the_steps_own_rates`.
+- **One record of the effective availability:** `channel_effective_availability`, @3's observation
+  per channel slot (merge d0104950). It is the held availability times the population's
+  routing-door factors, the value its flux runs at.
+  - It is recorded only where a population declares `factors`. Elsewhere that value is
+    `channel_availability`, and the column does not exist.
+  - In a composite, `channel_availability` already holds the operators' factors, and this column
+    adds only the door's.
+  - Test: `tests/unit/test_surface_pump_v3_populations.py`:
+    `test_the_effective_availability_is_recorded_where_the_door_routes_into_channels`.
 
-The kinds' routes now have their per-route flux and current records, on request (81a29442).
+The kinds' routes have their per-route flux and current records, on request (81a29442).
+
+**What these readouts still do not give:**
+- **A current after the gates settle.** The clamped entry points keep the state's gates, so they
+  give the instantaneous current at the declared voltage, not a steady-state current-voltage curve.
+- **A one-way flux.** `channel_flux_fmol_s`, `passive_transferred` and `passive_flux_fmol_s` are
+  net, so equal and opposite one-way flows cancel.
+- **A recorded current column for @3's channel populations.** Derive it from
+  `channel_flux_fmol_s`, as in the table above, or with
+  `cells.models.surface_pump_v3.channel_current_A(flux, p)`.
 
 ## Run it
 

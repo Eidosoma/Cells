@@ -1,4 +1,4 @@
-"""population_unit_turnover@1, FR-7's unit producer (F1): host rows, and one compiled world.
+"""cells.operator.population_unit_turnover@1, FR-7's unit producer (F1): host rows, and one compiled world.
 
 Host (NumPy, no compile), on the bound pump-free cell (unit_turnover_fixtures.leak_cell):
 * the half-step against an independent 50-digit matrix exponential of the chain with its sinks
@@ -493,27 +493,74 @@ def test_membrane_state_is_required():
 
 class _Stub:
     PROCESS = False  # No in-step process (the species registry's moved_in_step reads it).
+    SPLIT = True  # A split part: with an amount write, a split row writer (contract.writes_rows).
+    EVENT_REPLACES = {}
+    SHARED_ROW_POTENTIAL = False
 
-    def __init__(self, law, *, writes=(), role="user", species=()):
-        self.LAW_ID, self.IDENTITY_ROLE = law, role
+    def __init__(self, law, *, writes=(), role="user", species=(), moves=None, rows=(), bound=None):
+        """moves: its ROW_MOVES (None: undeclared); rows: its written rows; bound: its
+        production_bound's rate at each of them (None: no production_bound)."""
+        self.LAW_ID, self.IDENTITY_ROLE, self.ROW_MOVES = law, role, moves
         self.ENTITY_WRITES = dict.fromkeys(writes, ("x",))
         self._species = tuple(SimpleNamespace(id=s) for s in species)
+        self._rows = tuple(rows)
+        if bound is not None:
+            self.production_bound = lambda spec, declaration: dict.fromkeys(self._rows, bound)
 
     def species_identities(self, declaration):
         return self._species
 
+    def written_rows(self, spec, declaration):
+        return self._rows
 
+    def sole_rows(self, spec, declaration):
+        return ()
+
+
+AMOUNTS = ("amount_increment", "extracellular_amount_increment")
+PRECURSOR_ROWS = ((fx.PRECURSOR, fx.CELL), (fx.PRECURSOR, "ecs_0"))
 WRITER_REFUSALS = {
     "trafficking": (
-        _Stub("scheduled_membrane_trafficking@1", writes=("population_abundance_increment",)),
+        _Stub(
+            "cells.operator.scheduled_membrane_trafficking@1",
+            writes=("population_abundance_increment",),
+        ),
         "also writes population units",
     ),
-    "another author": (
-        _Stub("planted_author@1", role="author", species=(fx.PRECURSOR,)),
-        "also declares the precursor",
+    # FR-43 part 3: another conversion of the precursor is refused by name, a transfer by R5 (its
+    # production has no static bound), and an undeclared split row writer fails closed.
+    "another conversion": (
+        _Stub(
+            "cells.operator.planted_conversion@1",
+            writes=AMOUNTS[:1],
+            moves="conversion",
+            rows=PRECURSOR_ROWS[:1],
+        ),
+        "converts the precursor",
+    ),
+    "a transfer": (
+        _Stub(
+            "cells.operator.planted_transfer@1",
+            writes=AMOUNTS,
+            moves="transfer",
+            rows=PRECURSOR_ROWS,
+            bound=float("inf"),
+        ),
+        "made at a rate with no static bound by cells.operator.planted_transfer@1",
+    ),
+    "an undeclared split row writer": (
+        _Stub("cells.operator.planted_writer@1", writes=AMOUNTS[:1]),
+        "declares no ROW_MOVES",
     ),
     "turnover admitted": (
-        _Stub(put.TURNOVER_LAW, role="author", species=(fx.PRECURSOR,)),
+        _Stub(
+            put.TURNOVER_LAW,
+            role="author",
+            species=(fx.PRECURSOR,),
+            writes=AMOUNTS,
+            moves="conversion",
+            rows=PRECURSOR_ROWS[:1],
+        ),
         None,
     ),
 }
@@ -586,7 +633,7 @@ class _Planted(Operator):
     """A planted rate-route source (B1′): a declared factor on the producer's assembly rate and
     its validity, or no route (factor None)."""
 
-    LAW_ID = "tests.planted_unit_route@1"
+    LAW_ID = "tests.operator.planted_unit_route@1"
     SPLIT = True
     RK4 = "split"
     RATE_ROUTES = ((put.LAW_ID, "unit_assembly_rate"),)
@@ -642,7 +689,7 @@ def test_the_assembly_rate_is_routable_and_a_route_multiplies_it_in_the_half_ste
 
 
 def test_the_coupling_v2_routes_a_template_onto_the_assembly_rate():
-    """F3's code (B1′ on species_regulated_availability@2; development, not judged): a Hill
+    """F3's code (B1′ on cells.operator.species_regulated_availability@2; development, not judged): a Hill
     activation of a template species in the cell, F = b + (1 - b) c^n / (K^n + c^n), multiplies the
     producer's assembly rate in its half-steps. It parses, round trips and binds one route; the
     routed half-step is bitwise the half-step at the product rate, and records F; switched off

@@ -1,0 +1,4800 @@
+{
+ "schema": "ensemble-reexpression legacy side, version 1",
+ "part": 2,
+ "captures": {
+  "root": "/mnt/workspaces/Cells/legacy-captures-20261125",
+  "science": "science-76a498ae",
+  "science_manifest_sha256": "e0e5520f5dfa28f5e0895e74b13788343ad659b55ca72b6082dc11a0ccddf639",
+  "origin": "origin-76a498ae",
+  "origin_manifest_sha256": "823f229c38882c99bfdd20148545f4f8b54f5beaf20ca6b420da295f15a5f149",
+  "snapshot": "snapshot-76a498ae",
+  "snapshot_manifest_sha256": "b0b569075ca5084efabbca410a782ecf47a193b2209a66e7ceb7e0da9c86aa90",
+  "snapshot_revision": "76a498ae118c6d706cee0b5a6d278b1f5dae7a90",
+  "cpu_model": "Intel(R) Xeon(R) CPU @ 2.20GHz",
+  "python": "3.13.5",
+  "jax": "0.11.1",
+  "jaxlib": "0.11.1",
+  "numpy": "2.5.3"
+ },
+ "threshold_rule": "10 x 8 x 2^-52 x (S + 1) x s, S the steps of the finest captured run, s inputs_part2.json's scale",
+ "worlds": {
+  "spatial_calcium": {
+   "captured_steps_s": [
+    1.25e-05,
+    6.25e-06,
+    3.125e-06
+   ],
+   "captured_step_counts": [
+    1600,
+    3200,
+    6400
+   ],
+   "entries": {
+    "n_out_Na": {
+     "class": "unresolved",
+     "observed_order": -1.54,
+     "d2": 1.11e-15,
+     "d1": 3.22e-15,
+     "threshold": 2.32e-09,
+     "largest": 0.53
+    },
+    "leak_Na": {
+     "class": "unresolved",
+     "observed_order": -0.83,
+     "d2": 7.45e-20,
+     "d1": 1.32e-19,
+     "threshold": 6.5e-15,
+     "largest": 2.39e-05
+    },
+    "junction_Na": {
+     "class": "unresolved",
+     "observed_order": 0.4,
+     "d2": 1.4e-20,
+     "d1": 1.06e-20,
+     "threshold": 5.8e-15,
+     "largest": 3.18e-06
+    },
+    "face_Na": {
+     "class": "unresolved",
+     "observed_order": -0.31,
+     "d2": 8.05e-16,
+     "d1": 9.99e-16,
+     "threshold": 1.16e-09,
+     "largest": 0.324
+    },
+    "n_out_K": {
+     "class": "unresolved",
+     "observed_order": -1.62,
+     "d2": 1.94e-16,
+     "d1": 5.97e-16,
+     "threshold": 1.75e-10,
+     "largest": 0.153
+    },
+    "leak_K": {
+     "class": "unresolved",
+     "observed_order": -0.56,
+     "d2": 1.56e-19,
+     "d1": 2.3e-19,
+     "threshold": 1.21e-13,
+     "largest": 4.18e-05
+    },
+    "junction_K": {
+     "class": "unresolved",
+     "observed_order": -1.48,
+     "d2": 6.44e-20,
+     "d1": 1.8e-19,
+     "threshold": 9.03e-14,
+     "largest": 2.85e-05
+    },
+    "face_K": {
+     "class": "unresolved",
+     "observed_order": 0.47,
+     "d2": 2.5e-16,
+     "d1": 1.8e-16,
+     "threshold": 8.77e-11,
+     "largest": 0.0851
+    },
+    "n_out_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.51,
+     "d2": 7.77e-16,
+     "d1": 1.11e-15,
+     "threshold": 2.97e-09,
+     "largest": 0.377
+    },
+    "leak_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.95,
+     "d2": 2.71e-20,
+     "d1": 5.25e-20,
+     "threshold": 4.09e-14,
+     "largest": 5.39e-06
+    },
+    "junction_Cl": {
+     "class": "unresolved",
+     "observed_order": -2.13,
+     "d2": 1.38e-21,
+     "d1": 6.04e-21,
+     "threshold": 5.16e-15,
+     "largest": 9.16e-07
+    },
+    "face_Cl": {
+     "class": "unresolved",
+     "observed_order": 0.93,
+     "d2": 5.83e-16,
+     "d1": 3.05e-16,
+     "threshold": 1.48e-09,
+     "largest": 0.239
+    },
+    "n_out_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.51,
+     "d2": 1.83e-19,
+     "d1": 1.29e-19,
+     "threshold": 1.65e-13,
+     "largest": 4.63e-05
+    },
+    "leak_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 2.88e-20,
+     "d1": 2.88e-20,
+     "threshold": 3.39e-15,
+     "largest": 1.23e-05
+    },
+    "junction_Ca": {
+     "class": "unresolved",
+     "observed_order": 1.43,
+     "d2": 3.03e-22,
+     "d1": 1.12e-22,
+     "threshold": 9.41e-17,
+     "largest": 3.35e-08
+    },
+    "face_Ca": {
+     "class": "unresolved",
+     "observed_order": -0.76,
+     "d2": 4.4e-20,
+     "d1": 7.45e-20,
+     "threshold": 8.23e-14,
+     "largest": 3e-05
+    },
+    "channel_K": {
+     "class": "unresolved",
+     "observed_order": 0.3,
+     "d2": 1.14e-20,
+     "d1": 9.32e-21,
+     "threshold": 1.09e-13,
+     "largest": 3.15e-06
+    },
+    "gate_m": {
+     "class": "unresolved",
+     "observed_order": -0.22,
+     "d2": 5e-16,
+     "d1": 5.83e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.2
+    },
+    "gate_h": {
+     "class": "unresolved",
+     "observed_order": -0.83,
+     "d2": 2e-15,
+     "d1": 3.55e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.702
+    },
+    "pump": {
+     "class": "unresolved",
+     "observed_order": 0.12,
+     "d2": 1.41e-18,
+     "d1": 1.3e-18,
+     "threshold": 2.27e-13,
+     "largest": 0.000989
+    },
+    "junction_gate": {
+     "class": "unresolved",
+     "observed_order": -0.46,
+     "d2": 3.89e-15,
+     "d1": 5.33e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.606
+    },
+    "heat_junction": {
+     "class": "unresolved",
+     "observed_order": -2.35,
+     "d2": 8.13e-20,
+     "d1": 4.13e-19,
+     "threshold": 1.45e-12,
+     "largest": 3.89e-05
+    },
+    "heat_face": {
+     "class": "unresolved",
+     "observed_order": -0.61,
+     "d2": 1.05e-15,
+     "d1": 1.61e-15,
+     "threshold": 3.96e-08,
+     "largest": 0.433
+    },
+    "heat_membrane": {
+     "class": "unresolved",
+     "observed_order": -0.07,
+     "d2": 6.94e-17,
+     "d1": 7.29e-17,
+     "threshold": 4.51e-11,
+     "largest": 0.0278
+    },
+    "exchange_Na": {
+     "class": "unresolved",
+     "observed_order": -1.26,
+     "d2": 2.17e-18,
+     "d1": 5.2e-18,
+     "threshold": 6.95e-13,
+     "largest": 0.00295
+    },
+    "exchange_K": {
+     "class": "unresolved",
+     "observed_order": -1.25,
+     "d2": 1.73e-18,
+     "d1": 4.12e-18,
+     "threshold": 7.74e-13,
+     "largest": 0.00191
+    },
+    "exchange_Cl": {
+     "class": "unresolved",
+     "observed_order": -1.62,
+     "d2": 2.63e-20,
+     "d1": 8.05e-20,
+     "threshold": 4.6e-14,
+     "largest": 6.31e-06
+    },
+    "exchange_Ca": {
+     "class": "unresolved",
+     "observed_order": -1.47,
+     "d2": 1.52e-20,
+     "d1": 4.24e-20,
+     "threshold": 3.48e-15,
+     "largest": 1.22e-05
+    },
+    "cyt_B": {
+     "class": "unresolved",
+     "observed_order": 0.22,
+     "d2": 5.93e-18,
+     "d1": 5.1e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000902
+    },
+    "store_B": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 3.19e-16,
+     "d1": 1.95e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333
+    },
+    "cyt_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 5.41e-16,
+     "d1": 3.29e-17,
+     "threshold": 2.13e-12,
+     "largest": 0.000595
+    },
+    "store_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 5.91e-16,
+     "d1": 3.6e-17,
+     "threshold": 3e-12,
+     "largest": 0.00448
+    },
+    "cyt_Ca2B": {
+     "class": "unresolved",
+     "observed_order": 2.43,
+     "d2": 1.19e-19,
+     "d1": 2.2e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.62e-06
+    },
+    "store_Ca2B": {
+     "class": "unresolved",
+     "observed_order": 3.02,
+     "d2": 1.84e-17,
+     "d1": 2.28e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847
+    },
+    "cyt_CaB": {
+     "class": "unresolved",
+     "observed_order": 0.35,
+     "d2": 5.82e-18,
+     "d1": 4.55e-18,
+     "threshold": 1.39e-12,
+     "largest": 0.000894
+    },
+    "store_CaB": {
+     "class": "unresolved",
+     "observed_order": 3.78,
+     "d2": 3.35e-16,
+     "d1": 2.45e-17,
+     "threshold": 2.26e-12,
+     "largest": 0.00255
+    },
+    "cyt_Cl": {
+     "class": "unresolved",
+     "observed_order": -1.62,
+     "d2": 2.63e-20,
+     "d1": 8.05e-20,
+     "threshold": 4.6e-14,
+     "largest": 6.31e-06
+    },
+    "cyt_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 3.98e-13,
+     "d1": 2.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.0013
+    },
+    "store_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 3.98e-13,
+     "d1": 2.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.000604
+    },
+    "cyt_Na": {
+     "class": "unresolved",
+     "observed_order": -1.26,
+     "d2": 2.17e-18,
+     "d1": 5.2e-18,
+     "threshold": 6.95e-13,
+     "largest": 0.00295
+    },
+    "store_leak_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 6.03e-17,
+     "d1": 3.67e-18,
+     "threshold": 6.58e-14,
+     "largest": 4.32e-05
+    },
+    "store_leak_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 3.98e-13,
+     "d1": 2.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.000604
+    },
+    "store_pump": {
+     "class": "unresolved",
+     "observed_order": -1.0,
+     "d2": 6.1e-20,
+     "d1": 1.22e-19,
+     "threshold": 9.55e-15,
+     "largest": 3.78e-05
+    },
+    "store_release": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 4.74e-16,
+     "d1": 2.89e-17,
+     "threshold": 6.58e-13,
+     "largest": 0.000299
+    },
+    "heat_store_leak": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 1.09e-14,
+     "d1": 6.65e-16,
+     "threshold": 3.3e-09,
+     "largest": 0.000498
+    },
+    "heat_store_pump": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 2.29e-16,
+     "d1": 1.4e-17,
+     "threshold": 8.26e-13,
+     "largest": 0.00143
+    },
+    "heat_store_release": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 7.7e-15,
+     "d1": 4.69e-16,
+     "threshold": 2.44e-11,
+     "largest": 0.00342
+    },
+    "extent_bind_0_first": {
+     "class": "unresolved",
+     "observed_order": 0.22,
+     "d2": 5.93e-18,
+     "d1": 5.1e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000902
+    },
+    "extent_bind_0_second": {
+     "class": "unresolved",
+     "observed_order": 2.43,
+     "d2": 1.19e-19,
+     "d1": 2.2e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.62e-06
+    },
+    "extent_bind_1_first": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 3.19e-16,
+     "d1": 1.95e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333
+    },
+    "extent_bind_1_second": {
+     "class": "unresolved",
+     "observed_order": 3.02,
+     "d2": 1.84e-17,
+     "d1": 2.28e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847
+    },
+    "heat_reactions_cytosol": {
+     "class": "unresolved",
+     "observed_order": 0.77,
+     "d2": 4.72e-17,
+     "d1": 2.78e-17,
+     "threshold": 7.5e-11,
+     "largest": 0.00443
+    },
+    "heat_reactions_store": {
+     "class": "unresolved",
+     "observed_order": 3.98,
+     "d2": 8.02e-14,
+     "d1": 5.07e-15,
+     "threshold": 9.69e-11,
+     "largest": 0.0498
+    },
+    "voltage": {
+     "class": "unresolved",
+     "observed_order": -2.32,
+     "d2": 4.16e-17,
+     "d1": 2.08e-16,
+     "threshold": 4.76e-11,
+     "largest": 0.0703
+    },
+    "phi_out": {
+     "class": "unresolved",
+     "observed_order": -0.57,
+     "d2": 1.46e-19,
+     "d1": 2.17e-19,
+     "threshold": 2.92e-12,
+     "largest": 0.000509
+    },
+    "store_voltage": {
+     "class": "unresolved",
+     "observed_order": 2.64,
+     "d2": 3.61e-16,
+     "d1": 5.79e-17,
+     "threshold": 1.82e-09,
+     "largest": 5.59e-05
+    }
+   },
+   "zero_entries": [
+    "store_Cl",
+    "store_Na"
+   ]
+  },
+  "plasma_calcium": {
+   "captured_steps_s": [
+    1.25e-05,
+    6.25e-06,
+    3.125e-06
+   ],
+   "captured_step_counts": [
+    1600,
+    3200,
+    6400
+   ],
+   "entries": {
+    "n_out_Na": {
+     "class": "unresolved",
+     "observed_order": -0.89,
+     "d2": 7.77e-16,
+     "d1": 1.44e-15,
+     "threshold": 2.32e-09,
+     "largest": 0.53
+    },
+    "leak_Na": {
+     "class": "unresolved",
+     "observed_order": -0.1,
+     "d2": 7.45e-20,
+     "d1": 7.96e-20,
+     "threshold": 6.5e-15,
+     "largest": 2.4e-05
+    },
+    "junction_Na": {
+     "class": "unresolved",
+     "observed_order": -0.22,
+     "d2": 1.27e-20,
+     "d1": 1.48e-20,
+     "threshold": 5.8e-15,
+     "largest": 3.15e-06
+    },
+    "face_Na": {
+     "class": "unresolved",
+     "observed_order": -1.56,
+     "d2": 9.44e-16,
+     "d1": 2.78e-15,
+     "threshold": 1.16e-09,
+     "largest": 0.324
+    },
+    "n_out_K": {
+     "class": "unresolved",
+     "observed_order": -0.34,
+     "d2": 5.27e-16,
+     "d1": 6.66e-16,
+     "threshold": 1.75e-10,
+     "largest": 0.153
+    },
+    "leak_K": {
+     "class": "unresolved",
+     "observed_order": 0.6,
+     "d2": 2.57e-19,
+     "d1": 1.69e-19,
+     "threshold": 1.21e-13,
+     "largest": 4.12e-05
+    },
+    "junction_K": {
+     "class": "unresolved",
+     "observed_order": -0.66,
+     "d2": 1.46e-19,
+     "d1": 2.3e-19,
+     "threshold": 9.03e-14,
+     "largest": 2.81e-05
+    },
+    "face_K": {
+     "class": "unresolved",
+     "observed_order": -0.3,
+     "d2": 2.36e-16,
+     "d1": 2.91e-16,
+     "threshold": 8.77e-11,
+     "largest": 0.0851
+    },
+    "n_out_Cl": {
+     "class": "unresolved",
+     "observed_order": -1.05,
+     "d2": 7.77e-16,
+     "d1": 1.61e-15,
+     "threshold": 2.97e-09,
+     "largest": 0.377
+    },
+    "leak_Cl": {
+     "class": "unresolved",
+     "observed_order": 0.19,
+     "d2": 1.76e-20,
+     "d1": 1.55e-20,
+     "threshold": 4.09e-14,
+     "largest": 5.24e-06
+    },
+    "junction_Cl": {
+     "class": "unresolved",
+     "observed_order": 0.37,
+     "d2": 7.41e-21,
+     "d1": 5.72e-21,
+     "threshold": 5.16e-15,
+     "largest": 9.02e-07
+    },
+    "face_Cl": {
+     "class": "unresolved",
+     "observed_order": 0.18,
+     "d2": 7.22e-16,
+     "d1": 6.38e-16,
+     "threshold": 1.48e-09,
+     "largest": 0.239
+    },
+    "n_out_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.22,
+     "d2": 2.37e-19,
+     "d1": 2.03e-19,
+     "threshold": 2.78e-13,
+     "largest": 6.27e-05
+    },
+    "leak_Ca": {
+     "class": "unresolved",
+     "observed_order": -0.88,
+     "d2": 5.42e-20,
+     "d1": 9.99e-20,
+     "threshold": 3.39e-15,
+     "largest": 1.24e-05
+    },
+    "junction_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.43,
+     "d2": 3.03e-22,
+     "d1": 2.25e-22,
+     "threshold": 9.41e-17,
+     "largest": 3.28e-08
+    },
+    "face_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.29,
+     "d2": 1.32e-19,
+     "d1": 1.08e-19,
+     "threshold": 8.23e-14,
+     "largest": 3e-05
+    },
+    "channel_K": {
+     "class": "unresolved",
+     "observed_order": 1.28,
+     "d2": 2.16e-20,
+     "d1": 8.89e-21,
+     "threshold": 1.09e-13,
+     "largest": 3.12e-06
+    },
+    "gate_m": {
+     "class": "unresolved",
+     "observed_order": -0.17,
+     "d2": 5.41e-16,
+     "d1": 6.11e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.2
+    },
+    "gate_h": {
+     "class": "unresolved",
+     "observed_order": -0.19,
+     "d2": 4e-15,
+     "d1": 4.55e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.702
+    },
+    "pump": {
+     "class": "unresolved",
+     "observed_order": -0.26,
+     "d2": 2.71e-18,
+     "d1": 3.25e-18,
+     "threshold": 2.27e-13,
+     "largest": 0.000989
+    },
+    "junction_gate": {
+     "class": "unresolved",
+     "observed_order": -0.56,
+     "d2": 1.89e-15,
+     "d1": 2.78e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.607
+    },
+    "heat_junction": {
+     "class": "unresolved",
+     "observed_order": 0.56,
+     "d2": 2.3e-19,
+     "d1": 1.56e-19,
+     "threshold": 1.45e-12,
+     "largest": 3.83e-05
+    },
+    "heat_face": {
+     "class": "unresolved",
+     "observed_order": -0.12,
+     "d2": 6.66e-16,
+     "d1": 7.22e-16,
+     "threshold": 3.96e-08,
+     "largest": 0.433
+    },
+    "heat_membrane": {
+     "class": "unresolved",
+     "observed_order": -1.71,
+     "d2": 3.82e-17,
+     "d1": 1.25e-16,
+     "threshold": 4.51e-11,
+     "largest": 0.0278
+    },
+    "exchange_Na": {
+     "class": "unresolved",
+     "observed_order": -0.53,
+     "d2": 3.9e-18,
+     "d1": 5.64e-18,
+     "threshold": 8.92e-13,
+     "largest": 0.00288
+    },
+    "exchange_K": {
+     "class": "unresolved",
+     "observed_order": -0.5,
+     "d2": 2.6e-18,
+     "d1": 3.69e-18,
+     "threshold": 7.74e-13,
+     "largest": 0.00191
+    },
+    "exchange_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.09,
+     "d2": 1.67e-20,
+     "d1": 1.78e-20,
+     "threshold": 4.6e-14,
+     "largest": 6.14e-06
+    },
+    "exchange_Ca": {
+     "class": "unresolved",
+     "observed_order": -0.42,
+     "d2": 1.19e-19,
+     "d1": 1.59e-19,
+     "threshold": 7.56e-14,
+     "largest": 3.52e-05
+    },
+    "cyt_B": {
+     "class": "unresolved",
+     "observed_order": 1.69,
+     "d2": 5.93e-18,
+     "d1": 1.84e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000885
+    },
+    "store_B": {
+     "class": "unresolved",
+     "observed_order": 4.0,
+     "d2": 3.18e-16,
+     "d1": 1.99e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333
+    },
+    "cyt_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 5.41e-16,
+     "d1": 3.29e-17,
+     "threshold": 2.2e-12,
+     "largest": 0.000627
+    },
+    "store_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 5.91e-16,
+     "d1": 3.61e-17,
+     "threshold": 3e-12,
+     "largest": 0.00447
+    },
+    "cyt_Ca2B": {
+     "class": "unresolved",
+     "observed_order": 1.28,
+     "d2": 1.19e-19,
+     "d1": 4.91e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.2e-06
+    },
+    "store_Ca2B": {
+     "class": "unresolved",
+     "observed_order": 3.1,
+     "d2": 1.86e-17,
+     "d1": 2.17e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847
+    },
+    "cyt_CaB": {
+     "class": "unresolved",
+     "observed_order": 0.42,
+     "d2": 5.82e-18,
+     "d1": 4.34e-18,
+     "threshold": 1.39e-12,
+     "largest": 0.000876
+    },
+    "store_CaB": {
+     "class": "unresolved",
+     "observed_order": 3.73,
+     "d2": 3.36e-16,
+     "d1": 2.54e-17,
+     "threshold": 2.26e-12,
+     "largest": 0.00255
+    },
+    "cyt_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.09,
+     "d2": 1.67e-20,
+     "d1": 1.78e-20,
+     "threshold": 4.6e-14,
+     "largest": 6.14e-06
+    },
+    "cyt_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 3.98e-13,
+     "d1": 2.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.00131
+    },
+    "store_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 3.98e-13,
+     "d1": 2.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.000598
+    },
+    "cyt_Na": {
+     "class": "unresolved",
+     "observed_order": -0.53,
+     "d2": 3.9e-18,
+     "d1": 5.64e-18,
+     "threshold": 8.92e-13,
+     "largest": 0.00288
+    },
+    "store_leak_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 6.03e-17,
+     "d1": 3.67e-18,
+     "threshold": 6.58e-14,
+     "largest": 4.32e-05
+    },
+    "store_leak_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 3.98e-13,
+     "d1": 2.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.000598
+    },
+    "store_pump": {
+     "class": "unresolved",
+     "observed_order": -0.25,
+     "d2": 1.42e-19,
+     "d1": 1.69e-19,
+     "threshold": 9.55e-15,
+     "largest": 3.75e-05
+    },
+    "store_release": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 4.74e-16,
+     "d1": 2.89e-17,
+     "threshold": 6.58e-13,
+     "largest": 0.000295
+    },
+    "heat_store_leak": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 1.09e-14,
+     "d1": 6.66e-16,
+     "threshold": 3.3e-09,
+     "largest": 0.0005
+    },
+    "heat_store_pump": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 2.29e-16,
+     "d1": 1.4e-17,
+     "threshold": 8.26e-13,
+     "largest": 0.00142
+    },
+    "heat_store_release": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 7.7e-15,
+     "d1": 4.68e-16,
+     "threshold": 2.44e-11,
+     "largest": 0.0034
+    },
+    "extent_bind_0_first": {
+     "class": "unresolved",
+     "observed_order": 1.69,
+     "d2": 5.93e-18,
+     "d1": 1.84e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000885
+    },
+    "extent_bind_0_second": {
+     "class": "unresolved",
+     "observed_order": 1.28,
+     "d2": 1.19e-19,
+     "d1": 4.91e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.2e-06
+    },
+    "extent_bind_1_first": {
+     "class": "unresolved",
+     "observed_order": 4.0,
+     "d2": 3.18e-16,
+     "d1": 1.99e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333
+    },
+    "extent_bind_1_second": {
+     "class": "unresolved",
+     "observed_order": 3.1,
+     "d2": 1.86e-17,
+     "d1": 2.17e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847
+    },
+    "ca_pump": {
+     "class": "unresolved",
+     "observed_order": -0.36,
+     "d2": 4.74e-20,
+     "d1": 6.1e-20,
+     "threshold": 6.37e-15,
+     "largest": 2.5e-05
+    },
+    "exchanger": {
+     "class": "unresolved",
+     "observed_order": 0.45,
+     "d2": 8.77e-20,
+     "d1": 6.44e-20,
+     "threshold": 6.58e-14,
+     "largest": 2.26e-05
+    },
+    "heat_ca_pump": {
+     "class": "unresolved",
+     "observed_order": -0.17,
+     "d2": 1.83e-18,
+     "d1": 2.06e-18,
+     "threshold": 5e-13,
+     "largest": 0.000872
+    },
+    "heat_exchanger": {
+     "class": "unresolved",
+     "observed_order": 1.13,
+     "d2": 2.07e-18,
+     "d1": 9.49e-19,
+     "threshold": 2.73e-12,
+     "largest": 0.000408
+    },
+    "heat_reactions_cytosol": {
+     "class": "unresolved",
+     "observed_order": 1.44,
+     "d2": 4.72e-17,
+     "d1": 1.73e-17,
+     "threshold": 7.5e-11,
+     "largest": 0.00431
+    },
+    "heat_reactions_store": {
+     "class": "unresolved",
+     "observed_order": 3.99,
+     "d2": 8.01e-14,
+     "d1": 5.02e-15,
+     "threshold": 9.69e-11,
+     "largest": 0.0498
+    },
+    "voltage": {
+     "class": "unresolved",
+     "observed_order": 0.1,
+     "d2": 1.04e-16,
+     "d1": 9.71e-17,
+     "threshold": 5.68e-11,
+     "largest": 0.0708
+    },
+    "phi_out": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 2.17e-19,
+     "d1": 2.17e-19,
+     "threshold": 2.92e-12,
+     "largest": 0.000509
+    },
+    "store_voltage": {
+     "class": "unresolved",
+     "observed_order": 3.22,
+     "d2": 3.72e-16,
+     "d1": 4e-17,
+     "threshold": 1.82e-09,
+     "largest": 5.58e-05
+    }
+   },
+   "zero_entries": [
+    "store_Cl",
+    "store_Na"
+   ]
+  },
+  "gated_calcium": {
+   "captured_steps_s": [
+    1.25e-05,
+    6.25e-06,
+    3.125e-06
+   ],
+   "captured_step_counts": [
+    1600,
+    3200,
+    6400
+   ],
+   "entries": {
+    "n_out_Na": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 1.11e-15,
+     "d1": 1.11e-15,
+     "threshold": 2.32e-09,
+     "largest": 0.53
+    },
+    "leak_Na": {
+     "class": "unresolved",
+     "observed_order": -0.56,
+     "d2": 7.79e-20,
+     "d1": 1.15e-19,
+     "threshold": 6.5e-15,
+     "largest": 2.4e-05
+    },
+    "junction_Na": {
+     "class": "unresolved",
+     "observed_order": 0.62,
+     "d2": 1.95e-20,
+     "d1": 1.27e-20,
+     "threshold": 5.8e-15,
+     "largest": 3.15e-06
+    },
+    "face_Na": {
+     "class": "unresolved",
+     "observed_order": 0.36,
+     "d2": 9.99e-16,
+     "d1": 7.77e-16,
+     "threshold": 1.16e-09,
+     "largest": 0.324
+    },
+    "n_out_K": {
+     "class": "unresolved",
+     "observed_order": -1.37,
+     "d2": 2.36e-16,
+     "d1": 6.11e-16,
+     "threshold": 1.75e-10,
+     "largest": 0.153
+    },
+    "leak_K": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 1.29e-19,
+     "d1": 1.29e-19,
+     "threshold": 1.21e-13,
+     "largest": 4.14e-05
+    },
+    "junction_K": {
+     "class": "unresolved",
+     "observed_order": 1.29,
+     "d2": 1.66e-19,
+     "d1": 6.78e-20,
+     "threshold": 9.03e-14,
+     "largest": 2.81e-05
+    },
+    "face_K": {
+     "class": "unresolved",
+     "observed_order": -0.86,
+     "d2": 2.22e-16,
+     "d1": 4.02e-16,
+     "threshold": 8.77e-11,
+     "largest": 0.0851
+    },
+    "n_out_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.3,
+     "d2": 9.44e-16,
+     "d1": 1.17e-15,
+     "threshold": 2.97e-09,
+     "largest": 0.377
+    },
+    "leak_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.23,
+     "d2": 5e-20,
+     "d1": 5.84e-20,
+     "threshold": 4.09e-14,
+     "largest": 5.29e-06
+    },
+    "junction_Cl": {
+     "class": "unresolved",
+     "observed_order": 1.07,
+     "d2": 7.09e-21,
+     "d1": 3.39e-21,
+     "threshold": 5.16e-15,
+     "largest": 9.01e-07
+    },
+    "face_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.52,
+     "d2": 6.38e-16,
+     "d1": 9.16e-16,
+     "threshold": 1.48e-09,
+     "largest": 0.239
+    },
+    "n_out_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.32,
+     "d2": 2.37e-19,
+     "d1": 1.9e-19,
+     "threshold": 4.16e-13,
+     "largest": 5.61e-05
+    },
+    "leak_Ca": {
+     "class": "unresolved",
+     "observed_order": -0.71,
+     "d2": 3.73e-20,
+     "d1": 6.1e-20,
+     "threshold": 3.39e-15,
+     "largest": 1.24e-05
+    },
+    "junction_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.76,
+     "d2": 3.03e-22,
+     "d1": 1.79e-22,
+     "threshold": 9.41e-17,
+     "largest": 3.28e-08
+    },
+    "face_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.68,
+     "d2": 8.13e-20,
+     "d1": 5.08e-20,
+     "threshold": 8.23e-14,
+     "largest": 3e-05
+    },
+    "channel_K": {
+     "class": "unresolved",
+     "observed_order": -1.43,
+     "d2": 1.36e-20,
+     "d1": 3.64e-20,
+     "threshold": 1.09e-13,
+     "largest": 3.13e-06
+    },
+    "gate_m": {
+     "class": "unresolved",
+     "observed_order": -0.32,
+     "d2": 6.66e-16,
+     "d1": 8.33e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.2
+    },
+    "gate_h": {
+     "class": "unresolved",
+     "observed_order": -1.4,
+     "d2": 3.33e-15,
+     "d1": 8.77e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.702
+    },
+    "pump": {
+     "class": "unresolved",
+     "observed_order": -0.82,
+     "d2": 2.28e-18,
+     "d1": 4.01e-18,
+     "threshold": 2.27e-13,
+     "largest": 0.000989
+    },
+    "junction_gate": {
+     "class": "unresolved",
+     "observed_order": -0.19,
+     "d2": 2.33e-15,
+     "d1": 2.66e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.607
+    },
+    "heat_junction": {
+     "class": "unresolved",
+     "observed_order": -0.54,
+     "d2": 1.49e-19,
+     "d1": 2.17e-19,
+     "threshold": 1.45e-12,
+     "largest": 3.83e-05
+    },
+    "heat_face": {
+     "class": "unresolved",
+     "observed_order": -1.3,
+     "d2": 7.22e-16,
+     "d1": 1.78e-15,
+     "threshold": 3.96e-08,
+     "largest": 0.433
+    },
+    "heat_membrane": {
+     "class": "unresolved",
+     "observed_order": -0.05,
+     "d2": 5.38e-17,
+     "d1": 5.55e-17,
+     "threshold": 4.51e-11,
+     "largest": 0.0278
+    },
+    "exchange_Na": {
+     "class": "unresolved",
+     "observed_order": -0.4,
+     "d2": 1.21e-17,
+     "d1": 1.6e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288
+    },
+    "exchange_K": {
+     "class": "unresolved",
+     "observed_order": 0.36,
+     "d2": 3.9e-18,
+     "d1": 3.04e-18,
+     "threshold": 7.74e-13,
+     "largest": 0.00191
+    },
+    "exchange_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.35,
+     "d2": 5.93e-20,
+     "d1": 7.54e-20,
+     "threshold": 4.6e-14,
+     "largest": 6.19e-06
+    },
+    "exchange_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.33,
+     "d2": 1.19e-19,
+     "d1": 9.49e-20,
+     "threshold": 1.57e-13,
+     "largest": 3.16e-05
+    },
+    "cyt_B": {
+     "class": "unresolved",
+     "observed_order": 2.07,
+     "d2": 5.93e-18,
+     "d1": 1.41e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000886
+    },
+    "store_B": {
+     "class": "unresolved",
+     "observed_order": 3.89,
+     "d2": 3.18e-16,
+     "d1": 2.15e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333
+    },
+    "cyt_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 5.41e-16,
+     "d1": 3.29e-17,
+     "threshold": 2.28e-12,
+     "largest": 0.000625
+    },
+    "store_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 5.91e-16,
+     "d1": 3.61e-17,
+     "threshold": 3e-12,
+     "largest": 0.00447
+    },
+    "cyt_Ca2B": {
+     "class": "unresolved",
+     "observed_order": 1.38,
+     "d2": 1.19e-19,
+     "d1": 4.57e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.24e-06
+    },
+    "store_Ca2B": {
+     "class": "unresolved",
+     "observed_order": 3.33,
+     "d2": 1.85e-17,
+     "d1": 1.84e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847
+    },
+    "cyt_CaB": {
+     "class": "unresolved",
+     "observed_order": 0.94,
+     "d2": 5.82e-18,
+     "d1": 3.04e-18,
+     "threshold": 1.39e-12,
+     "largest": 0.000878
+    },
+    "store_CaB": {
+     "class": "unresolved",
+     "observed_order": 4.0,
+     "d2": 3.37e-16,
+     "d1": 2.1e-17,
+     "threshold": 2.26e-12,
+     "largest": 0.00255
+    },
+    "cyt_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.35,
+     "d2": 5.93e-20,
+     "d1": 7.54e-20,
+     "threshold": 4.6e-14,
+     "largest": 6.19e-06
+    },
+    "cyt_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 3.98e-13,
+     "d1": 2.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.00131
+    },
+    "store_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 3.98e-13,
+     "d1": 2.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.000598
+    },
+    "cyt_Na": {
+     "class": "unresolved",
+     "observed_order": -0.4,
+     "d2": 1.21e-17,
+     "d1": 1.6e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288
+    },
+    "store_leak_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 6.03e-17,
+     "d1": 3.67e-18,
+     "threshold": 6.58e-14,
+     "largest": 4.32e-05
+    },
+    "store_leak_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 3.98e-13,
+     "d1": 2.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.000598
+    },
+    "store_pump": {
+     "class": "unresolved",
+     "observed_order": 0.81,
+     "d2": 1.42e-19,
+     "d1": 8.13e-20,
+     "threshold": 9.55e-15,
+     "largest": 3.75e-05
+    },
+    "store_release": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 4.74e-16,
+     "d1": 2.89e-17,
+     "threshold": 6.58e-13,
+     "largest": 0.000296
+    },
+    "heat_store_leak": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 1.09e-14,
+     "d1": 6.66e-16,
+     "threshold": 3.3e-09,
+     "largest": 0.0005
+    },
+    "heat_store_pump": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 2.29e-16,
+     "d1": 1.4e-17,
+     "threshold": 8.26e-13,
+     "largest": 0.00142
+    },
+    "heat_store_release": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 7.7e-15,
+     "d1": 4.68e-16,
+     "threshold": 2.44e-11,
+     "largest": 0.0034
+    },
+    "extent_bind_0_first": {
+     "class": "unresolved",
+     "observed_order": 2.07,
+     "d2": 5.93e-18,
+     "d1": 1.41e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000886
+    },
+    "extent_bind_0_second": {
+     "class": "unresolved",
+     "observed_order": 1.38,
+     "d2": 1.19e-19,
+     "d1": 4.57e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.24e-06
+    },
+    "extent_bind_1_first": {
+     "class": "unresolved",
+     "observed_order": 3.89,
+     "d2": 3.18e-16,
+     "d1": 2.15e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333
+    },
+    "extent_bind_1_second": {
+     "class": "unresolved",
+     "observed_order": 3.33,
+     "d2": 1.85e-17,
+     "d1": 1.84e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847
+    },
+    "ca_pump": {
+     "class": "unresolved",
+     "observed_order": -0.95,
+     "d2": 4.04e-20,
+     "d1": 7.79e-20,
+     "threshold": 6.37e-15,
+     "largest": 2.5e-05
+    },
+    "exchanger": {
+     "class": "unresolved",
+     "observed_order": 1.0,
+     "d2": 1.02e-19,
+     "d1": 5.08e-20,
+     "threshold": 6.58e-14,
+     "largest": 2.25e-05
+    },
+    "heat_ca_pump": {
+     "class": "unresolved",
+     "observed_order": 0.18,
+     "d2": 2.82e-18,
+     "d1": 2.49e-18,
+     "threshold": 5e-13,
+     "largest": 0.000873
+    },
+    "heat_exchanger": {
+     "class": "unresolved",
+     "observed_order": 0.93,
+     "d2": 2.07e-18,
+     "d1": 1.08e-18,
+     "threshold": 2.73e-12,
+     "largest": 0.000408
+    },
+    "ca_channel": {
+     "class": "unresolved",
+     "observed_order": -0.82,
+     "d2": 1.27e-20,
+     "d1": 2.24e-20,
+     "threshold": 8.13e-14,
+     "largest": 3.63e-06
+    },
+    "heat_ca_channel": {
+     "class": "unresolved",
+     "observed_order": 1.1,
+     "d2": 2.03e-19,
+     "d1": 9.49e-20,
+     "threshold": 2.36e-12,
+     "largest": 5.14e-05
+    },
+    "ca_gate_m": {
+     "class": "unresolved",
+     "observed_order": 0.09,
+     "d2": 4.72e-16,
+     "d1": 4.44e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.2
+    },
+    "ca_gate_h": {
+     "class": "unresolved",
+     "observed_order": -0.37,
+     "d2": 3e-15,
+     "d1": 3.89e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.7
+    },
+    "heat_reactions_cytosol": {
+     "class": "unresolved",
+     "observed_order": 1.37,
+     "d2": 4.72e-17,
+     "d1": 1.82e-17,
+     "threshold": 7.5e-11,
+     "largest": 0.00432
+    },
+    "heat_reactions_store": {
+     "class": "unresolved",
+     "observed_order": 3.95,
+     "d2": 8.03e-14,
+     "d1": 5.21e-15,
+     "threshold": 9.69e-11,
+     "largest": 0.0498
+    },
+    "voltage": {
+     "class": "unresolved",
+     "observed_order": -0.96,
+     "d2": 2.36e-16,
+     "d1": 4.58e-16,
+     "threshold": 6.11e-11,
+     "largest": 0.0706
+    },
+    "phi_out": {
+     "class": "unresolved",
+     "observed_order": null,
+     "d2": 0.0,
+     "d1": 0.0,
+     "threshold": 2.92e-12,
+     "largest": 0.000509
+    },
+    "store_voltage": {
+     "class": "unresolved",
+     "observed_order": 3.78,
+     "d2": 3.69e-16,
+     "d1": 2.69e-17,
+     "threshold": 1.82e-09,
+     "largest": 5.58e-05
+    }
+   },
+   "zero_entries": [
+    "store_Cl",
+    "store_Na"
+   ]
+  },
+  "ip3_calcium": {
+   "captured_steps_s": [
+    1.25e-05,
+    6.25e-06,
+    3.125e-06
+   ],
+   "captured_step_counts": [
+    1600,
+    3200,
+    6400
+   ],
+   "entries": {
+    "n_out_Na": {
+     "class": "unresolved",
+     "observed_order": 0.07,
+     "d2": 1.11e-15,
+     "d1": 1.05e-15,
+     "threshold": 2.32e-09,
+     "largest": 0.53
+    },
+    "leak_Na": {
+     "class": "unresolved",
+     "observed_order": -0.2,
+     "d2": 9.15e-20,
+     "d1": 1.05e-19,
+     "threshold": 6.5e-15,
+     "largest": 2.4e-05
+    },
+    "junction_Na": {
+     "class": "unresolved",
+     "observed_order": -0.97,
+     "d2": 1.23e-20,
+     "d1": 2.41e-20,
+     "threshold": 5.8e-15,
+     "largest": 3.15e-06
+    },
+    "face_Na": {
+     "class": "unresolved",
+     "observed_order": 0.13,
+     "d2": 1.28e-15,
+     "d1": 1.17e-15,
+     "threshold": 1.16e-09,
+     "largest": 0.324
+    },
+    "n_out_K": {
+     "class": "unresolved",
+     "observed_order": 0.38,
+     "d2": 3.61e-16,
+     "d1": 2.78e-16,
+     "threshold": 1.75e-10,
+     "largest": 0.153
+    },
+    "leak_K": {
+     "class": "unresolved",
+     "observed_order": -0.67,
+     "d2": 7.45e-20,
+     "d1": 1.19e-19,
+     "threshold": 1.21e-13,
+     "largest": 4.14e-05
+    },
+    "junction_K": {
+     "class": "unresolved",
+     "observed_order": -0.09,
+     "d2": 1.02e-19,
+     "d1": 1.08e-19,
+     "threshold": 9.03e-14,
+     "largest": 2.81e-05
+    },
+    "face_K": {
+     "class": "unresolved",
+     "observed_order": 0.32,
+     "d2": 2.08e-16,
+     "d1": 1.67e-16,
+     "threshold": 8.77e-11,
+     "largest": 0.0851
+    },
+    "n_out_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.66,
+     "d2": 1.05e-15,
+     "d1": 1.67e-15,
+     "threshold": 2.97e-09,
+     "largest": 0.377
+    },
+    "leak_Cl": {
+     "class": "unresolved",
+     "observed_order": -0.76,
+     "d2": 3.56e-20,
+     "d1": 6.01e-20,
+     "threshold": 4.09e-14,
+     "largest": 5.29e-06
+    },
+    "junction_Cl": {
+     "class": "unresolved",
+     "observed_order": 0.22,
+     "d2": 7.62e-21,
+     "d1": 6.56e-21,
+     "threshold": 5.16e-15,
+     "largest": 9.01e-07
+    },
+    "face_Cl": {
+     "class": "unresolved",
+     "observed_order": 0.15,
+     "d2": 8.33e-16,
+     "d1": 7.49e-16,
+     "threshold": 1.48e-09,
+     "largest": 0.239
+    },
+    "n_out_Ca": {
+     "class": "unresolved",
+     "observed_order": -0.83,
+     "d2": 2.17e-19,
+     "d1": 3.86e-19,
+     "threshold": 4.16e-13,
+     "largest": 5.14e-05
+    },
+    "leak_Ca": {
+     "class": "unresolved",
+     "observed_order": -0.32,
+     "d2": 2.71e-20,
+     "d1": 3.39e-20,
+     "threshold": 3.39e-15,
+     "largest": 1.24e-05
+    },
+    "junction_Ca": {
+     "class": "unresolved",
+     "observed_order": -0.64,
+     "d2": 1.19e-22,
+     "d1": 1.85e-22,
+     "threshold": 9.41e-17,
+     "largest": 3.14e-08
+    },
+    "face_Ca": {
+     "class": "unresolved",
+     "observed_order": -0.39,
+     "d2": 1.52e-19,
+     "d1": 2e-19,
+     "threshold": 8.23e-14,
+     "largest": 3e-05
+    },
+    "channel_K": {
+     "class": "unresolved",
+     "observed_order": 0.03,
+     "d2": 1.99e-20,
+     "d1": 1.95e-20,
+     "threshold": 1.09e-13,
+     "largest": 3.13e-06
+    },
+    "gate_m": {
+     "class": "unresolved",
+     "observed_order": 0.33,
+     "d2": 8.74e-16,
+     "d1": 6.94e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.2
+    },
+    "gate_h": {
+     "class": "unresolved",
+     "observed_order": -0.9,
+     "d2": 1.67e-15,
+     "d1": 3.11e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.702
+    },
+    "pump": {
+     "class": "unresolved",
+     "observed_order": -0.55,
+     "d2": 1.41e-18,
+     "d1": 2.06e-18,
+     "threshold": 2.27e-13,
+     "largest": 0.000989
+    },
+    "junction_gate": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 2.33e-15,
+     "d1": 2.33e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.607
+    },
+    "heat_junction": {
+     "class": "unresolved",
+     "observed_order": -1.71,
+     "d2": 7.45e-20,
+     "d1": 2.44e-19,
+     "threshold": 1.45e-12,
+     "largest": 3.83e-05
+    },
+    "heat_face": {
+     "class": "unresolved",
+     "observed_order": 0.22,
+     "d2": 1.17e-15,
+     "d1": 9.99e-16,
+     "threshold": 3.96e-08,
+     "largest": 0.433
+    },
+    "heat_membrane": {
+     "class": "unresolved",
+     "observed_order": 0.19,
+     "d2": 5.55e-17,
+     "d1": 4.86e-17,
+     "threshold": 4.51e-11,
+     "largest": 0.0278
+    },
+    "exchange_Na": {
+     "class": "unresolved",
+     "observed_order": -0.4,
+     "d2": 8.24e-18,
+     "d1": 1.08e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288
+    },
+    "exchange_K": {
+     "class": "unresolved",
+     "observed_order": -0.68,
+     "d2": 4.12e-18,
+     "d1": 6.61e-18,
+     "threshold": 7.74e-13,
+     "largest": 0.00191
+    },
+    "exchange_Cl": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 3.22e-20,
+     "d1": 3.22e-20,
+     "threshold": 4.6e-14,
+     "largest": 6.19e-06
+    },
+    "exchange_Ca": {
+     "class": "unresolved",
+     "observed_order": 0.75,
+     "d2": 1.08e-19,
+     "d1": 6.44e-20,
+     "threshold": 1.57e-13,
+     "largest": 2.92e-05
+    },
+    "cyt_B": {
+     "class": "unresolved",
+     "observed_order": -0.12,
+     "d2": 2.49e-18,
+     "d1": 2.71e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000814
+    },
+    "store_B": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 3.22e-16,
+     "d1": 1.97e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333
+    },
+    "cyt_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 1.19e-16,
+     "d1": 7.23e-18,
+     "threshold": 2.28e-12,
+     "largest": 0.00074
+    },
+    "store_Ca": {
+     "class": "unresolved",
+     "observed_order": 3.35,
+     "d2": 3.04e-16,
+     "d1": 2.99e-17,
+     "threshold": 3e-12,
+     "largest": 0.0043
+    },
+    "cyt_Ca2B": {
+     "class": "unresolved",
+     "observed_order": -0.6,
+     "d2": 2.69e-20,
+     "d1": 4.07e-20,
+     "threshold": 3.12e-14,
+     "largest": 6.58e-06
+    },
+    "store_Ca2B": {
+     "class": "unresolved",
+     "observed_order": 2.12,
+     "d2": 1.89e-17,
+     "d1": 4.34e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000856
+    },
+    "cyt_CaB": {
+     "class": "unresolved",
+     "observed_order": -0.58,
+     "d2": 1.52e-18,
+     "d1": 2.28e-18,
+     "threshold": 1.39e-12,
+     "largest": 0.000808
+    },
+    "store_CaB": {
+     "class": "unresolved",
+     "observed_order": 3.82,
+     "d2": 3.38e-16,
+     "d1": 2.39e-17,
+     "threshold": 2.26e-12,
+     "largest": 0.00255
+    },
+    "cyt_Cl": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 3.22e-20,
+     "d1": 3.22e-20,
+     "threshold": 4.6e-14,
+     "largest": 6.19e-06
+    },
+    "cyt_IP3": {
+     "class": "unresolved",
+     "observed_order": 0.31,
+     "d2": 1.39e-19,
+     "d1": 1.12e-19,
+     "threshold": 1.26e-14,
+     "largest": 2.44e-05
+    },
+    "cyt_IP3_bound": {
+     "class": "unresolved",
+     "observed_order": 0.31,
+     "d2": 1.39e-19,
+     "d1": 1.12e-19,
+     "threshold": 1.26e-14,
+     "largest": 2.44e-05
+    },
+    "cyt_IP3_buffer": {
+     "class": "unresolved",
+     "observed_order": 0.31,
+     "d2": 1.39e-19,
+     "d1": 1.12e-19,
+     "threshold": 1.26e-14,
+     "largest": 2.44e-05
+    },
+    "cyt_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 1.78e-13,
+     "d1": 1.08e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.00169
+    },
+    "store_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 1.78e-13,
+     "d1": 1.08e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.00022
+    },
+    "cyt_Na": {
+     "class": "unresolved",
+     "observed_order": -0.4,
+     "d2": 8.24e-18,
+     "d1": 1.08e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288
+    },
+    "store_leak_Ca": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 2.7e-17,
+     "d1": 1.65e-18,
+     "threshold": 6.58e-14,
+     "largest": 4.37e-05
+    },
+    "store_leak_K": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 1.78e-13,
+     "d1": 1.08e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.00022
+    },
+    "store_pump": {
+     "class": "unresolved",
+     "observed_order": 0.0,
+     "d2": 1.02e-19,
+     "d1": 1.02e-19,
+     "threshold": 9.55e-15,
+     "largest": 3.63e-05
+    },
+    "store_release": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 9.04e-17,
+     "d1": 5.5e-18,
+     "threshold": 6.58e-13,
+     "largest": 0.000103
+    },
+    "heat_store_leak": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 1.97e-15,
+     "d1": 1.2e-16,
+     "threshold": 3.3e-09,
+     "largest": 0.000513
+    },
+    "heat_store_pump": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 1.02e-16,
+     "d1": 6.2e-18,
+     "threshold": 8.26e-13,
+     "largest": 0.00137
+    },
+    "heat_store_release": {
+     "class": "unresolved",
+     "observed_order": 4.04,
+     "d2": 1.47e-15,
+     "d1": 8.94e-17,
+     "threshold": 2.44e-11,
+     "largest": 0.0012
+    },
+    "extent_bind_0_first": {
+     "class": "unresolved",
+     "observed_order": -0.12,
+     "d2": 2.49e-18,
+     "d1": 2.71e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000814
+    },
+    "extent_bind_0_second": {
+     "class": "unresolved",
+     "observed_order": -0.6,
+     "d2": 2.69e-20,
+     "d1": 4.07e-20,
+     "threshold": 3.12e-14,
+     "largest": 6.58e-06
+    },
+    "extent_bind_1_first": {
+     "class": "unresolved",
+     "observed_order": 4.03,
+     "d2": 3.22e-16,
+     "d1": 1.97e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333
+    },
+    "extent_bind_1_second": {
+     "class": "unresolved",
+     "observed_order": 2.12,
+     "d2": 1.89e-17,
+     "d1": 4.34e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000856
+    },
+    "extent_ip3_binding": {
+     "class": "unresolved",
+     "observed_order": 0.31,
+     "d2": 1.39e-19,
+     "d1": 1.12e-19,
+     "threshold": 1.26e-14,
+     "largest": 2.44e-05
+    },
+    "ca_pump": {
+     "class": "unresolved",
+     "observed_order": -1.06,
+     "d2": 4.07e-20,
+     "d1": 8.47e-20,
+     "threshold": 6.37e-15,
+     "largest": 2.42e-05
+    },
+    "exchanger": {
+     "class": "unresolved",
+     "observed_order": -0.14,
+     "d2": 6.78e-20,
+     "d1": 7.45e-20,
+     "threshold": 6.58e-14,
+     "largest": 2.1e-05
+    },
+    "heat_ca_pump": {
+     "class": "unresolved",
+     "observed_order": -0.44,
+     "d2": 3.04e-18,
+     "d1": 4.12e-18,
+     "threshold": 5e-13,
+     "largest": 0.00084
+    },
+    "heat_exchanger": {
+     "class": "unresolved",
+     "observed_order": 0.76,
+     "d2": 2.11e-18,
+     "d1": 1.25e-18,
+     "threshold": 2.73e-12,
+     "largest": 0.000372
+    },
+    "ca_channel": {
+     "class": "unresolved",
+     "observed_order": 1.37,
+     "d2": 4.28e-20,
+     "d1": 1.65e-20,
+     "threshold": 8.13e-14,
+     "largest": 3.63e-06
+    },
+    "heat_ca_channel": {
+     "class": "unresolved",
+     "observed_order": 0.49,
+     "d2": 7.32e-19,
+     "d1": 5.22e-19,
+     "threshold": 2.36e-12,
+     "largest": 5.2e-05
+    },
+    "ca_gate_m": {
+     "class": "unresolved",
+     "observed_order": 1.25,
+     "d2": 1.05e-15,
+     "d1": 4.44e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.2
+    },
+    "ca_gate_h": {
+     "class": "unresolved",
+     "observed_order": -0.34,
+     "d2": 5.88e-15,
+     "d1": 7.44e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.7
+    },
+    "heat_reactions_cytosol": {
+     "class": "unresolved",
+     "observed_order": -0.62,
+     "d2": 1.07e-17,
+     "d1": 1.65e-17,
+     "threshold": 7.61e-11,
+     "largest": 0.00396
+    },
+    "heat_reactions_store": {
+     "class": "unresolved",
+     "observed_order": 3.99,
+     "d2": 8.01e-14,
+     "d1": 5.04e-15,
+     "threshold": 9.69e-11,
+     "largest": 0.0499
+    },
+    "voltage": {
+     "class": "unresolved",
+     "observed_order": -1.1,
+     "d2": 9.71e-17,
+     "d1": 2.08e-16,
+     "threshold": 6.11e-11,
+     "largest": 0.0706
+    },
+    "phi_out": {
+     "class": "unresolved",
+     "observed_order": null,
+     "d2": 2.17e-19,
+     "d1": 0.0,
+     "threshold": 2.92e-12,
+     "largest": 0.000509
+    },
+    "store_voltage": {
+     "class": "unresolved",
+     "observed_order": 1.88,
+     "d2": 1.59e-16,
+     "d1": 4.34e-17,
+     "threshold": 1.82e-09,
+     "largest": 2.36e-05
+    }
+   },
+   "zero_entries": [
+    "store_Cl",
+    "store_IP3",
+    "store_IP3_bound",
+    "store_IP3_buffer",
+    "store_Na"
+   ]
+  },
+  "cluster_spatial_calcium": {
+   "captured_steps_s": [
+    1.25e-05,
+    6.25e-06,
+    3.125e-06
+   ],
+   "captured_step_counts": [
+    1600,
+    3200,
+    6400
+   ],
+   "families": "4 seeds x world IDs 0 to 1",
+   "entries": {
+    "n_out_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2e-15,
+     "largest_d1": 1.44e-15,
+     "threshold": 2.32e-09,
+     "largest": 0.53,
+     "smallest_of_the_families_largest": 0.53
+    },
+    "leak_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.79e-20,
+     "largest_d1": 1.46e-19,
+     "threshold": 6.5e-15,
+     "largest": 2.39e-05,
+     "smallest_of_the_families_largest": 2.39e-05
+    },
+    "junction_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.27e-20,
+     "largest_d1": 4.62e-20,
+     "threshold": 5.8e-15,
+     "largest": 3.18e-06,
+     "smallest_of_the_families_largest": 3.18e-06
+    },
+    "face_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.39e-15,
+     "largest_d1": 1.28e-15,
+     "threshold": 1.16e-09,
+     "largest": 0.324,
+     "smallest_of_the_families_largest": 0.324
+    },
+    "n_out_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.94e-16,
+     "largest_d1": 6.11e-16,
+     "threshold": 1.75e-10,
+     "largest": 0.153,
+     "smallest_of_the_families_largest": 0.153
+    },
+    "leak_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.76e-19,
+     "largest_d1": 2.3e-19,
+     "threshold": 1.21e-13,
+     "largest": 4.19e-05,
+     "smallest_of_the_families_largest": 4.19e-05
+    },
+    "junction_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.68e-19,
+     "largest_d1": 4.07e-19,
+     "threshold": 9.03e-14,
+     "largest": 2.86e-05,
+     "smallest_of_the_families_largest": 2.86e-05
+    },
+    "face_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.44e-16,
+     "largest_d1": 4.44e-16,
+     "threshold": 8.77e-11,
+     "largest": 0.0851,
+     "smallest_of_the_families_largest": 0.0851
+    },
+    "n_out_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.44e-15,
+     "largest_d1": 1.78e-15,
+     "threshold": 2.97e-09,
+     "largest": 0.377,
+     "smallest_of_the_families_largest": 0.377
+    },
+    "leak_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.32e-20,
+     "largest_d1": 7.12e-20,
+     "threshold": 4.09e-14,
+     "largest": 5.05e-06,
+     "smallest_of_the_families_largest": 5.03e-06
+    },
+    "junction_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 9e-21,
+     "largest_d1": 1.37e-20,
+     "threshold": 5.16e-15,
+     "largest": 8.75e-07,
+     "smallest_of_the_families_largest": 8.72e-07
+    },
+    "face_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.22e-16,
+     "largest_d1": 1.8e-15,
+     "threshold": 1.48e-09,
+     "largest": 0.239,
+     "smallest_of_the_families_largest": 0.239
+    },
+    "n_out_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.22e-19,
+     "largest_d1": 2.64e-19,
+     "threshold": 1.65e-13,
+     "largest": 4.63e-05,
+     "smallest_of_the_families_largest": 4.63e-05
+    },
+    "leak_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.93e-20,
+     "largest_d1": 7.12e-20,
+     "threshold": 3.39e-15,
+     "largest": 1.23e-05,
+     "smallest_of_the_families_largest": 1.23e-05
+    },
+    "junction_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.92e-22,
+     "largest_d1": 2.05e-22,
+     "threshold": 9.41e-17,
+     "largest": 3.36e-08,
+     "smallest_of_the_families_largest": 3.35e-08
+    },
+    "face_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.13e-20,
+     "largest_d1": 9.83e-20,
+     "threshold": 8.23e-14,
+     "largest": 3e-05,
+     "smallest_of_the_families_largest": 3e-05
+    },
+    "channel_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.16e-21,
+     "largest_d1": 4.24e-22,
+     "threshold": 1.09e-13,
+     "largest": 1.04e-06,
+     "smallest_of_the_families_largest": 9.8e-08
+    },
+    "gate_m": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.01e-16,
+     "largest_d1": 5.9e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.0569,
+     "smallest_of_the_families_largest": 0.0569
+    },
+    "gate_h": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.66e-15,
+     "largest_d1": 4.33e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.702,
+     "smallest_of_the_families_largest": 0.702
+    },
+    "pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.82e-18,
+     "largest_d1": 4.99e-18,
+     "threshold": 2.27e-13,
+     "largest": 0.000989,
+     "smallest_of_the_families_largest": 0.000989
+    },
+    "junction_gate": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.44e-15,
+     "largest_d1": 7.99e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.606,
+     "smallest_of_the_families_largest": 0.606
+    },
+    "heat_junction": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.57e-19,
+     "largest_d1": 3.93e-19,
+     "threshold": 1.45e-12,
+     "largest": 3.91e-05,
+     "smallest_of_the_families_largest": 3.9e-05
+    },
+    "heat_face": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.05e-15,
+     "largest_d1": 1.89e-15,
+     "threshold": 3.96e-08,
+     "largest": 0.433,
+     "smallest_of_the_families_largest": 0.433
+    },
+    "heat_membrane": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.9e-17,
+     "largest_d1": 9.71e-17,
+     "threshold": 4.51e-11,
+     "largest": 0.0278,
+     "smallest_of_the_families_largest": 0.0278
+    },
+    "exchange_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.07e-18,
+     "largest_d1": 8.02e-18,
+     "threshold": 6.95e-13,
+     "largest": 0.00295,
+     "smallest_of_the_families_largest": 0.00295
+    },
+    "exchange_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.12e-18,
+     "largest_d1": 1.21e-17,
+     "threshold": 7.74e-13,
+     "largest": 0.00191,
+     "smallest_of_the_families_largest": 0.00191
+    },
+    "exchange_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.91e-20,
+     "largest_d1": 6.18e-20,
+     "threshold": 4.6e-14,
+     "largest": 5.92e-06,
+     "smallest_of_the_families_largest": 5.91e-06
+    },
+    "exchange_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.42e-20,
+     "largest_d1": 6.78e-20,
+     "threshold": 3.48e-15,
+     "largest": 1.22e-05,
+     "smallest_of_the_families_largest": 1.22e-05
+    },
+    "cyt_B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.49e-18,
+     "largest_d1": 6.61e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000902,
+     "smallest_of_the_families_largest": 0.000902
+    },
+    "store_B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.46e-17,
+     "largest_d1": 8.24e-18,
+     "threshold": 2.06e-12,
+     "largest": 0.00333,
+     "smallest_of_the_families_largest": 0.00333
+    },
+    "cyt_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.17e-18,
+     "largest_d1": 3.14e-18,
+     "threshold": 2.13e-12,
+     "largest": 0.000595,
+     "smallest_of_the_families_largest": 0.000595
+    },
+    "store_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 9.19e-17,
+     "largest_d1": 3.21e-17,
+     "threshold": 3e-12,
+     "largest": 0.00448,
+     "smallest_of_the_families_largest": 0.00448
+    },
+    "cyt_Ca2B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.25e-20,
+     "largest_d1": 6.27e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.62e-06,
+     "smallest_of_the_families_largest": 8.62e-06
+    },
+    "store_Ca2B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.01e-18,
+     "largest_d1": 4.01e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847,
+     "smallest_of_the_families_largest": 0.000847
+    },
+    "cyt_CaB": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.34e-18,
+     "largest_d1": 3.69e-18,
+     "threshold": 1.39e-12,
+     "largest": 0.000894,
+     "smallest_of_the_families_largest": 0.000894
+    },
+    "store_CaB": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.63e-17,
+     "largest_d1": 1.95e-17,
+     "threshold": 2.26e-12,
+     "largest": 0.00248,
+     "smallest_of_the_families_largest": 0.00248
+    },
+    "cyt_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.91e-20,
+     "largest_d1": 6.18e-20,
+     "threshold": 4.6e-14,
+     "largest": 5.92e-06,
+     "smallest_of_the_families_largest": 5.91e-06
+    },
+    "cyt_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.83e-17,
+     "largest_d1": 6.96e-17,
+     "threshold": 2.35e-10,
+     "largest": 0.0013,
+     "smallest_of_the_families_largest": 0.0013
+    },
+    "store_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.65e-17,
+     "largest_d1": 7.94e-17,
+     "threshold": 2.35e-10,
+     "largest": 0.000604,
+     "smallest_of_the_families_largest": 0.000604
+    },
+    "cyt_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.07e-18,
+     "largest_d1": 8.02e-18,
+     "threshold": 6.95e-13,
+     "largest": 0.00295,
+     "smallest_of_the_families_largest": 0.00295
+    },
+    "store_leak_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.76e-19,
+     "largest_d1": 1.36e-19,
+     "threshold": 6.58e-14,
+     "largest": 4.32e-05,
+     "smallest_of_the_families_largest": 4.32e-05
+    },
+    "store_leak_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.65e-17,
+     "largest_d1": 7.94e-17,
+     "threshold": 2.35e-10,
+     "largest": 0.000604,
+     "smallest_of_the_families_largest": 0.000604
+    },
+    "store_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.98e-19,
+     "largest_d1": 2.37e-19,
+     "threshold": 9.55e-15,
+     "largest": 3.78e-05,
+     "smallest_of_the_families_largest": 3.78e-05
+    },
+    "store_release": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.3e-18,
+     "largest_d1": 1.68e-18,
+     "threshold": 6.58e-13,
+     "largest": 0.000299,
+     "smallest_of_the_families_largest": 0.000299
+    },
+    "heat_store_leak": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.32e-15,
+     "largest_d1": 5.08e-16,
+     "threshold": 3.3e-09,
+     "largest": 0.000498,
+     "smallest_of_the_families_largest": 0.000498
+    },
+    "heat_store_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 9.76e-18,
+     "largest_d1": 9.11e-18,
+     "threshold": 8.26e-13,
+     "largest": 0.00143,
+     "smallest_of_the_families_largest": 0.00143
+    },
+    "heat_store_release": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.9e-17,
+     "largest_d1": 1.95e-17,
+     "threshold": 2.44e-11,
+     "largest": 0.00342,
+     "smallest_of_the_families_largest": 0.00342
+    },
+    "extent_bind_0_first": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.49e-18,
+     "largest_d1": 6.61e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000902,
+     "smallest_of_the_families_largest": 0.000902
+    },
+    "extent_bind_0_second": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.25e-20,
+     "largest_d1": 6.27e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.62e-06,
+     "smallest_of_the_families_largest": 8.62e-06
+    },
+    "extent_bind_1_first": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.46e-17,
+     "largest_d1": 8.24e-18,
+     "threshold": 2.06e-12,
+     "largest": 0.00333,
+     "smallest_of_the_families_largest": 0.00333
+    },
+    "extent_bind_1_second": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.01e-18,
+     "largest_d1": 4.01e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847,
+     "smallest_of_the_families_largest": 0.000847
+    },
+    "heat_reactions_cytosol": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.78e-17,
+     "largest_d1": 3.99e-17,
+     "threshold": 7.5e-11,
+     "largest": 0.00443,
+     "smallest_of_the_families_largest": 0.00443
+    },
+    "heat_reactions_store": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.98e-14,
+     "largest_d1": 5.29e-15,
+     "threshold": 9.69e-11,
+     "largest": 0.0498,
+     "smallest_of_the_families_largest": 0.0498
+    },
+    "voltage": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.94e-16,
+     "largest_d1": 2.36e-16,
+     "threshold": 4.76e-11,
+     "largest": 0.0703,
+     "smallest_of_the_families_largest": 0.0702
+    },
+    "channel_K_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.22e-21,
+     "largest_d1": 4.24e-22,
+     "threshold": 1.09e-13,
+     "largest": 1.04e-06,
+     "smallest_of_the_families_largest": 9.8e-08
+    },
+    "store_voltage": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.66e-16,
+     "largest_d1": 6.35e-17,
+     "threshold": 1.82e-09,
+     "largest": 5.59e-05,
+     "smallest_of_the_families_largest": 5.59e-05
+    },
+    "cyt_Na_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 0.0,
+     "threshold": 6.95e-13,
+     "largest": 0.00295,
+     "smallest_of_the_families_largest": 0.00295
+    },
+    "cyt_K_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 0.0,
+     "threshold": 2.35e-10,
+     "largest": 0.0013,
+     "smallest_of_the_families_largest": 0.0013
+    },
+    "cyt_Cl_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 0.0,
+     "threshold": 4.6e-14,
+     "largest": 6.33e-06,
+     "smallest_of_the_families_largest": 6.31e-06
+    },
+    "cyt_Ca_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.47e-18,
+     "largest_d1": 3.14e-18,
+     "threshold": 2.13e-12,
+     "largest": 0.000595,
+     "smallest_of_the_families_largest": 0.000595
+    }
+   },
+   "zero_entries": [
+    "store_Cl",
+    "store_Na"
+   ]
+  },
+  "cluster_plasma_calcium": {
+   "captured_steps_s": [
+    1.25e-05,
+    6.25e-06,
+    3.125e-06
+   ],
+   "captured_step_counts": [
+    1600,
+    3200,
+    6400
+   ],
+   "families": "4 seeds x world IDs 0 to 1",
+   "entries": {
+    "n_out_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.78e-15,
+     "largest_d1": 3.33e-15,
+     "threshold": 2.32e-09,
+     "largest": 0.53,
+     "smallest_of_the_families_largest": 0.53
+    },
+    "leak_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.25e-19,
+     "largest_d1": 2.37e-19,
+     "threshold": 6.5e-15,
+     "largest": 2.4e-05,
+     "smallest_of_the_families_largest": 2.4e-05
+    },
+    "junction_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.75e-20,
+     "largest_d1": 4.45e-20,
+     "threshold": 5.8e-15,
+     "largest": 3.16e-06,
+     "smallest_of_the_families_largest": 3.16e-06
+    },
+    "face_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.11e-15,
+     "largest_d1": 8.88e-16,
+     "threshold": 1.16e-09,
+     "largest": 0.324,
+     "smallest_of_the_families_largest": 0.324
+    },
+    "n_out_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.08e-16,
+     "largest_d1": 1.08e-15,
+     "threshold": 1.75e-10,
+     "largest": 0.153,
+     "smallest_of_the_families_largest": 0.153
+    },
+    "leak_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.36e-19,
+     "largest_d1": 3.12e-19,
+     "threshold": 1.21e-13,
+     "largest": 4.13e-05,
+     "smallest_of_the_families_largest": 4.13e-05
+    },
+    "junction_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.25e-19,
+     "largest_d1": 6.13e-19,
+     "threshold": 9.03e-14,
+     "largest": 2.82e-05,
+     "smallest_of_the_families_largest": 2.82e-05
+    },
+    "face_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.33e-16,
+     "largest_d1": 2.36e-16,
+     "threshold": 8.77e-11,
+     "largest": 0.0851,
+     "smallest_of_the_families_largest": 0.0851
+    },
+    "n_out_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.61e-15,
+     "largest_d1": 1.67e-15,
+     "threshold": 2.97e-09,
+     "largest": 0.377,
+     "smallest_of_the_families_largest": 0.377
+    },
+    "leak_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.76e-20,
+     "largest_d1": 6.35e-20,
+     "threshold": 4.09e-14,
+     "largest": 4.81e-06,
+     "smallest_of_the_families_largest": 4.8e-06
+    },
+    "junction_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.06e-20,
+     "largest_d1": 2.73e-20,
+     "threshold": 5.16e-15,
+     "largest": 8.55e-07,
+     "smallest_of_the_families_largest": 8.51e-07
+    },
+    "face_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.83e-16,
+     "largest_d1": 1.08e-15,
+     "threshold": 1.48e-09,
+     "largest": 0.239,
+     "smallest_of_the_families_largest": 0.239
+    },
+    "n_out_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.69e-19,
+     "largest_d1": 2.78e-19,
+     "threshold": 2.78e-13,
+     "largest": 6.27e-05,
+     "smallest_of_the_families_largest": 6.27e-05
+    },
+    "leak_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.91e-20,
+     "largest_d1": 8.3e-20,
+     "threshold": 3.39e-15,
+     "largest": 1.24e-05,
+     "smallest_of_the_families_largest": 1.24e-05
+    },
+    "junction_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.11e-22,
+     "largest_d1": 2.51e-22,
+     "threshold": 9.41e-17,
+     "largest": 3.29e-08,
+     "smallest_of_the_families_largest": 3.28e-08
+    },
+    "face_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.08e-19,
+     "largest_d1": 2e-19,
+     "threshold": 8.23e-14,
+     "largest": 3e-05,
+     "smallest_of_the_families_largest": 3e-05
+    },
+    "channel_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.48e-21,
+     "largest_d1": 7.94e-22,
+     "threshold": 1.09e-13,
+     "largest": 1.04e-06,
+     "smallest_of_the_families_largest": 9.8e-08
+    },
+    "gate_m": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.41e-16,
+     "largest_d1": 5.34e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.057,
+     "smallest_of_the_families_largest": 0.057
+    },
+    "gate_h": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4e-15,
+     "largest_d1": 6.22e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.702,
+     "smallest_of_the_families_largest": 0.702
+    },
+    "pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.6e-18,
+     "largest_d1": 4.77e-18,
+     "threshold": 2.27e-13,
+     "largest": 0.000989,
+     "smallest_of_the_families_largest": 0.000989
+    },
+    "junction_gate": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.11e-15,
+     "largest_d1": 7.99e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.607,
+     "smallest_of_the_families_largest": 0.607
+    },
+    "heat_junction": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.79e-19,
+     "largest_d1": 6.03e-19,
+     "threshold": 1.45e-12,
+     "largest": 3.85e-05,
+     "smallest_of_the_families_largest": 3.84e-05
+    },
+    "heat_face": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.5e-15,
+     "largest_d1": 3.11e-15,
+     "threshold": 3.96e-08,
+     "largest": 0.433,
+     "smallest_of_the_families_largest": 0.433
+    },
+    "heat_membrane": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 9.37e-17,
+     "largest_d1": 6.94e-17,
+     "threshold": 4.51e-11,
+     "largest": 0.0278,
+     "smallest_of_the_families_largest": 0.0278
+    },
+    "exchange_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.17e-17,
+     "largest_d1": 1.43e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288,
+     "smallest_of_the_families_largest": 0.00288
+    },
+    "exchange_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.47e-18,
+     "largest_d1": 4.99e-18,
+     "threshold": 7.74e-13,
+     "largest": 0.00191,
+     "smallest_of_the_families_largest": 0.00191
+    },
+    "exchange_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.19e-19,
+     "largest_d1": 9.99e-20,
+     "threshold": 4.6e-14,
+     "largest": 5.67e-06,
+     "smallest_of_the_families_largest": 5.65e-06
+    },
+    "exchange_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.15e-19,
+     "largest_d1": 2.1e-19,
+     "threshold": 7.56e-14,
+     "largest": 3.52e-05,
+     "smallest_of_the_families_largest": 3.52e-05
+    },
+    "cyt_B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.58e-18,
+     "largest_d1": 3.58e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000885,
+     "smallest_of_the_families_largest": 0.000885
+    },
+    "store_B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.2e-17,
+     "largest_d1": 1.65e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333,
+     "smallest_of_the_families_largest": 0.00333
+    },
+    "cyt_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.95e-18,
+     "largest_d1": 2.49e-18,
+     "threshold": 2.2e-12,
+     "largest": 0.000627,
+     "smallest_of_the_families_largest": 0.000627
+    },
+    "store_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.07e-17,
+     "largest_d1": 3.21e-17,
+     "threshold": 3e-12,
+     "largest": 0.00447,
+     "smallest_of_the_families_largest": 0.00447
+    },
+    "cyt_Ca2B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.24e-20,
+     "largest_d1": 6.27e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.2e-06,
+     "smallest_of_the_families_largest": 8.2e-06
+    },
+    "store_Ca2B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.04e-18,
+     "largest_d1": 4.88e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847,
+     "smallest_of_the_families_largest": 0.000847
+    },
+    "cyt_CaB": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.6e-18,
+     "largest_d1": 6.07e-18,
+     "threshold": 1.39e-12,
+     "largest": 0.000876,
+     "smallest_of_the_families_largest": 0.000876
+    },
+    "store_CaB": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.33e-17,
+     "largest_d1": 2.47e-17,
+     "threshold": 2.26e-12,
+     "largest": 0.00248,
+     "smallest_of_the_families_largest": 0.00248
+    },
+    "cyt_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.19e-19,
+     "largest_d1": 9.99e-20,
+     "threshold": 4.6e-14,
+     "largest": 5.67e-06,
+     "smallest_of_the_families_largest": 5.65e-06
+    },
+    "cyt_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.22e-17,
+     "largest_d1": 1.06e-16,
+     "threshold": 2.35e-10,
+     "largest": 0.00131,
+     "smallest_of_the_families_largest": 0.00131
+    },
+    "store_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.17e-17,
+     "largest_d1": 1.01e-16,
+     "threshold": 2.35e-10,
+     "largest": 0.000598,
+     "smallest_of_the_families_largest": 0.000598
+    },
+    "cyt_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.17e-17,
+     "largest_d1": 1.43e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288,
+     "smallest_of_the_families_largest": 0.00288
+    },
+    "store_leak_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.97e-19,
+     "largest_d1": 2.44e-19,
+     "threshold": 6.58e-14,
+     "largest": 4.32e-05,
+     "smallest_of_the_families_largest": 4.32e-05
+    },
+    "store_leak_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.17e-17,
+     "largest_d1": 1.01e-16,
+     "threshold": 2.35e-10,
+     "largest": 0.000598,
+     "smallest_of_the_families_largest": 0.000598
+    },
+    "store_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.56e-19,
+     "largest_d1": 2.17e-19,
+     "threshold": 9.55e-15,
+     "largest": 3.75e-05,
+     "smallest_of_the_families_largest": 3.75e-05
+    },
+    "store_release": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.28e-18,
+     "largest_d1": 2.06e-18,
+     "threshold": 6.58e-13,
+     "largest": 0.000295,
+     "smallest_of_the_families_largest": 0.000295
+    },
+    "heat_store_leak": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.32e-15,
+     "largest_d1": 5.1e-16,
+     "threshold": 3.3e-09,
+     "largest": 0.0005,
+     "smallest_of_the_families_largest": 0.0005
+    },
+    "heat_store_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.34e-18,
+     "largest_d1": 7.16e-18,
+     "threshold": 8.26e-13,
+     "largest": 0.00142,
+     "smallest_of_the_families_largest": 0.00142
+    },
+    "heat_store_release": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.34e-17,
+     "largest_d1": 1.95e-17,
+     "threshold": 2.44e-11,
+     "largest": 0.0034,
+     "smallest_of_the_families_largest": 0.0034
+    },
+    "extent_bind_0_first": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.58e-18,
+     "largest_d1": 3.58e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000885,
+     "smallest_of_the_families_largest": 0.000885
+    },
+    "extent_bind_0_second": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.24e-20,
+     "largest_d1": 6.27e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.2e-06,
+     "smallest_of_the_families_largest": 8.2e-06
+    },
+    "extent_bind_1_first": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.2e-17,
+     "largest_d1": 1.65e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333,
+     "smallest_of_the_families_largest": 0.00333
+    },
+    "extent_bind_1_second": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.04e-18,
+     "largest_d1": 4.88e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847,
+     "smallest_of_the_families_largest": 0.000847
+    },
+    "ca_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.08e-20,
+     "largest_d1": 1.56e-19,
+     "threshold": 6.37e-15,
+     "largest": 2.5e-05,
+     "smallest_of_the_families_largest": 2.5e-05
+    },
+    "exchanger": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.12e-20,
+     "largest_d1": 9.15e-20,
+     "threshold": 6.58e-14,
+     "largest": 2.25e-05,
+     "smallest_of_the_families_largest": 2.25e-05
+    },
+    "heat_ca_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.6e-18,
+     "largest_d1": 3.47e-18,
+     "threshold": 5e-13,
+     "largest": 0.000872,
+     "smallest_of_the_families_largest": 0.000872
+    },
+    "heat_exchanger": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.39e-18,
+     "largest_d1": 2.28e-18,
+     "threshold": 2.73e-12,
+     "largest": 0.000408,
+     "smallest_of_the_families_largest": 0.000407
+    },
+    "heat_reactions_cytosol": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.17e-17,
+     "largest_d1": 2.95e-17,
+     "threshold": 7.5e-11,
+     "largest": 0.00431,
+     "smallest_of_the_families_largest": 0.00431
+    },
+    "heat_reactions_store": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.97e-14,
+     "largest_d1": 5.26e-15,
+     "threshold": 9.69e-11,
+     "largest": 0.0498,
+     "smallest_of_the_families_largest": 0.0498
+    },
+    "voltage": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.78e-16,
+     "largest_d1": 4.86e-16,
+     "threshold": 5.68e-11,
+     "largest": 0.0708,
+     "smallest_of_the_families_largest": 0.0707
+    },
+    "channel_K_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.48e-21,
+     "largest_d1": 7.94e-22,
+     "threshold": 1.09e-13,
+     "largest": 1.04e-06,
+     "smallest_of_the_families_largest": 9.8e-08
+    },
+    "store_voltage": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.74e-16,
+     "largest_d1": 6.65e-17,
+     "threshold": 1.82e-09,
+     "largest": 5.58e-05,
+     "smallest_of_the_families_largest": 5.58e-05
+    },
+    "cyt_Na_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 8.88e-16,
+     "threshold": 8.92e-13,
+     "largest": 0.00288,
+     "smallest_of_the_families_largest": 0.00288
+    },
+    "cyt_K_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 0.0,
+     "threshold": 2.35e-10,
+     "largest": 0.00131,
+     "smallest_of_the_families_largest": 0.00131
+    },
+    "cyt_Cl_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 0.0,
+     "threshold": 4.6e-14,
+     "largest": 6.17e-06,
+     "smallest_of_the_families_largest": 6.15e-06
+    },
+    "cyt_Ca_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.47e-18,
+     "largest_d1": 2.49e-18,
+     "threshold": 2.2e-12,
+     "largest": 0.000627,
+     "smallest_of_the_families_largest": 0.000627
+    }
+   },
+   "zero_entries": [
+    "store_Cl",
+    "store_Na"
+   ]
+  },
+  "cluster_gated_calcium": {
+   "captured_steps_s": [
+    1.25e-05,
+    6.25e-06,
+    3.125e-06
+   ],
+   "captured_step_counts": [
+    1600,
+    3200,
+    6400
+   ],
+   "families": "4 seeds x world IDs 0 to 1",
+   "entries": {
+    "n_out_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.66e-15,
+     "largest_d1": 2.55e-15,
+     "threshold": 2.32e-09,
+     "largest": 0.53,
+     "smallest_of_the_families_largest": 0.53
+    },
+    "leak_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.13e-20,
+     "largest_d1": 1.56e-19,
+     "threshold": 6.5e-15,
+     "largest": 2.4e-05,
+     "smallest_of_the_families_largest": 2.4e-05
+    },
+    "junction_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.69e-20,
+     "largest_d1": 2.37e-20,
+     "threshold": 5.8e-15,
+     "largest": 3.16e-06,
+     "smallest_of_the_families_largest": 3.16e-06
+    },
+    "face_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.66e-16,
+     "largest_d1": 1.83e-15,
+     "threshold": 1.16e-09,
+     "largest": 0.324,
+     "smallest_of_the_families_largest": 0.324
+    },
+    "n_out_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.16e-16,
+     "largest_d1": 7.49e-16,
+     "threshold": 1.75e-10,
+     "largest": 0.153,
+     "smallest_of_the_families_largest": 0.153
+    },
+    "leak_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.1e-19,
+     "largest_d1": 2.64e-19,
+     "threshold": 1.21e-13,
+     "largest": 4.15e-05,
+     "smallest_of_the_families_largest": 4.15e-05
+    },
+    "junction_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.12e-19,
+     "largest_d1": 5.39e-19,
+     "threshold": 9.03e-14,
+     "largest": 2.82e-05,
+     "smallest_of_the_families_largest": 2.82e-05
+    },
+    "face_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.3e-16,
+     "largest_d1": 6.11e-16,
+     "threshold": 8.77e-11,
+     "largest": 0.0851,
+     "smallest_of_the_families_largest": 0.0851
+    },
+    "n_out_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.22e-15,
+     "largest_d1": 1.28e-15,
+     "threshold": 2.97e-09,
+     "largest": 0.377,
+     "smallest_of_the_families_largest": 0.377
+    },
+    "leak_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.2e-20,
+     "largest_d1": 1.02e-19,
+     "threshold": 4.09e-14,
+     "largest": 4.88e-06,
+     "smallest_of_the_families_largest": 4.87e-06
+    },
+    "junction_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.9e-20,
+     "largest_d1": 3.23e-20,
+     "threshold": 5.16e-15,
+     "largest": 8.53e-07,
+     "smallest_of_the_families_largest": 8.5e-07
+    },
+    "face_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.83e-16,
+     "largest_d1": 5.97e-16,
+     "threshold": 1.48e-09,
+     "largest": 0.239,
+     "smallest_of_the_families_largest": 0.239
+    },
+    "n_out_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.97e-19,
+     "largest_d1": 3.46e-19,
+     "threshold": 4.16e-13,
+     "largest": 5.61e-05,
+     "smallest_of_the_families_largest": 5.6e-05
+    },
+    "leak_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.57e-20,
+     "largest_d1": 5.93e-20,
+     "threshold": 3.39e-15,
+     "largest": 1.24e-05,
+     "smallest_of_the_families_largest": 1.24e-05
+    },
+    "junction_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.58e-22,
+     "largest_d1": 4.76e-22,
+     "threshold": 9.41e-17,
+     "largest": 3.29e-08,
+     "smallest_of_the_families_largest": 3.28e-08
+    },
+    "face_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.15e-19,
+     "largest_d1": 1.22e-19,
+     "threshold": 8.23e-14,
+     "largest": 3e-05,
+     "smallest_of_the_families_largest": 3e-05
+    },
+    "channel_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.48e-21,
+     "largest_d1": 9e-22,
+     "threshold": 1.09e-13,
+     "largest": 1.04e-06,
+     "smallest_of_the_families_largest": 9.8e-08
+    },
+    "gate_m": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.94e-16,
+     "largest_d1": 3.47e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.0569,
+     "smallest_of_the_families_largest": 0.0569
+    },
+    "gate_h": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.66e-15,
+     "largest_d1": 5.88e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.702,
+     "smallest_of_the_families_largest": 0.702
+    },
+    "pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.77e-18,
+     "largest_d1": 2.6e-18,
+     "threshold": 2.27e-13,
+     "largest": 0.000989,
+     "smallest_of_the_families_largest": 0.000989
+    },
+    "junction_gate": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.11e-15,
+     "largest_d1": 5.77e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.607,
+     "smallest_of_the_families_largest": 0.607
+    },
+    "heat_junction": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.81e-19,
+     "largest_d1": 6.17e-19,
+     "threshold": 1.45e-12,
+     "largest": 3.84e-05,
+     "smallest_of_the_families_largest": 3.83e-05
+    },
+    "heat_face": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.44e-15,
+     "largest_d1": 2.33e-15,
+     "threshold": 3.96e-08,
+     "largest": 0.433,
+     "smallest_of_the_families_largest": 0.433
+    },
+    "heat_membrane": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.2e-17,
+     "largest_d1": 1.08e-16,
+     "threshold": 4.51e-11,
+     "largest": 0.0278,
+     "smallest_of_the_families_largest": 0.0278
+    },
+    "exchange_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.07e-18,
+     "largest_d1": 2.21e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288,
+     "smallest_of_the_families_largest": 0.00288
+    },
+    "exchange_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.12e-18,
+     "largest_d1": 5.64e-18,
+     "threshold": 7.74e-13,
+     "largest": 0.00191,
+     "smallest_of_the_families_largest": 0.00191
+    },
+    "exchange_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.18e-20,
+     "largest_d1": 1.16e-19,
+     "threshold": 4.6e-14,
+     "largest": 5.74e-06,
+     "smallest_of_the_families_largest": 5.72e-06
+    },
+    "exchange_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.22e-19,
+     "largest_d1": 1.08e-19,
+     "threshold": 1.57e-13,
+     "largest": 3.16e-05,
+     "smallest_of_the_families_largest": 3.16e-05
+    },
+    "cyt_B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.71e-18,
+     "largest_d1": 4.45e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000886,
+     "smallest_of_the_families_largest": 0.000886
+    },
+    "store_B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.68e-17,
+     "largest_d1": 5.64e-18,
+     "threshold": 2.06e-12,
+     "largest": 0.00333,
+     "smallest_of_the_families_largest": 0.00333
+    },
+    "cyt_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.69e-18,
+     "largest_d1": 2.17e-18,
+     "threshold": 2.28e-12,
+     "largest": 0.000625,
+     "smallest_of_the_families_largest": 0.000625
+    },
+    "store_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.76e-17,
+     "largest_d1": 3.6e-17,
+     "threshold": 3e-12,
+     "largest": 0.00447,
+     "smallest_of_the_families_largest": 0.00447
+    },
+    "cyt_Ca2B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.08e-20,
+     "largest_d1": 4.07e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.24e-06,
+     "smallest_of_the_families_largest": 8.24e-06
+    },
+    "store_Ca2B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.93e-18,
+     "largest_d1": 5.31e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847,
+     "smallest_of_the_families_largest": 0.000847
+    },
+    "cyt_CaB": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.69e-18,
+     "largest_d1": 5.31e-18,
+     "threshold": 1.39e-12,
+     "largest": 0.000878,
+     "smallest_of_the_families_largest": 0.000878
+    },
+    "store_CaB": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.9e-17,
+     "largest_d1": 1.39e-17,
+     "threshold": 2.26e-12,
+     "largest": 0.00248,
+     "smallest_of_the_families_largest": 0.00248
+    },
+    "cyt_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.18e-20,
+     "largest_d1": 1.16e-19,
+     "threshold": 4.6e-14,
+     "largest": 5.74e-06,
+     "smallest_of_the_families_largest": 5.72e-06
+    },
+    "cyt_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.71e-17,
+     "largest_d1": 7.5e-17,
+     "threshold": 2.35e-10,
+     "largest": 0.00131,
+     "smallest_of_the_families_largest": 0.00131
+    },
+    "store_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.32e-17,
+     "largest_d1": 6.84e-17,
+     "threshold": 2.35e-10,
+     "largest": 0.000598,
+     "smallest_of_the_families_largest": 0.000598
+    },
+    "cyt_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.07e-18,
+     "largest_d1": 2.21e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288,
+     "smallest_of_the_families_largest": 0.00288
+    },
+    "store_leak_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.44e-19,
+     "largest_d1": 2.57e-19,
+     "threshold": 6.58e-14,
+     "largest": 4.32e-05,
+     "smallest_of_the_families_largest": 4.32e-05
+    },
+    "store_leak_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.32e-17,
+     "largest_d1": 6.84e-17,
+     "threshold": 2.35e-10,
+     "largest": 0.000598,
+     "smallest_of_the_families_largest": 0.000598
+    },
+    "store_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.56e-19,
+     "largest_d1": 2.85e-19,
+     "threshold": 9.55e-15,
+     "largest": 3.75e-05,
+     "smallest_of_the_families_largest": 3.75e-05
+    },
+    "store_release": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.52e-18,
+     "largest_d1": 1.71e-18,
+     "threshold": 6.58e-13,
+     "largest": 0.000296,
+     "smallest_of_the_families_largest": 0.000296
+    },
+    "heat_store_leak": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.32e-15,
+     "largest_d1": 5.11e-16,
+     "threshold": 3.3e-09,
+     "largest": 0.0005,
+     "smallest_of_the_families_largest": 0.0005
+    },
+    "heat_store_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.46e-18,
+     "largest_d1": 8.02e-18,
+     "threshold": 8.26e-13,
+     "largest": 0.00142,
+     "smallest_of_the_families_largest": 0.00142
+    },
+    "heat_store_release": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.38e-17,
+     "largest_d1": 1.65e-17,
+     "threshold": 2.44e-11,
+     "largest": 0.0034,
+     "smallest_of_the_families_largest": 0.0034
+    },
+    "extent_bind_0_first": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.71e-18,
+     "largest_d1": 4.45e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000886,
+     "smallest_of_the_families_largest": 0.000886
+    },
+    "extent_bind_0_second": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.08e-20,
+     "largest_d1": 4.07e-20,
+     "threshold": 3.12e-14,
+     "largest": 8.24e-06,
+     "smallest_of_the_families_largest": 8.24e-06
+    },
+    "extent_bind_1_first": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.68e-17,
+     "largest_d1": 5.64e-18,
+     "threshold": 2.06e-12,
+     "largest": 0.00333,
+     "smallest_of_the_families_largest": 0.00333
+    },
+    "extent_bind_1_second": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.93e-18,
+     "largest_d1": 5.31e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000847,
+     "smallest_of_the_families_largest": 0.000847
+    },
+    "ca_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.12e-20,
+     "largest_d1": 1.22e-19,
+     "threshold": 6.37e-15,
+     "largest": 2.5e-05,
+     "smallest_of_the_families_largest": 2.5e-05
+    },
+    "exchanger": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.29e-19,
+     "largest_d1": 2.24e-19,
+     "threshold": 6.58e-14,
+     "largest": 2.25e-05,
+     "smallest_of_the_families_largest": 2.25e-05
+    },
+    "heat_ca_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.47e-18,
+     "largest_d1": 4.34e-18,
+     "threshold": 5e-13,
+     "largest": 0.000873,
+     "smallest_of_the_families_largest": 0.000873
+    },
+    "heat_exchanger": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.95e-18,
+     "largest_d1": 2.71e-18,
+     "threshold": 2.73e-12,
+     "largest": 0.000407,
+     "smallest_of_the_families_largest": 0.000407
+    },
+    "ca_channel": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.52e-20,
+     "largest_d1": 3.81e-20,
+     "threshold": 8.13e-14,
+     "largest": 3.63e-06,
+     "smallest_of_the_families_largest": 3.63e-06
+    },
+    "heat_ca_channel": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.73e-19,
+     "largest_d1": 4.74e-19,
+     "threshold": 2.36e-12,
+     "largest": 5.14e-05,
+     "smallest_of_the_families_largest": 5.14e-05
+    },
+    "ca_gate_m": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.41e-16,
+     "largest_d1": 7.77e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.0929,
+     "smallest_of_the_families_largest": 0.0929
+    },
+    "ca_gate_h": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.66e-15,
+     "largest_d1": 6.99e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.609,
+     "smallest_of_the_families_largest": 0.609
+    },
+    "heat_reactions_cytosol": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.69e-17,
+     "largest_d1": 1.91e-17,
+     "threshold": 7.5e-11,
+     "largest": 0.00432,
+     "smallest_of_the_families_largest": 0.00432
+    },
+    "heat_reactions_store": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.99e-14,
+     "largest_d1": 5.15e-15,
+     "threshold": 9.69e-11,
+     "largest": 0.0498,
+     "smallest_of_the_families_largest": 0.0498
+    },
+    "voltage": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.84e-16,
+     "largest_d1": 6.8e-16,
+     "threshold": 6.11e-11,
+     "largest": 0.0706,
+     "smallest_of_the_families_largest": 0.0706
+    },
+    "channel_K_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.48e-21,
+     "largest_d1": 9e-22,
+     "threshold": 1.09e-13,
+     "largest": 1.04e-06,
+     "smallest_of_the_families_largest": 9.8e-08
+    },
+    "store_voltage": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.7e-16,
+     "largest_d1": 5.54e-17,
+     "threshold": 1.82e-09,
+     "largest": 5.58e-05,
+     "smallest_of_the_families_largest": 5.58e-05
+    },
+    "cyt_Na_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 0.0,
+     "threshold": 8.92e-13,
+     "largest": 0.00288,
+     "smallest_of_the_families_largest": 0.00288
+    },
+    "cyt_K_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.42e-14,
+     "largest_d1": 0.0,
+     "threshold": 2.35e-10,
+     "largest": 0.00131,
+     "smallest_of_the_families_largest": 0.00131
+    },
+    "cyt_Cl_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 0.0,
+     "threshold": 4.6e-14,
+     "largest": 6.21e-06,
+     "smallest_of_the_families_largest": 6.2e-06
+    },
+    "cyt_Ca_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.69e-18,
+     "largest_d1": 2.17e-18,
+     "threshold": 2.28e-12,
+     "largest": 0.000625,
+     "smallest_of_the_families_largest": 0.000625
+    }
+   },
+   "zero_entries": [
+    "store_Cl",
+    "store_Na"
+   ]
+  },
+  "cluster_ip3_calcium": {
+   "captured_steps_s": [
+    1.25e-05,
+    6.25e-06,
+    3.125e-06
+   ],
+   "captured_step_counts": [
+    1600,
+    3200,
+    6400
+   ],
+   "families": "4 seeds x world IDs 0 to 1",
+   "entries": {
+    "n_out_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.55e-15,
+     "largest_d1": 2.44e-15,
+     "threshold": 2.32e-09,
+     "largest": 0.53,
+     "smallest_of_the_families_largest": 0.53
+    },
+    "leak_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.79e-20,
+     "largest_d1": 1.66e-19,
+     "threshold": 6.5e-15,
+     "largest": 2.4e-05,
+     "smallest_of_the_families_largest": 2.4e-05
+    },
+    "junction_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.73e-20,
+     "largest_d1": 4.02e-20,
+     "threshold": 5.8e-15,
+     "largest": 3.16e-06,
+     "smallest_of_the_families_largest": 3.16e-06
+    },
+    "face_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.33e-15,
+     "largest_d1": 2e-15,
+     "threshold": 1.16e-09,
+     "largest": 0.324,
+     "smallest_of_the_families_largest": 0.324
+    },
+    "n_out_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.38e-16,
+     "largest_d1": 9.71e-16,
+     "threshold": 1.75e-10,
+     "largest": 0.153,
+     "smallest_of_the_families_largest": 0.153
+    },
+    "leak_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.76e-19,
+     "largest_d1": 5.42e-19,
+     "threshold": 1.21e-13,
+     "largest": 4.15e-05,
+     "smallest_of_the_families_largest": 4.15e-05
+    },
+    "junction_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.03e-19,
+     "largest_d1": 5.29e-19,
+     "threshold": 9.03e-14,
+     "largest": 2.82e-05,
+     "smallest_of_the_families_largest": 2.82e-05
+    },
+    "face_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.55e-16,
+     "largest_d1": 5.41e-16,
+     "threshold": 8.77e-11,
+     "largest": 0.0851,
+     "smallest_of_the_families_largest": 0.0851
+    },
+    "n_out_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.5e-15,
+     "largest_d1": 2.22e-15,
+     "threshold": 2.97e-09,
+     "largest": 0.377,
+     "smallest_of_the_families_largest": 0.377
+    },
+    "leak_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.18e-20,
+     "largest_d1": 9.99e-20,
+     "threshold": 4.09e-14,
+     "largest": 4.88e-06,
+     "smallest_of_the_families_largest": 4.87e-06
+    },
+    "junction_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.13e-20,
+     "largest_d1": 2.53e-20,
+     "threshold": 5.16e-15,
+     "largest": 8.54e-07,
+     "smallest_of_the_families_largest": 8.5e-07
+    },
+    "face_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.83e-16,
+     "largest_d1": 9.16e-16,
+     "threshold": 1.48e-09,
+     "largest": 0.239,
+     "smallest_of_the_families_largest": 0.239
+    },
+    "n_out_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.3e-19,
+     "largest_d1": 2.03e-19,
+     "threshold": 4.16e-13,
+     "largest": 5.14e-05,
+     "smallest_of_the_families_largest": 5.14e-05
+    },
+    "leak_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.9e-20,
+     "largest_d1": 6.1e-20,
+     "threshold": 3.39e-15,
+     "largest": 1.24e-05,
+     "smallest_of_the_families_largest": 1.24e-05
+    },
+    "junction_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.31e-22,
+     "largest_d1": 3.31e-22,
+     "threshold": 9.41e-17,
+     "largest": 3.15e-08,
+     "smallest_of_the_families_largest": 3.14e-08
+    },
+    "face_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.13e-20,
+     "largest_d1": 7.45e-20,
+     "threshold": 8.23e-14,
+     "largest": 3e-05,
+     "smallest_of_the_families_largest": 3e-05
+    },
+    "channel_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.27e-21,
+     "largest_d1": 1.85e-21,
+     "threshold": 1.09e-13,
+     "largest": 1.04e-06,
+     "smallest_of_the_families_largest": 9.8e-08
+    },
+    "gate_m": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.97e-16,
+     "largest_d1": 6.18e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.0569,
+     "smallest_of_the_families_largest": 0.0569
+    },
+    "gate_h": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.44e-15,
+     "largest_d1": 6.33e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.702,
+     "smallest_of_the_families_largest": 0.702
+    },
+    "pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.82e-18,
+     "largest_d1": 5.85e-18,
+     "threshold": 2.27e-13,
+     "largest": 0.000989,
+     "smallest_of_the_families_largest": 0.000989
+    },
+    "junction_gate": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.22e-15,
+     "largest_d1": 3.55e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.607,
+     "smallest_of_the_families_largest": 0.607
+    },
+    "heat_junction": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.51e-19,
+     "largest_d1": 7.39e-19,
+     "threshold": 1.45e-12,
+     "largest": 3.85e-05,
+     "smallest_of_the_families_largest": 3.83e-05
+    },
+    "heat_face": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.39e-15,
+     "largest_d1": 1.05e-15,
+     "threshold": 3.96e-08,
+     "largest": 0.433,
+     "smallest_of_the_families_largest": 0.433
+    },
+    "heat_membrane": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.08e-16,
+     "largest_d1": 7.98e-17,
+     "threshold": 4.51e-11,
+     "largest": 0.0278,
+     "smallest_of_the_families_largest": 0.0278
+    },
+    "exchange_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.77e-18,
+     "largest_d1": 1.69e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288,
+     "smallest_of_the_families_largest": 0.00288
+    },
+    "exchange_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.29e-18,
+     "largest_d1": 5.2e-18,
+     "threshold": 7.74e-13,
+     "largest": 0.00191,
+     "smallest_of_the_families_largest": 0.00191
+    },
+    "exchange_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.44e-20,
+     "largest_d1": 9.66e-20,
+     "threshold": 4.6e-14,
+     "largest": 5.74e-06,
+     "smallest_of_the_families_largest": 5.72e-06
+    },
+    "exchange_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.32e-19,
+     "largest_d1": 1.52e-19,
+     "threshold": 1.57e-13,
+     "largest": 2.92e-05,
+     "smallest_of_the_families_largest": 2.92e-05
+    },
+    "cyt_B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.99e-18,
+     "largest_d1": 2.49e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000814,
+     "smallest_of_the_families_largest": 0.000814
+    },
+    "store_B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.59e-17,
+     "largest_d1": 1.04e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333,
+     "smallest_of_the_families_largest": 0.00333
+    },
+    "cyt_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.63e-18,
+     "largest_d1": 3.47e-18,
+     "threshold": 2.28e-12,
+     "largest": 0.00074,
+     "smallest_of_the_families_largest": 0.00074
+    },
+    "store_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.89e-17,
+     "largest_d1": 3.64e-17,
+     "threshold": 3e-12,
+     "largest": 0.0043,
+     "smallest_of_the_families_largest": 0.0043
+    },
+    "cyt_Ca2B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.57e-20,
+     "largest_d1": 5.17e-20,
+     "threshold": 3.12e-14,
+     "largest": 6.58e-06,
+     "smallest_of_the_families_largest": 6.58e-06
+    },
+    "store_Ca2B": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.9e-18,
+     "largest_d1": 3.79e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000856,
+     "smallest_of_the_families_largest": 0.000856
+    },
+    "cyt_CaB": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.47e-18,
+     "largest_d1": 5.1e-18,
+     "threshold": 1.39e-12,
+     "largest": 0.000808,
+     "smallest_of_the_families_largest": 0.000808
+    },
+    "store_CaB": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.24e-17,
+     "largest_d1": 2.86e-17,
+     "threshold": 2.26e-12,
+     "largest": 0.00247,
+     "smallest_of_the_families_largest": 0.00247
+    },
+    "cyt_Cl": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.44e-20,
+     "largest_d1": 9.66e-20,
+     "threshold": 4.6e-14,
+     "largest": 5.74e-06,
+     "smallest_of_the_families_largest": 5.72e-06
+    },
+    "cyt_IP3": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 9.49e-20,
+     "largest_d1": 4.4e-20,
+     "threshold": 1.26e-14,
+     "largest": 2.44e-05,
+     "smallest_of_the_families_largest": 2.44e-05
+    },
+    "cyt_IP3_bound": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 9.49e-20,
+     "largest_d1": 4.4e-20,
+     "threshold": 1.26e-14,
+     "largest": 2.44e-05,
+     "smallest_of_the_families_largest": 2.44e-05
+    },
+    "cyt_IP3_buffer": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 9.49e-20,
+     "largest_d1": 4.4e-20,
+     "threshold": 1.26e-14,
+     "largest": 2.44e-05,
+     "smallest_of_the_families_largest": 2.44e-05
+    },
+    "cyt_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.51e-17,
+     "largest_d1": 7.16e-17,
+     "threshold": 2.35e-10,
+     "largest": 0.00169,
+     "smallest_of_the_families_largest": 0.00169
+    },
+    "store_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.23e-17,
+     "largest_d1": 7.64e-17,
+     "threshold": 2.35e-10,
+     "largest": 0.00022,
+     "smallest_of_the_families_largest": 0.00022
+    },
+    "cyt_Na": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.77e-18,
+     "largest_d1": 1.69e-17,
+     "threshold": 8.92e-13,
+     "largest": 0.00288,
+     "smallest_of_the_families_largest": 0.00288
+    },
+    "store_leak_Ca": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.78e-19,
+     "largest_d1": 1.49e-19,
+     "threshold": 6.58e-14,
+     "largest": 4.37e-05,
+     "smallest_of_the_families_largest": 4.37e-05
+    },
+    "store_leak_K": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 5.23e-17,
+     "largest_d1": 7.64e-17,
+     "threshold": 2.35e-10,
+     "largest": 0.00022,
+     "smallest_of_the_families_largest": 0.00022
+    },
+    "store_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.29e-19,
+     "largest_d1": 1.42e-19,
+     "threshold": 9.55e-15,
+     "largest": 3.63e-05,
+     "smallest_of_the_families_largest": 3.63e-05
+    },
+    "store_release": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.45e-19,
+     "largest_d1": 1.06e-18,
+     "threshold": 6.58e-13,
+     "largest": 0.000103,
+     "smallest_of_the_families_largest": 0.000103
+    },
+    "heat_store_leak": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.66e-15,
+     "largest_d1": 1.05e-16,
+     "threshold": 3.3e-09,
+     "largest": 0.000513,
+     "smallest_of_the_families_largest": 0.000513
+    },
+    "heat_store_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.69e-18,
+     "largest_d1": 9.97e-18,
+     "threshold": 8.26e-13,
+     "largest": 0.00137,
+     "smallest_of_the_families_largest": 0.00137
+    },
+    "heat_store_release": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.29e-18,
+     "largest_d1": 6.72e-18,
+     "threshold": 2.44e-11,
+     "largest": 0.0012,
+     "smallest_of_the_families_largest": 0.0012
+    },
+    "extent_bind_0_first": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.99e-18,
+     "largest_d1": 2.49e-18,
+     "threshold": 1.36e-12,
+     "largest": 0.000814,
+     "smallest_of_the_families_largest": 0.000814
+    },
+    "extent_bind_0_second": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.57e-20,
+     "largest_d1": 5.17e-20,
+     "threshold": 3.12e-14,
+     "largest": 6.58e-06,
+     "smallest_of_the_families_largest": 6.58e-06
+    },
+    "extent_bind_1_first": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 6.59e-17,
+     "largest_d1": 1.04e-17,
+     "threshold": 2.06e-12,
+     "largest": 0.00333,
+     "smallest_of_the_families_largest": 0.00333
+    },
+    "extent_bind_1_second": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.9e-18,
+     "largest_d1": 3.79e-18,
+     "threshold": 2.06e-13,
+     "largest": 0.000856,
+     "smallest_of_the_families_largest": 0.000856
+    },
+    "extent_ip3_binding": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 9.49e-20,
+     "largest_d1": 4.4e-20,
+     "threshold": 1.26e-14,
+     "largest": 2.44e-05,
+     "smallest_of_the_families_largest": 2.44e-05
+    },
+    "ca_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 8.47e-20,
+     "largest_d1": 1.08e-19,
+     "threshold": 6.37e-15,
+     "largest": 2.42e-05,
+     "smallest_of_the_families_largest": 2.42e-05
+    },
+    "exchanger": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.19e-19,
+     "largest_d1": 1.05e-19,
+     "threshold": 6.58e-14,
+     "largest": 2.1e-05,
+     "smallest_of_the_families_largest": 2.1e-05
+    },
+    "heat_ca_pump": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.69e-18,
+     "largest_d1": 4.66e-18,
+     "threshold": 5e-13,
+     "largest": 0.00084,
+     "smallest_of_the_families_largest": 0.00084
+    },
+    "heat_exchanger": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.9e-18,
+     "largest_d1": 3.36e-18,
+     "threshold": 2.73e-12,
+     "largest": 0.000372,
+     "smallest_of_the_families_largest": 0.000372
+    },
+    "ca_channel": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.47e-20,
+     "largest_d1": 5.34e-20,
+     "threshold": 8.13e-14,
+     "largest": 3.63e-06,
+     "smallest_of_the_families_largest": 3.63e-06
+    },
+    "heat_ca_channel": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 3.32e-19,
+     "largest_d1": 7.66e-19,
+     "threshold": 2.36e-12,
+     "largest": 5.19e-05,
+     "smallest_of_the_families_largest": 5.19e-05
+    },
+    "ca_gate_m": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.16e-16,
+     "largest_d1": 7.22e-16,
+     "threshold": 1.14e-10,
+     "largest": 0.0929,
+     "smallest_of_the_families_largest": 0.0929
+    },
+    "ca_gate_h": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 4.22e-15,
+     "largest_d1": 6.11e-15,
+     "threshold": 1.14e-10,
+     "largest": 0.609,
+     "smallest_of_the_families_largest": 0.609
+    },
+    "heat_reactions_cytosol": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.81e-18,
+     "largest_d1": 1.82e-17,
+     "threshold": 7.61e-11,
+     "largest": 0.00396,
+     "smallest_of_the_families_largest": 0.00396
+    },
+    "heat_reactions_store": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 7.95e-14,
+     "largest_d1": 5.16e-15,
+     "threshold": 9.69e-11,
+     "largest": 0.0499,
+     "smallest_of_the_families_largest": 0.0499
+    },
+    "voltage": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.64e-16,
+     "largest_d1": 5.27e-16,
+     "threshold": 6.11e-11,
+     "largest": 0.0706,
+     "smallest_of_the_families_largest": 0.0706
+    },
+    "channel_K_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.91e-21,
+     "largest_d1": 1.85e-21,
+     "threshold": 1.09e-13,
+     "largest": 1.04e-06,
+     "smallest_of_the_families_largest": 9.8e-08
+    },
+    "store_voltage": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 1.83e-16,
+     "largest_d1": 6.53e-17,
+     "threshold": 1.82e-09,
+     "largest": 2.36e-05,
+     "smallest_of_the_families_largest": 2.36e-05
+    },
+    "cyt_Na_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 0.0,
+     "threshold": 8.92e-13,
+     "largest": 0.00288,
+     "smallest_of_the_families_largest": 0.00288
+    },
+    "cyt_K_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 1.42e-14,
+     "threshold": 2.35e-10,
+     "largest": 0.00169,
+     "smallest_of_the_families_largest": 0.00169
+    },
+    "cyt_Cl_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 0.0,
+     "largest_d1": 0.0,
+     "threshold": 4.6e-14,
+     "largest": 6.21e-06,
+     "smallest_of_the_families_largest": 6.2e-06
+    },
+    "cyt_Ca_summary": {
+     "classes": {
+      "unresolved": 8
+     },
+     "largest_d2": 2.28e-18,
+     "largest_d1": 3.47e-18,
+     "threshold": 2.28e-12,
+     "largest": 0.00074,
+     "smallest_of_the_families_largest": 0.00074
+    }
+   },
+   "zero_entries": [
+    "store_Cl",
+    "store_IP3",
+    "store_IP3_bound",
+    "store_IP3_buffer",
+    "store_Na"
+   ]
+  }
+ }
+}

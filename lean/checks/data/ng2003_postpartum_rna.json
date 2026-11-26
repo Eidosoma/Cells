@@ -1,0 +1,22 @@
+{
+  "citation": "Ng et al. (2003), Proceedings of the National Academy of Sciences 100, 4748–4753",
+  "doi": "10.1073/pnas.0637450100",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC153627/",
+  "transcript": "human placental lactogen (hPL) mRNA",
+  "preparation": "Maternal plasma sampled before delivery and at a paired postpartum time, at term (38–42 weeks). The two-hour and 24-hour comparisons used different groups.",
+  "two_hours": {
+    "locator": "Figure 4C and accompanying Results",
+    "participants": 13,
+    "detectable": 4,
+    "median_predelivery_copies_per_ml": 24499,
+    "concentration_decrease_percent_in_four_detectable_pairs": [66, 97],
+    "calculated_wilson_95_percent_interval_for_detection_fraction": [0.1268, 0.5763]
+  },
+  "twenty_four_hours": {
+    "locator": "Figure 4A and accompanying Results",
+    "participants": 8,
+    "detectable": 0,
+    "median_predelivery_copies_per_ml": 50004
+  },
+  "limit": "The denominator is sampled women. The concentration changes refer to plasma samples, and neither the time of release nor the survival of individual RNA molecules was measured."
+}

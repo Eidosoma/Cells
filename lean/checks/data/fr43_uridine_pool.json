@@ -1,0 +1,21 @@
+{
+  "doi": "10.1016/j.mec.2026.e00287",
+  "locator": "Huber et al., Fig. 8. The 7-hour validation batch; means in UDP-GalNAc40_TO7h_with_initConcColumns.txt, SDs in UDP-GalNAc40_TO7h_SD.txt.",
+  "source_means": "https://raw.githubusercontent.com/klamt-lab/MoRSel_UDP-GalNAc_Paper/3a6ae20eb9c33bf667f4af9c1942cc4f4fce2963/process_optimization/exp_val_data/UDP-GalNAc40_TO7h_with_initConcColumns.txt",
+  "source_sd": "https://raw.githubusercontent.com/klamt-lab/MoRSel_UDP-GalNAc_Paper/3a6ae20eb9c33bf667f4af9c1942cc4f4fce2963/process_optimization/exp_val_data/UDP-GalNAc40_TO7h_SD.txt",
+  "archive": "https://doi.org/10.5281/zenodo.19098183",
+  "columns": ["time_h", "uridine_mM", "UMP_mM", "UDP_mM", "UDP_GalNAc_mM", "UTP_mM", "UTP_SD_mM"],
+  "rows": [
+    [0, 50.5452059, 0, 0, 0, 0, 0],
+    [0.5, 28.9682227772, 9.320318, 2.681742, 1.88265, 7.976654, 1.05181008702902],
+    [1, 16.67741407122, 11.2527212, 4.61917316, 6.17332968, 11.79566332, 1.64502217803002],
+    [2, 8.019857298208, 10.003903, 6.3782572, 16.13397576, 10.1847214, 2.47873101657301],
+    [4, 4.41781127442816, 7.604646336, 4.664073792, 29.811760608, 3.980283552, 1.57168379861077],
+    [7, 3.4176312757608, 5.32764036, 3.69799164, 37.27985394, 0.9545445, 0.350096386456673],
+    [12, 2.1159256433056, 4.5002405, 2.3260328, 40.7819538, 0.80451728, 0.118447865128665],
+    [16, 2.233093589055, 4.0976698, 2.0708142, 41.1885418, 0.6786689, 0.053294287838942],
+    [20, 2.3152976735742, 4.09288908, 1.71719478, 41.7847605, 0.59536554, 0.0592769042889455],
+    [24, 0.79372637518776, 3.98992692, 1.92784536, 43.1363667, 0.52514868, 0.0219420648517499]
+  ],
+  "scope": "Five measured uridine-bearing pools at the nominal batch volume. The UTP concentrations after time zero are held out of the reconstruction. Paired covariance and gross pathway fluxes are unavailable."
+}

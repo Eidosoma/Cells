@@ -6,7 +6,7 @@ voltage-gated junctions. Every cell is written in state H, an exact declared ste
 cell (validation/tissue/surface_pump_v3_fixtures.heredity_cells) and, with no junction voltage, of
 the sheet: the run starts at rest, with no pattern to settle first.
 
-Drive (the lead's ruling 3, §9): electrode_current_injection@1 into the centre cell, a
+Drive (the lead's ruling 3, §9): cells.operator.electrode_current_injection@1 into the centre cell, a
 charge-balanced square wave (+I for the first half of each period, -I for the second), so the
 injected amounts net to zero over a period. Its carriers are a 3 M KCl filling's proportion with M
 as this world's anion. The amplitude keeps every cell far below its switching voltage (H at about
@@ -18,10 +18,10 @@ The run covers SETTLE periods and one more; only the last period's rows are obse
 the view's first observed row is at t0 = SETTLE T and its last at t0 + T. The writer measures the
 closure there and labels the run a loop only within TOLERANCE.
 
-Engine models: resolved_pump_composite@1 over resolved_pump_tissue@3, with the heredity cell's laws
-(nav1p2_m3h_regularized@1, kir2p1_mh2@1, the Na/K pump nak_atp_mass_action_positive@1, membranes
-and junctions constant_field@1, the junction gate junction_voltage_relaxation@1), and
-electrode_current_injection@1. An illustration (D175): no verdict, not registered.
+Engine models: cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, with the heredity cell's laws
+(cells.channel.nav1p2_m3h_regularized@1, cells.channel.kir2p1_mh2@1, the Na/K pump cells.cycle.nak_atp_mass_action_positive@1, membranes
+and junctions cells.route.constant_field@1, the junction gate cells.junction.junction_voltage_relaxation@1), and
+cells.operator.electrode_current_injection@1. An illustration (D175): no verdict, not registered.
 
 The amplitude, settling periods and tolerance are provisional until the first development run
 (the package's own probe) shows the closure and the cells' voltage range.
@@ -125,7 +125,7 @@ def package(
     cell = f"cell_{centre}"
     raw["model"]["operators"] = [
         dict(
-            law="electrode_current_injection@1",
+            law="cells.operator.electrode_current_injection@1",
             electrodes=[dict(cell_id=cell, carriers=dict(CARRIERS))],
         )
     ]

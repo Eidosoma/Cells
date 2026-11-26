@@ -1,5 +1,5 @@
-"""Fission, continuation and the lineage table (cells.size_threshold_fission@1,
-cells.daughter_continuation@1): exact sizes, conservation, rules and carrier keys.
+"""Fission, continuation and the lineage table (cells.operator.size_threshold_fission@1,
+cells.operator.daughter_continuation@1): exact sizes, conservation, rules and carrier keys.
 
 Planted errors it must catch:
 - a split at 0.55 where 1/2 is declared (the first daughter's size is checked exactly);

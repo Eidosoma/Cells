@@ -23,7 +23,7 @@ Each enabled mitochondrial cycle runs forward at negative full-turn ΔG, reverse
 - [CellsProofs.Chemistry.MitochondrialStall.heat_nonneg](../CellsProofs/Chemistry/MitochondrialStall.lean#L92)
 - [CellsProofs.Chemistry.MitochondrialStall.heat_zero_iff](../CellsProofs/Chemistry/MitochondrialStall.lean#L96)
 
-Direct proof subject `cells.nadh_ubiquinone_proton_cycle@1`, `cells.ubiquinol_cytochrome_c_proton_cycle@1`, `cells.cytochrome_c_oxygen_proton_cycle@1`, `cells.proton_coupled_atp_synthesis_cycle@1`, `cells.electrogenic_nucleotide_exchange@1`, `cells.phosphate_proton_symport@1`, `cells.potassium_proton_exchange@1`
+Direct proof subject `cells.cycle.nadh_ubiquinone_proton_cycle@1`, `cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1`, `cells.cycle.cytochrome_c_oxygen_proton_cycle@1`, `cells.cycle.proton_coupled_atp_synthesis_cycle@1`, `cells.cycle.electrogenic_nucleotide_exchange@1`, `cells.cycle.phosphate_proton_symport@1`, `cells.cycle.potassium_proton_exchange@1`
 
 Proof sources [Mathlib geometric sum used to recover the fractional exponent](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GeomSum.lean#L239)
 

@@ -133,6 +133,22 @@ theorem analytic_heat_nonneg {scale rt hIn hOut : ℝ} (hs : 0 ≤ scale) (hrt :
       (mul_nonpos_of_nonneg_of_nonpos hcoeff (mul_nonpos_of_nonneg_of_nonpos hbase (sub_nonpos.mpr h)))
       (sub_nonpos.mpr (Real.log_le_log ho h))
 
+/-- Changing only the outside free proton concentration has an exact linear effect
+on inward flux at fixed voltage, inside concentration and route opening. -/
+theorem outside_change (factor : NormalizedFactor) (scale hIn h₁ h₂ x : ℝ) :
+    inward factor scale hIn h₂ x - inward factor scale hIn h₁ x =
+      scale * factor.eval x * (h₂ - h₁) := by
+  simp only [inward_formula]
+  ring
+
+/-- For the engine's Bernoulli factor an open patch strictly distinguishes two outside readings. -/
+theorem strictMono_outside {scale : ℝ} (hs : 0 < scale) (hIn x : ℝ) :
+    StrictMono (fun hOut => inward seriesFactor scale hIn hOut x) := by
+  intro a b h
+  apply sub_pos.mp
+  rw [outside_change]
+  exact mul_pos (mul_pos hs (series_pos x)) (sub_pos.mpr h)
+
 end
 
 end CellsProofs.Transport.ProtonLeak

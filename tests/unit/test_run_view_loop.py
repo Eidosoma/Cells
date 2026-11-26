@@ -7,7 +7,7 @@
 * The declarations a closure reads (the operator contract's RECORD_DIAGNOSTICS and
   RECORD_REFERENCES): a diagnostic's records say so, and a field stored as an increment over a
   fixed reference names it (a constant of the view, or the merged view's record under door S).
-  resolved_pump_tissue@3 declares its own (models/surface_pump_v3), which the tests read; an
+  cells.model.resolved_pump_tissue@3 declares its own (models/surface_pump_v3), which the tests read; an
   operator's are planted on its class.
 * The closure (loop_closure) on saved files, read one at a time: for each observed record of kind
   level, amount or rate that is not a diagnostic, the largest change from the first row to the
@@ -45,7 +45,7 @@ SOURCE = {
     "dirty": False,
     "from": "the execution snapshot's record (SNAPSHOT.json)",
 }
-# resolved_pump_tissue@3's own record roles, restated: the tests check the writer reads them.
+# cells.model.resolved_pump_tissue@3's own record roles, restated: the tests check the writer reads them.
 DIAGNOSTICS = ("charge_residual_C", "component_current_residual_A", "energy_balance_pJ_s")
 REFERENCES = {
     "amount_increment": "amount_reference",

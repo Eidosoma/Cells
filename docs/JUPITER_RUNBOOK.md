@@ -9,6 +9,11 @@ Status, 8 November 2026: the scripts below were exercised on the local L4
 unverified. These steps check the platform and the runner. Moving from L4/x86
 to GH200/Arm still needs fresh numerical qualification of the chosen model.
 
+> **Legacy cleanup (25 November 2026, D386).** The check's and the smoke's world, `spatial_extracellular@2` with
+> `configs/spatial_kinetic_cluster.json`, left the engine; the tag `pre-cleanup-2026-11-25` keeps it, with the L4
+> figures below. The same cluster is being re-expressed as a closed `resolved_pump_tissue@3` world; until
+> `validation/ensemble/jupiter_check.py` names it, run this page from the tag.
+
 | File | Purpose |
 | --- | --- |
 | `validation/ensemble/jupiter_env_setup.sh` | Python 3.13 venv with the L4's exact jax 0.11.1 / CUDA 13 wheel set |

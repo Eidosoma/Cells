@@ -20,7 +20,7 @@ With fixed binder inventories, ligand totals determine at most one positive free
 - [CellsProofs.Chemistry.BindingEquilibrium.equilibrium_group_unique](../CellsProofs/Chemistry/BindingEquilibrium.lean#L114)
 - [CellsProofs.Chemistry.BindingEquilibrium.positive_free_unique](../CellsProofs/Chemistry/BindingEquilibrium.lean#L124)
 
-Direct proof subject `cells.rapid_binding@1`
+Direct proof subject `cells.binding.rapid_binding@1`
 
 Proof sources [Mathlib positivity of the matrix quadratic form, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L330-L334) · [Mathlib strict monotonicity from a positive derivative, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L382-L385) · [Cells finite binding response and its positive definiteness](../CellsProofs/Chemistry/BindingResponse.lean#L147)
 

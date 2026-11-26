@@ -1,7 +1,7 @@
 """Tier-1 tests of the secreted-species definitions (D150 version 1; host side, no compile).
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §1.3, §1.5, §2.6, §5.2, §5.5, §8 and §11.5: the inventory
-helper, the species cap with its reason (16 since FR-9 / D165, 7 before), identity on the
+helper, the species cap with its reason (1,024 since FR-43 / D315, 16 and 7 before), identity on the
 declarations (never in the arrays), the version 1 composition refusals, the stationary analysis'
 refusal of the composite, the required energy-guard statement, and the occupant rule (rates belong
 to the carrier; donor copies admitted only with the slot's route values; schedules keyed by
@@ -108,8 +108,10 @@ def test_the_helper_declares_a_neutral_impermeant_species_at_a_trace():
 # ------------------------------------------------------------------ cap, identity, composition
 
 
-def test_more_than_sixteen_species_are_refused_with_the_reason():
-    """FR-9 / D165: the cap is 16, every species counted, ions included (it was 7)."""
+def test_more_species_than_the_cap_are_refused_with_the_reason(monkeypatch):
+    """The cap counts every species, ions included (FR-43 / D315: 1,024, test_species_cap.py). Set
+    to 16 here, so the world stays small: the operators read it at their definition check."""
+    monkeypatch.setattr(species_common, "MAX_SPECIES", 16)
     raw = turnover_world()
     for i in range(13):  # 3 ions, S and 13 more: 17 species.
         raw = add_inventory_species(
@@ -119,7 +121,7 @@ def test_more_than_sixteen_species_are_refused_with_the_reason():
         parse_spec(raw)
     assert "ions included" in str(error.value)
     assert "explicit species order (D148)" in str(error.value)
-    assert "another probe (FR-9 / D165)" in str(error.value)
+    assert "another probe (FR-43 / D315)" in str(error.value)
     sixteen = turnover_world()
     for i in range(12):
         sixteen = add_inventory_species(
@@ -198,7 +200,9 @@ def test_version_1_refuses_volume_providers_area_providers_and_mask_providers():
     with_writer = fx.with_exchange(
         cleft, [("sec", "furrow", "export", "first_order")], [("sec", cell, [(0.0, 0.1)])]
     )
-    with pytest.raises(ConfigError, match=r"scheduled_species_exchange@1 reads \w+_active as"):
+    with pytest.raises(
+        ConfigError, match=r"cells.operator.scheduled_species_exchange@1 reads \w+_active as"
+    ):
         parse_spec(with_writer)
 
 
@@ -207,7 +211,7 @@ def test_the_stationary_analysis_does_not_admit_the_composite():
     refuses it; per-species Newton tolerances are a recorded requirement, not code (§8)."""
     from cells.analysis import stationary
 
-    with pytest.raises(ConfigError, match="not resolved_pump_composite@1"):
+    with pytest.raises(ConfigError, match="not cells.model.resolved_pump_composite@1"):
         stationary.problem(parse_spec(turnover_world()))
 
 
@@ -403,7 +407,9 @@ def test_the_definition_round_trips():
 
 
 @pytest.mark.parametrize("operator", ["turnover", "exchange"])
-def test_each_operator_refuses_more_than_sixteen_species(operator):
+def test_each_operator_refuses_more_species_than_the_cap(operator, monkeypatch):
+    """Each operator calls the cap at its definition check; the cap is set to 16 here."""
+    monkeypatch.setattr(species_common, "MAX_SPECIES", 16)
     base = fx.secreting_cell()
     if operator == "turnover":
         routes, controls = [("p", "cell_0", "production")], [("p", "cell_0", [(0.0, 1e-6)])]
@@ -516,3 +522,14 @@ def test_a_batch_refuses_worlds_with_different_route_structures():
     batch(a, c)
     with pytest.raises(ConfigError, match="matching model array axes"):
         batch(a, b)
+    # The sparse field (FR-17 stage 1) binds the faces' patterns: one face topology per batch,
+    # refused by name; version 2 admits the same pair as before.
+    d = copy.deepcopy(c)
+    face = d["model"]["faces"][0]
+    face["sender"], face["receiver"] = face["receiver"], face["sender"]
+    batch(a, d)
+    sparse = "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
+    for world in (a, d):
+        world["execution"]["field_solver"] = sparse
+    with pytest.raises(ConfigError, match="requires one face topology"):
+        batch(a, d)

@@ -5,25 +5,25 @@ fr7-references-rloop-2026-11-19) declares F4's world in interface/loop_inputs.js
 world of D231, its template scaled by D233. This module reads that file only, never the
 references' implementation, and declares the world for the engine.
 
-**The model.** The composite resolved_pump_composite@1 over resolved_pump_tissue@3, holding:
+**The model.** The composite cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, holding:
 * **the cell:** the heredity cell H at the registered volume per area, with the registered start
   (amounts, the fixed charge X, and the charge C V at the start's V), and one constant-field
   patch facing a bath held at 0 V;
-* **the Na/K pump** (nak_atp_mass_action_positive@1) on held fuel pools, with ΔG0 over the 1 M
+* **the Na/K pump** (cells.cycle.nak_atp_mass_action_positive@1) on held fuel pools, with ΔG0 over the 1 M
   standard state, which the law fixes and the inputs declare;
-* **the populations in membrane_entity_state@1:** kir_0, a gate-free K leak (kleak_always_open@1),
-  and naleak_0, the Na-leak units (naleak_always_open@1, carrying the cell's whole Na leak), each
+* **the populations in cells.operator.membrane_entity_state@1:** kir_0, a gate-free K leak (cells.channel.kleak_always_open@1),
+  and naleak_0, the Na-leak units (cells.channel.naleak_always_open@1, carrying the cell's whole Na leak), each
   at its registered reference density and units;
-* **under scheduled_species_turnover@1,** the template and the precursor, two neutral inventory
+* **under cells.operator.scheduled_species_turnover@1,** the template and the precursor, two neutral inventory
   species: the template's production schedule and first-order clearance, and the precursor's
   supply S_P and clearance k_P;
-* **species_regulated_availability@2,** with:
-  - the regulatory state s_na (hill_regulated_two_state@1, a Hill activation by cytosolic Na), at
+* **cells.operator.species_regulated_availability@2,** with:
+  - the regulatory state s_na (cells.regulation.hill_regulated_two_state@1, a Hill activation by cytosolic Na), at
     its registered start s;
   - two operator routes on the unit producer's assembly rate of the route naleak_units, in
     declared order: the template's Hill activation (K, n, b_T) at the operating range [0, 1] mM,
     then s_na's complement (b = 0). The rate is k_a F_T F_loop;
-* **population_unit_turnover@1,** with nu, m = 0, k_a and k_r on all of N.
+* **cells.operator.population_unit_turnover@1,** with nu, m = 0, k_a and k_r on all of N.
 
 **The arms.**
 * **closed:** the loop on throughout.
@@ -47,7 +47,6 @@ The synthetic labels are the references' (D217). Development, not judged.
 """
 
 import copy
-import json
 import math
 from pathlib import Path
 
@@ -55,6 +54,7 @@ from cells.definitions import pump_composite_spec as cs
 from cells.laws.electrochemistry import F
 from cells.laws.pumps import nak_atp_mass_action_positive as pump_law
 from cells.registry.inventory_species import add_inventory_species
+from validation import id_table
 from validation.fr7 import unit_turnover_fixtures as fx
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,19 +64,19 @@ CELL, BATH, PATCH, PUMP = "cell_0", "bath_0", "membrane_0", "pump_0"
 ROUTE, STATE_ID = "naleak_units", "s_na"
 TRACE_mM = 1e-15
 FLOOR_FMOL = 1e-20  # The species ledger's floor, as the coupling protocol declares it.
-IMEX = "imex_ars222_face_electromigration@1"
-FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
-CLOSURE = "resolved_capacitor_components_current_continuity@1"
+IMEX = "cells.solver.imex_ars222_face_electromigration@1"
+FIELD_SOLVER = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
+CLOSURE = "cells.field_closure.resolved_capacitor_components_current_continuity@1"
 CHARGE_PER_FMOL = F * 1e-15
 LAWS = {
-    "gate-free K leak (kleak_always_open@1), K only": "kleak_always_open@1",
-    "gate-free Na leak (naleak_always_open@1), Na only": "naleak_always_open@1",
+    "gate-free K leak (cells.channel.kleak_always_open@1), K only": "cells.channel.kleak_always_open@1",
+    "gate-free Na leak (cells.channel.naleak_always_open@1), Na only": "cells.channel.naleak_always_open@1",
 }
 
 
 def inputs(path=None):
     """The registered loop inputs (interface/loop_inputs.json, or the given copy of it)."""
-    return json.loads(Path(path or INTERFACE / "loop_inputs.json").read_text())
+    return id_table.load(path or INTERFACE / "loop_inputs.json")
 
 
 def _identity(name):
@@ -134,7 +134,7 @@ def definition(inp, *, arm="closed", f_star=None, dosed=True, end=None, rows=Non
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=cell["temperature_K"],
             species=[dict(id=s, valence=z) for s, z in zip(species, valence, strict=True)],
             cells=[
@@ -169,10 +169,10 @@ def definition(inp, *, arm="closed", f_star=None, dosed=True, end=None, rows=Non
                     permeability_m_per_s=dict(
                         zip(species, cell["leak_permeability_m_s"], strict=True)
                     ),
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=dict(
                         id=PUMP,
-                        law="nak_atp_mass_action_positive@1",
+                        law="cells.cycle.nak_atp_mass_action_positive@1",
                         roles=dict(sodium="Na", potassium="K"),
                         stoichiometry=dict(Na=-3, K=2),
                         capacity_fmol_per_s=pump["capacity_fmol_cycles_per_s"],
@@ -180,7 +180,7 @@ def definition(inp, *, arm="closed", f_star=None, dosed=True, end=None, rows=Non
                         km_k_mM=pump["km_k_mM"],
                         km_atp_mM=pump["km_atp_mM"],
                         metabolism=dict(
-                            kind="maintained_chemical_reservoirs@1",
+                            kind="cells.fuel_kind.maintained_chemical_reservoirs@1",
                             atp_mM=pump["atp_mM"],
                             adp_mM=pump["adp_mM"],
                             pi_mM=pump["pi_mM"],
@@ -278,7 +278,7 @@ def _with_operators(raw, loop, arm, f_star):
     )
     route = regulator["route"]
     coupling = dict(
-        law="species_regulated_availability@2",
+        law="cells.operator.species_regulated_availability@2",
         species=_identity(TEMPLATE) + _identity("Na"),
         states=[
             dict(

@@ -1,5 +1,8 @@
 # Gap-junction cancer replication
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **The preprint.** J. Grodstein, J. Mathews and M. Levin, "Membrane voltage and connexin expression
 work together to enhance tumor growth and metastasis in cancer", bioRxiv,
 doi:[10.64898/2026.09.02.748840](https://doi.org/10.64898/2026.09.02.748840), version 1,
@@ -963,3 +966,64 @@ This section is the handoff; the evidence is under `/mnt/workspaces/Cells/gap-ju
   `tools/write_summary.py` and `tools/bitsey_log_points.py`.
 - BITSEY's code and logs, as read at b2cb370 and b007aab: `downloads/` (never committed).
 
+
+## 9. The judged comparisons, registered (23 November 2026)
+
+D219's two approved comparisons have registrations. Each is tagged before any judged run, and each
+names a reader that exists at its tag (D308).
+- **[GJ-L1, the linear model](GJ_LINEAR_REGISTRATION.md)** (`linear_judge.py`). Figures 3b, 5 and 8
+  in both forms, against code-blind references.
+  - The Norton form is judged at its floor: transient plus rounding.
+  - The form as written is judged at dt/4 from the triple dt, dt/2, dt/4, by FR-25's rule.
+  - Figure 5a at 10 G_eq as written runs through the windowed path.
+- **[GJ-N1, the "neither" threshold](GJ_NEITHER_REGISTRATION.md)** (`neither_judge.py`).
+  - The line is not blind (`neither-02`). The 25 × 25 field is a true pre-registration.
+  - The verdict is refinement (R), the half-step convergence condition (C), and agreement with an
+    independent integration (A).
+  - BITSEY's historical logs and a pinned run at b2cb370 are reported, never judged.
+- **The field's compute is open for the lead** (GJ_NEITHER_REGISTRATION.md §8): about 0.17 s a step
+  on today's engine, and about 400 CPU-hours for its search.
+- **The references read only** `validation/gap_junction_tissue/references/spec/` and the preprint.
+- **BITSEY runs unmodified** in `/mnt/workspaces/Cells/venv-bitsey`, from a clean checkout at
+  b2cb370, by `bitsey_run.py`. Its runs are under `/mnt/workspaces/Cells/bitsey-20261123/runs/`.
+  - The licence check found none, at b2cb370 or at the newest head (7e4fb45d), the situation D208
+    was ruled on.
+  - Both historical logs print the result line of 04225e4 (20 May 2026), not b2cb370's: their
+    producing revision is earlier.
+  - **The pinned 1D run reproduces the historical 1D log's first search** (`runs/1d-01`,
+    unit `cells-gj-bitsey-1d-01`). All 16 points have the same D at full precision, the same
+    outcomes and identical end-state dumps, and the printed bracket is the same (7.172e-15,
+    7.178e-15). So b2cb370 produces that log's numbers, whatever revision printed it. This is a
+    finding about the reference, not about Cells.
+
+**What each comparison needs from FR-15, FR-16 and FR-17** (from FEATURE_REQUESTS.md's rows of
+23 November and `run.py refusals` rerun on this branch; this updates §5's table).
+- **GJ-L1 and GJ-N1's line and field need none of them.** Both run on today's engine. The field
+  (626 nodes) is within the 2,048-node solve; it waits on compute, not on a feature.
+- **Not registered, for §6 (c), the tables:**
+  - **Table 1's printed "neither" value (3D):** FR-17 alone, since 15,626 nodes exceed 2,048, and
+    compute beyond the field's.
+  - **Every depolarized-tumor column** (Table 1's depol and both, Table 2, Table 3's depol and
+    neighbor-depol) needs FR-15's F2 on junctions: the miRNA's valence −1 drift with its charge in
+    the closure.
+    - On main: S1 (charged species in `local_species_reactions@1`) and P2
+      (`passive_constant_field_permeation@1`, on patches only).
+    - Junction hosting waits on the @3 owner's two answers.
+    - BITSEY gives the miRNA drift but no charge weight. Cells would count the charge, so the
+      comparison would differ there by design.
+  - **The same columns need FR-16's F3 and F4**, a Chen-Izu two-state gate and per-species closed
+    floors (miRNA 0, ions 0.06).
+    - FR-30's `junction_series_gates@1` is on main, with a Boltzmann gate in |V| and per-route
+      residuals that a tracer may set to 0.
+    - It is development-only: no registered or judged result may use it until a voltage series
+      qualifies it.
+    - A single |V| Boltzmann is not Chen-Izu's two-exponential form, which is smooth through
+      dV = 0.
+  - **Underexpression** (Table 1's underexp and both, Table 2) needs FR-16's F5 minimum docking.
+    `species_regulated_availability@1` combines a junction's two sides by product only.
+  - **Table 3** needs F5's mean docking, (1 + P)/2 at the border, and availability above the base
+    conductance.
+    - Its hypol column needs F5 alone. Every cell shares one voltage, so the drift vanishes as in
+      "neither", and BITSEY's always-on Cx45 gate (`metas_algos` sets `do_gate=True`) sits at its
+      dV = 0 value: a constant factor on every junction.
+    - Its neighbor-depol column also needs F8, a mechanism the preprint does not give.

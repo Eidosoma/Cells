@@ -1,4 +1,4 @@
-"""resolved_pump_tissue@3: the heredity cell's pre-screen states and the CPU/L4 agreement (a
+"""cells.model.resolved_pump_tissue@3: the heredity cell's pre-screen states and the CPU/L4 agreement (a
 shard of the former test_surface_pump_v3.py).
 """
 

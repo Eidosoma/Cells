@@ -14,7 +14,7 @@ forward term:
   at pH 7, one scalar proton released), plus ln([S_ox][NADH] h_N / ([S_red][NAD])). The forward
   term carries no standard free energy, so the law has no cited constant and emits no seam-E
   entry.
-- S_red and S_ox are its fuel, held together (maintained_held_rows@1 only): read at every stage,
+- S_red and S_ox are its fuel, held together (cells.fuel_kind.maintained_held_rows@1 only): read at every stage,
   never moved. Their upkeep is the kind's held-row work, -J (mu_S_ox - mu_S_red). It equals the
   supply's heat, -J Delta G, plus the work delivered to the NAD pool, J (mu_NADH + mu_H - mu_NAD).
 
@@ -35,10 +35,10 @@ from cells.laws.cycles.forms import (
     Scaled,
 )
 from cells.laws.cycles.mitochondria_source import citation
-from cells.modules import CycleLaw
+from cells.modules import CycleLaw, qualified
 
-LAW_ID = "held_reductant_supply@1"
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+LAW_ID = "cells.cycle.held_reductant_supply@1"
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 PI_TOTAL = Reference("Pi", "N", "total")  # The total matrix phosphate, read and never moved.
 CYCLE = CycleForm(
     kinetics="monomial",
@@ -71,11 +71,15 @@ CYCLE = CycleForm(
 )
 LAW = CycleLaw(
     DECLARED_ID,
-    fuel_kinds=("maintained_held_rows@1",),  # A world that moves the pair is refused.
-    reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    fuel_kinds=(
+        "cells.fuel_kind.maintained_held_rows@1",
+    ),  # A world that moves the pair is refused.
+    reads=(
+        "cells.binding.rapid_binding@1",
+    ),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Frame B: every move in base forms, every proton counted (D236).
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="cited",
     source=citation(
         "the appendix's §6 (Eq. 1; Table 1's X_DH, r, k_Pi1 and k_Pi2)",

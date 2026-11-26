@@ -1,4 +1,4 @@
-"""resolved_pump_composite@1: resolved_pump_tissue@3's own step plus declared operators.
+"""cells.model.resolved_pump_composite@1: cells.model.resolved_pump_tissue@3's own step plus declared operators.
 
 Design: docs/CELL_DIVISION_DESIGN.md §3 (D142, D143). Definition:
 definitions/pump_composite_spec.py. The inner model's names live only in the entity
@@ -31,9 +31,9 @@ RK4 inner steps (reference runs; a contract addition, §3.4 covers the split
 form): when an operator's split part is declared "coupled" (water) or an
 in-step process is present, RK4 integrates the coupled right-hand side (the inner
 readouts at the view, with the process, plus the operators' rates) unsplit, as
-resolved_pump_water@1 does; such compositions refuse event maps, split parts kept
+cells.model.resolved_pump_water@1 does; such compositions refuse event maps, split parts kept
 "split" and integer state. Otherwise the events and exact half-steps stay around
-the inner RK4 step, as resolved_pump_replacement@1 does.
+the inner RK4 step, as cells.model.resolved_pump_replacement@1 does.
 
 Checks: host and device use the inner model's own row checks
 (surface_pump.checked_rows, surface_pump_checks.row_checks, surface_pump.
@@ -46,7 +46,7 @@ model's exactly.
 
 from collections.abc import Mapping
 from dataclasses import make_dataclass, replace
-from functools import cache
+from functools import cache, partial
 from typing import NamedTuple
 
 import jax
@@ -62,12 +62,14 @@ from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.numerics.surface_field import SPARSE_SOLVER_ID
 from cells.operators.contract import (
     COMMUTING,
     HEAT_SUFFIX,
     READ_STAGES,
     WORK_SUFFIX,
     factor_reads,
+    label_event,
     monotone_heat,
     part_stages,
     reads_of,
@@ -204,7 +206,7 @@ def self_moved_targets(spec_model):
 
 # The laws whose events change which occupant a slot holds (D150's occupant tables switch at
 # their times): observe_history's event rows report the departing occupant.
-OCCUPANT_EVENTS = ("scheduled_cell_replacement@1",)
+OCCUPANT_EVENTS = ("cells.operator.scheduled_cell_replacement@1",)
 
 
 def occupant_event_times(spec):
@@ -215,6 +217,33 @@ def occupant_event_times(spec):
         if op.LAW_ID in OCCUPANT_EVENTS
         for event in schedule
     }
+
+
+# FR-51's follow-up (D327's operator gap). These operators repopulate, move or open channel slots:
+# they rewrite a slot's law, permeability, patch or activity, never the block's per-slot fields
+# (channel_block_*). So a slot they rewrite would keep its old block, and a blocked population
+# beside one is refused by name until a world qualifies the pair.
+SLOT_WRITERS = (
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+    "cells.operator.isopotential_partition@1",
+    "cells.operator.scheduled_membrane_insertion@1",
+    "cells.operator.scheduled_membrane_insertion@2",
+)
+
+
+def block_slot_errors(pairs, spec):
+    """FR-51: one message per slot-rewriting operator (SLOT_WRITERS) beside a blocked population
+    (cells.channel_block.open_channel_block_weighted_modes@1); [] without a block."""
+    blocked = [c.id for c in getattr(spec.model, "channels", ()) if getattr(c, "block", None)]
+    if not blocked:
+        return []
+    return [
+        f"{op.LAW_ID} rewrites channel slots but not the block's per-slot fields, so it is refused "
+        f"beside the blocked population(s) {blocked} until a world qualifies the pair (FR-51)"
+        for op, _ in pairs
+        if op.LAW_ID in SLOT_WRITERS
+    ]
 
 
 def check_definition(spec):
@@ -237,6 +266,7 @@ class FamilyModel:
         "STATE_TYPE",
         "LAYOUT_TYPE",
         "FLOOR_LAYOUT_TYPE",
+        "SPARSE_LAYOUT_TYPE",
         "checked_step",
         "readouts",
         "field_values",
@@ -487,7 +517,7 @@ def slot_mask_errors(entries, spec, p):
 # "outside")), so it is taken to move its species at every node of that kind. The species
 # registry's moved_in_step is not read here: it joins the inner movers by node kind, and an inner
 # route at another node would be a false refusal.
-PASSIVE_ROUTES_ID = "cells.passive_routes@1"
+PASSIVE_ROUTES_ID = "cells.kind.passive_routes@1"
 
 
 def operator_writers(entries, spec):
@@ -566,7 +596,7 @@ def exact_row_errors(entries, spec, p):
 
 def exact_face_row_errors(entries, spec, structure):
     """D280, the operators' half for @3's faces: where the inner structure picks
-    exact_free_energy_heat@1 for faces (surface_pump_v3.exact_faces), no operator's in-step
+    cells.heat.exact_free_energy_heat@1 for faces (surface_pump_v3.exact_faces), no operator's in-step
     process writes a row a face carries (a species with a positive diffusivity, at either end
     node), as exact_row_errors holds for exact passive routes: the face's exact share would
     average over a change it did not make."""
@@ -825,7 +855,11 @@ def structure_errors(inner, operators):
     # presence. The core's presence gate, which makes an entity on a closed host absent, acts only
     # where the composition declares a closer (CLOSES: @3's padding_fill), so beside a slot changer
     # with no closer declared (an activity-mask provider alone) a kind with entities stays refused.
+    # A slot changer is refused beside a routed slot that closes a loop on its own gate, whatever
+    # its kinds declare: the loops' layout (surface_pump_v3.LOOP_LAYOUT_FIELDS) is the core's, on no
+    # kind, so the lifecycle acts on none of it and it would go stale.
     kinds = tuple(getattr(inner, "KINDS", ()))
+    loops = getattr(getattr(inner, "structure", None), "loops", ())
     declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
     masks = set(getattr(inner, "MASK_FIELDS", ()))
     blocked = _kinds_lifecycle(inner, kinds)
@@ -839,6 +873,19 @@ def structure_errors(inner, operators):
             )
         if kinds and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
             errors.extend(_kinds_beside_closer(op, kinds, blocked, bound=bound, gated=gated))
+            errors.extend(
+                f"{op.LAW_ID} opens, closes or retires slots, and the kind {kind_id} keeps one_way "
+                "records, which version 1 refuses beside an operator that retires or closes slots "
+                "until its lifecycle covers them (FR-50; fails closed)"
+                for kind_id, kind in bound.items()
+                if kind.one_way_records
+            )
+            if loops:
+                errors.append(
+                    f"{op.LAW_ID} opens, closes or retires slots, and a routed slot closes a loop "
+                    "on its own gate: no lifecycle acts on the loops' layout, so it is refused "
+                    "beside one (fails closed)"
+                )
         required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
         for kind_id in sorted(required - declared):
             errors.append(
@@ -944,6 +991,14 @@ def lifecycle_errors(inner, operators):
     if not any(op.RETIRES for op in operators):
         return []
     errors = []
+    if any(op.DIVIDES_OWNED for op in operators):  # FR-43 part 3 (D315): owned state divides.
+        for op in operators:
+            if op.RETIRES and not op.TAKES_LIFECYCLE:
+                errors.append(
+                    f"{op.LAW_ID} retires slots beside operators whose owned state divides "
+                    "(DIVIDES_OWNED), but its event map takes no lifecycle=, so their state "
+                    "would not divide (fails closed)"
+                )
     for kind in getattr(inner, "BOUND_KINDS", ()):
         reason = pump3.kind_lifecycle_errors(kind)
         if reason and reason[0] in ("roles", "axes"):  # Refused by the structure check anyway.
@@ -1294,10 +1349,14 @@ class Composition:
             op: k for k, op in enumerate(o for o in self.label_reporters_in_order if o.LABEL_POOLS)
         }
         # D296: the events that report what they replace, the slots or (a pool reporter's) the
-        # pools they empty (erratum E; static: by their signature).
+        # pools they empty (erratum E), or (FR-44) the liquid they exchange (static: by their
+        # signature).
         self.label_events = frozenset(
             op for op in self.events if self.label_owner is not None and takes_labels(op.event)
         )
+        # FR-44: each one's report kind, by which the owner reads its report (static; the
+        # contract refuses a labels-taking event with none, label_event_error).
+        self.label_event_kinds = {op: label_event(op) for op in self.label_events}
         # FR-42's stage 2: the inner step reports its one-way transfers where it takes labels=
         # (static: by the inner implementation's signature; none without an owner). Declared
         # kinds report theirs through their hook (D303 item 6), and the owner's definition check
@@ -1331,6 +1390,10 @@ class Composition:
         # checks read the adjusted row. Without either, nothing here changes a program.
         self.closers = tuple(op for op in operators if op.CLOSES)
         self.retiring = tuple(op for op in operators if op.RETIRES)
+        # FR-43 part 3 (D315): operators whose owned state divides at a retiring operator's
+        # division (contract.DIVIDES_OWNED), in declared order. None in a composition admitted
+        # before, so the lifecycle's condition and callable stay as they were (static).
+        self.owned_dividers = tuple(op for op in operators if op.DIVIDES_OWNED)
         self.owns_view_energy = bool(self.closers)
         self.COMPOSITE_LAYOUT_FIELDS = (
             ("view_energy_reference_pJ", "view_plate_reference_C") if self.owns_view_energy else ()
@@ -1373,6 +1436,10 @@ class Composition:
         self.FLOOR_LAYOUT_TYPE = NamedTuple(
             "CompositeFloorLayout",
             [(k, object) for k in (*inner.FLOOR_LAYOUT_TYPE._fields, *extra)],
+        )
+        self.SPARSE_LAYOUT_TYPE = NamedTuple(  # The sparse field (surface_field.SPARSE_SOLVER_ID).
+            "CompositeSparseLayout",
+            [(k, object) for k in (*inner.SPARSE_LAYOUT_TYPE._fields, *extra)],
         )
         self.CONTROL_FIELDS = (
             *inner.CONTROL_FIELDS,
@@ -1461,6 +1528,15 @@ class Composition:
             op.working_size(spec) for op in self.operators
         )
 
+    def fixed_working_size(self, spec):
+        """Values held once per resident copy, never per saved row (execution/resources.fixed_bytes;
+        FR-43, D315): the operators' bound layouts, where an operator declares one."""
+        return sum(
+            op.fixed_working_size(spec)
+            for op in self.operators
+            if hasattr(op, "fixed_working_size")
+        )
+
     def initial_values(self, spec):
         state, p = self.inner.initial_values(projection(spec))
         values, layout = state._asdict(), p._asdict()
@@ -1473,7 +1549,11 @@ class Composition:
         for field, name in (*self.KIND_RECORDS.items(), *self.KIND_MOVED.items()):
             values[name] = np.zeros_like(np.asarray(values[field], dtype=float))
         kind = (
-            self.FLOOR_LAYOUT_TYPE if type(p) is self.inner.FLOOR_LAYOUT_TYPE else self.LAYOUT_TYPE
+            self.FLOOR_LAYOUT_TYPE
+            if type(p) is self.inner.FLOOR_LAYOUT_TYPE
+            else self.SPARSE_LAYOUT_TYPE
+            if type(p) is self.inner.SPARSE_LAYOUT_TYPE
+            else self.LAYOUT_TYPE
         )
         if self.owns_view_energy:
             values = self._closed_initial_state(self.STATE_TYPE(**values), kind, layout)
@@ -1631,18 +1711,24 @@ class Composition:
                 keywords = self._inner_keyword(op)  # Static: an operator that uses the inner.
                 if self._passes_view(op):  # Static: S5's partition; door S's current readers.
                     keywords["view"] = self._view_for(op, p, xp=xp)
-                lifecycle = op.RETIRES and bool(self.kind_lifecycle)  # Static: Q6 (b).
+                lifecycle = op.RETIRES and (  # Static: Q6 (b), and FR-43's owned dividers.
+                    bool(self.kind_lifecycle) or bool(self.owned_dividers)
+                )
                 if lifecycle:
-                    keywords["lifecycle"] = self._lifecycle
+                    owned = self.owned_dividers
+                    keywords["lifecycle"] = (
+                        partial(self._owned_lifecycle, p) if owned else self._lifecycle
+                    )
                 before = current
-                if op in self.label_events:  # Static (D296; erratum E): what it replaced.
+                if op in self.label_events:  # Static (D296; erratum E; FR-44): what it moved.
                     rows = self.label_owner.rows(p)
                     current, ok, report = op.event(
                         current, control, p, xp=xp, labels=rows, **keywords
-                    )  # A pool reporter's event reports its emptied pools, any other its slots.
+                    )  # Its report by its kind: replaced slots, emptied pools or an exchange.
                     pool = self.label_pools.get(op)
+                    kind = self.label_event_kinds[op]  # FR-44: read by its kind.
                     current = self.label_owner.advance_event(
-                        before, current, report, control, p, xp=xp, pool=pool
+                        before, current, report, control, p, kind=kind, xp=xp, pool=pool
                     )
                 else:
                     current, ok = op.event(current, control, p, xp=xp, **keywords)
@@ -1896,23 +1982,24 @@ class Composition:
             self.view(p, state, xp=xp),
         )
 
-    def clamped_channel_flux(self, state, control, p, voltages_V, *, xp=np):
+    def clamped_channel_flux(self, state, control, p, voltages_V, *, xp=np, block=False):
         """FR-34 in a composite (D265 finding 1): @3's clamped_channel_flux, each channel
         population's outward flux [species, channel] (fmol/s) and current [channel] (A,
         outward-positive) at the patch voltages given [membrane] (V; a scalar applies to every
         patch), at the composite's clamp_inputs; @3 then applies its structure's stage read and
         routing door. Given the stored control and layout instead, @3's helper loses every
-        operator factor: a population held at 0.5 by species_regulated_availability@1 read
-        11.10328 pA at -50 mV, where the composite runs at 5.55164 pA. Pure: it records nothing."""
+        operator factor: a population held at 0.5 by cells.operator.species_regulated_availability@1 read
+        11.10328 pA at -50 mV, where the composite runs at 5.55164 pA. Pure: it records nothing.
+        block (FR-51): also the blocked populations' terms at the same inputs, as @3 gives them."""
         inner_state, inner_control, view = self.clamp_inputs(state, control, p, xp=xp)
         clamp = (
             getattr(self.inner, "clamped_channel_flux", None) or pump3.ionic.clamped_channel_flux
         )
-        return clamp(inner_state, inner_control, view, voltages_V, xp=xp)
+        return clamp(inner_state, inner_control, view, voltages_V, xp=xp, block=block)
 
     def clamped_kind(self, function, state, control, p, voltages_V, *, xp=np):
         """FR-34's kinds in a composite (D265 finding 1's check: the same gap): a kind's clamped
-        evaluation, cells.passive_routes@1's clamped_flux or cells.transporter@1's clamped_rates,
+        evaluation, cells.kind.passive_routes@1's clamped_flux or cells.kind.transporter@1's clamped_rates,
         at the composite's clamp_inputs after @3's stage read and routing door of its structure,
         the path @3's readouts takes to the kinds' rates. The kinds' own controls take no operator
         factor today (CONTROL_FACTORS name junction and channel only), but their read, the door
@@ -2009,6 +2096,9 @@ class Composition:
         )
         if scoped:
             raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
+        blocked = block_slot_errors(pairs, spec)  # FR-51's follow-up.
+        if blocked:
+            raise ConfigError("Invalid operator composition: " + "; ".join(blocked))
         # The operators' in-step writers beside declared kinds (held_row_errors,
         # exact_row_errors): only with kinds and an in-step process, so no world without them
         # makes either call.
@@ -2024,6 +2114,8 @@ class Composition:
                 raise ConfigError(
                     f"{op.LAW_ID} event times must lie inside the horizon and {ON_THE_GRID}"
                 )
+        if self.field_inputs and spec.execution.field_solver == SPARSE_SOLVER_ID:
+            self.inner.refuse_sparse_field_inputs()  # Before any binding refreshes the view.
         small = compact(spec)
         state, p = self.initial_values(small)
         exact = exact_row_errors(pairs, spec, p) if writing else []
@@ -2101,6 +2193,18 @@ class Composition:
             m: getattr(state, m) + (retired[k] - values[k]) for k, m in self.KIND_MOVED.items()
         }
         return state._replace(**retired, **kept, **moved), valid
+
+    def _owned_lifecycle(self, p, state, maps, masks, *, xp):
+        """(state, valid): the kinds' lifecycle where their table is non-empty (_lifecycle), then
+        each owned divider's divide_owned in declared order (FR-43 part 3, D315; static: passed in
+        place of _lifecycle only where an owned divider is composed)."""
+        valid = None
+        if self.kind_lifecycle:
+            state, valid = self._lifecycle(state, maps, masks, xp=xp)
+        for op in self.owned_dividers:
+            state, ok = op.divide_owned(state, maps, masks, p, xp=xp)
+            valid = _and(valid, ok)
+        return state, xp.asarray(True) if valid is None else valid
 
     def _history_kept(self, before, after, *, xp):
         """Whether every kind history field plus its record is unchanged across a retiring event,

@@ -613,7 +613,7 @@ def band_terms(temperature_K):
             for law, (nu, _) in TURNOVERS.items()}  # fmt: skip
 
 
-# The binding owner's convention file (beard2005@1, 20 November 2026), its values at 310.15 K.
+# The binding owner's convention file (cells.potential_set.beard2005@1, 20 November 2026), its values at 310.15 K.
 CONVENTION_310 = dict(cytc_red="39.955405547706", QH2="60.289353662720", NADH="103.308282037566",
                       S_red="87.190186386608", ATP="-2.592286211096", MgATP="-13.229742938712",
                       MgADP="-7.966185778017", H2PO4="-15.542437799191")  # fmt: skip

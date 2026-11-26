@@ -17,7 +17,7 @@ from tests.unit.test_chloride_leak_law import chloride_world
 from validation.tissue.surface_pump_v3_fixtures import channel
 
 
-def specimen(protocol):
+def specimen(protocol, *, external_pH=None):
     raw = chloride_world(patch=0.0)
     model = raw["model"]
     for reservoirs, field in (("cells", "inside_K_mM"), ("extracellular", "outside_K_mM")):
@@ -26,9 +26,22 @@ def specimen(protocol):
         potassium = protocol[field] * pool["volume_pL"]
         amounts["Na"] += amounts["K"] - potassium  # Preserve the charge of the fixture.
         amounts["K"] = potassium
+    if external_pH is not None:
+        # Carry free H as its own positive species. Exchange equal monovalent charge
+        # with Na so that changing bath pH preserves each node's declared charge.
+        model["species"].append({"id": "H", "valence": 1})
+        raw["execution"]["material_balance_atol_fmol"]["H"] = 1e-12
+        for group, pH in (("cells", protocol.get("inside_pH", 7.3)),
+                          ("extracellular", external_pH)):
+            for pool in model[group]:
+                amount = pool["volume_pL"] * 10 ** (3 - pH)
+                pool["initial_amount_fmol"]["H"] = amount
+                pool["initial_amount_fmol"]["Na"] -= amount
+        for patch in model["membranes"]:
+            patch["permeability_m_per_s"]["H"] = 0.0
     model["membranes"][0]["pump"] = None
     raw["experiment"]["pump_controls"] = []
-    model["channels"] = [channel("kv15", 0, "kv1p5_mh@1", "K", 4e-9, 1.0, [0.5, 1.0])]
+    model["channels"] = [channel("kv15", 0, "cells.channel.kv1p5_mh@1", "K", 4e-9, 1.0, [0.5, 1.0])]
     raw["experiment"]["channel_controls"] = [
         dict(channel_id="kv15", schedule=[dict(time=0.0, availability=1.0)])
     ]
@@ -46,7 +59,7 @@ def run():
     data = json.loads((Path(__file__).parent / "data/trapani2003_kv15_ph.json").read_text())
     data = data["trapani2003_kv15_ph"]
     protocol, panel_f = data["protocol"], data["panel_F"]
-    law = laws.active().lookup("kv1p5_mh@1")
+    law = laws.active().lookup("cells.channel.kv1p5_mh@1")
     host, state, control, layout = specimen(protocol)
     hold, test, tail = [protocol[k] * 1e-3 for k in ("hold_mV", "test_mV", "tail_mV")]
     lower, upper = law.voltage_domain_V
@@ -108,7 +121,7 @@ def run():
     panel_b = data["panel_B"]
     e = panel_f["reading_precision"]
     return {
-        "model": "resolved_pump_tissue@3", "law": law.law_id,
+        "model": "cells.model.resolved_pump_tissue@3", "law": law.law_id,
         "panel_F_equal_maximum_prediction": prediction,
         "graph_reading_range": [(f["acid"] - e) / (f["control"] + e),
                                 (f["acid"] + e) / (f["control"] - e)],

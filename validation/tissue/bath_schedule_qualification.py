@@ -84,6 +84,8 @@ STAND_IN_PARTS = {}
 REFERENCES_INPUTS = ROOT / "validation" / "fr10" / "references" / "reference_inputs.json"
 REGISTERED_INPUTS = ROOT / "validation" / "bath_schedule" / "reference_inputs.json"
 # The checks a refusal may name (refusal_classes' `check`), by a phrase of their messages.
+# "the species cap" names no class since R9_the_species_cap's retirement (the lead's ruling,
+# 23 November 2026); its phrase still names the cap's check, now at 1,024 (FR-43, D315).
 CHECKS = (
     ("the step rule (solver and dt)", "dose steps are measured only under"),
     ("the step rule (face)", "steps are measured only beside faces"),

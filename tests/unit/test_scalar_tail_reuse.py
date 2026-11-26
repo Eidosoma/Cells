@@ -12,7 +12,7 @@ from cells.definitions.specs import parse_spec
 from cells.execution import runner
 from cells.execution.runner import run
 from cells.execution.windows import WindowPolicy, iter_windows, plan_windows
-from tests.batch_fixtures import MODELS, short_spec
+from tests.batch_fixtures import ROUTES, short_spec
 from tests.unit.test_windows import assert_windows
 from validation.betse.emulator.rehost import REHOST_REASON
 
@@ -27,9 +27,9 @@ class Lowerings:
         return self.original.lower(*args)
 
 
-@pytest.mark.parametrize("name", MODELS)
-def test_short_tail_reuses_one_executable_with_exact_complete_history(name, monkeypatch):
-    spec = short_spec(name, 0.073)
+@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
+def test_short_tail_reuses_one_executable_with_exact_complete_history(short_world, monkeypatch):
+    spec = short_world(0.55)  # Eleven steps.
     full = run(spec)
     count = len(full.times) - 1
     width = 2 if count % 2 else count - 1
@@ -130,7 +130,7 @@ def test_failed_real_step_stops_following_model_evaluations(mode):
 
 
 def test_single_step_restart_uses_only_its_remaining_width_and_terminal_never_compiles(monkeypatch):
-    spec = short_spec("single_cell_pulse", 0.073)
+    spec = short_spec("reaction_transport_pair", 0.55)
     full = run(spec)
     point = full.checkpoint_at(float(full.times[-2]))
     lowerings = Lowerings(runner._compiled_window_rollout)

@@ -9,12 +9,13 @@ builder's parameter (the cytosol's pool) makes them differ.
 
 import json
 
+from validation import id_table
 from validation.tissue import compartment_acceptance_fixtures as af
 from validation.tissue import compartment_acceptance_reference_inputs as ri
 
 
 def test_the_registered_inputs_are_the_builders_worlds(monkeypatch):
-    registered = json.loads(ri.REGISTERED.read_text())
+    registered = id_table.load(ri.REGISTERED)
     assert json.loads(json.dumps(ri.inputs())) == registered
     monkeypatch.setattr(af, "POOL_mM", 2e-3)
     assert json.loads(json.dumps(ri.inputs())) != registered

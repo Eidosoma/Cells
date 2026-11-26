@@ -1,4 +1,4 @@
-"""species_regulated_availability@1 composed with scheduled_cell_replacement@1 (a development run).
+"""cells.operator.species_regulated_availability@1 composed with cells.operator.scheduled_cell_replacement@1 (a development run).
 
 docs/INVENTORY_COUPLING_DESIGN.md §1.7 and §1.12 ("composes on slots it does not replace"), making
 no acceptance claim. The seven-cell heredity sheet, 20 steps at 1 ms: replacement@1 replaces cell_1

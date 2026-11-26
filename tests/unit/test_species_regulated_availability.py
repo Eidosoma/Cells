@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of species_regulated_availability@1: the contract fit and every refusal.
+"""Tier-1 smoke test of cells.operator.species_regulated_availability@1: the contract fit and every refusal.
 
 docs/INVENTORY_COUPLING_DESIGN.md §1 (accepted 14 November 2026, rulings in §6.3). The registration
 and round trip; every definition refusal of §1.11 with its message; and the operator's parts on the
@@ -23,7 +23,7 @@ from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, species_common
 from cells.operators import species_regulated_availability as sra
 from cells.operators.contract import Read, check_declarations
 from cells.registry.inventory_species import add_inventory_species
@@ -207,7 +207,11 @@ REFUSALS = {
     ),
     "unlisted source": (_edit(lambda r: block(r)["species"].pop(0)), "not a listed species"),
     "other operator's control": (
-        _edit(lambda r: _coupling(r)["target"].update(operator="scheduled_species_turnover@1")),
+        _edit(
+            lambda r: _coupling(r)["target"].update(
+                operator="cells.operator.scheduled_species_turnover@1"
+            )
+        ),
         "inner model's controls only",
     ),
     "leak control": (
@@ -510,7 +514,11 @@ def _from_state(raw):
 REFUSALS.update(
     {
         "v2 unroutable target": (
-            _edit_v2(lambda r: _target_v2(r).update(operator="scheduled_species_exchange@1")),
+            _edit_v2(
+                lambda r: _target_v2(r).update(
+                    operator="cells.operator.scheduled_species_exchange@1"
+                )
+            ),
             "routable targets",
         ),
         "v2 operator target's evaluation": (
@@ -559,10 +567,10 @@ REFUSALS.update(
 
 
 # ------------------------------------------------------------------ version 2's site source
-# FR-24 (D244; the contract's R3): @2 reads a site population of site_occupancy@1 through its
+# FR-24 (D244; the contract's R3): @2 reads a site population of cells.operator.site_occupancy@1 through its
 # readable quantities. The world: D150's face-free cell with an outward population r0 on contact_0
 # (cell_0, facing ecs_0) at theta0, and @2 routing its quantity to the turnover's production of X0
-# in cell_0, declared after site_occupancy@1 and before the turnover. Development, not judged.
+# in cell_0, declared after cells.operator.site_occupancy@1 and before the turnover. Development, not judged.
 
 SITE_FRACTION = ("occupied_fraction", "site_fraction")
 
@@ -746,61 +754,81 @@ def test_version_2_routes_an_element_in_a_replaced_cell_from_a_species_source():
     """FR-26's part C′ (D244): @2 admits an operator target's element in a cell replacement@1
     replaces when its source is a species of that cell, since replacement swaps the cell's species
     and the factor then reads the newcomer's. (A site source there is admitted likewise, with
-    site_occupant_replacement@1 resetting the population: the acceptance world.) Parse only."""
+    cells.operator.site_occupant_replacement@1 resetting the population: the acceptance world.) Parse only."""
     spec = parse_spec(routed_replaced())
     declaration = next(d for o, d, _ in cs.entries(spec) if o.LAW_ID == LAW_V2)
     assert declaration.couplings[0].source_kind == "species"
 
 
 @pytest.mark.parametrize("case", sorted(REFUSALS))
-def test_refusals(case):
+def test_refusals(case, monkeypatch):
     make, message = REFUSALS[case]
+    if case == "species cap":  # Its call to the cap (1,024 since FR-43 / D315), set to 16 here.
+        monkeypatch.setattr(species_common, "MAX_SPECIES", 16)
     with pytest.raises(ConfigError, match=None) as error:
         parse_spec(make())
     assert message in str(error.value), str(error.value)
 
 
 REFUSED = {  # Operator lists with each provider or closer (requirements first) and the reason.
-    "water": (("ideal_osmosis_linear_compliance_water@1",), "reads volume as declared"),
+    "water": (
+        ("cells.operator.ideal_osmosis_linear_compliance_water@1",),
+        "reads volume as declared",
+    ),
     "replacement@2": (
-        ("ideal_osmosis_linear_compliance_water@1", "scheduled_cell_replacement@2"),
+        (
+            "cells.operator.ideal_osmosis_linear_compliance_water@1",
+            "cells.operator.scheduled_cell_replacement@2",
+        ),
         "reads volume as declared",
     ),
     "lumen@1": (
-        ("membrane_entity_state@1", "scheduled_membrane_insertion@1", "restricted_cleft_lumen@1"),
+        (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.scheduled_membrane_insertion@1",
+            "cells.operator.restricted_cleft_lumen@1",
+        ),
         "reads extracellular_volume as declared",
     ),
     "lumen@2": (
-        ("membrane_entity_state@1", "scheduled_membrane_insertion@2", "restricted_cleft_lumen@2"),
+        (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.scheduled_membrane_insertion@2",
+            "cells.operator.restricted_cleft_lumen@2",
+        ),
         "reads extracellular_volume as declared",
     ),
     "insertion@1": (
-        ("membrane_entity_state@1", "scheduled_membrane_insertion@1"),
+        ("cells.operator.membrane_entity_state@1", "cells.operator.scheduled_membrane_insertion@1"),
         "reads outside_active as declared",
     ),
     "insertion@2": (
-        ("membrane_entity_state@1", "scheduled_membrane_insertion@2"),
-        "reads outside_active as declared, but scheduled_membrane_insertion@2 closes it",
+        ("cells.operator.membrane_entity_state@1", "cells.operator.scheduled_membrane_insertion@2"),
+        "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@2 closes it",
     ),
     "partition": (
-        ("membrane_entity_state@1", "isopotential_partition@1"),
-        "reads active as declared, but isopotential_partition@1 closes it",
+        ("cells.operator.membrane_entity_state@1", "cells.operator.isopotential_partition@1"),
+        "reads active as declared, but cells.operator.isopotential_partition@1 closes it",
     ),
     "bridge": (
-        ("membrane_entity_state@1", "isopotential_partition@1", "cytoplasmic_bridge_closure@1"),
-        "reads active as declared, but isopotential_partition@1 closes it",
+        (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.isopotential_partition@1",
+            "cells.operator.cytoplasmic_bridge_closure@1",
+        ),
+        "reads active as declared, but cells.operator.isopotential_partition@1 closes it",
     ),
 }
 ADMITTED = (  # The note's §1.12 "composes" rows (replacement@1 on slots it does not replace).
     (),
-    ("electrode_current_injection@1",),
-    ("membrane_entity_state@1",),
-    ("scheduled_cell_replacement@1",),
-    ("scheduled_species_turnover@1",),
-    ("scheduled_species_exchange@1",),
-    ("scheduled_species_turnover@1", "scheduled_species_exchange@1"),
-    ("local_species_reactions@1",),
-    ("scheduled_species_turnover@1", "local_species_reactions@1"),
+    ("cells.operator.electrode_current_injection@1",),
+    ("cells.operator.membrane_entity_state@1",),
+    ("cells.operator.scheduled_cell_replacement@1",),
+    ("cells.operator.scheduled_species_turnover@1",),
+    ("cells.operator.scheduled_species_exchange@1",),
+    ("cells.operator.scheduled_species_turnover@1", "cells.operator.scheduled_species_exchange@1"),
+    ("cells.operator.local_species_reactions@1",),
+    ("cells.operator.scheduled_species_turnover@1", "cells.operator.local_species_reactions@1"),
 )
 
 
@@ -1069,14 +1097,14 @@ def _lumen(version):
 
     raw = ifx.with_operators(ifx.cleft_cell(), ifx.furrow_insertion(onset=0.002))
     lumen = dict(
-        law="restricted_cleft_lumen@1",
+        law="cells.operator.restricted_cleft_lumen@1",
         lumens=[dict(node_id="cleft", source_id="bath_0", gap_width_m=2e-6)],
     )
     raw["model"]["operators"].append(lumen)
     if version == 2:
         later = {
-            "scheduled_membrane_insertion@1": "scheduled_membrane_insertion@2",
-            "restricted_cleft_lumen@1": "restricted_cleft_lumen@2",
+            "cells.operator.scheduled_membrane_insertion@1": "cells.operator.scheduled_membrane_insertion@2",
+            "cells.operator.restricted_cleft_lumen@1": "cells.operator.restricted_cleft_lumen@2",
         }
         for entry in raw["model"]["operators"]:
             entry["law"] = later.get(entry["law"], entry["law"])
@@ -1093,17 +1121,19 @@ def _replacement_over_water():
     return _with_idle_operator(crfx.over_water(raw, [template], ((t, "cell_0", "h", "n1"),)))
 
 
-WATER_REASON = "reads volume as declared, but ideal_osmosis_linear_compliance_water@1 provides it"
+WATER_REASON = "reads volume as declared, but cells.operator.ideal_osmosis_linear_compliance_water@1 provides it"
 VOLUME_PROVIDERS = {  # A7: a conserved amount with a changing volume, refused with its reason.
     "water": (_watered, WATER_REASON),
     "replacement@2 over water": (_replacement_over_water, WATER_REASON),
     "lumen@1": (
         lambda: _lumen(1),
-        "reads extracellular_volume as declared, but restricted_cleft_lumen@1 provides it",
+        "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@1 "
+        "provides it",
     ),
     "lumen@2": (
         lambda: _lumen(2),
-        "reads extracellular_volume as declared, but restricted_cleft_lumen@2 provides it",
+        "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@2 "
+        "provides it",
     ),
 }
 
@@ -1150,21 +1180,28 @@ def test_a9_a_batch_refuses_worlds_of_another_structure():
 def test_the_field_map_records_each_factored_controls_chain_and_only_then():
     """Ruling 6, with the lead's rule of 14 November 2026: the `factors` entry appears only with a
     factor operator, so every other composition's field map (and its manifests) is unchanged."""
-    inner = "resolved_pump_tissue@3"
-    replacement, bridge = "scheduled_cell_replacement@1", "cytoplasmic_bridge_closure@1"
+    inner = "cells.model.resolved_pump_tissue@3"
+    replacement, bridge = (
+        "cells.operator.scheduled_cell_replacement@1",
+        "cells.operator.cytoplasmic_bridge_closure@1",
+    )
     keys = {"state", "layout", "control", "views", "observations"}
     for laws in (
         (),
-        ("ideal_osmosis_linear_compliance_water@1",),
-        ("electrode_current_injection@1",),
-        ("scheduled_species_turnover@1", "local_species_reactions@1"),
+        ("cells.operator.ideal_osmosis_linear_compliance_water@1",),
+        ("cells.operator.electrode_current_injection@1",),
+        ("cells.operator.scheduled_species_turnover@1", "cells.operator.local_species_reactions@1"),
     ):
         assert set(pump_composite.implementation(inner, laws).FIELD_MAP) == keys, laws
     chains = {
         (replacement, LAW): {"junction": [replacement, LAW], "channel": [LAW]},
         (LAW, replacement): {"junction": [LAW, replacement], "channel": [LAW]},
         (replacement,): {"junction": [replacement]},
-        ("membrane_entity_state@1", "isopotential_partition@1", bridge): {"junction": [bridge]},
+        (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.isopotential_partition@1",
+            bridge,
+        ): {"junction": [bridge]},
     }
     for laws, chain in chains.items():
         field_map = pump_composite.implementation(inner, laws).FIELD_MAP
@@ -1298,7 +1335,7 @@ def self_routed():
 
 
 def _autoregulated_transcription(monkeypatch):
-    """The row templated_polymerisation@1 (FR-38's found defect, the lead's ruling of 22 November
+    """The row cells.operator.templated_polymerisation@1 (FR-38's found defect, the lead's ruling of 22 November
     2026): A1 to 10 s with its coupling's source moved from X to R, transcription's own product,
     which R's loss and completions move inside each of transcription's half-steps; R starts at the
     Hill activation's K, 1e-8 mM. Before the operator declared half_step_rows the composite never
@@ -1340,7 +1377,7 @@ def _autoregulated_transcription(monkeypatch):
 
 
 def _routed_release_fraction(monkeypatch):
-    """The row templated_polymerisation@1's durable fraction (FR-38's routed p, the sheet's §9.4,
+    """The row cells.operator.templated_polymerisation@1's durable fraction (FR-38's routed p, the sheet's §9.4,
     source 3): R1 to 10 s at k_I = 0, its release's p = 0.75 routed by a Hill activation on R, the
     durable fate row that the release itself fills inside each of transcription's half-steps; R
     starts at the activation's K, 1e-10 mM, and rises about threefold, so p's factor u, between b =
@@ -1412,9 +1449,9 @@ def _routed_release_fraction(monkeypatch):
 @pytest.mark.parametrize(
     "target",
     [
-        "scheduled_species_turnover@1",
-        "templated_polymerisation@1",
-        "templated_polymerisation@1-release_fraction",
+        "cells.operator.scheduled_species_turnover@1",
+        "cells.operator.templated_polymerisation@1",
+        "cells.operator.templated_polymerisation@1-release_fraction",
     ],
 )
 def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint(
@@ -1429,9 +1466,9 @@ def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint
     booking; a composition without such a route (routed) keeps its key. Planted: the midpoint off,
     order 1. The second row is _autoregulated_transcription's, the third
     _routed_release_fraction's."""
-    if target == "templated_polymerisation@1":
+    if target == "cells.operator.templated_polymerisation@1":
         return _autoregulated_transcription(monkeypatch)
-    if target == "templated_polymerisation@1-release_fraction":
+    if target == "cells.operator.templated_polymerisation@1-release_fraction":
         return _routed_release_fraction(monkeypatch)
     spec = parse_spec(routed())
     assert pump_composite.self_moved_targets(spec.model) == frozenset()
@@ -1638,7 +1675,7 @@ def _theta(state, p):
 def test_version_2_routes_a_site_populations_quantity_in_the_targets_half_steps():
     """FR-24 on @2 (development, not judged), in NumPy with no world compiled (about 2 s): the
     turnover's production of X0 in cell_0 routed from r0's occupied fraction (site_fraction, basal
-    0.1), read through site_occupancy@1's readable quantities (R3). The factor is
+    0.1), read through cells.operator.site_occupancy@1's readable quantities (R3). The factor is
     0.1 + 0.9 theta at the bound state and its record's start; the routed half-step is bitwise the
     half-step at the product rate; at another occupancy the factor and the half-step change;
     switched off the factor is exactly 1; the site half-step keeps its bits whether the coupling is
@@ -1822,7 +1859,7 @@ def receptor_routed(theta0, enabled=1):
     reaction = rfx.mass_action("convert", {"cells": ["cell_0"]}, {"X0": 1}, {"P": 1}, 0.2)
     raw = rfx.with_reactions(raw, species, [reaction], [("convert", None, [(0.0, 1.0)])])
     target = dict(
-        operator="local_species_reactions@1",
+        operator="cells.operator.local_species_reactions@1",
         control="reaction_multiplier",
         ids=["convert"],
         evaluation="target_half_steps",
@@ -1834,7 +1871,7 @@ def receptor_routed(theta0, enabled=1):
         raw, species=[], couplings=[entry], switches={"receptor": [(0.0, enabled)]}
     )
     block(raw)["law"] = LAW_V2
-    rank = {ofx.LAW: 0, LAW_V2: 1, "local_species_reactions@1": 2}
+    rank = {ofx.LAW: 0, LAW_V2: 1, "cells.operator.local_species_reactions@1": 2}
     raw["model"]["operators"].sort(key=lambda b: rank.get(b["law"], -1))
     return raw
 
@@ -1859,7 +1896,9 @@ def test_a_routed_targets_exported_rate_is_the_rate_its_step_runs_at(monkeypatch
         observed = model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
         exported = float(np.asarray(observed.reaction_rate_fmol_per_s)[0, 0])
         assert exported == pytest.approx(k * n * factor, rel=1e-12, abs=1e-30), theta0
-        reactions = next(o for o in model.operators if o.LAW_ID == "local_species_reactions@1")
+        reactions = next(
+            o for o in model.operators if o.LAW_ID == "cells.operator.local_species_reactions@1"
+        )
         control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
         stepped, ok = model._half_step(reactions, state, h, control, p, xp=np)
         row = list(spec.model.species_ids).index("P")
@@ -1877,7 +1916,7 @@ def test_a_routed_targets_exported_rate_is_the_rate_its_step_runs_at(monkeypatch
 def _clamp_world(source):
     """FR-34's maintained twin example (validation/channel_readouts/example.py, a composite:
     kir_0 and leak_1, the same count on one patch), both scheduled at availability 1, with leak_1
-    held at a factor of 0.5 by `source`: "write", species_regulated_availability@1 (a Hill
+    held at a factor of 0.5 by `source`: "write", cells.operator.species_regulated_availability@1 (a Hill
     activation of R at its own concentration, exactly 0.5); "door", the routing door (a planted
     factor source, 0.5)."""
     from tests import kind_fixtures as kf

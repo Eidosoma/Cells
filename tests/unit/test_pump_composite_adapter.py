@@ -20,6 +20,10 @@ from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite_adapter as pump3
 from cells.models import surface_pump_v3
 from cells.numerics import surface_imex as imex
+from tests import membrane_insertion_fixtures as ifx
+from tests import partition_fixtures as pfx
+from tests.unit import test_restricted_lumen as lumen_tests
+from tests.unit import test_restricted_lumen_v2 as lumen2_tests
 from validation.tissue import cell_replacement_fixtures as fx
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 
@@ -104,3 +108,37 @@ def test_a_field_input_provider_is_refused_above_the_node_cap():
     pump3.check_field_inputs(p, pump3.FIELD_INPUT_NODE_CAP)
     with pytest.raises(ConfigError, match=r"limited to 64 field nodes.*\(b\).*\(c\)"):
         pump3.check_field_inputs(p, pump3.FIELD_INPUT_NODE_CAP + 1)
+    raw = sheet()  # The sparse field (FR-17 stage 1) binds no dense array to refresh.
+    raw["execution"]["field_solver"] = (
+        "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
+    )
+    p = surface_pump_v3.initial_values(parse_spec(raw))[1]
+    with pytest.raises(ConfigError, match=r"refused under \S*sparse_capacitive"):
+        pump3.check_field_inputs(p, nodes(p))
+
+
+def _bridge():
+    return pfx.divided(bridge=("linear", 0.004))
+
+
+def _insertion_2():
+    return lumen2_tests.as_v2(ifx.with_operators(ifx.cleft_cell(), ifx.furrow_insertion()))
+
+
+def _lumen_2():
+    return lumen2_tests.as_v2(lumen_tests.world())
+
+
+@pytest.mark.parametrize("solver", [imex.EULER_ID, imex.ARS222_ID])
+@pytest.mark.parametrize("build", [pfx.divided, _bridge, _insertion_2, _lumen_2])
+def test_a_live_field_input_provider_is_refused_at_the_parse_under_the_sparse_field(build, solver):
+    """The refusal reads the declared field solver, so it comes before the binding that would
+    refresh the view (D349's probe: an AttributeError from that binding, not this refusal)."""
+    raw = copy.deepcopy(build())
+    raw["execution"]["solver"] = solver
+    raw["execution"]["field_solver"] = (
+        "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
+    )
+    words = r"refused under \S*sparse_capacitive.*which the sparse field does not bind"
+    with pytest.raises(ConfigError, match=words):
+        parse_spec(raw)

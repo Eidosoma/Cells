@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "model": {
-    "id": "resolved_tissue@1",
+    "id": "cells.model.resolved_tissue@1",
     "temperature_K": 310.0,
     "species": [
       {
@@ -92,7 +92,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       },
       {
         "id": "membrane_0_bath",
@@ -105,7 +105,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       },
       {
         "id": "membrane_1_shared",
@@ -118,7 +118,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       },
       {
         "id": "membrane_1_bath",
@@ -131,7 +131,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       },
       {
         "id": "membrane_2_shared",
@@ -144,7 +144,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       },
       {
         "id": "membrane_2_bath",
@@ -157,7 +157,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       }
     ],
     "junctions": [
@@ -171,7 +171,7 @@
           "K": 2e-09,
           "Cl": 1e-09
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       },
       {
         "id": "junction_1_2",
@@ -183,7 +183,7 @@
           "K": 2e-09,
           "Cl": 1e-09
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       }
     ],
     "faces": [
@@ -198,11 +198,11 @@
           "K": 1e-10,
           "Cl": 1e-10
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       }
     ],
     "closure": {
-      "law": "resolved_capacitor_components_current_continuity@1",
+      "law": "cells.field_closure.resolved_capacitor_components_current_continuity@1",
       "gauge_reference": null
     }
   },
@@ -322,6 +322,6 @@
     },
     "extracellular_capacity": 3,
     "face_capacity": 2,
-    "field_solver": "capacitive_reduction_gauged_damped_newton@1"
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@1"
   }
 }

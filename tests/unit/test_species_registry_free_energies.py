@@ -20,7 +20,7 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   naming a law is refused (an operator hosts none);
 - an entry with a species the registry gives no potential is not compared, and one naming a species
   that is not a row of the model (water, which entries omit) is refused;
-- a named potential set (B1, the lead's rulings of 20 November 2026): beard2005@1 keeps its own
+- a named potential set (B1, the lead's rulings of 20 November 2026): cells.potential_set.beard2005@1 keeps its own
   contract, and applied whole (with a matrix buffer) it parses and writes back as declared. Every
   reaction's sum of nu mu°/RT equals the cited value written out here independently, at the
   world's temperature and at 310.15 K (the lane's appendix's column), and a form's ln K_d carries
@@ -29,7 +29,7 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   elsewhere, and a second set. The set's moieties over the rows present are required, and its
   proton buffer is checked as the set's rows are (planted, each refused: a set moiety dropped, one
   edited, and the buffer's protonated form moved);
-- the set's second version (D236): beard2005@2 is @1, bit for bit on every shared row, with AMP2-,
+- the set's second version (D236): cells.potential_set.beard2005@2 is @1, bit for bit on every shared row, with AMP2-,
   fixed by adenylate kinase's constant in base forms, which carries no temperature. The set
   derives it from K_AK 0.4331 on totals at the free Mg2+ of the source's state-3 buffer, and
   applied at 298.15 K every potential is the lane's appendix's to its nine decimals, the match
@@ -85,7 +85,9 @@ PUMP = kl.PUMP
 HYDROLYSIS = (("ATP", -1), ("ADP", 1), ("Pi", 1))  # Its one mode's net change: H only moves.
 VALENCE = dict(tf.PUMP_ROLES)
 POTENTIAL = {role: tf.PUMP_MU[(role, "N")] for role in VALENCE}  # The world's, at its 1000 mM.
-KIND = r"Kind cells\.transporter@1's standard_free_energies, entry 0"
+PUMP_ID = re.escape(PUMP.law_id)
+TRANSPORTER_ID = re.escape(transporter.KIND_ID)
+KIND = rf"Kind {TRANSPORTER_ID}'s standard_free_energies, entry 0"
 
 
 def residual(value):
@@ -119,7 +121,7 @@ def edge_law(fraction=0.9):
         for e in form.diagram.edges
     )  # fmt: skip
     cycle = form._replace(diagram=form.diagram._replace(edges=edges))
-    return dataclasses.replace(PUMP, law_id="seamtest.edge_pump@1", cycle=cycle)
+    return dataclasses.replace(PUMP, law_id="seamtest.cycle.edge_pump@1", cycle=cycle)
 
 
 EDGE = edge_law()
@@ -186,7 +188,7 @@ def bandless(monkeypatch):
 
 
 def unhosted(monkeypatch):
-    return pump_world(), kind_scope((entry()._replace(law_id="seamtest.nowhere@1"),))
+    return pump_world(), kind_scope((entry()._replace(law_id="seamtest.cycle.nowhere@1"),))
 
 
 def modeless(monkeypatch):
@@ -199,7 +201,7 @@ MU = dict(S=0.0, E=0.0, C=-2.0, P=-1.0)  # The enzyme network's own, at its c0 o
 REGISTRY_C0 = 1000.0
 BINDING = (("E", -1), ("S", -1), ("C", 1))  # E + S -> C, sum nu = -1.
 DG = MU["C"] - MU["E"] - MU["S"]  # At the operator's c0.
-OPERATOR = r"Operator local_species_reactions@1's standard_free_energies, entry 0"
+OPERATOR = r"Operator cells.operator.local_species_reactions@1's standard_free_energies, entry 0"
 
 
 def enzyme_world(declared=tuple(MU)):
@@ -273,7 +275,7 @@ def set_world(temperature_K=None, potential_set=species_registry.BEARD_2005):
 
 
 def a_named_set(monkeypatch):
-    """beard2005@1 applied whole, with a matrix buffer at pK 7.4. Its preconditions: the set keeps
+    """cells.potential_set.beard2005@1 applied whole, with a matrix buffer at pK 7.4. Its preconditions: the set keeps
     its own contract; every reaction's sum of nu mu°/RT is the cited value at the world's
     temperature (written out independently, expected_RT), and at 310.15 K the lane's appendix's
     column; each form's ln K_d carries no temperature; the definition writes back as declared."""
@@ -362,14 +364,14 @@ def state_3_match():
 
 
 def with_match(**changed):
-    """beard2005@2 with its kinase's match changed (a plant)."""
+    """cells.potential_set.beard2005@2 with its kinase's match changed (a plant)."""
     r = SECOND.reactions[-1]
     planted = r._replace(**changed.pop("reaction", {}), match=r.match._replace(**changed))
     return SECOND._replace(reactions=(*SECOND.reactions[:-1], planted))
 
 
 def a_second_version(monkeypatch):
-    """beard2005@2 applied whole, with AMP. Its preconditions: the set keeps its own contract;
+    """cells.potential_set.beard2005@2 applied whole, with AMP. Its preconditions: the set keeps its own contract;
     every row it shares with @1 has @1's double, bit for bit, at the world's temperature and at
     310.15 K; adenylate kinase's sum of nu mu°/RT is -ln K_base at both, its constant carrying no
     temperature; AMP's moieties are adenine and phosphorus at 1 each."""
@@ -395,7 +397,7 @@ def a_second_version(monkeypatch):
 
 
 def the_second_version_as_the_appendix_prints_it(monkeypatch):
-    """beard2005@2 applied in a world at 298.15 K: every set row's and form's mu°/RT, as the world
+    """cells.potential_set.beard2005@2 applied in a world at 298.15 K: every set row's and form's mu°/RT, as the world
     declares it, is the lane's appendix's to its nine decimals, AMP's included, and the match is
     the appendix's (free Mg2+ 3.808553529 mM, K_base 0.388964538, written out independently; its
     section 7 declares no rounded constant). Planted, each
@@ -437,7 +439,7 @@ def a_second_version_amp_at_two_phosphorus(monkeypatch):
 
 
 def the_kinase_beside_the_second_version(k):
-    """beard2005@2 applied, with adenylate kinase's entry declared beside it at the constant k (a
+    """cells.potential_set.beard2005@2 applied, with adenylate kinase's entry declared beside it at the constant k (a
     planted declarer, as Table 2's): in base forms at K_base, or the constant on totals."""
 
     def setup(monkeypatch):
@@ -474,24 +476,24 @@ def fuel_world(law_id):
 
 def off_by_one():
     """§7.3's planted error: the ATP-driven law's form with Pi +2 per cycle."""
-    law = law_registry.BUILTIN.lookup("cells.atp_driven_transporter_mass_action_positive@1")
+    law = law_registry.BUILTIN.lookup("cells.cycle.atp_driven_transporter_mass_action_positive@1")
     (mode, counts), = law.cycle.modes
     cycle = law.cycle._replace(modes=((mode, (*counts[:4], 2)),))
-    return dataclasses.replace(law, law_id="seamtest.atp_pi_off_by_one@1", cycle=cycle)
+    return dataclasses.replace(law, law_id="seamtest.cycle.atp_pi_off_by_one@1", cycle=cycle)
 
 
 def a_balanced_fuel_mode(monkeypatch):
-    return fuel_world("cells.atp_driven_transporter_mass_action_positive@1"), kind_scope()
+    return fuel_world("cells.cycle.atp_driven_transporter_mass_action_positive@1"), kind_scope()
 
 
 def a_fuel_mode_off_by_one(monkeypatch):
     laws = law_registry.BUILTIN.extended(off_by_one())
-    return fuel_world("seamtest.atp_pi_off_by_one@1"), law_registry.scope(laws)
+    return fuel_world("seamtest.cycle.atp_pi_off_by_one@1"), law_registry.scope(laws)
 
 
 ENZYME = ("enzyme", (("E", 1), ("C", 1)))
 SUBSTRATE = ("substrate", (("S", 1), ("C", 1), ("P", 1)))
-MOVES = r"Operator local_species_reactions@1's"
+MOVES = r"Operator cells.operator.local_species_reactions@1's"
 
 
 def operator_moves(moves):
@@ -583,7 +585,7 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "an energy just outside the form band": (
         just_outside,
-        rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): .* beyond its law's form's band",
+        rf"{KIND} \({PUMP_ID}'s cycle, mode pump\): .* beyond its law's form's band",
     ),
     "a law whose form gives no band": (
         bandless,
@@ -592,11 +594,11 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "a law the kind does not host": (
         unhosted,
-        rf"{KIND}: 'seamtest\.nowhere@1' is not a cycle law it hosts",
+        rf"{KIND}: '{re.escape('seamtest.cycle.nowhere@1')}' is not a cycle law it hosts",
     ),
     "a mode the form lacks": (
         modeless,
-        rf"{KIND}: seamtest\.diagram_pump@1's form has no mode 'unpumped'",
+        rf"{KIND}: {PUMP_ID}'s form has no mode 'unpumped'",
     ),
     "an honest operator entry converted by sum nu": (
         reactions((FreeEnergyEntry(BINDING, DG, 1.0),)),
@@ -612,7 +614,7 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "an operator entry naming a law": (
         reactions((FreeEnergyEntry(BINDING, DG, 1.0, PUMP.law_id, "pump"),)),
-        rf"{OPERATOR}: 'seamtest\.diagram_pump@1' is not a cycle law it hosts",
+        rf"{OPERATOR}: '{PUMP_ID}' is not a cycle law it hosts",
     ),
     "a species with no registry potential": (
         reactions((FreeEnergyEntry(BINDING, DG + 1.0, 1.0),), declared=("S", "E", "P")),
@@ -620,31 +622,35 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "an entry naming a species that is not a row": (
         an_entry_naming_water,
-        rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): it names 'H2O', which is not "
+        rf"{KIND} \({PUMP_ID}'s cycle, mode pump\): it names 'H2O', which is not "
         "a species of the model",
     ),
     "a named set applied whole": (a_named_set, None),
     "a named set's row edited": (
         a_set_row_edited,
-        r"species ATP \(potential set beard2005@1\): its potentials .* are not the set's",
+        r"species ATP \(potential set cells.potential_set.beard2005@1\): its potentials .* are not "
+        r"the set's",
     ),
     "a named set at another temperature": (
         a_set_re_tempered,
-        r"species NADH \(potential set beard2005@1\): .* at 311\.0 K",
+        r"species NADH \(potential set cells.potential_set.beard2005@1\): .* at 311\.0 K",
     ),
     "a named set's moiety dropped": (
         a_set_moiety_dropped,
-        r"potential set beard2005@1: its moiety phosphorus over the rows present, .* is declared "
+        r"potential set cells.potential_set.beard2005@1: its moiety phosphorus over the rows "
+        r"present, .* is declared "
         "as None: a named set's moieties are required",
     ),
     "a named set's moiety edited": (
         a_set_moiety_edited,
-        r"potential set beard2005@1: its moiety adenine over the rows present, .* is declared as "
+        r"potential set cells.potential_set.beard2005@1: its moiety adenine over the rows present, "
+        r".* is declared as "
         r"\{'ATP': 2, 'ADP': 1\}",
     ),
     "a named set's proton buffer edited": (
         a_buffer_edited,
-        r"proton buffer Buf \(potential set beard2005@1, pK 7\.4\): its potentials .* are not",
+        r"proton buffer Buf \(potential set cells.potential_set.beard2005@1, pK 7\.4\): its "
+        r"potentials .* are not",
     ),
     "the second version applied whole, with AMP": (a_second_version, None),
     "the second version as the lane's appendix prints it": (
@@ -653,7 +659,8 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "the second version's AMP at 2 in phosphorus": (
         a_second_version_amp_at_two_phosphorus,
-        r"potential set beard2005@2: its moiety phosphorus over the rows present, .* is declared "
+        r"potential set cells.potential_set.beard2005@2: its moiety phosphorus over the rows "
+        r"present, .* is declared "
         r"as \{.*'AMP': 2\}",
     ),
     "adenylate kinase in base forms beside the second version": (
@@ -668,13 +675,14 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     "a fuel mode that conserves every moiety": (a_balanced_fuel_mode, None),
     "a fuel mode with Pi off by one": (
         a_fuel_mode_off_by_one,
-        r"Kind cells\.transporter@1's move under seamtest\.atp_pi_off_by_one@1, mode cycle: it "
+        rf"Kind {TRANSPORTER_ID}'s move under {re.escape('seamtest.cycle.atp_pi_off_by_one@1')}, "
+        r"mode cycle: it "
         r"changes moiety phosphorus by \+1 per turnover",
     ),
     "an entry in kJ/mol at the world's temperature": (a_kJ_entry, None),
     "an entry in kJ/mol at another temperature": (
         a_kJ_entry_at_another_temperature,
-        rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): dG° .* kJ/mol \(dG°/RT .* at "
+        rf"{KIND} \({PUMP_ID}'s cycle, mode pump\): dG° .* kJ/mol \(dG°/RT .* at "
         r"313\.0 K\) .* beyond its law's form's band",
     ),
     "Table 2's reactions beside the set at 310.15 K": (entries_beside_the_set(310.15), None),

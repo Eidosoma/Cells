@@ -8,7 +8,7 @@ programs (jaxprs) and bindings, compared bitwise at every core landing.
   their schedule changes. The bindings record itself again bit for bit.
 - A planted change in one operator's parameter changes that world's record, and nothing else in
   the set's. Each plant is the protocol's own control or generator parameter: exchange@1's export
-  rate (FR-1), site_occupancy@1's k_on (FR-3's K_rates), the bath schedule's KCl step 1% down
+  rate (FR-1), cells.operator.site_occupancy@1's k_on (FR-3's K_rates), the bath schedule's KCl step 1% down
   (FR-10) and the A5'' state's per-cell prior swapped (its K_prior_swapped).
 The programs are traced by the gates' crossrev runs, not here: this tier-1 file records bindings
 only.
@@ -18,15 +18,22 @@ import pytest
 
 from validation.tissue import composite_crossrev as crossrev
 
-EXCHANGE, TURNOVER = "scheduled_species_exchange@1", "scheduled_species_turnover@1"
+EXCHANGE, TURNOVER = (
+    "cells.operator.scheduled_species_exchange@1",
+    "cells.operator.scheduled_species_turnover@1",
+)
 OPERATORS = {
-    "fr1_load_and_degrade": {"cell_owned_compartments@1", EXCHANGE, TURNOVER},
-    "fr1_load_and_react": {"cell_owned_compartments@1", EXCHANGE, "local_species_reactions@1"},
-    "fr3_q5_inward": {"site_occupancy@1"},
-    "fr3_q5_class_switch": {"site_occupancy@1"},
-    "fr10_ion": {"scheduled_bath_composition@1"},
-    "fr10_ledger": {"scheduled_bath_composition@1"},
-    "fr6_a5pp": {TURNOVER, "species_regulated_availability@1"},
+    "fr1_load_and_degrade": {"cells.operator.cell_owned_compartments@1", EXCHANGE, TURNOVER},
+    "fr1_load_and_react": {
+        "cells.operator.cell_owned_compartments@1",
+        EXCHANGE,
+        "cells.operator.local_species_reactions@1",
+    },
+    "fr3_q5_inward": {"cells.operator.site_occupancy@1"},
+    "fr3_q5_class_switch": {"cells.operator.site_occupancy@1"},
+    "fr10_ion": {"cells.operator.scheduled_bath_composition@1"},
+    "fr10_ledger": {"cells.operator.scheduled_bath_composition@1"},
+    "fr6_a5pp": {TURNOVER, "cells.operator.species_regulated_availability@1"},
 }
 SCHEDULED = {"fr3_q5_class_switch", "fr10_ion", "fr10_ledger", "fr6_a5pp"}
 

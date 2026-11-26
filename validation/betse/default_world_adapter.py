@@ -7,10 +7,10 @@ says which BETSE array feeds which quantity. Backends:
 
 * ``emulator``: validation/betse/emulator, BETSE's own update order. With BETSE's
   constants it should reproduce BETSE to roundoff; it attributes differences.
-* ``resolved``: ``resolved_definition`` builds resolved_pump_tissue@1 inputs
+* ``resolved``: ``resolved_definition`` builds cells.model.resolved_pump_tissue@1 inputs
   (cells, outside nodes, patches, junctions, faces, ring reservoirs at 0 V), or
-  resolved_pump_tissue@2 when the ion profile enables Ca and BETSE's Ca-ATPase
-  runs (alpha_Ca > 0): every patch then also carries a ca_atp_mass_action_positive@1
+  cells.model.resolved_pump_tissue@2 when the ion profile enables Ca and BETSE's Ca-ATPase
+  runs (alpha_Ca > 0): every patch then also carries a cells.cycle.ca_atp_mass_action_positive@1
   pump.
 
 Each run is INIT then SIM. SIM starts from BETSE's init_final.npz (``--sim-start
@@ -55,6 +55,7 @@ if __name__ == "__main__":
         if str(entry) not in sys.path:
             sys.path.insert(0, str(entry))
 
+from validation import id_table  # noqa: E402
 from validation.betse import betse_reference_run as reference_run  # noqa: E402
 from validation.betse import cells_betse_compare as compare  # noqa: E402
 
@@ -88,6 +89,7 @@ EXECUTED = (
     *package_files(ENGINE_MODULES),
     *ENGINE_MODULES,
     "validation/source_snapshot.py",
+    "validation/id_table.py",
     "validation/betse/default_world_adapter.py",
     "validation/betse/cells_betse_compare.py",
     "validation/betse/betse_reference_run.py",
@@ -469,7 +471,7 @@ RESOLVED_OBSERVED = (
 
 
 def resolved_layout_phase(world, definition, observations):
-    """Comparison-layout phase from resolved_pump_tissue@1/@2 observations of one phase.
+    """Comparison-layout phase from cells.model.resolved_pump_tissue@1/@2 observations of one phase.
 
     Judged arrays follow physical_route_observables.txt: vm_ave_time is each cell's
     charge voltage Q_cell / sum(C_patch), with Q_cell = initial_charge_C + F * sum
@@ -856,21 +858,21 @@ def _quantity(protocol, name):
 
 # ............................................................ resolved backend inputs
 
-RESOLVED_MODEL_ID = "resolved_pump_tissue@1"
-RESOLVED_CALCIUM_MODEL_ID = "resolved_pump_tissue@2"  # with BETSE's Ca-ATPase
-RESOLVED_CALCIUM_PUMP_LAW = "ca_atp_mass_action_positive@1"
-RESOLVED_SOLVER = "imex_ars222_face_electromigration@1"
-RESOLVED_FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
+RESOLVED_MODEL_ID = "cells.model.resolved_pump_tissue@1"
+RESOLVED_CALCIUM_MODEL_ID = "cells.model.resolved_pump_tissue@2"  # with BETSE's Ca-ATPase
+RESOLVED_CALCIUM_PUMP_LAW = "cells.cycle.ca_atp_mass_action_positive@1"
+RESOLVED_SOLVER = "cells.solver.imex_ars222_face_electromigration@1"
+RESOLVED_FIELD_SOLVER = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
 # Opt-in: version 2 plus convergence at the Newton's attainable rounding floor (bitwise
 # version 2 wherever version 2 converges; numerics/surface_field.py FLOOR_SOLVER_ID).
-RESOLVED_FLOOR_FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@3"
+RESOLVED_FLOOR_FIELD_SOLVER = "cells.solver.capacitive_reduction_gauged_damped_newton@3"
 RESOLVED_FIELD_SOLVERS = (RESOLVED_FIELD_SOLVER, RESOLVED_FLOOR_FIELD_SOLVER)
-RESOLVED_CLOSURE = "resolved_capacitor_components_current_continuity@1"
+RESOLVED_CLOSURE = "cells.field_closure.resolved_capacitor_components_current_continuity@1"
 NEUTRAL_ROUNDOFF = 1e-14  # |sum z*amount| / sum |z*amount| treated as a neutral composition
 
 
 def resolved_model_id(world):
-    """resolved_pump_tissue@1, or @2 when the world has BETSE's Ca-ATPase."""
+    """cells.model.resolved_pump_tissue@1, or @2 when the world has BETSE's Ca-ATPase."""
     return RESOLVED_MODEL_ID if world["calcium_pump"] is None else RESOLVED_CALCIUM_MODEL_ID
 
 
@@ -879,7 +881,7 @@ def calcium_standard_energy(world):
 
     BETSE's Ca-ATPase quotient cADP * cPi * cCao / (cATP * cCai) is in numeric mM
     (its Na/K quotient is molar), so its deltaGATP is a 1 mM-standard energy. Cells'
-    ca_atp_mass_action_positive@1 declares a 1 M standard state, as the Na/K law does;
+    cells.cycle.ca_atp_mass_action_positive@1 declares a 1 M standard state, as the Na/K law does;
     with the same R both give the same chemical drive. Cells' (CODATA) R is used, so
     only the constants differ, as for every other law.
     """
@@ -900,7 +902,7 @@ def resolved_definition(
     solver=RESOLVED_SOLVER,
     field_solver=RESOLVED_FIELD_SOLVER,
 ):
-    """resolved_pump_tissue@1 (or @2, see resolved_model_id) definition of one BETSE phase.
+    """cells.model.resolved_pump_tissue@1 (or @2, see resolved_model_id) definition of one BETSE phase.
 
     ``field_solver`` is the declared field solve (RESOLVED_FIELD_SOLVERS; default @2).
 
@@ -987,10 +989,10 @@ def resolved_definition(
                 "area_m2": float(area[j]),
                 "capacitance_F": world["capacitance_F_m2"] * float(area[j]),
                 "permeability_m_per_s": {sp: float(perm[i]) for i, sp in enumerate(species)},
-                "law": "constant_field@1",
+                "law": "cells.route.constant_field@1",
                 "pump": {
                     "id": f"pump-{j}",
-                    "law": "nak_atp_mass_action_positive@1",
+                    "law": "cells.cycle.nak_atp_mass_action_positive@1",
                     "roles": {"sodium": "Na", "potassium": "K"},
                     "stoichiometry": {"Na": -3, "K": 2},
                     "capacity_fmol_per_s": float(world["pump_capacity_fmol_s"][j]),
@@ -998,7 +1000,7 @@ def resolved_definition(
                     "km_k_mM": world["pump_km_k_mM"],
                     "km_atp_mM": world["pump_km_atp_mM"],
                     "metabolism": {
-                        "kind": "maintained_chemical_reservoirs@1",
+                        "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
                         "atp_mM": world["pump_atp_mM"],
                         "adp_mM": world["pump_adp_mM"],
                         "pi_mM": world["pump_pi_mM"],
@@ -1017,7 +1019,7 @@ def resolved_definition(
                 "km_ca_mM": calcium["km_ca_mM"],
                 "km_atp_mM": calcium["km_atp_mM"],
                 "metabolism": {
-                    "kind": "maintained_chemical_reservoirs@1",
+                    "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
                     "atp_mM": calcium["atp_mM"],
                     "adp_mM": calcium["adp_mM"],
                     "pi_mM": calcium["pi_mM"],
@@ -1042,9 +1044,9 @@ def resolved_definition(
                 "receiver": f"cell-{pair[1]}",
                 "area_m2": float(area[j]),
                 "permeability_m_per_s": {sp: float(perm[i]) for i, sp in enumerate(species)},
-                "law": "constant_field@1",
+                "law": "cells.route.constant_field@1",
                 "gate": {
-                    "law": "junction_voltage_relaxation@1",
+                    "law": "cells.junction.junction_voltage_relaxation@1",
                     "threshold_voltage_V": world["gate_threshold_V"],
                     "minimum_open_fraction": world["gate_minimum_open"],
                     "initial_gate": float(
@@ -1071,7 +1073,7 @@ def resolved_definition(
                     "area_m2": world["cell_height_m"] * world["grid_spacing_m"],
                     "length_m": world["grid_spacing_m"],
                     "diffusivity_m2_per_s": {sp: float(d[i]) for i, sp in enumerate(species)},
-                    "law": "logmean_electrodiffusion@1",
+                    "law": "cells.route.logmean_electrodiffusion@1",
                 }
             )
     steps = round(world["steps"][phase] * world["dt_s"][phase] / dt)
@@ -1256,7 +1258,7 @@ def _resolved_checks(definition, obs, newton):
 def _window_sink(observed, newton, control, model):
     """Collect a window's needed observations, field solve and ledgers at its end state.
 
-    ``model`` is the definition's model module (resolved_pump_tissue@1 or @2).
+    ``model`` is the definition's model module (cells.model.resolved_pump_tissue@1 or @2).
     """
     from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
@@ -1294,9 +1296,9 @@ PROTOCOL_BACKENDS = {"cpu": "cpu", "gpu": "gpu (L4)"}
 class ResolvedBackend(NamedTuple):
     """How run_resolved reads a case and builds, hands off and names its definitions.
 
-    The default (DEFAULT_RESOLVED) is this module's resolved_pump_tissue@1/@2 route.
+    The default (DEFAULT_RESOLVED) is this module's cells.model.resolved_pump_tissue@1/@2 route.
     An extension supplies its own functions with the same signatures, e.g.
-    network_world_adapter.NETWORK_RESOLVED (resolved_pump_tissue@3 with the general
+    network_world_adapter.NETWORK_RESOLVED (cells.model.resolved_pump_tissue@3 with the general
     network's channel populations):
 
       world(case, *, blind)                        -> world (betse_world's keys, and more)
@@ -1330,7 +1332,7 @@ def judged_protocol(
     that names no field solver was registered for the default (@2).
     """
     protocol, sha = compare.load_protocol(protocol_path)
-    run = protocol.get("cells_run") or {}
+    run = id_table.translate(protocol.get("cells_run") or {})
     expected = {
         "betse_case": (protocol.get("betse_case"), world["case"]),
         "model": (run.get("model"), model_id(world)),
@@ -1361,7 +1363,7 @@ def run_resolved(
     protocol_path=None,
     backend=None,
 ):
-    """resolved_pump_tissue@1/@2 run: INIT then SIM from its own INIT end, windowed.
+    """cells.model.resolved_pump_tissue@1/@2 run: INIT then SIM from its own INIT end, windowed.
 
     Reads BETSE inputs only (``betse_world(blind=True)``) and computes no difference
     from BETSE. Without ``protocol_path`` the layout names no protocol, so the
@@ -1846,7 +1848,9 @@ def main(argv=None):
     )
     run.add_argument("--out", required=True, help="fresh layout directory")
     run.set_defaults(func=cmd_run)
-    blind = sub.add_parser("run-resolved", help="blind resolved_pump_tissue@1/@2 INIT then SIM")
+    blind = sub.add_parser(
+        "run-resolved", help="blind cells.model.resolved_pump_tissue@1/@2 INIT then SIM"
+    )
     blind.add_argument("--case", required=True)
     blind.add_argument("--device", choices=("cpu", "gpu"), default="cpu")
     blind.add_argument("--dt-init", type=float, default=1e-3)
@@ -1884,7 +1888,9 @@ def main(argv=None):
     pair.add_argument("--protocol", required=True)
     pair.add_argument("--out", required=True)
     pair.set_defaults(func=cmd_compare_layouts)
-    resolved = sub.add_parser("resolved-definition", help="resolved_pump_tissue@1/@2 inputs")
+    resolved = sub.add_parser(
+        "resolved-definition", help="cells.model.resolved_pump_tissue@1/@2 inputs"
+    )
     resolved.add_argument("--case", required=True)
     resolved.add_argument("--phase", choices=PHASES, default="init")
     resolved.add_argument("--dt", type=float, required=True)

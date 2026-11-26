@@ -1,6 +1,6 @@
 """Projective forward Euler: coarse outer steps around a qualified fine integrator.
 
-projective_forward_euler@1 follows Gear and Kevrekidis, "Projective methods for
+cells.execution.projective_forward_euler@1 follows Gear and Kevrekidis, "Projective methods for
 stiff differential equations: problems with gaps in their eigenvalue spectrum"
 (SIAM J Sci Comput 24:1091-1106, 2003). A burst of K fine steps lets the fast
 modes decay; the slow derivative is the chord of the last m fine steps,
@@ -31,7 +31,7 @@ import math
 
 import numpy as np
 
-METHOD_ID = "projective_forward_euler@1"
+METHOD_ID = "cells.execution.projective_forward_euler@1"
 
 
 def extrapolate(last, base, ratio):

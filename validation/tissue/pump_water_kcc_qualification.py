@@ -1,8 +1,8 @@
-"""Stationary qualification of resolved_pump_water@2 against the frozen W2 predictions.
+"""Stationary qualification of cells.model.resolved_pump_water@2 against the frozen W2 predictions.
 
 For every arm of validation/tissue/pump_water_kcc_predictions.json (capacity x
-steepness), the engine's stationary_continuation_analysis@1 on the arm's
-resolved_pump_water@2 definition (pump_water_fixtures.with_symport on the
+steepness), the engine's cells.analysis.stationary_continuation_analysis@1 on the arm's
+cells.model.resolved_pump_water@2 definition (pump_water_fixtures.with_symport on the
 predictions' W1 heredity cell) is solved by Newton from each predicted state,
 checked for step-map consistency, and classified by its dense spectrum. A
 state is judged against its prediction with the bounds pinned in --protocol
@@ -27,6 +27,7 @@ jax.config.update("jax_enable_x64", True)
 import numpy as np  # noqa: E402
 
 from cells.definitions.specs import parse_spec  # noqa: E402
+from validation import id_table  # noqa: E402
 from validation.tissue import pump_water_fixtures as fixtures  # noqa: E402
 from validation.tissue import pump_water_qualification as w1  # noqa: E402
 
@@ -141,7 +142,7 @@ def main():
     args = parser.parse_args()
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
-    predictions = json.loads(Path(args.predictions).read_text())
+    predictions = id_table.load(args.predictions)
     # A judged run takes the registered protocol or a registered backend variant of it; any
     # other file is marked a dry run (composite_l4_agreement.judged_protocol).
     from validation.tissue import composite_l4_agreement as agreement

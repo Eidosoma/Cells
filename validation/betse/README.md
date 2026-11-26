@@ -1,5 +1,15 @@
 # Optional BETSE reference adapter
 
+> **Legacy cleanup (25 November 2026, D386).** The REF-era drivers and the physiology stack
+> described below are retired (D374), and their code left this folder; their protocols, plans and
+> reports stay as records. What stays and runs: the parity ladder and its emulator, the extraction
+> and comparison tools, and the native drivers of the spatial parity files, which share
+> `native_hooks.py`. The tag `pre-cleanup-2026-11-25` keeps the code.
+
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay.
+
 REF-003a, REF-003b1 and REF-003c, 2026-09-12. This is an **offline validation tool**, not part of the
 installed Cells package, solver, model registry or ordinary test collection.
 It uses separate worker processes and environments. No upstream implementation

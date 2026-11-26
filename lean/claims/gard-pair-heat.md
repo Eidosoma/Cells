@@ -19,7 +19,7 @@ A molecule entering an assembly sees the same catalytic multiplier as its revers
 - [CellsProofs.Chemistry.GardCatalysis.singleton_factors](../CellsProofs/Chemistry/GardCatalysis.lean#L48)
 - [CellsProofs.Chemistry.GardCatalysis.pair_heat](../CellsProofs/Chemistry/GardCatalysis.lean#L64)
 
-Direct proof subject `cells.gard_catalysis_pair_consistent@1`
+Direct proof subject `cells.rate_factor.gard_catalysis_pair_consistent@1`
 
 Uses [Single-molecule exchange heat equals the change in assembly log weight](assembly-exchange-heat.md)
 

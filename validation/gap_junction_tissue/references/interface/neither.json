@@ -1,0 +1,325 @@
+{
+ "format": "gap_junction_tissue.neither_references@1",
+ "registration": "gj-neither-registered-2026-11-23",
+ "model": {
+  "constants": {
+   "g_u": 4.199999999999999,
+   "K_u": 11.11111111111111,
+   "n_u": 3.0,
+   "lambda_u": 0.1,
+   "k_u": 0.05,
+   "g_m": 2.291666666666667,
+   "K_m": 2.7777777777777777,
+   "n_m": 2.0,
+   "lambda_m": 15.0,
+   "k_m": 0.5,
+   "g_z": 0.16666666666666666,
+   "x0": 40.0,
+   "l": [
+    1.0,
+    0.5,
+    0.2,
+    0.02,
+    0.02,
+    0.02,
+    0.02
+   ],
+   "k_z": 0.1,
+   "radius_m": 5e-06,
+   "junction_length_m": 1e-07,
+   "g_over_v_per_d": 6000000000000.0
+  },
+  "seeds": {
+   "tumor": {
+    "u": 1e-06,
+    "m": 100.0,
+    "z": 100.0
+   },
+   "healthy": {
+    "u": 100.0,
+    "m": 1e-06,
+    "z": 1e-06
+   }
+  }
+ },
+ "stage1": {
+  "tumor": {
+   "u": 8.817966182826805,
+   "m": 68.62439028594846,
+   "z": 62.72131156014265
+  },
+  "healthy": {
+   "u": 83.99620026465703,
+   "m": 5.951805842605381,
+   "z": 0.4100548569828493
+  }
+ },
+ "geometries": {
+  "line": {
+   "bracket": [
+    7.171630859375002e-15,
+    7.177734375000002e-15
+   ],
+   "points": [
+    {
+     "d": 0.0,
+     "normalized": false,
+     "epithelial_cells": 19,
+     "min_margin": -61.80642409970689,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 6.25e-15,
+     "normalized": false,
+     "epithelial_cells": 20,
+     "min_margin": -61.30863604079458,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 7.031250000000001e-15,
+     "normalized": false,
+     "epithelial_cells": 20,
+     "min_margin": -61.09468927984153,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 7.128906250000002e-15,
+     "normalized": false,
+     "epithelial_cells": 20,
+     "min_margin": -61.052959302558754,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 7.153320312500001e-15,
+     "normalized": false,
+     "epithelial_cells": 20,
+     "min_margin": -61.037819768683846,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 7.165527343750002e-15,
+     "normalized": false,
+     "epithelial_cells": 20,
+     "min_margin": -61.02404480948735,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 7.171630859375002e-15,
+     "normalized": false,
+     "epithelial_cells": 21,
+     "min_margin": -59.71052313020951,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 7.177734375000002e-15,
+     "normalized": true,
+     "epithelial_cells": 25,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 7.226562500000002e-15,
+     "normalized": true,
+     "epithelial_cells": 25,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 7.421875000000002e-15,
+     "normalized": true,
+     "epithelial_cells": 25,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 7.812500000000001e-15,
+     "normalized": true,
+     "epithelial_cells": 25,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 9.375000000000001e-15,
+     "normalized": true,
+     "epithelial_cells": 25,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 1.25e-14,
+     "normalized": true,
+     "epithelial_cells": 25,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 2.5e-14,
+     "normalized": true,
+     "epithelial_cells": 25,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 5e-14,
+     "normalized": true,
+     "epithelial_cells": 25,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 0.0
+    },
+    {
+     "d": 1e-13,
+     "normalized": true,
+     "epithelial_cells": 25,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 0.0
+    }
+   ],
+   "tighter": {
+    "factor": 10,
+    "lo_normalized": false,
+    "hi_normalized": true
+   },
+   "method": "stage 2 integrated by scipy 1.18.1 BDF (variable-order backward differentiation) with the analytic sparse Jacobian (checked against central differences), rtol 1e-09, atol 1e-12, over the full 20,000 s from stage 1's end states; stage 1 once by DOP853 at rtol 1e-13, atol 1e-16 (Radau at rtol 1e-12 agrees to 6e-14 relative); G/V = g_over_v_per_d x D on u only; outcome at t = 20,000 s: u > m + 2 in every cell and max m - min m <= 2 in every row; search: both ends of [0, 1e-13] first, then arithmetic bisection until hi <= 1.001 lo, tested in exact rationals (16 points); tighter: both final ends rerun at rtol 1e-10, atol 1e-13; independent check: both final ends rerun with explicit DOP853 at rtol 1e-09, atol 1e-12, which keeps both outcomes; at lo and hi the least margin u - m - 2 is -59.7105 and 76.0444, and the tighter and explicit reruns move it by at most 1e-06 and 3e-11; largest |dy/dt| at t = 20,000 s: 1.1e-03 per s at lo, 1.8e-09 per s at hi (at lo the end state is still changing at t = 20,000 s; its outcome is the state at that time, as the criterion defines); run at b674113c5ebb"
+  },
+  "field": {
+   "bracket": [
+    1.8859863281250003e-15,
+    1.8875122070312503e-15
+   ],
+   "points": [
+    {
+     "d": 0.0,
+     "normalized": false,
+     "epithelial_cells": 589,
+     "min_margin": -61.80642409970687,
+     "max_row_spread": 62.672584442769924
+    },
+    {
+     "d": 1.5625e-15,
+     "normalized": false,
+     "epithelial_cells": 590,
+     "min_margin": -61.80460773801518,
+     "max_row_spread": 62.67255641675782
+    },
+    {
+     "d": 1.7578125000000002e-15,
+     "normalized": false,
+     "epithelial_cells": 597,
+     "min_margin": -61.79984298948163,
+     "max_row_spread": 62.672482872934076
+    },
+    {
+     "d": 1.8554687500000004e-15,
+     "normalized": false,
+     "epithelial_cells": 597,
+     "min_margin": -61.7977352564631,
+     "max_row_spread": 62.67245032858627
+    },
+    {
+     "d": 1.8798828125000004e-15,
+     "normalized": false,
+     "epithelial_cells": 597,
+     "min_margin": -61.79701401329221,
+     "max_row_spread": 62.67243919064367
+    },
+    {
+     "d": 1.8859863281250003e-15,
+     "normalized": false,
+     "epithelial_cells": 597,
+     "min_margin": -61.796740340413635,
+     "max_row_spread": 62.672434964181775
+    },
+    {
+     "d": 1.8875122070312503e-15,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 2.376587815433595e-11
+    },
+    {
+     "d": 1.8890380859375004e-15,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132932,
+     "max_row_spread": 1.8474111129762605e-12
+    },
+    {
+     "d": 1.8920898437500006e-15,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 2.6645352591003757e-13
+    },
+    {
+     "d": 1.9042968750000004e-15,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132932,
+     "max_row_spread": 2.078337502098293e-12
+    },
+    {
+     "d": 1.9531250000000004e-15,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132933,
+     "max_row_spread": 2.6645352591003757e-15
+    },
+    {
+     "d": 2.3437500000000003e-15,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132932,
+     "max_row_spread": 8.881784197001252e-15
+    },
+    {
+     "d": 3.125e-15,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132932,
+     "max_row_spread": 4.440892098500626e-15
+    },
+    {
+     "d": 6.25e-15,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132932,
+     "max_row_spread": 7.993605777301127e-15
+    },
+    {
+     "d": 1.25e-14,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.0443944213293,
+     "max_row_spread": 7.105427357601002e-15
+    },
+    {
+     "d": 2.5e-14,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132929,
+     "max_row_spread": 6.217248937900877e-15
+    },
+    {
+     "d": 5e-14,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132927,
+     "max_row_spread": 9.769962616701378e-15
+    },
+    {
+     "d": 1e-13,
+     "normalized": true,
+     "epithelial_cells": 625,
+     "min_margin": 76.04439442132927,
+     "max_row_spread": 1.1546319456101628e-14
+    }
+   ],
+   "tighter": {
+    "factor": 10,
+    "lo_normalized": false,
+    "hi_normalized": true
+   },
+   "method": "stage 2 integrated by scipy 1.18.1 BDF (variable-order backward differentiation) with the analytic sparse Jacobian (checked against central differences), rtol 1e-09, atol 1e-12, over the full 20,000 s from stage 1's end states; stage 1 once by DOP853 at rtol 1e-13, atol 1e-16 (Radau at rtol 1e-12 agrees to 6e-14 relative); G/V = g_over_v_per_d x D on u only; outcome at t = 20,000 s: u > m + 2 in every cell and max m - min m <= 2 in every row; search: both ends of [0, 1e-13] first, then arithmetic bisection until hi <= 1.001 lo, tested in exact rationals (18 points); tighter: both final ends rerun at rtol 1e-10, atol 1e-13; independent check: both final ends rerun with explicit DOP853 at rtol 1e-09, atol 1e-12, which keeps both outcomes; at lo and hi the least margin u - m - 2 is -61.7967 and 76.0444, and the tighter and explicit reruns move it by at most 5e-11 and 8e-12; largest |dy/dt| at t = 20,000 s: 8.0e-08 per s at lo, 4.0e-09 per s at hi; every end state is symmetric under y <-> z to within 1e-6 relative; run at b674113c5ebb"
+  }
+ }
+}

@@ -1,4 +1,4 @@
-"""Operator scheduled_membrane_insertion@1: membrane insertion at scheduled rates (stage S2).
+"""Operator cells.operator.scheduled_membrane_insertion@1: membrane insertion at scheduled rates (stage S2).
 
 docs/PUMP_COMPOSITE_V2_DESIGN.md §3; the law is docs/CELL_DIVISION_DESIGN.md §5.1. The name is
 general: the cleavage furrow is one use (D144).
@@ -6,7 +6,7 @@ general: the cleavage furrow is one use (D144).
 Law, per half-step h of the split part, on each inserted patch k with the rate r_k >= 0 of its
 schedule: dA = r h, dC = c_d r h and dN_j = rho_j r h for each population j at the patch, with
 c_d the inserted membrane's specific capacitance and rho_j its density of population j
-(units/m^2). They are written to membrane_entity_state@1's increments (that operator must
+(units/m^2). They are written to cells.operator.membrane_entity_state@1's increments (that operator must
 precede this one) and booked in this operator's accumulators. The change is applied at fixed
 free-node charges with the potentials re-solved (adapter.fixed_charge_change): the inserted
 membrane arrives uncharged.
@@ -42,7 +42,7 @@ Refusals:
 * an onset patch with channel populations or a pump, facing a held bath or a node with a
   nonzero charge anchor or with patches that open at another time, or whose node's volume an
   operator provides, unless that operator keeps the declared volume until the onset
-  (ONSET_ANCHORED_VIEWS: restricted_cleft_lumen@1, whose volume grows with the patch's area);
+  (ONSET_ANCHORED_VIEWS: cells.operator.restricted_cleft_lumen@1, whose volume grows with the patch's area);
 * another operator that books image charge on the declared layout (replacement): those
   bookings would miss the changed capacitances. Injection books at the view (BOOKS_AT_VIEW)
   and composes;
@@ -76,7 +76,7 @@ from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
 from cells.operators.contract import Operator
 
-LAW_ID = "scheduled_membrane_insertion@1"
+LAW_ID = "cells.operator.scheduled_membrane_insertion@1"
 STEP_ID = "fixed_charge_exact_half_steps@1"
 # A free node's capacitance gain in one half-step, as a multiple of its own, above which the heat
 # and the image charges are formed without cancellation (charge_change's docstring).
@@ -131,7 +131,7 @@ class PatchSchedule:
 
 
 def parse_insertion(raw, base, *, law=LAW_ID):
-    """The declaration (law: this law's ID, or scheduled_membrane_insertion@2's; host side)."""
+    """The declaration (law: this law's ID, or cells.operator.scheduled_membrane_insertion@2's; host side)."""
     _fields(raw, {"law", "patches"}, "insertion")
     if raw["law"] != law:
         raise ConfigError("Insertion requires law " + law)
@@ -186,7 +186,7 @@ def parse_controls(raw, base, declaration, *, onsets=None):
     """One rate schedule per inserted patch, in declaration order (retrieval is refused).
 
     onsets: the onset rule applied to the parsed schedule (default check_onsets, this law's;
-    scheduled_membrane_insertion@2 passes its own). Host side only."""
+    cells.operator.scheduled_membrane_insertion@2 passes its own). Host side only."""
     by_patch = {}
     end = base.experiment.end_time
     for entry in raw["insertion_controls"]:
@@ -465,7 +465,7 @@ def _gains_above(q, dc, *, xp):
             scatter(added, xp.zeros(o), (q.membrane_outside,), xp=xp),
         )
     )
-    return gain > RATIO_ABOVE * xp.diagonal(q.field_capacitor_matrix)
+    return gain > RATIO_ABOVE * field.capacitor_diagonal(tissue.field_layout(q), xp=xp)
 
 
 def _exact_change(operands, *, xp):

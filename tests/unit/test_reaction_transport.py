@@ -8,13 +8,14 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import (
+    ChannelChange,
     ConfigError,
-    ContactChange,
     GraphContactChange,
-    InputChange,
+    MultispeciesExecutionSpec,
     load_spec,
     parse_spec,
 )
+from cells.definitions.surface_tissue_spec import SurfaceExperiment
 from cells.execution.errors import NumericalError
 from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
 from cells.execution.schedule import control_values
@@ -129,12 +130,26 @@ def test_invalid_graph_definitions(graph_data, path, value):
 def test_python_api_cannot_drop_or_substitute_controls(graph_data):
     spec = parse_spec(graph_data)
     for changed in (
-        replace(spec.experiment, source=(InputChange(0, 1),)),
-        replace(spec.experiment, contact=(ContactChange(0, 1),)),
+        replace(spec.experiment, contact=(ChannelChange(0, 1),)),
         replace(spec.experiment, contact=()),
     ):
         with pytest.raises(ConfigError):
             run(replace(spec, experiment=changed))
+    settings = MultispeciesExecutionSpec(
+        **vars(spec.execution), material_balance_atol_fmol=(1e-12, 1e-12)
+    )
+    for changed, message in (
+        (
+            replace(spec, execution=settings),
+            "Multispecies execution settings require their own model identity",
+        ),
+        (
+            replace(spec, experiment=SurfaceExperiment(12.0, (0.0, 12.0), (), ())),
+            "Experiment type does not match the declared model",
+        ),
+    ):
+        with pytest.raises(ConfigError, match=message):
+            changed.to_dict()
 
 
 def test_contact_ids_resolve_control_order_and_no_alias(graph_data):
@@ -520,6 +535,12 @@ def test_multispecies_graph_primitive_and_batched_world_independence(graph_data)
     active = np.array([True, True, False])
     flux = edge_flux(amount, np.ones(3), params, active)
     assert np.all(np.asarray(flux)[:, 1:] == 0)
+    # By hand, over the one edge that is not closed: 0.4 (8/1 - 0/2), 0.1 (0/1 - 2/2) and
+    # 0.7 (1/1 - 2/2) at an opening of 1, and half of each at a half.
+    for opening, hand in ((1.0, (3.2, -0.1, 0.0)), (0.5, (1.6, -0.05, 0.0))):
+        for xp in (np, jax.numpy):
+            value = edge_flux(amount, np.array([opening, 1.0, 1.0]), params, active, xp=xp)
+            np.testing.assert_allclose(value, [(x, 0.0, 0.0) for x in hand], rtol=0, atol=1e-15)
     expected = np.zeros_like(amount)
     for edge, (a, b) in enumerate(zip(params.senders, params.receivers, strict=True)):
         expected[:, a] -= flux[:, edge]

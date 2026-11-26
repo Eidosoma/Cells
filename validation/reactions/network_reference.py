@@ -1,4 +1,4 @@
-"""Node kinetics and bookings: an independent reference for local_species_reactions@1 (D152).
+"""Node kinetics and bookings: an independent reference for cells.operator.local_species_reactions@1 (D152).
 
 Written from docs/SHARED_INVENTORY_REACTIONS_DESIGN.md, Appendix A (with §2.2, §3.1-§3.4 and
 §4.2), and from textbook sources, never from the engine's operator code. NumPy and the standard
@@ -81,7 +81,7 @@ LAW_NAMES = {
     "mass_action": MASS_ACTION,
     "michaelis_menten": MICHAELIS_MENTEN,
     "passive": PASSIVE,
-    "ideal_detailed_balance_mass_action@1": PASSIVE,  # The passive law's registered name.
+    "cells.species_reaction.ideal_detailed_balance_mass_action@1": PASSIVE,  # The passive law's registered name.
 }
 HILL_ACTIVATION, HILL_INHIBITION = "hill_activation", "hill_inhibition"
 _FACTOR_SIGN = {HILL_ACTIVATION: -1.0, HILL_INHIBITION: 1.0}
@@ -125,7 +125,7 @@ class Reaction:
     * mass_action: `rate_constant` k (mM^(1-q) s^-1);
     * michaelis_menten: `K_M_mM`, and either `k_cat_per_s` with `catalyst`, or `V_max_mM_per_s`;
       reactants must be {S: 1};
-    * passive (or "ideal_detailed_balance_mass_action@1"): `k_f_per_s` (s^-1 at c0); closed and
+    * passive (or "cells.species_reaction.ideal_detailed_balance_mass_action@1"): `k_f_per_s` (s^-1 at c0); closed and
       without factors.
     """
 

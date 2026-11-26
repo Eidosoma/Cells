@@ -1,4 +1,4 @@
-"""species_regulated_availability@1 composed with local_species_reactions@1 (a development run).
+"""cells.operator.species_regulated_availability@1 composed with cells.operator.local_species_reactions@1 (a development run).
 
 docs/INVENTORY_COUPLING_DESIGN.md §1.7 and §1.12: D152's reactions write rows this operator only
 reads (reads are not writes). Making no acceptance claim. The seven-cell heredity sheet, 20 steps

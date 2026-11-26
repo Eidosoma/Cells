@@ -1,29 +1,13 @@
 """Analytic and thermodynamic checks of the independent water reference."""
 
-import json
 import sys
 from copy import deepcopy
-from pathlib import Path
 
 import numpy as np
 import pytest
 
-from validation.tissue import surface_dynamics_reference as ionic
-from validation.tissue import surface_water_reference as coupled
 from validation.tissue import water_volume_reference as ref
-
-
-def case():
-    return dict(
-        temperature_K=298.15,
-        initial_volume_pL=[1.0, 3.0],
-        reference_volume_pL=[1.0, 3.0],
-        amount_fmol=[[100.0, 300.0], [80.0, 200.0]],
-        impermeant_amount_fmol=[120.0, 100.0],
-        bulk_modulus_Pa=[0.0, 0.0],
-        pressure_offset_Pa=[0.0, 0.0],
-        edges=[dict(sender=0, receiver=1, area_m2=1e-9, hydraulic_permeability_m_per_Pa_s=1e-12)],
-    )
+from validation.tissue.water_volume_reference import case
 
 
 def test_decimal_gradient_and_closed_water_energy_identity():
@@ -188,104 +172,6 @@ def test_invalid_domain_rejects_without_clipping(fault):
         ref.evaluate(raw)
 
 
-def coupled_case():
-    return json.loads(
-        (Path(__file__).resolve().parents[2] / "configs/resolved_water_tissue.json").read_text()
-    )
-
-
-def test_coupled_reference_uses_current_volume_without_mutating_ionic_context():
-    raw = coupled_case()
-    c = coupled.bind(raw)
-    assert len(c["shapes"]) == 16 and len(c["ionic"]["shapes"]) == 12
-    initial_vi, initial_vo = c["ionic"]["vi"].copy(), c["ionic"]["vo"].copy()
-    fields = coupled.unpack(c, coupled.initial(c))
-    fields["volume_increment_pL"][:] = 0.1
-    fields["extracellular_volume_increment_pL"][:] = -0.1
-    actual, phi, proof = coupled.evaluate(c, coupled.flatten(c, fields), 0)
-    current = dict(c["ionic"], vi=initial_vi + 0.1, vo=initial_vo - 0.1)
-    expected, expected_phi, _ = ionic.evaluate(current, ionic.flatten(c["ionic"], fields), 0)
-    np.testing.assert_array_equal(coupled.flatten(c["ionic"], coupled.unpack(c, actual)), expected)
-    np.testing.assert_array_equal(phi, expected_phi)
-    np.testing.assert_array_equal(c["ionic"]["vi"], initial_vi)
-    np.testing.assert_array_equal(c["ionic"]["vo"], initial_vo)
-    assert abs(proof["physical_energy_balance_pJ_s"]) < 1e-10
-    assert proof["water_volume_rate_balance_pL_s"] == 0
-
-
-def test_water_schedule_is_right_continuous_and_independent_of_ion_control():
-    c = coupled.bind(coupled_case())
-    state = coupled.initial(c)
-    before = coupled.unpack(c, coupled.evaluate(c, state, np.nextafter(0.00037, 0))[0])
-    after = coupled.unpack(c, coupled.evaluate(c, state, 0.00037)[0])
-    assert np.any(before["water_transferred_pL"])
-    assert np.all(after["water_transferred_pL"] == 0)
-    for name in c["ionic"]["shapes"]:
-        np.testing.assert_array_equal(before[name], after[name])
-    released = coupled.unpack(c, coupled.evaluate(c, state, 0.00113)[0])
-    assert np.any(released["water_transferred_pL"])
-    assert np.all(released["membrane_transferred"] == 0)
-
-
-def test_zero_water_conductance_reduces_to_unchanged_ionic_derivatives():
-    raw = coupled_case()
-    raw["model"]["water_membranes"][0]["hydraulic_permeability_m_per_Pa_s"] = 0
-    c = coupled.bind(raw)
-    slope, phi, _ = coupled.evaluate(c, coupled.initial(c), 0)
-    expected, expected_phi, _ = ionic.evaluate(c["ionic"], ionic.initial(c["ionic"]), 0)
-    fields = coupled.unpack(c, slope)
-    np.testing.assert_array_equal(coupled.flatten(c["ionic"], fields), expected)
-    np.testing.assert_array_equal(phi, expected_phi)
-    for name in set(c["shapes"]) - set(c["ionic"]["shapes"]):
-        assert np.all(fields[name] == 0)
-
-
-def test_coupled_adaptive_history_refines_and_closes_material_and_energy():
-    raw = coupled_case()
-    c = coupled.bind(raw)
-    result, tight = (coupled.integrate(raw, refinement=r) for r in (1, 4))
-    fields, finer = (coupled.unpack(c, result["state"]), coupled.unpack(c, tight["state"]))
-    for name in fields:
-        np.testing.assert_allclose(
-            fields[name], finer[name], rtol=3e-9, atol=3e-28 if name.endswith("_C") else 3e-13
-        )
-    np.testing.assert_allclose(
-        fields["amount_increment"].sum(axis=-1)
-        + fields["extracellular_amount_increment"].sum(axis=-1),
-        0,
-        rtol=0,
-        atol=3e-14,
-    )
-    np.testing.assert_allclose(
-        fields["volume_increment_pL"].sum(axis=-1)
-        + fields["extracellular_volume_increment_pL"].sum(axis=-1),
-        0,
-        rtol=0,
-        atol=3e-14,
-    )
-    start, stop = result["times"].index(0.00037), result["times"].index(0.00113)
-    for name in (
-        "volume_increment_pL",
-        "extracellular_volume_increment_pL",
-        "water_transferred_pL",
-    ):
-        np.testing.assert_array_equal(fields[name][start], fields[name][stop])
-    energy = []
-    for i, phi in enumerate(result["potential_V"]):
-        volume = np.r_[
-            c["vi"] + fields["volume_increment_pL"][i],
-            c["vo"] + fields["extracellular_volume_increment_pL"][i],
-        ]
-        amount = np.c_[
-            c["ai"] + fields["amount_increment"][i],
-            c["ao"] + fields["extracellular_amount_increment"][i],
-        ]
-        water_energy = ref.evaluate(c["water_case"], volume, amount)["free_energy_pJ"]
-        capacitive = 0.5e12 * raw["model"]["membranes"][0]["capacitance_F"] * (phi[0] - phi[1]) ** 2
-        energy.append(water_energy + capacitive)
-    dissipated = sum(
-        fields[name].sum(axis=-1) for name in fields if name.endswith("dissipated_energy_pJ")
-    )
-    np.testing.assert_allclose(np.asarray(energy) - energy[0] + dissipated, 0, rtol=0, atol=3e-9)
+def test_the_reference_imports_no_production_code():
     assert not any(name == "cells" or name.startswith("cells.") for name in sys.modules)
     assert not any(name == "jax" or name.startswith("jax.") for name in sys.modules)

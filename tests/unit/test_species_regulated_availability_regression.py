@@ -1,4 +1,4 @@
-"""species_regulated_availability@1: the 1 ms errors of A4 and A5 against their references, pinned.
+"""cells.operator.species_regulated_availability@1: the 1 ms errors of A4 and A5 against their references, pinned.
 
 docs/INVENTORY_COUPLING_DESIGN.md §10. A regression guard, not a qualification (the lead's ruling,
 14 November 2026): the protocol's `regression_pins_1ms` (validation/tissue/

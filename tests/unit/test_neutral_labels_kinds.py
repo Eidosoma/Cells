@@ -56,7 +56,7 @@ from tests.unit import test_transporter_kind as tk
 from validation.compartment_ph_engine import definitions as fr
 from validation.tissue import secreted_species_fixtures as fx
 
-LAW = "neutral_arrival_labels@1"
+LAW = "cells.operator.neutral_arrival_labels@1"
 EPS = np.finfo(float).eps
 CELL, NODE, BATH = "cell_0", "ecs_0", "bath"
 RATE = 10.0  # 1/s: 1e15 P A (1/V_cell + 1/V_node), each 1 pL, S's exchange relaxation rate.
@@ -187,7 +187,7 @@ RECTIFIER_NA = dict(
 # A test-only law whose one mode takes two of a species at N for one at P (its role bound to the
 # exchange world's W, whose potential the registry declares): no crossing, refused beside labels.
 UNEQUAL_LAW = law_registry.CycleLaw(
-    "seamtest.unequal_crossing@1",
+    "seamtest.cycle.unequal_crossing@1",
     (),
     (),
     None,
@@ -329,7 +329,7 @@ def test_a_cycles_one_way_rates_are_j_plus_and_j_plus_e_to_the_x(form):
 def test_a_net_flow_population_beside_reports_finite_zeros():
     """A net-flow mode has no one-way form: its J+ and J- (NaN in the evaluation) are selected to
     0 before any arithmetic, so a labelled row beside it reads finite amounts."""
-    raw = ck.exchange_world(ck.exchanger(law="seamtest.net_exchange@1"))
+    raw = ck.exchange_world(ck.exchanger(law="seamtest.cycle.net_exchange@1"))
     plus, minus, j, _, p = _probe_population(raw, (), ck.scoped, -0.03)
     assert np.all(plus == 0) and np.all(minus == 0) and np.any(j != 0)
 
@@ -575,7 +575,7 @@ def axis_world(case):
         return tk.held_world(ck.general(tk.population(), n_end="b")), ["Y"], ck.scoped()
     if case == "diagram, two crossing rows":
         return ck.exchange_world(ck.exchanger()), ["W", "X"], ck.scoped()
-    raw = ck.exchange_world(ck.exchanger(law="seamtest.net_exchange@1"))
+    raw = ck.exchange_world(ck.exchanger(law="seamtest.cycle.net_exchange@1"))
     raw["execution"]["dt"] = 1e-4  # A step every form admits (test_cycle_kind's four_steps).
     return raw, ["Y"], ck.scoped()  # Y: moved by nothing, beside a net-flow population.
 
@@ -624,7 +624,7 @@ def test_the_euler_imex_weights_each_kinds_start_fluxes():
     bit, and the passive route's and the pump's forward less backward are their booked nets at
     rounding, every amount >= 0."""
     raw = kinds_world(labelled=False, node_mM=0.1 * S_mM)
-    raw["execution"]["solver"] = "imex_euler_face_electromigration@1"
+    raw["execution"]["solver"] = "cells.solver.imex_euler_face_electromigration@1"
     spec, impl, state, p, control = host(raw)
     ids = list(spec.model.species_ids)
     rows = np.asarray([ids.index("S"), ids.index("Y")])
@@ -653,3 +653,40 @@ def test_label_errors_take_each_kinds_reasons_from_the_model():
         assert any("rectifier_Na runs" in e for e in errors) == refused, (species, errors)
     blanket = surface_pump_v3.label_errors(p, (ids.index("S"),), structure=structure)
     assert any("need the parsed model" in e for e in blanket)
+
+
+@pytest.mark.parametrize("solver", [None, "cells.solver.imex_euler_face_electromigration@1"])
+def test_labels_beside_one_way_records_share_the_steps_ends_and_change_nothing(solver):
+    """FR-50 (D327) beside FR-42: the world's route and pump keep one-way records too. Over three
+    host steps, under ARS(2,2,2) and the Euler IMEX, the labelled transfers are the labelled-only
+    twin's bit for bit, the records the recorded-only twin's, and every shared field all three
+    twins'. Records and labels read one end view of each step."""
+    raw = kinds_world(labelled=False)
+    if solver:
+        raw["execution"]["solver"] = solver
+    recorded = copy.deepcopy(raw)
+    recorded["model"][passive_routes.MODEL_KEY][0]["one_way"] = True
+    recorded["model"][transporter.MODEL_KEY][0]["one_way"] = True
+    twins = {}
+    for name, world, labelled in (("labels", raw, True), ("records", recorded, False),
+                                  ("both", recorded, True)):  # fmt: skip
+        spec, impl, state, p, control = host(world)
+        rows = np.asarray([list(spec.model.species_ids).index(s) for s in ("S", "Y")])
+        transfers = []
+        for _ in range(3):
+            asks = dict(labels=rows) if labelled else {}
+            out = impl.imex_step(state, 1e-3, control, p, xp=np, **asks)
+            state, valid = out[0], out[1]
+            assert bool(valid)
+            transfers.append(out[2] if labelled else None)
+        twins[name] = (state, transfers)
+    (labels, label_transfers), (records, _), (both, both_transfers) = twins.values()
+    for a, b in zip(label_transfers, both_transfers, strict=True):
+        assert bits(np.concatenate([np.ravel(x) for t in a for x in t])) == bits(
+            np.concatenate([np.ravel(x) for t in b for x in t])
+        )
+    for name in type(both)._fields:
+        assert bits(getattr(both, name)) == bits(getattr(records, name)), name
+        if name in type(labels)._fields:
+            assert bits(getattr(both, name)) == bits(getattr(labels, name)), name
+    assert np.all(both.passive_inward_fmol > 0) and np.all(both.transporter_forward_fmol[1] > 0)

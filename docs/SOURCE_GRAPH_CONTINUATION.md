@@ -1,5 +1,10 @@
 # Registered long-reference continuation
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 NUM-005c1 / D034. Continue the [capped first session](../reports/NUM005C1_LONG_REFERENCE.md)
 without changing its artifacts or its 25 archived source dependencies. This is
 reference engineering, not a production graph or a selected RK4 step.

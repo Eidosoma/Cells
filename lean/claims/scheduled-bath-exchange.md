@@ -25,7 +25,7 @@ Neutral formula units preserve bath charge. Across any sequence of solution chan
 - [CellsProofs.Tissue.BathSchedule.epoch_sum](../CellsProofs/Tissue/BathSchedule.lean#L102)
 - [CellsProofs.Tissue.BathSchedule.reversal_shift](../CellsProofs/Tissue/BathSchedule.lean#L114)
 
-Direct proof subject `cells.scheduled_bath_composition@1`
+Direct proof subject `cells.operator.scheduled_bath_composition@1`
 
 Uses [Balanced reactions preserve a weighted inventory](reaction-inventory.md) · [Ion charge sets permeation reversal and bounds the current–voltage slope](charged-permeation.md)
 

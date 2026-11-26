@@ -1,0 +1,1138 @@
+{
+ "about": "READOUTS.md's published names, engine series against reference series. engine/reference: series/<name>, excess_over_blank/<fate>, route2/<fate>, survival/<fate>, not_compared/<name>; meta names the reference series whose class, accuracy and scale a bare not_compared list takes. scale: READOUTS.md §3's kind. order: state, heat or label (spec.declared_order), none for route 2. status: judged or reported per profile (READOUTS.md §4); absent means the profile has no such readout. blank: whether the blank carries it.",
+ "kind": "cells.fr38_v2.judge_mapping@1",
+ "readouts": [
+  {
+   "blank": true,
+   "engine": "series/n_N",
+   "name": "n_N",
+   "order": "state",
+   "reference": "series/n_N",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_M",
+   "name": "n_M",
+   "order": "state",
+   "reference": "series/n_M",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_Pi",
+   "name": "n_Pi",
+   "order": "state",
+   "reference": "series/n_Pi",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_R",
+   "name": "n_R",
+   "order": "state",
+   "reference": "series/n_R",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_R_s",
+   "name": "n_R_s",
+   "order": "state",
+   "reference": "series/n_R_s",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_X",
+   "name": "n_X",
+   "order": "state",
+   "reference": "series/n_X",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_A",
+   "name": "n_A",
+   "order": "state",
+   "reference": "series/n_A",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_ATP",
+   "name": "n_ATP",
+   "order": "state",
+   "reference": "series/n_ATP",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_ADP",
+   "name": "n_ADP",
+   "order": "state",
+   "reference": "series/n_ADP",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_P",
+   "name": "n_P",
+   "order": "state",
+   "reference": "series/n_P",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/n_Mx",
+   "name": "n_Mx",
+   "order": "state",
+   "reference": "series/n_Mx",
+   "scale": "amount",
+   "status": {
+    "C": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_tx_release",
+   "name": "H_tx_release",
+   "order": "state",
+   "reference": "series/H_tx_release",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tx_1",
+   "name": "C_tx_1",
+   "order": "state",
+   "reference": "series/C_tx_1",
+   "scale": "amount",
+   "status": {
+    "A": "reported",
+    "B": "reported",
+    "C": "reported",
+    "D": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tx_2",
+   "name": "C_tx_2",
+   "order": "state",
+   "reference": "series/C_tx_2",
+   "scale": "amount",
+   "status": {
+    "A": "reported",
+    "B": "reported",
+    "C": "reported",
+    "D": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tx_3",
+   "name": "C_tx_3",
+   "order": "state",
+   "reference": "series/C_tx_3",
+   "scale": "amount",
+   "status": {
+    "A": "reported",
+    "B": "reported",
+    "C": "reported",
+    "D": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tx_4",
+   "name": "C_tx_4",
+   "order": "state",
+   "reference": "series/C_tx_4",
+   "scale": "amount",
+   "status": {
+    "A": "reported",
+    "B": "reported",
+    "C": "reported",
+    "D": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tx_5",
+   "name": "C_tx_5",
+   "order": "state",
+   "reference": "series/C_tx_5",
+   "scale": "amount",
+   "status": {
+    "A": "reported",
+    "B": "reported",
+    "C": "reported",
+    "D": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tx_6",
+   "name": "C_tx_6",
+   "order": "state",
+   "reference": "series/C_tx_6",
+   "scale": "amount",
+   "status": {
+    "A": "reported",
+    "B": "reported",
+    "C": "reported",
+    "D": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tx_7",
+   "name": "C_tx_7",
+   "order": "state",
+   "reference": "series/C_tx_7",
+   "scale": "amount",
+   "status": {
+    "A": "reported",
+    "B": "reported",
+    "C": "reported",
+    "D": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tx_8",
+   "name": "C_tx_8",
+   "order": "state",
+   "reference": "series/C_tx_8",
+   "scale": "amount",
+   "status": {
+    "A": "reported",
+    "B": "reported",
+    "C": "reported",
+    "D": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/E_tx",
+   "name": "E_tx",
+   "order": "state",
+   "reference": "series/E_tx",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/W_tx",
+   "name": "W_tx",
+   "order": "state",
+   "reference": "series/W_tx",
+   "scale": "amount",
+   "status": {
+    "A": "reported",
+    "B": "reported",
+    "C": "reported",
+    "D": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/F_pol",
+   "name": "F_pol",
+   "order": "state",
+   "reference": "series/F_pol",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/F_rib",
+   "name": "F_rib",
+   "order": "state",
+   "reference": "series/F_rib",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_J_I_tx",
+   "name": "int_J_I_tx",
+   "order": "state",
+   "reference": "series/int_J_I_tx",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_S_tx",
+   "name": "int_S_tx",
+   "order": "state",
+   "reference": "series/int_S_tx",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_Q_tx",
+   "name": "int_Q_tx",
+   "order": "state",
+   "reference": "series/int_Q_tx",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_Q_tx_release_durable",
+   "name": "int_Q_tx_release_durable",
+   "order": "state",
+   "reference": "series/int_Q_tx_release_durable",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_Q_tx_release_short_lived",
+   "name": "int_Q_tx_release_short_lived",
+   "order": "state",
+   "reference": "series/int_Q_tx_release_short_lived",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_D_R",
+   "name": "int_D_R",
+   "order": "state",
+   "reference": "series/int_D_R",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_D_R_s",
+   "name": "int_D_R_s",
+   "order": "state",
+   "reference": "series/int_D_R_s",
+   "scale": "amount",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_1",
+   "name": "C_tl_1",
+   "order": "state",
+   "reference": "series/C_tl_1",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_2",
+   "name": "C_tl_2",
+   "order": "state",
+   "reference": "series/C_tl_2",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_3",
+   "name": "C_tl_3",
+   "order": "state",
+   "reference": "series/C_tl_3",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_4",
+   "name": "C_tl_4",
+   "order": "state",
+   "reference": "series/C_tl_4",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_5",
+   "name": "C_tl_5",
+   "order": "state",
+   "reference": "series/C_tl_5",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_6",
+   "name": "C_tl_6",
+   "order": "state",
+   "reference": "series/C_tl_6",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_7",
+   "name": "C_tl_7",
+   "order": "state",
+   "reference": "series/C_tl_7",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_8",
+   "name": "C_tl_8",
+   "order": "state",
+   "reference": "series/C_tl_8",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/E_tl",
+   "name": "E_tl",
+   "order": "state",
+   "reference": "series/E_tl",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/W_tl",
+   "name": "W_tl",
+   "order": "state",
+   "reference": "series/W_tl",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_J_I_tl",
+   "name": "int_J_I_tl",
+   "order": "state",
+   "reference": "series/int_J_I_tl",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_S_tl",
+   "name": "int_S_tl",
+   "order": "state",
+   "reference": "series/int_S_tl",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_Q_tl",
+   "name": "int_Q_tl",
+   "order": "state",
+   "reference": "series/int_Q_tl",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_s_1",
+   "name": "C_tl_s_1",
+   "order": "state",
+   "reference": "series/C_tl_s_1",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_s_2",
+   "name": "C_tl_s_2",
+   "order": "state",
+   "reference": "series/C_tl_s_2",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_s_3",
+   "name": "C_tl_s_3",
+   "order": "state",
+   "reference": "series/C_tl_s_3",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_s_4",
+   "name": "C_tl_s_4",
+   "order": "state",
+   "reference": "series/C_tl_s_4",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_s_5",
+   "name": "C_tl_s_5",
+   "order": "state",
+   "reference": "series/C_tl_s_5",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_s_6",
+   "name": "C_tl_s_6",
+   "order": "state",
+   "reference": "series/C_tl_s_6",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_s_7",
+   "name": "C_tl_s_7",
+   "order": "state",
+   "reference": "series/C_tl_s_7",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/C_tl_s_8",
+   "name": "C_tl_s_8",
+   "order": "state",
+   "reference": "series/C_tl_s_8",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/E_tl_s",
+   "name": "E_tl_s",
+   "order": "state",
+   "reference": "series/E_tl_s",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/W_tl_s",
+   "name": "W_tl_s",
+   "order": "state",
+   "reference": "series/W_tl_s",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_J_I_tl_s",
+   "name": "int_J_I_tl_s",
+   "order": "state",
+   "reference": "series/int_J_I_tl_s",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_S_tl_s",
+   "name": "int_S_tl_s",
+   "order": "state",
+   "reference": "series/int_S_tl_s",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_Q_tl_s",
+   "name": "int_Q_tl_s",
+   "order": "state",
+   "reference": "series/int_Q_tl_s",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_D_P",
+   "name": "int_D_P",
+   "order": "state",
+   "reference": "series/int_D_P",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/int_J_C",
+   "name": "int_J_C",
+   "order": "state",
+   "reference": "series/int_J_C",
+   "scale": "amount",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_tx",
+   "name": "H_tx",
+   "order": "heat",
+   "reference": "series/H_tx",
+   "scale": "heat",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_deg_R",
+   "name": "H_deg_R",
+   "order": "heat",
+   "reference": "series/H_deg_R",
+   "scale": "heat",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_deg_R_s",
+   "name": "H_deg_R_s",
+   "order": "heat",
+   "reference": "series/H_deg_R_s",
+   "scale": "heat",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_rel_tx_release_durable",
+   "name": "H_rel_tx_release_durable",
+   "order": "heat",
+   "reference": "series/H_rel_tx_release_durable",
+   "scale": "heat",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_rel_tx_release_short_lived",
+   "name": "H_rel_tx_release_short_lived",
+   "order": "heat",
+   "reference": "series/H_rel_tx_release_short_lived",
+   "scale": "heat",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_tl",
+   "name": "H_tl",
+   "order": "heat",
+   "reference": "series/H_tl",
+   "scale": "heat",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_deg_P",
+   "name": "H_deg_P",
+   "order": "heat",
+   "reference": "series/H_deg_P",
+   "scale": "heat",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_rc",
+   "name": "H_rc",
+   "order": "heat",
+   "reference": "series/H_rc",
+   "scale": "heat",
+   "status": {
+    "B": "reported"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_store",
+   "name": "H_store",
+   "order": "heat",
+   "reference": "series/H_store",
+   "scale": "heat",
+   "status": {
+    "C": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/H_water",
+   "name": "H_water",
+   "order": "heat",
+   "reference": "series/H_water",
+   "scale": "heat",
+   "status": {
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/W_bath",
+   "name": "W_bath",
+   "order": "heat",
+   "reference": "series/W_bath",
+   "scale": "heat",
+   "status": {
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/V",
+   "name": "V",
+   "order": "state",
+   "reference": "series/V",
+   "scale": "amount",
+   "status": {
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/G_minus_G0",
+   "name": "G_minus_G0",
+   "order": "state",
+   "reference": "series/G_minus_G0",
+   "scale": "G",
+   "status": {
+    "A": "judged",
+    "B": "reported",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_resyn",
+   "name": "label_R_resyn",
+   "order": "label",
+   "reference": "series/label_R_resyn",
+   "scale": "label:R",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_pool0",
+   "name": "label_R_pool0",
+   "order": "label",
+   "reference": "series/label_R_pool0",
+   "scale": "label:R",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_pre",
+   "name": "label_R_pre",
+   "order": "label",
+   "reference": "series/label_R_pre",
+   "scale": "label:R",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_win",
+   "name": "label_R_win",
+   "order": "label",
+   "reference": "series/label_R_win",
+   "scale": "label:R",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_post",
+   "name": "label_R_post",
+   "order": "label",
+   "reference": "series/label_R_post",
+   "scale": "label:R",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_s_resyn",
+   "name": "label_R_s_resyn",
+   "order": "label",
+   "reference": "series/label_R_s_resyn",
+   "scale": "label:R_s",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_s_pool0",
+   "name": "label_R_s_pool0",
+   "order": "label",
+   "reference": "series/label_R_s_pool0",
+   "scale": "label:R_s",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_s_pre",
+   "name": "label_R_s_pre",
+   "order": "label",
+   "reference": "series/label_R_s_pre",
+   "scale": "label:R_s",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_s_win",
+   "name": "label_R_s_win",
+   "order": "label",
+   "reference": "series/label_R_s_win",
+   "scale": "label:R_s",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/label_R_s_post",
+   "name": "label_R_s_post",
+   "order": "label",
+   "reference": "series/label_R_s_post",
+   "scale": "label:R_s",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/released_present_gross_durable",
+   "name": "released_present_gross_durable",
+   "order": "label",
+   "reference": "series/released_present_gross_durable",
+   "scale": "label:R",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": true,
+   "engine": "series/released_present_gross_short_lived",
+   "name": "released_present_gross_short_lived",
+   "order": "label",
+   "reference": "series/released_present_gross_short_lived",
+   "scale": "label:R_s",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": false,
+   "engine": "series/excess_over_blank_durable",
+   "name": "excess_over_blank_durable",
+   "order": "state",
+   "reference": "excess_over_blank/durable",
+   "scale": "excess:R",
+   "status": {
+    "A": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": false,
+   "engine": "series/excess_over_blank_short_lived",
+   "name": "excess_over_blank_short_lived",
+   "order": "state",
+   "reference": "excess_over_blank/short_lived",
+   "scale": "excess:R_s",
+   "status": {
+    "A": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": false,
+   "engine": "route2/durable",
+   "name": "route2_durable",
+   "order": "none",
+   "reference": "route2/durable",
+   "scale": "route2:durable",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": false,
+   "engine": "route2/short_lived",
+   "name": "route2_short_lived",
+   "order": "none",
+   "reference": "route2/short_lived",
+   "scale": "route2:short_lived",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": false,
+   "engine": "survival/durable",
+   "name": "survival_durable",
+   "order": "label",
+   "reference": "survival/durable",
+   "scale": "label:R",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  },
+  {
+   "blank": false,
+   "engine": "survival/short_lived",
+   "name": "survival_short_lived",
+   "order": "label",
+   "reference": "survival/short_lived",
+   "scale": "label:R_s",
+   "status": {
+    "A": "judged",
+    "B": "judged",
+    "C": "judged",
+    "D": "judged"
+   }
+  }
+ ]
+}

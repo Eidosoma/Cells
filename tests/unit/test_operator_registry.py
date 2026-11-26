@@ -34,27 +34,29 @@ from cells.registry import kind_registry, operators
 from cells.registry import laws as law_registry
 
 TODAY = (  # The built-in package's registration order: today's dictionary's order.
-    "ideal_osmosis_linear_compliance_water@1",
-    "k_anion_symport_mass_action@1",
-    "scheduled_cell_replacement@1",
+    "cells.operator.ideal_osmosis_linear_compliance_water@1",
+    "cells.operator.k_anion_symport_mass_action@1",
+    "cells.operator.scheduled_cell_replacement@1",
 )
 HEADER = "from cells.operators.contract import Operator\n\n\n"
 EXISTING = HEADER + (
-    "class Existing(Operator):\n    LAW_ID = 'tests.existing_operator@1'\n    EVENT = True\n"
+    "class Existing(Operator):\n    LAW_ID = 'tests.operator.existing_operator@1'\n    EVENT = "
+    "True\n"
 )
 NEW = HEADER + (
     "from cells.operators.osmotic_water import OsmoticWater  # Imported from another package.\n"
     "from {package}.a_existing import Existing  # Imported: its own module's, not this one's.\n\n\n"
     "class Base(Operator):  # An intermediate base: no LAW_ID of its own.\n    EVENT = True\n\n\n"
-    "class New(Base):\n    LAW_ID = 'tests.new_operator@1'\n\n\n"
+    "class New(Base):\n    LAW_ID = 'tests.operator.new_operator@1'\n\n\n"
     "class Inherits(New):  # It only inherits New's LAW_ID: not a second operator.\n    pass\n\n\n"
-    "class Helper:  # Not an Operator.\n    LAW_ID = 'tests.not_an_operator@1'\n"
+    "class Helper:  # Not an Operator.\n    LAW_ID = 'tests.operator.not_an_operator@1'\n"
 )
 NEWER = HEADER + (
-    "class Newer(Operator):\n    LAW_ID = 'tests.newer_operator@1'\n    EVENT = True\n"
+    "class Newer(Operator):\n    LAW_ID = 'tests.operator.newer_operator@1'\n    EVENT = True\n"
 )
 UNBOOKED = HEADER + (  # The contract's planted error below, in a module of its own.
-    "class Unbooked(Operator):\n    LAW_ID = 'tests.unbooked_operator@1'\n    EVENT = True\n"
+    "class Unbooked(Operator):\n    LAW_ID = 'tests.operator.unbooked_operator@1'\n    EVENT = "
+    "True\n"
     "    STATE_AXES = {'unbooked_dissipated_energy_pJ': ('cell_slot',)}\n"
 )
 
@@ -62,14 +64,14 @@ UNBOOKED = HEADER + (  # The contract's planted error below, in a module of its 
 class Planted(contract.Operator):
     """A valid declaration: an event part and nothing else."""
 
-    LAW_ID = "tests.planted_operator@1"
+    LAW_ID = "tests.operator.planted_operator@1"
     EVENT = True
 
 
 class Unbooked(contract.Operator):
     """The planted error: an owned field named as heat but not declared as heat."""
 
-    LAW_ID = "tests.unbooked_operator@1"
+    LAW_ID = "tests.operator.unbooked_operator@1"
     EVENT = True
     STATE_AXES = {"unbooked_dissipated_energy_pJ": ("cell_slot",)}
 
@@ -85,12 +87,12 @@ def test_operators_register_with_check_declarations():
         contract.check_declarations(Unbooked)
     instance = section.register(Planted)
     assert isinstance(instance, Planted) and section.register(Planted) is instance  # Idempotent.
-    assert section.lookup("tests.planted_operator@1") is instance
+    assert section.lookup("tests.operator.planted_operator@1") is instance
 
 
 def test_a_duplicate_operator_id_is_refused_whatever_its_spelling():
     class Twin(OsmoticWater):
-        LAW_ID = "cells." + OsmoticWater.LAW_ID  # The namespaced spelling of a built-in's ID.
+        LAW_ID = kind_registry.qualified(OsmoticWater.LAW_ID)  # A built-in's, namespaced.
 
     section = operators.BUILTIN.extended()
     with pytest.raises(ValueError, match="already registered"):
@@ -109,7 +111,9 @@ def test_operators_is_the_active_section_with_todays_keys():
     assert tuple(OPERATORS)[: len(TODAY)] == TODAY and len(OPERATORS) == count
     assert all(type(op).LAW_ID == law for law, op in OPERATORS.items())
     assert tuple(OPERATORS.values()) == operators.BUILTIN.operators()
-    assert "cells." + TODAY[0] not in OPERATORS  # Exact keys, as definitions compare them.
+    name = TODAY[0].rsplit(".", 1)[-1]
+    spellings = (name, f"cells.{name}", f"cells.operator.{name}")
+    assert [s for s in spellings if s in OPERATORS] == [TODAY[0]]  # Exact keys: one spelling.
     assert dict(OPERATORS) == OPERATORS and OPERATORS == dict(OPERATORS)
     with operators.scope(operators.BUILTIN.extended(Planted)):
         assert Planted.LAW_ID in OPERATORS and len(OPERATORS) == count + 1
@@ -190,7 +194,7 @@ def test_a_new_operator_module_joins_its_package_with_no_edit_there(planted_pack
     unbooked = operators.OperatorRegistry()
     with pytest.raises(ValueError, match="declared as heat or work"):
         operators.register_package(unbooked, "planted_unbooked")
-    assert "tests.unbooked_operator@1" not in unbooked
+    assert "tests.operator.unbooked_operator@1" not in unbooked
     planted_packages("planted_broken", {"a_broken": "raise RuntimeError('a planted failure')\n"})
     with pytest.raises(RuntimeError, match="a planted failure"):
         operators.package_operators("planted_broken")
@@ -205,7 +209,7 @@ def test_a_new_operator_module_joins_its_package_with_no_edit_there(planted_pack
 class PlantedReaction:
     """A planted composite operator's standard free energies hook, by its LAW_ID."""
 
-    LAW_ID = "tests.planted_reaction@1"
+    LAW_ID = "tests.operator.planted_reaction@1"
 
     def __init__(self, entries):
         self.entries = entries
@@ -224,7 +228,7 @@ def test_an_operator_s_standard_free_energies_are_checked_and_name_no_law():
         reaction,
         cited,
     )
-    law = law_registry.active().laws(law_registry.CYCLE_LAW, "cells.transporter@1")[0]
+    law = law_registry.active().laws(law_registry.CYCLE_LAW, "cells.kind.transporter@1")[0]
     for entries, words in (
         ((reaction._replace(law_id=law.law_id, mode="coupled"),), "is not a cycle law it hosts"),
         ([reaction], "returns a tuple of FreeEnergyEntry"),

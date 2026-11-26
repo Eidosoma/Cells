@@ -21,7 +21,7 @@ The inward molecular rate equals permeability times area times outside number de
 - [CellsProofs.Chemistry.VesicleExchange.transfer_clearance](../CellsProofs/Chemistry/VesicleExchange.lean#L96)
 - [CellsProofs.Chemistry.VesicleExchange.washout_derivative](../CellsProofs/Chemistry/VesicleExchange.lean#L103)
 
-Direct proof subject `cells.membrane_permeation@1`
+Direct proof subject `cells.reaction.membrane_permeation@1`
 
 Uses [Lipid insertion scales with membrane area and diffusion-limited capture scales with radius](vesicle-phase-exchange.md) · [Bilayer area is half the sum of the molecular footprints in its two leaflets](bilayer-footprint.md) · [Production and first-order clearance preserve a positive pool and account for gross turnover](scheduled-species-turnover.md)
 
@@ -51,7 +51,29 @@ Uses [Lipid insertion scales with membrane area and diffusion-limited capture sc
 
 **Open.** Neutral-solute washout rate in fixed-size liposomes, and inward molecular uptake as a function of membrane area.
 
+- [Urea crosses a protein-free POPC membrane down its concentration gradient, with comparable apparent permeability in influx and efflux assays.](../WET_LAB_EVIDENCE.md#pair-popc-urea-permeability) · Supported by both studies
+
 **Unit** s⁻¹
+
+### branden2010_urea_permeability@1
+
+Protein-free tethered POPC liposomes, mean diameter about 71 nm, 22 °C. Fig. 3A and Passive diffusion results. [Brändén et al. (2010), Fig. 3A](https://doi.org/10.1016/j.bpj.2010.03.059)
+
+- **Evidence role** descriptive
+
+Uncertainty reported on the fitted rate. The article converts rate to permeability using the size and bilayer thickness.
+
+The fitted efflux rate of 1.23 ± 0.06 s⁻¹ gave a permeability of 1.29 × 10⁻⁶ cm/s at 22 °C. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
+
+### peterlin2012_urea_permeability@1
+
+Individual giant POPC vesicles exposed to external urea. Permeability inferred from swelling. Fig. 6a and Results §V. [Peterlin et al. (2012), Fig. 6a](https://doi.org/10.1039/C1SM06670F)
+
+- **Evidence role** descriptive
+
+The ± convention and assay temperature are unspecified here. The authors distinguish variation between vesicles from the uncertainty of individual fits.
+
+The reported urea permeability was 0.013 ± 0.001 µm/s at 0.10 and 0.20 M. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
 
 ### branden2010_glycerol_radius@1
 

@@ -1,4 +1,4 @@
-"""Operator scheduled_species_exchange@1: secretion and uptake of neutral species across patches.
+"""Operator cells.operator.scheduled_species_exchange@1: secretion and uptake of neutral species across patches.
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §2.3 and §2.5 (D150, version 1). A secreted species is
 one more row of @3's species axis (valence 0, zero membrane permeability), which @3 owns. This
@@ -58,7 +58,7 @@ RK4 is guarded, not refused: exact half-steps around @3's RK4 step ("split").
 
 The patch area is a current read (D191; the lead's ruling of 20 November 2026, for FR-7's U2 world
 with a releasing compartment): SCOPED_READS declares membrane_area current at stage split, so where
-an operator of the composition changes it (membrane_entity_state@1 provides it), each half-step's
+an operator of the composition changes it (cells.operator.membrane_entity_state@1 provides it), each half-step's
 imports take the area of the view it receives, the route's patch found on device as the one
 declared patch that joins the route's cell to its outside node (route_areas). A second declared
 patch joining that pair is then refused at the definition (check_area_reads), since the lookup
@@ -69,8 +69,8 @@ area is the declared area plus a zero increment: the declared area, bit for bit.
 kept (D191).
 
 Refusals. At the definition: a charged species, a patch on a held bath, an import with a flux law,
-a saturable export, a negative rate, K_M <= 0, a schedule change off the dt grid, more than 16
-species per world (FR-9 / D165), an occupant without its rates, a donor copy whose route values
+a saturable export, a negative rate, K_M <= 0, a schedule change off the dt grid, more than 1,024
+species per world (FR-43 / D315), an occupant without its rates, a donor copy whose route values
 differ from the slot's, a second patch joining a route's cell and outside node where a provider of
 the areas is composed (above), and every provider or closer of the volumes and the activity masks
 (CONFLICTS_VIEW: version 1 reads the declared volumes, so water, the lumens, insertion and S5's
@@ -100,6 +100,7 @@ the source's shares. The physics is unchanged: the labelled call's state is bit 
 unlabelled one's, and without labels nothing of it is traced.
 """
 
+import math
 from collections import Counter
 from dataclasses import dataclass
 
@@ -115,7 +116,7 @@ from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
 from cells.operators.species_turnover import scatter_add, set_rows
 
-LAW_ID = "scheduled_species_exchange@1"
+LAW_ID = "cells.operator.scheduled_species_exchange@1"
 # FR-15 S1: exchange stays neutral. A charged scheduled flux is electrogenic transport, which needs
 # its electrical work and a place in the membrane current; no consumer asks for it.
 CHARGED_LIMIT = (
@@ -558,6 +559,9 @@ def key_of(route):
 class ScheduledSpeciesExchange(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # Species registry (D176): it declares its species.
+    # FR-43 part 3: a transfer, moving each route's species between its patch's cell and outside
+    # node and booking both sides in exchange_moved_fmol (written_rows).
+    ROW_MOVES = "transfer"
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -648,6 +652,23 @@ class ScheduledSpeciesExchange(Operator):
 
     def species_identities(self, declaration):
         return declaration.species
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: each route's species at its patch's cell and outside node (a finite node:
+        a patch on a held bath is refused)."""
+        return tuple(
+            dict.fromkeys(
+                row
+                for r in declaration.routes
+                for row in ((r.species, r.cell), (r.species, r.outside))
+            )
+        )
+
+    def production_bound(self, spec, declaration):
+        """{(species, node): fmol/s}: a transfer's rate has no static bound at either of its rows
+        (math.inf), so a consumer that needs one, the unit producer's R5, refuses it there
+        (population_unit_turnover.check_writers; FR-43 part 3)."""
+        return dict.fromkeys(self.written_rows(spec, declaration), math.inf)
 
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)

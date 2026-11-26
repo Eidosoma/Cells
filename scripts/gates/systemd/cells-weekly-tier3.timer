@@ -1,0 +1,13 @@
+# Starts cells-weekly-tier3.service on Sundays at 04:00 UTC, a quiet hour after the nightly tiers
+# (02:30, about 45 minutes), so the two do not meet. Persistent: a Sunday missed while the machine was
+# off runs at boot.
+[Unit]
+Description=Cells weekly tier 3 on Sundays at 04:00 UTC
+
+[Timer]
+OnCalendar=Sun *-*-* 04:00:00 UTC
+Persistent=true
+Unit=cells-weekly-tier3.service
+
+[Install]
+WantedBy=timers.target

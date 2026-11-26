@@ -3,8 +3,8 @@
 Operators register the way kinds do (registry/kind_registry.py):
 - one registration call, `registry.register(operator)`, with an operator class or its one
   instance. It runs the operator contract's check_declarations (operators/contract.py) at
-  registration, and refuses a second operator under one namespaced ID, whatever the spelling;
-- namespaced IDs: an operator's LAW_ID, a bare ID being in `cells`;
+  registration, and refuses a second operator under one ID;
+- one spelling: an operator's LAW_ID is `namespace.operator.name@major` (registry/ids.py);
 - the built-in operators register on BUILTIN from their own homes, the static model table's
   `operator_homes` (registry/model_table.py), loaded by name once, the composite's package
   (BUILTIN_PACKAGE) first, through the call an outside package uses;
@@ -46,6 +46,7 @@ from dataclasses import KW_ONLY, dataclass
 from types import MappingProxyType
 from typing import ClassVar
 
+from cells.registry import ids
 from cells.registry import laws as law_registry
 from cells.registry.kind_registry import NAMESPACE, qualified
 from cells.registry.model_table import MODELS
@@ -74,8 +75,7 @@ class FamilyOperator:
     operator declares. A family's type is built on it, adds its own fields after `operator_id`,
     sets its `interface` and checks its own fields in `errors()`, calling this one first.
 
-    - `operator_id`: namespaced (`namespace.name@major`; a bare ID is in `cells`), named for what
-      it does;
+    - `operator_id`: `namespace.operator.name@major`, named for what it does;
     - `host`: the ID of the model that runs it;
     - `provenance`, `source` and `test`: as the law template's (registry/laws.py).
     """
@@ -94,10 +94,11 @@ class FamilyOperator:
     def errors(self):
         """Why this declaration breaks the template (empty: it keeps it)."""
         out = []
-        if not law_registry._is_id(self.operator_id):
-            out.append("its operator_id is [namespace.]name@major")
+        why = ids.reason(self.operator_id, family="operator", what="an operator")
+        if why is not None:
+            out.append(why)
         interface = type(self).interface
-        if not law_registry._is_id(interface, namespaced=True):
+        if not ids.interface(interface):
             out.append("its type declares a namespaced interface ID with its major")
         elif interface.split(".", 1)[0] == NAMESPACE and interface not in (
             law_registry.FAMILY_INTERFACES
@@ -107,8 +108,8 @@ class FamilyOperator:
                 "is one its family declares in the model table (the composite's is "
                 f"{COMPOSITE_INTERFACE}, its contract's)"
             )
-        if not law_registry._is_id(self.host):
-            out.append("its host is the ID of the model that runs it")
+        if (why := ids.reason(self.host, family="model", what="a model")) is not None:
+            out.append(f"its host, the model that runs it: {why}")
         return out + law_registry.source_errors(self.provenance, self.source, self.test, "operator")
 
 
@@ -133,7 +134,9 @@ class OperatorRegistry:
 
         cls = operator if isinstance(operator, type) else type(operator)
         check_declarations(cls)
-        key = qualified(cls.LAW_ID)
+        key = cls.LAW_ID
+        if (why := ids.reason(key, family="operator", what="an operator")) is not None:
+            raise ValueError(f"Operator {key!r}: {why}")
         known = self._operators.get(key)
         if known is not None and (known is operator or (operator is cls and type(known) is cls)):
             return known
@@ -174,7 +177,7 @@ class OperatorRegistry:
         return declaration
 
     def lookup(self, law_id):
-        """The composite's operator of a law ID, in either spelling (a bare ID is in cells)."""
+        """The composite's operator of a law ID."""
         key = qualified(law_id)
         if key not in self._operators:
             raise KeyError(f"No registered operator {key}")
@@ -193,7 +196,7 @@ class OperatorRegistry:
             raise KeyError(f"No registered operator {key}")
 
     def __contains__(self, law_id):
-        return isinstance(law_id, str) and bool(law_id) and qualified(law_id) in self._operators
+        return isinstance(law_id, str) and law_id in self._operators
 
     def operators(self):
         """The composite's registered instances, in registration order."""
@@ -336,11 +339,10 @@ class _ActiveOperators(MutableMapping):
     """The active section as a mapping (module docstring): keys are the LAW_IDs as declared."""
 
     def __getitem__(self, law_id):
-        if isinstance(law_id, str) and law_id:
-            operator = active()._operators.get(qualified(law_id))
-            if operator is not None and operator.LAW_ID == law_id:
-                return operator
-        raise KeyError(law_id)
+        operator = active()._operators.get(law_id) if isinstance(law_id, str) else None
+        if operator is None:
+            raise KeyError(law_id)
+        return operator
 
     def __iter__(self):
         return iter(tuple(op.LAW_ID for op in active().operators()))

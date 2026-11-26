@@ -1,0 +1,209 @@
+{
+ "format": "gap_junction_tissue.neither_rule@1",
+ "registration": "docs/GJ_NEITHER_REGISTRATION.md",
+ "proposed_tag": "gj-neither-registered-2026-11-23",
+ "engine_models": [
+  "resolved_pump_composite@1 over resolved_pump_tissue@3 (the species-only world of the secreted-species fixtures: ions at the bath's composition with zero permeability)",
+  "local_species_reactions@1: the switch, per cell",
+  "cells.passive_routes@1 with passive_neutral_permeation@1: miR200 alone on each junction, P A = G (no routes at D = 0)",
+  "junction_voltage_relaxation@1 pinned open; resolved_capacitor_components_current_continuity@1; imex_ars222_face_electromigration@1 with capacitive_reduction_gauged_damped_newton@2"
+ ],
+ "model": {
+  "species": {
+   "u": "miR200 (total)",
+   "m": "Zeb mRNA (total)",
+   "z": "ZEB protein"
+  },
+  "units": "scaled units: one unit is 1 uM in the engine's world; time in s (BITSEY's unit)",
+  "equations": [
+   "du/dt = g_u H(z; K_u, n_u, lambda_u) - k_u u + (junction terms, u only)",
+   "dm/dt = g_m H(z; K_m, n_m, lambda_m) - k_m m",
+   "dz/dt = g_z m sum_{i=0..6} C(6, i) l_i X^i / (1 + X)^6 - k_z z, X = u / x0",
+   "H(z; K, n, lambda) = (1 + lambda (z/K)^n) / (1 + (z/K)^n)",
+   "junction (a, b): its flux G (u_a - u_b) leaves a and enters b; G / V = D A_cell / (L_GJ V_cell) = 3 D / (r L_GJ)"
+  ],
+  "constants": {
+   "g_u": 4.199999999999999,
+   "K_u": 11.11111111111111,
+   "n_u": 3.0,
+   "lambda_u": 0.1,
+   "k_u": 0.05,
+   "g_m": 2.291666666666667,
+   "K_m": 2.7777777777777777,
+   "n_m": 2.0,
+   "lambda_m": 15.0,
+   "k_m": 0.5,
+   "g_z": 0.16666666666666666,
+   "x0": 40.0,
+   "l": [
+    1.0,
+    0.5,
+    0.2,
+    0.02,
+    0.02,
+    0.02,
+    0.02
+   ],
+   "k_z": 0.1,
+   "radius_m": 5e-06,
+   "junction_length_m": 1e-07,
+   "g_over_v_per_d": 6000000000000.0
+  },
+  "constants_source": "BITSEY's cancer_GJ_sims/GRN_miRNA.py at b2cb370 (numbers only, D208), scaled as it scales them, with Snail = 72 folded into g_u = 6 (1 + 0.4)/2 and g_m = (5/12)(1 + 10)/2; ITERATE = False, so the binding uses total miR200",
+  "seeds": {
+   "tumor": {
+    "u": 1e-06,
+    "m": 100.0,
+    "z": 100.0
+   },
+   "healthy": {
+    "u": 100.0,
+    "m": 1e-06,
+    "z": 1e-06
+   },
+   "note": "BITSEY seeds 0 where these are 1e-6 (the engine needs positive amounts)"
+  },
+  "stages": {
+   "uncoupled_s": 500.0,
+   "coupled_s": 20000.0,
+   "rule": "stage 1: one tumor cell and one healthy cell, no junctions, 500 s from the seeds, once; every tumor cell of stage 2 starts at stage 1's tumor end state, every healthy cell at its healthy one; stage 2 runs 20,000 s coupled, its clock from 0"
+  },
+  "criterion": {
+   "cell": "u > m + 2 at the end of stage 2, in every cell",
+   "rows": "for every row, max m - min m <= 2; a row is the cells with one z (the last lattice index)",
+   "source": "BITSEY's GRN_miRNA.py healthy_snapped_rows (line 519), on the whole field"
+  }
+ },
+ "geometry": {
+  "line": {
+   "lattice": "1 x 1 x 25: cells c0..c24 along z",
+   "tumor": "z < 6 (c0..c5)",
+   "junctions": "c_k - c_(k+1), k = 0..23",
+   "rows": "each cell is its own row, so the spread condition is empty",
+   "neighbours": 2,
+   "nodes": 26
+  },
+  "field": {
+   "lattice": "1 x 25 x 25: cell c{y}_{z}, y and z in 0..24",
+   "tumor": "y < 6 and z < 6 (a 6 x 6 block at the corner)",
+   "junctions": "one per pair one lattice step apart (c{y}_{z} - c{y}_{z+1} and c{y}_{z} - c{y+1}_{z}), 1,200 in all; no diagonals",
+   "rows": "row z holds c0_z .. c24_z",
+   "neighbours": 4,
+   "nodes": 626
+  }
+ },
+ "search": {
+  "bracket": [
+   0.0,
+   1e-13
+  ],
+  "ends": "D = 0 must not normalize and D = 1e-13 must; both are run",
+  "stop": "hi <= (1 + 0.001) lo, hi the smallest normalizing D and lo the largest below it that does not; reported x2 = hi",
+  "placement": "one point per CPU; the first points are the bracket's ends and dyadic points 1e-13/2^k, k from 1 on the line and from 4 on the field (the largest that runs at the base step, neither.first_points); then each finished worker takes a new point inside the current bracket (neither.place)",
+  "step": "per point, dt = 1/8 s halved until dt x 2 x neighbours x G/V <= 0.04 (neither.step); stage 1 at the shape's finest coupled step (1/64 s on the line, 1/128 s on the field)",
+  "convergence": "the final bracket's two ends rerun at half their step (C)",
+  "retry": "if C fails, the whole search once more at half the step rule, with its own C at a quarter; if that C fails too, the geometry is inconclusive. A run the harness stops is rerun once from the same snapshot; an engine refusal is a result. neither.py's search has no step option yet: a retry needs a tagged amendment adding it before it runs (D308)"
+ },
+ "verdicts": {
+  "R": "refinement: converged, no refused point, monotone, both ends as required",
+  "C": "the final bracket's ends keep their outcomes at half their step",
+  "A": "Cells' [lo - w/3, hi + w/3] overlaps the reference's bracket (verified at a ten-fold tighter tolerance)",
+  "geometry": "failed if a point is refused, a bracket end is wrong, or A fails with R and C passed; inconclusive if the outcomes are not monotone or C fails after its retry; else passed",
+  "overall": "any failed geometry makes it failed; else any inconclusive makes it inconclusive; else any not assessable makes it not assessable; else passed (D308)",
+  "no_ratio_alone": "no ratio of thresholds judges (D219)"
+ },
+ "plants": [
+  {
+   "id": "P-A1",
+   "what": "a reference bracket 1% above Cells' interval",
+   "expected": "A fails"
+  },
+  {
+   "id": "P-A2",
+   "what": "a reference bracket inside Cells' widened interval but outside its bracket",
+   "expected": "A passes: the margin is the stated w/3"
+  },
+  {
+   "id": "P-R1",
+   "what": "a refused point in Cells' search",
+   "expected": "the geometry fails"
+  },
+  {
+   "id": "P-R2",
+   "what": "non-monotone outcomes",
+   "expected": "the geometry is inconclusive"
+  },
+  {
+   "id": "P-C1",
+   "what": "a half-step rerun that flips an outcome",
+   "expected": "the geometry is inconclusive"
+  },
+  {
+   "id": "P-I1",
+   "what": "a reference bracket wider than 1.001",
+   "expected": "refused before comparison"
+  },
+  {
+   "id": "P-I2",
+   "what": "a reference whose bracket ends flip at the tighter tolerance",
+   "expected": "refused before comparison"
+  },
+  {
+   "id": "P-I3",
+   "what": "a reference echoing a different constant (Snail's g_u 4.0)",
+   "expected": "refused before comparison"
+  }
+ ],
+ "reported": {
+  "bitsey": "the historical logs and the pinned run, each bracket at full precision, its overlap with Cells' interval, the ratio hi_Cells / hi_BITSEY and the outcomes at common points; never judged",
+  "logs": {
+   "line": {
+    "file": "cancer_GJ_sims/results_miRNA/tumor_isolate_1D_V1M",
+    "command": "zombie.py zombie_tumor_isolate 1 1 25 0 (its first line)",
+    "revision": "earlier than b2cb370: its search is titled 'lowest Kd that fixes a 1-spot', which no committed revision from 04225e4 (20 May 2026) on prints; its result line 'Final NR=0' is 04225e4's format, not b2cb370's",
+    "sha256": "d5c3f75a6a6fe0bc27292785e0a3c47fff38a0621d8ef87e633415ebcaac7009"
+   },
+   "field": {
+    "file": "cancer_GJ_sims/results_miRNA/tumor_isolate_2D_V1M",
+    "command": "zombie.py zombie_tumor_isolate 1 25 25 0 (its first line)",
+    "revision": "earlier than b2cb370: its result line 'Final NR=0: ...' is 04225e4's format (20 May 2026); b2cb370 prints '0. Final underexp=0.3: ...'. GRN_miRNA.py and sim.py differ between 04225e4 and b2cb370 in comments and one equivalent expression only; zombie.py's protocol code changed",
+    "sha256": "d1e1c2d2479ccd77220327287d0dc1571f2c5099bf989de76b2a9f90c74fa328"
+   }
+  },
+  "pinned_run": {
+   "runner": "validation/gap_junction_tissue/bitsey_run.py",
+   "revision": "b2cb370aaecbc8299f259bc4251d5396c81f19a6",
+   "environment": "/mnt/workspaces/Cells/venv-bitsey (numpy 2.3.5, scipy 1.16.3, matplotlib 3.10.7, Python 3.13)",
+   "line": "zombie_tumor_isolate 1 1 25 0 0 1",
+   "field": "zombie_tumor_isolate 1 25 25 0 0 1, stopped once the first search has printed its result",
+   "licence": "none at b2cb370 or at the newest head (7e4fb45d, 22 November 2026); seven tracked files point to a LICENSE that does not exist; the user's D208 was ruled knowing this"
+  },
+  "seen_values": "the 1D log's bracket [7.171630859375e-15, 7.177734375e-15] and the 2D log's [1.8859863281250003e-15, 1.8875122070312503e-15], read before this rule"
+ },
+ "interface": {
+  "file": "validation/gap_junction_tissue/references/interface/neither.json",
+  "format": "gap_junction_tissue.neither_references@1",
+  "keys": {
+   "format": "gap_junction_tissue.neither_references@1",
+   "registration": "the tag the references read",
+   "model": "{constants: {every key of model.constants, each value as read}, seeds: {tumor: {u, m, z}, healthy: {u, m, z}} as read from model.seeds}",
+   "stage1": "{tumor: {u, m, z}, healthy: {u, m, z}} after 500 s uncoupled",
+   "geometries": "{line, field}: {bracket: [lo, hi], points: [{d, normalized, epithelial_cells, min_margin, max_row_spread}], tighter: {factor, lo_normalized, hi_normalized}, method}; a geometry the references did not compute is absent and is then not assessable"
+  },
+  "conditions": [
+   "hi <= (1 + 0.001) lo",
+   "lo not normalized and hi normalized, in points and again at the tighter tolerance",
+   "points monotone in d, with 0 not normalized and 1e-13 normalized"
+  ]
+ },
+ "not_blind": {
+  "line": "Not blind (D219): the registrant's development search neither-02 (from 1f4c740a, 17 November) converged at x2 = 7.177734375e-15 m^2/s, bracket [7.176208496e-15, 7.177734375e-15], 37 points, the half-step check passed; neither-01, picks-01/-02, dense-01 and ladder-01 ran the line at many D values. These conditions were written after; the judged run repeats the search fresh from the tag.",
+  "field": "A true pre-registration (D219): no 25 x 25 world has run past 16 s. Seen before this rule: BITSEY's whole 2D bisection in its saved log (bracket 1.886e-15 to 1.888e-15); sheet-01, a different world (9 x 9, a central 3 x 3 tumor, 2,000 s), whose threshold lay between 9.0e-16 and 1.8e-15; field-parse-01, a parse with no integration; and the cost probe field-cost-01: D = 1e-13 for 1.5 s and D = 0 for 16 s, where every tumor cell was still mesenchymal and every healthy cell epithelial (589 of 625), which cannot show a threshold; the smokes probes/smoke-registered-01 (a field point, D = 1e-13 for 0.25 s; a field search and a line search at 0.25 s and 2 s, each stopped at its upper end); and the pinned BITSEY field run's first five outcomes (D = 0 not normalized; 1e-13, 5e-14, 2.5e-14 and 1.25e-14 normalized), as in the historical log"
+ },
+ "compute_budget": {
+  "measured": "field-cost-01 on today's engine (main db54d0f5), one CPU: the field takes 0.16-0.19 s a step (with or without routes; 32- and 16-step windows, 1.3 GB), the line 3.4 ms a step; the first window's compile 72-77 s",
+  "line": "as neither-02: about 37 points, 8 CPU-hours; the upper end's 1.28 million steps (72 minutes) are the critical path; on four light CPUs about 2-3 hours",
+  "field": "a base-step point (1/8 s, 160,000 steps) takes 7-8.5 hours; the upper end (1/128 s, 2.56 million steps) 4.7-5.6 days; the search with its convergence check about 350-410 CPU-hours. It does not fit the light CPUs; the field runs when the lead assigns the compute, or after an amendment tagged before it runs",
+  "memory": "the line 1.2 GB a worker, the field 1.3 GB a worker"
+ }
+}

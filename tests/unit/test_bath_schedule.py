@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md, D169).
+"""Tier-1 smoke test of cells.operator.scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md, D169).
 
 In NumPy (no compile), on the species-only dose leg (validation/tissue/bath_schedule_fixtures):
 * the definition refusals with their messages: a net-charged formula unit (exact, in integers), a
@@ -261,38 +261,48 @@ def test_a_dose_beside_reactions_is_admitted_by_door_s():
     parse_spec(raw)
 
 
-STATE = "membrane_entity_state@1"
+STATE = "cells.operator.membrane_entity_state@1"
 STRUCTURE_REFUSED = {
     "insertion@1, a second provider": (
-        (STATE, "scheduled_membrane_insertion@1"),
+        (STATE, "cells.operator.scheduled_membrane_insertion@1"),
         "two providers of the view field extracellular_amount_reference",
     ),
     "insertion@2, a closer": (
-        (STATE, "scheduled_membrane_insertion@2"),
+        (STATE, "cells.operator.scheduled_membrane_insertion@2"),
         "extracellular_amount_reference has closers or a provider, never both",
     ),
     "the partition, a closer": (
-        (STATE, "isopotential_partition@1"),
+        (STATE, "cells.operator.isopotential_partition@1"),
         "extracellular_amount_reference has closers or a provider, never both",
     ),
     "lumen@1, over insertion@1": (
-        (STATE, "scheduled_membrane_insertion@1", "restricted_cleft_lumen@1"),
+        (
+            STATE,
+            "cells.operator.scheduled_membrane_insertion@1",
+            "cells.operator.restricted_cleft_lumen@1",
+        ),
         "two providers of the view field extracellular_amount_reference",
     ),
     "lumen@2, over insertion@2": (
-        (STATE, "scheduled_membrane_insertion@2", "restricted_cleft_lumen@2"),
+        (
+            STATE,
+            "cells.operator.scheduled_membrane_insertion@2",
+            "cells.operator.restricted_cleft_lumen@2",
+        ),
         "extracellular_amount_reference has closers or a provider, never both",
     ),
 }
 STRUCTURE_ADMITTED = (
-    ("electrode_current_injection@1",),
+    ("cells.operator.electrode_current_injection@1",),
     (STATE,),
-    ("scheduled_cell_replacement@1",),
-    ("scheduled_species_turnover@1",),
-    ("scheduled_species_exchange@1",),
-    ("scheduled_species_turnover@1", "scheduled_species_exchange@1"),
-    ("ideal_osmosis_linear_compliance_water@1",),  # Isosmotic steps only, at the definition.
-    ("local_species_reactions@1",),  # Door S: disjoint slots (D176).
+    ("cells.operator.scheduled_cell_replacement@1",),
+    ("cells.operator.scheduled_species_turnover@1",),
+    ("cells.operator.scheduled_species_exchange@1",),
+    ("cells.operator.scheduled_species_turnover@1", "cells.operator.scheduled_species_exchange@1"),
+    (
+        "cells.operator.ideal_osmosis_linear_compliance_water@1",
+    ),  # Isosmotic steps only, at the definition.
+    ("cells.operator.local_species_reactions@1",),  # Door S: disjoint slots (D176).
 )
 
 

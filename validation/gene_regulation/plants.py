@@ -9,7 +9,7 @@ Edits of the definition:
   factor multiplies the rate twice (B1′ multiplies its routes' factors in declared order).
 
 Edits of the motion, made in the running process only, never in src (validation's planted failures,
-each replacing one module function of templated_polymerisation@1 before the world is compiled):
+each replacing one module function of cells.operator.templated_polymerisation@1 before the world is compiled):
 - A1-3, a dropped fuel term: translation's stage exits move no ATP, ADP or Pi; its laws, phi_tl and
   x_tl, are unchanged;
 - A1-4 and A1-M-2, a machine not returned: a release returns no machine to the pool (A1's
@@ -39,6 +39,10 @@ from cells.operators import templated_polymerisation as tp
 from validation.gene_regulation import engine_run, worlds
 
 FUEL = ("ATP", "ADP", "Pi")
+COUPLING_LAWS = (
+    "cells.operator.species_regulated_availability@1",
+    "cells.operator.species_regulated_availability@2",
+)
 
 
 def _block(raw):
@@ -118,8 +122,7 @@ def plant(name, dt=0.5):
         return "A1", raw
     if name == "A1-5":
         raw = worlds.world("A1", dt=dt)
-        (coupling,) = [o for o in raw["model"]["operators"] if o["law"].startswith(
-            "species_regulated_availability")]  # fmt: skip
+        (coupling,) = [o for o in raw["model"]["operators"] if o["law"] in COUPLING_LAWS]
         twice = copy.deepcopy(coupling["couplings"][0])
         twice["id"] = f"{twice['id']}_twice"
         coupling["couplings"].append(twice)

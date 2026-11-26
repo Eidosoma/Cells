@@ -74,10 +74,12 @@ as BETSE, BITSEY, tyssue, Chaste, Morpheus, CompuCell3D, PhysiCell and cellGPU.
   faster harness first.
 - Gates are sized to the change (D223, amended by D229). A landing with no src/ change runs the
   tier-1/2 files it can reach (from recorded runtime imports and file reads), plus the always-run
-  guard set, and tiers 1+2 run in full nightly. Queued heads may be gated together as a stack.
+  guard set; the map is refreshed by a traced full run after each engine landing, and tiers 1+2
+  run in full nightly. Queued heads may be gated together as a stack.
 - The routine test gate is `scripts/test_tiers.py run --tiers tests/test_tiers.json
   --tier 1` (about 6 minutes on four cores). Add tier 2 (about 11 more minutes)
-  before landing engine changes; run tier 3 deliberately. A gate passes when
+  before landing engine changes; tier 3 runs weekly (Sundays 04:00 UTC, D396), and deliberately when a
+  change needs it. A gate passes when
   outcomes match the recorded tier baseline. Re-measure tiers after adding or
   fixing tests.
 

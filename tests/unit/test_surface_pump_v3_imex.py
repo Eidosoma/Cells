@@ -1,4 +1,4 @@
-"""resolved_pump_tissue@3: IMEX ledgers, orders and restart (a shard of the former file).
+"""cells.model.resolved_pump_tissue@3: IMEX ledgers, orders and restart (a shard of the former file).
 
 One module fixture (`imex_runs`: closed and release arms, both schemes, and the RK4
 reference at 2.5 us) serves the ledger, dissipation, order and bitwise-restart tests.
@@ -48,7 +48,7 @@ def selected(raw):
     """N2 runs only with X2 selected (its guard); the other schemes as they are."""
     if raw["execution"]["solver"] == N2:
         raw["execution"]["energy_check"] = dict(
-            check="step_doubled_energy@1", integration_error_cap=2e-3
+            check="cells.execution.step_doubled_energy@1", integration_error_cap=2e-3
         )
     return raw
 

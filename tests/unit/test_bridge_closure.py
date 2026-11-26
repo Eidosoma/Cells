@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of cytoplasmic_bridge_closure@1 (docs/CELL_DIVISION_S5_DESIGN.md §4).
+"""Tier-1 smoke test of cells.operator.cytoplasmic_bridge_closure@1 (docs/CELL_DIVISION_S5_DESIGN.md §4).
 
 In NumPy on the compact division world with a bridge between its daughters (no compile):
 * the bridge junction declares P_s A = 2 a_0 D_s^cyt, with D^cyt from the declared sigma_cyt, and a

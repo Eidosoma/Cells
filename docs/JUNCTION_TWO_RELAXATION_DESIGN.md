@@ -669,6 +669,246 @@ voltage. A match is not a reading: it may come from another connexin or from a h
 amplitude, P_open or conductance value for any candidate. The search's file is
 /mnt/workspaces/Cells/fr30-search-20261122/candidates.md, and the fitter does not open it.
 
+### 13.5 Entry of 13:55 UTC on 23 November 2026: Revilla, Castro and Barrio (1999), the prediction, readout and scoring conventions and their code, before any fit
+
+Written by FR-30's harness author, who becomes its fitter after the tag, at the lead's direction
+(D311). It pins the conventions of the lead's draft (call 3 of
+/mnt/workspaces/Cells/fr30-benchmark-20261123/RULING_DRAFT.md) and section 13's rule 4 with D311's
+consequences. It also names the code that applies them, which exists at this entry's tag (D308).
+The commit carrying it is to be tagged `fr30-revilla1999-registered-2026-11-23` before any fit. No
+fit has been made, and the code has met no held-out value. Its tests and its end-to-end smoke use
+invented inputs. Its reader ran twice on the training file fit.json (point 6): it parsed and
+validated the training values in memory, and printed and compared none.
+
+**What I have read (disclosure).**
+- **Read:**
+  - this note's sections 13 to 13.4 and its source list;
+  - D276, D291, D292, D308 and D311, and the lead's draft;
+  - the training files `revilla1999/extraction/fit.json` and `protocol.json`, values included;
+  - the law's code (`junction_series_gates.py`, `junction_voltage_relaxation.py`,
+    `junction_gate.py`) and the header of its unit test.
+- **Other papers' values, seen through this note:** sections 13.1 and 13.2 print Moreno et al.
+  (2002)'s two times at 60 mV, and Sahu and Bera (2013)'s protocol and Table 2's two decay times at
+  -100 mV. Neither is this paper's.
+- **Seen by name only:** a search for this section's heading printed four headings of sections 2 to
+  4 (2.1, 3, 4 and 4.1). I read none of their text and nothing else of sections 1 to 12.
+- **Not opened:**
+  - anything under lean/, and the four papers;
+  - `held_out.json` and every other file under `fr30-candidates4-extraction/`;
+  - the earlier FR-30 extraction folders;
+  - the source search's `candidates.md`, and the notes named in sections 13 and 13.1.
+- **From training data** I recall this paper's title and subject: transjunctional voltage dependence
+  of Cx32 and Cx43 junctions in oocyte pairs. I recall no value from its figures or tables. What I
+  know of Cx43 gating in general comes from other work, not from this paper.
+
+**The trace criterion (D311, the user's choice).** Superimposed or single sample records are not
+refitted: only decays the paper itself analysed count.
+- It resolves rule 1's "digitized, then fitted by the extractor" toward rule 5.
+- It applies to this paper and binds every later candidate, fallbacks 5 to 9 included.
+- It was fixed and hashed (4d5b1df8...) after Shibayama had been read, and before Elenes was opened
+  or any value digitized.
+
+**1. The prediction** (`predict(params, vj_mV, protocol)`).
+- **The protocol:** each gate at its steady state at V_j = 0 (the target of the law's `kinetics` at
+  0 V), then a 30-s step to V_j. Both oocytes are held at one level, so V_j = 0 before each step
+  (protocol.json).
+- **G_0:** the law's conductance at +10 mV immediately after the step from the 0-mV steady state,
+  that is `advance_clamped` with dt = 0. This is the paper's brief 10-mV prepulse, with no
+  relaxation. The law has no instantaneous voltage dependence, so G_0 equals the 0-mV steady
+  conductance. It is computed, never assumed to be 1.
+- **The trace:** one call of `advance_clamped` from that state at V_j, with dt the grid's times, so
+  each sample is exact and none is chained. The grid is t_k = k ms, k = 0 to 30,000, from the
+  step's onset.
+- **G_ss/G_0:** the conductance at t = 30 s over G_0. It is the end-of-step value, never the fitted
+  offset or an asymptote, and it is judged whatever the fit.
+- **Cannot predict** (rule 4): `domain_valid` fails at the holding level, the prepulse, the step
+  (dt = 30 s) or the end state; or the trace is not finite; or G_0 is not positive.
+- **One parameter set at both polarities.**
+  - Both gate kinds read |V_j|. The law declares this departure: one Boltzmann in |V|, symmetric in
+    polarity, where the paper fits each polarity.
+  - So one block of kinds and parameters, as the law is declared, gives the predictions at -80 and
+    +80 mV, and the two are equal.
+  - predictions.json carries that one block, and `verify` recomputes every prediction from it. A
+    separate fit per polarity would be another law, and this entry does not admit it.
+
+**2. The readout** (`readout(trace)`), on y = G/G_0 over 5 ms <= t <= 30 s, both ends included
+(29,996 samples).
+- **The form:** y = C + A_f exp(-t/tau_f) + A_s exp(-t/tau_s), with C free, by unweighted least
+  squares. "Fast" means tau_f < tau_s, and the amplitudes are fractions of G_0.
+- **Variable projection:** C, A_f and A_s by linear least squares at each (tau_f, tau_s).
+- **The start:** the fixed log grid, tau_f in {0.05, 0.1, 0.2, 0.5, 1, 2} s and tau_s in {1, 2, 5,
+  10, 20, 50} s with tau_f < tau_s (33 pairs). The pair with the smallest residual sum of squares
+  starts the refinement; on a tie, the first in grid order (tau_f ascending, then tau_s).
+- **The refinement, fixed beyond the draft:**
+  - the projected residual over (ln tau_f, ln tau_s), unbounded;
+  - Levenberg-Marquardt (SciPy's `least_squares`, method `lm`) with Kaufman's Jacobian;
+  - xtol, ftol and gtol 1e-12, and at most 1,000 evaluations;
+  - then C, A_f and A_s at the final pair, with the two terms sorted so that tau_f < tau_s.
+- **Reported:** tau_f, tau_s, A_f, A_s, C, the residual's RMS, the grid start and the refinement's
+  status, with each gate's rates at V_j.
+
+**3. Degenerate fits.** A fit is degenerate if tau_s/tau_f < 1.5, if A_f or A_s is below 1e-3, or
+if tau_s is above 300 s.
+- **Fixed beyond the draft:**
+  - "below 1e-3" is signed, so a negative amplitude (a rising term) is degenerate;
+  - a refinement that does not converge, or that ends with a value that is not finite or a time
+    that is not positive, is degenerate too.
+- At a degenerate voltage both time comparisons fail, with the reasons recorded. Its G_ss/G_0 is
+  still judged.
+
+**4. The comparisons** (`score(predictions, held_out)`).
+- **A time** passes if |ln(pred/obs)| <= ln 1.25 or |pred - obs| <= 2 SEM.
+  - Both outcomes are recorded, with the tolerance that applied: the band edge farther from the
+    observed value, on the prediction's side.
+  - The ln band is asymmetric: -20% and +25%.
+- **G_ss/G_0** passes if |pred - obs| <= max(0.05, 2 SEM), and the one that applied is recorded.
+- **The SEM** is the held-out entry's own dispersion, where its type begins "SEM" (each point is the
+  mean +- SEM of six pairs).
+  - A null dispersion leaves the base tolerance alone (section 13.1, point 4).
+  - Any other type, such as an SD or a range, is refused for the lead to rule.
+- **Not judged:** A_fast and A_slow, which are not reported per voltage (section 13.2). The
+  prediction's amplitudes are reported only. The digitising error, the extractor's own, is reported
+  with each comparison and widens nothing, since section 13 fixes none.
+
+**5. The pass rule** (section 13's rule 4, with D311's consequences).
+- **The held-out voltages** are -80 and +80 mV, two voltages (D311). The claim is one interpolated
+  magnitude, 80 mV between 60 and 100 mV, at both polarities. It is not two independent tests.
+- **With two voltages, "more than half" means both.** The benchmark passes only if all four time
+  comparisons and both G_ss comparisons pass. Rule 4's 75% condition then holds too.
+- **The verdict:** cannot predict if the law leaves its domain at either held-out voltage; otherwise
+  fail if any comparison fails; otherwise pass.
+- The in-sample fit is reported, not judged.
+
+**6. The reader, and how the checker runs it.**
+- **Written from fit.json,** which the extractor built the same way as held_out.json.
+  - It reads every list under "observables" and matches each entry by its (vj_mV,
+    maps_to_registered_observable) pair.
+  - An entry without that mapping is skipped (fit.json's amplitude ratio).
+  - It needs exactly one entry per held-out voltage and judged observable.
+  - The units are seconds (or milliseconds, converted) for times, and fit.json's "G/G(10-mV
+    prepulse)" for G_ss.
+- **It fails closed.**
+  - It refuses a missing or duplicated entry, a missing key, a value that is not a finite number, a
+    sign against its polarity, unknown units, and a dispersion that is not an SEM.
+  - A refusal names key paths only, never a value, and the command line withholds any other error's
+    text.
+- **The checker's order:**
+  1. `python -m validation.junction_gate_benchmark.revilla1999 verify predictions.json` recomputes
+     every prediction from the file's one block with the tagged code, within a relative 1e-6.
+  2. `python -m validation.junction_gate_benchmark.revilla1999_score score predictions.json
+     held_out.json verdict.json --expect-sha256
+     e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285` (D311's digest). The
+     verdict file records both files' digests, every value and the tolerance used; stdout carries
+     verdicts only.
+- **Checked before the tag:**
+  - `resolve` on fit.json at -100, -60, +60 and +100 mV resolves all 12 entries from their keys.
+    At the default -80 and +80 mV it refuses, since fit.json holds neither. Neither run printed a
+    value.
+  - An end-to-end smoke of the stages used an invented parameter block and synthetic held-out files
+    in fit.json's structure (/mnt/workspaces/Cells/fr30-benchmark-20261123/harness/smoke-c58714f8/).
+    `predict` ran at -80 and +80 mV with the invented parameters, which is not a fit. `verify`
+    passed, and `score` with each file's digest gave pass and fail where it should. A wrong digest
+    and a tampered prediction were refused (exit 2), and stdout carried no value.
+
+**7. Exposures and exclusions** (D311).
+- **The Lean lane's files:**
+  - `lean/checks/data/revilla1999_cx43.json` holds Table 1's per-polarity Boltzmann fits, which
+    encode the held-out steady state. It has been on main since 21 November (0ec0ac28, 760d9f0c).
+  - lean/PROGRESS.md and lean/claims/junction-gate.md print the fitted conductance at -80 and +80
+    mV, so the held-out steady state is printed in the repository, not merely derivable.
+  - lean/claims/junction-series-amplitudes.md and lean/COVERAGE.md print the -100 mV times and the
+    amplitude ratio, which are training values.
+- **Section 13.4's line** "Nobody on this project has read these papers' results" was wrong for
+  Revilla. The Lean lane, an independent agent, had read it and put its Table 1 on main the day
+  before (D311).
+- **The law's design predates the exposure** (D311).
+- **The fitter's exclusions,** beyond sections 13 and 13.1:
+  - all of lean/;
+  - the four papers in /mnt/datasets/Cells/papers/incoming/;
+  - every file under fr30-candidates4-extraction/ except revilla1999/extraction/fit.json and
+    protocol.json;
+  - the earlier FR-30 extraction folders;
+  - sections 1 to 12 of this note.
+
+  The fitter works from fit.json and protocol.json alone.
+
+**8. The code at the tag** (D308).
+- `validation/junction_gate_benchmark/revilla1999.py`: `PROTOCOL`, `READOUT`, `LawParameters`,
+  `predict`, `readout`, `predictions_document` and `verify`, with the stages `predict` and `verify`.
+- `validation/junction_gate_benchmark/revilla1999_score.py`: `resolve`, `read_predictions` and
+  `score`, with the stages `resolve` and `score`. It imports the standard library only, so no
+  verdict depends on the engine's code.
+- `tests/unit/test_junction_gate_benchmark.py`: synthetic inputs only. Its plants are a 30% time
+  error, a G_ss off by 0.06 and a degenerate predicted trace, with the reader's refusals.
+
+**9. What follows.**
+- The fitter fits junction_series_gates@1 to fit.json only and states the gates' kinds before any
+  prediction.
+- It writes predictions.json at -80 and +80 mV with the tagged `predict` and `readout`, and the
+  in-sample fit report.
+- A separate checker runs the tagged scorer against held_out.json. Disagreements go to the lead.
+
+### 13.6 Entry of 16:02 UTC on 23 November 2026: reader erratum 1, the held-out file's container, before any comparison
+
+Written by FR-30's checker at the lead's direction, on D308's precedent: a registered reader that
+cannot read its registered file is corrected by an erratum tagged before any judged run. Until now
+the checker had built nothing in FR-30. This erratum is its only part in the harness, and its
+verdict will say so. The lead tags the commit carrying it before the judged score.
+
+**The obstacle.**
+- The checker ran section 13.5 point 6's order from a clean full snapshot of main at ddcf32c1.
+  `verify` passed. `resolve` on held_out.json refused it (exit 2) at its first check. `score`, which
+  calls the same reader, was not run. The record is
+  /mnt/workspaces/Cells/fr30-benchmark-20261123/verdict/checker_record.json.
+- The tagged reader takes "observables" only as an object of named lists of entries, which is
+  fit.json's shape. In held_out.json, "observables" is one flat list of six entries, one per judged
+  pair.
+- So point 6's "built the same way as held_out.json" holds for the entries, not for their
+  container. Each entry carries the keys, labels and JSON types that the reader's entry checks
+  expect.
+- The refusal's text misled as well. It said there was "no 'observables' object" while listing
+  `observables` among the top-level keys. The key exists, and its value is a list.
+
+**The change** (`revilla1999_score.py`'s `resolve` only).
+- "observables" may be fit.json's object of named lists, with paths `observables.NAME[i]` as before,
+  or held_out.json's one flat list, with paths `observables[i]`.
+- Every entry goes through the same checks as before, by the unchanged `_entry`: its (vj_mV,
+  maps_to_registered_observable) pair, its polarity, its units, its dispersion's type and units, and
+  its value.
+- The refusals now say whether the key is absent, or present with neither shape.
+- Nothing else changes: no tolerance, rule, pass logic or mapping of quantities.
+  - `RULE`, which predictions.json carries as its conventions, is unchanged, so `verify` reads the
+    registered predictions as before.
+  - The scorer's output therefore still names section 13.5, and the checker's verdict names this
+    entry's tag.
+
+**How it was written.**
+- From the two files' keys and shapes only, through the checker's structure logs:
+  /mnt/workspaces/Cells/fr30-benchmark-20261123/verdict/logs/06-structure-held_out.txt and
+  07-structure-fit.txt.
+  - They print key names, JSON types, list lengths and step voltages, with the reader's labels
+    (the mapping, units and polarity, and whether a dispersion is an SEM).
+  - They print no value.
+- Its tests use invented values. The new reader has not been run on held_out.json, and it meets the
+  file only after the tag.
+
+**No comparison has been computed.** No predicted value has been compared with a held-out value, and
+the checker has seen no held-out value. The inputs are unchanged:
+- predictions.json, sha256 20ca2a4a4e53fe04fe3a335a824f1148df1df436676e69d07064ec75f2252401, which
+  `verify` passed;
+- held_out.json, sha256 e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285 (D311).
+
+**Tests** (`tests/unit/test_junction_gate_benchmark.py`, H8).
+- **The passing path:** a synthetic document in held_out.json's flat list resolves to the same
+  entries as in fit.json's structure, at paths `observables[i]`, and scores to the same comparisons.
+  The tagged reader refused it, and that refusal is the plant.
+- **Two refusal rows:** an SD at the flat list's first entry, refused by its path; and an
+  "observables" of neither shape, refused with a message saying that the key is present.
+- **Cost:** three test IDs, and well under a second.
+
+**What follows.** After the tag, the checker freezes a clean snapshot that holds the erratum. It then
+runs `verify`, `resolve` and `score` as section 13.5 point 6 states, with the same `--expect-sha256`.
+
 ## Sources
 
 - **Read:**

@@ -1,6 +1,6 @@
 """Door S's merged view in the run view (cells/records/run_view.py, module docstring; route B).
 
-* A provider: the bath schedule's dose (scheduled_bath_composition@1) is recorded through
+* A provider: the bath schedule's dose (cells.operator.scheduled_bath_composition@1) is recorded through
   write_run in view_extracellular_amount_reference, bitwise the view the host observer formed for
   each observed row: the held content at the bath, the bound value elsewhere. The row saved at the
   dose's time holds the content before it, the next row after it. (The windowed path, a closer and

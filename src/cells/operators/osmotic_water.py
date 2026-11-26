@@ -1,7 +1,7 @@
-"""Operator ideal_osmosis_linear_compliance_water@1: osmotic water and compliant volumes.
+"""Operator cells.operator.ideal_osmosis_linear_compliance_water@1: osmotic water and compliant volumes.
 
 The law, its Heun half-steps at frozen amounts and its ledgers, moved here unchanged
-from resolved_pump_water@1 (models/surface_pump_water.py, now a thin composition;
+from cells.model.resolved_pump_water@1 (models/surface_pump_water.py, now a thin composition;
 docs/PUMP_WATER_MODEL.md). Water is numerics/osmotic_water.LAW_ID on the
 membranes: the flow across a patch is Q = 1e15 A Lp a (psi_cell - psi_outside) pL/s
 with psi = P - Pi, Pi = R T (sum of declared amounts + neutral impermeants) / V and
@@ -20,7 +20,7 @@ Contract (operators/contract.py):
   at the current volumes and re-checked at the step end. The water conductances are
   bound from the declared patch areas, so no other operator may provide an area;
 * accepted writes: the cell volume increments, which a later operator may set at its
-  events (scheduled_cell_replacement@2) with removed and supplied volumes booked in the
+  events (cells.operator.scheduled_cell_replacement@2) with removed and supplied volumes booked in the
   local and total water ledgers; node_free_energy_pJ is water's endpoint free energy per
   node, whose change such a writer books (docs/PUMP_COMPOSITE_V2_DESIGN.md §2);
 * parts: a split process (Heun half-steps, heun_frozen_amount_water@1); under RK4
@@ -63,8 +63,7 @@ physical_amounts = ionic.physical_amounts
 WATER_STEP_ID = "heun_frozen_amount_water@1"
 
 
-# dt x (water relaxation rate) per step: the bound of the existing water
-# families (legacy/models/surface_water.py); physiological values give 1e-5-2e-3 at 1 ms.
+# dt x (water relaxation rate) per step; physiological values give 1e-5-2e-3 at 1 ms.
 MAX_WATER_RELAXATION_PER_STEP = 0.05
 
 
@@ -303,7 +302,7 @@ def node_free_energy_pJ(state, p, *, xp=jnp):
     Against the declared volume V0 at the current amounts, on finite nodes (0 elsewhere):
     the dilution -RT N_tot log(V/V0), which brings @3's chemical term on V0 to the
     physical one, and the elastic U(V) - U(V0). An operator that changes a node's amounts or
-    volume outside water's step books the change of this term (scheduled_cell_replacement@2).
+    volume outside water's step books the change of this term (cells.operator.scheduled_cell_replacement@2).
     These are the per-node terms water_ledgers sums into the energy ledger, in the same
     expressions; water_ledgers keeps its own code, so water's programs are unchanged, and
     tests/unit/test_cell_replacement_v2.py holds the two equal to rounding.
@@ -363,7 +362,7 @@ WATER_READOUTS = (
 def bind(spec, declaration, p):
     """The water state (zero) and layout fields of a definition on @3's layout p.
 
-    resolved_pump_water@1's binding: compartments, held baths and membrane routes of
+    cells.model.resolved_pump_water@1's binding: compartments, held baths and membrane routes of
     the declaration, the conductance 1e15 A Lp and each held bath's water potential,
     as edge_exchange computes it at a bath node.
     """
@@ -502,7 +501,7 @@ class OsmoticWater(Operator):
     CONFLICTS_VIEW = ("membrane_area",)
     VIEW_FOLLOWS_SPLIT = True
     # A later operator may write the cell volumes (a replacement event's newcomer volume,
-    # scheduled_cell_replacement@2); it books removed and supplied volumes in these ledgers.
+    # cells.operator.scheduled_cell_replacement@2); it books removed and supplied volumes in these ledgers.
     # Without such a writer nothing changes (v2 design §1.4).
     ACCEPTS_WRITES = {"volume_increment_pL": ("water_local", "water_total")}
     LEDGERS = WATER_LEDGERS

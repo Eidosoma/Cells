@@ -1,5 +1,8 @@
 # Coupling out of the inventory: species-regulated availability (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **A5″ qualified, 18 November 2026 (FR-6 items 1 and 3).** The registered protocol `fr6-a5pp-v1`
 (`validation/tissue/a5pp_acceptance_protocol.json`, registered at 555d8771) was judged once from a
 clean snapshot of that commit: passed, 18 of 18 judged criteria, against the code-blind references
@@ -879,7 +882,7 @@ is an ordinary state: a Hill law of 0 gives activation 0 and inhibition 1, with 
 | W3a | Pumps on a dividing cell | Pump capacity as entity state | The next `membrane_entity_state` version providing the pump views from state; a partition version splitting them by a_k; R5's worst case over the daughters | Door (S5 §3.3, "later work") | S5's line |
 | W3b | Water beside the partition | The partition writing water's volume | S5 §5.5's third extension, booking water's endpoint free energy | Door | S5's line |
 | W3c | 64 padded field nodes, held baths only, with any field-input provider (every closer is one) | A refresh policy that scales | (a) a raised cap at the measured cost (+20% per step at 254 nodes, +48% at 825, one CPU core; GPU unmeasured); (b) declared epochs, which do not serve triggered events or per-world predicates under vmap; (c) rank-k updates; or the field-solver interface's sparse IDs | A decision, then a door | The v2 note §3 (the lead), with the field-solver interface note |
-| W4 | 16 species per world, ions included (`check_species_cap`); 7 until FR-9 (D165) | Above 16, another probe | Lifted to 16 by FR-9 (D165, a D148 change): the W4 probe, with the host-side summation-order guard at 8 or more terms in `tests/unit/test_species_cap.py` | Done to 16 | D150's note; D165 |
+| W4 | 1,024 species per world, ions included (`check_species_cap`); 16 until FR-43 (D315), 7 until FR-9 (D165) | Above 1,024, another probe | Lifted to 16 by FR-9 (D165, a D148 change): the W4 probe, with the host-side summation-order guard at 8 or more terms in `tests/unit/test_species_cap.py` | Done to 16 | D150's note; D165 |
 
 **The count that made W4 bind (S).** The heredity world has 4 species (Na, K, M, P). Track R's
 minimal chain adds 3: an activator, a partner and their complex. That is exactly 7, the cap when

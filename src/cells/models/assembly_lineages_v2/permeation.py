@@ -1,4 +1,4 @@
-"""cells.membrane_permeation@1: one molecule enters the lumen from the pool, across the membrane.
+"""cells.reaction.membrane_permeation@1: one molecule enters the lumen from the pool, across the membrane.
 
 OL2: the design note's §0.2b rule 6, §0.2c rules 2, 3 and 15, and §0.2d items 2 and 4.
 
@@ -38,7 +38,7 @@ FORMULAS = {
 
 LAW = law_registry.BUILTIN.register(
     ReactionLaw(
-        "cells.membrane_permeation@1",
+        "cells.reaction.membrane_permeation@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

@@ -1,0 +1,41 @@
+{
+  "ntini_2023_actb": {
+    "citation": "Ntini et al. (2023), Cell Systems 14, 906–922.e6, Figure 1 and authors’ transcript table",
+    "doi": "10.1016/j.cels.2023.09.005",
+    "accession": "GSE218726",
+    "series": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE218726",
+    "table": "https://github.com/evgnt/chrTT-seq/blob/a86a76de0245fca5d52def6bd630904a4847497e/data/mRNA_allfeatures",
+    "row": "ENSG00000075624.14",
+    "gene": "ACTB",
+    "column": "halftime",
+    "preparation": "MCF-7 cells",
+    "pulse_min": 8,
+    "chase_times_min": [
+      0,
+      5,
+      10,
+      15,
+      20
+    ],
+    "observable": "Fit to the chromatin-associated fraction of recovered nuclear last-exon reads, CHR/(CHR + NP). RNA was labelled during synthesis. Time zero is the end of the pulse.",
+    "chromatin_association_half_time_min": 3.35316390870914,
+    "uncertainty": "The authors' transcript table gives a point estimate for this row.",
+    "limit": "The nuclear fractions pool transcripts that detached at different times. They do not supply a count at detachment for the same RNAs followed through the chase."
+  },
+  "tutucci_2018_ash1": {
+    "citation": "Tutucci et al. (2018), Nature Methods 15, 81–89, Figure 6b–c",
+    "doi": "10.1038/nmeth.4502",
+    "figure": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5843578/#F6",
+    "organism": "Saccharomyces cerevisiae",
+    "gene": "ASH1",
+    "preparation": "Live yeast with endogenously tagged ASH1",
+    "cells": 21,
+    "sampling_interval_min": 2,
+    "origin": "Anaphase onset",
+    "observable": "Detected ASH1 mRNA spots per cell through mitosis, followed by their decline.",
+    "reported_half_life_min": 6.1,
+    "reported_plus_minus_min": 2.8,
+    "uncertainty": "The Figure 6c value is printed as 6.1 ± 2.8 min. The type of the reported uncertainty is unspecified.",
+    "limit": "Per-cell counts do not identify the time when each RNA detached from its template. The reported half-life has no matched count of RNAs at detachment."
+  }
+}

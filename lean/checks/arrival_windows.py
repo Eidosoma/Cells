@@ -1,4 +1,4 @@
-"""FR-42 point releases and interval totals, with a separate development FR-38 engine comparison."""
+"""FR-42 window references and a compiled FR-38 replay with neutral RNA labels."""
 
 import argparse
 import json
@@ -97,57 +97,153 @@ def development_release():
     import numpy as np
 
     from cells.definitions.specs import parse_spec
-    from validation.gene_regulation import engine_run, kernel, worlds
+    from validation.gene_regulation import engine_run, kernel, release_check, worlds
 
     jax.config.update("jax_enable_x64", True)
-    raw = kernel.truncated(worlds.r1(0.75, labelled=True), 10.0)
-    times = [0.0, 2.0, 4.0, 6.0, 8.0, 10.0]
+    times = [i / 2 for i in range(21)]
+    samples = times[::4]  # Same six endpoints on the fine and two-second counter grids.
+    windows = [(2.0, 4.0, 0.75), (6.0, 8.0, 0.25)]
+    raw = kernel.truncated(worlds.r1(0.75, dt=0.5), times[-1])
     raw["experiment"]["observation_times"] = times
-    active = [1, 2, 1, 2, 1]
-    route = next(
-        r for r in raw["experiment"]["polymerisation_controls"] if r["route_id"] == worlds.LABEL
+    kernel.block(raw)["chains"][0]["release"]["durable_fraction"] = "scheduled"
+    raw["experiment"]["polymerisation_controls"].append(
+        dict(
+            route_id=worlds.RELEASE,
+            schedule=[dict(time=0.0, value=0.75), dict(time=6.0, value=0.25)],
+        )
     )
-    route["schedule"] = [
-        dict(time=t, value=float(label)) for t, label in zip(times[:-1], active, strict=True)
-    ]
-    spec = parse_spec(raw)
-    t, x, _ = engine_run.readouts(spec, engine_run.collect(spec))
-    np.testing.assert_array_equal(t, times)
-    np.testing.assert_array_equal(x["int_Q_tx"], np.zeros(len(times)))
-    exported = dict(definition=spec.to_dict(), t=t, readouts=x)
+
+    def readouts(definition):
+        spec = parse_spec(definition)
+        t, x, checks = engine_run.readouts(spec, engine_run.collect(spec))
+        assert t == times
+        return spec, x, checks
+
+    plain, physical, checks = readouts(raw)
+    by_schedule = {}
+    for second_mark in ("cohort", "second"):
+        labelled = worlds.with_share_labels(
+            raw, window=windows[0][:2], labels=("base", "cohort", "second")
+        )
+        for route in labelled["experiment"]["label_arrivals"]:
+            route["schedule"].extend(
+                [dict(time=6.0, label=second_mark), dict(time=8.0, label="base")]
+            )
+        _, x, labelled_checks = readouts(labelled)
+        assert {k for k in x if not k.startswith("label_")} == set(physical)
+        for k, values in physical.items():
+            assert np.asarray(x[k]).tobytes() == np.asarray(values).tobytes(), k
+        assert checks == labelled_checks
+        by_schedule[second_mark] = x
+    reused, separate = by_schedule["cohort"], by_schedule["second"]
+    assert all(q == 0 for q in physical["int_Q_tx"])  # Every release came from the initial hold.
+
+    # Physical loss of the hold independently measures gross detachment in each step.
+    hold = np.asarray(physical[f"H_{worlds.RELEASE}"])
+    gross = {f: np.diff(physical[f"int_Q_{worlds.RELEASE}_{f}"]) for f in release_check.FATE_ROWS}
+    total = gross["durable"] + gross["short_lived"]
+    gap = np.abs(total + np.diff(hold))
+    assert np.all(gap <= 128 * math.ulp(1.0) * (hold[1:] + hold[:-1] + total))
+    assert np.all(total > 0)
+    np.testing.assert_allclose(
+        gross["durable"] / total, [0.75 if t < 6 else 0.25 for t in times[:-1]], atol=0, rtol=2e-12
+    )
+    marked_steps = [any(a <= t < b for a, b, _ in windows) for t in times[:-1]]
+    marked_starts = [t for t, marked in zip(times[:-1], marked_steps, strict=True) if marked]
+    assert marked_starts == [2, 2.5, 3, 3.5, 6, 6.5, 7, 7.5]
+
     report = {}
     with TemporaryDirectory() as directory:
-        path = Path(directory) / "release.json"
-        path.write_text(json.dumps(exported, allow_nan=False))
-        for fate, row in (("durable", "R_c2"), ("short_lived", "R_s_c2")):
-            prefix = f"int_Q_{worlds.RELEASE}_{fate}"
-            class1, class2 = (np.diff(x[f"{prefix}_{i}"]) for i in (1, 2))
-            assert all(
-                a > 0 and b == 0 if label == 1 else a == 0 and b > 0
-                for a, b, label in zip(class1, class2, active, strict=True)
+        path = Path(directory) / "plain.json"
+        path.write_text(
+            json.dumps(
+                dict(
+                    definition=plain.to_dict(),
+                    t=times,
+                    cell=checks["exported_cell"],
+                    readouts=physical,
+                )
             )
+        )
+        for fate, row in release_check.FATE_ROWS.items():
             series = cohort.read(path, row)
-            np.testing.assert_array_equal(series[2], x[f"{prefix}_2"])
-            close, chased = window_survivors(series, 2, 4, 4), window_survivors(series, 2, 4, 6)
-            old, new = window_survivors(series, 2, 4, 8), window_survivors(series, 6, 8, 8)
-            # Class 2 has zero inflow in the gap. One continuous integration of this
-            # counter across the gap provides a separate check of the two-window sum.
-            combined = window_survivors(series, 2, 8, 8)
-            assert 0 < old < chased < close and combined > new
-            assert math.isclose(combined, old + new, rel_tol=2e-14)
-            report[fate] = dict(
-                first_at_close_fmol=close,
-                first_at_chase_fmol=chased,
-                chase_fraction=chased / close,
-                carried_fmol=old,
-                new_fmol=new,
-                combined_fmol=combined,
-                class2_release_by_step_fmol=class2.tolist(),
+            coarse = [values[::4] for values in series]
+            np.testing.assert_array_equal(series[2], physical[f"int_Q_{worlds.RELEASE}_{fate}"])
+            first = np.asarray(separate[f"label_{row}_cohort"])
+            second = np.asarray(separate[f"label_{row}_second"])
+            both = np.asarray(reused[f"label_{row}_cohort"])
+            start, close, reopen, end = (times.index(t) for t in (2, 4, 6, 8))
+            assert (
+                first[start] == 0 < first[reopen] < first[close]
+                and second[reopen] == 0 < second[end]
             )
+            assert all(q == 0 for q in reused[f"label_{row}_second"])
+            np.testing.assert_allclose(both, first + second, rtol=release_check.SHARES, atol=0)
+            for x in (reused, separate):
+                labels = [x[f"label_{row}_{name}"] for name in ("base", "cohort", "second")]
+                np.testing.assert_allclose(
+                    np.sum(labels, axis=0), physical[f"n_{row}"], rtol=release_check.SHARES, atol=0
+                )
+
+            # One reference integrates the analytic physical rates. The other infers survival
+            # from the unlabelled run's cumulative releases, losses and total RNA at the cell.
+            exact, inferred, coarse_inferred, grid_errors = [], [], [], []
+            for sample in samples:
+                bounds = [(a, min(b, sample), p) for a, b, p in windows if a < sample]
+                exact.append(
+                    math.fsum(
+                        release_check.window_cohort(p, fate, a, b, sample) * release_check.COPY_FMOL
+                        for a, b, p in bounds
+                    )
+                )
+                inferred.append(
+                    math.fsum(window_survivors(series, a, b, sample) for a, b, _ in bounds)
+                )
+                coarse_inferred.append(
+                    math.fsum(window_survivors(coarse, a, b, sample) for a, b, _ in bounds)
+                )
+                errors = [cohort.grid_error(*series, a, b, sample) for a, b, _ in bounds]
+                assert all(error is not None for error in errors)
+                grid_errors.append(math.fsum(errors))
+            bound = release_check.SURVIVORS + release_check.split_bound(fate, plain.execution.dt)
+            sampled = both[::4]
+            np.testing.assert_allclose(sampled, exact, rtol=bound, atol=0)
+            np.testing.assert_allclose(inferred, exact, rtol=release_check.SURVIVORS, atol=0)
+            assert np.all(np.abs(sampled - inferred) <= np.asarray(grid_errors) + bound * sampled)
+            report[fate] = dict(
+                gross_marked_fmol=float(np.sum(gross[fate][marked_steps])),
+                first_at_close_fmol=float(first[close]),
+                first_at_reopening_fmol=float(first[reopen]),
+                chase_fraction=float(first[reopen] / first[close]),
+                old_at_second_close_fmol=float(first[end]),
+                new_at_second_close_fmol=float(second[end]),
+                reused_at_second_close_fmol=float(both[end]),
+                reused_amounts_fmol=sampled.tolist(),
+                max_reuse_error_fmol=float(np.max(np.abs(both - (first + second)))),
+                max_analytic_error_fmol=float(np.max(np.abs(sampled - exact))),
+                max_counter_relative_error={
+                    grid: max(abs(v / e - 1) for v, e in zip(values, exact, strict=True) if e > 0)
+                    for grid, values in (
+                        ("half_second", inferred),
+                        ("two_seconds", coarse_inferred),
+                    )
+                },
+            )
+    marked_hold_loss = -math.fsum(np.diff(hold)[marked_steps])
+    marked_fate_sum = math.fsum(result["gross_marked_fmol"] for result in report.values())
+    marked_error = abs(marked_fate_sum - marked_hold_loss)
+    assert marked_error <= 128 * math.ulp(1.0) * math.fsum((hold[1:] + hold[:-1])[marked_steps])
     return dict(
-        steps=len(active),
-        class_by_step=active,
-        new_chain_completions_fmol=x["int_Q_tx"][-1],
+        sample_times_s=samples,
+        engine_step_s=plain.execution.dt,
+        marked_step_starts_s=marked_starts,
+        compiled_worlds=3,
+        shared_physical_readouts=len(physical),
+        diagnostics_equal=True,
+        largest_gross_balance_error_fmol=float(np.max(gap)),
+        marked_hold_loss_fmol=marked_hold_loss,
+        marked_fate_sum_fmol=marked_fate_sum,
+        marked_balance_error_fmol=marked_error,
         fates=report,
     )
 

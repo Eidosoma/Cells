@@ -1,0 +1,14 @@
+{
+  "dataset_id": "mathieson2018_neuron_turnover",
+  "doi": "10.1038/s41467-018-03106-1",
+  "workbook": "https://pmc-oa-opendata.s3.amazonaws.com/PMC5814408.1/41467_2018_3106_MOESM5_ESM.xlsx",
+  "raw_data": "https://www.ebi.ac.uk/pride/archive/projects/PXD008514",
+  "sheet": "protein half lives high qual",
+  "preparation": "Primary cortical neurons from embryonic-day-15 mice",
+  "columns": {"A": "gene symbol", "Z": "neuron replicate 3, hours", "AC": "neuron replicate 4, hours"},
+  "rows": [
+    {"row": 1845, "symbol": "GOLGA2", "protein": "GM130", "uniprot": "Q921M4", "half_life_h": [35.136, 40.233]},
+    {"row": 2429, "symbol": "LMNB1", "protein": "Lamin B1", "uniprot": "P14733", "half_life_h": [169.008, 209.115]}
+  ],
+  "uncertainty": "The two values are fitted biological replicates. A within-fit confidence interval is unavailable in these columns."
+}

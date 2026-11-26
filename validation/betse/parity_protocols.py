@@ -33,6 +33,7 @@ if __name__ == "__main__":
         if str(entry) not in sys.path:
             sys.path.insert(0, str(entry))
 
+from validation import id_table  # noqa: E402
 from validation.betse import protocol_tolerances as pt  # noqa: E402
 
 PHASES = pt.PHASES
@@ -120,7 +121,7 @@ def build(case):
     d = json.loads(Path(case["derived"]).read_text())
     if d["provisional_terms"]:
         raise ValueError(f"{case['id']}: provisional terms {d['provisional_terms']}")
-    proto = copy.deepcopy(json.loads(Path(case["template"]).read_text()))
+    proto = copy.deepcopy(id_table.load(case["template"]))
     label = proto["verdict_class"]
     proto["id"] = case["id"]
     proto["purpose"] = case["purpose"]

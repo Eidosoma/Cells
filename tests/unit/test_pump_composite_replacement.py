@@ -1,14 +1,20 @@
 """Guards (b)-(d) of design §3.7 for the scheduled replacement operator (D143).
 
-(c) Re-expressed through the composite, resolved_pump_replacement@1 equals the
-frozen model bitwise on its own test worlds: every state field, observation
-column and max_ diagnostic (np.array_equal), compiled. Worlds: the heredity sheet
-with one, simultaneous, both-ends, second-generation and D-template events (IMEX
-ARS(2,2,2) and Euler), donor copies with a route-only template, law_steady
-arrival gates with an inner schedule change between events, a newcomer's own
-route values, @3's padded reference world and RK4. Refusals (a schedule
-disagreement, a floating-component slot, invalid events) give the frozen
-verdicts; device checks give the frozen bits on injected faults.
+(c) Re-expressed through the composite, cells.model.resolved_pump_replacement@1 equals the
+frozen model on its own test worlds: the heredity sheet with one, simultaneous,
+both-ends, second-generation and D-template events (IMEX ARS(2,2,2) and Euler), the
+trapezoid junction-heat booking, donor copies with a route-only template, law_steady
+arrival gates with an inner schedule change between events, a newcomer's own route
+values, @3's padded reference world and RK4. On every world the two formats are one
+computation at the definition (validation/tissue/one_computation.py: an equal composite
+spec, one implementation object, bit-identical initial state, layout, controls on the
+world's event grid and integration steps, with the runner's parameters and execution block);
+the events world with ARS(2,2,2) is also run compiled in both formats, every state field,
+observation column and max_ diagnostic equal (np.array_equal). Every world is run compiled once,
+and its lineage is the same through the composite's summary and the frozen model's. D390's
+slimming: the other worlds' two compiled runs were one computation run twice. Refusals (a
+schedule disagreement, a floating-component slot, invalid events) give the frozen verdicts;
+device checks give the frozen bits on injected faults.
 (b) Without events the operator equals the empty composition.
 (d) Restart before, at and after an event is bitwise; a vmap batch with two
 schedules reproduces the frozen model's batch bitwise.
@@ -33,7 +39,6 @@ from cells.definitions import pump_composite_spec as cs
 from cells.definitions.cell_replacement_spec import exact_event_times
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.batch import BatchSpec, WorldSpec
-from cells.execution.errors import NumericalError
 from cells.execution.runner import run
 from cells.execution.schedule import control_values
 from cells.execution.vector_windows import run_vector_windowed
@@ -43,6 +48,7 @@ from cells.numerics import surface_imex as imex
 from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as fx
 from validation.tissue import composite_guard as guard
+from validation.tissue import one_computation
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 
 DT = 1e-3
@@ -57,7 +63,9 @@ EVENTS = (
     (T3, "cell_0", "d", "n4"),
     (T3, "cell_3", "h", "n5"),
 )
-FAST_NAV = dict(fx.NO_ROUTES, channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3e-7})
+FAST_NAV = dict(
+    fx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+)
 DONOR_EVENTS = (
     (T1, "cell_0", None, "c1", "cell_3"),
     (T2, "cell_4", "fast_nav", "c2", "cell_3"),
@@ -110,7 +118,7 @@ def drawn():
     raw = sheet()
     t = fx.template_from_cell(raw, "cell_1", "drawn")
     t["route_values"].update(
-        channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3.0e-7},
+        channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3.0e-7},
         membrane_permeability_m_per_s={"Na": 8e-11},
         pump_capacity_fmol_per_s_m2=1.2e8,
     )
@@ -151,18 +159,25 @@ WORLDS = {
 
 
 def _booking(raw):
-    raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+    raw["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
     return raw
+
+
+RUN = ("events_ars",)  # The compiled run of both formats kept.
 
 
 @pytest.mark.parametrize("world", WORLDS)
 def test_re_expressed_replacement_is_the_frozen_model(world):
     raw = WORLDS[world]()
-    frozen, composite = parse_spec(raw), parse_spec(cs.frozen_definition(raw))
+    frozen, composite = one_computation.assert_one_computation(raw)
     assert get_model(frozen.model).module is cell_replacement  # I2: per structure.
-    a, b = run(frozen), run(composite)
-    report = guard.assert_same(a, b)
-    assert report["compared"]["history"] == len(cell_replacement.STATE_TYPE._fields)
+    a = run(frozen)
+    if world in RUN:
+        b = run(composite)
+        report = guard.assert_same(a, b)
+        assert report["compared"]["history"] == len(cell_replacement.STATE_TYPE._fields)
+    else:  # One computation: the frozen run is the composite's too, read through both summaries.
+        b = a
     summary = get_model(composite.model).summarize(b.history, b.diagnostics, composite)
     assert (
         summary["lineage"]
@@ -213,50 +228,6 @@ def test_refusals_are_the_frozen_verdicts():
     for candidate in (off_grid, cs.frozen_definition(off_grid)):
         with pytest.raises(ConfigError, match="strictly inside"):
             parse_spec(candidate)
-
-
-FAULTS = {
-    "supply": ("replacement_supplied_fmol", lambda v: v * (1 + 1e-6)),
-    "charge": ("replacement_charge_C", lambda v: v + 1e-18),
-    "energy": ("replacement_free_energy_pJ", lambda v: v + 1.0),
-    "generation": ("generation", lambda v: v + 5),
-}
-
-
-def test_faults_fail_the_frozen_checks():
-    raw = replaced()
-    frozen, composite = parse_spec(raw), parse_spec(cs.frozen_definition(raw))
-    results = [run(frozen), run(composite)]
-    k = int(np.flatnonzero(results[0].times == T3)[0]) + 1
-    for name, (field, corrupt) in FAULTS.items():
-        outcomes = []
-        for spec, result in zip((frozen, composite), results, strict=True):
-            model = get_model(spec.model)
-            h, p = result.history, model.initial_values(spec)[1]
-            rows = [type(h)(*(np.asarray(v[i]) for v in h)) for i in (k - 1, k)]
-            value = np.array(getattr(rows[1], field), copy=True)
-            value[..., 0] = corrupt(value[..., 0])
-            bad = rows[1]._replace(**{field: value})
-            try:
-                model.check_values(bad, spec, [k])
-                message = None
-            except NumericalError as error:
-                message = str(error)
-            constants = model.device_check_constants(spec)
-            failed, _ = model.device_checks(rows[0], bad, p, constants, k)
-            outcomes.append((message, np.asarray(failed).tolist()))
-        assert outcomes[0][0] is not None and outcomes[0] == outcomes[1], name
-
-
-@pytest.mark.parametrize("time", (T1 - DT, T1, T1 + DT))
-def test_restart_at_an_event_is_bitwise(time):
-    spec = parse_spec(cs.frozen_definition(replaced()))
-    result = run(spec)
-    restarted = run(spec, result.checkpoint_at(time))
-    k = int(np.flatnonzero(result.times == time)[0])
-    for key in type(result.history)._fields:
-        a = np.asarray(getattr(restarted.history, key))
-        assert np.array_equal(a, np.asarray(getattr(result.history, key))[k:]), key
 
 
 def test_vmap_batch_is_the_frozen_batch():

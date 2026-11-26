@@ -1,4 +1,4 @@
-"""§7.5's sign rule with its floor (cells.passive_routes@1, amended 17 November 2026).
+"""§7.5's sign rule with its floor (cells.kind.passive_routes@1, amended 17 November 2026).
 
 A step is refused only where an exact route's share lies below its floor: minus 16 eps times the
 share's scale, (|mu-bar_in| + |mu-bar_out| + 2) |m|, in the share's unit (pJ, 1e-3 RT). The

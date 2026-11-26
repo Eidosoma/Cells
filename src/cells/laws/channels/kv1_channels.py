@@ -7,7 +7,7 @@ equations preserve source gate powers; they do not adopt BETSE's update clock.
 Each law's numbers live in its own module, laws/channels/kv1p{1,2,3,4,6}_mh*.py, the law's one
 source (docs/CORE_SEAMS_DESIGN.md §8.6 as amended: the lead's ruling (B), 18 November 2026). This
 dispatcher gathers the same floats per element: a recorded temporary second form of the five laws'
-math, which retires with the legacy catalogue families, holds these five, and takes no new law
+math, which retires with the shared catalogue, holds these five, and takes no new law
 (tests/unit/test_kv1_channel_laws.py). Its program text and outputs are today's. Why the two forms
 differ under JAX: XLA on CPU rewrites x / constant as x * (1/constant), while this dispatcher
 divides by gathered arrays, which it keeps exact; the per-law kernels, which divide by constants,
@@ -19,11 +19,11 @@ import jax.numpy as jnp
 from cells.laws.channels import hcn_channels, kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh
 
 FAMILIES = (1, 2, 3, 4, 6)
-KV1_LAWS = {f"kv1p{i}_mh{'2' if i == 1 else ''}@1": i for i in FAMILIES}
+LAWS = (kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh)  # Catalogue codes 6-10, in order.
+KV1_LAWS = {law.LAW_ID: i for law, i in zip(LAWS, FAMILIES, strict=True)}
 LAW_CODES = {**hcn_channels.LAW_CODES, **{law: i for i, law in enumerate(KV1_LAWS, 6)}}
 LAW_PERMEABILITIES = hcn_channels.LAW_PERMEABILITIES | {law: (("K", 1.0),) for law in KV1_LAWS}
 SPECIES_VALENCE = hcn_channels.SPECIES_VALENCE
-LAWS = (kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh)  # Catalogue codes 6-10, in order.
 # A logistic time constant's (scale, midpoint, slope) where a law's takes another form (Kv1.3's
 # affine, Kv1.4's constant), which then replaces it.
 PLACEHOLDER = (0, 0, 1)

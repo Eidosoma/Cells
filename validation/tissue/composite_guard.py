@@ -1,4 +1,4 @@
-"""Bitwise guards of resolved_pump_composite@1 against the frozen models (D143, design §3.7).
+"""Bitwise guards of cells.model.resolved_pump_composite@1 against the frozen models (D143, design §3.7).
 
 compare_runs(reference, result) compares two runner results field by field, as
 the frozen models' own equivalence tests do (np.array_equal on every state field,
@@ -123,9 +123,9 @@ def _paths():
 
 
 def _load(name):
-    import json
+    from validation import id_table
 
-    return json.loads(_paths()[name].read_text())
+    return id_table.load(_paths()[name])
 
 
 def pair_specs(raw):
@@ -234,7 +234,7 @@ def evaluation_pair(raw, states, *, steps=4):
     """rhs, its state Jacobian and the k-step map, frozen and composite, at given states.
 
     states: frozen-model state NamedTuples (numpy). The stationary analyses
-    (stationary_continuation_analysis@1) evaluate exactly these functions, so
+    (cells.analysis.stationary_continuation_analysis@1) evaluate exactly these functions, so
     bitwise agreement here makes their Newton solutions identical.
     """
     import jax

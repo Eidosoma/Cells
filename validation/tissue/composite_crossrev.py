@@ -72,7 +72,7 @@ def worlds():
     raw["experiment"]["observation_times"] = [0.0, 0.1]
     out["water"] = wfx.with_water(raw, pf_m_s=5e-4, bath_pressure_Pa=12.5)
     sheet = wfx.with_water(wfx.gated_sheet(end_time=0.01), pf_m_s=5e-4)
-    sheet["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+    sheet["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
     out["water_sheet"] = sheet
     out["symport"] = wfx.with_symport(out["water"], flux_mmol_L_h=15.0, steepness=0.12)
     out["symport_none"] = wfx.with_symport(out["water"], membranes=[])
@@ -93,7 +93,9 @@ def worlds():
     ]
     events = ((t1, "cell_0", "h", "n1"), (t2, "cell_2", "h", "n2"), (t3, "cell_0", "d", "n4"))
     out["replacement"] = rfx.with_replacement(cells, templates, events)
-    fast = dict(rfx.NO_ROUTES, channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3e-7})
+    fast = dict(
+        rfx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+    )
     donor_events = (
         (t1, "cell_0", None, "c1", "cell_3"),
         (t2, "cell_4", "fast_nav", "c2", "cell_3"),
@@ -105,14 +107,14 @@ def worlds():
     out["replacement_steady"] = rfx.with_replacement(cells, templates, events, formation=steady)
     drawn = rfx.template_from_cell(cells, "cell_1", "drawn")
     drawn["route_values"].update(
-        channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3.0e-7},
+        channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3.0e-7},
         membrane_permeability_m_per_s={"Na": 8e-11},
         pump_capacity_fmol_per_s_m2=1.2e8,
     )
     out["replacement_routes"] = rfx.with_replacement(
         cells, [drawn], [(t1, "cell_0", "drawn", "n1")]
     )
-    padded = v3fx.definition("release", solver="imex_ars222_face_electromigration@1")
+    padded = v3fx.definition("release", solver="cells.solver.imex_ars222_face_electromigration@1")
     padded["experiment"]["end_time"] = 0.0012
     padded["experiment"]["observation_times"] = [0.0, 0.0012]
     p1, p2 = exact_event_times((4, 9), padded["execution"]["dt"])
@@ -135,8 +137,7 @@ def qualification_worlds(all_steps=False):
     also W1's trajectories at every step size of W1's dt study and Q5's cases at every
     step size of Q5.
     """
-    import json
-
+    from validation import id_table
     from validation.tissue import cell_replacement_fixtures as rfx
     from validation.tissue import cell_replacement_judge as judge
     from validation.tissue import cell_replacement_qualification as g2q
@@ -147,7 +148,7 @@ def qualification_worlds(all_steps=False):
 
     root = Path(w1q.__file__).parent  # The predictions of the revision under test.
     w1, w2, g2 = (
-        json.loads((root / name).read_text())
+        id_table.load(root / name)
         for name in (
             "pump_water_predictions.json",
             "pump_water_kcc_predictions.json",
@@ -196,7 +197,7 @@ def _w37():
 
 
 def injection_worlds():
-    """electrode_current_injection@1 without a field-input provider, as its runs use it: the
+    """cells.operator.electrode_current_injection@1 without a field-input provider, as its runs use it: the
     heredity cell with both polarities, and the Rm1 egg at its judged step (1 ms)."""
     from cells.definitions import pump_composite_spec as cs
     from validation.tissue import injection_rm1 as rm1
@@ -209,7 +210,8 @@ def injection_worlds():
     carriers = {"K": 0.4912, "M": 0.5088}
     raw["model"]["operators"] = [
         dict(
-            law="electrode_current_injection@1", electrodes=[dict(cell_id=cell, carriers=carriers)]
+            law="cells.operator.electrode_current_injection@1",
+            electrodes=[dict(cell_id=cell, carriers=carriers)],
         )
     ]
     schedule = [dict(time=0.0, current_A=1e-12), dict(time=0.002, current_A=-1e-12)]
@@ -218,7 +220,7 @@ def injection_worlds():
 
 
 def volume_worlds():
-    """scheduled_cell_replacement@2 over water (v2 design §2): the heredity sheet with templates
+    """cells.operator.scheduled_cell_replacement@2 over water (v2 design §2): the heredity sheet with templates
     at their own arrival volumes and a copy of the centre into the ring, and without events."""
     from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.tissue import cell_replacement_fixtures as rfx
@@ -283,18 +285,18 @@ def acceptances_worlds():
     (docs/CORE_SEAMS_DESIGN.md §18), each built by its registered protocol's own generator:
 
     * FR-1, fr1-closed-compartment-v1 (compartment_acceptance_fixtures):
-      cell_owned_compartments@1 with exchange@1's first-order export from the cytosol into the
+      cells.operator.cell_owned_compartments@1 with exchange@1's first-order export from the cytosol into the
       compartment, beside turnover@1's first-order clearance at its node (C6, load_and_degrade)
       or beside D152's first-order S -> P there (C7, load_and_react);
-    * FR-3, fr3-site-occupancy-v1 (site_occupancy_acceptance_fixtures): site_occupancy@1 with an
+    * FR-3, fr3-site-occupancy-v1 (site_occupancy_acceptance_fixtures): cells.operator.site_occupancy@1 with an
       outward population internalising into its cell and an inward one on the cell's wall
       (q5_inward), and with the internalisation multiplier off, on at 5 s and off at 10 s
       (q5_class_switch);
-    * FR-10, fr10-dose-schedule-v1 (bath_schedule_fixtures): scheduled_bath_composition@1's ion
+    * FR-10, fr10-dose-schedule-v1 (bath_schedule_fixtures): cells.operator.scheduled_bath_composition@1's ion
       world, KCl for NaCl at 0.5 s beside a K-permeable cell under ARS at 1 ms (W2), and its
       ledger world, the dose leg's bath S stepped at step 20 of 60 under RK4 at 0.1 ms (W3);
-    * FR-6's A5'', fr6-a5pp-v1 (a5pp_acceptance_fixtures): species_regulated_availability@1
-      with hill_regulated_two_state@1, two cells' K-leak populations driven through the state
+    * FR-6's A5'', fr6-a5pp-v1 (a5pp_acceptance_fixtures): cells.operator.species_regulated_availability@1
+      with cells.regulation.hill_regulated_two_state@1, two cells' K-leak populations driven through the state
       from the per-cell prior s0 = 0.1 and 0.8, the same regulator dose by turnover@1, at 1 ms.
 
     The unscheduled worlds run over their first five steps. §18 asks for the judged worlds' first
@@ -365,19 +367,19 @@ def replication_worlds():
     * The linear model on Figure 8's chain of three cells, G_GJ = G_eq, its port loaded by a
       reservoir held at 0.5 (the first of the two loads its Norton conductance is measured from),
       in both of its forms:
-      - linear_norton: resolved_pump_tissue@3's own constant_field@1 membranes and junctions for
+      - linear_norton: cells.model.resolved_pump_tissue@3's own cells.route.constant_field@1 membranes and junctions for
         one neutral permeant species, with held reservoirs (worlds.linear_network);
-      - linear_as_written: resolved_pump_composite@1 over @3, local_species_reactions@1's source
-        and decay in each cell, and passive_neutral_permeation@1 routes on the junctions and on
+      - linear_as_written: cells.model.resolved_pump_composite@1 over @3, cells.operator.local_species_reactions@1's source
+        and decay in each cell, and cells.route.passive_neutral_permeation@1 routes on the junctions and on
         the probe's patch (worlds.as_written).
     * The neither condition's coupled stage (neither.coupled_world): the EMT switch as
-      local_species_reactions@1 reactions, with miR200 on passive_neutral_permeation@1 junction
+      cells.operator.local_species_reactions@1 reactions, with miR200 on cells.route.passive_neutral_permeation@1 junction
       routes. Each starts from stage 1's pinned end state (neither.STAGE1_END_UNITS), since
       crossrev runs nothing:
       - neither_line: BITSEY's 1x1x25 line at the 1D search's threshold x2 (step 1/8 s);
       - neither_sheet: the 9x9 sheet of section 7.6 at x2 (1/16 s);
       - neither_ladder: the line at the ladder's top point, 5e-14 m^2/s (1/32 s).
-    Every junction gate is junction_voltage_relaxation@1, pinned open.
+    Every junction gate is cells.junction.junction_voltage_relaxation@1, pinned open.
 
     The set has its own record (replication_jaxprs, replication_bindings), which closes two blind
     spots of the other sets' (an external review, 18 November 2026): it records each schedule

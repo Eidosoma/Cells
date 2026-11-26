@@ -1,4 +1,4 @@
-"""Operator scheduled_species_turnover@1: production and first-order clearance of neutral species.
+"""Operator cells.operator.scheduled_species_turnover@1: production and first-order clearance of neutral species.
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §2.2 (D150, version 1). A secreted species is one more
 row of @3's species axis (valence 0), which @3 owns and its face law carries (core/inventory_species
@@ -53,8 +53,8 @@ keeps exact half-steps around @3's RK4 step ("split").
 
 Refusals. At the definition: a charged species (charged turnover routes wait for a turnover@2,
 FR-15 S1: a charged source is a source reaction), a production route on an outside node, a route on
-a held bath, a negative rate, a schedule change off the dt grid, more than 16 species per world
-(FR-9 / D165; species_common), an occupant without its rates, a donor copy whose route values
+a held bath, a negative rate, a schedule change off the dt grid, more than 1,024 species per world
+(FR-43 / D315; species_common), an occupant without its rates, a donor copy whose route values
 differ from the slot's, and every provider or closer of the volumes and activity masks
 (CONFLICTS_VIEW: version 1 is transport on a static tissue, so water, the lumens, insertion and S5's
 partition and bridge are refused). At run time: non-finite values and any written amount that would
@@ -88,14 +88,14 @@ from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators.contract import Operator
 
-LAW_ID = "scheduled_species_turnover@1"
+LAW_ID = "cells.operator.scheduled_species_turnover@1"
 # FR-15 S1 (the lead's ruling of 19 November 2026): charged turnover routes are deferred. A charged
-# source with its counter-ion is a source reaction of local_species_reactions@1; exact first-order
+# source with its counter-ion is a source reaction of cells.operator.local_species_reactions@1; exact first-order
 # clearance of a charged row waits for a turnover@2 when a consumer needs it.
 CHARGED_LIMIT = (
     ": charged turnover routes wait for a scheduled_species_turnover@2 when a consumer needs exact "
     "first-order clearance of a charged row; a charged source with its counter-ion is a source "
-    "reaction of local_species_reactions@1 (FR-15)"
+    "reaction of cells.operator.local_species_reactions@1 (FR-15)"
 )
 STEP_ID = "exact_production_clearance_half_steps@1"
 KINDS = ("production", "clearance")
@@ -481,6 +481,7 @@ def key_of(route):
 class ScheduledSpeciesTurnover(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # Species registry (D176): it declares its species.
+    ROW_MOVES = "conversion"  # FR-43 part 3: production and clearance at its routes' nodes.
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -566,6 +567,34 @@ class ScheduledSpeciesTurnover(Operator):
 
     def species_identities(self, declaration):
         return declaration.species
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: each route's species at its node, a cell or a finite outside node (a route
+        on a held bath is refused)."""
+        return tuple(dict.fromkeys((r.species, r.node) for r in declaration.routes))
+
+    def production_bound(self, spec, declaration):
+        """{(species, cell): fmol/s}: the largest total production of each row, for a consumer's
+        bounds (the unit producer's R5, population_unit_turnover.supply_bound; the integer
+        population's event rates, integer_unit_population.check_hazard_bound; FR-43 / D315 and
+        part 3): each production route's largest scheduled rate over its schedules, summed per
+        row. A rate route's factor is at most 1, so the scheduled rate is the maximum."""
+        from cells.definitions import pump_composite_spec as composite_spec
+
+        (schedule,) = (s for _, d, s in composite_spec.entries(spec) if d is declaration)
+        kind = {r.id: r for r in declaration.routes}
+        top = {}
+        for s in schedule:
+            route = kind[s.route_id]
+            if route.kind == "production" and route.cell is not None:
+                peak = max(float(v[0]) for _, v in s.changes)
+                top[route.id] = max(top.get(route.id, 0.0), peak)
+        out = {}
+        for route_id, peak in top.items():
+            route = kind[route_id]
+            key = (route.species, route.cell)
+            out[key] = out.get(key, 0.0) + peak
+        return out
 
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)

@@ -1,5 +1,10 @@
 # E02 lossless reference-backed comparison records
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 D040 / NUM-005c2d, 2026-09-09. The user approved the next bounded prototype after
 [D039](../reports/NUM005C2C_LOSSLESS_EVIDENCE.md). Remove repeated comparison
 states from storage, not samples, state coordinates, scientific checks or

@@ -1,67 +1,167 @@
-"""Manufactured shared Na/K/Ca/Cl catalog on multiple tissue membrane owners.
+"""Manufactured shared Na/K/Ca/Cl catalog on multiple tissue membrane owners (cells.model.resolved_tissue@8).
 
-No fitted physiology. The calcium/ER parent is projected to its ordinary ionic
-model: calcium here is a mobile ion, without the parent's dedicated stores.
+The closed kinetic tissue (validation/tissue/surface_kinetic_fixtures.py) with calcium as a mobile
+ion and the catalogue's 35 laws on 39 populations, spread over its four patches. Every population
+has an intrinsic gate pair, the leaks too. Synthetic: no fitted physiology, and no calcium stores.
 """
 
-from copy import deepcopy
+from validation.tissue import surface_kinetic_fixtures as base
 
-from validation.tissue import surface_calcium_cav_fixtures as prior
-
-ADDED = (
-    ("nav1p3_m3h_regularized@1", (("Na", 1.0),)),
-    ("navrat2_m3h_regularized@1", (("Na", 1.0),)),
-    ("navrat1_m3h_regularized@1", (("Na", 1.0),)),
-    ("navrat3_m3h_regularized@1", (("Na", 1.0),)),
-    ("naleak_always_open@1", (("Na", 1.0),)),
-    ("nav1p6_persistent_m@1", (("Na", 1.0),)),
-    ("kv2p1_mh@1", (("K", 1.0),)),
-    ("kv2p2_mh@1", (("K", 1.0),)),
-    ("kv3p1_m@1", (("K", 1.0),)),
-    ("kv3p2_m2@1", (("K", 1.0),)),
-    ("kv3p3_m2h_long_tau@1", (("K", 1.0),)),
-    ("kv3p4_mh@1", (("K", 1.0),)),
-    ("k_fast_mh@1", (("K", 1.0),)),
-    ("kleak_always_open@1", (("K", 1.0),)),
-    ("clleak_always_open@1", (("Cl", 1.0),)),
-    ("catleak_na_k@1", (("Na", 1.0), ("K", 1.0), ("Ca", 0.0))),
-    ("catleak2_na_k_ca@1", (("Na", 1.0), ("K", 1.0), ("Ca", 1.0))),
-)
 ARMS = ("open", "blocked", "release", "reordered")
+K, NA, CA, CL = ((("K", 1.0),), (("Na", 1.0),), (("Ca", 1.0),), (("Cl", 1.0),))
+HCN = (("Na", 0.2), ("K", 1.0), ("Ca", 0.05))
+# (population, patch, law, permeant ions, permeability m/s, abundance, initial gate)
+POPULATIONS = (
+    *(
+        (f"channel_{i}", i, law, K, 3e-10, 0.5 + 0.1 * i, [0.2 + 0.05 * i, 0.7])
+        for i, law in enumerate(("cells.channel.kv1p5_mh@1", "cells.channel.kir2p1_mh2@1") * 2)
+    ),
+    ("channel_4", 0, "cells.channel.kir2p1_mh2@1", K, 3e-10, 0.5, [0.65, 0.35]),
+    *(
+        (
+            f"sodium_{i}",
+            patch,
+            "cells.channel.nav1p2_m3h_regularized@1",
+            NA,
+            3e-10,
+            0.2 + 0.1 * i,
+            [0.15 + 0.2 * i, 0.8 - 0.2 * i],
+        )
+        for i, patch in enumerate((0, 2))
+    ),
+    *(
+        (f"hcn_{n}", i, law, HCN, 3e-10, 0.12 + 0.08 * i, [0.35 + 0.1 * i, 0.7])
+        for i, (n, law) in enumerate(
+            (
+                (1, "cells.channel.hcn1_m@1"),
+                (2, "cells.channel.hcn2_m@1"),
+                (4, "cells.channel.hcn4_m@1"),
+            )
+        )
+    ),
+    *(
+        (
+            f"kv1_{law.split('.')[-1][4]}",  # The name's fifth character: kv1_1, ..., kv1_6.
+            i % 4,
+            law,
+            K,
+            3e-10,
+            0.10 + 0.04 * i,
+            [0.25 + 0.1 * i, 0.65 - 0.05 * i],
+        )
+        for i, law in enumerate(
+            (
+                "cells.channel.kv1p1_mh2@1",
+                "cells.channel.kv1p2_mh@1",
+                "cells.channel.kv1p3_mh@1",
+                "cells.channel.kv1p4_mh@1",
+                "cells.channel.kv1p6_mh@1",
+            )
+        )
+    ),
+    *(
+        (
+            f"cav_population_{i}",
+            i % 4,
+            law,
+            CA,
+            1e-9,
+            0.10 + 0.02 * i,
+            [0.2 + 0.05 * i, 0.7 - 0.04 * i],
+        )
+        for i, law in enumerate(
+            (
+                "cells.channel.cav1p2_m2h@1",
+                "cells.channel.cav1p3_m2h@1",
+                "cells.channel.cav2p1_m@1",
+                "cells.channel.cav2p2_m2h_regularized@1",
+                "cells.channel.cav2p3_mh@1",
+                "cells.channel.cav3p1_mh_piecewise_tau_m@1",
+                "cells.channel.cav3p3_mh@1",
+            )
+        )
+    ),
+    *(
+        (
+            f"catalog_population_{i}",
+            i % 4,
+            law,
+            ions,
+            1e-9,
+            0.05 + 0.01 * (i % 4),
+            [0.15 + 0.03 * (i % 7), 0.8 - 0.04 * (i % 6)],
+        )
+        for i, (law, ions) in enumerate(
+            (
+                ("cells.channel.nav1p3_m3h_regularized@1", NA),
+                ("cells.channel.navrat2_m3h_regularized@1", NA),
+                ("cells.channel.navrat1_m3h_regularized@1", NA),
+                ("cells.channel.navrat3_m3h_regularized@1", NA),
+                ("cells.channel.naleak_always_open@1", NA),
+                ("cells.channel.nav1p6_persistent_m@1", NA),
+                ("cells.channel.kv2p1_mh@1", K),
+                ("cells.channel.kv2p2_mh@1", K),
+                ("cells.channel.kv3p1_m@1", K),
+                ("cells.channel.kv3p2_m2@1", K),
+                ("cells.channel.kv3p3_m2h_long_tau@1", K),
+                ("cells.channel.kv3p4_mh@1", K),
+                ("cells.channel.k_fast_mh@1", K),
+                ("cells.channel.kleak_always_open@1", K),
+                ("cells.channel.clleak_always_open@1", CL),
+                ("cells.channel.catleak_na_k@1", (("Na", 1.0), ("K", 1.0), ("Ca", 0.0))),
+                ("cells.channel.catleak2_na_k_ca@1", (("Na", 1.0), ("K", 1.0), ("Ca", 1.0))),
+            )
+        )
+    ),
+)
 
 
-def legacy_definition(*, backend="cpu", padded=True):
-    raw = prior.definition("baseline", backend=backend, padded=padded)
-    raw["model"] = raw["model"]["ionic"]
-    for key in ("store_controls", "plasma_controls", "calcium_channel_controls"):
-        raw["experiment"].pop(key)
-    for key in ("chemical_capacity", "reaction_capacity"):
-        raw["execution"].pop(key)
+def with_calcium(raw):
+    """The closed kinetic tissue with Ca in every inventory and route, electroneutral as before."""
+    m = raw["model"]
+    m["species"].append(dict(id="Ca", valence=2))
+    for name, concentration in (("cells", 0.002), ("extracellular", 0.02)):
+        for owner in m[name]:
+            calcium = concentration * owner["volume_pL"]
+            owner["initial_amount_fmol"]["Ca"] = calcium
+            owner["fixed_charge_equivalent_fmol"] -= 2 * calcium
+    for name in ("membranes", "junctions"):
+        for route in m[name]:
+            route["permeability_m_per_s"]["Ca"] = 1e-9
+    for face in m["faces"]:
+        face["diffusivity_m2_per_s"]["Ca"] = 1e-10
+    raw["execution"]["material_balance_atol_fmol"]["Ca"] = 2e-11
     return raw
 
 
 def definition(arm="open", *, backend="cpu", padded=True):
     if arm not in ARMS:
         raise ValueError(arm)
-    raw = legacy_definition(backend=backend, padded=padded)
+    raw = with_calcium(base.definition("closed", backend=backend, padded=padded))
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
-    m["id"] = "resolved_tissue@8"
-    for i, (law, ions) in enumerate(ADDED):
-        channel = deepcopy(m["channels"][i % 4])
-        channel.update(
-            id=f"catalog_population_{i}",
+    m["id"] = "cells.model.resolved_tissue@8"
+    m["channels"] = [
+        dict(
+            id=name,
+            membrane_id=f"membrane_{patch}",
             kinetic_law=law,
             permeant_ions=[dict(species_id=s, relative_permeability=w) for s, w in ions],
-            initial_gate=[0.15 + 0.03 * (i % 7), 0.8 - 0.04 * (i % 6)],
-            max_permeability_m_per_s=1e-9,
-            abundance=0.05 + 0.01 * (i % 4),
+            max_permeability_m_per_s=permeability,
+            abundance=abundance,
+            initial_gate=list(gate),
         )
-        m["channels"].append(channel)
-        e["channel_controls"].append(dict(channel_id=channel["id"], schedule=[]))
+        for name, patch, law, ions, permeability, abundance, gate in POPULATIONS
+    ]
     # Intrinsic gates evolve independently of availability, including leak gates.
-    for i, row in enumerate(e["channel_controls"]):
-        row["schedule"] = [dict(time=0.0, availability=0.0 if arm == "blocked" else 0.8)]
-        if arm == "release":
+    e["channel_controls"] = [
+        dict(
+            channel_id=channel["id"],
+            schedule=[dict(time=0.0, availability=0.0 if arm == "blocked" else 0.8)],
+        )
+        for channel in m["channels"]
+    ]
+    if arm == "release":
+        for i, row in enumerate(e["channel_controls"]):
             row["schedule"] += [
                 dict(time=0.0005 + 0.000025 * (i % 2), availability=0.0),
                 dict(time=0.001 + 0.000025 * (i % 2), availability=0.7),
@@ -72,7 +172,13 @@ def definition(arm="open", *, backend="cpu", padded=True):
         m["species"].reverse()
         m["channels"].reverse()
         e["channel_controls"].reverse()
-    x["channel_capacity"] = len(m["channels"]) + int(padded)
+    # The fast CaV2.1 activation transient needs this RK4 step, over the complete 2 ms.
+    x.update(
+        dt=1.25e-6,
+        max_steps=8192,
+        max_trace_bytes=2**32,
+        channel_capacity=len(m["channels"]) + int(padded),
+    )
     return raw
 
 

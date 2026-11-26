@@ -23,7 +23,7 @@ The incremental change equals the difference between the final and initial equil
 - [CellsProofs.Chemistry.VesicleEvent.change_eq](../CellsProofs/Chemistry/VesicleEvent.lean#L126)
 - [CellsProofs.Chemistry.VesicleEvent.round_trip](../CellsProofs/Chemistry/VesicleEvent.lean#L132)
 
-Direct proof subject `cells.osmotic_lumen@1`
+Direct proof subject `cells.free_energy.osmotic_lumen@1`
 
 Proof sources [Mathlib log_rpow, specialized to the three-halves footprint exponent](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Pow/Real.lean#L469) · [Mathlib log_le_sub_one_of_pos bounds the branch correction](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L288) · [Incremental energy in the Cells candidate](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/lumen.py#L193-L242)
 

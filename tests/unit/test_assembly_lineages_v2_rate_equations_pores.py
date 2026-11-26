@@ -1,4 +1,4 @@
-"""cells.rate_equations@1's pore clock (OL6 slice S3; the OL6 design note's §3.5, §3.6, §4).
+"""cells.assembly_representation.rate_equations@1's pore clock (OL6 slice S3; the OL6 design note's §3.5, §3.6, §4).
 
 Closed forms and identities only, never a comparison with exact events (D304: Protocol D is
 registered before any such reading):
@@ -13,12 +13,15 @@ registered before any such reading):
 - each daughter draws its own threshold at birth (domain 7, its key, counter 0), in a single
   lineage and in a population;
 - the slice's refusals: an area-changing step under a hold (T2), σ_max beyond σ_β/4 with σ from F,
-  a pore law with no tension, a hold with an osmotic lumen (tension_hold's own words), the clock's
-  error bound (exact events admit the σ-from-F world since OL6 S4: test_assembly_lineages_v2_
-  pores_device.py).
+  a pore law with no tension, a hold with an osmotic lumen (tension_hold's own words) (exact events
+  admit the σ-from-F world since OL6 S4: test_assembly_lineages_v2_pores_device.py);
+- the clock's bound (D309): |U^H| <= 1e-10 + 2e-3 |ΔH| per accepted step, planted at the bound
+  (accepted) and just beyond it (refused) in both its parts, and Protocol D's D7 at 50 nm, which
+  the absolute 1e-10 refused (its §7.2), running to its opening in (d) alone.
 A new file for the slice (D224): the S2 files are at 39 and 47 s of tier 2's 90; four worlds
 compiled here (a held vesicle, a σ-from-F vesicle and its twin, the daughters' two), about 60 s
 on a shared light CPU, most of it the limit's generic verdict and the twin pair at rtol 1e-12.
+D7's row adds a fifth world, about 20 s (D309's follow-up: the one world the bound was changed for).
 """
 
 import copy
@@ -53,6 +56,7 @@ from tests.unit.test_assembly_lineages_v2_rate_equations_vesicles import (
     species,
     vesicle_world,
 )
+from validation.assembly_lineages_v2 import limit_qualification
 
 jax.config.update("jax_enable_x64", True)
 
@@ -155,11 +159,42 @@ def test_a_held_vesicle_ruptures_at_start_plus_e_over_its_rate(held_run, tmp_pat
         rate_equations.PORE_LIMIT)
 
 
-def test_the_clock_s_error_bound_refuses_a_run(held_run, monkeypatch):
+def test_the_clock_s_error_bound_refuses_a_run(held_run):
+    """D309's bound planted on one accepted step of the held vesicle's run: an estimate at
+    1e-10 + 2e-3 |ΔH| is accepted and H advances by ΔH; one just beyond it is refused and H stays.
+    ΔH = 0 is the absolute part; at ΔH = 0.25 the absolute 1e-10 alone would refuse both."""
     spec, _ = held_run
-    monkeypatch.setattr(rate_equations, "H_ERROR", 1e-30)  # every step's estimate passes it
-    with pytest.raises(ConfigError, match="the pore clock's error estimate"):
-        runner.run(spec)
+    for increment in (0.0, 0.25):
+        bound = rate_equations.H_ERROR + rate_equations.H_RELATIVE * increment
+        for factor, refused in ((1.0, False), (1.0 + 1e-9, True)):
+            state = rate_equations._Run(spec)
+            carried = {name: np.full(state.H.shape, value) for name, value in (
+                ("increment", increment), ("error", -factor * bound), ("k1", 0.0), ("k2", 0.0))}
+            if refused:
+                with pytest.raises(ConfigError, match="the pore clock's error estimate, .* passes "
+                                   "its bound 1e-10 \\+ 0.002 \\|dH\\|"):  # fmt: skip
+                    state.advance_clock(carried)
+                assert np.all(state.H == 0.0)
+            else:
+                state.advance_clock(carried)
+                assert np.all(state.H == increment) and state.clock_fraction == 1.0
+
+
+def test_d7_s_50_nm_world_runs_under_the_relative_bound():
+    """Protocol D's D7 at 50 nm, the registered definition at seed 1, in (d) alone (nothing is
+    compared with exact events): its clock's estimate passes the absolute 1e-10 that refused it
+    (Protocol D's §7.2) but stays within D309's bound, and it opens by its pore at H = E."""
+    spec = parse_spec(limit_qualification.definition("D7", 50.0, 1, True))
+    run = runner.run(spec)
+    pores = run.statistics["pores"]
+    assert run.status == "lysed" and [e["cause"] for e in run.events] == ["pore"]
+    assert pores["largest_clock_error"] > rate_equations.H_ERROR
+    assert 0.0 < pores["largest_clock_error_fraction"] <= 1.0
+    assert (pores["clock_error_bound"], pores["clock_error_relative"]) == (1e-10, 2e-3)
+    (opening,) = run.events
+    energy = opening["threshold_E"]
+    assert abs(opening["clock_H"] - energy) <= 10 * (rate_equations.H_ERROR + 1e-12 * energy)
+    assert run.ledger["closes"] and run.moieties["closes"] and run.dissipation["holds"]
 
 
 def test_pores_against_no_pores_rows_are_identical_until_the_first_opening():

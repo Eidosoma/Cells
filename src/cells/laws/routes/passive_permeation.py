@@ -1,4 +1,4 @@
-"""passive_neutral_permeation@1: the passive permeation law's kernel for neutral species (A5).
+"""cells.route.passive_neutral_permeation@1: the passive permeation law's kernel for neutral species (A5).
 
 The inner-model note §11 (the law, D174/D176) and §7.4; ARCHITECTURE.md, "Transport laws by
 physical contract". The kernel is the constant-field route at valence 0, which is Fick's law:
@@ -29,7 +29,7 @@ import jax.numpy as jnp
 from cells.laws.electrochemistry import R, ghk_leak
 from cells.modules import Citation, RouteLaw
 
-LAW_ID = "passive_neutral_permeation@1"
+LAW_ID = "cells.route.passive_neutral_permeation@1"
 SERIES_BELOW = 1e-6  # |x| below which (1 + x) log1p(x) / x takes its series (as D152).
 
 
@@ -100,7 +100,7 @@ LAW = RouteLaw(
     "Fick's law: the constant-field flux at valence 0 (laws/routes/passive_permeation.py), with "
     "the exact booking of docs/INNER_MODEL_V4_DESIGN.md §7.5",
     material_bound="bound_rate_per_s",  # dt L <= 1 (the kind's bound_rate): CORE_SEAMS §18.
-    host="cells.passive_routes@1",
+    host="cells.kind.passive_routes@1",
     provenance="cited",
     source=Citation(
         "Fick's law of diffusion (A. Fick, 1855, named from memory and not read; standard theory)",

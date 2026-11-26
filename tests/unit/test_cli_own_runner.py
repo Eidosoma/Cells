@@ -59,5 +59,5 @@ def test_without_the_declaration_the_fixed_step_path_is_reached(lineage, sentine
 
 @pytest.mark.needs_checkout
 def test_a_fixed_step_model_still_validates(capsys):
-    assert cli.main(["validate", str(ROOT / "configs/single_cell_pulse.json")]) == 0
+    assert cli.main(["validate", str(ROOT / "configs/reaction_transport_single.json")]) == 0
     assert json.loads(capsys.readouterr().out)["status"] == "valid"

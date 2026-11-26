@@ -1,4 +1,4 @@
-"""Scale, stiffness and step study of resolved_pump_tissue@1 at 825 nodes.
+"""Scale, stiffness and step study of cells.model.resolved_pump_tissue@1 at 825 nodes.
 
 Parts (each writes <part>.json in --output):
   spectrum    Arnoldi spectra: the law's RHS (explicit RK4 limit); (G - I)/dt at

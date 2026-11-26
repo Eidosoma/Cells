@@ -17,8 +17,14 @@
 # anyway). OUT/done holds the verdict's exit status, or 2 when the holder did not run to its end
 # (its flock killed while waiting, or its own refusal), in which case nothing is judged.
 #
+# Cold (D321 R2): JAX's persistent compilation cache is disabled here and in the holder's queue units
+# (fr_landing_holder.sh passes it to each), and the cold check refuses the set, before any verdict,
+# if a cache entry appeared under its outputs.
+#
 # Usage: fr_landing_set.sh REV OUT   (REPO, the checkout, defaults to this script's repository)
 set -u
+export JAX_ENABLE_COMPILATION_CACHE=false
+unset JAX_COMPILATION_CACHE_DIR CELLS_JAX_CACHE
 REV=${1:?revision}; OUT=${2:?out}
 G=$(cd "$(dirname "$0")" && pwd)
 REPO=${REPO:-$(git -C "$G" rev-parse --show-toplevel)}
@@ -26,7 +32,7 @@ PY=${PY:-/mnt/workspaces/Cells/venv-cpu/bin/python}
 LOCK=${LANE_LOCK:-/mnt/workspaces/Cells/locks/gate-cores-8-11.lock}
 FR=/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45
 START=$FR/rehearsal-20261117/run-e79b4232/fr5/start/start.json
-BEFORE=/mnt/workspaces/Cells/global-charge-bound-20261122/fr-baselines-605331c2/windowed  # Renewed for D305's fix (D307): RENEWAL.json beside it.
+BEFORE=/mnt/workspaces/Cells/fr-baselines/805c48a4-20261126/windowed  # Renewed for D307, then for the ID move's definition hashes (D345): RENEWAL.json beside it; D392's permanent copy.
 [ -e "$OUT" ] && { echo "Refused: $OUT exists" >&2; exit 1; }
 mkdir -p "$OUT/fr-landing"
 log() { echo "$(date -u +%FT%TZ) $*" >> "$OUT/fr-landing-set.log"; }
@@ -45,6 +51,14 @@ if [ $held -ne 0 ]; then
   log "refused: the holder did not run to its end under the lock (exit $held); no verdict"
   echo 2 > "$OUT/done"
   exit 2
+fi
+log "JAX's persistent compilation cache disabled in the queues (JAX_ENABLE_COMPILATION_CACHE=false; D321 R2)"
+if why=$(python3 -I "$G/gate_steps.py" jax-entries "$OUT/fr-landing" 2>&1); then
+  log "cold check after the queues: $why"
+else
+  log "refused: JAX compilation cache entries appeared in the queues (the cold check): $why; no verdict"
+  echo 1 > "$OUT/done"
+  exit 1
 fi
 "$PY" -I "$G/fr_landing_verdict.py" "$FS" "$OUT/fr-landing" "$BEFORE" "$OUT/fr-landing/verdict.json" \
   > "$OUT/fr-landing/verdict.stdout" 2>&1

@@ -1,4 +1,4 @@
-"""B3, a compiled run of scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §4).
+"""B3, a compiled run of cells.operator.scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §4).
 
 The ledgers across an event. The species-only dose leg (validation/tissue/bath_schedule_fixtures)
 under RK4 at 0.1 ms, whose energy bound is the absolute 2e-8 pJ, from a resolved profile, with the

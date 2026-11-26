@@ -1,0 +1,11 @@
+{
+  "doi": "10.1038/ncomms8321",
+  "figure": "3c–l, especially 3l. Figure 4i provides a functional control.",
+  "observable": "Donor miR-146a in lysates of recipient mouse dendritic cells unable to make the assayed RNA, following exposure to an extracellular vesicle fraction with donor cells absent.",
+  "time_h": 24,
+  "approximate_mean_copies_per_recipient_cell": 370,
+  "n": 3,
+  "uncertainty": "Figure 3l shows SD. The numerical SD was not extracted.",
+  "control": "An extracellular fraction from donors lacking miR-146a was the negative control.",
+  "scope": "The lysate includes surface-associated RNA. A single endpoint does not determine gross uptake, post-wash persistence, or the fraction internalized."
+}

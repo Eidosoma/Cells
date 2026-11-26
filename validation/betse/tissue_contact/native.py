@@ -7,8 +7,8 @@ import time
 import traceback
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "fresh_rerun"))
-import common as u  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from native_hooks import InitialConditionHook, successful_return, u  # noqa: E402
 
 seed = u.private("tissue_native_seed", Path(__file__).parents[1] / "junction_transport/native.py")
 base = u.private(
@@ -49,8 +49,6 @@ class Observer:
         self.step = self.calls = self.returns = 0
 
     def observe(self, frame, event, argument):
-        from loop_observer import successful_return
-
         if event not in ("call", "return") or (event == "return" and not successful_return(frame)):
             return
         if (
@@ -156,9 +154,6 @@ def run_row(directory, workspace, protocol, case, dt, mode, *, adapter=None):
     )
     sim, cells, p = phase.sim, phase.cells, phase.p
     p.v_sensitive_gj, p.gj_surface = False, protocol["gj_surface_fraction"]
-    u.module_path("channel_loop_preparation")
-    from loop_observer import InitialConditionHook
-
     science = Path(betse.__file__).resolve().parent / "science"
     observer_type = Observer if adapter is None else adapter.Observer
     observer = observer_type(phase, science) if mode == "observed" else None

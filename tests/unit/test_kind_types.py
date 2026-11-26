@@ -11,6 +11,7 @@
 """
 
 import copy
+import dataclasses
 
 import numpy as np
 import pytest
@@ -34,7 +35,7 @@ def planted(name, key):
         return tuple(sorted((str(k), float(v)) for k, v in entries.items()))
 
     return kind_registry.Kind(
-        kind_id=f"tests.{name}@1",
+        kind_id="tests.kind.planted_kind@1".replace("planted_kind", name),
         model_key=key,
         state_axes=((f"{name}_moved_fmol", ("cell_slot",)),),
         layout_fields=(f"{name}_rate_fmol_s",),
@@ -112,7 +113,7 @@ def test_kinds_append_in_canonical_order_whatever_the_declaration_order(tmp_path
     with kind_registry.scope(kinds):
         one = parse_spec(declaring(heredity(), "beta_block", "alpha_block"))
         two = parse_spec(declaring(heredity(), "alpha_block", "beta_block"))
-        assert [k for k, _ in one.model.kinds] == ["tests.alpha@1", "tests.beta@1"]
+        assert [k for k, _ in one.model.kinds] == ["tests.kind.alpha@1", "tests.kind.beta@1"]
         assert one.model.kinds == two.model.kinds
         a, b = surface_pump_v3.model_for(one.model), surface_pump_v3.model_for(two.model)
         assert a.structure_key == b.structure_key
@@ -151,11 +152,19 @@ def test_kinds_append_in_canonical_order_whatever_the_declaration_order(tmp_path
 
 
 def test_namespaces_and_duplicates():
-    assert kind_registry.qualified("transporter@1") == "cells.transporter@1"
-    assert kind_registry.qualified("tests.alpha@1") == "tests.alpha@1"
+    for kind_id in ("cells.kind.transporter@1", "tests.kind.alpha@1"):
+        assert kind_registry.qualified(kind_id) == kind_id
+    for short in ("one_part@1", "tests.two_parts@1"):  # Never given a namespace or a family.
+        with pytest.raises(ValueError, match=f"^{short} is not namespace.family.name@major"):
+            kind_registry.qualified(short)
+    with pytest.raises(ValueError, match="a kind's ID is tests.kind.<name>@major"):
+        kind_registry.KindRegistry().register(
+            dataclasses.replace(planted("alpha", "alpha_block"), kind_id="tests.channel.alpha@1")
+        )
     kinds = registry(planted("alpha", "alpha_block"))
     with pytest.raises(ValueError, match="already registered"):
         kinds.register(planted("alpha", "other_block"))
     with pytest.raises(ValueError, match="model key"):
         kinds.register(planted("gamma", "alpha_block"))
-    assert kind_registry.KindRegistry.canonical(["tests.b@1", "a@1"]) == ("cells.a@1", "tests.b@1")
+    two = ("cells.kind.a@1", "tests.kind.b@1")
+    assert kind_registry.KindRegistry.canonical(two[::-1]) == two

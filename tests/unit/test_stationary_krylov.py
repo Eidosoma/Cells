@@ -1,4 +1,4 @@
-"""stationary_continuation_analysis@1 matrix-free paths on the default-world cell (@1).
+"""cells.analysis.stationary_continuation_analysis@1 matrix-free paths on the default-world cell (@1).
 
 Newton-Krylov (GMRES on JAX JVPs of the law's derivative) reaches the same
 stationary state as dense Newton, and Arnoldi on the JVP of the engine's step

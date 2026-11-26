@@ -18,6 +18,18 @@
 #               --wait-headroom SIZE  start COMMAND only once the slice has SIZE (e.g. 6.5G)
 #                                below its cap, counting anonymous memory (page cache is
 #                                reclaimable); checked every 60 s inside the unit
+#               --jax-cache      a development unit sharing this VM's CPU compilation cache
+#                                (scripts/jax_cache.py env: the machine's folder, every compile
+#                                written, the CPU only). Refused with a visible GPU. Until the
+#                                configure_caches() fix lands (D321), run no `cells ensemble` in
+#                                such a unit: its GPU workers would inherit the cache
+#               --dry-run        print the systemd-run command, one argument per line; start nothing
+#
+# JAX's persistent compilation cache (D321): every unit started without --jax-cache runs with it
+# disabled (JAX_ENABLE_COMPILATION_CACHE=false, set after the --env list, so it wins). Registered
+# and judged runs therefore stay cold whatever shell launched them, and a gate or a tier measurement
+# never reads a cache its caller set up. A command that means to use a cache sets it in its own
+# environment (scripts/gates/cache_qualify.sh's arms, for example).
 #
 # cells.slice (~/.config/systemd/user/cells.slice) caps all Cells units together; change
 # it with `systemctl --user set-property cells.slice MemoryMax=...`. Every unit gets a
@@ -33,7 +45,7 @@ set -euo pipefail
 name=${1:?unit name}
 mem=${2:?memory cap, e.g. 3G}
 shift 2
-cpus= runtime= adj=200 dir=$PWD headroom=
+cpus= runtime= adj=200 dir=$PWD headroom= jax_cache=0 dry_run=0
 envs=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -43,12 +55,28 @@ while [ $# -gt 0 ]; do
     --env) envs+=("--setenv=$2"); shift 2 ;;
     --dir) dir=$2; shift 2 ;;
     --wait-headroom) headroom=$(LC_ALL=C numfmt --from=iec "$2"); shift 2 ;;
+    --jax-cache) jax_cache=1; shift ;;
+    --dry-run) dry_run=1; shift ;;
     --) shift; break ;;
     *) echo "run_detached.sh: unknown option $1" >&2; exit 2 ;;
   esac
 done
 [ $# -gt 0 ] || { echo "run_detached.sh: no command given" >&2; exit 2; }
 [[ $name =~ ^[A-Za-z0-9._-]+$ ]] || { echo "run_detached.sh: bad unit name $name" >&2; exit 2; }
+if [ $jax_cache -eq 1 ]; then  # CPU only: the L4's recorded bitwise failure crossed this cache.
+  for e in "${envs[@]}"; do
+    case "$e" in
+      --setenv=CUDA_VISIBLE_DEVICES=?*|--setenv=JAX_PLATFORMS=*)
+        [ "$e" = --setenv=JAX_PLATFORMS=cpu ] || {
+          echo "run_detached.sh: --jax-cache refused: ${e#--setenv=} (the shared cache is CPU-only)" >&2; exit 2; } ;;
+    esac
+  done
+  lines=$(python3 -I "$(cd "$(dirname "$0")" && pwd)/jax_cache.py" env) || exit 2
+  while IFS= read -r line; do envs+=("--setenv=$line"); done <<< "$lines"
+  [ $dry_run -eq 1 ] || mkdir -p "$(sed -n 's/^JAX_COMPILATION_CACHE_DIR=//p' <<< "$lines")"
+else
+  envs+=("--setenv=JAX_ENABLE_COMPILATION_CACHE=false")
+fi
 if [ -n "$headroom" ]; then
   slice=/sys/fs/cgroup/user.slice/user-$(id -u).slice/user@$(id -u).service/cells.slice
   set -- bash -c 'need=$1 slice=$2; shift 2
@@ -63,5 +91,7 @@ fi
 props=(-p "MemoryMax=$mem" -p MemorySwapMax=0 -p OOMPolicy=continue -p "OOMScoreAdjust=$adj")
 [ -z "$cpus" ] || props+=(-p "CPUAffinity=$cpus")
 [ -z "$runtime" ] || props+=(-p "RuntimeMaxSec=$runtime")
-exec systemd-run --user --unit="cells-$name" --slice=cells.slice --collect \
-  --working-directory="$dir" "--setenv=PATH=$PATH" "${envs[@]}" "${props[@]}" -- "$@"
+cmd=(systemd-run --user --unit="cells-$name" --slice=cells.slice --collect
+     --working-directory="$dir" "--setenv=PATH=$PATH" "${envs[@]}" "${props[@]}" -- "$@")
+if [ $dry_run -eq 1 ]; then printf '%s\n' "${cmd[@]}"; exit 0; fi
+exec "${cmd[@]}"

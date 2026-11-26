@@ -1,5 +1,8 @@
 # Reactions on the shared inventory (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status: numerically qualified within MG0c's scope, 15 November 2026.**
 - **The design** was accepted on 14 November 2026 (the lead, with the advisor; rulings in §9).
 - **Milestones 1 and 2** (§11 to §11.2) and milestone 3, MG0c's driver and protocol (§11.3 to
@@ -187,9 +190,10 @@ per-node and per-species chemical term, which D150 v1 builds.
    - **Probe C4, the engine as it is:** finding 3, neutral species on junctions and membranes. It
      is a separate track.
    - **Still to come:** the contract fit (C1) is now the code branch's first milestone (§10.4).
-9. **Limits** (§7). Version 1 is a static tissue with neutral species, at most 16 species
-   (D150's cap, 7 until FR-9 / D165), and kinetics with dt · L ≤ 1.
-   - It is refused beside water, the lumen, closers, RK4 and the stationary analysis.
+9. **Limits** (§7). Version 1 is a static tissue with neutral species, at most 1,024 species
+   (D150's cap: 16 until FR-43 / D315, 7 until FR-9 / D165), and kinetics with dt · L ≤ 1.
+   - It is refused beside the lumens, replacement@2, closers, RK4 and the stationary analysis.
+     Beside water it reads the current volumes (FR-43 / D315, §7.3's volume door, delivered).
    - Cell routes on slots that replacement@1 replaces are refused.
 10. **Effort:** about 6 agent-days (range 5 to 7), plus about an hour of CPU for MG0c's judged runs
     (§8).
@@ -312,7 +316,7 @@ program that calls it today changes, so crossrev stays identical and D148 does n
   qualification stands;
 - `reaction_transport@1`, MG0a's standalone model.
 
-**Not authorised, and recorded for later** (§9 question 11):
+**Not authorised, and recorded for later** (§9 question 11, answered on 25 November 2026):
 - retiring `network_reactions@1`'s kinetic branches;
 - letting the calcium-energy family's regulation read species rows of a shared inventory.
 
@@ -532,8 +536,8 @@ binding E + S ⇌ C followed by a driven catalytic step C → E + P.
 - non-positive K_M, K, n, k_f or c0, and negative rate constants;
 - schedule changes off the dt grid;
 - the `CONFLICTS_VIEW` providers and closers (§5);
-- more than 16 species, D150's cap (7 until FR-9 / D165), refused with the cap named (D150 §2.6,
-  §13);
+- more than 1,024 species, D150's cap (16 until FR-43 / D315, 7 until FR-9 / D165), refused with
+  the cap named (D150 §2.6, §13, §14);
 - a turnover route on a (species, node) the network writes (§1.1);
 - a cell route on a slot that `scheduled_cell_replacement@1` replaces (§2.1);
 - RK4 (§4.6);
@@ -1497,9 +1501,12 @@ ruling, §9 question 8).
 - Held-bath sites, membrane-surface reactions and occupancy.
 - Volume providers (water, the lumen, replacement@2) and closers (insertion, partition, bridge).
 - RK4, the stationary analysis and the coarse modes.
-- Kinetics with dt · L > 1, refused at run time (§4.3, from C3); sub-steps.
-- More than 16 species per world (D150's cap, raised from 7 by FR-9 / D165 on the W4 probe; every
-  species counts, ions included).
+- Kinetics with dt · L > 1, refused at run time (§4.3, from C3); sub-steps. The step a declared
+  accuracy needs is reported, not enforced (FR-43 / D315; the operator's docstring): third order,
+  so about 0.1 / k_f for 2 × 10⁻⁵ of the largest amount on FR-43's chain at any size, six times
+  below the refusal; a stiff integrator stays the door of §7.3, a separate law.
+- More than 1,024 species per world (D150's cap, raised from 16 by FR-43 / D315 on FR-43's probe
+  and from 7 by FR-9 / D165 on the W4 probe; every species counts, ions included).
 - Per-carrier parameter sets; reversible Michaelis–Menten; multi-substrate mechanisms; delays.
 - A turnover route on a reacting (species, node) (Q3).
 - A cell route on a slot that replacement@1 replaces (Q6).
@@ -1517,7 +1524,7 @@ ruling, §9 question 8).
 
 | Door | What it needs |
 | --- | --- |
-| Volume (water, the lumen) | `VIEW_READS` with D150's fallback; bookings at the view through water's endpoint free energy (D150 §5.1) |
+| Volume (water, the lumen) | **Delivered for water (FR-43 / D315):** `volume` and `extracellular_volume` are current reads at the split, with C1's fallback, so every world without a volume changer keeps its program; the half-step's concentrations, rates, stage condition and bookings take the view's volumes, held over the half-step, and its bookings meet water's dilution term (docs/FR43_SHARED_INVENTORIES_DESIGN.md §2.3). The lumens and replacement@2 stay refused (`check_volume_changers`) until a probe covers them |
 | Closers | S5's living-interval rule (D150 §5.3) |
 | Charged closed reactions (buffering) | Σ_s z_s ν_sr = 0 checked in integers; the field and electrode exactness of D150 §3 re-argued |
 | Stiff kinetics (dt · L > 1) | Sub-steps with a splitting that holds its order where C3 found reduction; or a positive implicit or linearly implicit half-step. Each needs its own order and positivity probes |
@@ -1527,7 +1534,7 @@ ruling, §9 question 8).
 | Chemostats inside cells | A held species, an open passive law whose partner has a declared potential |
 | Energy pools | Driven routes drawing on finite energy pools, making their work a metabolic cost (D150 question 11) |
 | Regulation from other layers | The gene-regulation layer (held, D145) as a factor source or a production law, not an edit to these laws |
-| More than 16 species | Another probe of host-side summation order above 16 (the W4 probe checked it up to 16; FR-9 / D165, D150 §13) |
+| More than 1,024 species | Another probe above 1,024 (FR-43's probe checked the ledgers, the sum orders and W4's parts up to it; FR-43 / D315, D150 §14), and the per-entry network layout, whose dense form costs about the square of the count (docs/FR43_SHARED_INVENTORIES_DESIGN.md §1.6) |
 | Occupancy and surface catalysis | D150 §2.5's primitive and its four requirements |
 | Reads of charged or permeant species (added at milestone 1, §11) | Factors and catalysts that read charged or permeant species, for example calcium-regulated production. Reads book nothing, so they need only a read-only species list beside the written one. E15's coupling from bioelectric to chemical signalling is the likely consumer |
 
@@ -1666,6 +1673,12 @@ Rulings marked *ruled* are the lead's, with the advisor, 14 November 2026.
     drawing on finite energy pools come later (§7.3)? *Open for the user.*
 11. Should `network_reactions@1`'s kinetic branches eventually be retired, or re-expressed through
     this operator? Not authorised now; recorded only. *Open for the user.*
+   - *Answered by the user, 25 November 2026:* they are retired with the legacy cleanup, with
+     `network_control_factors@1`, and the tag `pre-cleanup-2026-11-25` keeps both. On the live engine
+     their work is `local_species_reactions@1`'s (qualified with MG0c) and
+     `species_regulated_availability@1` and `@2`'s, and, not judged yet, the pump of any valence's,
+     the symports' and the species condition's. The finite-fuel forms and their regulated kinetics
+     have no live replacement.
 
 ## 10. Pre-code checks (14 November)
 

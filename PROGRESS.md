@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-22 UTC.
+Last updated: 2026-11-26 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -9,31 +9,194 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 2026, with every earlier run summary and its evidence links, is preserved in
 [the archived progress file](docs/history/PROGRESS_BEFORE_2026-11-08.md).
 
-## Open FR and core work (22 November 2026, 21:00 UTC)
+## Open FR and core work (25 November 2026, morning)
 
-- **Landed today, each gated:**
-  - FR-25's final verdict (D282: inconclusive, 30 of 32 pass, none failed);
-  - F2, an opt-in exact face heat; FR-33's first test; the OL5 precision fix and GARD @2's range fixes;
-  - FR-38's sheet and its errata, its references, the reader, the engine core and its follow-ups,
-    and amendment S (step 4's sheet, tagged before code);
-  - the near-event snap, stages 1 and 2 (D283);
-  - FR-42's first stage and @3's transport side (D289);
-  - FR-31's rupture Phase A (D287), after its blind test passed (D298);
-  - MT-1b's world declaration with errata 1-3, its independent reference R2, and the runner fix;
-  - the Lean lane's and the visualizer's merges.
-- **Gating:** FR-42's stack (the kinds side, D296's label state and D1's retirement, D300) with its
-  independent acceptance, then the gene unit's labels; the temporary refusal of the gene unit beside
-  replacement (D301).
-- **Building:** OL6, then FR-39's pore episodes (D287); FR-38's step 4 under amendment S, after FR-42's
-  stack; FR-42's kinds hook; MT-1b's face (D288); a cheaper half-step energy check (D302).
-- **Decided:** the implicit cycle block is dropped (D302).
-- **High priority (D286):** FR-39, FR-40, FR-41 (data-only check undetermined).
-- **Architecture (D299):** one evolving-cell integration case (after the inventory); one static
-  level-of-detail pair and its contract (after FR-42 and FR-38).
-- **Waiting on downloads:** FR-30's next candidates (section 13.4).
-- **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-17, FR-8's rung
-  2, F1 (after an MG0c rerun), crossrev renewal, and the Phase 0 runner's review.
-- **Deferred:** FR-26's L, FR-36.
+Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
+25 November.
+
+- **26 November, evening (D395): FR-43 part 3's co-writers engine build is landed** (4be34f74, tag
+  `fr43-part3-cowriters-landed-2026-11-26`): rules for which writers may share a row, with a clean D148 round. The registered
+  comparison is next (the judge's rulings are made, D394; the format sample comes first). FR-65 runs its round now, with
+  the small fixes stacked (D393). The BETSE file removal (D394) follows the test slimming's landing; FR-45's build starts next.
+- **26 November (D390): the legacy cleanup is landed** (805c48a4; records 67c0de27). One full gate, every difference attributed;
+  tier 3 first failed on ID-move defects, fixed. Next: FR-43 part 3's co-writers (engine build, then the registered
+  comparison as tagged), FR-65 alongside, the heavy tests slimmed, tier 3 weekly. The viewer is on hold today.
+- **25 November, late (D389):** the ensemble's re-expression, Part 1, is judged and **passes** (`jupiter`, `cell`, `base`, `integrated`;
+  judge and independent checker agree). Part 2 is run and sealed by the user's decision (all 127 runs and 36 retry runs completed;
+  not judged). The test review's removals come before the one full gate. Next: the deletion on the user's yes, the ID move, the gate.
+- **On now: the legacy cleanup** (D383, the user's decision). One branch, `legacy-cleanup`: the live side without legacy, the
+  deletion, four features (their design notes are being written), the calcium ensemble re-expressed on the CPU, and the ID
+  move last. Nothing lands and no gate runs until it is coded; then one registered qualification, one full gate with tier 3
+  and FR's set. The removal list comes to the user first. **Everything else below holds,** except GJ-N1's field run and
+  FR-43 part 3's spec and references. The baseline is the tag `pre-cleanup-2026-11-25` (49529e71), whose legacy worlds match
+  the captures bit for bit (D384).
+- **Scheduled, from the morning of 25 November:**
+  - **The law-ID rename** (D345, D346, D371). Everything live becomes `cells.<family>.<name>@major`; one scripted
+    move with a committed mapping table, no aliases. The design note is on `rename-design` (2dd54f72) and the tool is
+    landed with an empty table and the hand refactors (49529e71, `id-rename-landing-1-2026-11-25`, D384). The move is the last
+    step of the legacy cleanup (D383). The words are decided (D371, and the 12 of D383). The branches in flight are
+    re-merged after the move.
+  - **Legacy** (D346, D348, D369, D374). Everything actually used leaves legacy in canonical forms; relocation alone
+    is ruled out as an end state. The calcium ensemble is kept and re-expressed (five engine features, about 16 to
+    28 agent-days as a rough guess, candidate requests only). The physiology stack (17 drivers on five legacy BETSE
+    IDs, 18 REF-era drivers) is retired in the approved deletion batch, which needs a dry run, a tag and a removal
+    list the user approves. The plan is on `legacy-port-plan` (4781e141), with the dry run's evidence (D378, D379). The route is
+    decided (D383): one branch, one deletion, a CPU re-expression counts, one test at the end.
+    BETSE parity stays on the live `resolved_pump_tissue@1` to `@3` ladder.
+  - **Gate speed** (D358, decided by the user) is landed (2c82a048, D382). A refresh of the scope map follows each engine
+    landing, by a nightly on demand, and the nightly full run stays the backstop. Open for the user: the 28 readers of
+    `SNAPSHOT.json`, and AGENTS.md's wording of D229's rule 3.
+- **Queued builds, in the order the decisions give:**
+  - **FR-52** (high; D371, D375): cohort observations for integer units; an engine record at each event, chains in
+    version 1, a split makes a new unit. Note on branch `fr52-design`; 4.25 to 5 agent-days, after the rename.
+  - **FR-54 and FR-57** (high; D341, D362, D364): one `liquid_routing@1` operator that takes over the wash. Note
+    `docs/LIQUID_ROUTING_DESIGN.md` (968bd182, branch `fr54-57-design`); 8.25 to 10.5 agent-days, after the
+    rename. The protocol and spec are tagged (`liquid-routing-criteria-2026-11-25`), and amendment 5
+    (with amendment 6, dd21509b) settles an independent audit's findings (D383). The references are tagged
+    (`liquid-routing-references-2026-11-25`, D384), and the line holds. The wash retires only after FR-49's World B and C1 and FR-45's W2 and W7 have run, or those runs are
+    pinned to an earlier snapshot.
+  - **FR-65** (high, part of FR-43; D365, D375): turnover beside a changing volume, with a lumen. Note `fr65-design`
+    (df473a02); about 3.1 to 4.45 agent-days for the first build, 2 to 2.5 more for the volume-reading step.
+  - **FR-64** (normal; D356, D361): one declared voltage shift on a channel population, with FR-63 (normal; D353)
+    re-formed as a pH shift on it. Note `docs/VOLTAGE_SHIFT_DESIGN.md` (377a1b34, branch `fr64-design`); the build
+    follows FR-51's follow-up and the rename.
+  - **FR-53** (normal; D371, D370): a rounding allowance for global ledgers. Note `docs/LEDGER_ROUNDING_DESIGN.md`
+    (774fdcd5); D370 corrects its premise for the pump-tissue family. FR-47's ledger limit: the
+    evidence recommends keeping it, with the user to decide (D379).
+  - **FR-55** (normal; D344, D351): its note recommends no build. **FR-58 to FR-62** (normal; D365) and **FR-66**
+    (medium; D372) have design notes on branches, with questions for the user (D379); so does **FR-56** (172fce4c, D380).
+  - **FR-39, FR-40, FR-41** (high, D286) and the architecture items (D299) are unchanged; no decision of 23 to 24
+    November moves them.
+- **Registrations and judged runs still to come:**
+  - **FR-51's two-potassium registration has stopped by its own §3** (D391, the user's choice, 26 November): the
+    10 mM trace in Panama's Fig. 3E cannot be identified, so neither held-out curve was read or scored. The
+    external-potassium arm stays development-only, and FR-64's build is now free.
+  - **FR-38's second comparison has passed and is landed** (D381, D382; 4039dcba), beside D313's failed verdict. The three
+    uncovered readout controls go to a later registration, FR-38 v3 (D354).
+  - **FR-43 part 3's co-writers** (D328, D383, D394, D395): the engine build is landed (4be34f74). The criteria and code-blind
+    references are tagged; the blind judge's scorer passes C0 under the lead's rulings (`fr43-cowriters-judge`, cd8137ed). Next:
+    the format sample, the judge's tag, then the registered comparison.
+  - **FR-45** (D327, D377, D394): its judge is the builder's own, written with its build; the build starts next, once the
+    lead has ruled which tag binds its registration. W2 and W7 stay on the wash or are pinned.
+  - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;
+    C4's four-way form by amendment once admission by species lands.
+  - **GJ-N1** (D330, D337, D338, D388): judged on 25 November 2026, passed on the line and on the 2D field. The references land with the next landing; the 3D field is not run.
+  - **FR-30** (D343, D344, D350, D366): parked as development-only, narrowly reopened for two phases at a declared
+    voltage. Ek-Vitorín 2016 is undetermined by structure (D341, D342), so nothing is fitted (D379); D366's
+    power check and multistart bind any later registered fit. The Revilla diagnostic is landed (260a9138).
+  - **Follow-ups:** FR-43 part 3's open items and the factor-width term (D328); FR-43's gaps 3 and 4 (D347: no
+    registered criterion for part 1; turnover in a swelling cell is FR-65). The docstring batch, D349's restart row and the
+    per-solver support view are landed (260a9138). The composite on a GPU through the plain `runner.run` is admitted with
+    host checks; whether to require XLA's deterministic flag, refuse it, or state the caveat is the user's (D380).
+  - **Lean's rebuilt tip is merged** at 18198688 (D378); `lean-ready.sh` runs before every Lean merge.
+- **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-8's rung 2, F1 (after an
+  MG0c rerun), crossrev renewal, and the Phase 0 runner's review. FR-17's stage 1 has landed (below); its GPU
+  placement is closed (D336).
+- **Deferred:** FR-26's L, FR-36. **Parked:** FR-29 (D268), FR-30 (above).
+
+## Landed since 22 November (to 25 November 2026)
+
+Each line gives the merge or tag commit, the tag, the decision and where the evidence is. Tags are named
+`<name>-<date>`; tags marked "reg" are registrations, tagged before the engine side reads them.
+
+- **22 November (unchanged from the earlier list):** FR-25's final verdict (D282: inconclusive, 30 of 32 pass,
+  none failed); F2, an opt-in exact face heat; FR-33's first test; the OL5 precision fix and GARD @2's range
+  fixes; FR-38's sheet, errata, references, reader and engine core; the near-event snap, stages 1 and 2 (D283);
+  FR-42's first stage and @3's transport side (D289); FR-31's rupture Phase A (D287, blind test D298); MT-1b's
+  world declaration with errata 1 to 3, its reference R2 and the runner fix. Run entries are below.
+- **FR-43** (very high; D315, D328, D365, D372, D376).
+  - Part 1, the 1,024-species capacity: bbc99163, `fr43-part1-merged-2026-11-23`. Part 3, the integer-unit
+    population: 7fb0ad87, `fr43-part3-merged-2026-11-23` (D319, passed). Part 2A: c9687d68,
+    `fr43-part2a-merged-2026-11-23`. Part 2B: 2ca07dcb, `fr43-part2b-merged-2026-11-24` (D324, passed). Part 3
+    stays open until D152 reactions and the gene unit can co-write a moved row (D328).
+  - Part 1's gaps: 14f19f9f, `fr43-part1-gaps-landed-2026-11-25` (the name is a day ahead; landed 23:34 UTC on
+    24 November; D376). The 16-row control and the 256-row case are rows with plants; the CPU performance report is
+    [PERFORMANCE.md](validation/fr43_part1/PERFORMANCE.md) with `performance.json` (D372). The 256-row case is
+    in `tests/tier3_record.json` (04ddd25b).
+- **FR-17, stage 1:** the sparse field solver `sparse_capacitive_reduction_gauged_damped_newton@1`, 8760d5b3,
+  `fr17-stage1-merged-2026-11-24` (D317). D336's refusal of the composite on a GPU in the vector path: 72893c2a,
+  `fr17-d336-landed-2026-11-24`, with D330's evidence driver and its closed record (D336, D338).
+- **FR-38's second comparison, registered** (D334, D339, D354, D367): criteria 707014e4
+  (`fr38-v2-criteria-2026-11-24`), spec amendments efb311fd, references 8bd81c7e (six files, 19,957,976 bytes,
+  within the 20 MB limit), amendment 3 5859006b, amendment 4 b4af13df, sheet erratum I a55a2e12
+  (`gr1-sheet-fr38-erratum-i-2026-11-24`; no decision number located), amendments 5 and 6 (`fr38-v2-amendment-6-2026-11-25`),
+  registered at b0974a06 (`fr38-v2-registered-2026-11-25`), run and passed (D381), landed at 4039dcba
+  (`fr38-v2-landed-2026-11-25`, D382).
+- **D358, gate speed:** 2c82a048 (`d358-landed-2026-11-25`); the map is @3 from the nightly on demand at 2c82a048 (D382).
+- **The pre-rename stack:** 260a9138 (`pre-rename-stack-landed-2026-11-25`, D381).
+- **Fail-closed and rounding fixes, 23 November (validation only):** FR-38's retention-resolution and survival-rounding fixes
+  (fd2bb88c, 4944314d), the cohort and release-check fail-closed fixes (275b508f, 1de0055b); decision numbers not
+  traced.
+- **FR-44:** a6f7a0f4, `fr44-landed-2026-11-24` (D327): the wash reports a typed exchange and labels are diluted
+  exactly. **FR-49's judge erratum 1:** 26b70c6b, `fr49-compartment-compositions-v1-judge-erratum-1-2026-11-24`
+  (`LABELS_ONLY` gains FR-44's field). **FR-49 parts H and L:** 7d021548, `fr49-expression-labels-merged-2026-11-24`
+  (D331); registration d0f9af67, amendment 1 a21381c9, references 35c91d25, judge 0cfdffaa.
+- **FR-45:** registration 6e92d0ec (`fr45-site-competition-v1-registered-2026-11-24`), references 8743aa02,
+  amendments 1 ae25c28d, 2 ff99fead and 3 98cd33db (D375), references v2 b62ce23c (D376). No engine code for it is on
+  main yet (D377); the judge comes after the rename.
+- **FR-46 and FR-48:** d702f13a, `fr48-fr46-merged-2026-11-24` (D323).
+- **FR-47:** references 426f5ab5, registration 231aae39, build ec7e8c7d (`fr47-merged-2026-11-24`), schedule
+  supplement ff9a410e and its erratum 1 fb2b4e3f (D339, D350), the wall-marker fix 9d8c42be
+  (`fr47-inert-wall-landed-2026-11-24`, D354). Independent check and supplement passed (D373); development-only
+  status lifted.
+- **FR-50, phase 1:** 1939563e, `fr50-phase1-landed-2026-11-24` (D363, D372); registration 3a6b56eb, amendment 1
+  64e3b923, references 5a59b3c5, judge 3cec272b and erratum 1 a6e48ce9.
+- **FR-51:** 955765ef, `fr51-landed-2026-11-24` (D327); registration 5f1f14b5, references 1360c925, judge 5b9b4c90.
+  Follow-up, the slot refusal: f66fa681, `fr51-slot-refusal-landed-2026-11-24` (D360).
+- **The charge-anchor fix:** 82c26ddd, `charge-anchor-landed-2026-11-24` (D333, D359): the anchor check holds to the
+  rounding budget above its 1e-20 C floor. Lean's proof for it merged as 29d69f1d.
+- **Lean merges** (unedited, `lean/` only; none touched here): 23 November 872dc2d2 and others in `git log --merges`;
+  24 November d3655b0c (tip 8634e566), 29d69f1d, afc28d1d (FR-47 interval heat), 1b3bde45 (tip d5a2c138). One
+  merge, 1b3bde45, went in without the privacy scan; the push stands, the waiting tips are held and reworded first,
+  and a pre-merge check now runs (D376).
+- **GJ-N1:** amendment 1 bbefb664 (`gj-n1-amendment-1-2026-11-23`), amendment 2 750076a7
+  (`gj-n1-amendment-2-2026-11-24`, the field on CPUs). The field path d6d42b46 and the 1D line's engine table are
+  hashed (D330, [SHA256SUMS](/mnt/workspaces/Cells/gap-junction-20261123/judged/line-01/SHA256SUMS)). The field is
+  running or queued (see above).
+- **OL6 Protocol G:** registered 16671ae4 (`ol6-protocol-g-registered-2026-11-23`); passed (D322). **Protocol D
+  version 2:** registered eced4ef8 (`ol6-protocol-d-v2-registered-2026-11-24`, pinned at eced4ef8, D357); passed
+  (D368). **XC0 version 2:** rule erratum 2, b477f433 (`xc0-erratum-2-2026-11-24`); passed (D359).
+- **Speed-up, step 1:** the shared compile cache's scripts, 31fde682 (`speedup-cache-step1-merged-2026-11-23`,
+  D321): tier seconds and gates stay cold by default; development runs may opt in.
+
+## Judged comparisons since 22 November
+
+Passes are as recorded; the failures stay on record beside any later pass.
+
+- **Passed:**
+  - FR-38's second comparison (D381): AF, AN, B, C and D, all twelve plants caught, an independent checker agreeing.
+    [Verdict](/mnt/workspaces/Cells/fr38-v2-campaign-20261125/judge/verdict.json),
+    [checker](/mnt/workspaces/Cells/fr38-v2-checker-20261125/out/verdict_checker.json). Its first comparison's fail stands below.
+  - OL6 Protocol G, both scopes (D322): 1,280 of 1,280 seeds at tier 1, 540 statistics at tier 2, plants caught.
+    [Verdict](/mnt/workspaces/Cells/ol6-checker-20261123/verdict_protocol_g_both_scopes.json).
+  - FR-43 part 3 (D319,
+    [verdict](/mnt/workspaces/Cells/fr43-part3-20261123/evidence-52935908/compare/verdict.json)) and part 2's C2.3,
+    C2.6/C2.7 and C2.8 (D324, [records](/mnt/workspaces/Cells/fr43-20261123/part2/registered-20261123/)).
+  - The gap-junction replication's GJ-L1: 57 of 57 real entries, both plants caught (D325,
+    [records](/mnt/workspaces/Cells/gap-junction-20261123/judged/)).
+  - FR-49 World L (D331, [records](/mnt/workspaces/Cells/fr49-expression-labels-20261123/judged-0cfdffaa/)).
+  - FR-50 phase 1, every criterion and all five plants (D363,
+    [records](/mnt/workspaces/Cells/fr50-build-20261124/judged-4872266d/)).
+  - FR-51, every criterion, none inconclusive, and all eleven reference-judged plants caught (D377,
+    [records](/mnt/workspaces/Cells/fr51-build-20261124/judged-d3b3cf0b/)).
+  - XC0 version 2: all claims C0 to C8 pass, disclosed as not blind on the diagnosed rows (D359,
+    [record](/mnt/workspaces/Cells/xenopus-lane-20261119/xc0-erratum2-run/)).
+  - OL6 Protocol D version 2, all seven worlds on the first seed set (D368,
+    [verdict](/mnt/workspaces/Cells/ol6-protocol-d-v2-checker-20261124/verdict/verdict.json)).
+  - FR-47: the frozen scorer and, separately, the schedule supplement (D373,
+    [verdict](/mnt/workspaces/Cells/fr47-checker-20261124/judgement/verdict.json)).
+- **Failed or inconclusive, kept on record:**
+  - FR-38's first comparison (D313): R1 failed, R2 inconclusive. The failures are definitional, with no engine or
+    reference defect found (D316). A later pass would sit beside it, never in place of it.
+  - OL6 Protocol D's first registration (D318): failed on D6's criterion M alone (10.47 against 6), an arithmetic
+    artifact. Version 2 passed on fresh seeds (D368).
+  - FR-30's Revilla 1999 benchmark (D320): 4 of 6 comparisons, both misses at -80 mV; the law stays development-only.
+    The later diagnostic is non-blind and decides nothing (D366).
+  - XC0's first run (D329): C0 to C5 pass, C7 and C8 fail, C6 not testable. Diagnosed as rule-side definitions and
+    an engine parse tolerance (D332); version 2 passed (D359). The fail stands.
+  - FR-17's GPU qualification (D330, D335, D336): closed as failed. G1 and G6 pass under the deterministic flag, G2
+    fails as declared (window 1 at 0.514 against the amended bound of 0.291), and the speed gain is about 1.5x,
+    not about 3x. GPU device mode is not qualified; the field's longest points run on CPUs.
 
 ## Current position
 
@@ -132,7 +295,8 @@ starts, and production design is deferred until parity is established.
 ## Runs
 
 Per-run summaries for this plan are added here, newest first, each linking its
-machine-readable inputs, results, checks and failures.
+machine-readable inputs, results, checks and failures. Landings and judgements of 23 and 24
+November are listed in the two sections near the top, one line each.
 
 - **FR-31's rupture Phase A landed (22 November 2026).** Merge a9a67d06, tag
   `pores-phase-a-landed-2026-11-22`. `cells.pore_nucleation@1` under `cells.assembly_hazard@1`, and a

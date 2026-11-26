@@ -154,6 +154,12 @@ Declarations (class attributes):
     lifecycle_retire), and calls it with its maps and retirement masks at every division.
     Beside a kind with fields on its slot axes, a retiring operator without it is refused
     (fails closed: the kinds' history would be lost);
+  - ``DIVIDES_OWNED`` (FR-43 part 3, D315): an operator whose owned state divides at a retiring
+    operator's division. Its ``divide_owned(state, maps, masks, p, *, xp)`` gives (state, valid)
+    after the due divisions, from the same maps and retirement masks the kinds' lifecycle reads,
+    and the composite calls it, in declared order after the kinds' fields, inside the lifecycle
+    callable it passes the retiring event (TAKES_LIFECYCLE). Without such an operator nothing
+    changes: the lifecycle is passed and called as before;
   - ``BOOKS_AT_VIEW`` on an event map: the composite passes ``view``, a function of state
     giving its view, when a field input is provided.
 * Scoped composition, door S (docs/SCOPED_COMPOSITION_DESIGN.md), refining the view
@@ -194,6 +200,19 @@ Declarations (class attributes):
   process moves inside the inner step, which an operator with ``PROCESS`` declares;
   ``species_moieties``, the net row change of each move it makes, which the registry's
   check_moieties holds to the model's moieties (docs/GENE_REGULATION_DESIGN.md §7.6).
+* The writers of a species row (FR-43 part 3; docs/FR43_PART3_COWRITERS_DESIGN.md §3.2). A split
+  row writer (``writes_rows``: a split part with an amount write that is not an event's
+  replacement) declares ``ROW_MOVES``: "transfer" for one that changes only where a species is,
+  moving it between a cell and an outside node and booking both sides in the same accumulators
+  (checked here), or "conversion" for one that changes how much there is at a place. Its
+  ``written_rows`` are every (species, node) its half-steps can change by net change (a catalyst
+  is not written), at cells and finite outside nodes; its ``sole_rows`` the rows it claims as their
+  one writer, each with its reason. ``SHARED_ROW_POTENTIAL`` marks a conversion whose rows, shared
+  with another such writer, need the species registry's standard potential (check_shared_rows,
+  FR-43 / D315). The registry's one rule (check_row_writers): a transfer may share a row with any
+  declared writer, unless a writer claims that row alone; an undeclared split writer is refused
+  beside an operator that guards its rows. Every declaration is optional, so an outside operator
+  that declares none still registers.
 * Neutral arrival-time labels (FR-42, D289; operators/species_labels.py): a label owner
   (``LABEL_OWNER``, part-less, at most one per composition) holds each labelled species' shares,
   which the composite advances after every applied half-step of a reporter. A reporter is a split
@@ -242,6 +261,23 @@ Declarations (class attributes):
     the amount before the event times its shares just before it, cumulative from t = 0, rows
     (``label_removed_fmol``) and pools (``label_pool_removed_fmol``) apart; a pool reporter
     whose event takes no labels is refused there.
+  - **An event that exchanges a node's liquid** (FR-44, D327: the compartment wash) reports the
+    exchange: its ``event`` with ``labels=rows`` returns ``(state, valid, LiquidExchange)``,
+    removed and supplied [m, outside node] >= 0, the amounts of each labelled row that this
+    step's sample took away and its buffer brought, zero at every node not exchanged in the step.
+    The axis is the outside nodes, as the owner's record of what left
+    (``label_outside_removed_fmol``) is. An exchange of a cell's own liquid cannot be expressed in
+    version 1. The sample leaves with the node's shares, since the liquid is well mixed. The
+    buffer carries no label and joins the base, whatever window is open. The owner records what
+    left by label, at the shares just before the event.
+  - **Each labels-taking event has one report kind** (``LABEL_EVENT``, one of
+    LABEL_EVENT_KINDS; label_event, static):
+    - "replaced" is a replacing event's (``EVENT_REPLACES``) by default;
+    - "emptied" is a pool reporter's (``LABEL_POOLS``);
+    - "exchanged" is declared.
+    The composite passes the kind to the owner, which reads the report by it. A labels-taking
+    event with no kind, or one its declarations contradict, is refused (label_event_error), so no
+    report is read as another kind's.
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;
@@ -304,6 +340,14 @@ COMMUTING = ("add", "multiply", "and")  # Overlaps admitted, applied in declared
 CHANGE_STAGES = ("event", "split")
 READ_MODES = ("reference", "current", "fixed")
 READ_STAGES = ("event", "split", "inner", "end", "observe")  # In step order.
+# The reports a labels-taking event gives the label owner (FR-42's events, FR-44; label_event).
+REPLACED, EMPTIED, EXCHANGED = "replaced", "emptied", "exchanged"
+LABEL_EVENT_KINDS = (REPLACED, EMPTIED, EXCHANGED)
+# The writers of a species row (FR-43 part 3; module docstring): the amount fields, and the kinds of
+# a split row writer's moves.
+AMOUNT_FIELDS = ("amount_increment", "extracellular_amount_increment")
+TRANSFER, CONVERSION = "transfer", "conversion"
+ROW_MOVES_KINDS = (TRANSFER, CONVERSION)
 
 
 class Change(NamedTuple):
@@ -326,6 +370,17 @@ class Read(NamedTuple):
     mode: str
     stage: str
     scoped: bool = False
+
+
+class LiquidExchange(NamedTuple):
+    """An exchanging event's report to the label owner (FR-44; module docstring), in fmol, each
+    [labelled species, outside node] and >= 0, zero at every node not exchanged in the step.
+
+    removed: what this step's sample took away, which carries the node's shares. supplied: what
+    its buffer brought, which carries no label."""
+
+    removed: object
+    supplied: object
 
 
 def reads_of(operator, field):
@@ -359,6 +414,60 @@ def reports_labels(operator):
     """Whether a split part reports its one-way moves to a label owner (FR-42, module
     docstring): its half_step takes labels=."""
     return operator.SPLIT and takes_labels(operator.half_step)
+
+
+def label_event(operator):
+    """The kind of report a labels-taking event gives the label owner (FR-42, FR-44; module
+    docstring), static.
+    - Its declared LABEL_EVENT where it declares one.
+    - Otherwise "emptied" for a pool reporter's event and "replaced" for a replacing event's.
+    - None for an event that takes no labels, and for one that declares no kind and is neither
+      (label_event_error refuses that one)."""
+    if not (operator.EVENT and takes_labels(operator.event)):
+        return None
+    if operator.LABEL_EVENT is not None:
+        return operator.LABEL_EVENT
+    if operator.LABEL_POOLS:
+        return EMPTIED
+    return REPLACED if operator.EVENT_REPLACES else None
+
+
+def label_event_error(operator):
+    """Why an operator's label event kind contradicts its declarations, or None (fail closed: no
+    report is read as another kind's). check_declarations raises it for a class, and the label
+    owner refuses it in a composition."""
+    if not (operator.EVENT and takes_labels(operator.event)):
+        if operator.LABEL_EVENT is None:
+            return None
+        return "it declares a report kind (LABEL_EVENT), which only an event taking labels= has"
+    kind = label_event(operator)
+    if kind is None:
+        return (
+            "its event takes labels= but has no report kind: it declares no LABEL_EVENT and is "
+            "neither a pool reporter's nor a replacing event's, so no reader would read its report"
+        )
+    if kind not in LABEL_EVENT_KINDS:
+        return f"its report kind {kind!r} is not one of {LABEL_EVENT_KINDS}"
+    if kind == EMPTIED and not operator.LABEL_POOLS:
+        return "an emptied report is a pool reporter's (LABEL_POOLS)"
+    if kind == REPLACED and (operator.LABEL_POOLS or not operator.EVENT_REPLACES):
+        return "a replaced report is a replacing event's (EVENT_REPLACES), not a pool reporter's"
+    if kind == EXCHANGED and (
+        operator.LABEL_POOLS or operator.EVENT_REPLACES or not operator.ENTITY_WRITES
+    ):
+        return (
+            "an exchanged report is an event's that writes amounts (ENTITY_WRITES), replaces "
+            "none and holds no label pools"
+        )
+    return None
+
+
+def writes_rows(operator):
+    """Whether an operator's half-steps write species rows (FR-43 part 3; module docstring): a split
+    part with an amount write (AMOUNT_FIELDS) that is not an event's replacement (EVENT_REPLACES).
+    Such a writer declares ROW_MOVES, or an operator that guards its rows refuses it."""
+    writes, replaced = operator.ENTITY_WRITES, operator.EVENT_REPLACES
+    return bool(operator.SPLIT and any(f in writes and f not in replaced for f in AMOUNT_FIELDS))
 
 
 def part_stages(operator):
@@ -433,6 +542,7 @@ class Operator:
     CLOSES = ()
     RETIRES = False
     TAKES_LIFECYCLE = False  # Its event map takes lifecycle= (module docstring).
+    DIVIDES_OWNED = False  # Its owned state divides at a division (divide_owned; FR-43, D315).
     # Its parts call the inner model's structure-bound functions (an event map's kinetics, the
     # field solve): the composite passes the inner implementation object as `inner=` to its
     # event, half_step and rates calls and to initial_values (static), and host methods reach
@@ -444,6 +554,11 @@ class Operator:
     # Species identity (registry/species_registry.py, D176): "author" for an operator that declares
     # the species it writes, "user" for one that refers to species others declare.
     IDENTITY_ROLE = "author"
+    # The writers of a species row (FR-43 part 3; module docstring): a split row writer's moves,
+    # "transfer" or "conversion" (None: undeclared), and whether a row it shares with another such
+    # writer needs the species registry's standard potential (check_shared_rows).
+    ROW_MOVES = None
+    SHARED_ROW_POTENTIAL = False
     # Its layers in the run view (docs/RUN_VIEW_DESIGN.md §3): ({"id", "label",
     # "representation"}, ...), representation one of REPRESENTATIONS. None: undeclared, which the
     # run-view writer refuses.
@@ -463,6 +578,9 @@ class Operator:
     LABEL_OWNER = False
     LABEL_SOURCES = False
     LABEL_POOLS = False
+    # FR-44: a labels-taking event's report kind, one of LABEL_EVENT_KINDS, where its flags do
+    # not give it (label_event): "exchanged" is declared.
+    LABEL_EVENT = None
 
     @classmethod
     def observed_columns(cls):
@@ -581,6 +699,19 @@ class Operator:
         ((species id, "cell" | "outside"), ...); read by core/species_registry.moved_in_step,
         which the coupling operator's instantaneous admission uses (D176, "moved by the step").
         An operator without an in-step process moves nothing in the step: ()."""
+        return ()
+
+    def written_rows(self, spec, declaration):
+        """((species id, node id), ...): every row its half-steps can change, by net change (a
+        catalyst is not written), at cells and finite outside nodes (FR-43 part 3; module
+        docstring). A split row writer that declares ROW_MOVES defines it; the species registry's
+        row rules read it (check_row_writers, check_shared_rows). (): it writes none."""
+        return ()
+
+    def sole_rows(self, spec, declaration):
+        """((species id, node id or None, reason), ...): the rows it claims as their one writer,
+        None for every node of the species, each with the reason a second writer is refused
+        (species_registry.check_row_writers; FR-43 part 3). (): it claims none."""
         return ()
 
     def label_pools(self, declaration):
@@ -742,6 +873,12 @@ class Operator:
         routes evaluated there, at the control view (target None) or at a target's half-step
         (target, field) (B1′'s exact record of the factor applied). With factor_reads it also
         takes view= at the control view (R2); a target's half-step passes none."""
+        raise NotImplementedError
+
+    def divide_owned(self, state, maps, masks, p, *, xp):
+        """(state, valid) after a retiring operator's due divisions, for DIVIDES_OWNED: its owned
+        fields from maps ({slot axis: (parent rows, daughter rows, daughter 1's fraction, due
+        rows)}) and masks ({slot axis: retired}), the closer's own (module docstring)."""
         raise NotImplementedError
 
     def closures(self, state, p, q, *, xp):
@@ -938,6 +1075,9 @@ def check_declarations(operator):
         raise ValueError(f"{name}: a label owner has no part; the composite advances its shares")
     if (operator.LABEL_SOURCES or operator.LABEL_POOLS) and not reports_labels(operator):
         raise ValueError(f"{name}: sources and pools are a label reporter's (FR-42, D296)")
+    error = label_event_error(operator)
+    if error:
+        raise ValueError(f"{name}: {error} (FR-44)")
     for field in operator.STATE_AXES:
         booked = field in operator.HEAT_FIELDS or field in operator.WORK_FIELDS
         if field.endswith((HEAT_SUFFIX, WORK_SUFFIX)) != booked:
@@ -983,6 +1123,14 @@ def check_declarations(operator):
         operator.TAKES_LIFECYCLE and not operator.RETIRES
     ):
         raise ValueError(f"{name}: TAKES_LIFECYCLE is a bool, true only for a retiring operator")
+    if not isinstance(operator.DIVIDES_OWNED, bool) or (
+        operator.DIVIDES_OWNED
+        and not (operator.STATE_AXES and _defined_below_operator(operator, "divide_owned"))
+    ):
+        raise ValueError(
+            f"{name}: DIVIDES_OWNED is a bool, true only for an operator with owned state that "
+            "defines divide_owned"
+        )
     if operator.EVENT_REPLACES and not operator.EVENT:
         raise ValueError(f"{name}: replaced fields need an event map")
     for field, accumulators in operator.EVENT_REPLACES.items():
@@ -999,10 +1147,55 @@ def check_declarations(operator):
         raise ValueError(f"{name}: an in-step process declares the rows it moves (moves_in_step)")
     if operator.IDENTITY_ROLE not in IDENTITY_ROLES:
         raise ValueError(f"{name}: IDENTITY_ROLE is one of {IDENTITY_ROLES}")
+    _check_row_moves(operator)
     _check_layers(operator)
     _check_records(operator)
     _check_kinds(operator)
     return operator
+
+
+def _check_row_moves(operator):
+    """The writers of a species row (FR-43 part 3; module docstring). ROW_MOVES is None or one of
+    ROW_MOVES_KINDS, and only a split row writer's (writes_rows), which then defines written_rows. A
+    transfer books its writes at the cell and at the outside node in the same accumulators, so what
+    leaves one side enters the other; it keeps the species' total, so it claims no row and no
+    standard potential. An undeclared operator declares neither sole rows nor the potential flag."""
+    name, moves = operator.LAW_ID, operator.ROW_MOVES
+    if moves is not None and moves not in ROW_MOVES_KINDS:
+        raise ValueError(f"{name}: ROW_MOVES is one of {ROW_MOVES_KINDS}, or None (undeclared)")
+    if not isinstance(operator.SHARED_ROW_POTENTIAL, bool):
+        raise ValueError(f"{name}: SHARED_ROW_POTENTIAL is a bool")
+    claims = _defined_below_operator(operator, "sole_rows")
+    if moves is None:
+        if (
+            operator.SHARED_ROW_POTENTIAL
+            or claims
+            or _defined_below_operator(operator, "written_rows")
+        ):
+            raise ValueError(
+                f"{name}: written rows, sole rows and the shared-row potential are a declared "
+                "split row writer's (ROW_MOVES)"
+            )
+        return
+    if not writes_rows(operator):
+        raise ValueError(
+            f"{name}: ROW_MOVES is a split row writer's: a split part that writes "
+            f"{' or '.join(AMOUNT_FIELDS)} other than at an event's replacement"
+        )
+    if not _defined_below_operator(operator, "written_rows"):
+        raise ValueError(f"{name}: a split row writer declares the rows it writes (written_rows)")
+    if moves == TRANSFER:
+        booked = [tuple(operator.ENTITY_WRITES.get(f, ())) for f in AMOUNT_FIELDS]
+        if not booked[0] or booked[0] != booked[1]:
+            raise ValueError(
+                f"{name}: a transfer books its writes at the cell and at the outside node in the "
+                "same accumulators, so that what leaves one side enters the other (ENTITY_WRITES)"
+            )
+        if claims or operator.SHARED_ROW_POTENTIAL:
+            raise ValueError(
+                f"{name}: a transfer keeps the species' total, so it claims no row alone and no "
+                "standard potential enters its moves"
+            )
 
 
 def energy_roles(operator):
@@ -1127,8 +1320,8 @@ def _check_records(operator):
 
 
 def _check_kinds(operator):
-    """REQUIRES_KINDS (schema A): a tuple of distinct kind IDs (a bare ID is in the cells
-    namespace, registry/kind_registry.py); FIXED_INNER_FIELDS a bool, and never with REQUIRES_KINDS."""  # noqa: E501
+    """REQUIRES_KINDS (schema A): a tuple of distinct kind IDs (registry/kind_registry.py);
+    FIXED_INNER_FIELDS a bool, and never with REQUIRES_KINDS."""
     name, kinds = operator.LAW_ID, operator.REQUIRES_KINDS
     if not isinstance(operator.FIXED_INNER_FIELDS, bool):
         raise ValueError(f"{name}: FIXED_INNER_FIELDS is a bool")

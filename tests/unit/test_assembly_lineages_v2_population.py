@@ -1,4 +1,4 @@
-"""OL2 milestone 3 in cells.assembly_lineages@2: the diagnostic record, Poisson shear times and
+"""OL2 milestone 3 in cells.model.assembly_lineages@2: the diagnostic record, Poisson shear times and
 §0.2d item 9 (slice 1); the shared pool, population division and serial transfer follow
 (docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1.8, §2.1, §2.6; the design note's §0.2d items 5, 6, 9, 10).
 
@@ -374,7 +374,7 @@ def test_a_transfer_keeps_a_uniform_sample_and_refreshes_the_pool(tmp_path):
     with pytest.raises(ConfigError, match="exceed c_ext"):
         too_many = [dict(schedules[0], fresh_pool=[10**9, 0, 0])]
         pop_spec(founders, 4, schedules=too_many)
-    assert transfer.SERIAL_TRANSFER == "cells.serial_transfer@1"
+    assert transfer.SERIAL_TRANSFER == "cells.operator.serial_transfer@1"
 
 
 REFUSALS = {

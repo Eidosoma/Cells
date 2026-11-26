@@ -23,7 +23,7 @@ Assigning each molecule to one daughter preserves per-species inventories and th
 - [CellsProofs.Chemistry.VesiclePopulation.closure_work](../CellsProofs/Chemistry/VesiclePopulation.lean#L107)
 - [CellsProofs.Chemistry.VesiclePopulation.volume_gate](../CellsProofs/Chemistry/VesiclePopulation.lean#L116)
 
-Direct proof subject `cells.shear_fission@1`
+Direct proof subject `cells.operator.shear_fission@1`
 
 Uses [Bilayer area is half the sum of the molecular footprints in its two leaflets](bilayer-footprint.md) · [Membrane area caps the volume that minimizes a vesicle’s osmotic free energy](osmotic-vesicle-volume.md) · [Vesicles withdrawing from a finite shared bath conserve each species across the population](shared-pool-inventory.md)
 

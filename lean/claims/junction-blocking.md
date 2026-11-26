@@ -14,7 +14,7 @@ Setting the effective transport scale to zero gives zero junction flux at every 
 
 - [CellsProofs.Transport.flux_blocked](../CellsProofs/Transport/ConstantField.lean#L58)
 
-Direct proof subject `cells.constant_field@1`
+Direct proof subject `cells.route.constant_field@1`
 
 ## Numerical comparison
 

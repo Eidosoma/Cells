@@ -1,7 +1,7 @@
 """Contract tests for FR-4's law kernels (docs/COMPARTMENT_PH_TRANSFER_DESIGN.md).
 
-rapid_proton_buffer@1, proton_atp_mass_action_positive@1, passive_neutral_permeation@1 and
-proton_constant_field_leak@1: pure kernels, checked in NumPy (xp=np) against their defining
+cells.kind.rapid_proton_buffer@1, cells.cycle.proton_atp_mass_action_positive@1, cells.route.passive_neutral_permeation@1 and
+cells.route.proton_constant_field_leak@1: pure kernels, checked in NumPy (xp=np) against their defining
 equations, with one JAX agreement check. Planted errors must fail where stated.
 """
 
@@ -27,7 +27,7 @@ def ph_to_h(ph):
     return 1000.0 * 10.0 ** (-ph)
 
 
-# --- rapid_proton_buffer@1 -------------------------------------------------------------------
+# --- cells.kind.rapid_proton_buffer@1 -------------------------------------------------------------------
 
 
 def test_k_from_registry_potentials_gives_the_declared_pk():
@@ -187,7 +187,7 @@ def test_jax_agrees_with_numpy_for_the_closure():
     np.testing.assert_allclose(np.asarray(h_jx), h_np, rtol=1e-13)
 
 
-# --- proton_atp_mass_action_positive@1 -------------------------------------------------------
+# --- cells.cycle.proton_atp_mass_action_positive@1 -------------------------------------------------------
 
 
 H_REST = 1000.0 * 10.0 ** (-7.2)
@@ -264,7 +264,7 @@ def test_zero_availability_is_an_exact_zero():
     assert pump.kinetics(pump_inputs(), PUMP, 0.0, xp=np).cycles_fmol_s == 0.0
 
 
-# --- passive_neutral_permeation@1 ------------------------------------------------------------
+# --- cells.route.passive_neutral_permeation@1 ------------------------------------------------------------
 
 
 def test_neutral_flux_is_ficks_law_and_antisymmetric():
@@ -312,7 +312,7 @@ def test_divided_potential_tends_to_the_potential_for_a_tiny_change():
     assert mu == pytest.approx(math.log(n / v), rel=1e-8)
 
 
-# --- proton_constant_field_leak@1 ------------------------------------------------------------
+# --- cells.route.proton_constant_field_leak@1 ------------------------------------------------------------
 
 
 def test_proton_leak_is_zero_at_electrochemical_equilibrium_and_dissipative_elsewhere():
@@ -439,7 +439,7 @@ def test_the_read_closes_over_its_structure_and_takes_the_published_arguments():
         temperature_K=T,
     )
     values, valid = read.evaluate(np.array([[2e-4], [0.0]]), np.array([[10.0], [20.0]]), p, xp=np)
-    assert read.read_id == "rapid_proton_buffer@1" and valid.all()
+    assert read.read_id == "cells.kind.rapid_proton_buffer@1" and valid.all()
     assert values["h"][0] == pytest.approx(2e-4, rel=1e-13)
 
 

@@ -2,17 +2,19 @@
 
 ![Cells logo: three connected cells beside the Cells wordmark.](docs/assets/cells-logo.png)
 
-**Cells is a physics simulator for biology.** It builds cells and tissues from
-explicit physical laws, from electrodiffusion, chemistry and transport to
-mechanics and molecular assembly, with energy, charge and matter accounted for
-at every step. A growing set of properties of its laws, such as the direction of
-a flux and the conservation of what it moves, is proved in Lean
+**Cells is a physics simulator for biology.** Biology has a growing list of its
+parts, from genes and molecular counts to protein structures, yet living
+function lives in the relationships between those parts across scales. Cells
+builds molecules, compartments, cells and tissues from explicit physical laws,
+from electrodiffusion, chemistry and gene expression to mechanics and molecular
+assembly, with matter, charge, volume and free energy accounted for at every
+step. A growing set of properties of its laws, such as the direction of a flux
+and the conservation of what it moves, is proved in Lean
 ([`lean/`](lean/README.md)) and checked numerically against the engine. It is
-multiscale: its models span molecular assembly, cells and
-tissues, and its runs can be followed through time. It is GPU-native, written in
-**Python and JAX**, so the same models compile for NVIDIA GPUs and for CPUs, and
-the CPU runs serve as independent references. Its first questions are how
-molecular assembly, cell physiology and communication shape memory, inheritance
+GPU-native, written in **Python and JAX**, so the same models compile for NVIDIA
+GPUs (from a single workstation GPU to multi-GH200 supercomputer nodes) and for
+CPUs, which serve as independent references. Its first questions are how
+cross-scale relationships shape self-maintenance, cellular memory, inheritance
 and tissue organisation. We are building toward integrated whole-cell models,
 whole organs and interacting organ systems. A
 [3D visualizer](#the-visualizer-and-its-replays) shows the engine, the proteins
@@ -47,13 +49,17 @@ definitions with machine-readable records, so people and AI systems alike can
 design, run and read them.
 
 Unlike a real microscope, it shows a model, not the cell itself, so it is only
-as true as what goes into it. That is why every law names its source, every
-quantity of matter, charge and energy is accounted for, every result traces back
-to the code, parameters and measurements behind it, and a mechanism is qualified
-before a judged experiment relies on it. In return, it lets us do what a
-laboratory often cannot: remove a single cue, give two cells the same visible
-state but different histories, or replace every cell in a tissue and watch what
-survives.
+as true as what goes into it. Most multiscale biology stitches together separate
+models that speak incompatible languages, hiding errors in the glue between
+them. In Cells, scales meet through conserved physical currencies, matter,
+charge, volume and chemical free energy, so a molecular assembly, an acidifying
+compartment, a dividing cell and a coupled tissue pay into the same ledgers.
+Every law names its source, every result traces back to the code, parameters and
+measurements behind it, and a mechanism is qualified before a judged experiment
+relies on it. In return, batched GPU runs let us do at scale what a laboratory
+often cannot: branch one state into thousands of parallel worlds with a single
+feedback severed, give two cells the same visible voltage but different chemical
+histories, or replace every molecule or cell and watch what survives.
 
 We also think a project like Cells can only be done through collective
 intelligence and open source. A cell is a puzzle of a great many pieces: the law
@@ -84,11 +90,14 @@ and when it survives replacement.
 Bioelectricity, chemistry and assembly were the starting point. Water and cell
 volume, cell replacement, prescribed division and 2-D tissue mechanics have
 joined them, and metabolism and growth are planned. Cells' purpose is to study
-how these processes work together in the same evolving cells and tissues. When an experiment shows that a mechanism is
-missing, we add it to the engine as a cited, biologically grounded model rather
-than working around it. The goal is to find where
-the ideas hold, fail or need revision. See the
-[research background](docs/SCIENTIFIC_BASIS.md) and
+how these processes work together in the same evolving cells and tissues. We
+never force a model to look alive with ad-hoc fixes: when every part is
+physically honest and every ledger closes, a failure to renew, escape or
+remember is not a simulator bug, but evidence showing which cross-scale
+relationship is missing. When an experiment exposes that gap, we add the missing
+mechanism to the engine as a cited, general physical law rather than working
+around it. The goal is to find where the ideas hold, fail or need revision. See
+the [research background](docs/SCIENTIFIC_BASIS.md) and
 [planned experiments](docs/EXPERIMENTS.md).
 
 ## Ambition
@@ -123,8 +132,9 @@ declaring which. A cell's mitochondria could then be one population or individua
 organelles that divide, fuse and are inherited, and a molecular machine one copy
 stepping through its cycle or a count with rates. The levels are to meet at their
 physical interfaces and keep the same accounting, with the finer one as the
-reference for the coarser. The contract for declaring them is designed but not yet
-built.
+reference for the coarser. The first declared pair, continuous rate equations
+beside exact stochastic events in the assembly family, is on `main`; the general
+contract across families is designed and queued.
 
 On the molecular side, the one level we skip is protein folding itself. Beneath
 it, we aim to simulate the gene regulation that sets how much of each protein is
@@ -140,19 +150,33 @@ form membranes, which grow, split and pass on their composition, with every
 molecule and every unit of energy accounted for. The published GARD model of
 compositional inheritance is implemented beside it for comparison.
 
-Every run is also meant to be readable as a history: which cell or assembly came
-from which, where its material came from, and what each result depended on. These
-are written as plain [tables](docs/RELATIONSHIPS_DESIGN.md), so that graphs come
-straight from the raw data.
+Across scales, a simulation in Cells tracks four relationships at once:
+- **Coupling and dependence:** which process drives, feeds or constrains another
+  right now, through shared pools, membranes, fields and forces;
+- **Material provenance:** which molecules were inherited from a founder and
+  which were newly taken up or made, followed by neutral labels that leave the
+  physical trajectory unchanged bit for bit;
+- **Descent and replacement:** which assembly or cell came from or replaced
+  which, and why each life ended;
+- **Memory across timescales:** how fast electrical and chemical fluxes carry
+  signals while slower inventories, bound complexes and tissue structure hold
+  history.
+
+These relationships are written as plain [tables](docs/RELATIONSHIPS_DESIGN.md),
+so that lineage trees, material flows and dependency graphs come straight from
+the raw data.
 
 Our goal is a complete and faithful simulation of a real cell, and in time of the
 tissues and organs it builds. Each qualified mechanism is a step toward it, and we
 believe progress in AI and in mathematics can bring that goal closer than it
 seems today. As a first whole cell we have taken up the minimal bacterium
-JCVI-syn3A as a [track](docs/SYN3A_MINIMAL_CELL_TRACK.md). So far it holds an
-evidence audit and capability probes, with no engine code written for it. Beyond
-it, the organisms in view are the mouse, the planarian and the human, beginning
-with the human heart's muscle cells and their mitochondria.
+JCVI-syn3A as a [track](docs/SYN3A_MINIMAL_CELL_TRACK.md): it holds an evidence
+audit, capability probes, and general engine features motivated by whole-cell
+renewal (neutral origin labels and 1,024-species inventories on `main`, with
+shared-pool coupling and low-count integer units in progress), while no
+organism-specific code lives in the engine. Beyond it, the organisms in view are
+the mouse, the planarian and the human, beginning with the human heart's muscle
+cells and their mitochondria.
 
 ## Where things stand (17 November 2026)
 
@@ -394,10 +418,11 @@ Use Python 3.13 (tested with 3.13.5):
 python3 -m venv .venv
 .venv/bin/python -m pip install --no-cache-dir -r requirements-lock.txt
 .venv/bin/python -m pip install --no-build-isolation --no-deps -e .
-.venv/bin/python -m cells run configs/single_cell_pulse.json --output runs/my-first-cell --checkpoint-at 6
+.venv/bin/python -m cells run configs/resolved_pump_tissue_channels_cell.json --output runs/my-first-cell --checkpoint-at 0.5
 ```
 
-This simulates one cell for 12 seconds with an input pulse, and writes the
+This simulates one pumping cell with three channel populations for one second, with a
+sodium leak open from 0.05 to 0.35 seconds, and writes the
 resolved configuration, trajectories, a summary and complete checkpoints. Every
 output directory must be new. More examples, including restart and branching,
 are in [Running the model families](docs/RUN_EXAMPLES.md). The lock is CPU-only;

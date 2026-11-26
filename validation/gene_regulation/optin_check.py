@@ -1,4 +1,4 @@
-"""templated_polymerisation@1's opt-in check (FR-38; D148, D284): with no release block, every
+"""cells.operator.templated_polymerisation@1's opt-in check (FR-38; D148, D284): with no release block, every
 registered definition keeps its fingerprint, its structure and its program, and its run bit for
 bit.
 

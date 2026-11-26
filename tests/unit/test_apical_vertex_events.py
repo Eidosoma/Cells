@@ -1,4 +1,4 @@
-"""apical_vertex_mechanics@1 events: ablation, restart from disk, vmap, step refusal.
+"""cells.model.apical_vertex_mechanics@1 events: ablation, restart from disk, vmap, step refusal.
 
 A scheduled Farhadifar cut books its control work and the exact velocity jump;
 a run written with write_run and resumed from its loaded snapshot ends bitwise

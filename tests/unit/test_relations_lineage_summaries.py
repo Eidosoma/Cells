@@ -78,7 +78,9 @@ def replacement_worlds():
         rfx.template_from_cell(cells, "cell_3", "d"),
     ]
     events = ((t1, "cell_0", "h", "n1"), (t2, "cell_2", "h", "n2"), (t3, "cell_0", "d", "n4"))
-    fast = dict(rfx.NO_ROUTES, channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3e-7})
+    fast = dict(
+        rfx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+    )
     donors = ((t1, "cell_0", None, "c1", "cell_3"), (t2, "cell_4", "fast_nav", "c2", "cell_3"))
     route = rfx.route_template("fast_nav", fast)
     return {
@@ -313,7 +315,7 @@ def deep_lineage(directory, fissions):
     keys, lives, events = rel.Keys(), [], []
     key, own = keys.open()
     name, born, generation, parent = f"carrier:a{key}", 0.0, 0, ""
-    law, follow = "cells.assembly_lineages@1", "cells.daughter_continuation@1"
+    law, follow = "cells.model.assembly_lineages@1", "cells.operator.daughter_continuation@1"
     for k in range(fissions):
         event, time = f"event:fission/{k}", float(k + 1)
         (key_1, own_1), (key_2, _) = keys.split(own, [True, False], continues=0)
@@ -362,7 +364,9 @@ def deep_lineage(directory, fissions):
             )
         )
         events.append(
-            rel.Event(event, time, "fission", "cells.size_threshold_fission@1", False, at=name)
+            rel.Event(
+                event, time, "fission", "cells.operator.size_threshold_fission@1", False, at=name
+            )
         )
         parent, name, key, own, born, generation = (
             name,

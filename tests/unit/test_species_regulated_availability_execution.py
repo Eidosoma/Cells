@@ -1,4 +1,4 @@
-"""species_regulated_availability@1: execution guards on the moving world (tier 3).
+"""cells.operator.species_regulated_availability@1: execution guards on the moving world (tier 3).
 
 docs/INVENTORY_COUPLING_DESIGN.md §1.9 and §4.4 A8. Four compiled programs on the sheet's moving
 world (regulated_availability_fixtures.dynamic_world: R cleared and dosed in cell_0, a state of Na

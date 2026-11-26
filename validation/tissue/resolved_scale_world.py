@@ -1,4 +1,4 @@
-"""Synthetic BETSE-sized resolved_pump_tissue@1 world for scale and step studies.
+"""Synthetic BETSE-sized cells.model.resolved_pump_tissue@1 world for scale and step studies.
 
 Geometry is synthetic: a jittered hexagonal cluster of 225 cells in a 24 x 25
 extracellular grid whose outer ring is held as reservoirs. Patches map to the
@@ -84,11 +84,11 @@ def definition(
     dt=1e-3,
     end_time=0.01,
     observation_times=None,
-    solver="imex_ars222_face_electromigration@1",
+    solver="cells.solver.imex_ars222_face_electromigration@1",
     backend="cpu",
     seed=0,
     max_trace_bytes=2**34,
-    field_solver="capacitive_reduction_gauged_damped_newton@2",
+    field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
 ):
     """The scale world's definition. field_solver: the declared field solver; the default
     is the version every definition made before D147 declares (drivers choose by D147 with
@@ -120,10 +120,10 @@ def definition(
                 area_m2=area,
                 capacitance_F=CAPACITANCE_F_m2 * area,
                 permeability_m_per_s=mapped([d / MEMBRANE_THICKNESS_m for d in MEMBRANE_D_m2_s]),
-                law="constant_field@1",
+                law="cells.route.constant_field@1",
                 pump=dict(
                     id=f"pump_{k}",
-                    law="nak_atp_mass_action_positive@1",
+                    law="cells.cycle.nak_atp_mass_action_positive@1",
                     roles=dict(sodium="Na", potassium="K"),
                     stoichiometry=dict(Na=-3, K=2),
                     capacity_fmol_per_s=ALPHA_NAK_mol_m2_s * area * 1e15,
@@ -131,7 +131,7 @@ def definition(
                     km_k_mM=0.2,
                     km_atp_mM=0.5,
                     metabolism=dict(
-                        kind="maintained_chemical_reservoirs@1",
+                        kind="cells.fuel_kind.maintained_chemical_reservoirs@1",
                         atp_mM=1.5,
                         adp_mM=0.1,
                         pi_mM=0.1,
@@ -149,9 +149,9 @@ def definition(
             permeability_m_per_s=mapped(
                 [d * GJ_SURFACE_FRACTION / GJ_LENGTH_m for d in FREE_D_m2_s]
             ),
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             gate=dict(
-                law="junction_voltage_relaxation@1",
+                law="cells.junction.junction_voltage_relaxation@1",
                 threshold_voltage_V=GJ_THRESHOLD_V,
                 minimum_open_fraction=GJ_MINIMUM,
                 initial_gate=1.0,
@@ -168,12 +168,12 @@ def definition(
             area_m2=face_area,
             length_m=g["delta"],
             diffusivity_m2_per_s=mapped(FREE_D_m2_s),
-            law="logmean_electrodiffusion@1",
+            law="cells.route.logmean_electrodiffusion@1",
         )
         for k, (a, b) in enumerate(zip(g["face_sender"], g["face_receiver"], strict=True))
     ]
     model = dict(
-        id="resolved_pump_tissue@1",
+        id="cells.model.resolved_pump_tissue@1",
         temperature_K=TEMPERATURE_K,
         species=[dict(id=s, valence=z) for s, z in SPECIES],
         cells=[owner("cell", i, g["cell_volume_pL"], CELL_mM) for i in range(g["cells"])],
@@ -192,7 +192,8 @@ def definition(
         junctions=junctions,
         faces=faces,
         closure=dict(
-            law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+            law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+            gauge_reference=None,
         ),
     )
     times = [0.0, end_time] if observation_times is None else list(observation_times)

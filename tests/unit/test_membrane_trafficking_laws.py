@@ -1,4 +1,4 @@
-"""Tier-1 tests of scheduled_membrane_trafficking@1's laws (FR-2 version 1): T4, T5 and T6 of
+"""Tier-1 tests of cells.operator.scheduled_membrane_trafficking@1's laws (FR-2 version 1): T4, T5 and T6 of
 docs/MEMBRANE_RETRIEVAL_DESIGN.md §8 at the operator level, in NumPy on bound worlds (no compile).
 Each check is against an independent computation written here, and each sits beside a planted
 error it catches. These are development checks; the judged references are the references agent's.

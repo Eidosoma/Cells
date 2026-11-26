@@ -3,7 +3,7 @@
 From the independent reduced reference (validation/tissue/pump_water_reference.py:
 regulated_stationary_states and stationary_spectrum; no Cells code), computed and
 frozen before any W2 engine run. The world is the W1 P2 heredity cell (approved
-water parameters) with one route of k_anion_symport_mass_action@1 on its membrane
+water parameters) with one route of cells.operator.k_anion_symport_mass_action@1 on its membrane
 (roles K and M), V_set = the declared reference volume and availability 1:
 
   capacity  red-cell range 4, 15 and 20 mmol/(L cells h) of K:Cl efflux at the
@@ -93,7 +93,7 @@ def main():
     v0 = raw["model"]["cells"][0]["volume_pL"]
     result = dict(
         reference="validation/tissue/pump_water_reference.py (numpy/scipy, no Cells code)",
-        law="k_anion_symport_mass_action@1 with exponential_volume_activation@1",
+        law="cells.operator.k_anion_symport_mass_action@1 with cells.transfer_factor.exponential_volume_activation@1",
         definition=raw,
         reference_product_difference_mM2=REFERENCE_PRODUCT_DIFFERENCE_mM2,
         route_free=None,

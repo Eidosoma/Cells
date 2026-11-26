@@ -1,12 +1,12 @@
-"""resolved_pump_water@1 device checks and vectorized worlds.
+"""cells.model.resolved_pump_water@1 device checks and vectorized worlds.
 
 On a water-on trajectory the device checks (execution/vector_windows.py hooks)
 pass every row and their diagnostics match the host's to rounding. Faults in
 the water ledgers (a water transfer booking, a bath-work booking, negative
 water heat) fail the same checks on the host and on the device, with the water
 messages. A vmap batch of heterogeneous water-on worlds reproduces each world's
-own windowed run to rounding (1e-12 of each field, as for resolved_pump_tissue@3),
-and ionic_worlds@1 admits the model with world_batching "vmap".
+own windowed run to rounding (1e-12 of each field, as for cells.model.resolved_pump_tissue@3),
+and cells.model.ionic_worlds@1 admits the model with world_batching "vmap".
 """
 
 import jax
@@ -144,4 +144,4 @@ def test_ionic_worlds_admit_the_model_with_vmap():
         dict(model=ensemble.MODEL_ID, simulation=simulation, worlds=2, world_batching="vmap")
     )
     assert spec.world_batching == "vmap"
-    assert spec.simulation.to_dict()["model"]["id"] == "resolved_pump_water@1"
+    assert spec.simulation.to_dict()["model"]["id"] == "cells.model.resolved_pump_water@1"

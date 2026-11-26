@@ -1,4 +1,4 @@
-"""cells.transporter@1 (B5) through the core's kind seams (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)).
+"""cells.kind.transporter@1 (B5) through the core's kind seams (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)).
 
 The world: heredity cell D facing its held bath, with a neutral role Y and held fuel rows ATP, ADP
 and Pi whose standard potentials the species registry declares (Δ_rG'° = -30.5 kJ/mol). The
@@ -128,7 +128,8 @@ def fuel(**over):
         (dict(stoichiometry=5), r"stoichiometry must be an integer in \[1, 4\]"),
         (dict(stoichiometry=1.0), r"stoichiometry must be an integer in \[1, 4\]"),
         (dict(patch="nowhere"), "unknown membrane patch"),
-        (dict(law="other@1"), "law is one of"),
+        (dict(law="other@1"), "law: other@1 is not namespace.family.name@major"),
+        (dict(law="tests.cycle.other@1"), "law is one of"),
         (dict(role="K"), "neutral law's role has valence 0"),
         (dict(role="Q"), "not a species row"),
         (dict(km_role_mM=0.0), "km_role_mM must be finite and positive"),
@@ -319,7 +320,7 @@ def charged_world(*, ph_cell=PH_CELL, **over):
         raw["execution"]["material_balance_atol_fmol"][species] = 1e-15
     m["stage_reads"] = [
         dict(
-            read_id="rapid_proton_buffer@1",
+            read_id="cells.kind.rapid_proton_buffer@1",
             proton_row="H",
             buffers={"cell_0": ["B_c"]},
             k_on_per_mM_s={"B_c": 1e7},
@@ -359,7 +360,7 @@ def test_the_charged_pump_reads_free_h_and_closes_charge_field_and_ledgers():
         spec = parse_spec(charged_world())
         model = get_model(spec.model)
         assert [k for k, _ in model.structure.kinds] == [
-            "cells.rapid_proton_buffer@1",
+            "cells.kind.rapid_proton_buffer@1",
             transporter.KIND_ID,
         ]
         result = run(spec)
@@ -413,13 +414,15 @@ def test_a_held_fuel_row_has_one_writer():
         dict(
             id="atp_route_0",
             patch="membrane_0",
-            law="passive_neutral_permeation@1",
+            law="cells.route.passive_neutral_permeation@1",
             species="ATP",
             permeability_m_per_s=1e-9,
         )
     ]
     with scoped(transporter.TRANSPORTER, passive_routes.PASSIVE_ROUTES):
-        with pytest.raises(ConfigError, match="holds ATP at cell_0, which cells.passive_routes"):
+        with pytest.raises(
+            ConfigError, match=r"holds ATP at cell_0, which \S*cells.kind.passive_routes@1"
+        ):
             parse_spec(raw)
         raw["model"]["passive_routes"][0]["species"] = "Y"  # The role: moved by both, admitted.
         parse_spec(raw)
@@ -562,3 +565,102 @@ def test_the_ph_band_refuses_at_the_stage():
         parse_spec(charged_world(ph_cell=7.24))
         with pytest.raises(ConfigError, match="domain invalid"):
             parse_spec(charged_world(ph_cell=7.3))
+
+
+# ------------------------------------------------------------------ FR-50's one-way records
+# fr50-one-way-records-v1 (D327): host rows, judged by the tagged judge's own checks
+# (validation/fr50/judge.py) against the builder's closed forms (validation/fr50/closed_forms.py),
+# on the registered cases; the compiled K4 row is tests/unit/test_one_way_records_transporter.py.
+
+
+def _fr50():
+    import json
+
+    from validation.fr50 import closed_forms, engine, judge, plants
+
+    cases = json.loads(judge.SPEC.read_text())["cases"]
+    return cases, closed_forms, engine, judge, plants
+
+
+def test_one_way_cycle_records_exist_only_where_a_population_asks():
+    """D148 in both layouts: without the key the entry, the fields and the record hooks are
+    today's; with it, OneWayEntry, the records, the mask and the hooks, and the key round trips.
+    On the population axis, a diagram population's records close to cycle_count at rounding over
+    four host steps."""
+    from tests.unit import test_cycle_kind as ck
+
+    cases, _, engine, _, _ = _fr50()
+    case = cases["K4_transporter_equilibrium"]
+    for one_way in (False, True):
+        spec = parse_spec(engine.transporter_world(case, one_way=one_way))
+        declaration = dict(spec.model.kinds)[transporter.KIND_ID]
+        entry = transporter.structure_entry(declaration)
+        bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+        assert isinstance(entry, transporter.OneWayEntry) == one_way
+        assert (bound.one_way_fluxes is not None) == one_way == bool(bound.one_way_records)
+        assert bound.state_axes == transporter.STATE_AXES + (
+            transporter.V1_ONE_WAY_STATE_AXES if one_way else ()
+        )
+        assert (transporter.ONE_WAY_KEY in transporter.to_dict(declaration)[0]) == one_way
+    with ck.scoped():
+        spec = parse_spec(ck.exchange_world(ck.exchanger(one_way=True)))
+        entry = transporter.structure_entry(dict(spec.model.kinds)[transporter.KIND_ID])
+        axis = transporter.CycleAxis(("seamtest.cycle.slip_exchanger@1",))
+        assert entry == transporter.OneWayEntry(axis)
+        _, state, p, control = ck.start(spec)
+        impl = get_model(spec.model)
+        for _ in range(4):
+            state, valid = impl.imex_step(state, 1e-4, control, p, xp=np)
+            assert bool(valid)
+        moved = state.cycle_forward_fmol - state.cycle_backward_fmol - state.cycle_count
+        bound = 2.5 * np.finfo(float).eps * 4 * (
+            state.cycle_forward_fmol + state.cycle_backward_fmol + np.abs(state.cycle_count)
+        )
+        assert np.all(np.abs(moved) <= bound) and np.any(state.cycle_forward_fmol > 0)
+        assert np.all(state.cycle_one_way_gap_relative <= 1e-6)
+
+
+def test_k4h_one_way_cycle_rates_meet_hills_ratio_and_the_inverted_ratio_fails():
+    """K4h (check_k4h: J-/J+ = e^(dG/RT) and J+ = k a S within 1e-12) at the registered state off
+    equilibrium; plant K4 (b), J- = J+ e^(-dG/RT), fails its ratio."""
+    cases, closed_forms, engine, judge, _ = _fr50()
+    reference = closed_forms.k4h("K4h", cases["K4h_transporter_off_equilibrium"])
+    request = judge.request_for(reference)
+    honest = judge.check_k4h(reference, engine.engine(request))
+    assert honest["passed"], honest
+    planted = judge.check_k4h(reference, engine.engine(dict(request, plant="K4b_ratio_inverted")))
+    assert not planted["ratio"]["passed"] and planted["J_plus"]["passed"]
+
+
+@pytest.mark.parametrize("plant", [None, "K4a_no_saturation"])
+def test_k4_plant_a_misses_the_absolute_records(plant):
+    """K4 on ten host steps at 0.1 s (check_absolute): honest, each cycle record is k a S t within
+    1e-11; plant K4 (a), J+ without its saturation S, misses it by 1/S while the net stays 0."""
+    cases, closed_forms, engine, judge, plants = _fr50()
+    case = cases["K4_transporter_equilibrium"]
+    reference = closed_forms.k4("K4", case, times=("0", "0.5", "1.0"))
+    with plants.planted(plant):
+        spec = parse_spec(engine.transporter_world(case, dt=0.1, end=1.0))
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in surface_pump_v3_control(spec)))
+        j = [patch.id for patch in spec.model.membranes].index(engine.WALL)
+        rows = {q: [] for q in ("n", "F", "B", "net", "gap")}
+        for n in range(11):
+            if n:
+                state, valid = impl.imex_step(state, 0.1, control, p, xp=np)
+                assert bool(valid)
+            for q, value in zip(rows, (
+                n, state.transporter_forward_fmol[j], state.transporter_backward_fmol[j],
+                state.transporter_cycles[j], state.transporter_one_way_gap_relative[j],
+            ), strict=True):  # fmt: skip
+                rows[q].append(value)
+    rows = {q: np.asarray(v, dtype=np.int64 if q == "n" else np.float64) for q, v in rows.items()}
+    assert judge.check_absolute(reference, rows, "0.1")["passed"] == (plant is None)
+    assert judge.check_net_and_gap(rows)["passed"] and judge.check_closure(rows)["passed"]
+
+
+def surface_pump_v3_control(spec):
+    from cells.definitions.surface_pump_v3_spec import control_values
+
+    return control_values(spec, [0.0])

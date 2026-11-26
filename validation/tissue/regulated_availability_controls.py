@@ -1,4 +1,4 @@
-"""Planted defects of species_regulated_availability@1: the qualification protocol's order controls.
+"""Planted defects of cells.operator.species_regulated_availability@1: the qualification protocol's order controls.
 
 docs/INVENTORY_COUPLING_DESIGN.md §10 (milestone 4). Each control is a deliberately wrong copy of
 the operator that must lower the observed order the protocol judges (the lead's ruling, 14
@@ -6,10 +6,10 @@ November 2026). They are controls, not physics: they live here, under their own 
 the engine's operator registry only inside `registered(...)`, for one control run; nothing in
 src/cells knows them.
 
-* `first_order_state` (control_first_order_state@1): the regulatory state's half-steps by
+* `first_order_state` (cells.operator.control_first_order_state@1): the regulatory state's half-steps by
   explicit Euler, s' = s + h (k_on u (1 - s) - k_off s), in place of the exact two-state solution:
   two Euler halves per step are first order in s.
-* `lagged_factor` (control_lagged_factor@1): the factors read the regulatory state from the start
+* `lagged_factor` (cells.operator.control_lagged_factor@1): the factors read the regulatory state from the start
   of the previous step (one step stale), in place of the state after the first half-steps.
 
 `as_control(raw, kind)` gives a definition the control's law; `registered(kind)` adds the control
@@ -34,7 +34,7 @@ class _Control(sra.SpeciesRegulatedAvailability):
 
 
 class FirstOrderState(_Control):
-    LAW_ID = "control_first_order_state@1"
+    LAW_ID = "cells.operator.control_first_order_state@1"
     STEP_ID = "control_explicit_euler_half_steps@1"
 
     def half_step(self, state, h, control, p, *, xp):
@@ -50,7 +50,7 @@ class FirstOrderState(_Control):
 
 
 class LaggedFactor(_Control):
-    LAW_ID = "control_lagged_factor@1"
+    LAW_ID = "cells.operator.control_lagged_factor@1"
     STATE_AXES = {
         **sra.STATE_AXES,
         "control_held_state": ["regulatory_slot"],  # s at the latest step start.
@@ -88,7 +88,9 @@ def as_control(raw, kind):
     out = copy.deepcopy(raw)
     blocks = [b for b in out["model"]["operators"] if b["law"] == sra.LAW_ID]
     if len(blocks) != 1:
-        raise ValueError("A control replaces exactly one species_regulated_availability@1 block")
+        raise ValueError(
+            "A control replaces exactly one cells.operator.species_regulated_availability@1 block"
+        )
     blocks[0]["law"] = law_of(kind)
     return out
 

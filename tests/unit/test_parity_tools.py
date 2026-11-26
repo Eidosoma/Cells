@@ -208,7 +208,7 @@ def test_protocol_assembly_and_discrimination(tmp_path):
         "purpose": "test",
         "primary": "kir2p1_given_rest (BETSE)",
         "options": {"kir2p1_given_rest (BETSE)": {"file": str(tmp_path / "option.json")}},
-        "laws": {"kir2p1": "kir2p1_mh2@1"},
+        "laws": {"kir2p1": "cells.channel.kir2p1_mh2@1"},
         "gate_lag_run": str(tmp_path / "run.json"),
         "coverage_case": str(tmp_path / "case"),
         "cells_run": {"note": "n"},
@@ -238,7 +238,7 @@ def test_protocol_assembly_and_discrimination(tmp_path):
         "Covered: Kir2.1 INIT -90.0 to 0.0 mV (from 0 V), SIM -91.2 to -90.5 mV."
     ]
     assert proto["world_change"] == {"factor": 0.2} and proto["cells_run"]["note"] == "n"
-    assert proto["cells_run"]["model"] == "resolved_pump_tissue@3"  # template kept
+    assert proto["cells_run"]["model"] == "cells.model.resolved_pump_tissue@3"  # template kept
     derived["provisional_terms"] = ["t"]
     (tmp_path / "derived.json").write_text(json.dumps(derived))
     with pytest.raises(ValueError, match="provisional"):

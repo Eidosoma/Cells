@@ -1,4 +1,4 @@
-"""Cost and step studies of resolved_pump_tissue@3 (channel populations, IMEX).
+"""Cost and step studies of cells.model.resolved_pump_tissue@3 (channel populations, IMEX).
 
 Parts (each writes <part>-<backend>.json in --output):
   cost      runner wall time per step at 825 nodes (validation/tissue/
@@ -40,7 +40,7 @@ from cells.execution.runner import run  # noqa: E402
 from validation.tissue import resolved_scale_world as world  # noqa: E402
 from validation.tissue import surface_pump_v3_fixtures as fixtures  # noqa: E402
 
-ARS = "imex_ars222_face_electromigration@1"
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
 NA_LEAK_SCALE = 0.2  # Heredity pre-screen: Na leak x0.2 of BETSE's default.
 
 
@@ -51,7 +51,7 @@ def tissue_definition(
     channels=True,
     backend="cpu",
     observation_times=None,
-    field_solver="capacitive_reduction_gauged_damped_newton@2",
+    field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
 ):
     """The 825-node scale world as @3, with NaV1.2 and Kir2.1 on every patch.
 
@@ -66,7 +66,7 @@ def tissue_definition(
         field_solver=field_solver,
     )
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
-    m["id"] = "resolved_pump_tissue@3"
+    m["id"] = "cells.model.resolved_pump_tissue@3"
     for p in m["membranes"]:
         p["calcium_pump"] = None
         p["permeability_m_per_s"]["Na"] *= NA_LEAK_SCALE

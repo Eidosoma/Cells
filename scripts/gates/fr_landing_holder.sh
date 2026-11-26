@@ -16,14 +16,17 @@
 #   helper's scope;
 # - the baselines are FR's frozen quick dry runs, renewed for D305's fix (D307): the parts whose
 #   max_global_charge_bound_ratio fell, from FR's set at 605331c2; the rest linked to the dry runs
-#   (RENEWAL.json beside them).
+#   (RENEWAL.json beside them). Renewed again for the law-ID move (D345): every part's
+#   definition_sha256 is the landed definition's (legacy-cleanup-landed-2026-11-26, 805c48a4), and
+#   nothing else changed (that folder's RENEWAL.json).
 #
 # Steps:
 #   1. freeze the snapshot from the clean worktree, then remove the worktree;
 #   2. refuse, launching nothing, unless the snapshot is clean and no other unit computes on lane B
 #      without its lock (OUT/lane-check.json);
 #   3. launch the four queues on CPUs 8, 9, 10 and 11, leaving their siblings 24-27 idle, and hold
-#      the lock until they end.
+#      the lock until they end. Each queue runs with JAX's persistent compilation cache disabled
+#      (D321 R2), passed explicitly so it holds whichever run_detached.sh launches it.
 #
 # Usage: fr_landing_holder.sh WORKTREE SNAPSHOT_DEST START OUT
 set -u
@@ -33,7 +36,7 @@ RD=$G/../run_detached.sh
 Q=$G/fr_landing_queue.sh
 PY=${PY:-/mnt/workspaces/Cells/venv-cpu/bin/python}
 LOCK=${LANE_LOCK:-/mnt/workspaces/Cells/locks/gate-cores-8-11.lock}
-P=/mnt/workspaces/Cells/global-charge-bound-20261122/fr-baselines-605331c2
+P=/mnt/workspaces/Cells/fr-baselines/805c48a4-20261126  # D392: the dated permanent copy of final-gate-20261126/fr-baselines-805c48a4
 F4=$P/fr4-quick F5=$P/fr5
 log() { echo "$(date -u +%FT%TZ) holder $*" >> "$O/run.log"; }
 log "the lock is held"
@@ -61,7 +64,8 @@ launch() {  # CPU TASK...
   local cpu=$1; shift
   "$RD" "fr45-landingB-q$cpu" 3G --cpus "$cpu" --oom-first --runtime-max 3600 --dir "$S" \
     --env "PYTHONPATH=$S/src:$S" --env JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu \
-    --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 -- \
+    --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 \
+    --env JAX_ENABLE_COMPILATION_CACHE=false -- \
     bash "$Q" "$O" "$START" "$cpu" "$@" >> "$O/launch.log" 2>&1
 }
 launch 8 "$(q fr4 rung_1ms $F4)" "$(q fr4 control_k1 $F4)" "$(q fr5 T_control $F5 $F5/start/start.json)"

@@ -6,7 +6,8 @@ import sys
 from pathlib import Path
 
 from cells import __version__
-from cells.definitions.specs import ConfigError, load_spec
+from cells.definitions.specs import ConfigError, load_spec, read_json
+from cells.ensemble.families import parked
 from cells.execution.batch import branch_batch_checkpoints, load_batch, plan_batch, run_batch
 from cells.execution.batch_windows import plan_batch_windows
 from cells.execution.runner import NumericalError, branch_checkpoint, run, timeline
@@ -15,17 +16,17 @@ from cells.records.batch_io import load_batch_snapshot, write_batch_run
 from cells.records.batch_window_io import write_windowed_batch
 from cells.records.io import load_snapshot, write_run
 from cells.records.window_io import write_windowed_run
-from cells.registry.legacy_entry import legacy
 from cells.registry.models import get_model
 
-# The older families' subcommands, each with its own arguments (D188 R1: legacy().cli).
-LEGACY_COMMANDS = (
-    "tissue-phase",
-    "tissue-geometry",
-    "tissue-profiles",
-    "assembly-cluster",
-    "assembly-cell",
-)
+
+def _add_inputs(command):
+    command.add_argument(
+        "--inputs",
+        type=Path,
+        metavar="FILE.json",
+        help="a JSON object that says what the definition was made from, recorded as "
+        "provenance.inputs in the run's manifest",
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -34,21 +35,12 @@ def _parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("assembly", help="stochastic molecular assembly on CPU or GPU")
     commands.add_parser("assembly-pool", help="finite material and breakable assembly bonds")
-    commands.add_parser("assembly-cell", help="assembly-controlled channel in a finite ionic cell")
-    commands.add_parser(
-        "assembly-cluster", help="cell-owned assembly controlling interacting cells"
-    )
     commands.add_parser("ensemble", help="balanced independent assembly worlds across GPUs")
-    commands.add_parser("tissue-profiles", help="prepare and replay static tissue profiles")
-    commands.add_parser("tissue-phase", help="carry INIT history into a new SIM phase")
     commands.add_parser(
         "stationary", help="opt-in stationary states, stability and continuation (read-only)"
     )
     commands.add_parser(
-        "declarations", help="write the declarations manifest (cells.declarations@1)"
-    )
-    commands.add_parser(
-        "tissue-geometry", help="prepare and replay initial passive tissue geometry"
+        "declarations", help="write the declarations manifest (cells.declarations@3)"
     )
     validate = commands.add_parser("validate", help="validate a definition and its resource bounds")
     validate.add_argument("config", type=Path)
@@ -59,22 +51,12 @@ def _parser() -> argparse.ArgumentParser:
     branch = commands.add_parser("branch", help="continue with explicitly changed future inputs")
     branch.add_argument("snapshot", type=Path)
     branch.add_argument("config", type=Path)
-    excision = commands.add_parser(
-        "excise",
-        help="remove named cells and rebuild supported passive, active or calcium/fuel tissue",
-    )
-    excision.add_argument("snapshot", type=Path)
-    excision.add_argument(
-        "--remove", action="append", required=True, help="cell ID; repeat for several cells"
-    )
-    excision.add_argument(
-        "--output", type=Path, required=True, help="new excision archive directory"
-    )
     for command in (fresh, resume, branch):
         command.add_argument(
             "--output", type=Path, required=True, help="new directory; never overwritten"
         )
         command.add_argument("--checkpoint-at", type=float, action="append", default=[])
+        _add_inputs(command)
     batch = commands.add_parser("batch", help="validate/run/resume/branch independent worlds")
     batch_commands = batch.add_subparsers(dest="batch_command", required=True)
     for name in ("validate", "run", "resume", "branch"):
@@ -86,6 +68,7 @@ def _parser() -> argparse.ArgumentParser:
         if name != "validate":
             command.add_argument("--output", type=Path, required=True)
             command.add_argument("--checkpoint-at", type=float, action="append", default=[])
+            _add_inputs(command)
     batch_windowed = batch_commands.add_parser(
         "windowed", help="bounded rounds with independent clocks and complete cohort checkpoints"
     )
@@ -103,6 +86,7 @@ def _parser() -> argparse.ArgumentParser:
         if name != "validate":
             command.add_argument("--output", type=Path, required=True)
             command.add_argument("--checkpoint-every-windows", type=int, default=0)
+            _add_inputs(command)
     windowed = commands.add_parser("windowed", help="bounded single-world execution and recording")
     window_commands = windowed.add_subparsers(dest="window_command", required=True)
     for name in ("validate", "run", "resume", "branch"):
@@ -124,7 +108,27 @@ def _parser() -> argparse.ArgumentParser:
         if name != "validate":
             command.add_argument("--output", type=Path, required=True)
             command.add_argument("--checkpoint-at", type=float, action="append", default=[])
+            _add_inputs(command)
     return parser
+
+
+def _inputs(path, spec):
+    """The --inputs object for a run's provenance, or None where no file is given: what the
+    definition (a batch's, for a batch) was made from, recorded as it is. The run follows none of
+    it. An object that lists the definitions it is about (`definitions_sha256`, their fingerprints)
+    is refused beside any other."""
+    if path is None:
+        return None
+    value = read_json(path)
+    if not isinstance(value, dict):
+        raise ConfigError(f"--inputs takes a JSON object: {path}")
+    about = value.get("definitions_sha256", [spec.fingerprint])
+    if not isinstance(about, list) or spec.fingerprint not in about:
+        raise ConfigError(
+            f"The inputs of {path} are another definition's: their definitions_sha256 do not list "
+            f"this one's, {spec.fingerprint}"
+        )
+    return value
 
 
 def _batch_main(args):
@@ -152,6 +156,7 @@ def _batch_main(args):
         if args.batch_command == "branch":
             spec = load_batch(args.config)
             checkpoints = branch_batch_checkpoints(saved.spec, checkpoints, spec)
+    provenance["inputs"] = _inputs(args.inputs, spec)
     result = run_batch(spec, checkpoints)
     return write_batch_run(
         args.output, result, checkpoint_times=tuple(args.checkpoint_at), provenance=provenance
@@ -184,6 +189,7 @@ def _batch_window_main(args):
         if args.cohort_command == "branch":
             spec = load_batch(args.config)
             checkpoints = branch_batch_checkpoints(saved.spec, checkpoints, spec)
+    provenance["inputs"] = _inputs(args.inputs, spec)
     return write_windowed_batch(
         args.output,
         spec,
@@ -208,6 +214,9 @@ def _fixed_step(spec):
 
 def main(argv=None) -> int:
     args = sys.argv[1:] if argv is None else argv
+    if args and parked(args[0]):
+        print(f"cells: {parked(args[0])}", file=sys.stderr)
+        return 2
     if args and args[0] == "stationary":
         from cells.analysis.cli import main as stationary_main
 
@@ -216,8 +225,6 @@ def main(argv=None) -> int:
         from cells.registry.declarations import main as declarations_main
 
         return declarations_main(args[1:])
-    if args and args[0] in LEGACY_COMMANDS:
-        return legacy().cli(args[0])(args[1:])
     if args and args[0] == "assembly-pool":
         from cells.assembly_pool.cli import main as pool_main
 
@@ -233,8 +240,6 @@ def main(argv=None) -> int:
         return assembly_main(argv[1:])
     args = _parser().parse_args(argv)
     try:
-        if args.command == "excise":  # An older family's (D188 R1).
-            return legacy().cli("excise")(args)
         if args.command == "windowed":
             print(json.dumps(_window_main(args), indent=2))
             return 0
@@ -270,6 +275,7 @@ def main(argv=None) -> int:
             if args.command == "branch":
                 spec = load_spec(args.config)
                 checkpoint = branch_checkpoint(snapshot.spec, checkpoint, spec)
+        provenance["inputs"] = _inputs(args.inputs, spec)
         result = run(spec, checkpoint)
         summary = write_run(
             args.output, result, checkpoint_times=tuple(args.checkpoint_at), provenance=provenance
@@ -311,6 +317,7 @@ def _window_main(args):
         if args.window_command == "branch":
             spec = load_spec(args.config)
             checkpoint = branch_checkpoint(saved.spec, checkpoint, spec)
+    provenance["inputs"] = _inputs(args.inputs, spec)
     return write_windowed_run(
         args.output,
         spec,

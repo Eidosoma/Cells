@@ -1,5 +1,11 @@
 # Water and volume: independent reference and source correspondence
 
+> **Legacy cleanup (25 November 2026, D386).** `resolved_water@1`, `resolved_water@2` and
+> `resolved_energy_water@1` left the engine, with the references and tests that served them alone.
+> `resolved_pump_water@1` and `@2` carry the physics, and
+> `validation/tissue/water_volume_reference.py` stays with its own case. The tag
+> `pre-cleanup-2026-11-25` keeps the code.
+
 Reference work reviewed on **2026-10-28**. This note owns the reference equations,
 source findings and reference-test evidence. [Progress](../PROGRESS.md) owns the
 production implementation and CPU/L4 qualification status.

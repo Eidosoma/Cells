@@ -1,4 +1,4 @@
-"""proton_atp_mass_action_positive@1: an ATP-driven proton pump on a patch (FR-4).
+"""cells.cycle.proton_atp_mass_action_positive@1: an ATP-driven proton pump on a patch (FR-4).
 
 docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §6, against the inner-model note's §7.4 (g) 2 (the
 transporter kind). Per cycle it hydrolyses one ATP at the patch's inside node and moves n H+ from
@@ -10,13 +10,17 @@ the inside to the outside, n a declared integer from 1 to 4. The form is the Na/
     cycles = capacity x availability x S x (1 - exp(dG_cyc/RT)),
     S = [1 + (K_H/h_in)^n]^-1 [1 + K_ATP/c_ATP]^-1.
 
-h_in and h_out are free protons, read through each node's closure (rapid_proton_buffer@1).
+h_in and h_out are free protons, read through each node's closure (cells.kind.rapid_proton_buffer@1).
 dG'° comes from the registry's transformed potentials (B3), never from the pump. Fuel is held
-(maintained_held_rows@1): the rows are read, not moved. Heat is -cycles x dG_cyc, and work is
+(cells.fuel_kind.maintained_held_rows@1): the rows are read, not moved. Heat is -cycles x dG_cyc, and work is
 -cycles x the chemical drive (pJ/s with cycles in fmol/s and energies in J/mol, times 1e-3).
 
 Pure functions in the xp style of processes/. The composing model supplies valid, positive inputs
 and refuses a trial whose domain fails; nothing here floors or clips.
+
+cells.cycle.atp_driven_transporter_mass_action_positive@2 (laws/pumps/atp_transporter_v2.py) is this cycle for a
+species of any valence, with no pH band. This law stays until the worlds that run it are judged
+again, and then folds into that one (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3).
 """
 
 from typing import Any, NamedTuple
@@ -25,9 +29,9 @@ import jax.numpy as jnp
 
 from cells.laws.cycles.forms import CycleForm, Parameter, PhBand, Saturation
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
-from cells.modules import Citation, CycleLaw
+from cells.modules import Citation, CycleLaw, qualified
 
-LAW_ID = "proton_atp_mass_action_positive@1"
+LAW_ID = "cells.cycle.proton_atp_mass_action_positive@1"
 STANDARD_STATE_mM = 1000.0
 MAX_ABS_AFFINITY_OVER_RT = 80.0
 PROTONS_PER_CYCLE_RANGE = (1, 4)
@@ -125,16 +129,15 @@ def proton_inward_fmol_s(rates, parameters):
 # §7.4 (g) 2: per-cycle stoichiometry by role, inward-positive. n is the population's declared
 # integer; its role binds at binding to the H row at the patch's inside and outside nodes.
 MOVES = (("proton", "-protons_per_cycle"),)
-READS = ("rapid_proton_buffer@1",)  # free h at both nodes
+READS = ("cells.kind.rapid_proton_buffer@1",)  # free h at both nodes
 DECLARATION = {
     "law_id": LAW_ID,
     "code": None,  # the core's registry assigns the next free code
     "kind": "transporter",
     "moves": MOVES,
     "reads": READS,
-    "fuel": "maintained_held_rows@1",
+    "fuel": "cells.fuel_kind.maintained_held_rows@1",
     "stage_term": "electrogenic_conductance_S",
-    "loop_term": "loop_rates_per_s",
     "provenance": "cited",
     "b8": {},  # D175's four fields: reserved, empty
 }
@@ -152,7 +155,8 @@ def electrogenic_conductance_S(inputs, parameters, availability, *, xp=jnp):
 
 def loop_rates_per_s(inputs, parameters, availability, free_per_total_in, volume_in_pL,
                      free_per_total_out, volume_out_pL, *, xp=jnp):
-    """The loop terms (1/s) at both nodes: |d(n cycles)/dH_eq| through each closure's dh/dH.
+    """The loop terms (1/s) at both nodes: |d(n cycles)/dH_eq| through each closure's dh/dH. The
+    engine does not evaluate them.
 
     With cycles = M (1 - e^a): the outside proton enters through a only (da/dln h_out = n); the
     inside one through a (da/dln h_in = -n) and the saturation M
@@ -253,18 +257,17 @@ CYCLE = CycleForm(
 
 # Its declaration on the law template (registry/laws.py): inert, registered by the law registry's
 # loader as one of the model table's law homes, hosted by the transporter kind.
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 LAW = CycleLaw(
     DECLARED_ID,
     MOVES,
-    ("maintained_held_rows@1",),
+    ("cells.fuel_kind.maintained_held_rows@1",),
     kinetics,
     domain_valid,
     reads=READS,
     stage_term=DECLARATION["stage_term"],
-    loop_term=DECLARATION["loop_term"],
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance=DECLARATION["provenance"],
     source=Citation(
         "an ATP-driven proton pump, in the Na/K law's mass-action form "

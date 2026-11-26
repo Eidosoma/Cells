@@ -18,7 +18,7 @@ At each due site the previous occupant leaves and a template or a copy of a pre-
 - [CellsProofs.Tissue.CellReplacement.booked_charge](../CellsProofs/Tissue/CellReplacement.lean#L48)
 - [CellsProofs.Tissue.CellReplacement.shared_field_energy](../CellsProofs/Tissue/CellReplacement.lean#L54)
 
-Direct proof subject `cells.scheduled_cell_replacement@1`
+Direct proof subject `cells.operator.scheduled_cell_replacement@1`
 
 ## Numerical comparison
 

@@ -1,6 +1,6 @@
 {
   "kind": "resolved_surface_kinetic_trajectory_qualification@1",
-  "scope": "Registered resolved_tissue@2: synthetic 2-ms, two-cell/four-patch/five-outside worlds with Kv1.5 m/h gates, physical-time junction gates and maintained-pool Na/K ATPases. Same-stage resolved capacitor/return-current closure with nineteen complete state arrays. Numerical composition qualification, not native full-tissue equivalence.",
+  "scope": "Registered cells.model.resolved_tissue@2: synthetic 2-ms, two-cell/four-patch/five-outside worlds with Kv1.5 m/h gates, physical-time junction gates and maintained-pool Na/K ATPases. Same-stage resolved capacitor/return-current closure with nineteen complete state arrays. Numerical composition qualification, not native full-tissue equivalence.",
   "tests": [
     "tests/unit/test_surface_kinetic.py",
     "tests/unit/test_specs.py",

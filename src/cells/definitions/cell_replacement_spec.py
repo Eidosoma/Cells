@@ -1,7 +1,7 @@
-"""resolved_pump_replacement@1: scheduled cell replacement on resolved_pump_tissue@3.
+"""cells.model.resolved_pump_replacement@1: scheduled cell replacement on cells.model.resolved_pump_tissue@3.
 
 Every field of the inner model (``replacement.inner_model``, here only
-resolved_pump_tissue@3) keeps its meaning and is parsed by that identity's own
+cells.model.resolved_pump_tissue@3) keeps its meaning and is parsed by that identity's own
 parser. The model adds ``replacement``:
 
 * ``law``: the event operator, OPERATION_LAW_ID;
@@ -64,8 +64,8 @@ from cells.definitions.specs import ConfigError, _fields, _integer, _number
 from cells.laws.junctions.junction_formation import LAW_ID as FORMATION_LAW_ID
 from cells.numerics import clock_instants
 
-MODEL_ID = "resolved_pump_replacement@1"
-OPERATION_LAW_ID = "scheduled_cell_replacement@1"
+MODEL_ID = "cells.model.resolved_pump_replacement@1"
+OPERATION_LAW_ID = "cells.operator.scheduled_cell_replacement@1"
 INNER_MODEL_IDS = (ionic.MODEL_ID,)
 GATE_RULES = ("law_open", "law_steady")
 # Newly formed channels take the junction's current gate state; that is exact
@@ -190,7 +190,7 @@ class Experiment(ionic.Experiment):
 
 
 def projection(spec):
-    """The inner (resolved_pump_tissue@3) definition: no replacement declarations."""
+    """The inner (cells.model.resolved_pump_tissue@3) definition: no replacement declarations."""
     m, e = spec.model, spec.experiment
     model = ionic.SurfacePumpChannelModel(
         **{k: getattr(m, k) for k in ionic.SurfacePumpChannelModel.__dataclass_fields__}
@@ -322,7 +322,7 @@ def parse_template(raw, base):
             values = gates[law]
             if law not in laws or counts[law] == 0:
                 raise ConfigError(
-                    "Template gates require a gated resolved_pump_tissue@3 channel law"
+                    "Template gates require a gated cells.model.resolved_pump_tissue@3 channel law"
                 )
             if law not in ionic.LAW_CODES:  # The operator's tables hold today's five.
                 raise ConfigError(
@@ -366,9 +366,9 @@ TEMPLATE_VOLUME_RULES = ("slot", "arrival")
 def check_template_on_slot(template, slot, model, *, template_volume="slot"):
     """A template may only replace the slot's existing routes, on matching geometry.
 
-    template_volume: "slot" (resolved_pump_replacement@1, the default) requires the
+    template_volume: "slot" (cells.model.resolved_pump_replacement@1, the default) requires the
     template's volume to equal the slot's declared volume. "arrival" leaves the volume to
-    the operator that owns it: scheduled_cell_replacement@2 checks a newcomer's arrival
+    the operator that owns it: cells.operator.scheduled_cell_replacement@2 checks a newcomer's arrival
     volume against water's bounds (docs/PUMP_COMPOSITE_V2_DESIGN.md §2.2).
     """
     if template_volume not in TEMPLATE_VOLUME_RULES:

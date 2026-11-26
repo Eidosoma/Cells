@@ -1,5 +1,9 @@
 # Closed compartment chemistry
 
+> **Legacy cleanup (25 November 2026, D386).** `compartment_reactions@1` left the engine, with its
+> example. `local_species_reactions@1` uses the same law kernel, `laws/reactions/mass_action.py`, on
+> the composite. The tag `pre-cleanup-2026-11-25` keeps the code.
+
 `compartment_reactions@1` adds fixed-volume, compartment-owned reaction networks
 to the ordinary Cells CPU/GPU solver. The example
 [`calcium_buffer_compartments.json`](../configs/calcium_buffer_compartments.json)

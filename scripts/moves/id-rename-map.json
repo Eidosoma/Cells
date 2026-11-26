@@ -1,0 +1,6629 @@
+{
+ "kind": "cells.id_moves.map@1",
+ "move": "id-rename",
+ "final": true,
+ "revision": {
+  "head": "973bc5467a7d9ae09d3d1717cc341b1b96140d5c",
+  "dirty": false
+ },
+ "scope": {
+  "dirs": [
+   "src/",
+   "tests/",
+   "validation/",
+   "scripts/",
+   "examples/",
+   "configs/"
+  ],
+  "suffixes": [
+   ".py",
+   ".json",
+   ".sh",
+   ".toml"
+  ],
+  "test_ids": [
+   "tests/tier3_record.json"
+  ]
+ },
+ "rows": [
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.analysis.stationary",
+   "old": [
+    "cells.stationary_continuation_analysis@1",
+    "stationary_continuation_analysis@1"
+   ],
+   "new": "cells.analysis.stationary_continuation_analysis@1",
+   "family": "analysis",
+   "piece": "analysis",
+   "source": "seed cells.analysis.stationary.ANALYSIS_ID"
+  },
+  {
+   "interface": "cells.assembly_geometry@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.geometry",
+   "old": [
+    "bilayer_geometry@1",
+    "cells.bilayer_geometry@1"
+   ],
+   "new": "cells.assembly_geometry.bilayer_geometry@1",
+   "family": "assembly_geometry",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.geometry"
+  },
+  {
+   "interface": "cells.assembly_geometry@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.prescribed_shell",
+   "old": [
+    "cells.prescribed_shell@1",
+    "prescribed_shell@1"
+   ],
+   "new": "cells.assembly_geometry.prescribed_shell@1",
+   "family": "assembly_geometry",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.prescribed_shell"
+  },
+  {
+   "interface": "cells.assembly_hazard@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.pore_nucleation",
+   "old": [
+    "cells.pore_nucleation@1",
+    "pore_nucleation@1"
+   ],
+   "new": "cells.assembly_hazard.pore_nucleation@1",
+   "family": "assembly_hazard",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.pore_nucleation"
+  },
+  {
+   "interface": "cells.assembly_observable@1",
+   "host": "finite_bond_assembly@1",
+   "module": "cells.assembly_pool.observables",
+   "old": [
+    "cells.root_component_has_cycle@1",
+    "root_component_has_cycle@1"
+   ],
+   "new": "cells.assembly_observable.root_component_has_cycle@1",
+   "family": "assembly_observable",
+   "piece": "law",
+   "source": "law registry: cells.assembly_pool.observables"
+  },
+  {
+   "interface": "cells.assembly_representation@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.rate_equations",
+   "old": [
+    "cells.rate_equations@1",
+    "rate_equations@1"
+   ],
+   "new": "cells.assembly_representation.rate_equations@1",
+   "family": "assembly_representation",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.rate_equations"
+  },
+  {
+   "interface": "cells.binding_law@1",
+   "host": "cells.rapid_proton_buffer@1",
+   "module": "cells.laws.reactions.rapid_binding",
+   "old": [
+    "cells.rapid_binding@1",
+    "rapid_binding@1"
+   ],
+   "new": "cells.binding.rapid_binding@1",
+   "family": "binding",
+   "piece": "law",
+   "source": "law registry: cells.laws.reactions.rapid_binding"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.calcium_catalog_extra",
+   "old": [
+    "ca_l2_m2h@1",
+    "cells.ca_l2_m2h@1"
+   ],
+   "new": "cells.channel.ca_l2_m2h@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.calcium_catalog_extra.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.calcium_catalog_extra",
+   "old": [
+    "ca_l3_shift15_m2h@1",
+    "cells.ca_l3_shift15_m2h@1"
+   ],
+   "new": "cells.channel.ca_l3_shift15_m2h@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.calcium_catalog_extra.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.calcium_activated_potassium",
+   "old": [
+    "cagpotassium_numeric_mM_scale@1",
+    "cells.cagpotassium_numeric_mM_scale@1"
+   ],
+   "new": "cells.channel.cagpotassium_numeric_mM_scale@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.calcium_activated_potassium.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.calcium_catalog_extra",
+   "old": [
+    "caleak_always_open@1",
+    "cells.caleak_always_open@1"
+   ],
+   "new": "cells.channel.caleak_always_open@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.calcium_catalog_extra.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "catleak2_na_k_ca@1",
+    "cells.catleak2_na_k_ca@1"
+   ],
+   "new": "cells.channel.catleak2_na_k_ca@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "catleak_na_k@1",
+    "cells.catleak_na_k@1"
+   ],
+   "new": "cells.channel.catleak_na_k@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.cav1p2_m2h",
+   "old": [
+    "cav1p2_m2h@1",
+    "cells.cav1p2_m2h@1"
+   ],
+   "new": "cells.channel.cav1p2_m2h@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.cav1p2_m2h"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cav1p3_m2h@1",
+    "cells.cav1p3_m2h@1"
+   ],
+   "new": "cells.channel.cav1p3_m2h@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cav2p1_m@1",
+    "cells.cav2p1_m@1"
+   ],
+   "new": "cells.channel.cav2p1_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cav2p2_m2h_regularized@1",
+    "cells.cav2p2_m2h_regularized@1"
+   ],
+   "new": "cells.channel.cav2p2_m2h_regularized@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cav2p3_mh@1",
+    "cells.cav2p3_mh@1"
+   ],
+   "new": "cells.channel.cav2p3_mh@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cav3p1_mh_piecewise_tau_m@1",
+    "cells.cav3p1_mh_piecewise_tau_m@1"
+   ],
+   "new": "cells.channel.cav3p1_mh_piecewise_tau_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cav3p3_mh@1",
+    "cells.cav3p3_mh@1"
+   ],
+   "new": "cells.channel.cav3p3_mh@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.calcium_catalog_extra",
+   "old": [
+    "cav_g_m2h_regularized@1",
+    "cells.cav_g_m2h_regularized@1"
+   ],
+   "new": "cells.channel.cav_g_m2h_regularized@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.calcium_catalog_extra.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cav_l_ml2_instantaneous@1",
+    "cells.cav_l_ml2_instantaneous@1"
+   ],
+   "new": "cells.channel.cav_l_ml2_instantaneous@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cav_l_ml_instantaneous@1",
+    "cells.cav_l_ml_instantaneous@1"
+   ],
+   "new": "cells.channel.cav_l_ml_instantaneous@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cav_n_ml_instantaneous@1",
+    "cells.cav_n_ml_instantaneous@1"
+   ],
+   "new": "cells.channel.cav_n_ml_instantaneous@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cav_t_ml_instantaneous@1",
+    "cells.cav_t_ml_instantaneous@1"
+   ],
+   "new": "cells.channel.cav_t_ml_instantaneous@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.clleak_always_open",
+   "old": [
+    "cells.clleak_always_open@1",
+    "clleak_always_open@1"
+   ],
+   "new": "cells.channel.clleak_always_open@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.clleak_always_open"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.hcn1_m@1",
+    "hcn1_m@1"
+   ],
+   "new": "cells.channel.hcn1_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.hcn_extra_channels",
+   "old": [
+    "cells.hcn2_camp_m@1",
+    "hcn2_camp_m@1"
+   ],
+   "new": "cells.channel.hcn2_camp_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.hcn_extra_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.hcn2_m@1",
+    "hcn2_m@1"
+   ],
+   "new": "cells.channel.hcn2_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cells.hcn2_ml_depolarization_activated_instantaneous@1",
+    "hcn2_ml_depolarization_activated_instantaneous@1"
+   ],
+   "new": "cells.channel.hcn2_ml_depolarization_activated_instantaneous@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.hcn_extra_channels",
+   "old": [
+    "cells.hcn4_camp_m@1",
+    "hcn4_camp_m@1"
+   ],
+   "new": "cells.channel.hcn4_camp_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.hcn_extra_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.hcn4_m@1",
+    "hcn4_m@1"
+   ],
+   "new": "cells.channel.hcn4_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cells.hcn4_ml_depolarization_activated_instantaneous@1",
+    "hcn4_ml_depolarization_activated_instantaneous@1"
+   ],
+   "new": "cells.channel.hcn4_ml_depolarization_activated_instantaneous@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.hcn_extra_channels",
+   "old": [
+    "cells.hcn_leak_open@1",
+    "hcn_leak_open@1"
+   ],
+   "new": "cells.channel.hcn_leak_open@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.hcn_extra_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.k_fast_mh@1",
+    "k_fast_mh@1"
+   ],
+   "new": "cells.channel.k_fast_mh@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.kir2p1_mh2",
+   "old": [
+    "cells.kir2p1_mh2@1",
+    "kir2p1_mh2@1"
+   ],
+   "new": "cells.channel.kir2p1_mh2@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.kir2p1_mh2"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cells.kir_ml_instantaneous@1",
+    "kir_ml_instantaneous@1"
+   ],
+   "new": "cells.channel.kir_ml_instantaneous@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.kleak_always_open",
+   "old": [
+    "cells.kleak_always_open@1",
+    "kleak_always_open@1"
+   ],
+   "new": "cells.channel.kleak_always_open@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.kleak_always_open"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.kv1p1_mh2",
+   "old": [
+    "cells.kv1p1_mh2@1",
+    "kv1p1_mh2@1"
+   ],
+   "new": "cells.channel.kv1p1_mh2@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.kv1p1_mh2"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.kv1p2_mh",
+   "old": [
+    "cells.kv1p2_mh@1",
+    "kv1p2_mh@1"
+   ],
+   "new": "cells.channel.kv1p2_mh@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.kv1p2_mh"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.kv1p3_mh",
+   "old": [
+    "cells.kv1p3_mh@1",
+    "kv1p3_mh@1"
+   ],
+   "new": "cells.channel.kv1p3_mh@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.kv1p3_mh"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cells.kv1p3_ml_dynamic_m@1",
+    "kv1p3_ml_dynamic_m@1"
+   ],
+   "new": "cells.channel.kv1p3_ml_dynamic_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.kv1p4_mh",
+   "old": [
+    "cells.kv1p4_mh@1",
+    "kv1p4_mh@1"
+   ],
+   "new": "cells.channel.kv1p4_mh@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.kv1p4_mh"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.kv1p5_mh",
+   "old": [
+    "cells.kv1p5_mh@1",
+    "kv1p5_mh@1"
+   ],
+   "new": "cells.channel.kv1p5_mh@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.kv1p5_mh"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cells.kv1p5_ml_dynamic_m@1",
+    "kv1p5_ml_dynamic_m@1"
+   ],
+   "new": "cells.channel.kv1p5_ml_dynamic_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cells.kv1p5s_ml_slow_dynamic_m@1",
+    "kv1p5s_ml_slow_dynamic_m@1"
+   ],
+   "new": "cells.channel.kv1p5s_ml_slow_dynamic_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.kv1p6_mh",
+   "old": [
+    "cells.kv1p6_mh@1",
+    "kv1p6_mh@1"
+   ],
+   "new": "cells.channel.kv1p6_mh@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.kv1p6_mh"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.kv2p1_mh@1",
+    "kv2p1_mh@1"
+   ],
+   "new": "cells.channel.kv2p1_mh@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cells.kv2p1_ml_dynamic_m@1",
+    "kv2p1_ml_dynamic_m@1"
+   ],
+   "new": "cells.channel.kv2p1_ml_dynamic_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.kv2p2_mh@1",
+    "kv2p2_mh@1"
+   ],
+   "new": "cells.channel.kv2p2_mh@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.kv3p1_m@1",
+    "kv3p1_m@1"
+   ],
+   "new": "cells.channel.kv3p1_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.kv3p2_m2@1",
+    "kv3p2_m2@1"
+   ],
+   "new": "cells.channel.kv3p2_m2@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.kv3p3_m2h_long_tau@1",
+    "kv3p3_m2h_long_tau@1"
+   ],
+   "new": "cells.channel.kv3p3_m2h_long_tau@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.kv3p4_mh@1",
+    "kv3p4_mh@1"
+   ],
+   "new": "cells.channel.kv3p4_mh@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cells.kv_ml1_dynamic_m@1",
+    "kv_ml1_dynamic_m@1"
+   ],
+   "new": "cells.channel.kv_ml1_dynamic_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.naleak_always_open",
+   "old": [
+    "cells.naleak_always_open@1",
+    "naleak_always_open@1"
+   ],
+   "new": "cells.channel.naleak_always_open@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.naleak_always_open"
+  },
+  {
+   "interface": "cells.channel_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.nav1p2_m3h_regularized",
+   "old": [
+    "cells.nav1p2_m3h_regularized@1",
+    "nav1p2_m3h_regularized@1"
+   ],
+   "new": "cells.channel.nav1p2_m3h_regularized@1",
+   "family": "channel",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.nav1p2_m3h_regularized"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.nav1p3_m3h_regularized@1",
+    "nav1p3_m3h_regularized@1"
+   ],
+   "new": "cells.channel.nav1p3_m3h_regularized@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.nav1p6_persistent_m@1",
+    "nav1p6_persistent_m@1"
+   ],
+   "new": "cells.channel.nav1p6_persistent_m@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "old": [
+    "cells.nav_ml_instantaneous@1",
+    "nav_ml_instantaneous@1"
+   ],
+   "new": "cells.channel.nav_ml_instantaneous@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.morris_lecar_channels.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.navrat1_m3h_regularized@1",
+    "navrat1_m3h_regularized@1"
+   ],
+   "new": "cells.channel.navrat1_m3h_regularized@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.navrat2_m3h_regularized@1",
+    "navrat2_m3h_regularized@1"
+   ],
+   "new": "cells.channel.navrat2_m3h_regularized@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "old": [
+    "cells.navrat3_m3h_regularized@1",
+    "navrat3_m3h_regularized@1"
+   ],
+   "new": "cells.channel.navrat3_m3h_regularized@1",
+   "family": "channel",
+   "piece": "channel",
+   "source": "seed cells.laws.channels.shared_channel_catalog.LAW_CODES"
+  },
+  {
+   "interface": "cells.channel_block_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.channels.open_channel_block",
+   "old": [
+    "cells.open_channel_block_weighted_modes@1",
+    "open_channel_block_weighted_modes@1"
+   ],
+   "new": "cells.channel_block.open_channel_block_weighted_modes@1",
+   "family": "channel_block",
+   "piece": "law",
+   "source": "law registry: cells.laws.channels.open_channel_block"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.adenylate_kinase",
+   "old": [
+    "adenylate_kinase@1",
+    "cells.adenylate_kinase@1"
+   ],
+   "new": "cells.cycle.adenylate_kinase@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.adenylate_kinase"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.pumps.atp_transporter",
+   "old": [
+    "atp_driven_transporter_mass_action_positive@1",
+    "cells.atp_driven_transporter_mass_action_positive@1"
+   ],
+   "new": "cells.cycle.atp_driven_transporter_mass_action_positive@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.pumps.atp_transporter"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.pumps.atp_transporter_v2",
+   "old": [
+    "atp_driven_transporter_mass_action_positive@2",
+    "cells.atp_driven_transporter_mass_action_positive@2"
+   ],
+   "new": "cells.cycle.atp_driven_transporter_mass_action_positive@2",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.pumps.atp_transporter_v2"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.pumps.ca_atp_mass_action_positive",
+   "old": [
+    "ca_atp_mass_action_positive@1",
+    "cells.ca_atp_mass_action_positive@1"
+   ],
+   "new": "cells.cycle.ca_atp_mass_action_positive@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.pumps.ca_atp_mass_action_positive"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.cytochrome_c_oxygen_proton_cycle",
+   "old": [
+    "cells.cytochrome_c_oxygen_proton_cycle@1",
+    "cytochrome_c_oxygen_proton_cycle@1"
+   ],
+   "new": "cells.cycle.cytochrome_c_oxygen_proton_cycle@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.cytochrome_c_oxygen_proton_cycle"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.electrogenic_nucleotide_exchange",
+   "old": [
+    "cells.electrogenic_nucleotide_exchange@1",
+    "electrogenic_nucleotide_exchange@1"
+   ],
+   "new": "cells.cycle.electrogenic_nucleotide_exchange@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.electrogenic_nucleotide_exchange"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.electroneutral_symport_reversible_tanh",
+   "old": [
+    "cells.electroneutral_symport_reversible_tanh@1",
+    "electroneutral_symport_reversible_tanh@1"
+   ],
+   "new": "cells.cycle.electroneutral_symport_reversible_tanh@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.electroneutral_symport_reversible_tanh"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.held_reductant_supply",
+   "old": [
+    "cells.held_reductant_supply@1",
+    "held_reductant_supply@1"
+   ],
+   "new": "cells.cycle.held_reductant_supply@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.held_reductant_supply"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.na2_anion_symport_diagram",
+   "old": [
+    "cells.na2_anion_symport_diagram@1",
+    "na2_anion_symport_diagram@1"
+   ],
+   "new": "cells.cycle.na2_anion_symport_diagram@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.na2_anion_symport_diagram"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.na_anion_symport_factored",
+   "old": [
+    "cells.na_anion_symport_factored@1",
+    "na_anion_symport_factored@1"
+   ],
+   "new": "cells.cycle.na_anion_symport_factored@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.na_anion_symport_factored"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.na_k_2anion_symport_reversible_tanh",
+   "old": [
+    "cells.na_k_2anion_symport_reversible_tanh@1",
+    "na_k_2anion_symport_reversible_tanh@1"
+   ],
+   "new": "cells.cycle.na_k_2anion_symport_reversible_tanh@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.na_k_2anion_symport_reversible_tanh"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.nadh_ubiquinone_proton_cycle",
+   "old": [
+    "cells.nadh_ubiquinone_proton_cycle@1",
+    "nadh_ubiquinone_proton_cycle@1"
+   ],
+   "new": "cells.cycle.nadh_ubiquinone_proton_cycle@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.nadh_ubiquinone_proton_cycle"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.pumps.nak_atp_mass_action_positive",
+   "old": [
+    "cells.nak_atp_mass_action_positive@1",
+    "nak_atp_mass_action_positive@1"
+   ],
+   "new": "cells.cycle.nak_atp_mass_action_positive@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.pumps.nak_atp_mass_action_positive"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.phosphate_proton_symport",
+   "old": [
+    "cells.phosphate_proton_symport@1",
+    "phosphate_proton_symport@1"
+   ],
+   "new": "cells.cycle.phosphate_proton_symport@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.phosphate_proton_symport"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.potassium_proton_exchange",
+   "old": [
+    "cells.potassium_proton_exchange@1",
+    "potassium_proton_exchange@1"
+   ],
+   "new": "cells.cycle.potassium_proton_exchange@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.potassium_proton_exchange"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.pumps.proton_pump",
+   "old": [
+    "cells.proton_atp_mass_action_positive@1",
+    "proton_atp_mass_action_positive@1"
+   ],
+   "new": "cells.cycle.proton_atp_mass_action_positive@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.pumps.proton_pump"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.proton_coupled_atp_synthesis_cycle",
+   "old": [
+    "cells.proton_coupled_atp_synthesis_cycle@1",
+    "proton_coupled_atp_synthesis_cycle@1"
+   ],
+   "new": "cells.cycle.proton_coupled_atp_synthesis_cycle@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.proton_coupled_atp_synthesis_cycle"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.sodium_calcium_exchange_symmetric_barrier",
+   "old": [
+    "cells.sodium_calcium_exchange_symmetric_barrier@1",
+    "sodium_calcium_exchange_symmetric_barrier@1"
+   ],
+   "new": "cells.cycle.sodium_calcium_exchange_symmetric_barrier@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.sodium_calcium_exchange_symmetric_barrier"
+  },
+  {
+   "interface": "cells.cycle_law@1",
+   "host": "cells.transporter@1",
+   "module": "cells.laws.cycles.ubiquinol_cytochrome_c_proton_cycle",
+   "old": [
+    "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+    "ubiquinol_cytochrome_c_proton_cycle@1"
+   ],
+   "new": "cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1",
+   "family": "cycle",
+   "piece": "law",
+   "source": "law registry: cells.laws.cycles.ubiquinol_cytochrome_c_proton_cycle"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.transport.patch_damage",
+   "old": [
+    "bounding_patch_damage@1",
+    "cells.bounding_patch_damage@1"
+   ],
+   "new": "cells.damage.bounding_patch_damage@1",
+   "family": "damage",
+   "piece": "law (no Law record)",
+   "source": "seed cells.laws.transport.patch_damage.LAW_ID"
+  },
+  {
+   "interface": "cells.exchange_law@1",
+   "host": "cells.assembly_lineages@1",
+   "module": "cells.models.assembly_lineages.exchange",
+   "old": [
+    "cells.reservoir_exchange@1",
+    "reservoir_exchange@1"
+   ],
+   "new": "cells.exchange.reservoir_exchange@1",
+   "family": "exchange",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages.exchange"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.fine_window_spec",
+   "old": [
+    "cells.fixed_fine_windows@1",
+    "fixed_fine_windows@1"
+   ],
+   "new": "cells.execution.fixed_fine_windows@1",
+   "family": "execution",
+   "piece": "execution",
+   "source": "seed cells.definitions.fine_window_spec.METHOD_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.projective",
+   "old": [
+    "cells.projective_forward_euler@1",
+    "projective_forward_euler@1"
+   ],
+   "new": "cells.execution.projective_forward_euler@1",
+   "family": "execution",
+   "piece": "execution",
+   "source": "seed cells.numerics.projective.METHOD_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.energy_check_spec",
+   "old": [
+    "cells.step_doubled_energy@1",
+    "step_doubled_energy@1"
+   ],
+   "new": "cells.execution.step_doubled_energy@1",
+   "family": "execution",
+   "piece": "execution",
+   "source": "seed cells.definitions.energy_check_spec.CHECK_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.execution.vector_windows",
+   "old": [
+    "cells.vmap_device_checks@1",
+    "vmap_device_checks@1"
+   ],
+   "new": "cells.execution.vmap_device_checks@1",
+   "family": "execution",
+   "piece": "execution",
+   "source": "seed cells.execution.vector_windows.MAPPING_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.surface_field",
+   "old": [
+    "cells.resolved_capacitor_components_current_continuity@1",
+    "resolved_capacitor_components_current_continuity@1"
+   ],
+   "new": "cells.field_closure.resolved_capacitor_components_current_continuity@1",
+   "family": "field_closure",
+   "piece": "law (no Law record)",
+   "source": "seed cells.numerics.surface_field.LAW_ID"
+  },
+  {
+   "interface": "cells.free_energy_term@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.ideal_mixing",
+   "old": [
+    "cells.ideal_mixing@1",
+    "ideal_mixing@1"
+   ],
+   "new": "cells.free_energy.ideal_mixing@1",
+   "family": "free_energy",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.ideal_mixing"
+  },
+  {
+   "interface": "cells.free_energy_term@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.lumen",
+   "old": [
+    "cells.osmotic_lumen@1",
+    "osmotic_lumen@1"
+   ],
+   "new": "cells.free_energy.osmotic_lumen@1",
+   "family": "free_energy",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.lumen"
+  },
+  {
+   "interface": "cells.free_energy_term@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.regular_mixing",
+   "old": [
+    "cells.regular_mixing@1",
+    "regular_mixing@1"
+   ],
+   "new": "cells.free_energy.regular_mixing@1",
+   "family": "free_energy",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.regular_mixing"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.kinds.transporter",
+   "old": [
+    "cells.finite_fuel_rows@1",
+    "finite_fuel_rows@1"
+   ],
+   "new": "cells.fuel_kind.finite_fuel_rows@1",
+   "family": "fuel_kind",
+   "piece": "law (no Law record)",
+   "source": "seed cells.kinds.transporter.FINITE"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.kinetic_pump_spec",
+   "old": [
+    "cells.maintained_chemical_reservoirs@1",
+    "maintained_chemical_reservoirs@1"
+   ],
+   "new": "cells.fuel_kind.maintained_chemical_reservoirs@1",
+   "family": "fuel_kind",
+   "piece": "fuel_kind",
+   "source": "seed cells.definitions.kinetic_pump_spec.METABOLISM_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.kinds.transporter",
+   "old": [
+    "cells.maintained_held_rows@1",
+    "maintained_held_rows@1"
+   ],
+   "new": "cells.fuel_kind.maintained_held_rows@1",
+   "family": "fuel_kind",
+   "piece": "law (no Law record)",
+   "source": "seed cells.kinds.transporter.HELD"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_pump_v3_spec",
+   "old": [
+    "cells.exact_free_energy_heat@1",
+    "exact_free_energy_heat@1"
+   ],
+   "new": "cells.heat.exact_free_energy_heat@1",
+   "family": "heat",
+   "piece": "heat",
+   "source": "seed cells.definitions.surface_pump_v3_spec.EXACT_FREE_ENERGY_HEAT"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_pump_v3_spec",
+   "old": [
+    "cells.trapezoid_nonnegative@1",
+    "trapezoid_nonnegative@1"
+   ],
+   "new": "cells.heat.trapezoid_nonnegative@1",
+   "family": "heat",
+   "piece": "heat",
+   "source": "seed cells.definitions.surface_pump_v3_spec.TRAPEZOID_JUNCTION_HEAT"
+  },
+  {
+   "interface": "cells.junction_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.junctions.junction_series_gates",
+   "old": [
+    "cells.junction_series_gates@1",
+    "junction_series_gates@1"
+   ],
+   "new": "cells.junction.junction_series_gates@1",
+   "family": "junction",
+   "piece": "law",
+   "source": "law registry: cells.laws.junctions.junction_series_gates"
+  },
+  {
+   "interface": "cells.junction_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.junctions.junction_voltage_relaxation",
+   "old": [
+    "cells.junction_voltage_relaxation@1",
+    "junction_voltage_relaxation@1"
+   ],
+   "new": "cells.junction.junction_voltage_relaxation@1",
+   "family": "junction",
+   "piece": "law",
+   "source": "law registry: cells.laws.junctions.junction_voltage_relaxation"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.junctions.junction_formation",
+   "old": [
+    "cells.delayed_first_order_junction_formation@1",
+    "delayed_first_order_junction_formation@1"
+   ],
+   "new": "cells.junction_formation.delayed_first_order_junction_formation@1",
+   "family": "junction_formation",
+   "piece": "law (no Law record)",
+   "source": "seed cells.laws.junctions.junction_formation.LAW_ID"
+  },
+  {
+   "interface": "cells.kind@1",
+   "host": null,
+   "module": null,
+   "old": [
+    "cells.passive_routes@1",
+    "passive_routes@1"
+   ],
+   "new": "cells.kind.passive_routes@1",
+   "family": "kind",
+   "piece": "kind",
+   "source": "kind registry: passive_routes"
+  },
+  {
+   "interface": "cells.kind@1",
+   "host": null,
+   "module": null,
+   "old": [
+    "cells.patch_damage@1",
+    "patch_damage@1"
+   ],
+   "new": "cells.kind.patch_damage@1",
+   "family": "kind",
+   "piece": "kind",
+   "source": "kind registry: patch_damage"
+  },
+  {
+   "interface": "cells.kind@1",
+   "host": null,
+   "module": null,
+   "old": [
+    "cells.ph_condition@1",
+    "ph_condition@1"
+   ],
+   "new": "cells.kind.ph_condition@1",
+   "family": "kind",
+   "piece": "kind",
+   "source": "kind registry: ph_conditions"
+  },
+  {
+   "interface": "cells.kind@1",
+   "host": null,
+   "module": null,
+   "old": [
+    "cells.rapid_proton_buffer@1",
+    "rapid_proton_buffer@1"
+   ],
+   "new": "cells.kind.rapid_proton_buffer@1",
+   "family": "kind",
+   "piece": "kind",
+   "source": "kind registry: stage_reads"
+  },
+  {
+   "interface": "cells.kind@1",
+   "host": null,
+   "module": null,
+   "old": [
+    "cells.species_condition@1",
+    "species_condition@1"
+   ],
+   "new": "cells.kind.species_condition@1",
+   "family": "kind",
+   "piece": "kind",
+   "source": "kind registry: species_conditions"
+  },
+  {
+   "interface": "cells.kind@1",
+   "host": null,
+   "module": null,
+   "old": [
+    "cells.transporter@1",
+    "transporter@1"
+   ],
+   "new": "cells.kind.transporter@1",
+   "family": "kind",
+   "piece": "kind",
+   "source": "kind registry: transporters"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.apical_vertex_spec",
+   "old": [
+    "apical_vertex_mechanics@1",
+    "cells.apical_vertex_mechanics@1"
+   ],
+   "new": "cells.model.apical_vertex_mechanics@1",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.apical_vertex_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.models.assembly_lineages.spec",
+   "old": [
+    "assembly_lineages@1",
+    "cells.assembly_lineages@1"
+   ],
+   "new": "cells.model.assembly_lineages@1",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.models.assembly_lineages.spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.models.assembly_lineages_v2.spec",
+   "old": [
+    "assembly_lineages@2",
+    "cells.assembly_lineages@2"
+   ],
+   "new": "cells.model.assembly_lineages@2",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.models.assembly_lineages_v2.spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.assembly",
+   "old": [
+    "capsid_graph@1",
+    "cells.capsid_graph@1"
+   ],
+   "new": "cells.model.capsid_graph@1",
+   "family": "model",
+   "piece": "model",
+   "source": "seed cells.assembly.MODEL_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.assembly_pool",
+   "old": [
+    "cells.finite_bond_assembly@1",
+    "finite_bond_assembly@1"
+   ],
+   "new": "cells.model.finite_bond_assembly@1",
+   "family": "model",
+   "piece": "model",
+   "source": "seed cells.assembly_pool.MODEL_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.ensemble.ionic",
+   "old": [
+    "cells.ionic_worlds@1",
+    "ionic_worlds@1"
+   ],
+   "new": "cells.model.ionic_worlds@1",
+   "family": "model",
+   "piece": "model",
+   "source": "seed cells.ensemble.ionic.MODEL_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.specs",
+   "old": [
+    "cells.reaction_transport@1",
+    "reaction_transport@1"
+   ],
+   "new": "cells.model.reaction_transport@1",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.specs"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.pump_composite_spec",
+   "old": [
+    "cells.resolved_pump_composite@1",
+    "resolved_pump_composite@1"
+   ],
+   "new": "cells.model.resolved_pump_composite@1",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.pump_composite_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.cell_replacement_spec",
+   "old": [
+    "cells.resolved_pump_replacement@1",
+    "resolved_pump_replacement@1"
+   ],
+   "new": "cells.model.resolved_pump_replacement@1",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.cell_replacement_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_pump_spec",
+   "old": [
+    "cells.resolved_pump_tissue@1",
+    "resolved_pump_tissue@1"
+   ],
+   "new": "cells.model.resolved_pump_tissue@1",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.surface_pump_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_pump_v2_spec",
+   "old": [
+    "cells.resolved_pump_tissue@2",
+    "resolved_pump_tissue@2"
+   ],
+   "new": "cells.model.resolved_pump_tissue@2",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.surface_pump_v2_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_pump_v3_spec",
+   "old": [
+    "cells.resolved_pump_tissue@3",
+    "resolved_pump_tissue@3"
+   ],
+   "new": "cells.model.resolved_pump_tissue@3",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.surface_pump_v3_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_pump_water_spec",
+   "old": [
+    "cells.resolved_pump_water@1",
+    "resolved_pump_water@1"
+   ],
+   "new": "cells.model.resolved_pump_water@1",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.surface_pump_water_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_pump_water_v2_spec",
+   "old": [
+    "cells.resolved_pump_water@2",
+    "resolved_pump_water@2"
+   ],
+   "new": "cells.model.resolved_pump_water@2",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.surface_pump_water_v2_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_tissue_spec",
+   "old": [
+    "cells.resolved_tissue@1",
+    "resolved_tissue@1"
+   ],
+   "new": "cells.model.resolved_tissue@1",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.surface_tissue_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_kinetic_spec",
+   "old": [
+    "cells.resolved_tissue@2",
+    "resolved_tissue@2"
+   ],
+   "new": "cells.model.resolved_tissue@2",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.surface_kinetic_spec"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.definitions.surface_kinetic_spec",
+   "old": [
+    "cells.resolved_tissue@8",
+    "resolved_tissue@8"
+   ],
+   "new": "cells.model.resolved_tissue@8",
+   "family": "model",
+   "piece": "model",
+   "source": "model table: cells.definitions.surface_kinetic_spec"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.compartments",
+   "old": [
+    "cell_owned_compartments@1",
+    "cells.cell_owned_compartments@1"
+   ],
+   "new": "cells.operator.cell_owned_compartments@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.compartments"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.bridge_closure",
+   "old": [
+    "cells.cytoplasmic_bridge_closure@1",
+    "cytoplasmic_bridge_closure@1"
+   ],
+   "new": "cells.operator.cytoplasmic_bridge_closure@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.bridge_closure"
+  },
+  {
+   "interface": "cells.lineage_operator@1",
+   "host": "cells.assembly_lineages@1",
+   "module": "cells.models.assembly_lineages.continuation",
+   "old": [
+    "cells.daughter_continuation@1",
+    "daughter_continuation@1"
+   ],
+   "new": "cells.operator.daughter_continuation@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.models.assembly_lineages.continuation"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.current_injection",
+   "old": [
+    "cells.electrode_current_injection@1",
+    "electrode_current_injection@1"
+   ],
+   "new": "cells.operator.electrode_current_injection@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.current_injection"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.osmotic_water",
+   "old": [
+    "cells.ideal_osmosis_linear_compliance_water@1",
+    "ideal_osmosis_linear_compliance_water@1"
+   ],
+   "new": "cells.operator.ideal_osmosis_linear_compliance_water@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.osmotic_water"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.integer_unit_population",
+   "old": [
+    "cells.integer_unit_population@1",
+    "integer_unit_population@1"
+   ],
+   "new": "cells.operator.integer_unit_population@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.integer_unit_population"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.partition",
+   "old": [
+    "cells.isopotential_partition@1",
+    "isopotential_partition@1"
+   ],
+   "new": "cells.operator.isopotential_partition@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.partition"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.k_anion_symport",
+   "old": [
+    "cells.k_anion_symport_mass_action@1",
+    "k_anion_symport_mass_action@1"
+   ],
+   "new": "cells.operator.k_anion_symport_mass_action@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.k_anion_symport"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.species_reactions",
+   "old": [
+    "cells.local_species_reactions@1",
+    "local_species_reactions@1"
+   ],
+   "new": "cells.operator.local_species_reactions@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.species_reactions"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.membrane_state",
+   "old": [
+    "cells.membrane_entity_state@1",
+    "membrane_entity_state@1"
+   ],
+   "new": "cells.operator.membrane_entity_state@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.membrane_state"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.species_labels",
+   "old": [
+    "cells.neutral_arrival_labels@1",
+    "neutral_arrival_labels@1"
+   ],
+   "new": "cells.operator.neutral_arrival_labels@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.species_labels"
+  },
+  {
+   "interface": "cells.assembly_operator@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.replacement",
+   "old": [
+    "cells.pool_replacement@1",
+    "pool_replacement@1"
+   ],
+   "new": "cells.operator.pool_replacement@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.models.assembly_lineages_v2.replacement"
+  },
+  {
+   "interface": "cells.assembly_operator@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.withdrawal",
+   "old": [
+    "cells.pool_withdrawal@1",
+    "pool_withdrawal@1"
+   ],
+   "new": "cells.operator.pool_withdrawal@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.models.assembly_lineages_v2.withdrawal"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.population_unit_turnover",
+   "old": [
+    "cells.population_unit_turnover@1",
+    "population_unit_turnover@1"
+   ],
+   "new": "cells.operator.population_unit_turnover@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.population_unit_turnover"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.restricted_lumen",
+   "old": [
+    "cells.restricted_cleft_lumen@1",
+    "restricted_cleft_lumen@1"
+   ],
+   "new": "cells.operator.restricted_cleft_lumen@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.restricted_lumen"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.restricted_lumen_v2",
+   "old": [
+    "cells.restricted_cleft_lumen@2",
+    "restricted_cleft_lumen@2"
+   ],
+   "new": "cells.operator.restricted_cleft_lumen@2",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.restricted_lumen_v2"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.bath_schedule",
+   "old": [
+    "cells.scheduled_bath_composition@1",
+    "scheduled_bath_composition@1"
+   ],
+   "new": "cells.operator.scheduled_bath_composition@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.bath_schedule"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.cell_replacement",
+   "old": [
+    "cells.scheduled_cell_replacement@1",
+    "scheduled_cell_replacement@1"
+   ],
+   "new": "cells.operator.scheduled_cell_replacement@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.cell_replacement"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.cell_replacement_v2",
+   "old": [
+    "cells.scheduled_cell_replacement@2",
+    "scheduled_cell_replacement@2"
+   ],
+   "new": "cells.operator.scheduled_cell_replacement@2",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.cell_replacement_v2"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.wash_schedule",
+   "old": [
+    "cells.scheduled_compartment_wash@1",
+    "scheduled_compartment_wash@1"
+   ],
+   "new": "cells.operator.scheduled_compartment_wash@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.wash_schedule"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.membrane_insertion",
+   "old": [
+    "cells.scheduled_membrane_insertion@1",
+    "scheduled_membrane_insertion@1"
+   ],
+   "new": "cells.operator.scheduled_membrane_insertion@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.membrane_insertion"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.membrane_insertion_v2",
+   "old": [
+    "cells.scheduled_membrane_insertion@2",
+    "scheduled_membrane_insertion@2"
+   ],
+   "new": "cells.operator.scheduled_membrane_insertion@2",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.membrane_insertion_v2"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.membrane_trafficking",
+   "old": [
+    "cells.scheduled_membrane_trafficking@1",
+    "scheduled_membrane_trafficking@1"
+   ],
+   "new": "cells.operator.scheduled_membrane_trafficking@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.membrane_trafficking"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.species_exchange",
+   "old": [
+    "cells.scheduled_species_exchange@1",
+    "scheduled_species_exchange@1"
+   ],
+   "new": "cells.operator.scheduled_species_exchange@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.species_exchange"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.species_turnover",
+   "old": [
+    "cells.scheduled_species_turnover@1",
+    "scheduled_species_turnover@1"
+   ],
+   "new": "cells.operator.scheduled_species_turnover@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.species_turnover"
+  },
+  {
+   "interface": "cells.assembly_operator@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.transfer",
+   "old": [
+    "cells.serial_transfer@1",
+    "serial_transfer@1"
+   ],
+   "new": "cells.operator.serial_transfer@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.models.assembly_lineages_v2.transfer"
+  },
+  {
+   "interface": "cells.assembly_operator@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.division",
+   "old": [
+    "cells.shear_fission@1",
+    "shear_fission@1"
+   ],
+   "new": "cells.operator.shear_fission@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.models.assembly_lineages_v2.division"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.site_occupancy",
+   "old": [
+    "cells.site_occupancy@1",
+    "site_occupancy@1"
+   ],
+   "new": "cells.operator.site_occupancy@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.site_occupancy"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.site_occupancy",
+   "old": [
+    "cells.site_occupant_replacement@1",
+    "site_occupant_replacement@1"
+   ],
+   "new": "cells.operator.site_occupant_replacement@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.site_occupancy"
+  },
+  {
+   "interface": "cells.assembly_operator@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.size_division",
+   "old": [
+    "cells.size_threshold_division@1",
+    "size_threshold_division@1"
+   ],
+   "new": "cells.operator.size_threshold_division@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.models.assembly_lineages_v2.size_division"
+  },
+  {
+   "interface": "cells.lineage_operator@1",
+   "host": "cells.assembly_lineages@1",
+   "module": "cells.models.assembly_lineages.fission",
+   "old": [
+    "cells.size_threshold_fission@1",
+    "size_threshold_fission@1"
+   ],
+   "new": "cells.operator.size_threshold_fission@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.models.assembly_lineages.fission"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.species_regulated_availability",
+   "old": [
+    "cells.species_regulated_availability@1",
+    "species_regulated_availability@1"
+   ],
+   "new": "cells.operator.species_regulated_availability@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.species_regulated_availability"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.species_regulated_availability",
+   "old": [
+    "cells.species_regulated_availability@2",
+    "species_regulated_availability@2"
+   ],
+   "new": "cells.operator.species_regulated_availability@2",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.species_regulated_availability"
+  },
+  {
+   "interface": "cells.operator@1",
+   "host": null,
+   "module": "cells.operators.templated_polymerisation",
+   "old": [
+    "cells.templated_polymerisation@1",
+    "templated_polymerisation@1"
+   ],
+   "new": "cells.operator.templated_polymerisation@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.operators.templated_polymerisation"
+  },
+  {
+   "interface": "cells.assembly_operator@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.tension_hold",
+   "old": [
+    "cells.tension_hold@1",
+    "tension_hold@1"
+   ],
+   "new": "cells.operator.tension_hold@1",
+   "family": "operator",
+   "piece": "operator",
+   "source": "operator registry: cells.models.assembly_lineages_v2.tension_hold"
+  },
+  {
+   "interface": "cells.population_structure@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.population",
+   "old": [
+    "cells.shared_pool@1",
+    "shared_pool@1"
+   ],
+   "new": "cells.population.shared_pool@1",
+   "family": "population",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.population"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.registry.species_registry",
+   "old": [
+    "beard2005@1",
+    "cells.beard2005@1"
+   ],
+   "new": "cells.potential_set.beard2005@1",
+   "family": "potential_set",
+   "piece": "potential_set",
+   "source": "seed cells.registry.species_registry.POTENTIAL_SETS"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.registry.species_registry",
+   "old": [
+    "beard2005@2",
+    "cells.beard2005@2"
+   ],
+   "new": "cells.potential_set.beard2005@2",
+   "family": "potential_set",
+   "piece": "potential_set",
+   "source": "seed cells.registry.species_registry.POTENTIAL_SETS"
+  },
+  {
+   "interface": "cells.rate_factor_law@1",
+   "host": "cells.assembly_lineages@1",
+   "module": "cells.models.assembly_lineages.gard",
+   "old": [
+    "cells.gard_catalysis_pair_consistent@1",
+    "gard_catalysis_pair_consistent@1"
+   ],
+   "new": "cells.rate_factor.gard_catalysis_pair_consistent@1",
+   "family": "rate_factor",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages.gard"
+  },
+  {
+   "interface": "cells.rate_factor_law@1",
+   "host": "cells.assembly_lineages@1",
+   "module": "cells.models.assembly_lineages.gard",
+   "old": [
+    "cells.gard_catalysis_pair_consistent@2",
+    "gard_catalysis_pair_consistent@2"
+   ],
+   "new": "cells.rate_factor.gard_catalysis_pair_consistent@2",
+   "family": "rate_factor",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages.gard"
+  },
+  {
+   "interface": "cells.rate_factor_law@1",
+   "host": "cells.assembly_lineages@1",
+   "module": "cells.models.assembly_lineages.gard",
+   "old": [
+    "cells.gard_catalysis_single_event@1",
+    "gard_catalysis_single_event@1"
+   ],
+   "new": "cells.rate_factor.gard_catalysis_single_event@1",
+   "family": "rate_factor",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages.gard"
+  },
+  {
+   "interface": "cells.rate_factor_law@2",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.gate_factor",
+   "old": [
+    "cells.gate_factor@1",
+    "gate_factor@1"
+   ],
+   "new": "cells.rate_factor.gate_factor@1",
+   "family": "rate_factor",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.gate_factor"
+  },
+  {
+   "interface": "cells.rate_factor_law@2",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.transition_state",
+   "old": [
+    "cells.transition_state_factor@1",
+    "transition_state_factor@1"
+   ],
+   "new": "cells.rate_factor.transition_state_factor@1",
+   "family": "rate_factor",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.transition_state"
+  },
+  {
+   "interface": "cells.reaction_law@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.permeation",
+   "old": [
+    "cells.membrane_permeation@1",
+    "membrane_permeation@1"
+   ],
+   "new": "cells.reaction.membrane_permeation@1",
+   "family": "reaction",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.permeation"
+  },
+  {
+   "interface": "cells.reaction_law@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.exchange",
+   "old": [
+    "cells.phase_exchange@1",
+    "phase_exchange@1"
+   ],
+   "new": "cells.reaction.phase_exchange@1",
+   "family": "reaction",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.exchange"
+  },
+  {
+   "interface": "cells.reaction_law@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.shell_permeation",
+   "old": [
+    "cells.shell_permeation@1",
+    "shell_permeation@1"
+   ],
+   "new": "cells.reaction.shell_permeation@1",
+   "family": "reaction",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.shell_permeation"
+  },
+  {
+   "interface": "cells.reaction_law@1",
+   "host": "cells.assembly_lineages@2",
+   "module": "cells.models.assembly_lineages_v2.mass_action",
+   "old": [
+    "cells.stochastic_mass_action@1",
+    "stochastic_mass_action@1"
+   ],
+   "new": "cells.reaction.stochastic_mass_action@1",
+   "family": "reaction",
+   "piece": "law",
+   "source": "law registry: cells.models.assembly_lineages_v2.mass_action"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.operators.species_regulated_availability",
+   "old": [
+    "cells.hill_regulated_two_state@1",
+    "hill_regulated_two_state@1"
+   ],
+   "new": "cells.regulation.hill_regulated_two_state@1",
+   "family": "regulation",
+   "piece": "law (no Law record)",
+   "source": "seed cells.operators.species_regulated_availability.STATE_LAW"
+  },
+  {
+   "interface": "cells.route_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.routes.constant_field",
+   "old": [
+    "cells.constant_field@1",
+    "constant_field@1"
+   ],
+   "new": "cells.route.constant_field@1",
+   "family": "route",
+   "piece": "law",
+   "source": "law registry: cells.laws.routes.constant_field"
+  },
+  {
+   "interface": "cells.route_law@1",
+   "host": "cells.passive_routes@1",
+   "module": "cells.laws.routes.inward_rectifier_linear_driving_force",
+   "old": [
+    "cells.inward_rectifier_linear_driving_force@1",
+    "inward_rectifier_linear_driving_force@1"
+   ],
+   "new": "cells.route.inward_rectifier_linear_driving_force@1",
+   "family": "route",
+   "piece": "law",
+   "source": "law registry: cells.laws.routes.inward_rectifier_linear_driving_force"
+  },
+  {
+   "interface": "cells.route_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.routes.logmean_electrodiffusion",
+   "old": [
+    "cells.logmean_electrodiffusion@1",
+    "logmean_electrodiffusion@1"
+   ],
+   "new": "cells.route.logmean_electrodiffusion@1",
+   "family": "route",
+   "piece": "law",
+   "source": "law registry: cells.laws.routes.logmean_electrodiffusion"
+  },
+  {
+   "interface": "cells.route_law@1",
+   "host": "cells.resolved_pump_tissue@3",
+   "module": "cells.laws.routes.logmean_electrodiffusion_forms",
+   "old": [
+    "cells.logmean_electrodiffusion_forms@1",
+    "logmean_electrodiffusion_forms@1"
+   ],
+   "new": "cells.route.logmean_electrodiffusion_forms@1",
+   "family": "route",
+   "piece": "law",
+   "source": "law registry: cells.laws.routes.logmean_electrodiffusion_forms"
+  },
+  {
+   "interface": "cells.route_law@1",
+   "host": "cells.passive_routes@1",
+   "module": "cells.laws.routes.constant_field_permeation",
+   "old": [
+    "cells.passive_constant_field_permeation@1",
+    "passive_constant_field_permeation@1"
+   ],
+   "new": "cells.route.passive_constant_field_permeation@1",
+   "family": "route",
+   "piece": "law",
+   "source": "law registry: cells.laws.routes.constant_field_permeation"
+  },
+  {
+   "interface": "cells.route_law@1",
+   "host": "cells.passive_routes@1",
+   "module": "cells.laws.routes.passive_permeation",
+   "old": [
+    "cells.passive_neutral_permeation@1",
+    "passive_neutral_permeation@1"
+   ],
+   "new": "cells.route.passive_neutral_permeation@1",
+   "family": "route",
+   "piece": "law",
+   "source": "law registry: cells.laws.routes.passive_permeation"
+  },
+  {
+   "interface": "cells.route_law@1",
+   "host": "cells.passive_routes@1",
+   "module": "cells.laws.transport.proton_leak",
+   "old": [
+    "cells.proton_constant_field_leak@1",
+    "proton_constant_field_leak@1"
+   ],
+   "new": "cells.route.proton_constant_field_leak@1",
+   "family": "route",
+   "piece": "law",
+   "source": "law registry: cells.laws.transport.proton_leak"
+  },
+  {
+   "interface": "cells.route_law@1",
+   "host": "cells.passive_routes@1",
+   "module": "cells.laws.transport.proton_leak_v2",
+   "old": [
+    "cells.proton_constant_field_leak@2",
+    "proton_constant_field_leak@2"
+   ],
+   "new": "cells.route.proton_constant_field_leak@2",
+   "family": "route",
+   "piece": "law",
+   "source": "law registry: cells.laws.transport.proton_leak_v2"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.operators.site_occupancy",
+   "old": [
+    "cells.langmuir_site_binding@1",
+    "langmuir_site_binding@1"
+   ],
+   "new": "cells.site_binding.langmuir_site_binding@1",
+   "family": "site_binding",
+   "piece": "law (no Law record)",
+   "source": "seed cells.operators.site_occupancy.BINDING_LAW"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.operators.site_occupancy",
+   "old": [
+    "cells.site_conserving_internalisation@1",
+    "site_conserving_internalisation@1"
+   ],
+   "new": "cells.site_internalisation.site_conserving_internalisation@1",
+   "family": "site_internalisation",
+   "piece": "law (no Law record)",
+   "source": "seed cells.operators.site_occupancy.INTERNALISATION_LAW"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.surface_field",
+   "old": [
+    "capacitive_reduction_gauged_damped_newton@1",
+    "cells.capacitive_reduction_gauged_damped_newton@1"
+   ],
+   "new": "cells.solver.capacitive_reduction_gauged_damped_newton@1",
+   "family": "solver",
+   "piece": "solver",
+   "source": "seed cells.numerics.surface_field.SOLVER_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.surface_field",
+   "old": [
+    "capacitive_reduction_gauged_damped_newton@2",
+    "cells.capacitive_reduction_gauged_damped_newton@2"
+   ],
+   "new": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+   "family": "solver",
+   "piece": "solver",
+   "source": "seed cells.numerics.surface_field.FACTORED_SOLVER_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.surface_field",
+   "old": [
+    "capacitive_reduction_gauged_damped_newton@3",
+    "cells.capacitive_reduction_gauged_damped_newton@3"
+   ],
+   "new": "cells.solver.capacitive_reduction_gauged_damped_newton@3",
+   "family": "solver",
+   "piece": "solver",
+   "source": "seed cells.numerics.surface_field.FLOOR_SOLVER_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.surface_imex",
+   "old": [
+    "cells.imex_ars222_face_electromigration@1",
+    "imex_ars222_face_electromigration@1"
+   ],
+   "new": "cells.solver.imex_ars222_face_electromigration@1",
+   "family": "solver",
+   "piece": "solver",
+   "source": "seed cells.numerics.surface_imex.ARS222_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.routes.patch_electrodiffusion",
+   "old": [
+    "cells.imex_ars222_face_patch_electromigration@1",
+    "imex_ars222_face_patch_electromigration@1"
+   ],
+   "new": "cells.solver.imex_ars222_face_patch_electromigration@1",
+   "family": "solver",
+   "piece": "solver",
+   "source": "seed cells.laws.routes.patch_electrodiffusion.SOLVER_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.surface_imex",
+   "old": [
+    "cells.imex_ars222_implicit_conductances@1",
+    "imex_ars222_implicit_conductances@1"
+   ],
+   "new": "cells.solver.imex_ars222_implicit_conductances@1",
+   "family": "solver",
+   "piece": "solver",
+   "source": "seed cells.numerics.surface_imex.IMPLICIT_CONDUCTANCES_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.surface_imex",
+   "old": [
+    "cells.imex_euler_face_electromigration@1",
+    "imex_euler_face_electromigration@1"
+   ],
+   "new": "cells.solver.imex_euler_face_electromigration@1",
+   "family": "solver",
+   "piece": "solver",
+   "source": "seed cells.numerics.surface_imex.EULER_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.rosenbrock_dense",
+   "old": [
+    "cells.rosenbrock_rodas4_dense@1",
+    "rosenbrock_rodas4_dense@1"
+   ],
+   "new": "cells.solver.rosenbrock_rodas4_dense@1",
+   "family": "solver",
+   "piece": "solver",
+   "source": "seed cells.numerics.rosenbrock_dense.METHOD_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.numerics.surface_field",
+   "old": [
+    "cells.sparse_capacitive_reduction_gauged_damped_newton@1",
+    "sparse_capacitive_reduction_gauged_damped_newton@1"
+   ],
+   "new": "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1",
+   "family": "solver",
+   "piece": "solver",
+   "source": "seed cells.numerics.surface_field.SPARSE_SOLVER_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.operators.species_reactions",
+   "old": [
+    "cells.ideal_detailed_balance_mass_action@1",
+    "ideal_detailed_balance_mass_action@1"
+   ],
+   "new": "cells.species_reaction.ideal_detailed_balance_mass_action@1",
+   "family": "species_reaction",
+   "piece": "species_reaction",
+   "source": "seed cells.operators.species_reactions.PASSIVE_LAW"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.assembly.graph",
+   "old": [
+    "cells.dodecahedron_g10_2@1",
+    "dodecahedron_g10_2@1"
+   ],
+   "new": "cells.topology.dodecahedron_g10_2@1",
+   "family": "topology",
+   "piece": "topology",
+   "source": "seed cells.assembly.graph.TOPOLOGY_ID"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.routes.k_anion_symport",
+   "old": [
+    "cells.exponential_volume_activation@1",
+    "exponential_volume_activation@1"
+   ],
+   "new": "cells.transfer_factor.exponential_volume_activation@1",
+   "family": "transfer_factor",
+   "piece": "law (no Law record)",
+   "source": "seed cells.laws.routes.k_anion_symport.VOLUME_FACTOR_ID"
+  },
+  {
+   "interface": "cells.transfer_factor_law@1",
+   "host": "cells.species_condition@1",
+   "module": "cells.laws.reactions.hill_product_factor",
+   "old": [
+    "cells.hill_product_factor@1",
+    "hill_product_factor@1"
+   ],
+   "new": "cells.transfer_factor.hill_product_factor@1",
+   "family": "transfer_factor",
+   "piece": "law",
+   "source": "law registry: cells.laws.reactions.hill_product_factor"
+  },
+  {
+   "interface": null,
+   "host": null,
+   "module": "cells.laws.reactions.ph_condition",
+   "old": [
+    "cells.ph_conditioned_factor@1",
+    "ph_conditioned_factor@1"
+   ],
+   "new": "cells.transfer_factor.ph_conditioned_factor@1",
+   "family": "transfer_factor",
+   "piece": "law (no Law record)",
+   "source": "seed cells.laws.reactions.ph_condition.LAW_ID"
+  }
+ ],
+ "left": {
+  "configs/reference/multispecies_membrane_v1.json": "pinned by hash, left",
+  "configs/reference/physical_ionic_graph_v1.json": "pinned by hash, left",
+  "configs/reference/voltage_gated_channel_v1.json": "pinned by hash, left",
+  "validation/betse/protocols/physical_p3_k_mem_dense.json": "pinned by hash, left",
+  "validation/betse/protocols/physical_p3_na_mem_dense.json": "pinned by hash, left",
+  "validation/betse/protocols/physical_p3_na_mem_gj_block_dense.json": "pinned by hash, left",
+  "validation/betse/protocols/physical_p3_pump_block_dense.json": "pinned by hash, left",
+  "validation/betse/protocols/physical_p4b_kir_h_dense.json": "pinned by hash, left",
+  "validation/betse/protocols/physical_p4b_kir_navsim_dense.json": "pinned by hash, left",
+  "validation/betse/protocols/physical_p4b_nav_kirsim_dense.json": "pinned by hash, left",
+  "validation/betse/protocols/physical_p4b_nav_kleak_dense.json": "pinned by hash, left",
+  "validation/geometry/conservative_polygon_geometry_protocol.json": "pinned by hash, left",
+  "validation/geometry/stable_seed_partition_advance_refinement_callers.json": "pinned by hash, left",
+  "validation/geometry/stable_seed_partition_physiology_bridge_callers.json": "pinned by hash, left",
+  "validation/tissue/surface_dynamics_protocol.json": "pinned by hash, left",
+  "validation/topology/tissue_profile_preparation_protocol.json": "pinned by hash, left"
+ },
+ "kept": {
+  "interface": [
+   "assembly_geometry@1",
+   "assembly_hazard@1",
+   "assembly_observable@1",
+   "assembly_operator@1",
+   "assembly_representation@1",
+   "binding_law@1",
+   "channel_block_law@1",
+   "channel_law@1",
+   "cycle_law@1",
+   "exchange_law@1",
+   "free_energy_term@1",
+   "junction_law@1",
+   "kind@1",
+   "lineage_operator@1",
+   "operator@1",
+   "population_structure@1",
+   "rate_factor_law@1",
+   "rate_factor_law@2",
+   "reaction_law@1",
+   "route_law@1",
+   "transfer_factor_law@1"
+  ],
+  "recorded label": [
+   "apical_vertex_rows@1",
+   "bath_fill_exact_half_steps@1",
+   "charge_following_palindromic_half_steps@1",
+   "event_formation_ionic_formation@1",
+   "events_then_symmetric_operator_halves@1",
+   "exact_aperture_half_steps@1",
+   "exact_production_clearance_half_steps@1",
+   "exact_two_state_half_steps@1",
+   "exact_unit_chain_half_steps@1",
+   "fixed_charge_exact_half_steps@1",
+   "heun_frozen_amount_water@1",
+   "junction_tension_inference@1",
+   "located_events_exact_transfer_half_steps@1",
+   "mechanical_equilibrium_analysis@1",
+   "palindromic_exact_exchange_stages@1",
+   "positive_resolved_inventory_actual_control_charge_current@1",
+   "positive_resolved_inventory_expanded_catalog_actual_controls@1",
+   "positive_resolved_inventory_gates_atp_bounded_compliant_volumes@1",
+   "positive_resolved_inventory_gates_atp_bounded_volumes_symport@1",
+   "positive_resolved_inventory_gates_atp_operator_domains@1",
+   "positive_resolved_inventory_gates_atp_replacement_ledgers@1",
+   "positive_resolved_inventory_intrinsic_gates_atp_actual_controls@1",
+   "reaction_transport_amounts@1",
+   "read_only_accepted_grid_control_dependent_field@1",
+   "resolved_expanded_shared_catalog_accepted_grid@1",
+   "resolved_kinetic_accepted_grid_readouts@1",
+   "resolved_pump_composite_accepted_grid_readouts@1",
+   "resolved_pump_regulated_water_accepted_grid_readouts@1",
+   "resolved_pump_replacement_accepted_grid_readouts@1",
+   "resolved_pump_water_accepted_grid_readouts@1",
+   "resolved_tissue_accepted_grid_readouts@1",
+   "ssprk33_stage_condition_exact_bookings@1",
+   "ssprk33_unidirectional_stage_condition_exact_bookings@1",
+   "ssprk33_unidirectional_stage_condition_site_bookings@1",
+   "strang_water_ionic_water@1",
+   "threefry2x32_fold_in_seed_world_event_open52@1"
+  ],
+  "format or plan kind": [
+   "assembly_cell_ensemble@1",
+   "assembly_cluster_ensemble@1",
+   "assembly_ensemble@1",
+   "assembly_lineages.arm@1",
+   "assembly_lineages.checkpoint@1",
+   "assembly_lineages.diagnostic@1",
+   "assembly_lineages.pair@1",
+   "assembly_lineages.run@1",
+   "assembly_lineages.run@2",
+   "assembly_lineages.world@1",
+   "assembly_lineages.world@2",
+   "assembly_lineages_v2.checkpoint@1",
+   "cells_assembly_checkpoint@1",
+   "cells_finite_bond_checkpoint@1",
+   "cells_ionic_ensemble_checkpoint@1",
+   "checkpoint_continuity@1",
+   "declarations@3",
+   "finite_bond_ensemble@1",
+   "ionic_ensemble@1",
+   "rate_equations_run@1",
+   "relations@1",
+   "relations@2",
+   "run_view@1",
+   "stationary_analysis_result@1"
+  ],
+  "constant, read by nothing": [
+   "bounding_patch_constant_field@1",
+   "capacitive_regions_ghk_return_current@1",
+   "cell_charge_area_resolved_capacitors@1",
+   "exponential_mean_rate_linear_target_gates@1",
+   "gauged_damped_newton@1",
+   "resolved_surface_transport_explicit_reservoirs@1"
+  ]
+ },
+ "plants": [
+  {
+   "old": [
+    "a_future_operator@1",
+    "cells.a_future_operator@1"
+   ],
+   "new": "cells.operator.a_future_operator@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cell_owned_compartments.py:1403"
+   ],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py"
+   ]
+  },
+  {
+   "old": [
+    "accepted_owner@1",
+    "cells.accepted_owner@1"
+   ],
+   "new": "cells.operator.accepted_owner@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cell_owned_compartments.py:235"
+   ],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py"
+   ]
+  },
+  {
+   "old": [
+    "bad_factor@1",
+    "cells.bad_factor@1"
+   ],
+   "new": "cells.operator.bad_factor@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:223"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "bad_reset@1",
+    "cells.bad_reset@1"
+   ],
+   "new": "cells.operator.bad_reset@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:229"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "bare@1",
+    "cells.bare@1"
+   ],
+   "new": "cells.operator.bare@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:465"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.planted@1"
+   ],
+   "new": "cells.route.planted@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.planted_lineage@1"
+   ],
+   "new": "cells.operator.planted_lineage@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_model_table.py:413"
+   ],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.column_thief@1",
+    "column_thief@1"
+   ],
+   "new": "cells.operator.column_thief@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:759"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.control_first_order_state@1",
+    "control_first_order_state@1"
+   ],
+   "new": "cells.operator.control_first_order_state@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "validation/tissue/regulated_availability_controls.py:37"
+   ],
+   "files": [
+    "validation/tissue/regulated_availability_controls.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.control_lagged_factor@1",
+    "control_lagged_factor@1"
+   ],
+   "new": "cells.operator.control_lagged_factor@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "validation/tissue/regulated_availability_controls.py:53"
+   ],
+   "files": [
+    "validation/tissue/regulated_availability_controls.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.declared_booker@1",
+    "declared_booker@1"
+   ],
+   "new": "cells.operator.declared_booker@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_membrane_insertion.py:431"
+   ],
+   "files": [
+    "tests/unit/test_membrane_insertion.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.dummy_counter@1",
+    "dummy_counter@1"
+   ],
+   "new": "cells.operator.dummy_counter@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_rk4.py:64"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_rk4.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.dummy_coupled@1",
+    "dummy_coupled@1"
+   ],
+   "new": "cells.operator.dummy_coupled@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_rk4.py:42"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_rk4.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.dummy_event@1",
+    "dummy_event@1"
+   ],
+   "new": "cells.operator.dummy_event@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_rk4.py:53"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_rk4.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.dummy_process@1",
+    "dummy_process@1"
+   ],
+   "new": "cells.operator.dummy_process@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:195",
+    "tests/unit/test_pump_composite_rk4.py:48"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py",
+    "tests/unit/test_pump_composite_rk4.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.dummy_process@2",
+    "dummy_process@2"
+   ],
+   "new": "cells.operator.dummy_process@2",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:200"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.dummy_split@1",
+    "dummy_split@1"
+   ],
+   "new": "cells.operator.dummy_split@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_rk4.py:58"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_rk4.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.dummy_view@1",
+    "dummy_view@1"
+   ],
+   "new": "cells.operator.dummy_view@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:184"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.dummy_view@2",
+    "dummy_view@2"
+   ],
+   "new": "cells.operator.dummy_view@2",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:191"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.early_reader@1",
+    "early_reader@1"
+   ],
+   "new": "cells.operator.early_reader@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:773"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.elementless@1",
+    "elementless@1"
+   ],
+   "new": "cells.operator.elementless@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.eventless@1",
+    "eventless@1"
+   ],
+   "new": "cells.operator.eventless@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:810"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "fr50test.net_flow_exchange@1"
+   ],
+   "new": "fr50test.cycle.net_flow_exchange@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "validation/fr50/engine.py:73"
+   ],
+   "files": [
+    "validation/fr50/engine.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.ghost_replacer@1",
+    "ghost_replacer@1"
+   ],
+   "new": "cells.operator.ghost_replacer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:766"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.minimal_declaration@1",
+    "minimal_declaration@1"
+   ],
+   "new": "cells.operator.minimal_declaration@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cell_owned_compartments.py:112"
+   ],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.misdeclared@1",
+    "misdeclared@1"
+   ],
+   "new": "cells.operator.misdeclared@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_restricted_lumen.py:345"
+   ],
+   "files": [
+    "tests/unit/test_restricted_lumen.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.nothing@1",
+    "nothing@1"
+   ],
+   "new": "cells.operator.nothing@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cell_owned_compartments.py:127",
+    "tests/unit/test_pump_composite_contract.py:255"
+   ],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py",
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.plain_factor@1",
+    "plain_factor@1"
+   ],
+   "new": "cells.operator.plain_factor@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:433"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.planted_author@1",
+    "planted_author@1"
+   ],
+   "new": "cells.operator.planted_author@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_population_unit_turnover.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.planted_reaction@1",
+    "planted_reaction@1"
+   ],
+   "new": "cells.operator.planted_reaction@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_rapid_binding_parse.py:209"
+   ],
+   "files": [
+    "tests/unit/test_rapid_binding_parse.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.quantity_owner@1",
+    "quantity_owner@1"
+   ],
+   "new": "cells.operator.quantity_owner@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:392"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.quantity_reader@1",
+    "quantity_reader@1"
+   ],
+   "new": "cells.operator.quantity_reader@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:408"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.quantity_reader@9",
+    "quantity_reader@9"
+   ],
+   "new": "cells.operator.quantity_reader@9",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:459"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.rate_source@1",
+    "rate_source@1"
+   ],
+   "new": "cells.operator.rate_source@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:337"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.reads_and_holds@1",
+    "reads_and_holds@1"
+   ],
+   "new": "cells.operator.reads_and_holds@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:818"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.routed@1",
+    "routed@1"
+   ],
+   "new": "cells.operator.routed@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:323"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.atp_pi_off_by_one@1"
+   ],
+   "new": "seamtest.cycle.atp_pi_off_by_one@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_species_registry_free_energies.py:482"
+   ],
+   "files": [
+    "tests/unit/test_species_registry_free_energies.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.buffered_uniport@1"
+   ],
+   "new": "seamtest.cycle.buffered_uniport@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:3346"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.chemistry_at_p@1"
+   ],
+   "new": "seamtest.cycle.chemistry_at_p@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:169"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.closure_hydrolysis@1"
+   ],
+   "new": "seamtest.cycle.closure_hydrolysis@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:1386"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.diagram_pump@1"
+   ],
+   "new": "seamtest.cycle.diagram_pump@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kinds_lifecycle_declarations.py:93"
+   ],
+   "files": [
+    "tests/unit/test_kinds_lifecycle_declarations.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.edge_pump@1"
+   ],
+   "new": "seamtest.cycle.edge_pump@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_species_registry_free_energies.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.inhibited_hydrolysis@1"
+   ],
+   "new": "seamtest.cycle.inhibited_hydrolysis@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:1412"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.monomial_exchange@1"
+   ],
+   "new": "seamtest.cycle.monomial_exchange@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:946"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.monomial_hydrolysis@1"
+   ],
+   "new": "seamtest.cycle.monomial_hydrolysis@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.monomial_mg@1"
+   ],
+   "new": "seamtest.cycle.monomial_mg@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.monomial_off@1"
+   ],
+   "new": "seamtest.cycle.monomial_off@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:1143"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.monomial_total@1"
+   ],
+   "new": "seamtest.cycle.monomial_total@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_backward@1"
+   ],
+   "new": "seamtest.cycle.na_ca_backward@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2386"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_bare@1"
+   ],
+   "new": "seamtest.cycle.na_ca_bare@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:3315"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_formless@1"
+   ],
+   "new": "seamtest.cycle.na_ca_formless@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2974"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_four@1"
+   ],
+   "new": "seamtest.cycle.na_ca_four@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2385"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_linear_k_na@1"
+   ],
+   "new": "seamtest.cycle.na_ca_linear_k_na@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2371"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_molar@1"
+   ],
+   "new": "seamtest.cycle.na_ca_molar@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2372"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_no_split@1"
+   ],
+   "new": "seamtest.cycle.na_ca_no_split@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2370"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_off@1"
+   ],
+   "new": "seamtest.cycle.na_ca_off@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2373"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_one_end@1"
+   ],
+   "new": "seamtest.cycle.na_ca_one_end@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2384"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_orders@1"
+   ],
+   "new": "seamtest.cycle.na_ca_orders@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2375"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_reverse@1"
+   ],
+   "new": "seamtest.cycle.na_ca_reverse@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2379"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_split_reversed@1"
+   ],
+   "new": "seamtest.cycle.na_ca_split_reversed@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2369"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_uneven@1"
+   ],
+   "new": "seamtest.cycle.na_ca_uneven@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2496"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.na_ca_unread@1"
+   ],
+   "new": "seamtest.cycle.na_ca_unread@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2968"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.net_exchange@1"
+   ],
+   "new": "seamtest.cycle.net_exchange@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:164"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py",
+    "tests/unit/test_neutral_arrival_labels.py",
+    "tests/unit/test_neutral_labels_kinds.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.nkcc_1_1_1@1"
+   ],
+   "new": "seamtest.cycle.nkcc_1_1_1@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2641"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.nkcc_backward@1"
+   ],
+   "new": "seamtest.cycle.nkcc_backward@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2656"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.nkcc_bare@1"
+   ],
+   "new": "seamtest.cycle.nkcc_bare@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2650"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.nkcc_formless@1"
+   ],
+   "new": "seamtest.cycle.nkcc_formless@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2976"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.nkcc_one_anion@1"
+   ],
+   "new": "seamtest.cycle.nkcc_one_anion@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2653"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.nkcc_stated@1"
+   ],
+   "new": "seamtest.cycle.nkcc_stated@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:3064"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.nkcc_unread@1"
+   ],
+   "new": "seamtest.cycle.nkcc_unread@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2970"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.nowhere@1"
+   ],
+   "new": "seamtest.cycle.nowhere@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_species_registry_free_energies.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.p_side_acid@1"
+   ],
+   "new": "seamtest.cycle.p_side_acid@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:1775"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.p_side_redox@1"
+   ],
+   "new": "seamtest.cycle.p_side_redox@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:1637"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.proton_uniport@1"
+   ],
+   "new": "seamtest.cycle.proton_uniport@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:1202"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.pump_backward@1"
+   ],
+   "new": "seamtest.cycle.pump_backward@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2632"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.pump_formless@1"
+   ],
+   "new": "seamtest.cycle.pump_formless@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2975"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.pump_hill_1@1"
+   ],
+   "new": "seamtest.cycle.pump_hill_1@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2621"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.pump_no_atp@1"
+   ],
+   "new": "seamtest.cycle.pump_no_atp@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2612"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.pump_no_pi@1"
+   ],
+   "new": "seamtest.cycle.pump_no_pi@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2625"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.pump_s_at_p@1"
+   ],
+   "new": "seamtest.cycle.pump_s_at_p@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2615"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.pump_unread@1"
+   ],
+   "new": "seamtest.cycle.pump_unread@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2969"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.ref_law@1"
+   ],
+   "new": "seamtest.cycle.ref_law@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_cycle_kind_references.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.salt_backward@1"
+   ],
+   "new": "seamtest.cycle.salt_backward@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2666"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.salt_bare@1"
+   ],
+   "new": "seamtest.cycle.salt_bare@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2661"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.salt_formless@1"
+   ],
+   "new": "seamtest.cycle.salt_formless@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2977"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.salt_one_anion@1"
+   ],
+   "new": "seamtest.cycle.salt_one_anion@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2664"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.salt_unread@1"
+   ],
+   "new": "seamtest.cycle.salt_unread@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:2971"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.salt_unstated@1"
+   ],
+   "new": "seamtest.cycle.salt_unstated@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:3063"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.shifted_exchange@1"
+   ],
+   "new": "seamtest.cycle.shifted_exchange@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:147"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.signed_basis@1"
+   ],
+   "new": "seamtest.cycle.signed_basis@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:220"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.slip_exchanger@1"
+   ],
+   "new": "seamtest.cycle.slip_exchanger@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:136"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py",
+    "tests/unit/test_kinds_lifecycle_declarations.py",
+    "tests/unit/test_transporter_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.slip_off@1"
+   ],
+   "new": "seamtest.cycle.slip_off@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:770"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.synthase_cited@1"
+   ],
+   "new": "seamtest.cycle.synthase_cited@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_mito_cycle_laws.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.synthase_shifted@1"
+   ],
+   "new": "seamtest.cycle.synthase_shifted@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_mito_cycle_laws.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.termed_uniport@1"
+   ],
+   "new": "seamtest.cycle.termed_uniport@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:3349"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.unequal_crossing@1"
+   ],
+   "new": "seamtest.cycle.unequal_crossing@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_neutral_labels_kinds.py:189"
+   ],
+   "files": [
+    "tests/unit/test_neutral_labels_kinds.py"
+   ]
+  },
+  {
+   "old": [
+    "seamtest.wrong_sign_basis@1"
+   ],
+   "new": "seamtest.cycle.wrong_sign_basis@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cycle_kind.py:221"
+   ],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.self_replacer@1",
+    "self_replacer@1"
+   ],
+   "new": "cells.operator.self_replacer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:800"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.stranded_owner@1",
+    "stranded_owner@1"
+   ],
+   "new": "cells.operator.stranded_owner@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cell_owned_compartments.py:242"
+   ],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.stray@1",
+    "stray@1"
+   ],
+   "new": "cells.operator.stray@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:367"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.stray_reader@1",
+    "stray_reader@1"
+   ],
+   "new": "cells.operator.stray_reader@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:471"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.stub@1",
+    "stub@1"
+   ],
+   "new": "cells.operator.stub@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_regulated_availability_population.py:275",
+    "tests/unit/test_regulated_availability_population.py:281"
+   ],
+   "files": [
+    "tests/unit/test_regulated_availability_population.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.stub_closer@1",
+    "stub_closer@1"
+   ],
+   "new": "cells.operator.stub_closer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:512",
+    "tests/unit/test_composition_order.py:518"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.stub_follows_split@1",
+    "stub_follows_split@1"
+   ],
+   "new": "cells.operator.stub_follows_split@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/partition_fixtures.py:451"
+   ],
+   "files": [
+    "tests/partition_fixtures.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.stub_volume_reader@1",
+    "stub_volume_reader@1"
+   ],
+   "new": "cells.operator.stub_volume_reader@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:495"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_a@1",
+    "test_a@1"
+   ],
+   "new": "cells.operator.test_a@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:108",
+    "tests/unit/test_door_s.py:158",
+    "tests/unit/test_door_s.py:164",
+    "tests/unit/test_door_s.py:169"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_add0@1",
+    "test_add0@1"
+   ],
+   "new": "cells.operator.test_add0@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_add1@1",
+    "test_add1@1"
+   ],
+   "new": "cells.operator.test_add1@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_add@1",
+    "test_add@1"
+   ],
+   "new": "cells.operator.test_add@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:147"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_alone@1",
+    "test_alone@1"
+   ],
+   "new": "cells.operator.test_alone@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:179",
+    "tests/unit/test_door_s.py:225"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py",
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_area_reader@1",
+    "test_area_reader@1"
+   ],
+   "new": "cells.operator.test_area_reader@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:297"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_b@1",
+    "test_b@1"
+   ],
+   "new": "cells.operator.test_b@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:108",
+    "tests/unit/test_door_s.py:158",
+    "tests/unit/test_door_s.py:164",
+    "tests/unit/test_door_s.py:170"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_bad@1",
+    "test_bad@1"
+   ],
+   "new": "cells.operator.test_bad@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:433",
+    "tests/unit/test_composition_order.py:446",
+    "tests/unit/test_door_s.py:293"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py",
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_books@1",
+    "test_books@1"
+   ],
+   "new": "cells.operator.test_books@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:482"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_c@1",
+    "test_c@1"
+   ],
+   "new": "cells.operator.test_c@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:171"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_change@1",
+    "test_change@1"
+   ],
+   "new": "cells.operator.test_change@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:208",
+    "tests/unit/test_composition_order.py:413"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_closer@1",
+    "test_closer@1"
+   ],
+   "new": "cells.operator.test_closer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:311",
+    "tests/unit/test_composition_order.py:318",
+    "tests/unit/test_composition_order.py:392",
+    "tests/unit/test_composition_order.py:468",
+    "tests/unit/test_composition_order.py:483",
+    "tests/unit/test_door_s.py:299"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py",
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_current@1",
+    "test_current@1"
+   ],
+   "new": "cells.operator.test_current@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:212",
+    "tests/unit/test_door_s.py:231"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_declaration@1",
+    "test_declaration@1"
+   ],
+   "new": "cells.operator.test_declaration@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_contract_additions.py:204",
+    "tests/unit/test_contract_additions.py:246"
+   ],
+   "files": [
+    "tests/unit/test_contract_additions.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_dose@1",
+    "test_dose@1"
+   ],
+   "new": "cells.operator.test_dose@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:186",
+    "tests/unit/test_door_s.py:201",
+    "tests/unit/test_door_s.py:211",
+    "tests/unit/test_door_s.py:230"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_event@1",
+    "test_event@1"
+   ],
+   "new": "cells.operator.test_event@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:221"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_event_masks@1",
+    "test_event_masks@1"
+   ],
+   "new": "cells.operator.test_event_masks@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:270"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_first@1",
+    "test_first@1"
+   ],
+   "new": "cells.operator.test_first@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:214",
+    "tests/unit/test_door_s.py:218"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_fixed@1",
+    "test_fixed@1"
+   ],
+   "new": "cells.operator.test_fixed@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:187",
+    "tests/unit/test_door_s.py:188",
+    "tests/unit/test_door_s.py:189",
+    "tests/unit/test_door_s.py:195",
+    "tests/unit/test_door_s.py:232"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_fixed_faces@1",
+    "test_fixed_faces@1"
+   ],
+   "new": "cells.operator.test_fixed_faces@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:396"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_fixed_patches@1",
+    "test_fixed_patches@1"
+   ],
+   "new": "cells.operator.test_fixed_patches@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:391"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_h@1",
+    "test_h@1"
+   ],
+   "new": "cells.operator.test_h@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:253"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_inherits@1",
+    "test_inherits@1"
+   ],
+   "new": "cells.operator.test_inherits@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:287"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_masks@1",
+    "test_masks@1"
+   ],
+   "new": "cells.operator.test_masks@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:467",
+    "tests/unit/test_composition_order.py:513"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_mul@1",
+    "test_mul@1"
+   ],
+   "new": "cells.operator.test_mul@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:148"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_multiply0@1",
+    "test_multiply0@1"
+   ],
+   "new": "cells.operator.test_multiply0@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_multiply1@1",
+    "test_multiply1@1"
+   ],
+   "new": "cells.operator.test_multiply1@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_one@1",
+    "test_one@1"
+   ],
+   "new": "cells.operator.test_one@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:411"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_op@1",
+    "test_op@1"
+   ],
+   "new": "cells.operator.test_op@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_contract_additions.py:65"
+   ],
+   "files": [
+    "tests/unit/test_contract_additions.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_owned_divider@1",
+    "test_owned_divider@1"
+   ],
+   "new": "cells.operator.test_owned_divider@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_integer_unit_population.py:321"
+   ],
+   "files": [
+    "tests/unit/test_integer_unit_population.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_owned_divider_without_its_method@1",
+    "test_owned_divider_without_its_method@1"
+   ],
+   "new": "cells.operator.test_owned_divider_without_its_method@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_integer_unit_population.py:332"
+   ],
+   "files": [
+    "tests/unit/test_integer_unit_population.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_owner@1",
+    "test_owner@1"
+   ],
+   "new": "cells.operator.test_owner@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:734"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_patch_reader@1",
+    "test_patch_reader@1"
+   ],
+   "new": "cells.operator.test_patch_reader@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:310"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_plain@1",
+    "test_plain@1"
+   ],
+   "new": "cells.operator.test_plain@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:288",
+    "tests/unit/test_contract_additions.py:263"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py",
+    "tests/unit/test_contract_additions.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_planted@1",
+    "test_planted@1"
+   ],
+   "new": "cells.operator.test_planted@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:246"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_r0@1",
+    "test_r0@1"
+   ],
+   "new": "cells.operator.test_r0@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_r1@1",
+    "test_r1@1"
+   ],
+   "new": "cells.operator.test_r1@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_reach@1",
+    "test_reach@1"
+   ],
+   "new": "cells.operator.test_reach@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:372"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_reader@1",
+    "test_reader@1"
+   ],
+   "new": "cells.operator.test_reader@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:207",
+    "tests/unit/test_composition_order.py:220",
+    "tests/unit/test_composition_order.py:285"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_ref@1",
+    "test_ref@1"
+   ],
+   "new": "cells.operator.test_ref@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:202"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_retiring@1",
+    "test_retiring@1"
+   ],
+   "new": "cells.operator.test_retiring@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_integer_unit_population.py:350"
+   ],
+   "files": [
+    "tests/unit/test_integer_unit_population.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_s@1",
+    "test_s@1"
+   ],
+   "new": "cells.operator.test_s@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:152"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_split@1",
+    "test_split@1"
+   ],
+   "new": "cells.operator.test_split@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:186",
+    "tests/unit/test_composition_order.py:222",
+    "tests/unit/test_composition_order.py:223"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_split_dose@1",
+    "test_split_dose@1"
+   ],
+   "new": "cells.operator.test_split_dose@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:216"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_two_modes@1",
+    "test_two_modes@1"
+   ],
+   "new": "cells.operator.test_two_modes@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:407"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_typo@1",
+    "test_typo@1"
+   ],
+   "new": "cells.operator.test_typo@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_composition_order.py:188"
+   ],
+   "files": [
+    "tests/unit/test_composition_order.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_user@1",
+    "test_user@1"
+   ],
+   "new": "cells.operator.test_user@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_contract_additions.py:261"
+   ],
+   "files": [
+    "tests/unit/test_contract_additions.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_w@1",
+    "test_w@1"
+   ],
+   "new": "cells.operator.test_w@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:253"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_whole@1",
+    "test_whole@1"
+   ],
+   "new": "cells.operator.test_whole@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_door_s.py:121"
+   ],
+   "files": [
+    "tests/unit/test_door_s.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.test_writer@1",
+    "test_writer@1"
+   ],
+   "new": "cells.operator.test_writer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:746"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.alpha@1"
+   ],
+   "new": "tests.kind.alpha@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_kind_rules.py",
+    "tests/unit/test_kind_types.py",
+    "tests/unit/test_p1_predictor.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.at_state_factor@1"
+   ],
+   "new": "tests.rate_factor.at_state_factor@1",
+   "family": "rate_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_kernel.py:201",
+    "tests/unit/test_assembly_lineages_v2_kernel.py:384"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_kernel.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.b@1"
+   ],
+   "new": "tests.kind.b@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_kind_types.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.bare@1"
+   ],
+   "new": "tests.kind.bare@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_schedules.py:148"
+   ],
+   "files": [
+    "tests/unit/test_kind_schedules.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.beta@1"
+   ],
+   "new": "tests.kind.beta@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_kind_rules.py",
+    "tests/unit/test_kind_types.py",
+    "tests/unit/test_p1_predictor.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.binding_reading_carrier@1"
+   ],
+   "new": "tests.cycle.binding_reading_carrier@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_rapid_binding_world.py:142"
+   ],
+   "files": [
+    "tests/unit/test_rapid_binding_world.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.booked_cycle@1"
+   ],
+   "new": "tests.cycle.booked_cycle@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_contract_hooks.py:440",
+    "tests/unit/test_kind_contract_hooks.py:707"
+   ],
+   "files": [
+    "tests/unit/test_kind_contract_hooks.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.booked_formed_cycle@1"
+   ],
+   "new": "tests.cycle.booked_formed_cycle@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_contract_hooks.py:437",
+    "tests/unit/test_kind_contract_hooks.py:715"
+   ],
+   "files": [
+    "tests/unit/test_kind_contract_hooks.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.booked_routes@1"
+   ],
+   "new": "tests.kind.booked_routes@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_contract_hooks.py:102"
+   ],
+   "files": [
+    "tests/unit/test_kind_contract_hooks.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.calcium_twin@1"
+   ],
+   "new": "tests.channel.calcium_twin@1",
+   "family": "channel",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kv1_channel_laws.py:310"
+   ],
+   "files": [
+    "tests/unit/test_kv1_channel_laws.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.carrier@1"
+   ],
+   "new": "tests.kind.carrier@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/kind_fixtures.py:365"
+   ],
+   "files": [
+    "tests/kind_fixtures.py",
+    "tests/unit/test_cell_owned_compartments.py",
+    "tests/unit/test_pump_composite_kinds.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.channel_carrier@1"
+   ],
+   "new": "tests.kind.channel_carrier@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_presence_gate.py:250"
+   ],
+   "files": [
+    "tests/unit/test_kind_presence_gate.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.cl_twin@1"
+   ],
+   "new": "tests.channel.cl_twin@1",
+   "family": "channel",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_chloride_leak_law.py:113"
+   ],
+   "files": [
+    "tests/unit/test_chloride_leak_law.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.claimant@1"
+   ],
+   "new": "tests.operator.claimant@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.claims_water@1"
+   ],
+   "new": "tests.kind.claims_water@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_schedules.py:123"
+   ],
+   "files": [
+    "tests/unit/test_kind_schedules.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.conversion@1"
+   ],
+   "new": "tests.kind.conversion@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/kind_fixtures.py:656"
+   ],
+   "files": [
+    "tests/kind_fixtures.py",
+    "tests/unit/test_heat_bookings_formula.py",
+    "tests/unit/test_kind_stored_rate.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.dilute@1"
+   ],
+   "new": "tests.rate_factor.dilute@1",
+   "family": "rate_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_registration.py:211"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.door_channel@1"
+   ],
+   "new": "tests.channel.door_channel@1",
+   "family": "channel",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_species_reactions_refusals.py:373"
+   ],
+   "files": [
+    "tests/unit/test_species_reactions_refusals.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.driven_reaction@1"
+   ],
+   "new": "tests.reaction.driven_reaction@1",
+   "family": "reaction",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_registration.py:194"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.each_direction@1"
+   ],
+   "new": "tests.rate_factor.each_direction@1",
+   "family": "rate_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_registration.py:207"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.elsewhere@1"
+   ],
+   "new": "tests.cycle.elsewhere@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.elsewhere_cycle@1"
+   ],
+   "new": "tests.cycle.elsewhere_cycle@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_contract_hooks.py:443",
+    "tests/unit/test_kind_contract_hooks.py:718"
+   ],
+   "files": [
+    "tests/unit/test_kind_contract_hooks.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.elsewhere_factor@1"
+   ],
+   "new": "tests.rate_factor.elsewhere_factor@1",
+   "family": "rate_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_registration.py:120"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.event@1"
+   ],
+   "new": "tests.operator.event@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_neutral_arrival_labels.py:1129"
+   ],
+   "files": [
+    "tests/unit/test_neutral_arrival_labels.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.event_heat_insertion@1"
+   ],
+   "new": "tests.operator.event_heat_insertion@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_operator_energy_roles.py:77"
+   ],
+   "files": [
+    "tests/unit/test_operator_energy_roles.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.event_writer@1"
+   ],
+   "new": "tests.operator.event_writer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_writers.py:83"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_writers.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.exchange@1"
+   ],
+   "new": "tests.kind.exchange@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/kind_fixtures.py:166"
+   ],
+   "files": [
+    "tests/kind_fixtures.py",
+    "tests/unit/test_kind_moved_rows_guard.py",
+    "tests/unit/test_kind_rules.py",
+    "tests/unit/test_kind_schedules.py",
+    "tests/unit/test_kind_seams.py",
+    "tests/unit/test_pump_composite_kinds.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.existing_operator@1"
+   ],
+   "new": "tests.operator.existing_operator@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_operator_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.face_route@1"
+   ],
+   "new": "tests.route.face_route@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_rapid_binding_world.py:928"
+   ],
+   "files": [
+    "tests/unit/test_rapid_binding_world.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.factor@1"
+   ],
+   "new": "tests.kind.factor@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/kind_fixtures.py",
+    "tests/unit/test_kind_routing.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.factor_b@1"
+   ],
+   "new": "tests.kind.factor_b@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_kind_routing.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.kind_factor@1"
+   ],
+   "new": "tests.operator.kind_factor@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_kinds.py:191"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_kinds.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.kind_reader@1"
+   ],
+   "new": "tests.operator.kind_reader@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_kinds.py:173"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_kinds.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.kind_writer@1"
+   ],
+   "new": "tests.operator.kind_writer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_kinds.py:179"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_kinds.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.kv_planted@1"
+   ],
+   "new": "tests.channel.kv_planted@1",
+   "family": "channel",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_surface_pump_v3_registry_laws.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.law_a@1"
+   ],
+   "new": "tests.binding.law_a@1",
+   "family": "binding",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_p1_predictor.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.law_b@1"
+   ],
+   "new": "tests.binding.law_b@1",
+   "family": "binding",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_p1_predictor.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.limit_off_by_a_constant@1"
+   ],
+   "new": "tests.reaction.limit_off_by_a_constant@1",
+   "family": "reaction",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_rate_equations.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.literal_last_molecule@1"
+   ],
+   "new": "tests.reaction.literal_last_molecule@1",
+   "family": "reaction",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_kernel.py:445"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_kernel.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.loose@1"
+   ],
+   "new": "tests.operator.loose@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_kinds.py:253"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_kinds.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.low_word_dropped@1"
+   ],
+   "new": "tests.rate_factor.low_word_dropped@1",
+   "family": "rate_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_kernel.py:161"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_kernel.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.new_operator@1"
+   ],
+   "new": "tests.operator.new_operator@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_operator_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.newer_operator@1"
+   ],
+   "new": "tests.operator.newer_operator@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_operator_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.non_mover@1"
+   ],
+   "new": "tests.kind.non_mover@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cell_owned_compartments.py:1278"
+   ],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.not_a_factor@1"
+   ],
+   "new": "tests.route.not_a_factor@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_registration.py:125"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.not_an_operator@1"
+   ],
+   "new": "tests.operator.not_an_operator@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_operator_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.one_sided@1"
+   ],
+   "new": "tests.reaction.one_sided@1",
+   "family": "reaction",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_kernel.py:205"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_kernel.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.other@1"
+   ],
+   "new": "tests.kind.other@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_schedules.py:138"
+   ],
+   "files": [
+    "tests/unit/test_kind_contract_hooks.py",
+    "tests/unit/test_kind_schedules.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.passive_reaction@1"
+   ],
+   "new": "tests.reaction.passive_reaction@1",
+   "family": "reaction",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_registration.py:219"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_bare_cycle@1"
+   ],
+   "new": "tests.cycle.planted_bare_cycle@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_law_registry.py:524"
+   ],
+   "files": [
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_binding@1"
+   ],
+   "new": "tests.binding.planted_binding@1",
+   "family": "binding",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_law_registry.py:114"
+   ],
+   "files": [
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_carried_cycle@1"
+   ],
+   "new": "tests.cycle.planted_carried_cycle@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_law_registry.py:514",
+    "tests/unit/test_law_registry.py:552"
+   ],
+   "files": [
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_channel@1"
+   ],
+   "new": "tests.channel.planted_channel@1",
+   "family": "channel",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_law_registry.py:97"
+   ],
+   "files": [
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_cycle@1"
+   ],
+   "new": "tests.cycle.planted_cycle@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_law_registry.py:108"
+   ],
+   "files": [
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_ensemble@1"
+   ],
+   "new": "tests.model.planted_ensemble@1",
+   "family": "model",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_ensemble_adapters.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_exchange@1"
+   ],
+   "new": "tests.exchange.planted_exchange@1",
+   "family": "exchange",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_factor@1"
+   ],
+   "new": "tests.transfer_factor.planted_factor@1",
+   "family": "transfer_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_fr5_source_kinds.py:493",
+    "tests/unit/test_hill_factors.py:259"
+   ],
+   "files": [
+    "tests/unit/test_fr5_source_kinds.py",
+    "tests/unit/test_hill_factors.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_fission@1"
+   ],
+   "new": "tests.operator.planted_fission@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_model_table.py:336",
+    "tests/unit/test_model_table.py:378"
+   ],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_formed_cycle@1"
+   ],
+   "new": "tests.cycle.planted_formed_cycle@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_declarations.py:286"
+   ],
+   "files": [
+    "tests/unit/test_declarations.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_formed_cycle@2"
+   ],
+   "new": "tests.cycle.planted_formed_cycle@2",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_declarations.py:294"
+   ],
+   "files": [
+    "tests/unit/test_declarations.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_home_route@1"
+   ],
+   "new": "tests.route.planted_home_route@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_inert_route@1"
+   ],
+   "new": "tests.route.planted_inert_route@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_kind@1"
+   ],
+   "new": "tests.kind.planted_kind@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_declarations.py:44",
+    "tests/unit/test_kind_rules.py:34",
+    "tests/unit/test_kind_types.py:36"
+   ],
+   "files": [
+    "tests/unit/test_declarations.py",
+    "tests/unit/test_kind_rules.py",
+    "tests/unit/test_kind_types.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_library_route@1"
+   ],
+   "new": "tests.route.planted_library_route@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_library_pages.py:48"
+   ],
+   "files": [
+    "tests/unit/test_library_pages.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_lineage_operator@1"
+   ],
+   "new": "tests.operator.planted_lineage_operator@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_declarations.py:58"
+   ],
+   "files": [
+    "tests/unit/test_declarations.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_move@1"
+   ],
+   "new": "tests.planted.planted_move@1",
+   "family": "planted",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_operator@1"
+   ],
+   "new": "tests.operator.planted_operator@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_declarations.py:48",
+    "tests/unit/test_operator_energy_roles.py:115",
+    "tests/unit/test_operator_registry.py:65"
+   ],
+   "files": [
+    "tests/unit/test_declarations.py",
+    "tests/unit/test_operator_energy_roles.py",
+    "tests/unit/test_operator_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_population@1"
+   ],
+   "new": "tests.kind.planted_population@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_lifecycle_roles.py:1042"
+   ],
+   "files": [
+    "tests/unit/test_kind_lifecycle_roles.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_rate_route@1"
+   ],
+   "new": "tests.operator.planted_rate_route@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_species_turnover.py:172"
+   ],
+   "files": [
+    "tests/unit/test_species_turnover.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_reaction@1"
+   ],
+   "new": "tests.operator.planted_reaction@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_operator_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_route@1"
+   ],
+   "new": "tests.route.planted_route@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_declarations.py:41",
+    "tests/unit/test_law_registry.py:111"
+   ],
+   "files": [
+    "tests/unit/test_declarations.py",
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_sites@1"
+   ],
+   "new": "tests.kind.planted_sites@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_lifecycle_roles.py:313"
+   ],
+   "files": [
+    "tests/unit/test_kind_lifecycle_roles.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_unit_route@1"
+   ],
+   "new": "tests.operator.planted_unit_route@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_population_unit_turnover.py:589"
+   ],
+   "files": [
+    "tests/unit/test_population_unit_turnover.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.planted_view_channel@1"
+   ],
+   "new": "tests.channel.planted_view_channel@1",
+   "family": "channel",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_law_modules.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.pools@1"
+   ],
+   "new": "tests.operator.pools@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_neutral_arrival_labels.py:1071",
+    "tests/unit/test_neutral_arrival_labels.py:1076"
+   ],
+   "files": [
+    "tests/unit/test_neutral_arrival_labels.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.power_propensity@1"
+   ],
+   "new": "tests.reaction.power_propensity@1",
+   "family": "reaction",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_kernel.py:190",
+    "tests/unit/test_assembly_lineages_v2_kernel.py:204",
+    "tests/unit/test_assembly_lineages_v2_kernel.py:260"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_kernel.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.pretender@1"
+   ],
+   "new": "tests.route.pretender@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_law_registry.py:211"
+   ],
+   "files": [
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.producer@1"
+   ],
+   "new": "tests.kind.producer@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_ledgers.py:119"
+   ],
+   "files": [
+    "tests/unit/test_kind_ledgers.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.relaxation@1"
+   ],
+   "new": "tests.kind.relaxation@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/kind_fixtures.py:511"
+   ],
+   "files": [
+    "tests/kind_fixtures.py",
+    "tests/unit/test_kind_book_control.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.renamed_factor@1"
+   ],
+   "new": "tests.rate_factor.renamed_factor@1",
+   "family": "rate_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_registration.py:119",
+    "tests/unit/test_assembly_lineages_v2_registration.py:235"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_registration.py",
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.requiring_kind_writer@1"
+   ],
+   "new": "tests.operator.requiring_kind_writer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_kinds.py:186"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_kinds.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.row_update@1"
+   ],
+   "new": "tests.rate_factor.row_update@1",
+   "family": "rate_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_kernel.py:114",
+    "tests/unit/test_assembly_lineages_v2_registration.py:232"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_kernel.py",
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.second@1"
+   ],
+   "new": "tests.channel.second@1",
+   "family": "channel",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_law_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.second_driven@1"
+   ],
+   "new": "tests.rate_factor.second_driven@1",
+   "family": "rate_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_registration.py:229"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.single_event_as_passive@1"
+   ],
+   "new": "tests.rate_factor.single_event_as_passive@1",
+   "family": "rate_factor",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_balance.py:88"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_balance.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.sink@1"
+   ],
+   "new": "tests.kind.sink@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/kind_fixtures.py:748"
+   ],
+   "files": [
+    "tests/kind_fixtures.py",
+    "tests/unit/test_kind_contract_hooks.py",
+    "tests/unit/test_kind_routing.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.sourced_reaction@1"
+   ],
+   "new": "tests.reaction.sourced_reaction@1",
+   "family": "reaction",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_registration.py:198"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.steep_fuel@1"
+   ],
+   "new": "tests.cycle.steep_fuel@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_cycle_kind.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.stored_insertion@1"
+   ],
+   "new": "tests.operator.stored_insertion@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_operator_energy_roles.py:99"
+   ],
+   "files": [
+    "tests/unit/test_operator_energy_roles.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.stray_without@1"
+   ],
+   "new": "tests.kind.stray_without@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_kind_contract_hooks.py:422"
+   ],
+   "files": [
+    "tests/unit/test_kind_contract_hooks.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.swap@1"
+   ],
+   "new": "tests.operator.swap@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_neutral_arrival_labels.py:1069"
+   ],
+   "files": [
+    "tests/unit/test_neutral_arrival_labels.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.term@1"
+   ],
+   "new": "tests.free_energy.term@1",
+   "family": "free_energy",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_registration.py:215"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.termless_pump@1"
+   ],
+   "new": "tests.cycle.termless_pump@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cell_owned_compartments.py:1054"
+   ],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.twice@1"
+   ],
+   "new": "tests.route.twice@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_declarations.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.unbooked_operator@1"
+   ],
+   "new": "tests.operator.unbooked_operator@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_operator_registry.py:72"
+   ],
+   "files": [
+    "tests/unit/test_operator_registry.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.uncited@1"
+   ],
+   "new": "tests.operator.uncited@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_model_table.py:351"
+   ],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.undeclared@1"
+   ],
+   "new": "tests.exchange.undeclared@1",
+   "family": "exchange",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.undeclared@1"
+   ],
+   "new": "tests.kind.undeclared@1",
+   "family": "kind",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_kind_contract_hooks.py",
+    "tests/unit/test_kind_ledgers.py",
+    "tests/unit/test_p1_predictor.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.unregistered@1"
+   ],
+   "new": "tests.cycle.unregistered@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_kind_contract_hooks.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.unsloped_pump@1"
+   ],
+   "new": "tests.cycle.unsloped_pump@1",
+   "family": "cycle",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cell_owned_compartments.py:1057"
+   ],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.v1_host@1"
+   ],
+   "new": "tests.reaction.v1_host@1",
+   "family": "reaction",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_assembly_lineages_v2_registration.py:202"
+   ],
+   "files": [
+    "tests/unit/test_assembly_lineages_v2_registration.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.writer@1"
+   ],
+   "new": "tests.operator.writer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_writers.py:57"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_writers.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.x@1"
+   ],
+   "new": "tests.route.x@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "tests.y@1"
+   ],
+   "new": "tests.route.y@1",
+   "family": "route",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "tests/unit/test_model_table.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.trafficking_stand_in@1",
+    "trafficking_stand_in@1"
+   ],
+   "new": "cells.operator.trafficking_stand_in@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_cell_owned_compartments.py:1435"
+   ],
+   "files": [
+    "tests/unit/test_cell_owned_compartments.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.unbooked@1",
+    "unbooked@1"
+   ],
+   "new": "cells.operator.unbooked@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:240"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.unledgered@1",
+    "unledgered@1"
+   ],
+   "new": "cells.operator.unledgered@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:806"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.unsplit@1",
+    "unsplit@1"
+   ],
+   "new": "cells.operator.unsplit@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:246"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  },
+  {
+   "old": [
+    "validation.ol6_plant_power_off_by_one@1"
+   ],
+   "new": "validation.reaction.ol6_plant_power_off_by_one@1",
+   "family": "reaction",
+   "piece": "plant",
+   "sites": [],
+   "files": [
+    "validation/assembly_lineages_v2/limit_qualification.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.volume_provider@1",
+    "volume_provider@1"
+   ],
+   "new": "cells.operator.volume_provider@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_restricted_lumen.py:335"
+   ],
+   "files": [
+    "tests/unit/test_restricted_lumen.py"
+   ]
+  },
+  {
+   "old": [
+    "cells.writer@1",
+    "writer@1"
+   ],
+   "new": "cells.operator.writer@1",
+   "family": "operator",
+   "piece": "plant",
+   "sites": [
+    "tests/unit/test_pump_composite_contract.py:250"
+   ],
+   "files": [
+    "tests/unit/test_pump_composite_contract.py"
+   ]
+  }
+ ],
+ "types": {
+  "laws": {
+   "AssemblyHazard": "assembly_hazard",
+   "AssemblyObservable": "assembly_observable",
+   "AssemblyRepresentation": "assembly_representation",
+   "BindingLaw": "binding",
+   "ChannelBlockLaw": "channel_block",
+   "ChannelLaw": "channel",
+   "CycleLaw": "cycle",
+   "ExchangeLaw": "exchange",
+   "FreeEnergyTerm": "free_energy",
+   "GeometryLaw": "assembly_geometry",
+   "JunctionLaw": "junction",
+   "PopulationStructure": "population",
+   "RateFactorLaw": "rate_factor",
+   "ReactionLaw": "reaction",
+   "RouteLaw": "route",
+   "TransferFactorLaw": "transfer_factor"
+  },
+  "kinds": [
+   "Kind"
+  ],
+  "operators": [
+   "AssemblyOperator",
+   "CellOwnedCompartments",
+   "CytoplasmicBridgeClosure",
+   "ElectrodeCurrentInjection",
+   "FamilyOperator",
+   "IntegerUnitPopulationOperator",
+   "IsopotentialPartition",
+   "KAnionSymport",
+   "LineageOperator",
+   "LocalSpeciesReactions",
+   "MembraneEntityState",
+   "NeutralArrivalLabels",
+   "Operator",
+   "OsmoticWater",
+   "PopulationUnitTurnover",
+   "RestrictedCleftLumen",
+   "RestrictedCleftLumenV2",
+   "ScheduledBathComposition",
+   "ScheduledCompartmentWash",
+   "ScheduledMembraneInsertion",
+   "ScheduledMembraneInsertionV2",
+   "ScheduledMembraneTrafficking",
+   "ScheduledReplacement",
+   "ScheduledReplacementOverWater",
+   "ScheduledSpeciesExchange",
+   "ScheduledSpeciesTurnover",
+   "SiteOccupancy",
+   "SiteOccupantReplacement",
+   "SpeciesRegulatedAvailability",
+   "SpeciesRegulatedAvailabilityV2",
+   "TemplatedPolymerisation"
+  ],
+  "modules": {
+   "cells.laws.channels.kv1p5_mh": "channel",
+   "cells.laws.channels.kir2p1_mh2": "channel",
+   "cells.laws.channels.nav1p2_m3h_regularized": "channel",
+   "cells.laws.channels.kleak_always_open": "channel",
+   "cells.laws.channels.naleak_always_open": "channel",
+   "cells.laws.channels.kv1p1_mh2": "channel",
+   "cells.laws.channels.kv1p2_mh": "channel",
+   "cells.laws.channels.kv1p3_mh": "channel",
+   "cells.laws.channels.kv1p4_mh": "channel",
+   "cells.laws.channels.kv1p6_mh": "channel",
+   "cells.laws.channels.clleak_always_open": "channel",
+   "cells.laws.channels.cav1p2_m2h": "channel",
+   "cells.laws.channels.open_channel_block": "channel_block",
+   "cells.laws.junctions.junction_voltage_relaxation": "junction",
+   "cells.laws.junctions.junction_series_gates": "junction",
+   "cells.laws.pumps.nak_atp_mass_action_positive": "cycle",
+   "cells.laws.pumps.ca_atp_mass_action_positive": "cycle",
+   "cells.laws.routes.constant_field": "route",
+   "cells.laws.routes.logmean_electrodiffusion": "route",
+   "cells.laws.routes.logmean_electrodiffusion_forms": "route",
+   "cells.laws.routes.passive_permeation": "route",
+   "cells.laws.routes.inward_rectifier_linear_driving_force": "route",
+   "cells.laws.routes.constant_field_permeation": "route",
+   "cells.laws.transport.proton_leak": "route",
+   "cells.laws.transport.proton_leak_v2": "route",
+   "cells.laws.pumps.atp_transporter": "cycle",
+   "cells.laws.pumps.atp_transporter_v2": "cycle",
+   "cells.laws.pumps.proton_pump": "cycle",
+   "cells.laws.cycles.na_anion_symport_factored": "cycle",
+   "cells.laws.cycles.na2_anion_symport_diagram": "cycle",
+   "cells.laws.cycles.nadh_ubiquinone_proton_cycle": "cycle",
+   "cells.laws.cycles.ubiquinol_cytochrome_c_proton_cycle": "cycle",
+   "cells.laws.cycles.cytochrome_c_oxygen_proton_cycle": "cycle",
+   "cells.laws.cycles.proton_coupled_atp_synthesis_cycle": "cycle",
+   "cells.laws.cycles.electrogenic_nucleotide_exchange": "cycle",
+   "cells.laws.cycles.phosphate_proton_symport": "cycle",
+   "cells.laws.cycles.potassium_proton_exchange": "cycle",
+   "cells.laws.cycles.held_reductant_supply": "cycle",
+   "cells.laws.cycles.adenylate_kinase": "cycle",
+   "cells.laws.cycles.sodium_calcium_exchange_symmetric_barrier": "cycle",
+   "cells.laws.cycles.na_k_2anion_symport_reversible_tanh": "cycle",
+   "cells.laws.cycles.electroneutral_symport_reversible_tanh": "cycle",
+   "cells.laws.reactions.rapid_binding": "binding",
+   "cells.laws.reactions.hill_product_factor": "transfer_factor",
+   "cells.assembly_pool.observables": "assembly_observable",
+   "cells.models.assembly_lineages.exchange": "exchange",
+   "cells.models.assembly_lineages.gard": "rate_factor",
+   "cells.models.assembly_lineages_v2.mass_action": "reaction",
+   "cells.models.assembly_lineages_v2.transition_state": "rate_factor",
+   "cells.models.assembly_lineages_v2.ideal_mixing": "free_energy",
+   "cells.models.assembly_lineages_v2.regular_mixing": "free_energy",
+   "cells.models.assembly_lineages_v2.geometry": "assembly_geometry",
+   "cells.models.assembly_lineages_v2.exchange": "reaction",
+   "cells.models.assembly_lineages_v2.permeation": "reaction",
+   "cells.models.assembly_lineages_v2.lumen": "free_energy",
+   "cells.models.assembly_lineages_v2.pore_nucleation": "assembly_hazard",
+   "cells.models.assembly_lineages_v2.population": "population",
+   "cells.models.assembly_lineages_v2.prescribed_shell": "assembly_geometry",
+   "cells.models.assembly_lineages_v2.shell_permeation": "reaction",
+   "cells.models.assembly_lineages_v2.gate_factor": "rate_factor",
+   "cells.models.assembly_lineages_v2.rate_equations": "assembly_representation"
+  }
+ }
+}

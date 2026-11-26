@@ -1,8 +1,8 @@
-"""passive_constant_field_permeation@1: passive constant-field permeation of a charged species.
+"""cells.route.passive_constant_field_permeation@1: passive constant-field permeation of a charged species.
 
 FR-15 F2, part P2 (the lead's rulings of 19 November 2026); the passive routes kind's charged
 route law beside its neutral one (laws/routes/passive_permeation.py). It is
-proton_constant_field_leak@1's flux (laws/transport/proton_leak.py) at any valence z != 0, read
+cells.route.proton_constant_field_leak@1's flux (laws/transport/proton_leak.py) at any valence z != 0, read
 from the row's amounts at both ends instead of through a closure:
 
     J = A P m [c_out B(x) - c_in B(-x)] / 1e-15   (fmol/s, positive inward),   x = z F V / (R T),
@@ -28,14 +28,26 @@ its sign in an interval of relative width about 1e-33 around reversal), so the b
 RAW_SUM_FACTOR*eps floors, not an exact sign. The neutral law's exact divided-difference booking
 does not apply: the potentials move within the step.
 
-Hosts: membrane patches, where its flux joins the patch's membrane current. Junction hosts wait for
-the @3 owner's answer (whether the field solve's floating-component residual must hold a kind's
-cell-to-cell current, and whether KindRates gains a junction_flux).
+Hosts: membrane patches, where its flux joins the patch's membrane current, and junctions (D310),
+between two cells at the junction voltage V = phi_sender - phi_receiver. The hosting kind takes 2G
+at each cell on a junction (G this law's conductance_S), and refuses, in version 1, a junction that
+joins two capacitor components where one floats: such a component's offset is set by the field
+solve's current balance, which holds @3's own currents, not a kind's (the lead's rulings on the @3
+owner's two questions, D310).
 
 Inert (docs/CORE_SEAMS_DESIGN.md §8.2): the module declares its one law as LAW and registers
 nothing at import; its registration on the passive routes kind is the kinds owner's.
 
 Pure functions in the xp style of processes/; nothing floors or clips.
+
+**Scope (D351, D355).** The law has one permeability at every voltage. Two indications go against
+carrying one across voltage: red-cell chloride and a valinomycin bilayer miss in opposite
+directions. Neither is confirmed.
+
+**A comparison rule (D344).** Raising outside K depolarizes squid axons, intact and perfused, and
+the law reproduces the direction. Quantitative comparisons use preparation-specific permeability
+ratios: its +12.63 mV against the measured +2.0 mV carried the intact axons' ratios to perfused
+axons, whose own were never measured.
 """
 
 import jax.numpy as jnp
@@ -50,7 +62,7 @@ from cells.laws.electrochemistry import (
 )
 from cells.modules import Citation, RouteLaw
 
-LAW_ID = "passive_constant_field_permeation@1"
+LAW_ID = "cells.route.passive_constant_field_permeation@1"
 
 
 def flux_fmol_s(
@@ -140,12 +152,12 @@ def material_slope_per_s(
 # named from memory, not read (CORE_SEAMS §15).
 LAW = RouteLaw(
     LAW_ID,
-    ("membrane",),
+    ("membrane", "junction"),
     "the Goldman-Hodgkin-Katz constant-field flux of a charged species at its valence, read from "
     "its amounts at both ends (laws/routes/constant_field_permeation.py)",
     stage_term="conductance_S",  # Its max-side slope in the stage rule: CORE_SEAMS §18.
     material_term="material_slope_per_s",  # Its material slope per stage (FR-15's trace rows).
-    host="cells.passive_routes@1",
+    host="cells.kind.passive_routes@1",
     provenance="cited",
     source=Citation(
         "the Goldman-Hodgkin-Katz constant-field flux (D. E. Goldman, 1943; A. L. Hodgkin and "

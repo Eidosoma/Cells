@@ -1,6 +1,6 @@
 """The step's control reaches a kind's book (docs/INNER_MODEL_V4_DESIGN.md §7.4 (l) 5).
 
-tests/kind_fixtures.py's `tests.relaxation@1` is FR-5's damage law in miniature
+tests/kind_fixtures.py's `tests.kind.relaxation@1` is FR-5's damage law in miniature
 (laws/transport/patch_damage.py): per cell, dd/dt = k_inj u_inj(t) (1 - d) - k_res u_res(t) d, with u_inj
 and u_res piecewise-constant schedules. Its book replaces d with the law's exact step at the step's
 held control. With the schedules' breakpoints on the step grid (an off-nominal one inserted), d

@@ -70,6 +70,11 @@ subprocesses, and crossrev's set actions run through crossrev_sets.py's commands
   qualify-subsets RECORD OUT --tier3 FILE ...
       The cache qualification's tier-3 stage subset of RECORD, rows only (cache_qualify.sh):
       OUT/tier3-tiers.json.
+  jax-entries DIR [DIR ...]
+      The cold check (D321 R2): JAX persistent compilation cache entries anywhere under the DIRs,
+      by their file name (a program's name, a 64-hex key, "-cache"). Exit 1 when any is found. The
+      gates disable the cache (JAX_ENABLE_COMPILATION_CACHE=false), so an entry under a gate's
+      outputs means something turned it back on and the gate's seconds are no longer cold.
   cache-verdict OUT
       The cache qualification's verdict on its arms (cache_qualify.sh), into OUT/verdict.json:
       every criterion, each listed with what failed, and notes (the cross-revision hit rate, the
@@ -104,13 +109,14 @@ def xr():
 # 18-19 November, each after about 25 minutes of tiers.
 GUARDS = (
     "tests/unit/test_species_sum_sites.py",
-    "tests/unit/test_legacy_entry.py",
     "tests/unit/test_engine_betse_boundary.py",
     "tests/unit/test_j2_bright_line.py",
     "tests/unit/test_continuity_bypass.py",
     "tests/unit/test_judge_imports.py",
     "tests/unit/test_law_modules.py",
-    "tests/unit/test_source_profile_boundary.py",
+    # The modules surface (built-in kinds import engine code only through cells.modules): about 3 s,
+    # added 23 November 2026 after FR-15 F2's gate met its refusal only at tiers, about 50 minutes in.
+    "tests/unit/test_modules_surface.py",
 )
 NEW_TIER = "9"  # The subset's key for test files the head's record has no row for.
 EMPTY_PATCH = hashlib.sha256(b"").hexdigest()
@@ -720,6 +726,18 @@ def stack_build(plan, repo, tree, out, python):
     return dict(ok=True, main=main, top=prev, trials=trials)
 
 
+JAX_ENTRY = re.compile(r"^.+-[0-9a-f]{64}-cache$")  # jax/_src/cache_key.get + lru_cache's suffix
+
+
+def jax_entries(dirs):
+    """Every JAX persistent compilation cache entry under DIRS (the cold check, D321 R2)."""
+    found = []
+    for top in dirs:
+        for folder, _, names in os.walk(top):
+            found += [os.path.join(folder, n) for n in names if JAX_ENTRY.match(n)]
+    return sorted(found)
+
+
 def stack_failure(gate_out):
     """The stage a refused gate stopped at, and its failing items: test files, crossrev sets or
     G1 worlds; preflight and IDs are one item each. An unknown stop (G1's plan or merge, a shard's
@@ -1236,6 +1254,8 @@ def main(argv=None):
     s.add_argument("--tier3", nargs="+", required=True)
     s = sub.add_parser("cache-verdict")
     s.add_argument("out")
+    s = sub.add_parser("jax-entries")
+    s.add_argument("dirs", nargs="+")
     a = p.parse_args(argv)
     step = a.step
     if step == "preflight":
@@ -1361,6 +1381,10 @@ def main(argv=None):
         failed = [k for k, v in doc["checks"].items() if not v]
         print(json.dumps({"passed": doc["passed"], "failed": failed, "notes": doc["notes"]})[:2000])
         return 0 if doc["passed"] else 1
+    if step == "jax-entries":
+        found = jax_entries(a.dirs)
+        print(json.dumps({"jax_cache_entries": len(found), "first": found[:3]}))
+        return 1 if found else 0
     return 2
 
 

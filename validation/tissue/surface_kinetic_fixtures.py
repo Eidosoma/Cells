@@ -8,11 +8,11 @@ ARMS = passive.ARMS
 def definition(arm="open", *, backend="cpu", padded=True):
     raw = passive.definition(arm, backend=backend, padded=padded)
     m, e = raw["model"], raw["experiment"]
-    m["id"], m["temperature_K"] = "resolved_tissue@2", 298.15
+    m["id"], m["temperature_K"] = "cells.model.resolved_tissue@2", 298.15
     for i, p in enumerate(m["membranes"]):
         p["pump"] = dict(
             id=f"pump_{i}",
-            law="nak_atp_mass_action_positive@1",
+            law="cells.cycle.nak_atp_mass_action_positive@1",
             roles=dict(sodium="Na", potassium="K"),
             stoichiometry=dict(Na=-3, K=2),
             capacity_fmol_per_s=0.02 + 0.005 * i,
@@ -20,7 +20,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
             km_k_mM=0.2,
             km_atp_mM=0.5,
             metabolism=dict(
-                kind="maintained_chemical_reservoirs@1",
+                kind="cells.fuel_kind.maintained_chemical_reservoirs@1",
                 atp_mM=1.5,
                 adp_mM=0.1,
                 pi_mM=0.1,
@@ -29,7 +29,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
         )
     for p in m["junctions"]:
         p["gate"] = dict(
-            law="junction_voltage_relaxation@1",
+            law="cells.junction.junction_voltage_relaxation@1",
             threshold_voltage_V=0.015,
             minimum_open_fraction=0.1,
             initial_gate=0.6,
@@ -39,7 +39,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
             id=f"channel_{i}",
             membrane_id=f"membrane_{i}",
             species_id="K",
-            kinetic_law="kv1p5_mh@1",
+            kinetic_law="cells.channel.kv1p5_mh@1",
             max_permeability_m_per_s=3e-10,
             abundance=0.5 + 0.1 * i,
             initial_gate=[0.2 + 0.05 * i, 0.7],

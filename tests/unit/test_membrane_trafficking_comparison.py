@@ -4,7 +4,7 @@
 Every row, criterion and plant here is the registered one (validation/membrane_trafficking/
 references/interface/comparison_bands.json). Each is evaluated through
 validation/tissue/membrane_trafficking_comparison.py, which reads only the interface files and
-drives scheduled_membrane_trafficking@1 on the registered drives, in worlds built from the engine's
+drives cells.operator.scheduled_membrane_trafficking@1 on the registered drives, in worlds built from the engine's
 own fixtures.
 - A row passes when |engine - reference| <= its band, the file's own; no tolerance of this lane's
   enters.

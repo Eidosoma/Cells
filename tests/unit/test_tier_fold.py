@@ -10,6 +10,8 @@
   row stays as it stands, in its order (main's out-of-order rows included); the measurements'
   sources and provenance are appended once each. Refused, with nothing written, when a row would
   be dropped, when a measured file is not a test file, or when a measured row failed.
+- fold and tiers take only a measurement marked cold (D321 R1): an unmarked or warm one is refused,
+  and an unmarked one from before the marker existed passes only with --pre-marker-ok.
 Host only: the script is loaded from its path and no test file is run.
 """
 
@@ -64,8 +66,12 @@ def record(rows1, rows2=(), rows3=()):
                 tiers={"1": list(rows1), "2": list(rows2), "3": list(rows3)}, note="kept")
 
 
-def measured(*rows, revision="b"):
-    return dict(provenance={"git_revision": revision}, files=list(rows))
+def measured(*rows, revision="b", mark="disabled"):
+    """measure's record of ROWS; MARK is its compilation cache marker (None: made before it)."""
+    doc = dict(provenance={"git_revision": revision}, files=list(rows), cap_seconds=90.0)
+    if mark is not None:
+        doc["jax_compilation_cache"] = mark
+    return doc
 
 
 def files_of(*records):
@@ -158,6 +164,36 @@ def test_the_fold_command_writes_nothing_when_refused(tool, tmp_path, monkeypatc
     tool.main(["fold", "--record", str(tmp_path / "record.json"), "--measured",
                str(tmp_path / "m.json"), "--out", str(out)])
     assert json.loads(out.read_text())["tiers"]["1"][0]["counts"] == {"passed": 3}
+
+
+@pytest.mark.parametrize("mark, utc, flag, refused", [
+    ("disabled", None, False, None),  # measure's cold marker: taken.
+    (None, None, False, "no cold marker"),  # No marker: its seconds may be warm.
+    ("/mnt/x/jax-cache", None, False, "with the compilation cache"),  # A warm run's record.
+    (None, "2026-11-20T10:00:00+00:00", True, None),  # Unmarked from before the marker, as allowed.
+    (None, "2026-12-01T10:00:00+00:00", True, "no cold marker"),  # Unmarked after it: refused.
+    ("/mnt/x/jax-cache", "2026-11-20T10:00:00+00:00", True, "with the compilation cache"),
+])
+def test_fold_and_tiers_take_only_a_measurement_marked_cold(tool, tmp_path, monkeypatch, mark,
+                                                            utc, flag, refused):
+    """D321 R1: tier membership is decided by seconds, so only a cold measurement places a row."""
+    (tmp_path / "record.json").write_text(json.dumps(record([row("a", 1)])))
+    doc = measured({**row("a", 2, passed=3), "timed_out": False}, mark=mark)
+    if utc:
+        doc["provenance"]["utc"] = utc
+    (tmp_path / "m.json").write_text(json.dumps(doc))
+    monkeypatch.setattr(tool, "_test_files", lambda: [f("a")])
+    for command in (["fold", "--record", str(tmp_path / "record.json")], ["tiers"]):
+        out = tmp_path / f"{command[0]}.json"
+        argv = [*command, "--measured", str(tmp_path / "m.json"), "--out", str(out)]
+        argv += ["--pre-marker-ok"] if flag else []
+        if refused:
+            with pytest.raises(SystemExit, match=refused):
+                tool.main(argv)
+            assert not out.exists()
+        else:
+            tool.main(argv)
+            assert json.loads(out.read_text())["tiers"]["1"][0]["counts"] == {"passed": 3}
 
 
 # ----------------------------------------------------------------------------------- merge

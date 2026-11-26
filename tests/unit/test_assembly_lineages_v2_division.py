@@ -1,4 +1,4 @@
-"""OL3 milestone 1: single-lineage division at shear events in cells.assembly_lineages@2
+"""OL3 milestone 1: single-lineage division at shear events in cells.model.assembly_lineages@2
 (docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §2.1–§2.5; the design note's §0.2c rules 9–13, §0.2d items
 6, 7, 9 and 10, §0.2e).
 

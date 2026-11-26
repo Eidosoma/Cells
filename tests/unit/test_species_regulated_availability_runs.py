@@ -1,4 +1,4 @@
-"""species_regulated_availability@1: a compiled run of every part.
+"""cells.operator.species_regulated_availability@1: a compiled run of every part.
 
 docs/INVENTORY_COUPLING_DESIGN.md §1. 20 steps of the seven-cell heredity sheet with D150's turnover
 clearing R in cell_0 (a moving, impermeant source read at once: a Hill inhibition on junction_0's

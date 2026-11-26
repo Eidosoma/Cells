@@ -1,4 +1,4 @@
-"""rosenbrock_rodas4_dense@1 (OL6 S1; docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md §6.1).
+"""cells.solver.rosenbrock_rodas4_dense@1 (OL6 S1; docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md §6.1).
 
 Five checks, each on a closed form, so a wrong coefficient fails one: the solution's order (4), the
 dense output's order (3), a linear invariant kept to rounding, L-stability on a stiff linear system,

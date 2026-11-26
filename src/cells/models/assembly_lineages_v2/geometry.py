@@ -1,4 +1,4 @@
-"""cells.bilayer_geometry@1: a closed bilayer vesicle's geometry from the counts (OL2).
+"""cells.assembly_geometry.bilayer_geometry@1: a closed bilayer vesicle's geometry from the counts (OL2).
 
 The rulings are the design note's §0.2c rules 4, 5 and 8 and §0.2d items 1 and 2
 (docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1.2, §1.5).
@@ -27,11 +27,17 @@ and the founder is at or above it.
 living vesicle (§0.2c rule 8): a constant here, so it enters no rate. It enters F's value (the
 ledger), and later a division's and a lysis's ΔF.
 
-Data, per world (`geometry`): {"law": "cells.bilayer_geometry@1", "area_quantum_m2": q,
+Data, per world (`geometry`): {"law": "cells.assembly_geometry.bilayer_geometry@1", "area_quantum_m2": q,
 "area_per_leaflet": {species: {"quanta": k, "sourced_m2": a, "source": "..."}},
 "vesicle_floor": {"quanta": W_floor, "provenance": "unsourced"},
 "closure_cost_kT": {"value": C, "provenance": "unsourced"}}. σ_max enters with the osmotic lumen
 (lumen_volume: osmotic), which this version refuses.
+
+**Scope (D340).** A footprint is declared for one temperature: each membrane species' area per
+molecule is a declaration, and the engine does not vary it with temperature. Two independent
+methods find fluid POPC expanding on warming (scattering +4.7% over 30 to 50 °C, solid-state NMR
++16.7% over 28 to 48 °C), and they disagree on the expansion's size. So a world compared across
+temperatures declares the footprint measured at each temperature.
 """
 
 import math
@@ -265,7 +271,7 @@ FORMULAS = {
 
 LAW = law_registry.BUILTIN.register(
     GeometryLaw(
-        "cells.bilayer_geometry@1",
+        "cells.assembly_geometry.bilayer_geometry@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

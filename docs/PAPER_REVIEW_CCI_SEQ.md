@@ -1,5 +1,8 @@
 **CCI-seq: relevance to Cells — reviewed 8 October 2026**
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 Tang, L., Tian, K., Fu, X. et al., *Resolving cell–cell interaction networks and
 their molecular logic in complex tissues*, Nature Methods, published
 5 October 2026. [Paper and methods](https://www.nature.com/articles/s41592-026-03237-0),

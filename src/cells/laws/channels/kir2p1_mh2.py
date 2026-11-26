@@ -1,11 +1,11 @@
-"""kir2p1_mh2@1: Kir2.1-type inward-rectifier potassium channel gating, the law and its
+"""cells.channel.kir2p1_mh2@1: Kir2.1-type inward-rectifier potassium channel gating, the law and its
 declaration on @3.
 
 Two gates m and h relax toward logistic targets of the membrane voltage V (volts) with
 voltage-dependent time constants (seconds); the population is open in proportion to (m h) h.
 The coefficients and the m h² opening correspond to BETSE v1.5.0's Kir2p1 channel, as
 docs/TISSUE_RETURN_CURRENT.md records; this is an independently expressed continuous law, not the
-source's discrete clock or a new fit to measurements. Channel code 1 of resolved_pump_tissue@3
+source's discrete clock or a new fit to measurements. Channel code 1 of cells.model.resolved_pump_tissue@3
 (cells.channel_law@1), registered by the law registry's loader (docs/CORE_SEAMS_DESIGN.md §8.2).
 Moved from laws/channels/potassium_channels.py, which re-imports these names.
 """
@@ -15,8 +15,8 @@ import jax.numpy as jnp
 from cells.laws.channels.kv1p5_mh import VOLTAGE_DOMAIN_V  # @3's channel domain, -120..60 mV.
 from cells.modules import ChannelLaw
 
-LAW_ID = "kir2p1_mh2@1"
-RK4_STEP_S = 25e-6  # The resolved channel family's qualified RK4 bound (surface_kinetic).
+LAW_ID = "cells.channel.kir2p1_mh2@1"
+RK4_STEP_S = 25e-6  # The resolved channel family's qualified RK4 bound.
 
 
 def kir2p1_kinetics(voltage, *, xp=jnp):
@@ -53,5 +53,5 @@ LAW = ChannelLaw(
     RK4_STEP_S,
     kir2p1_kinetics,
     opening,
-    host="cells.resolved_pump_tissue@3",
+    host="cells.model.resolved_pump_tissue@3",
 )

@@ -35,7 +35,6 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 
 READ = "read-only comparison or audit, or a writer of its own output: nothing continues"
-PAIRED = "its own paired format with identity checks; the numeric part goes through the loaders"
 DIAGNOSTIC = (
     "rebuilds and executes outside the loaders as a diagnostic; no output is a continuation "
     "of the run (its rule (b) record of the snapshot digest and both identities is the lead's "
@@ -57,47 +56,23 @@ PROBE = (
     "under S0 and S1, keeps every other loader check, and never continues a run"
 )
 EXEMPT = {
-    # Read-only comparisons, audits and writers of their own output (22).
-    "scripts/audit_spatial_extracellular_build.py": READ,
-    "scripts/spatial_extracellular_production_audit.py": READ,
-    "scripts/verify_windows_build.py": READ
-    + " (CORE-005a: a baseline trace row as an explicit test fixture, checked against "
-    "load_snapshot restores)",
+    # Read-only comparisons, audits and writers of their own output (8).
     "validation/assembly/compare_throughput.py": READ,
-    "validation/betse/channel_feedback_audit/feedback_audit_cells.py": READ,
-    "validation/betse/channel_feedback_audit/feedback_audit_context.py": READ,
-    "validation/betse/channel_history_audit/history_audit_cells.py": READ,
-    "validation/betse/channel_history_pilot/preparation_review.py": READ,
-    "validation/betse/channel_release_audit/release_audit_cells.py": READ,
-    "validation/betse/channel_release_audit/release_audit_context.py": READ,
-    "validation/betse/channel_release_pilot/timed_cells_check.py": READ,
-    "validation/betse/kinetic_family_audit/family_audit.py": READ,
-    "validation/betse/live_recording/matched_windows.py": READ,
-    "validation/betse/live_recording_audit/cells_review.py": READ,
-    "validation/betse/pump_pilot_diagnosis/diagnose.py": READ,
     "validation/ensemble/jupiter_check.py": READ,
-    "validation/ensemble/parallel_cluster.py": READ,
-    "validation/ensemble/profile_cluster.py": READ,
-    "validation/ensemble/spatial_matrix.py": READ,
-    "validation/ensemble/tile_benchmark.py": READ,
-    "validation/tissue/open_calcium_trajectory_compare.py": READ,
-    "validation/tissue/open_calcium_trajectory_production.py": READ + " (its own full-state.npz)",
-    # Own paired formats with identity checks (5).
-    "validation/betse/physiology/physiology_boundary_voltage_transition_io.py": PAIRED,
-    "validation/betse/physiology/physiology_checkpoint.py": PAIRED,
-    "validation/betse/physiology/physiology_protein_block_calendar_io.py": PAIRED,
-    "validation/betse/physiology/physiology_protein_checkpoint.py": PAIRED,
-    "validation/betse/physiology/physiology_protein_loop_io.py": PAIRED,
+    "validation/ensemble_reexpression/judge/legacy.py": READ,
+    "validation/ensemble_reexpression/rehearsal/legacy_arrays.py": READ,
+    "validation/ensemble_reexpression/rehearsal/reference.py": READ,
+    "validation/ensemble_reexpression/rehearsal_part2/legacy_arrays2.py": READ,
+    "validation/ensemble_reexpression/rehearsal_part2/reference2.py": READ,
+    "validation/ensemble_reexpression/table.py": READ,
     # Rebuild and execute outside the loaders, as diagnostics (2).
     "scripts/profile_dispatch.py": DIAGNOSTIC + " (L4 timing on held states, other XLA flags)",
     "validation/tissue/field_floor_held.py": DIAGNOSTIC
     + " (--state: version 3 on version-2 states, a deliberate case-3 diagnostic)",
     # Imports into a new definition, and driver-owned resumes.
     "validation/tissue/heredity_turnover_literature.py": IMPORT
-    + " (start_state: sheet70 states into resolved_pump_replacement@1, E07-v1's start; "
+    + " (start_state: sheet70 states into cells.model.resolved_pump_replacement@1, E07-v1's start; "
     "they predate the D148 ledger fix); also " + DRIVER + " (checkpoint.npz)",
-    "validation/tissue/open_calcium_bath_trajectory_production.py": DRIVER
-    + " (its last-state.npz handoff)",
     # A registered driver and a development tool (section 7's table).
     "validation/tissue/e07_v1_run.py": REGISTERED_DRIVER
     + " (E07-v1-B, validation/tissue/e07_v1_protocol.json: checkpoint.npz through the "
@@ -105,7 +80,7 @@ EXEMPT = {
     "validation/division/static_cleft_egg_steps.py": DEVELOPMENT_TOOL
     + " (S0b step 3's step study: start_state takes R-full's J1 state from its record.json)",
     "validation/tissue/excitable_import.py": DEVELOPMENT_TOOL
-    + " (Track E M1, D170 ruling 5: start_state takes one world's resolved_pump_tissue@3 "
+    + " (Track E M1, D170 ruling 5: start_state takes one world's cells.model.resolved_pump_tissue@3 "
     "checkpoint into a conduction assay's definition; its import record names the source "
     "manifest's digest and identities)",
     "validation/long_duration/rung0.py": DEVELOPMENT_TOOL
@@ -117,13 +92,13 @@ EXEMPT = {
     "stage 0's R3 state at each window's start from its kept rows.npz into H2's declared initial "
     "values; each run checks the file's sha256 against the registered digest and records it)",
     # Same-process restart and independent references.
-    "validation/betse/fresh_rerun/workers.py": SAME
-    + " (restart.npz written and read in one process)",
-    "validation/tissue/open_calcium_bath_trajectory_oracle.py": SAME + " (the oracle's own state)",
     "validation/mitochondria/references_r2/steady.py": SAME
     + " (R2, MT-1b's code-blind reference: start_state solves the anchored start state with R2's"
     " own solver from a freshly settled state; it reads no saved Cells state and runs no Cells "
     "engine)",
+    "validation/gap_junction_tissue/references/neither_reference.py": SAME
+    + " (GJ-N1's code-blind references: start_state lays out stage 1's own steady states over the "
+    "network; it reads no saved Cells state and runs no Cells engine)",
     # The probe itself.
     "validation/continuity/probe.py": PROBE,
 }

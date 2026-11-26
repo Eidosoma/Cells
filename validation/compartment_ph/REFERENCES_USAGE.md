@@ -563,7 +563,7 @@ ctl = fr.integrate(fr.acceptance_world(off_windows=()), 900.0, record=ts)  # m =
 ## The laws
 
 - **The regeneration reaction** at c: D + ADP + Pi ⇌ P + ATP, by D152's
-  `ideal_detailed_balance_mass_action@1`:
+  `cells.species_reaction.ideal_detailed_balance_mass_action@1`:
 
       v = m(t) V_c c° k_f [a_D a_ADP a_Pi − e^(Δ_rG'°_reg/RT) a_P a_ATP],   a = c/c°
 

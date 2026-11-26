@@ -1,4 +1,4 @@
-"""Compiled runs of local_species_reactions@1 (D152 version 1, milestone 2; design §4.5, §6.5, §11).
+"""Compiled runs of cells.operator.local_species_reactions@1 (D152 version 1, milestone 2; design §4.5, §6.5, §11).
 
 The species-only worlds of validation/tissue/species_reactions_fixtures, through the runner, the
 composite's compiled step and its host and device checks:
@@ -113,14 +113,22 @@ def test_every_unused_branch_and_padded_entry_stays_finite_in_jax():
         *jitted._asdict().items(),
     ):
         assert np.all(np.isfinite(np.asarray(value, dtype=float))), name
+    # The operator evaluates its declared factors only: a zero K planted in the padding is never
+    # read (the terms are unchanged, bit for bit); planted at the declared factors it raises.
     kind = np.asarray(p.reaction_factor_kind)
-    planted = p._replace(
-        reaction_factor_half_saturation_mM=np.where(
-            kind == 0, 0.0, p.reaction_factor_half_saturation_mM
-        )
-    )
+    assert (kind == 0).any() and (kind > 0).any()
+
+    def planted(where):
+        k = np.where(where, 0.0, p.reaction_factor_half_saturation_mM)
+        return p._replace(reaction_factor_half_saturation_mM=k)
+
+    with jax.debug_nans(True), jax.debug_infs(True):
+        padded_terms = sr.half_step_terms(state, m, 1e-3, planted(kind == 0), xp=jnp)
+    for name in sr.Step._fields:
+        a, b = (np.asarray(getattr(t, name), dtype=float) for t in (terms, padded_terms))
+        assert a.tobytes() == b.tobytes(), name
     with jax.debug_nans(True), jax.debug_infs(True), pytest.raises(FloatingPointError):
-        sr.half_step_terms(state, m, 1e-3, planted, xp=jnp)
+        sr.half_step_terms(state, m, 1e-3, planted(kind > 0), xp=jnp)
 
 
 # ------------------------------------------------------------------ the stage condition

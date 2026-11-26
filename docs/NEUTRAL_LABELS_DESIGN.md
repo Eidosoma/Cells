@@ -526,3 +526,84 @@ and schedule, so a schedule can no longer disagree with the events (operators/sp
   nothing (fail-closed; a batch of one runs).
 - **The gene unit's check** compares a release's two fate rows' declared labels. Each fate row
   should declare the same producers, so their derived lists agree.
+
+## 13. Liquid exchanges (FR-44, D327)
+
+**What it admits:** the label owner beside the compartment wash (`scheduled_compartment_wash@1`),
+in either order.
+- **Before FR-44 each refused the other.** The owner refused an event that writes amounts without
+  reporting them. The wash refused the owner, which follows labelled material only through
+  reported moves.
+- **Both refusals are lifted, each with a check:**
+  - The wash reports each exchange.
+  - The owner is shown local to the wash, since it moves no amount.
+
+**The report** (`operators/contract.py`). An exchanging event's `event` with `labels=rows` returns
+`(state, valid, LiquidExchange)`: removed and supplied, each [labelled species, outside node] in
+fmol.
+- **They are the wash's own per-event level records** (`wash_last_sample_fmol`,
+  `wash_last_supply_fmol`) at the labelled rows, masked by the nodes due in this step.
+  - A cumulative record's gain would be inexact.
+  - At f = 1 after an earlier wash, the kept part n − (fl(c + n) − c) is nonzero in about half
+    of random cases and negative in a quarter (the design's probe).
+  - A row plants this on two concrete cases.
+- **The state and validity are the unlabelled call's,** bit for bit. The report only reads the
+  records.
+- **The axis is the outside nodes,** the record's. An exchange of a cell's own liquid cannot be
+  expressed in version 1 (the coordinator's approval, 24 November 2026). The kernel itself is
+  axis-free.
+
+**The kind.** Each labels-taking event has one report kind (`LABEL_EVENT`, `contract.label_event`):
+- "replaced", replacement@1's, from `EVENT_REPLACES`;
+- "emptied", a pool reporter's, from `LABEL_POOLS`;
+- "exchanged", declared by the wash.
+
+The composite passes the kind to the owner, which reads the report by it, never by the report's
+shape. A labels-taking event with no kind, or with one that its declarations contradict, is refused
+by `contract.label_event_error`:
+- at registration, by `check_declarations`;
+- in a composition, by the owner.
+
+**The map** (`numerics/label_shares.exchange`). With n the row's amount just before the event, r
+the sample and a the supply, each label's material after is (n − r) s_k + a [k = 0]. The shares
+are that over its sum.
+- **The sample is well mixed,** so it carries the node's shares: every label loses the fraction f.
+- **The buffer carries no label and joins the base,** even while a window is open (D327).
+  - A buffer is not an arrival.
+  - A replaced slot differs: its newcomer material takes the label in force.
+- **The map is exact in the amounts it is given:**
+  - a zero share stays 0;
+  - a base-only row stays (1, 0, …);
+  - at f = 1 every other share is exactly 0, since r = fl(1.0 n) = n.
+- **A labelled ion keeps its amount,** since its buffer is the node's own composition. Its shares
+  still become (1 − f) s + f at the base.
+- **Labels carry no free energy,** so the energy ledger is the unlabelled run's (option A, D289).
+
+**The record** `label_outside_removed_fmol` [labelled species, label, outside node] holds what left
+at each exchange: the sample times the shares just before it, cumulative from t = 0.
+- It is zero-size without an exchanging event (`exchanging`), so every other labelled world keeps
+  its fields (D148 case 2).
+- `same_physics`'s exact set gains it (D327).
+- Its domain check (finite, ≥ 0), its view set and its summary follow erratum E's records.
+
+**The books.** Where only the wash moves a labelled species at a node, each label's material there,
+plus its record, less the wash's supplied record at the base, equals its start to rounding. The
+twin row checks this on every row.
+
+**What stays refused:**
+- **A path that moves a neutral species across a washed node's surface:** the wash's own
+  refusals (D263).
+- **Site populations beside labels:** `site_occupancy@1` writes amounts without reporting them.
+  Admission by species (D327's step 3) lifts this for unlabelled rows.
+- **A compartment beside the wash:** the compartments' admitted list refuses it until FR-49's wash
+  narrowing. FR-49's C1 world, which is also the inherited three-way composition, is a refusal
+  row.
+
+**Tests (D224):**
+
+| File | Rows |
+| --- | --- |
+| `test_neutral_arrival_labels.py` (NumPy) | The map on six rows, with two plants failing; a wash and a replacement in the composite's event stage, in both orders; turnover's clearance at a washed node keeping the diluted shares; the report kinds on planted declarations; `same_physics`'s set |
+| `test_wash_schedule.py` (NumPy) | Either order parses; the labelled event's report, in NumPy and compiled; a whole wash after an earlier one, with plant 5 failing on its two cases; a labelled gene-unit export and a labelled exchange route at the washed node refused, each parsing beside a wash of another node; FR-49's C1 world refused |
+| `test_neutral_labels_events.py` (compiled) | The twins: five washes, three of them at 3/7 (D266's condition); every physical record bit for bit; the identities, the records and the books on every row |
+| `test_wash_schedule_resume.py` (compiled) | The resume across a wash, at the wash row through a snapshot and one step after, with the redo and skip plants |

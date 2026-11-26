@@ -1,7 +1,7 @@
-"""Instantaneous legacy cagPotassium equation with an explicit free-Ca input.
+"""Instantaneous cagPotassium equation with an explicit free-Ca input.
 
-The source is a legacy function with no call site found in the pinned tree,
-not a current-runtime class or BK/SK fit. Retain its literal numeric-mM scale.
+The source is a function with no call site found in the pinned tree, not a
+current-runtime class or BK/SK fit. Retain its literal numeric-mM scale.
 No gating state, calcium consumption, ionic flux or invented relaxation clock.
 """
 
@@ -11,7 +11,7 @@ import numpy as np
 from cells.laws.channels.voltage_gates import VOLTAGE_DOMAIN_V
 from cells.laws.electrochemistry import F, R
 
-LAW_ID = "cagpotassium_numeric_mM_scale@1"
+LAW_ID = "cells.channel.cagpotassium_numeric_mM_scale@1"
 LAW_CODE = 39
 PAD_CODE = -1
 LAW_CODES = {LAW_ID: LAW_CODE}

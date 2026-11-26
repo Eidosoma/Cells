@@ -1,4 +1,4 @@
-"""na_anion_symport_factored@1 (laws/cycles/na_anion_symport_factored.py; D228 item 1) on the
+"""cells.cycle.na_anion_symport_factored@1 (laws/cycles/na_anion_symport_factored.py; D228 item 1) on the
 cycle kind's general layout: a fuel-free, electrogenic import of n Na+ and one monovalent anion.
 
 Each claim with its plant (D187), on this file's own world (heredity cell D facing its held bath,

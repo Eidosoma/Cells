@@ -1,11 +1,11 @@
 """Tier-2 test: exchange's current-area read (D191) compiled, beside membrane state (FR-7 item 3).
 
 The only compiled coverage of D191's first production current-value read at stage split
-(scheduled_species_exchange@1 reading membrane_area through the composite's reader view; the lead's
+(cells.operator.scheduled_species_exchange@1 reading membrane_area through the composite's reader view; the lead's
 rulings of 20 November 2026). The host-only checks are in test_cell_owned_compartments.py (the
 viewed half-step bitwise the declared-area one, and a doubled area doubling the rate constant); this
 file runs the traced program: FR-7's U2 world in miniature (validation/fr7/unit_turnover_fixtures:
-the unit producer on kir_0, species_regulated_availability@2 routing a template onto its assembly
+the unit producer on kir_0, cells.operator.species_regulated_availability@2 routing a template onto its assembly
 rate, a compartment of the cell holding template, and an exchange import releasing it), 300 steps
 of 1 ms through the windowed runner. Every step is checked by the runner; exchange is the
 composition's one view reader; and the compartment's template follows n0 exp(-kappa t), which the
@@ -41,7 +41,9 @@ def world():
 def test_the_compiled_import_reads_the_area_through_the_view():
     spec = parse_spec(world())
     model = get_model(spec.model)
-    assert [op.LAW_ID for op in model.view_readers] == ["scheduled_species_exchange@1"]
+    assert [op.LAW_ID for op in model.view_readers] == [
+        "cells.operator.scheduled_species_exchange@1"
+    ]
     _, p = model.initial_values(spec)
     species = list(spec.model.species_ids).index(ufx.TEMPLATE)
     node = [o.id for o in spec.model.extracellular].index(ufx.NODE)

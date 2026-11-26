@@ -7,7 +7,7 @@ time; reference_inputs.json (the stress worlds); designs/membrane_trafficking_re
 file, their code, or their own tests. The engine builds every declared world from its own
 fixtures, the same calls its tests make, and each stress world from that declared world with the
 stress record's nodes and routes laid over it (reference_inputs.json -> stress_worlds). It drives
-scheduled_membrane_trafficking@1 on every registered drive and reads each row's quantity as
+cells.operator.scheduled_membrane_trafficking@1 on every registered drive and reads each row's quantity as
 comparison_bands.json's `checks` define it.
 
 A row passes when |engine - reference| <= band, the band being the file's own. The reference is a
@@ -69,7 +69,6 @@ cycle_R, 34 dA_sum, 34 dC_sum, 33 dG_chem, 33 dU_view, 29 electrode_transfer, 35
 """
 
 import contextlib
-import json
 import math
 from decimal import Decimal, localcontext
 from functools import lru_cache
@@ -84,6 +83,7 @@ from cells.models import pump_composite_adapter as adapter
 from cells.operators import membrane_state
 from cells.operators import membrane_trafficking as trafficking
 from cells.registry.models import get_model
+from validation import id_table
 from validation.tissue import membrane_trafficking_fixtures as fx
 
 REFERENCES = Path(__file__).resolve().parents[1] / "membrane_trafficking" / "references"
@@ -97,11 +97,10 @@ LIE = "the Lie split S_ret(h) S_rec(h)"
 @lru_cache(maxsize=None)
 def interface():
     """(bands, values, inputs): the three interface files read at run time."""
-    read = lambda name: json.loads((REFERENCES / name).read_text())  # noqa: E731
     return (
-        read("interface/comparison_bands.json"),
-        read("designs/membrane_trafficking_reference_values.json"),
-        read("reference_inputs.json"),
+        id_table.load(REFERENCES / "interface/comparison_bands.json"),
+        id_table.load(REFERENCES / "designs/membrane_trafficking_reference_values.json"),
+        id_table.load(REFERENCES / "reference_inputs.json"),
     )
 
 

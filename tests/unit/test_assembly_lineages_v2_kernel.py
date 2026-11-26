@@ -1,4 +1,4 @@
-"""The claims of cells.assembly_lineages@2's kernel (OL1, §7.1), each with planted errors (D187).
+"""The claims of cells.model.assembly_lineages@2's kernel (OL1, §7.1), each with planted errors (D187).
 
 - Every pair keeps local detailed balance: ln a⁺ − ln a⁻ = −ΔF + w on the check's probe and on a
   world's own data (planted: a factor at each direction's own state, a power propensity, a
@@ -187,9 +187,9 @@ def test_the_world_report_is_kept_per_world_capacities_and_states_and_never_when
     for n, miss in enumerate(misses, start=2):
         miss()
         assert len(calls) == n  # each input it reads is in the key
-    power = renamed_mass_action("tests.power_propensity@1", _power)
+    power = renamed_mass_action("tests.reaction.power_propensity@1", _power)
     with scoped(power):
-        refused = with_law(paired(world(catalysis=False)), "tests.power_propensity@1")
+        refused = with_law(paired(world(catalysis=False)), "tests.reaction.power_propensity@1")
         for attempt in (1, 2):
             with pytest.raises(ConfigError, match="fail the identity"):
                 report(refused)
@@ -199,19 +199,23 @@ def test_the_world_report_is_kept_per_world_capacities_and_states_and_never_when
 
 def test_planted_kinetics_fail_the_identity_by_far_more_than_rounding():
     at_state = dataclasses.replace(
-        transition_state.LAW, law_id="tests.at_state_factor@1", log_factor=_at_state
+        transition_state.LAW, law_id="tests.rate_factor.at_state_factor@1", log_factor=_at_state
     )
-    power = renamed_mass_action("tests.power_propensity@1", _power)
-    one_sided = renamed_mass_action("tests.one_sided@1", _one_sided)
+    power = renamed_mass_action("tests.reaction.power_propensity@1", _power)
+    one_sided = renamed_mass_action("tests.reaction.one_sided@1", _one_sided)
     with scoped(at_state, power, one_sided):
         planted = world()
-        planted["rate_factor"]["law"] = "tests.at_state_factor@1"
+        planted["rate_factor"]["law"] = "tests.rate_factor.at_state_factor@1"
         assert worst(spec_of(planted)) > 1e-3
         assert (
-            worst(spec_of(with_law(paired(world(catalysis=False)), "tests.power_propensity@1")))
+            worst(
+                spec_of(
+                    with_law(paired(world(catalysis=False)), "tests.reaction.power_propensity@1")
+                )
+            )
             > 1e-3
         )
-        assert worst(spec_of(with_law(world(catalysis=False), "tests.one_sided@1"))) > 1e-3
+        assert worst(spec_of(with_law(world(catalysis=False), "tests.reaction.one_sided@1"))) > 1e-3
 
 
 # ------------------------------------------------------------------ textbook mass action
@@ -257,7 +261,7 @@ def test_the_reverse_from_F_is_the_products_mass_action():
     k_minus = 0.1 * math.exp(mu["L@pool"] - 2.0)  # μ°(F, solution) = 2.0 in the fixture
     assert minus[r] == pytest.approx(k_minus * 7, rel=1e-13)
     # Planted: a power propensity, n^a for n!/(n − a)!, seen on a step of order two in one species.
-    power = renamed_mass_action("tests.power_propensity@1", _power)
+    power = renamed_mass_action("tests.reaction.power_propensity@1", _power)
     two = paired(world(regular=False, catalysis=False))
     honest = spec_of(two)
     r = [s.id for s in honest.model.world.steps].index("pair_L")
@@ -265,7 +269,7 @@ def test_the_reverse_from_F_is_the_products_mass_action():
     assert plus[r] == pytest.approx(0.7 * 7 * 6 / X_pool, rel=1e-13)  # ff: n (n − 1)
     with scoped(power):
         planted, _ = rates_at(
-            spec_of(with_law(two, "tests.power_propensity@1")), state | {"Q@pool": 0}
+            spec_of(with_law(two, "tests.reaction.power_propensity@1")), state | {"Q@pool": 0}
         )
     assert planted[r] == pytest.approx(0.7 * 7 * 7 / X_pool, rel=1e-13)  # n²: caught
     assert planted[r] != pytest.approx(plus[r], rel=1e-3)
@@ -311,14 +315,14 @@ def closed_world(*, catalysis, law=None):
         "phases": {"membrane": {"species": ["A", "B", "C"]}},
         "steps": [step("iso", {"A": 1}, {"B": 1}, 1.3, phase="membrane"),
                   step("bind", {"A": 1, "B": 1}, {"C": 1}, 0.8, phase="membrane")],
-        "free_energy": [{"law": "cells.ideal_mixing@1"},
-                        {"law": "cells.regular_mixing@1",
+        "free_energy": [{"law": "cells.free_energy.ideal_mixing@1"},
+                        {"law": "cells.free_energy.regular_mixing@1",
                          "chi_kT": [{"pair": ["A", "C"], "chi": 0.7}]}],
         "founder": {"A@membrane": 4, "B@membrane": 2, "C@membrane": 1},
     }  # fmt: skip
     if catalysis:
         out["rate_factor"] = {
-            "law": law or "cells.transition_state_factor@1",
+            "law": law or "cells.rate_factor.transition_state_factor@1",
             "catalysing_phase": "membrane",
             "entries": [{"catalyst": "C", "step": "iso", "ddG_kT": 1.5},
                         {"catalyst": "A", "step": "bind", "ddG_kT": -0.6},
@@ -335,7 +339,7 @@ def contact_world():
     out = closed_world(catalysis=True)
     out["species"], out["phases"] = sp, {"membrane": {"species": ["A", "B", "C"]}}
     out["steps"] = [step("iso", {"A": 1}, {"B": 1}, 1e9, phase="membrane")]
-    out["free_energy"] = [{"law": "cells.ideal_mixing@1"}]
+    out["free_energy"] = [{"law": "cells.free_energy.ideal_mixing@1"}]
     out["founder"] = {"A@membrane": 1, "B@membrane": 0, "C@membrane": 1}
     contacts = (("A", 20.0), ("B", 20.0), ("C", -20.0))
     out["rate_factor"]["entries"] = [
@@ -382,10 +386,10 @@ def test_catalysis_is_kinetic_only_and_a_factor_at_each_direction_is_caught():
     assert stationary_tv(spec_of(closed_world(catalysis=False))) < 1e-10
     assert stationary_tv(spec_of(closed_world(catalysis=True))) < 1e-10
     at_state = dataclasses.replace(
-        transition_state.LAW, law_id="tests.at_state_factor@1", log_factor=_at_state
+        transition_state.LAW, law_id="tests.rate_factor.at_state_factor@1", log_factor=_at_state
     )
     with scoped(at_state):
-        planted = spec_of(closed_world(catalysis=True, law="tests.at_state_factor@1"))
+        planted = spec_of(closed_world(catalysis=True, law="tests.rate_factor.at_state_factor@1"))
         assert stationary_tv(planted) > 1e-3
     # Extreme contacts (the Lean proofs project's finding, 19 November 2026): the pair's only common
     # catalyst is C, so both directions carry e^-20, 2.06 /s at 1e9 /s. The cached form gave 0 to
@@ -442,9 +446,9 @@ def test_the_last_molecule_leaves_at_the_cancelled_form_under_extinct():
     assert rates_at(lone("multinomial", "kept"), {"L@membrane": 1})[1][0] == 0.0
     reversible = rates_at(lone("multinomial", "reversible"), {"L@membrane": 1})[1][0]
     assert reversible == pytest.approx(k_minus, rel=1e-14)  # E(m) = 1 under c = 0
-    literal = renamed_mass_action("tests.literal_last_molecule@1", _literal)
+    literal = renamed_mass_action("tests.reaction.literal_last_molecule@1", _literal)
     with scoped(literal):
-        planted = lone("multinomial_less_one", "extinct", "tests.literal_last_molecule@1")
+        planted = lone("multinomial_less_one", "extinct", "tests.reaction.literal_last_molecule@1")
         assert rates_at(planted, {"L@membrane": 1})[1][0] == 0.0  # the literal zero: an error
     # A run under extinct ends at the extinction (a nearly empty reservoir), its ledger closed.
     leaving = world(measure="multinomial_less_one", last="extinct", regular=False,
@@ -531,7 +535,7 @@ def singular_world(measure, last):
         "species": sp,
         "phases": {"membrane": {"species": ["A", "B", "C", "E"]}},
         "steps": [step("r4", {"A": 1, "B": 1, "E": 1}, {"C": 1, "E": 1}, 2.0, phase="membrane")],
-        "free_energy": [{"law": "cells.ideal_mixing@1"}],
+        "free_energy": [{"law": "cells.free_energy.ideal_mixing@1"}],
         "founder": {"A@membrane": 1, "B@membrane": 1, "C@membrane": 0, "E@membrane": 1},
     } | ({"world_role": "probe"} if measure == "multinomial_less_one" else {})  # fmt: skip
 

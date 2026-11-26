@@ -39,6 +39,7 @@ from pathlib import Path
 
 import numpy as np
 
+from validation import id_table
 from validation.stationary import worlds
 
 SHEET_RADIUS = 6
@@ -536,7 +537,7 @@ def part_offsets(args):
         name = arm.name
         if not name.startswith("donor-fast-k1-") or ".killed" in name:
             continue
-        raw = json.loads((arm / "definition.json").read_text())
+        raw = id_table.load(arm / "definition.json")
         rows[name.removeprefix("donor-fast-k1-")] = dict(
             free_field_offsets=field_solver_choice.free_field_offsets(raw),
             declared=raw["execution"].get("field_solver"),

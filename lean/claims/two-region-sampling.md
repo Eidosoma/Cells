@@ -19,7 +19,7 @@ A finite draw has the chamber’s mean concentration exactly when the starting c
 - [CellsProofs.Tissue.RegionalSampling.representative_iff](../CellsProofs/Tissue/RegionalSampling.lean#L52)
 - [CellsProofs.Tissue.RegionalSampling.enrichment_iff](../CellsProofs/Tissue/RegionalSampling.lean#L61)
 
-Direct proof subject `cells.scheduled_compartment_wash@1`
+Direct proof subject `cells.operator.scheduled_compartment_wash@1`
 
 Proof sources [Cells single-region wash inventory, summed across a finite set](../CellsProofs/Tissue/CompartmentWash.lean#L16) · [Mathlib fraction equality for nonzero denominators, imported for the two-region criterion](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L426-L427)
 
@@ -41,6 +41,8 @@ Uses [A partial wash dilutes free tracer and preserves its inventory](compartmen
 
 **Open.** Collected dye and both post-draw regional amounts in a finite vessel with measured source concentrations and draw volumes.
 
+- [A split from an incompletely mixed source can produce an outlet concentration different from the bulk mean.](../WET_LAB_EVIDENCE.md#pair-uneven-sampling-concentration) · Supported by both studies
+
 **Unit** Fraction of stock dye concentration
 
 ### johnson2006_branch_dye
@@ -52,5 +54,25 @@ Equal rates of 1 g/L Rhodamine dye solution and distilled water fed a rough-wall
 The authors give rounded values for the half-flow case. Those values carry no reported concentration error bar.
 
 At equal outlet flow the two branches measured about 75% and 25% of stock concentration. This supports enrichment in a physical flow system. The regional remainders after a finite draw remain unmeasured. [Dataset manifest](../checks/data/johnson2006_branch_dye.json) · [Comparison verdict](../PROGRESS.md#fr37-regional-sampling)
+
+### tan2004_splitting
+
+Dye and water at a 1:2 volume ratio in a droplet. Splits sampled an incompletely mixed dye gradient. Fig. 5, sequential bifurcations. [Tan et al. (2004)](https://doi.org/10.1039/B403280M)
+
+- **Evidence role** descriptive
+
+The figure gives daughter concentrations. The local volumes taken from different concentration regions and their remaining inventories are unknown.
+
+The three labelled streams were at 70.8%, 61.1% and 55% of stock, all above the fully mixed 33⅓%. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
+
+### stephenson2018_collected_dye
+
+Bromophenol blue in injected and split droplets, with beads concentrated by a magnet and dissolved dye assayed by absorbance in pooled outlets. Figs. 5–6, two-stage device. [Stephenson (2018)](https://doi.org/10.1186/s40486-018-0065-2)
+
+- **Evidence role** descriptive
+
+Bulk outlet concentrations do not supply the source fractions drawn from each part of a droplet.
+
+Collected dye measured 35.5 nM from 500 nM input, or 7.1%. This is a concentration measurement of the dissolved tracer. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

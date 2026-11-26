@@ -11,11 +11,39 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 
 ## Laws
 
+### `cells.assembly_observable@1`
+
+| Page | In one sentence | Status |
+| --- | --- | --- |
+| [`cells.assembly_observable.root_component_has_cycle@1`](cells/laws/assembly_observable.root_component_has_cycle@1.md) | It says whether a molecular assembly has a closed ring of bonds, by comparing how many bonds it has with how many building blocks are joined in it. | Not stated |
+
+### `cells.channel_block_law@1`
+
+| Page | In one sentence | Status |
+| --- | --- | --- |
+| [`cells.channel_block.open_channel_block_weighted_modes@1`](cells/laws/channel_block.open_channel_block_weighted_modes@1.md) | A charged blocker held on one side of the membrane plugs open channels to an extent set by the voltage, lowering the current they carry. | Not stated |
+
 ### `cells.channel_law@1`
 
 | Page | In one sentence | Status |
 | --- | --- | --- |
-| [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) | A potassium channel that opens within milliseconds when the membrane voltage rises, then slowly shuts over seconds, letting potassium out so that the voltage falls back. | Not stated |
+| [`cells.channel.cav1p2_m2h@1`](cells/laws/channel.cav1p2_m2h@1.md) | A calcium channel that opens within milliseconds when the membrane voltage rises and shuts within tens of milliseconds, so that a rise lets in a short pulse of calcium. | Not stated |
+| [`cells.channel.kv1p5_mh@1`](cells/laws/channel.kv1p5_mh@1.md) | A potassium channel that opens within milliseconds when the membrane voltage rises, then slowly shuts over seconds, letting potassium out so that the voltage falls back. | Not stated |
+
+### `cells.cycle_law@1`
+
+| Page | In one sentence | Status |
+| --- | --- | --- |
+| [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md) | A membrane pump that spends one ATP per cycle, from a supply held constant, to move a fixed number of ions or molecules of one kind, charged or not. | Not stated |
+| [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md) | One kind of cation and one kind of anion cross a membrane together, in a declared ratio that carries no net charge, at a rate whose form is manufactured. | Not stated |
+| [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md) | One sodium ion, one potassium ion and two single-charged anions cross a membrane together, carrying no net charge, at a rate whose form is manufactured. | Not stated |
+| [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md) | Three sodium ions cross a membrane one way for each calcium ion that crosses the other way, each exchange carrying one charge, at a rate whose form is synthetic. | Not stated |
+
+### `cells.transfer_factor_law@1`
+
+| Page | In one sentence | Status |
+| --- | --- | --- |
+| [`cells.transfer_factor.hill_product_factor@1`](cells/laws/transfer_factor.hill_product_factor@1.md) | A number between zero and one that rises or falls smoothly with each of the concentrations it reads, by which a transfer's rate is multiplied. | Not stated |
 
 ## Kinds
 
@@ -23,7 +51,8 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 
 | Page | In one sentence | Status |
 | --- | --- | --- |
-| [`cells.transporter@1`](cells/kinds/transporter@1.md) | Membrane pumps that each spend one ATP molecule per cycle to move a fixed number of one kind of molecule or ion across a membrane, even against its gradient. | Not stated |
+| [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md) | A condition at a node reads the concentrations of chosen substances there and gives a number between zero and one that opens or closes routes and channels. | Not stated |
+| [`cells.kind.transporter@1`](cells/kinds/kind.transporter@1.md) | Membrane machines that move a fixed number of ions or molecules across a membrane in each cycle, some of them paid for by ATP, even against a gradient. | Not stated |
 
 ## Operators
 
@@ -31,7 +60,10 @@ how to write one, the [glossary](GLOSSARY.md) defines the words, and
 
 | Page | In one sentence | Status |
 | --- | --- | --- |
-| [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md) | Water crosses each cell membrane toward the side with more dissolved particles, so cells swell or shrink until an elastic back-pressure balances that pull. | Not stated |
+| [`cells.operator.ideal_osmosis_linear_compliance_water@1`](cells/operators/operator.ideal_osmosis_linear_compliance_water@1.md) | Water crosses each cell membrane toward the side with more dissolved particles, so cells swell or shrink until an elastic back-pressure balances that pull. | Not stated |
+| [`cells.operator.integer_unit_population@1`](cells/operators/operator.integer_unit_population@1.md) | A few membrane machines switch on and off one at a time, each working machine moves a dissolved substance across the membrane, and switching depends on how much is there. | Not stated |
+| [`cells.operator.neutral_arrival_labels@1`](cells/operators/operator.neutral_arrival_labels@1.md) | It follows when material of one substance arrived, by keeping each pool's shares of older and newer material, without changing how the substance behaves. | Not stated |
+| [`cells.operator.scheduled_compartment_wash@1`](cells/operators/operator.scheduled_compartment_wash@1.md) | At set times, a chosen fraction of the liquid in a closed space outside the cells is drawn off and replaced by fresh buffer, as in a laboratory wash. | Not stated |
 
 ## Models
 

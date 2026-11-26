@@ -1,4 +1,4 @@
-"""scheduled_compartment_wash@1 (FR-27, D246) compiled, through the runner: one world, about 35 s.
+"""cells.operator.scheduled_compartment_wash@1 (FR-27, D246) compiled, through the runner: one world, about 35 s.
 
 Its reason: the only path through the compiled event map, the control arrays at its event time and
 the runner's host checks on every accepted row (the domain with each event's heat, every ledger with

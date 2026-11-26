@@ -5,7 +5,7 @@ The integration owner's part of schema A, with the planted kinds of tests/kind_f
   implementation object (its own names first), and builds the structure's own state, layout and
   control: today's structures keep this module's own objects, a declared kind's fields reach
   the composite, and the composite spec's controls follow the object's control type;
-- an empty composition of a kind's world is that world's resolved_pump_tissue@3 run, bitwise,
+- an empty composition of a kind's world is that world's cells.model.resolved_pump_tissue@3 run, bitwise,
   and an operator runs beside a kind with every check passing;
 - REQUIRES_KINDS: an operator that needs a kind is refused where the definition does not declare
   it, naming the operator and the kind, and a declared write of a kind's field names the kind;
@@ -18,6 +18,8 @@ The integration owner's part of schema A, with the planted kinds of tests/kind_f
   composition, structure key, classes and snapshot layout; a registered but undeclared kind
   changes no composition, and a kind world's composition follows its kind registry.
 """
+
+import re
 
 import jax
 import numpy as np
@@ -47,7 +49,7 @@ RATE = 1e-3  # fmol/s, as the core's seam test.
 METHODS = ("inner_state", "layout_kind", "inner_layout", "inner_control", "view", "control_view")
 FIXED_REFUSAL = (
     r"builds the inner model's state, layout or control with today's fixed fields, so it does not "
-    r"run beside declared kinds \(tests\.exchange@1\)"
+    rf"run beside declared kinds \({re.escape(kf.KIND_ID)}\)"
 )
 
 
@@ -168,25 +170,25 @@ def test_an_operator_runs_beside_a_kind():
 
 
 class KindReader(contract.Operator):
-    LAW_ID = "tests.kind_reader@1"
+    LAW_ID = "tests.operator.kind_reader@1"
     EVENT = True
     REQUIRES_KINDS = (kf.KIND_ID,)
 
 
 class KindWriter(contract.Operator):
-    LAW_ID = "tests.kind_writer@1"
+    LAW_ID = "tests.operator.kind_writer@1"
     EVENT = True
     STATE_AXES = {"kind_writer_booked_fmol": ("cell_slot",)}
     ENTITY_WRITES = {"exchange_moved_fmol": ("kind_writer_booked_fmol",)}
 
 
 class RequiringKindWriter(KindWriter):
-    LAW_ID = "tests.requiring_kind_writer@1"
-    REQUIRES_KINDS = ("tests.exchange@1",)
+    LAW_ID = "tests.operator.requiring_kind_writer@1"
+    REQUIRES_KINDS = ("tests.kind.exchange@1",)
 
 
 class KindFactor(contract.Operator):
-    LAW_ID = "tests.kind_factor@1"
+    LAW_ID = "tests.operator.kind_factor@1"
     EVENT = True
     CONTROL_FACTORS = ("exchange_availability",)
     REQUIRES_KINDS = (kf.KIND_ID,)
@@ -206,16 +208,17 @@ def test_requires_kinds_is_refused_without_its_kind():
         today, declared = adapters()
         errors = pump_composite.structure_errors(today, (KindReader(),))
         assert errors == [
-            f"tests.kind_reader@1 requires the kind {kf.KIND_ID}, which the definition does not "
+            f"tests.operator.kind_reader@1 requires the kind {kf.KIND_ID}, which the definition "
+            f"does not "
             "declare"
         ]
-        with pytest.raises(ConfigError, match="requires the kind tests.exchange@1"):
+        with pytest.raises(ConfigError, match="requires the kind tests.kind.exchange@1"):
             pump_composite.Composition(today, (KindReader(),))
         assert pump_composite.structure_errors(declared, (KindReader(),)) == []
         # A declared write of a kind's field names the kind; without the kind it is no inner state.
         errors = pump_composite.structure_errors(declared, (KindWriter(),))
         assert errors == [
-            "tests.kind_writer@1 writes exchange_moved_fmol, a field of the kind "
+            "tests.operator.kind_writer@1 writes exchange_moved_fmol, a field of the kind "
             f"{kf.KIND_ID}, which it does not require (REQUIRES_KINDS)"
         ]
         assert pump_composite.structure_errors(declared, (RequiringKindWriter(),)) == []
@@ -224,7 +227,7 @@ def test_requires_kinds_is_refused_without_its_kind():
         assert any("requires the kind" in e for e in errors)
         errors = pump_composite.structure_errors(declared, (KindFactor(),))
         assert errors == [
-            "tests.kind_factor@1 multiplies exchange_availability, a control of the kind "
+            "tests.operator.kind_factor@1 multiplies exchange_availability, a control of the kind "
             f"{kf.KIND_ID}; a kind's control is not factored (observation holds only today's "
             "schedules)"
         ]
@@ -233,9 +236,9 @@ def test_requires_kinds_is_refused_without_its_kind():
 @pytest.mark.parametrize(
     "kinds, message",
     [
-        (["tests.exchange@1"], "a tuple of kind IDs"),
+        (["tests.kind.exchange@1"], "a tuple of kind IDs"),
         (("",), "non-empty string"),
-        (("exchange@1", "cells.exchange@1"), "names a kind twice"),
+        (("tests.kind.exchange@1",) * 2, "names a kind twice"),
     ],
 )
 def test_requires_kinds_declarations_are_checked(kinds, message):
@@ -248,21 +251,23 @@ def test_fixed_inner_fields_declarations_are_checked():
     fixed = type("Fixed", (KindReader,), {"FIXED_INNER_FIELDS": True})
     with pytest.raises(ValueError, match="cannot require kinds"):
         contract.check_declarations(fixed)
-    loose = type("Loose", (contract.Operator,), {"LAW_ID": "tests.loose@1", "EVENT": True})
+    loose = type("Loose", (contract.Operator,), {"LAW_ID": "tests.operator.loose@1", "EVENT": True})
     with pytest.raises(ValueError, match="FIXED_INNER_FIELDS is a bool"):
         contract.check_declarations(type("Odd", (loose,), {"FIXED_INNER_FIELDS": 1}))
-    assert OPERATORS["scheduled_cell_replacement@1"].FIXED_INNER_FIELDS
-    assert OPERATORS["scheduled_cell_replacement@2"].FIXED_INNER_FIELDS
-    assert not OPERATORS["ideal_osmosis_linear_compliance_water@1"].FIXED_INNER_FIELDS
+    assert OPERATORS["cells.operator.scheduled_cell_replacement@1"].FIXED_INNER_FIELDS
+    assert OPERATORS["cells.operator.scheduled_cell_replacement@2"].FIXED_INNER_FIELDS
+    assert not OPERATORS[
+        "cells.operator.ideal_osmosis_linear_compliance_water@1"
+    ].FIXED_INNER_FIELDS
 
 
 @pytest.mark.parametrize(
     "family, build",
     [
-        ("resolved_pump_water@1", lambda raw: wfx.with_water(raw)),
+        ("cells.model.resolved_pump_water@1", lambda raw: wfx.with_water(raw)),
         # water@2's parser runs water@1's first, whose refusal names its water@1 base.
-        ("resolved_pump_water@1", lambda raw: wfx.with_symport(wfx.with_water(raw))),
-        ("resolved_pump_replacement@1", lambda raw: rfx.with_replacement(raw)),
+        ("cells.model.resolved_pump_water@1", lambda raw: wfx.with_symport(wfx.with_water(raw))),
+        ("cells.model.resolved_pump_replacement@1", lambda raw: rfx.with_replacement(raw)),
     ],
 )
 def test_the_families_refuse_a_declared_kind_at_their_definition(family, build):
@@ -291,7 +296,7 @@ def test_replacement_at_1_is_refused_beside_a_kind_in_a_composition():
         raw = cs.frozen_definition(rfx.with_replacement(kf.declare(world())))
         with pytest.raises(
             ConfigError,
-            match=r"scheduled_cell_replacement@1 " + FIXED_REFUSAL,
+            match=r"cells.operator.scheduled_cell_replacement@1 " + FIXED_REFUSAL,
         ):
             parse_spec(raw)
 
@@ -301,15 +306,15 @@ def test_replacement_at_2_is_refused_beside_a_kind_in_a_composition():
         raw = wrfx.over_water(kf.declare(with_b(wrfx.sheet(end=0.02))))
         with pytest.raises(
             ConfigError,
-            match=r"scheduled_cell_replacement@2 " + FIXED_REFUSAL,
+            match=r"cells.operator.scheduled_cell_replacement@2 " + FIXED_REFUSAL,
         ):
             parse_spec(raw)
 
 
 SLOT_CHANGERS = (
-    "isopotential_partition@1",  # CLOSES cells, RETIRES their history.
-    "scheduled_membrane_insertion@1",  # Provides activity masks.
-    "scheduled_membrane_insertion@2",  # CLOSES patches and outside nodes until their onsets.
+    "cells.operator.isopotential_partition@1",  # CLOSES cells, RETIRES their history.
+    "cells.operator.scheduled_membrane_insertion@1",  # Provides activity masks.
+    "cells.operator.scheduled_membrane_insertion@2",  # CLOSES patches and outside nodes until their onsets.
 )
 
 
@@ -337,7 +342,8 @@ def test_a_division_is_refused_beside_a_kind_with_per_patch_state():
     with kind_registry.scope(kf.registry(kf.carrier())):
         raw = kf.declare_carrier(pfx.divided(), species="K")
         with pytest.raises(
-            ConfigError, match=r"isopotential_partition@1 opens, closes or retires slots"
+            ConfigError,
+            match=r"cells.operator.isopotential_partition@1 opens, closes or retires slots",
         ):
             parse_spec(raw)
 
@@ -348,7 +354,7 @@ def snapshot_keys(path, spec):
 
 
 def test_kinds_in_any_declaration_order_share_one_composition(tmp_path):
-    """The canonical kind order (sorted ID): the carrier (tests.carrier@1) before the exchange."""
+    """The canonical kind order (sorted ID): the carrier (tests.kind.carrier@1) before the exchange."""
     with kind_registry.scope(kf.registry(kf.carrier())):
         base = world()
         one = composite(kf.declare_carrier(kf.declare(base), species="K"))

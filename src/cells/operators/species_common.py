@@ -1,7 +1,7 @@
 """Shared definition logic of the secreted-species operators (D150, version 1).
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §1.5, §2.6, §5.2 and §11.5; used by
-scheduled_species_turnover@1 (species_turnover.py) and scheduled_species_exchange@1
+cells.operator.scheduled_species_turnover@1 (species_turnover.py) and cells.operator.scheduled_species_exchange@1
 (species_exchange.py). Nothing here runs on the device: these are the declarations' parsers,
 the definition refusals and the host-side tables from which the operators' per-world controls
 are built.
@@ -12,13 +12,16 @@ are built.
   identity reaches the summary and the definition, never the arrays. Two operators that declare
   one species must declare the same identity.
 * **Charged rows** (FR-15 S1, the lead's rulings of 19 November 2026): the operators act on
-  neutral species, except local_species_reactions@1, whose reactions conserve charge. Every listed
+  neutral species, except cells.operator.local_species_reactions@1, whose reactions conserve charge. Every listed
   species is impermeant on @3's own routes (check_impermeant), except a declared counter-ion that
   @3's explicit-rate bound covers on each of its routes (check_counter_ion); a charged trace row's
-  permeation is the passive-routes kind's constant-field law.
-* **At most 16 species per world** (§2.6; FR-9 / D165 raised it from 7 on the W4 probe, §13),
-  refused in every species operator's definition check, with the reason in the message. The cap
-  counts every species, ions included.
+  permeation is the passive-routes kind's constant-field law, or for cells.operator.local_species_reactions@1 a
+  channel whose law declares its material term (check_impermeant's bounded_channels).
+* **At most 1,024 species per world** (§2.6; FR-43 / D315 raised it from 16 on FR-43's probe,
+  docs/FR43_SHARED_INVENTORIES_DESIGN.md §1; FR-9 / D165 from 7 on the W4 probe, §13), refused in
+  every species operator's definition check, with the reason in the message. The cap counts every
+  species, ions included. Above 16 the species sums fold by lax.scan on the device (the fold's gate,
+  numerics/species_sums.py), so every world at 16 species or fewer keeps its program.
 * **Rates belong to the occupant** (§5.2, the lead's decision of 13 November). Cell-side rates
   are properties of the carrier that occupies a slot, not of the slot:
   - founders' rates come from schedules keyed by the founder's carrier ID (its cell ID), from
@@ -48,9 +51,12 @@ from cells.definitions.specs import ConfigError, _fields
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.registry import species_registry as registry
 
-REPLACEMENT_LAW = "scheduled_cell_replacement@1"
-SPECIES_LAWS = ("scheduled_species_turnover@1", "scheduled_species_exchange@1")
-MAX_SPECIES = 16  # FR-9 / D165 (from 7): the W4 probe; above it, another.
+REPLACEMENT_LAW = "cells.operator.scheduled_cell_replacement@1"
+SPECIES_LAWS = (
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.scheduled_species_exchange@1",
+)
+MAX_SPECIES = 1024  # FR-43 / D315 (from 16; FR-9 / D165 from 7): FR-43's probe; above it, another.
 EVIDENCE_KINDS = registry.EVIDENCE_KINDS
 # Version 1 is transport on a static tissue (§5.5): both operators read the declared volumes and
 # masks, so no other operator may provide them, and a closer counts as a mask's provider (S5). This
@@ -99,9 +105,10 @@ class Occupant:
 
 def parse_species(raw, base, law, *, charged=False, counter_ions=frozenset(), limit=""):
     """The species list of an operator's declaration: neutral species of the inner model, or
-    (charged=True: FR-15 S1, local_species_reactions@1) charged ones too.
+    (charged=True: FR-15 S1, cells.operator.local_species_reactions@1) charged ones too.
 
-    Every listed species is impermeant on @3's own routes (check_impermeant), except a declared
+    Every listed species is impermeant on @3's own routes (check_impermeant; where charged rows are
+    admitted, a channel whose law declares its material term is no route), except a declared
     counter-ion (counter_ions), which is charged and covered by @3's explicit-rate bound on each
     of its routes (check_counter_ion). limit: the operator's stated reason a charged species is
     refused (charged=False)."""
@@ -125,7 +132,7 @@ def parse_species(raw, base, law, *, charged=False, counter_ions=frozenset(), li
                 raise ConfigError(f"{law}: a counter-ion is charged; {name!r} has valence 0")
             check_counter_ion(base, name, law)
         else:
-            check_impermeant(m, name, law)
+            check_impermeant(m, name, law, bounded_channels=charged)
         identity = registry.parse_identity(entry["catalogue"], entry["evidence"], law)
         species.append(SpeciesIdentity(name, identity.catalogue, identity.evidence))
     if len({s.id for s in species}) != len(species):
@@ -145,7 +152,7 @@ class ReadSpecies:
 def parse_read_species(raw, base, law):
     """The read-only species list: any species of the world, ions included, with D150's identity
     form; read, never written (docs/INVENTORY_COUPLING_DESIGN.md §1.3, ruling 1: one mechanism,
-    which D152's 1.1 door reuses). Moved here from species_regulated_availability@1."""
+    which D152's 1.1 door reuses). Moved here from cells.operator.species_regulated_availability@1."""
     if type(raw) is not list:
         raise ConfigError(f"{law} lists the species it reads in an explicit list")
     declared = set(base.model.species_ids)
@@ -162,22 +169,32 @@ def parse_read_species(raw, base, law):
     return tuple(species)
 
 
-def check_impermeant(model, name, law):
+def check_impermeant(model, name, law, *, bounded_channels=False):
     """Refuse a species with a membrane, junction or channel route of @3's (version 1).
 
     @3's explicit-rate bound (surface_pump.explicit_rate_bound) covers every species on faces, but
     on membranes and junctions it bounds only the z^2-weighted charge relaxation, and so do the
     channels' in-step refusal (membrane_rate): a neutral species moving through a membrane, junction
     or channel would have no material-rate bound. Templates cannot add such a route either, since a
-    template replaces only routes the slot already has (core/cell_replacement_spec)."""
+    template replaces only routes the slot already has (core/cell_replacement_spec).
+
+    bounded_channels (cells.operator.local_species_reactions@1 alone, through parse_species: it admits charged rows
+    and refuses RK4): a channel whose law declares its material term does not count, since the IMEX
+    step's material rule bounds its ions' amounts at every explicit stage
+    (surface_pump_v3.material_rate; docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §5.4)."""
+    from cells.definitions.surface_pump_v3_spec import channel_laws
+
     row = model.species_ids.index(name)
     routes = [f"membrane {p.id}" for p in model.membranes if p.permeability_m_per_s[row] != 0] + [
         f"junction {j.id}" for j in model.junctions if j.permeability_m_per_s[row] != 0
     ]
+    laws = channel_laws() if bounded_channels else {}
+    bounded = {law_id for law_id, own in laws.items() if own.material_term is not None}
     routes += [
         f"channel {c.id}"
         for c in model.channels
-        if any(i.species_id == name and i.relative_permeability != 0 for i in c.permeant_ions)
+        if c.kinetic_law not in bounded
+        and any(i.species_id == name and i.relative_permeability != 0 for i in c.permeant_ions)
     ]
     if routes:
         raise ConfigError(
@@ -205,10 +222,14 @@ COUNTER_ION_COVERAGE = 100.0
 def counter_ion_margin(base, name):
     """(the smallest margin over species `name`'s @3 routes of its own charge-relaxation term
     over its own material term, that route) at the declared state; (inf, None) without a route.
-    Membranes and channels on patches, junctions between cells, as the bound reads them."""
+    Membranes and channels on patches, junctions between cells, each against the capacitance the
+    bound relaxes its charge over (surface_pump.explicit_rate_bound): a held patch's and a
+    junction's, the cell's held patches'; a loose patch's, one that faces a floating node, its
+    own. (A junction at a cell with no held patch has no such capacitance: the bound refuses it.)"""
     from cells.definitions.surface_pump_v3_spec import projection
     from cells.laws.electrochemistry import F, R
     from cells.models import surface_kinetic as kinetic
+    from cells.models.surface_pump import floating_nodes
 
     m = base.model
     row = m.species_ids.index(name)
@@ -220,8 +241,11 @@ def counter_ion_margin(base, name):
         p.outside_active, p.extracellular_amount_reference[row] / p.extracellular_volume, 0.0
     )
     n = p.active.size
+    own, floating = np.asarray(p.membrane_capacitance), floating_nodes(m)
+    loose = np.zeros(own.size, dtype=bool)
+    loose[: len(m.membranes)] = [patch.outside in floating for patch in m.membranes]
     capacitance = np.zeros(n)
-    np.add.at(capacitance, np.asarray(p.membrane_cell), np.asarray(p.membrane_capacitance))
+    np.add.at(capacitance, np.asarray(p.membrane_cell), np.where(loose, 0.0, own))
     cell_volume = np.where(p.active, p.volume * 1e-15, np.inf)
     outside_volume = np.where(
         p.outside_active & ~p.reservoir, p.extracellular_volume * 1e-15, np.inf
@@ -237,14 +261,15 @@ def counter_ion_margin(base, name):
         if patch.permeability_m_per_s[row] == 0 and patch.id not in channel_patches:
             continue
         i, o = int(p.membrane_cell[k]), int(p.membrane_outside[k])
-        charge = slope * z2 * max(ci[i], co[o]) / capacitance[i]
+        charge = slope * z2 * max(ci[i], co[o]) / (own[k] if loose[k] else capacitance[i])
         material = 1.0 / cell_volume[i] + 1.0 / outside_volume[o]
         margins.append((charge / material, f"membrane {names[k]}"))
     for j, junction in enumerate(m.junctions):
         if junction.permeability_m_per_s[row] == 0:
             continue
         a, b = int(p.junction_sender[j]), int(p.junction_receiver[j])
-        charge = 2 * slope * z2 * max(ci[a], ci[b]) / min(capacitance[a], capacitance[b])
+        behind = min(capacitance[a], capacitance[b])
+        charge = 2 * slope * z2 * max(ci[a], ci[b]) / behind if behind > 0 else math.inf
         material = 1.0 / cell_volume[a] + 1.0 / cell_volume[b]
         margins.append((charge / material, f"junction {junction.id}"))
     return min(margins, default=(math.inf, None))
@@ -282,10 +307,12 @@ def check_species_cap(spec, law):
     if count > MAX_SPECIES:
         raise ConfigError(
             f"{law} admits at most {MAX_SPECIES} species per world (this world declares "
-            f"{count}; the cap counts every species, ions included). Up to 16 the W4 probe found "
-            "no ledger, guard or promised idleness that depends on NumPy's pairwise sum order over "
-            "the species axis, since every ledger adds the species in explicit species order "
-            "(D148); a larger world needs another probe (FR-9 / D165)"
+            f"{count}; the cap counts every species, ions included). Up to 1,024 FR-43's probe "
+            "found no ledger, guard or promised idleness that depends on a shared module's sum "
+            "order over the species axis, since every ledger adds the species in explicit species "
+            "order (D148), and the reactions' answers at one accuracy at every size; above it the "
+            "dense network layout's cost grows as the square of the count and no ledger, restart "
+            "or batch check has run, so a larger world needs another probe (FR-43 / D315)"
         )
 
 
@@ -294,6 +321,23 @@ def check_identities(spec, law, identities):
     species registry (registry/species_registry.py; D176), resolved from the model's entries and the
     operators' declared identities, authors before users. One call per law, no pairwise check."""
     registry.check_identities(spec, law, identities)
+
+
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"  # The one volume changer admitted.
+
+
+def largest_volumes(spec):
+    """{node id: the largest volume it can take (pL)} for every cell and outside node: its declared
+    volume, or where water changes the volumes its water compartment's declared maximum (FR-43 /
+    D315: a producer's static bound reads it; the gene unit's and D152's production_bound)."""
+    m = spec.model
+    out = {c.id: c.volume_pL for c in m.cells} | {c.id: c.volume_pL for c in m.extracellular}
+    for op, water, _ in composite_spec.entries(spec):
+        if op.LAW_ID == WATER:
+            for c in water.compartments:
+                if c.compartment_id in out:
+                    out[c.compartment_id] = max(out[c.compartment_id], c.maximum_volume_pL)
+    return out
 
 
 def summary_identities(identities):

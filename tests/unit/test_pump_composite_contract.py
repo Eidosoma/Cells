@@ -1,4 +1,4 @@
-"""resolved_pump_composite@1: definitions, dispatch and the operator contract (no long runs).
+"""cells.model.resolved_pump_composite@1: definitions, dispatch and the operator contract (no long runs).
 
 * Definitions round trip; frozen @3, water@1, water@2 and replacement@1
   definitions rewrite as compositions with the frozen state, layout and control
@@ -45,11 +45,11 @@ from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import secreted_species_fixtures as fx
 
-WATER = "ideal_osmosis_linear_compliance_water@1"
-SYMPORT = "k_anion_symport_mass_action@1"
-REPLACEMENT = "scheduled_cell_replacement@1"
-TURNOVER = "scheduled_species_turnover@1"
-REACTIONS = "local_species_reactions@1"
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"
+SYMPORT = "cells.operator.k_anion_symport_mass_action@1"
+REPLACEMENT = "cells.operator.scheduled_cell_replacement@1"
+TURNOVER = "cells.operator.scheduled_species_turnover@1"
+REACTIONS = "cells.operator.local_species_reactions@1"
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -89,7 +89,9 @@ def test_frozen_definitions_rewrite_with_the_frozen_fields(kind):
     assert parse_spec(spec.to_dict()) == spec
     model = get_model(spec.model)
     structure = pump3.inner_structure(spec.model)  # I2: one composition per inner structure.
-    assert model is pump_composite.implementation("resolved_pump_tissue@3", laws, structure)
+    assert model is pump_composite.implementation(
+        "cells.model.resolved_pump_tissue@3", laws, structure
+    )
     assert model.inner is pump3.for_structure(structure)
     assert model.STATE_TYPE._fields == frozen.STATE_TYPE._fields
     state, layout = model.initial_values(spec)
@@ -112,13 +114,13 @@ def test_frozen_definitions_rewrite_with_the_frozen_fields(kind):
     ]
     identity = model.composition_identity(spec)
     assert identity == dict(
-        model="resolved_pump_composite@1",
-        inner_model="resolved_pump_tissue@3",
+        model="cells.model.resolved_pump_composite@1",
+        inner_model="cells.model.resolved_pump_tissue@3",
         operators=list(laws),
     )
     assert model.batch_signature(spec.model)[:3] == (
-        "resolved_pump_composite@1",
-        "resolved_pump_tissue@3",
+        "cells.model.resolved_pump_composite@1",
+        "cells.model.resolved_pump_tissue@3",
         laws,
     )
 
@@ -144,7 +146,7 @@ def test_contract_refusals_at_the_definition():
     blocks = water["model"]["operators"]
     with pytest.raises(ConfigError, match="registered law"):
         parse_spec(composite(water, [dict(blocks[0], law="ideal_osmosis@0"), blocks[1]]))
-    with pytest.raises(ConfigError, match="requires ideal_osmosis"):
+    with pytest.raises(ConfigError, match=r"requires \S*ideal_osmosis"):
         raw = composite(water, [blocks[1]])
         del raw["experiment"]["water_controls"]
         parse_spec(raw)
@@ -160,7 +162,7 @@ def test_contract_refusals_at_the_definition():
         parse_spec(composite(water, [blocks[0]]))
     with pytest.raises(ConfigError, match="inner model"):
         raw = copy.deepcopy(water)
-        raw["model"]["inner_model"] = "resolved_pump_tissue@2"
+        raw["model"]["inner_model"] = "cells.model.resolved_pump_tissue@2"
         parse_spec(raw)
 
 
@@ -181,23 +183,23 @@ def test_replacement_refuses_a_volume_provider():
 
 
 class Dummy(Operator):
-    LAW_ID = "dummy_view@1"
+    LAW_ID = "cells.operator.dummy_view@1"
     SPLIT = True
     RK4 = "split"
     VIEW_FIELDS = ("pump_capacity",)
 
 
 class OtherDummy(Dummy):
-    LAW_ID = "dummy_view@2"
+    LAW_ID = "cells.operator.dummy_view@2"
 
 
 class ProcessDummy(Operator):
-    LAW_ID = "dummy_process@1"
+    LAW_ID = "cells.operator.dummy_process@1"
     PROCESS = True
 
 
 class OtherProcess(ProcessDummy):
-    LAW_ID = "dummy_process@2"
+    LAW_ID = "cells.operator.dummy_process@2"
 
 
 def test_structure_refusals_when_a_composition_is_built():
@@ -220,13 +222,13 @@ def test_factor_and_reset_names_are_checked_for_every_operator():
     operator of a composition with closers; restored before landing)."""
 
     class BadFactor(Operator):
-        LAW_ID = "bad_factor@1"
+        LAW_ID = "cells.operator.bad_factor@1"
         SPLIT = True
         RK4 = "split"
         CONTROL_FACTORS = ("no_such_control",)
 
     class BadReset(Operator):
-        LAW_ID = "bad_reset@1"
+        LAW_ID = "cells.operator.bad_reset@1"
         EVENT = True
         STATE_RESETS = ("no_such_state",)
 
@@ -237,22 +239,22 @@ def test_factor_and_reset_names_are_checked_for_every_operator():
 
 def test_operator_declarations_are_checked():
     class Unbooked(Operator):
-        LAW_ID = "unbooked@1"
+        LAW_ID = "cells.operator.unbooked@1"
         SPLIT = True
         RK4 = "split"
         STATE_AXES = {"x_dissipated_energy_pJ": ["cell_slot"]}
 
     class Unsplit(Operator):
-        LAW_ID = "unsplit@1"
+        LAW_ID = "cells.operator.unsplit@1"
         SPLIT = True
 
     class Writer(Operator):
-        LAW_ID = "writer@1"
+        LAW_ID = "cells.operator.writer@1"
         EVENT = True
         ENTITY_WRITES = {"amount_increment": ("nothing_owned",)}
 
     class Nothing(Operator):
-        LAW_ID = "nothing@1"
+        LAW_ID = "cells.operator.nothing@1"
 
     for bad in (Unbooked, Unsplit, Writer, Nothing):
         with pytest.raises(ValueError):
@@ -267,7 +269,10 @@ def test_operator_declarations_are_checked():
         (dict(PROCESS=True), "read in exact half-steps only"),
         (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=[(TURNOVER, "turnover_rate")]), "distinct"),
         (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "x"),) * 2), "distinct"),
-        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=(("routed@1", "rate_x"),)), "its own controls"),
+        (
+            dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=(("cells.operator.routed@1", "rate_x"),)),
+            "its own controls",
+        ),
         (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "turnover_rate"),)), "rate_factors"),
         (dict(FACTOR_RECORD="nowhere"), "FACTOR_RECORD is an owned state field"),
         (dict(STATE_AXES={"rec": ["one"]}, FACTOR_RECORD="rec"), "with factor_record"),
@@ -279,7 +284,7 @@ def test_operator_declarations_are_checked():
     elementless = {
         k: v for k, v in vars(Routed).items() if not k.startswith("__") and k != "routable_elements"
     }
-    elementless["LAW_ID"] = "elementless@1"
+    elementless["LAW_ID"] = "cells.operator.elementless@1"
     with pytest.raises(ValueError, match="defines routable_elements"):
         check_declarations(type("Elementless", (Operator,), elementless))
     check_declarations(Routed)
@@ -294,11 +299,11 @@ def test_operator_declarations_are_checked():
         factor_valid=lambda self, state, p, *, xp, view=None: None,
         factor_record=lambda self, state, p, target, field, *, xp, view=None: None,
     )
-    coupling = type(OPERATORS["species_regulated_availability@2"])
+    coupling = type(OPERATORS["cells.operator.species_regulated_availability@2"])
     check_declarations(type("Reader", (coupling,), reader))
     # The one registered reader: @2's population source (FR-7's part (b)).
     assert [op.LAW_ID for op in OPERATORS.values() if factor_reads(op)] == [
-        "species_regulated_availability@2"
+        "cells.operator.species_regulated_availability@2"
     ]
     for changes, words in (
         (dict(reader, CONTROL_FACTORS=()), "which none of its parts runs at"),
@@ -320,7 +325,7 @@ def test_operator_declarations_are_checked():
 class Routed(Operator):
     """A planted routable target (B1′): its own control rate_x, read in exact half-steps."""
 
-    LAW_ID = "routed@1"
+    LAW_ID = "cells.operator.routed@1"
     SPLIT = True
     RK4 = "split"
     CONTROL_FIELDS = ("rate_x",)
@@ -334,10 +339,10 @@ class RateSource(Operator):
     """A planted rate-route source (B1′) on the turnover's rates: a definition's declaration is
     the tuple of routes it declares."""
 
-    LAW_ID = "rate_source@1"
+    LAW_ID = "cells.operator.rate_source@1"
     SPLIT = True
     RK4 = "split"
-    RATE_ROUTES = (("scheduled_species_turnover@1", "turnover_rate"),)
+    RATE_ROUTES = (("cells.operator.scheduled_species_turnover@1", "turnover_rate"),)
 
     def half_step(self, state, h, control, p, *, xp):
         return state, None
@@ -364,10 +369,15 @@ def test_rate_routes_are_checked_when_a_composition_is_built():
     assert pump_composite.rate_routes((turnover,)) == {}
     assert pump_composite.structure_errors(pump3, (source,)) == []  # No target: idle.
     assert pump_composite.structure_errors(pump3, (turnover, source)) == []  # Nothing declared.
-    stray = type("Stray", (RateSource,), dict(LAW_ID="stray@1", RATE_ROUTES=((TURNOVER, "x"),)))
+    stray = type(
+        "Stray",
+        (RateSource,),
+        dict(LAW_ID="cells.operator.stray@1", RATE_ROUTES=((TURNOVER, "x"),)),
+    )
     (error,) = pump_composite.structure_errors(pump3, (stray(), turnover))
     assert error == (
-        f"stray@1 routes a rate factor to {TURNOVER}'s x, which is not one of its routable "
+        f"cells.operator.stray@1 routes a rate factor to {TURNOVER}'s x, which is not one of its "
+        f"routable "
         "controls (ROUTABLE_CONTROLS)"
     )
     route = ((TURNOVER, "turnover_rate"),)
@@ -375,21 +385,23 @@ def test_rate_routes_are_checked_when_a_composition_is_built():
     assert check([(source, route), (turnover, None)]) == []
     assert check([(turnover, None), (source, ())]) == []
     assert check([(turnover, None), (source, route)]) == [
-        f"rate_source@1 routes a rate factor to {TURNOVER}, which precedes it: a route's source "
+        f"cells.operator.rate_source@1 routes a rate factor to {TURNOVER}, which precedes it: a "
+        f"route's source "
         "runs before its target, so the split's halves are symmetric about it"
     ]
     assert check([(source, route)]) == [
-        f"rate_source@1 routes a rate factor to {TURNOVER}, which the composition does not hold"
+        f"cells.operator.rate_source@1 routes a rate factor to {TURNOVER}, which the composition "
+        f"does not hold"
     ]
     assert check([(source, ((TURNOVER, "x"),)), (turnover, None)]) == [
-        f"rate_source@1 declares a route to {TURNOVER}'s x, not one it routes"
+        f"cells.operator.rate_source@1 declares a route to {TURNOVER}'s x, not one it routes"
     ]
 
 
 class QuantityOwner(Operator):
     """A planted owner of a readable quantity (R3): level, a constant 0.25 per cell."""
 
-    LAW_ID = "quantity_owner@1"
+    LAW_ID = "cells.operator.quantity_owner@1"
     SPLIT = True
     RK4 = "split"
     QUANTITIES = MappingProxyType({"level": ("cell_slot", "1")})
@@ -405,11 +417,11 @@ class QuantityReader(Operator):
     """A planted reader (R3) of the owner's level, a factor operator on @3's junctions that records
     what its hooks receive; a definition's declaration is the tuple of reads it declares."""
 
-    LAW_ID = "quantity_reader@1"
+    LAW_ID = "cells.operator.quantity_reader@1"
     SPLIT = True
     RK4 = "split"
     CONTROL_FACTORS = ("junction",)
-    QUANTITY_READS = MappingProxyType({"quantity_owner@1": ("level",)})
+    QUANTITY_READS = MappingProxyType({"cells.operator.quantity_owner@1": ("level",)})
     seen = {}
 
     def half_step(self, state, h, control, p, *, xp):
@@ -430,7 +442,7 @@ class QuantityReader(Operator):
 class PlainFactor(QuantityReader):
     """A factor operator that reads no quantity: its hooks take no quantities keyword."""
 
-    LAW_ID = "plain_factor@1"
+    LAW_ID = "cells.operator.plain_factor@1"
     QUANTITY_READS = MappingProxyType({})
 
     def control_factors(self, state, p, *, xp):
@@ -455,43 +467,64 @@ def test_quantity_reads_are_checked_recorded_and_passed_to_readers_only():
         check_declarations(planted)
     malformed = (
         (dict(QUANTITIES={"level": "cell_slot"}), "QUANTITIES maps names to"),
-        (dict(QUANTITY_READS={"quantity_owner@1": "level"}), "QUANTITY_READS maps owner laws"),
-        (dict(QUANTITY_READS={"quantity_reader@9": ("level",)}, LAW_ID="quantity_reader@9"),
+        (dict(QUANTITY_READS={"cells.operator.quantity_owner@1": "level"}), "QUANTITY_READS maps owner laws"),
+        (dict(QUANTITY_READS={"cells.operator.quantity_reader@9": ("level",)}, LAW_ID="cells.operator.quantity_reader@9"),
          "reads no quantity of its own law"),
     )  # fmt: skip
     for attributes, message in malformed:
         with pytest.raises(ValueError, match=message):
             check_declarations(type("M", (QuantityReader,), attributes))
-    bare = dict(LAW_ID="bare@1", SPLIT=True, RK4="split", QUANTITIES={"x": ("cell_slot", "1")})
+    bare = dict(
+        LAW_ID="cells.operator.bare@1",
+        SPLIT=True,
+        RK4="split",
+        QUANTITIES={"x": ("cell_slot", "1")},
+    )
     with pytest.raises(ValueError, match="defines quantities"):
         check_declarations(type("B", (Operator,), bare))
     assert pump_composite.structure_errors(pump3, (owner, reader)) == []
     assert pump_composite.structure_errors(pump3, (reader,)) == []  # No owner: nothing to read.
-    reads = {"quantity_owner@1": ("level", "depth")}
-    stray = type("Stray", (QuantityReader,), dict(LAW_ID="stray_reader@1", QUANTITY_READS=reads))
+    reads = {"cells.operator.quantity_owner@1": ("level", "depth")}
+    stray = type(
+        "Stray",
+        (QuantityReader,),
+        dict(LAW_ID="cells.operator.stray_reader@1", QUANTITY_READS=reads),
+    )
     assert pump_composite.structure_errors(pump3, (owner, stray())) == [
-        "stray_reader@1 reads quantity_owner@1's depth, which it does not declare among its "
+        "cells.operator.stray_reader@1 reads cells.operator.quantity_owner@1's depth, which it "
+        "does not declare among its "
         "quantities"
     ]
     assert pump_composite.quantity_readers((owner, reader, plain)) == {reader: (owner,)}
     check = pump_composite.quantity_read_definition_errors
-    level, target = ("quantity_owner@1", "level"), Routed()
+    level, target = ("cells.operator.quantity_owner@1", "level"), Routed()
     assert check([(owner, None), (reader, ((*level, None),))]) == []
     assert check([(reader, ((*level, None),)), (owner, None)]) == []  # Control view: any order.
-    assert check([(owner, None), (target, None), (reader, ((*level, "routed@1"),))]) == []
-    assert check([(target, None), (owner, None), (reader, ((*level, "routed@1"),))]) == [
-        "quantity_reader@1 reads quantity_owner@1's level in routed@1's half-steps, but "
-        "quantity_owner@1 follows routed@1: an owner whose quantity a route reads precedes the "
+    assert (
+        check([(owner, None), (target, None), (reader, ((*level, "cells.operator.routed@1"),))])
+        == []
+    )
+    assert check(
+        [(target, None), (owner, None), (reader, ((*level, "cells.operator.routed@1"),))]
+    ) == [
+        "cells.operator.quantity_reader@1 reads cells.operator.quantity_owner@1's level in "
+        "cells.operator.routed@1's half-steps, but "
+        "cells.operator.quantity_owner@1 follows cells.operator.routed@1: an owner whose quantity "
+        "a route reads precedes the "
         "route's target, so both of its halves read the quantity after the owner's first half"
     ]
     assert check([(reader, ((*level, None),))]) == [
-        "quantity_reader@1 reads quantity_owner@1's level, which the composition does not hold"
+        "cells.operator.quantity_reader@1 reads cells.operator.quantity_owner@1's level, which the "
+        "composition does not hold"
     ]
-    assert check([(owner, None), (reader, (("quantity_owner@1", "depth", None),))]) == [
-        "quantity_reader@1 declares a read of quantity_owner@1's depth, not one it reads"
+    assert check(
+        [(owner, None), (reader, (("cells.operator.quantity_owner@1", "depth", None),))]
+    ) == [
+        "cells.operator.quantity_reader@1 declares a read of cells.operator.quantity_owner@1's "
+        "depth, not one it reads"
     ]
     assert pump_composite.field_map(pump3, (owner, reader))["quantities"] == {
-        "quantity_owner@1": {
+        "cells.operator.quantity_owner@1": {
             "quantities": {"level": ["cell_slot", "1"]},
             "readers": [reader.LAW_ID],
         }
@@ -507,13 +540,13 @@ def test_quantity_reads_are_checked_recorded_and_passed_to_readers_only():
     QuantityReader.seen.clear()
     composition.control_view(control, state, p, xp=np)
     composition._control_factor_checks(state, p, xp=np)
-    expected = {"quantity_owner@1": {"level": np.full(p.volume.shape, 0.25)}}
+    expected = {"cells.operator.quantity_owner@1": {"level": np.full(p.volume.shape, 0.25)}}
     for hook in ("control_factors", "factor_valid"):
         got = QuantityReader.seen[hook]
         assert got.keys() == expected.keys()
         assert (
-            got["quantity_owner@1"]["level"].tobytes()
-            == expected["quantity_owner@1"]["level"].tobytes()
+            got["cells.operator.quantity_owner@1"]["level"].tobytes()
+            == expected["cells.operator.quantity_owner@1"]["level"].tobytes()
         )
     assert QuantityReader.seen["plain"] is True  # Called without the keyword.
 
@@ -731,7 +764,7 @@ def test_an_event_time_within_4_ulps_of_its_point_is_that_point_for_every_operat
 class Owner(Operator):
     """A test owner: one owned field other operators may write, booked in its ledger."""
 
-    LAW_ID = "test_owner@1"
+    LAW_ID = "cells.operator.test_owner@1"
     SPLIT = True
     RK4 = "split"
     STATE_AXES = {"owned_pL": ["cell_slot"], "owned_meter": ["cell_slot"]}
@@ -743,7 +776,7 @@ class Owner(Operator):
 class OwnerWriter(Operator):
     """A test writer of the owner's field, with its accumulator."""
 
-    LAW_ID = "test_writer@1"
+    LAW_ID = "cells.operator.test_writer@1"
     EVENT = True
     STATE_AXES = {"written_pL": ["cell_slot"]}
     ENTITY_WRITES = {"owned_pL": ("written_pL",)}
@@ -756,21 +789,21 @@ class OwnerWriter(Operator):
 
 
 class ColumnThief(Operator):
-    LAW_ID = "column_thief@1"
+    LAW_ID = "cells.operator.column_thief@1"
     SPLIT = True
     RK4 = "split"
     READOUT_COLUMNS = ("energy_balance_pJ_s",)
 
 
 class GhostReplacer(Operator):
-    LAW_ID = "ghost_replacer@1"
+    LAW_ID = "cells.operator.ghost_replacer@1"
     SPLIT = True
     RK4 = "split"
     REPLACES = {"no_such_column": "test"}
 
 
 class EarlyReader(Operator):
-    LAW_ID = "early_reader@1"
+    LAW_ID = "cells.operator.early_reader@1"
     SPLIT = True
     RK4 = "split"
     VIEW_READS = ("volume",)
@@ -787,7 +820,8 @@ def test_ownership_refusals_when_a_composition_is_built():
     assert pump_composite.structure_errors(pump3, (EarlyReader(),)) == []
     errors = pump_composite.structure_errors(pump3, (EarlyReader(), OPERATORS[WATER]))
     assert errors == [
-        f"early_reader@1 reads the view volume at stage split before {WATER} changes it there"
+        f"cells.operator.early_reader@1 reads the view volume at stage split before {WATER} "
+        f"changes it there"
     ]
     assert pump_composite.structure_errors(pump3, (OPERATORS[WATER], EarlyReader())) == []
     errors = pump_composite.structure_errors(pump3, (OwnerWriter(), Owner()))  # Writer first.
@@ -797,17 +831,17 @@ def test_ownership_refusals_when_a_composition_is_built():
 
 def test_ownership_declarations_are_checked():
     class SelfReplacer(Operator):
-        LAW_ID = "self_replacer@1"
+        LAW_ID = "cells.operator.self_replacer@1"
         EVENT = True
         READOUT_COLUMNS = ("mine",)
         REPLACES = {"mine": "own column"}
 
     class Unledgered(Owner):
-        LAW_ID = "unledgered@1"
+        LAW_ID = "cells.operator.unledgered@1"
         ACCEPTS_WRITES = {"owned_pL": ("not_a_ledger",)}
 
     class Eventless(Operator):
-        LAW_ID = "eventless@1"
+        LAW_ID = "cells.operator.eventless@1"
         SPLIT = True
         RK4 = "split"
         STATE_AXES = {"a": ["cell_slot"], "b": ["cell_slot"]}
@@ -815,7 +849,7 @@ def test_ownership_declarations_are_checked():
         EVENT_REPLACES = {"amount_increment": ("a", "b")}
 
     class ReadsAndHolds(Operator):
-        LAW_ID = "reads_and_holds@1"
+        LAW_ID = "cells.operator.reads_and_holds@1"
         EVENT = True
         VIEW_READS = ("volume",)
         CONFLICTS_VIEW = ("volume",)
@@ -863,8 +897,89 @@ def test_the_energy_role_table_is_the_suffix_selection_for_every_composition():
     suffixes = ("_dissipated_energy_pJ", "_work_pJ")
     assert set(pump3.HEAT_FIELDS) == {k for k in pump3.STATE_FIELDS if k.endswith(suffixes[0])}
     assert set(pump3.WORK_FIELDS) == {k for k in pump3.STATE_FIELDS if k.endswith(suffixes[1])}
-    injection = "electrode_current_injection@1"
+    injection = "cells.operator.electrode_current_injection@1"
     for laws in ((), (WATER,), (WATER, SYMPORT), (REPLACEMENT,), (injection,)):
         model = pump_composite.implementation(pump3.MODEL_ID, laws)
         fields = model.STATE_TYPE._fields
         assert model.ENERGY_FLOW_FIELDS == tuple(k for k in fields if k.endswith(suffixes)), laws
+
+
+# ------------------------------------------------------------------ one computation (test review)
+
+
+def one_computation_worlds():
+    """The worlds of the rows the test review retired as two-format mirrors (each was run in its
+    family's own format by one row and through frozen_definition by another): the replacement
+    events world of test_cell_replacement.py (two templates, five events, ARS(2,2,2), 50 ms), cell D
+    under water and its two idle symports of test_surface_pump_water_v2.py, and cell H at
+    minimum_fraction 0.9999 of test_surface_pump_water.py, each built as those files build it."""
+    from cells.definitions.cell_replacement_spec import exact_event_times
+    from cells.numerics import surface_imex as imex
+
+    dt = 1e-3
+    t1, t2, t3 = exact_event_times((10, 20, 30), dt)
+    sheet = rfx.heredity_sheet(1, 0, dt=dt, end_time=0.05, solver=imex.ARS222_ID)
+    sheet["experiment"]["observation_times"] = list(exact_event_times((0, 10, 11, 30, 31, 50), dt))
+    templates = [
+        rfx.template_from_cell(sheet, "cell_1", "h"),
+        rfx.template_from_cell(sheet, "cell_3", "d"),
+    ]
+    events = (
+        (t1, "cell_0", "h", "n1"),
+        (t2, "cell_2", "h", "n2"),
+        (t2, "cell_5", "h", "n3"),
+        (t3, "cell_0", "d", "n4"),
+        (t3, "cell_3", "h", "n5"),
+    )
+    cell_d = wfx.heredity_cell("D", end_time=0.2)
+    cell_d["experiment"]["observation_times"] = [0.0, 0.1, 0.2]
+    cell_d["execution"]["jit"] = True
+    water_d = wfx.with_water(cell_d, pf_m_s=5e-4)
+    cell_h = wfx.heredity_cell("H", dt=dt, end_time=0.2, solver=imex.ARS222_ID)
+    cell_h["experiment"]["observation_times"] = [0.0, 0.1, 0.2]
+    return dict(
+        events=rfx.with_replacement(sheet, templates, events),
+        water_d=water_d,
+        no_route=wfx.with_symport(water_d, membranes=[]),
+        blocked=wfx.with_symport(water_d, availability=0.0),
+        volume_bound=wfx.with_water(cell_h, pf_m_s=5e-4, minimum_fraction=0.9999),
+    )
+
+
+def same_bits(a, b):
+    a, b = np.asarray(a), np.asarray(b)
+    return a.dtype == b.dtype and a.shape == b.shape and a.tobytes() == b.tobytes()
+
+
+@pytest.mark.parametrize("world", ("events", "water_d", "no_route", "blocked", "volume_bound"))
+def test_a_frozen_definition_and_its_rewrite_are_one_computation(world):
+    """On each world, the family's own format and its frozen_definition rewrite give an equal
+    composite spec, the same implementation object, and bit-identical initial state, layout and
+    controls at every point of the world's event grid: the two formats are one computation."""
+    from cells.execution.grid import EventGrid
+
+    raw = one_computation_worlds()[world]
+    frozen, rewrite = parse_spec(raw), parse_spec(cs.frozen_definition(raw))
+    family, model = get_model(frozen.model), get_model(rewrite.model)
+    assert family.module.composite(frozen) == rewrite
+    assert family.composition is model
+    state, layout = model.initial_values(rewrite)
+    frozen_state, frozen_layout = family.initial_values(frozen)
+    assert type(state) is type(frozen_state) and type(layout) is type(frozen_layout)
+    for name in type(state)._fields:
+        assert same_bits(getattr(state, name), getattr(frozen_state, name)), name
+    for name in type(layout)._fields:
+        a, b = getattr(layout, name), getattr(frozen_layout, name)
+        assert same_bits(a, b) if hasattr(a, "shape") else a == b, name
+    grid = EventGrid(frozen)
+    times = [grid[i] for i in range(len(grid))]
+    controls, frozen_controls = cs.control_values(rewrite, times), scheduled_controls(frozen, times)
+    assert controls._fields == frozen_controls._fields
+    for name, a, b in zip(controls._fields, controls, frozen_controls, strict=True):
+        assert same_bits(a, b), name
+    from cells.execution.runner import integration_steps  # The step sequence: the run's last input.
+
+    rewrite_grid = EventGrid(rewrite)
+    assert [rewrite_grid[i] for i in range(len(rewrite_grid))] == times
+    steps = [integration_steps(spec, np.asarray(times)) for spec in (frozen, rewrite)]
+    assert same_bits(*steps)

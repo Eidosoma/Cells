@@ -1,4 +1,4 @@
-"""Small worlds for scheduled_membrane_trafficking@1 (FR-2 version 1, MEMBRANE_RETRIEVAL_DESIGN).
+"""Small worlds for cells.operator.scheduled_membrane_trafficking@1 (FR-2 version 1, MEMBRANE_RETRIEVAL_DESIGN).
 
 All values are synthetic (D152 §2.4), built on independent heredity cells
 (surface_pump_v3_fixtures.heredity_cells). Each cell has:
@@ -26,9 +26,9 @@ from cells.definitions import pump_composite_spec as cs
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 
-LAW = "scheduled_membrane_trafficking@1"
-STATE = "membrane_entity_state@1"
-COMPARTMENTS = "cell_owned_compartments@1"
+LAW = "cells.operator.scheduled_membrane_trafficking@1"
+STATE = "cells.operator.membrane_entity_state@1"
+COMPARTMENTS = "cells.operator.cell_owned_compartments@1"
 DT = 1e-3
 END = 0.004
 DENSITY = 1e13  # Every population's reference density (units/m^2), as the insertion fixtures'.
@@ -38,7 +38,7 @@ CARRIERS = {"K": 0.5, "Na": 0.5}  # The plate charge's carriers (declared transf
 
 
 def membrane_state(raw):
-    """The membrane_entity_state@1 block declaring every population of raw at DENSITY."""
+    """The cells.operator.membrane_entity_state@1 block declaring every population of raw at DENSITY."""
     return dict(
         law=STATE,
         populations=[
@@ -150,7 +150,7 @@ def add_cleft(raw, i, *, fraction=0.1, cleft_pL=0.01, access_area_m2=1e-14, volt
             area_m2=access_area_m2,
             length_m=1e-2,
             diffusivity_m2_per_s={s: 1e-9 for s in amounts},
-            law="logmean_electrodiffusion@1",
+            law="cells.route.logmean_electrodiffusion@1",
         )
     )
     e["membrane_controls"].append(

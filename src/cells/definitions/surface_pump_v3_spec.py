@@ -1,13 +1,13 @@
-"""resolved_pump_tissue@3: resolved_pump_tissue@2 plus voltage-gated channel populations.
+"""cells.model.resolved_pump_tissue@3: cells.model.resolved_pump_tissue@2 plus voltage-gated channel populations.
 
-Every field of resolved_pump_tissue@2 keeps its meaning and is parsed by that
+Every field of cells.model.resolved_pump_tissue@2 keeps its meaning and is parsed by that
 identity's parser. The model adds ``channels``: populations on named membrane
 patches, each with one law of CHANNEL_LAWS, a maximal permeability (m/s), an
 abundance, its law's gate state and its law's permeant ion (the shared-gate
-population format of resolved_tissue@5 and later). The experiment adds
+population format of cells.model.resolved_tissue@8). The experiment adds
 ``channel_controls`` (one availability schedule per population) and the
 execution ``channel_capacity``. With no channels the identity reproduces
-resolved_pump_tissue@2.
+cells.model.resolved_pump_tissue@2.
 
 A channel population's entry may declare ``factors``, a list of factor-source IDs
 in declared order (docs/CORE_SEAMS_DESIGN.md §4.3, B1's routing door into @3): at
@@ -21,7 +21,7 @@ gains no field (other families build their models from its fields by name).
 An optional model key ``junction_heat_booking`` selects how IMEX steps book
 junction heat. The default, ``explicit_tableau`` (omitted from definitions, so
 default fingerprints are unchanged), books it with the tableau's explicit
-weights like every other route. ``trapezoid_nonnegative@1`` books
+weights like every other route. ``cells.heat.trapezoid_nonnegative@1`` books
 dt (q_start + q_end) / 2 from the junction powers at the step's start and end
 states, which cannot be negative; trajectories and every other booking are the
 default's (models/surface_pump_v3.imex_step).
@@ -31,8 +31,8 @@ booking ID}, picks the heat booking of @3's other mover classes (``channels``, `
 ``pumps``, ``calcium_pumps``) and of each declared kind's routes (by the kind's namespaced ID),
 beyond the tableau, which books every class by default and is never listed. Each class admits what
 models/inner_laws.OWN_HEAT_BOOKINGS (or the kind's heat_bookings) lists:
-``trapezoid_nonnegative@1``, booked once in the core for every class
-(models/surface_pump_v3.trapezoid_fields), and, for ``faces`` alone, ``exact_free_energy_heat@1``
+``cells.heat.trapezoid_nonnegative@1``, booked once in the core for every class
+(models/surface_pump_v3.trapezoid_fields), and, for ``faces`` alone, ``cells.heat.exact_free_energy_heat@1``
 (D280): each face books the exact free-energy release of the neutral rows it moves, and a face that
 carries a charged row, touches a held bath, or carries a row another mover moves in the step, is
 refused under it (models/surface_pump_v3.exact_face_heat). Junctions keep ``junction_heat_booking``
@@ -52,6 +52,7 @@ enters the constant-field flux, the affinities and the pumps only.
 """
 
 import copy
+import math
 from bisect import bisect_right
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field, fields, replace
@@ -65,24 +66,26 @@ from cells.definitions import surface_pump_v2_spec as second
 from cells.definitions import surface_tissue_spec as tissue
 from cells.definitions.spec_values import fraction, identifier
 from cells.definitions.specs import ConfigError, ExtracellularFaceSpec, _fields, _integer, _number
+from cells.laws.channels import open_channel_block as block_law
 from cells.laws.junctions import junction_gate
 from cells.laws.junctions import junction_series_gates as series_gates
 from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
 from cells.numerics import surface_imex as imex
+from cells.numerics.surface_field import SPARSE_SOLVER_ID
 from cells.registry import kind_registry
 from cells.registry import species_registry as registry
 
-MODEL_ID = "resolved_pump_tissue@3"
-KV1P5_LAW_ID = "kv1p5_mh@1"
-KIR2P1_LAW_ID = "kir2p1_mh2@1"
-NAV1P2_LAW_ID = "nav1p2_m3h_regularized@1"
-KLEAK_LAW_ID = "kleak_always_open@1"
-NALEAK_LAW_ID = "naleak_always_open@1"
+MODEL_ID = "cells.model.resolved_pump_tissue@3"
+KV1P5_LAW_ID = "cells.channel.kv1p5_mh@1"
+KIR2P1_LAW_ID = "cells.channel.kir2p1_mh2@1"
+NAV1P2_LAW_ID = "cells.channel.nav1p2_m3h_regularized@1"
+KLEAK_LAW_ID = "cells.channel.kleak_always_open@1"
+NALEAK_LAW_ID = "cells.channel.naleak_always_open@1"
 DEFAULT_JUNCTION_HEAT = "explicit_tableau"
-TRAPEZOID_JUNCTION_HEAT = "trapezoid_nonnegative@1"
+TRAPEZOID_JUNCTION_HEAT = "cells.heat.trapezoid_nonnegative@1"
 JUNCTION_HEAT_BOOKINGS = (DEFAULT_JUNCTION_HEAT, TRAPEZOID_JUNCTION_HEAT)
 # Seam D's exact booking for @3's faces (D280; INNER_MODEL_V4_DESIGN §7.5's name and version 1).
-EXACT_FREE_ENERGY_HEAT = "exact_free_energy_heat@1"
+EXACT_FREE_ENERGY_HEAT = "cells.heat.exact_free_energy_heat@1"
 # Today's five channel laws, the full catalogue's (structure None), by name: codes 0-2 are those of
 # laws/channels/sodium_channels.LAW_CODES, whose dispatch that path reuses; 3 and 4 are gate-free
 # leaks. Padding slots are inactive, not a code. The full-catalogue dispatch, its domain and the
@@ -163,12 +166,25 @@ def gate_counts():
     return {law_id: len(law.gates) for law_id, law in channel_laws().items()}
 
 
-SPECIES_VALENCE = {"Na": 1, "K": 1, "Cl": -1}  # Cl⁻ for clleak_always_open@1 (D228 item 3).
+# The ions a channel law may carry on the charge rule alone; a law that carries any other, a scarce
+# one, declares its material term (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §5.2).
+MAJOR_IONS = ("Na", "K", "Cl")
 CHANNEL_FIELDS = set(kinetic.ChannelPopulation.__dataclass_fields__)
 # B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): a population's optional factor sources, parsed beside
 # the shared ChannelPopulation dataclass (whose fields and fingerprints other families share).
 CHANNEL_FACTORS = "factors"
-_NONE = object()  # A channel entry without factors.
+_NONE = object()  # A channel entry without factors, or without a block.
+# FR-51 (D327): a population's optional open-channel block, popped before the strict parse as
+# factors is. A population that declares neither stays a ChannelPopulation.
+CHANNEL_BLOCK = "block"
+BLOCK_KEYS = {"law", "blocker", "reference", "modes"}
+BLOCKER_KEYS = {"id", "valence", "side", "concentration_mM"}
+STEEPNESS_KEYS = ("electrical_distance", "effective_valence")  # Exactly one per mode (ruling 7).
+REVERSAL_OF = "reversal_of"
+BLOCK_N2_REFUSAL = (
+    "An implicit-conductance solver (N2) beside a blocked channel population is refused: a "
+    "negative slope in its operator could make it indefinite (FR-51, ruling 5)"
+)
 # The model fields @3's parse sets itself; the others are the @2 base's.
 OWN_FIELDS = (
     "channels",
@@ -207,7 +223,7 @@ class SurfacePumpChannelModel:
     # class, the tableau never listed; () for every definition of today's, and then to_dict
     # writes nothing. Held by the structure (InnerStructure.heat_bookings), never by the layout.
     heat_bookings: tuple = ()
-    # The faces of logmean_electrodiffusion_forms@1 (FormsFace), in declared order: their own
+    # The faces of cells.route.logmean_electrodiffusion_forms@1 (FormsFace), in declared order: their own
     # entity set, never in `faces` or its arrays; () for every definition of today's, and then
     # to_dict writes nothing, so fingerprints are unchanged.
     forms_faces: tuple = ()
@@ -215,7 +231,7 @@ class SurfacePumpChannelModel:
 
 @dataclass(frozen=True)
 class FormsFace(ExtracellularFaceSpec):
-    """A face of logmean_electrodiffusion_forms@1 (laws/routes/logmean_electrodiffusion_forms):
+    """A face of cells.route.logmean_electrodiffusion_forms@1 (laws/routes/logmean_electrodiffusion_forms):
     today's face fields, one diffusivity per species. The base families parse and check it as its
     degenerate plain face (surface_tissue_spec.admitting_faces); @3 holds it in forms_faces."""
 
@@ -226,6 +242,17 @@ FORMS_FACE_SOLVERS = (imex.EULER_ID, imex.ARS222_ID)
 FORMS_FACE_SOLVER_REFUSAL = (
     f"{forms_law.LAW_ID} runs on the plain IMEX tableaux in version 1 "
     f"({', '.join(FORMS_FACE_SOLVERS)}): RK4 and N2 refuse it"
+)
+# FR-17 stage 1 (D317): @3 admits the sparse field solver (surface_field.SPARSE_SOLVER_ID), and
+# the models that parse through it do; @1's and @2's parses refuse it. In its first stage it runs
+# the plain IMEX tableaux alone, with plain faces: RK4, N2's implicit conductances (a dense
+# conductance Laplacian) and the forms faces (a dense forms Laplacian) are refused under it, as is
+# any field-input provider (pump_composite_adapter.check_field_inputs).
+SPARSE_FIELD_SOLVERS = (imex.EULER_ID, imex.ARS222_ID)
+SPARSE_FIELD_REFUSAL = (
+    f"{SPARSE_SOLVER_ID} runs the plain IMEX tableaux ({', '.join(SPARSE_FIELD_SOLVERS)}) "
+    "with plain faces in its first stage (FR-17): RK4, N2's implicit conductances and "
+    f"{forms_law.LAW_ID} are refused under it"
 )
 
 
@@ -268,7 +295,7 @@ class Experiment(second.Experiment):
 
 
 def projection(spec):
-    """The resolved_pump_tissue@2 part of a definition (no channel populations)."""
+    """The cells.model.resolved_pump_tissue@2 part of a definition (no channel populations)."""
     m, e = spec.model, spec.experiment
     model = second.SurfacePumpModel(
         **{
@@ -290,32 +317,54 @@ def projection(spec):
 
 
 def parse_channel(raw, ids, z, membranes):
+    """One channel population, strictly; `ids` and `z` are the model's species and their valences.
+    Its law, from the law registry, is the one authority for its ions: their species, valences and
+    permeability ratios. A law that carries an ion outside MAJOR_IONS and declares no material term
+    is refused by name."""
     _fields(raw, CHANNEL_FIELDS, "channel")
-    law = raw["kinetic_law"]
-    permeabilities, gates = law_permeabilities(), gate_counts()  # The registry's (§8.3).
-    if type(law) is not str or law not in gates or type(raw["permeant_ions"]) is not list:
-        raise ConfigError("Channel requires a resolved_pump_tissue@3 law and permeant ions")
+    law_id, laws = raw["kinetic_law"], channel_laws()  # The registry's (§8.3).
+    if type(law_id) is not str or law_id not in laws or type(raw["permeant_ions"]) is not list:
+        raise ConfigError(
+            "Channel requires a cells.model.resolved_pump_tissue@3 law and permeant ions"
+        )
+    law = laws[law_id]
+    valence = {species: own for species, own, _ in law.permeant}
     ions = []
     for ion in raw["permeant_ions"]:
         _fields(ion, set(kinetic.PermeantIon.__dataclass_fields__), "permeant ion")
         species = identifier(ion["species_id"])
         weight = _number(ion["relative_permeability"], "relative permeability")
-        if species not in ids or z[ids.index(species)] != SPECIES_VALENCE.get(species):
-            raise ConfigError("Channel ion requires its law's species and valence")
+        own = valence.get(species)
+        given = z[ids.index(species)] if species in ids else None
+        if own is None or given != own:
+            carries = f"no {species}" if own is None else f"{species} at valence {own}"
+            declares = "no such species" if given is None else f"it at valence {given}"
+            raise ConfigError(
+                f"Channel ion requires its law's species and valence: {law_id} carries {carries}, "
+                f"and the model declares {declares}"
+            )
         ions.append(kinetic.PermeantIon(species, weight))
-    if tuple((i.species_id, i.relative_permeability) for i in ions) != permeabilities[law]:
+    ratios = tuple((species, weight) for species, _, weight in law.permeant)
+    if tuple((i.species_id, i.relative_permeability) for i in ions) != ratios:
         raise ConfigError("Channel ions must exactly match the named law's permeability ratios")
+    scarce = [species for species in valence if species not in MAJOR_IONS]
+    if scarce and law.material_term is None:
+        raise ConfigError(
+            f"Channel {identifier(raw['id'])}: {law_id} carries {scarce[0]}, which is not Na, K or "
+            "Cl, and declares no material_term; the charge rule alone does not hold a scarce ion's "
+            "amounts"
+        )
     patch = identifier(raw["membrane_id"])
     if (
         patch not in membranes
         or type(raw["initial_gate"]) is not list
-        or len(raw["initial_gate"]) != gates[law]
+        or len(raw["initial_gate"]) != len(law.gates)
     ):
         raise ConfigError("Channel requires its patch and exactly its law's gate state")
     return kinetic.ChannelPopulation(
         identifier(raw["id"]),
         patch,
-        law,
+        law_id,
         _number(raw["max_permeability_m_per_s"], "channel permeability"),
         _number(raw["abundance"], "channel abundance"),
         tuple(fraction(v, "initial channel gate") for v in raw["initial_gate"]),
@@ -324,18 +373,64 @@ def parse_channel(raw, ids, z, membranes):
 
 
 @dataclass(frozen=True)
+class BlockMode:
+    """One weighted mode of a block (FR-51): its weight w (dimensionless), K(0) in mM, and exactly
+    one steepness (ruling 7). That is the electrical distance delta in [0, 1] or the effective
+    valence z_eff > 0; the other is None."""
+
+    weight: float
+    k0_mM: float
+    electrical_distance: float | None = None
+    effective_valence: float | None = None
+
+
+@dataclass(frozen=True)
+class ChannelBlock:
+    """A population's open-channel blocker (FR-51, D327; cells.channel_block.open_channel_block_weighted_modes@1).
+
+    The blocker has valence z_B and is held at concentration_mM (mM, constant in version 1) on its
+    side. It is referenced to the patch voltage (reversal_of None) or to V - E of the named
+    permeant ion, and binds in weighted modes. The block declares no count, and the bound blocker
+    is taken from no row (trace binding)."""
+
+    law: str
+    blocker_id: str
+    valence: int
+    side: str
+    concentration_mM: float
+    reversal_of: str | None
+    modes: tuple[BlockMode, ...]
+
+    def steepness(self):
+        """Each mode's signed steepness s sgn(z_B) m_k (dimensionless), with m_k = |z_B| delta_k or
+        z_eff,k. a_k is this times F/(R T) (fr51-channel-block-v1 §1.1)."""
+        sign = block_law.SIDES[self.side] * (1 if self.valence > 0 else -1)
+        return tuple(
+            sign
+            * (
+                abs(self.valence) * m.electrical_distance
+                if m.effective_valence is None
+                else m.effective_valence
+            )
+            for m in self.modes
+        )
+
+
+@dataclass(frozen=True)
 class FactoredChannelPopulation(kinetic.ChannelPopulation):
     """A channel population whose entry declares factors (B1's door, docs/CORE_SEAMS_DESIGN.md
-    §4.3): the shared ChannelPopulation with its factor-source IDs, in declared order. A population
-    without factors stays a ChannelPopulation, so its form and fingerprint are today's."""
+    §4.3), a block (FR-51), or both: the shared ChannelPopulation with its factor-source IDs, in
+    declared order, and its block. A population with neither stays a ChannelPopulation, so its
+    form and fingerprint are today's."""
 
     factors: tuple[str, ...] = ()
+    block: ChannelBlock | None = None
 
 
-def factored(channel, factors):
-    """The population as a FactoredChannelPopulation with these factors."""
+def factored(channel, factors, block=None):
+    """The population as a FactoredChannelPopulation with these factors and this block."""
     values = {f.name: getattr(channel, f.name) for f in fields(kinetic.ChannelPopulation)}
-    return FactoredChannelPopulation(**values, factors=tuple(factors))
+    return FactoredChannelPopulation(**values, factors=tuple(factors), block=block)
 
 
 def channel_factors(model):
@@ -346,6 +441,163 @@ def channel_factors(model):
         for slot, c in enumerate(getattr(model, "channels", ()))
         if getattr(c, "factors", ())
     )
+
+
+def channel_blocks(model):
+    """((slot, channel ID, its ChannelBlock), ...) of the model's blocked populations, in channel
+    order; () for every definition of today's (FR-51)."""
+    return tuple(
+        (slot, c.id, c.block)
+        for slot, c in enumerate(getattr(model, "channels", ()))
+        if getattr(c, "block", None) is not None
+    )
+
+
+def _real(value, name):
+    """A finite real number, an int or a float (never a bool), its sign kept."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise ConfigError(f"{name} must be a finite number")
+    return float(value)
+
+
+def parse_block(raw, channel, species_ids):
+    """A population's block (FR-51, D327). Each refusal names its reason
+    (fr51-channel-block-v1 §1.2)."""
+    name = f"Channel {channel.id}: block"
+    _fields(raw, BLOCK_KEYS, name)
+    if raw["law"] != block_law.LAW_ID:
+        raise ConfigError(f"{name}: law must be {block_law.LAW_ID}")
+    blocker = _fields(raw["blocker"], BLOCKER_KEYS, f"{name}'s blocker")
+    blocker_id = identifier(blocker["id"])
+    ions = tuple(i.species_id for i in channel.permeant_ions)
+    if blocker_id in species_ids or blocker_id in ions:
+        raise ConfigError(
+            f"{name}: the blocker {blocker_id!r} names a species row or a permeant ion; version "
+            "1's blocker is a declared constant, not a row"
+        )
+    valence = blocker["valence"]
+    if type(valence) is not int or valence == 0:
+        raise ConfigError(
+            f"{name}: the blocker's valence is a nonzero integer, kept for the charge's sign"
+        )
+    side = blocker["side"]
+    if side not in block_law.SIDES:
+        raise ConfigError(f"{name}: the blocker's side is outside or inside")
+    concentration = _real(blocker["concentration_mM"], f"{name}'s blocker concentration")
+    low, high = block_law.BLOCKER_RANGE_MM
+    if not low <= concentration <= high:
+        raise ConfigError(
+            f"{name}: the blocker concentration lies in [{low:g}, {high:g}] mM, the admitted domain"
+        )
+    reference = raw["reference"]
+    if reference == block_law.MEMBRANE_VOLTAGE:
+        reversal_of = None
+    elif isinstance(reference, dict) and set(reference) == {REVERSAL_OF}:
+        reversal_of = reference[REVERSAL_OF]
+        if reversal_of not in ions:
+            raise ConfigError(
+                f"{name}: the reversal reference names {reversal_of!r}, an ion the population "
+                "does not carry"
+            )
+    else:
+        raise ConfigError(
+            f"{name}: reference is {block_law.MEMBRANE_VOLTAGE!r} or {{{REVERSAL_OF!r}: ion}}"
+        )
+    carried = [i.species_id for i in channel.permeant_ions if i.relative_permeability]
+    law = channel_laws()[channel.kinetic_law]
+    if reversal_of is not None and len(carried) > 1 and law.material_term is not None:
+        raise ConfigError(  # The stage's term through the reversal is the named ion's own flux's.
+            f"{name}: {law.law_id} carries {', '.join(carried)} and declares a material term, and "
+            f"the block reads the reversal of {reversal_of}: the material term bounds only "
+            f"{reversal_of}'s own flux through that reversal, so its other ions' have no bound "
+            "(the membrane voltage as the reference is admitted)"
+        )
+    modes = raw["modes"]
+    if type(modes) is not list or not modes:
+        raise ConfigError(f"{name}: modes is a non-empty list")
+    if len(modes) > block_law.MAX_MODES:
+        raise ConfigError(
+            f"{name}: at most {block_law.MAX_MODES} modes, since the mode axis is static and its "
+            "sums are unrolled"
+        )
+    parsed = tuple(_block_mode(m, valence, f"{name}'s mode {k}") for k, m in enumerate(modes))
+    if abs(math.fsum(m.weight for m in parsed) - 1.0) > block_law.SUM_ULPS * np.spacing(1.0):
+        raise ConfigError(
+            f"{name}: the modes' weights sum to 1 within {block_law.SUM_ULPS} ulps, since they are "
+            "fractions of one population"
+        )
+    return ChannelBlock(block_law.LAW_ID, blocker_id, valence, side, concentration, reversal_of,
+                        parsed)  # fmt: skip
+
+
+def _block_mode(raw, valence, name):
+    """One mode (FR-51): its weight, K(0) and its one steepness (ruling 7), in the admitted
+    domain."""
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{name} must be an object")
+    steep = [key for key in STEEPNESS_KEYS if key in raw]
+    if len(steep) != 1:
+        raise ConfigError(
+            f"{name}: declare exactly one of electrical_distance and effective_valence (ruling 7: "
+            "one steepness per mode)"
+        )
+    _fields(raw, {"weight", "k0_mM", *steep}, name)
+    weight = _real(raw["weight"], f"{name}'s weight")
+    if not 0.0 <= weight <= 1.0:
+        raise ConfigError(f"{name}: the weight lies in [0, 1], a fraction of the population")
+    k0 = _real(raw["k0_mM"], f"{name}'s k0_mM")
+    low, high = block_law.K0_RANGE_MM
+    if not low <= k0 <= high:
+        raise ConfigError(f"{name}: k0_mM lies in [{low:g}, {high:g}] mM, the admitted domain")
+    value = _real(raw[steep[0]], f"{name}'s {steep[0]}")
+    if steep[0] == "electrical_distance":
+        if not 0.0 <= value <= 1.0:
+            raise ConfigError(
+                f"{name}: the electrical distance lies in [0, 1], a fraction of the field"
+            )
+        steepness, mode = abs(valence) * value, BlockMode(weight, k0, electrical_distance=value)
+    else:
+        if value <= 0.0:
+            raise ConfigError(
+                f"{name}: the effective valence is positive; its sign comes from s sgn(z_B)"
+            )
+        steepness, mode = value, BlockMode(weight, k0, effective_valence=value)
+    if steepness > block_law.MAX_STEEPNESS:
+        raise ConfigError(
+            f"{name}: the steepness {steepness:g} exceeds {block_law.MAX_STEEPNESS:g}, the "
+            "admitted domain's limit"
+        )
+    return mode
+
+
+def block_to_dict(block):
+    """A ChannelBlock as its declaration (FR-51)."""
+    return {
+        "law": block.law,
+        "blocker": {
+            "id": block.blocker_id,
+            "valence": block.valence,
+            "side": block.side,
+            "concentration_mM": block.concentration_mM,
+        },
+        "reference": (
+            block_law.MEMBRANE_VOLTAGE
+            if block.reversal_of is None
+            else {REVERSAL_OF: block.reversal_of}
+        ),
+        "modes": [
+            {
+                "weight": m.weight,
+                "k0_mM": m.k0_mM,
+                **(
+                    {"electrical_distance": m.electrical_distance}
+                    if m.effective_valence is None
+                    else {"effective_valence": m.effective_valence}
+                ),
+            }
+            for m in block.modes
+        ],
+    }
 
 
 def _factor_sources(given, channel_id):
@@ -373,7 +625,13 @@ def channel_to_dict(p):
         "permeant_ions": [asdict(i) for i in p.permeant_ions],
     }
     if type(p) is FactoredChannelPopulation:  # B1's door: its factors, in declared order.
-        out[CHANNEL_FACTORS] = list(p.factors)
+        out.pop(CHANNEL_BLOCK)  # FR-51: written only where declared, so no fingerprint moves.
+        if p.factors:
+            out[CHANNEL_FACTORS] = list(p.factors)
+        else:
+            out.pop(CHANNEL_FACTORS)
+        if p.block is not None:
+            out[CHANNEL_BLOCK] = block_to_dict(p.block)
     return out
 
 
@@ -473,7 +731,7 @@ def _kind_schedules(registry, declared, given, base):
     return tuple(out)
 
 
-# --- FR-30 (D262): junctions whose gate is junction_series_gates@1, development only ----------
+# --- FR-30 (D262): junctions whose gate is cells.junction.junction_series_gates@1, development only ----------
 
 SERIES_GATE_LAW_ID = series_gates.LAW_ID
 SERIES_DEVELOPMENT = (
@@ -493,7 +751,7 @@ def series_gate_parameters(gate):
 
 
 def parse_series_gate(block):
-    """A junction_series_gates@1 gate block: {law, development: true, gates: [fast, slow]}, each
+    """A cells.junction.junction_series_gates@1 gate block: {law, development: true, gates: [fast, slow]}, each
     gate {kind, its kind's parameters by name, initial}. Returns @1's admission tuple: the
     junction's minimum and initial conductance (the products of the gates' residuals and initial
     factors), its class and its extra fields. Every gate lies on the law's own domain at 0 V."""
@@ -580,7 +838,7 @@ def parse(data):
         or not isinstance(x, dict)
         or m.get("id") != MODEL_ID
     ):
-        raise ConfigError("Require resolved_pump_tissue@3")
+        raise ConfigError("Require cells.model.resolved_pump_tissue@3")
     if "channels" not in m or "channel_controls" not in e or "channel_capacity" not in x:
         raise ConfigError("Declare channels, channel_controls and channel_capacity")
     channels, controls = m.pop("channels"), e.pop("channel_controls")
@@ -593,8 +851,10 @@ def parse(data):
     heat_bookings = _heat_bookings(m.pop(HEAT_BOOKINGS_KEY, {}), x.get("solver"))
     if type(channels) is not list:
         raise ConfigError("channels requires an explicit list")
-    # B1's door: each entry's factors leave this copy before the strict channel parse.
+    # B1's door: each entry's factors leave this copy before the strict channel parse; so does
+    # FR-51's block.
     popped = [c.pop(CHANNEL_FACTORS, _NONE) if isinstance(c, dict) else _NONE for c in channels]
+    blocks = [c.pop(CHANNEL_BLOCK, _NONE) if isinstance(c, dict) else _NONE for c in channels]
     # The registry hook (§7.4 (f) 7): the registry's keys leave this copy's species entries and
     # model block before @2's strict species parse; None when the model declares none.
     declared = registry.parse_entries(m)
@@ -622,7 +882,7 @@ def parse(data):
     solver = x.get("solver")
     if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
         x["solver"] = imex.ARS222_ID
-    # The forms law (logmean_electrodiffusion_forms@1): @3 alone admits it on faces. The base
+    # The forms law (cells.route.logmean_electrodiffusion_forms@1): @3 alone admits it on faces. The base
     # families parse and check each forms face as its degenerate plain face, so the declared
     # face_capacity, which counts today's faces, is widened for their parse alone; the forms faces
     # then leave `faces` for their own entity set (forms_faces).
@@ -635,16 +895,23 @@ def parse(data):
     )
     if forms_count and type(declared_faces) is int:
         x["face_capacity"] = declared_faces + forms_count
-    # FR-30 (D262): @3 alone admits junction_series_gates@1; @1's and @2's parses refuse it.
+    if x.get("field_solver") == SPARSE_SOLVER_ID and (
+        solver not in SPARSE_FIELD_SOLVERS or forms_count
+    ):
+        raise ConfigError(SPARSE_FIELD_REFUSAL)
+    # FR-30 (D262): @3 alone admits cells.junction.junction_series_gates@1; @1's and @2's parses refuse it.
     with first.admitting({SERIES_GATE_LAW_ID: parse_series_gate}):
         with tissue.admitting_faces({forms_law.LAW_ID: FormsFace}):
-            base = second.parse(raw)
+            with first.admitting_field_solvers((SPARSE_SOLVER_ID,)):
+                base = second.parse(raw)
     series_junction_errors(base.model)
     forms_faces = tuple(f for f in base.model.faces if type(f) is FormsFace)
     if forms_faces:
         plain = tuple(f for f in base.model.faces if type(f) is not FormsFace)
         if declared_faces < len(plain):
-            raise ConfigError("face_capacity must hold every face of logmean_electrodiffusion@1")
+            raise ConfigError(
+                "face_capacity must hold every face of cells.route.logmean_electrodiffusion@1"
+            )
         if solver not in FORMS_FACE_SOLVERS:
             raise ConfigError(FORMS_FACE_SOLVER_REFUSAL)
         base = replace(
@@ -655,9 +922,19 @@ def parse(data):
     ids, z = base.model.species_ids, base.model.valence
     parsed = tuple(parse_channel(c, ids, z, {p.id for p in base.model.membranes}) for c in channels)
     parsed = tuple(
-        c if given is _NONE else factored(c, _factor_sources(given, c.id))
-        for c, given in zip(parsed, popped, strict=True)
+        c
+        if given is _NONE and block is _NONE
+        else factored(
+            c,
+            () if given is _NONE else _factor_sources(given, c.id),
+            None if block is _NONE else parse_block(block, c, ids),
+        )
+        for c, given, block in zip(parsed, popped, blocks, strict=True)
     )
+    if solver in imex.IMPLICIT_CONDUCTANCE_IDS and any(
+        getattr(c, "block", None) is not None for c in parsed
+    ):
+        raise ConfigError(BLOCK_N2_REFUSAL)
     model = base.model
     names = [
         p.id
@@ -734,6 +1011,7 @@ def parse(data):
         declared = (
             spec.model.kinds
             or channel_factors(spec.model)
+            or channel_blocks(spec.model)  # FR-51: the structure holds the blocked populations.
             or any(c.kinetic_law not in LAW_CODES for c in spec.model.channels)
             or spec.model.heat_bookings  # Seam D: the structure holds the picks.
             or any(isinstance(j, kinetic.SeriesJunction) for j in spec.model.junctions)  # FR-30.
@@ -746,7 +1024,7 @@ def parse(data):
 
 
 def control_values(spec, times):
-    """resolved_pump_tissue@2 controls with the channel availabilities filled in."""
+    """cells.model.resolved_pump_tissue@2 controls with the channel availabilities filled in."""
     base = second.control_values(projection(spec), times)
     changes = spec.experiment.changes
     clock = [c.time for c in changes]

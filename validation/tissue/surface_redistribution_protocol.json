@@ -1,6 +1,6 @@
 {
   "kind": "resolved_neutral_mobile_surface_qualification@1",
-  "scope": "Neutral always-open conserved membrane populations coupled to resolved_tissue@1 ionic surfaces. Two mobile populations, unequal patch areas, one finite exterior and one held reservoir; 0.4-ms synthetic accelerated-diffusion controls. Open/closed two-cell resolved-field stage checks. This qualifies a bounded numerical composition, not biological rates or native BETSE redistribution correspondence.",
+  "scope": "Neutral always-open conserved membrane populations coupled to cells.model.resolved_tissue@1 ionic surfaces. Two mobile populations, unequal patch areas, one finite exterior and one held reservoir; 0.4-ms synthetic accelerated-diffusion controls. Open/closed two-cell resolved-field stage checks. This qualifies a bounded numerical composition, not biological rates or native BETSE redistribution correspondence.",
   "tests": [
     "tests/unit/test_surface_redistribution.py"
   ],

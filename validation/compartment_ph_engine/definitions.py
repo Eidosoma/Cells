@@ -1,12 +1,12 @@
 """Definitions of FR-4's and FR-5's first acceptance worlds (generic; §13 of the FR-4/FR-5 note).
 
-`fr4_world(world)` builds the resolved_pump_tissue@3 definition from parameters.World:
+`fr4_world(world)` builds the cells.model.resolved_pump_tissue@3 definition from parameters.World:
 - one owner cell in a held bath, an impermeant plasma patch, the lumped compartment node and its
-  bounding patch with the K+ counterion route (constant_field@1), and the nine species rows (Na,
+  bounding patch with the K+ counterion route (cells.route.constant_field@1), and the nine species rows (Na,
   K, Cl, H as proton equivalents, B_c, B_L, ATP, ADP, Pi) with their species-registry entries;
 - the declared kinds (§7.4 (k)): B4's rapid-buffer closure (`stage_reads`,
-  cells.rapid_proton_buffer@1), the proton pump (`transporters`, cells.transporter@1, on held
-  fuel whose rows the kind holds) and the proton leak (`passive_routes`, cells.passive_routes@1).
+  cells.kind.rapid_proton_buffer@1), the proton pump (`transporters`, cells.kind.transporter@1, on held
+  fuel whose rows the kind holds) and the proton leak (`passive_routes`, cells.kind.passive_routes@1).
   Δ_rG'° is the registry's: the fuel rows' potentials (`fuel_potentials_RT`);
 - FR-1's compartment declaration (`operators`), for the composite path.
 
@@ -18,7 +18,7 @@ is corrected as a dated pre-run correction.
 `today_only(definition)` strips what today's parser refuses: the compartment operator, FR-5's
 damage state, conditions and schedules, and the passive routes that declare factors (FR-5's,
 dropped whole). FR-5's parts are the FR-4/FR-5 note's §16 forms: `patch_damage`
-(cells.patch_damage@1) and `ph_conditions` (cells.ph_condition@1, at a node by its ID) are the
+(cells.kind.patch_damage@1) and `ph_conditions` (cells.kind.ph_condition@1, at a node by its ID) are the
 routing door's sources, and a route's `factors` lists their IDs in declared order; the schedules
 take the core's gap-6 format when it lands (`damage_controls` is the draft's placeholder).
 Rows that do not apply at a node carry the world's declared trace (absent rows are refused, the
@@ -46,12 +46,14 @@ from validation.compartment_ph_engine.parameters import CHARGE_PER_FMOL, R, Worl
 SPECIES = (("Na", 1), ("K", 1), ("Cl", -1), ("H", 1), ("B_c", -1), ("B_L", -1),
            ("ATP", 0), ("ADP", 0), ("Pi", 0))
 PENDING_MODEL_KEYS = ("operators", "patch_damage", "ph_conditions")
-COMPOSITE_MODEL = "resolved_pump_composite@1"  # declared_world's: @3 inner, FR-1's operator
+COMPOSITE_MODEL = (
+    "cells.model.resolved_pump_composite@1"  # declared_world's: @3 inner, FR-1's operator
+)
 BACKGROUND_ROWS = ("B_c", "B_L", "ATP", "ADP", "Pi")
 PENDING_EXPERIMENT_KEYS = ("damage_controls",)
 FUEL_ROWS = ("ATP", "ADP", "Pi")
-PUMP_LAW = "cells.proton_atp_mass_action_positive@1"
-HELD_FUEL = "maintained_held_rows@1"
+PUMP_LAW = "cells.cycle.proton_atp_mass_action_positive@1"
+HELD_FUEL = "cells.fuel_kind.maintained_held_rows@1"
 CELL, BATH, LUMEN = "cell_0", "bath_0", "lumen_0"
 PLASMA, BOUNDING = "plasma_0", "bounding_0"
 RECORD_EVERY_S = 1.0
@@ -105,7 +107,7 @@ def _patch(world, pid, outside, area, permeability):
     return dict(id=pid, inside=CELL, outside=outside, area_m2=area,
                 capacitance_F=world.specific_capacitance_F_m2 * area,
                 permeability_m_per_s={s: permeability.get(s, 0.0) for s, _ in SPECIES},
-                law="constant_field@1", pump=None, calcium_pump=None)
+                law="cells.route.constant_field@1", pump=None, calcium_pump=None)
 
 
 def fuel_potentials_RT(world):
@@ -136,18 +138,18 @@ def fr4_world(world=None, *, dt_s=None):
             entry.update(background=dict(trace_mM=w.trace_mM, floor_fmol=w.trace_floor_fmol))
         species.append(entry)
     model = dict(
-        id="resolved_pump_tissue@3", temperature_K=w.temperature_K, species=species,
+        id="cells.model.resolved_pump_tissue@3", temperature_K=w.temperature_K, species=species,
         cells=[_node(w, CELL)],
         extracellular=[_node(w, BATH, outside=True, reservoir=True),
                        _node(w, LUMEN, outside=True, reservoir=False)],
         membranes=[_patch(w, PLASMA, BATH, w.owner[1], {}),
                    _patch(w, BOUNDING, LUMEN, w.patch_area_m2, {"K": w.counterion_k_m_s})],
         junctions=[], faces=[], channels=[],
-        closure=dict(law="resolved_capacitor_components_current_continuity@1",
+        closure=dict(law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
                      gauge_reference=None),
         # --- pending (§7.4 names; the core's insertion points) ---
         standard_concentration_mM=w.standard_concentration_mM,
-        stage_reads=[dict(read_id="rapid_proton_buffer@1", proton_row="H",
+        stage_reads=[dict(read_id="cells.kind.rapid_proton_buffer@1", proton_row="H",
                           buffers={CELL: ["B_c"], LUMEN: ["B_L"]},
                           k_on_per_mM_s={b.name: b.k_on_per_mM_s for b in registry.values()})],
         transporters=[dict(id="pump_0", patch=BOUNDING, law=PUMP_LAW,
@@ -156,9 +158,9 @@ def fr4_world(world=None, *, dt_s=None):
                            fuel=dict(kind=HELD_FUEL, node=CELL, rows=list(FUEL_ROWS),
                                      ph_ref=w.cytosol_mM["pH"], ph_band=w.fuel_ph_band))],
         passive_routes=[dict(id="proton_leak_0", patch=BOUNDING,
-                             law="proton_constant_field_leak@1",
+                             law="cells.route.proton_constant_field_leak@1",
                              permeability_m_per_s=w.proton_leak_m_s)],
-        operators=[dict(law="cell_owned_compartments@1",
+        operators=[dict(law="cells.operator.cell_owned_compartments@1",
                         compartments=[dict(id="compartment_0", node=LUMEN, patch=BOUNDING,
                                            owner=CELL, label="lumped population",
                                            reference=None, role="lumen")])],
@@ -171,13 +173,24 @@ def fr4_world(world=None, *, dt_s=None):
         observation_times=[k * dt for k in range(0, steps + 1, stride)],
     )
     execution = dict(
-        dt=dt, capacity=1, extracellular_capacity=2, membrane_capacity=2, edge_capacity=0,
-        face_capacity=0, channel_capacity=0, backend="cpu", jit=True, precision="float64",
-        solver="imex_ars222_face_electromigration@1",
-        field_solver="capacitive_reduction_gauged_damped_newton@2", max_steps=steps + 8,
+        dt=dt,
+        capacity=1,
+        extracellular_capacity=2,
+        membrane_capacity=2,
+        edge_capacity=0,
+        face_capacity=0,
+        channel_capacity=0,
+        backend="cpu",
+        jit=True,
+        precision="float64",
+        solver="cells.solver.imex_ars222_face_electromigration@1",
+        field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
+        max_steps=steps + 8,
         max_trace_bytes=2**31,
-        material_balance_atol_fmol=dict(Na=1e-10, K=1e-10, Cl=1e-10, H=1e-16,
-                                        **{s: w.trace_floor_fmol for s in BACKGROUND_ROWS}))
+        material_balance_atol_fmol=dict(
+            Na=1e-10, K=1e-10, Cl=1e-10, H=1e-16, **{s: w.trace_floor_fmol for s in BACKGROUND_ROWS}
+        ),
+    )
     return dict(schema_version=1, model=model, experiment=experiment, execution=execution)
 
 
@@ -221,21 +234,28 @@ def fr5_world(damage_world, *, dt_s=None, start=None, control=None):
     for patch in m["membranes"]:
         patch["permeability_m_per_s"]["X"] = 0.0
     base["execution"]["material_balance_atol_fmol"]["X"] = 1e-12
-    m["patch_damage"] = [dict(id=DAMAGE, patch=BOUNDING, law="bounding_patch_damage@1",
+    m["patch_damage"] = [dict(id=DAMAGE, patch=BOUNDING, law="cells.damage.bounding_patch_damage@1",
                               initial_damage=0.0, injury_rate_per_s=dw.injury_rate_per_s,
                               resealing_rate_per_s=dw.resealing_rate_per_s)]
-    m["ph_conditions"] = [dict(id=CONDITION, node=LUMEN, law="ph_conditioned_factor@1",
-                               ph50=dw.ph50, slope=dw.ph_slope)]
+    m["ph_conditions"] = [
+        dict(
+            id=CONDITION,
+            node=LUMEN,
+            law="cells.transfer_factor.ph_conditioned_factor@1",
+            ph50=dw.ph50,
+            slope=dw.ph_slope,
+        )
+    ]
     m["passive_routes"].append(
-        dict(id="cargo_transfer_0", patch=BOUNDING, law="passive_neutral_permeation@1",
+        dict(id="cargo_transfer_0", patch=BOUNDING, law="cells.route.passive_neutral_permeation@1",
              species="X", permeability_m_per_s=dw.cargo_transfer_m_s,
              factors=[] if control == "f_equals_1" else [CONDITION]))
     if dw.pore_cargo_m_s > 0:
         m["passive_routes"].append(
-            dict(id="cargo_pore_0", patch=BOUNDING, law="passive_neutral_permeation@1",
+            dict(id="cargo_pore_0", patch=BOUNDING, law="cells.route.passive_neutral_permeation@1",
                  species="X", permeability_m_per_s=dw.pore_cargo_m_s, factors=[DAMAGE]))
     m["passive_routes"].append(
-        dict(id="proton_pore_0", patch=BOUNDING, law="proton_constant_field_leak@1",
+        dict(id="proton_pore_0", patch=BOUNDING, law="cells.route.proton_constant_field_leak@1",
              permeability_m_per_s=dw.pore_proton_m_s, factors=[DAMAGE]))
     t0, t1 = dw.injury_window_s
     injury = [dict(time=0.0, value=0.0)] + ([] if control == "d_equals_0" else [
@@ -310,7 +330,7 @@ def development_world(definition):
 
 def declared_world(definition):
     """The definition as the declared world runs, FR-1's compartment operator included: the
-    composite's form (resolved_pump_composite@1 with @3 as its inner model and the definition's
+    composite's form (cells.model.resolved_pump_composite@1 with @3 as its inner model and the definition's
     own operators block). The operator adds identity and refusals only, so its records must be
     bitwise development_world's (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1)."""
     out = copy.deepcopy(definition)

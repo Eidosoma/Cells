@@ -1,4 +1,4 @@
-"""Field solver capacitive_reduction_gauged_damped_newton@3: version 2 plus the floor.
+"""Field solver cells.solver.capacitive_reduction_gauged_damped_newton@3: version 2 plus the floor.
 
 Version 3 iterates exactly as version 2, so on every fixture where version 2
 converges the trajectories are bitwise the same. Where version 2 cannot reach
@@ -131,3 +131,11 @@ def test_pump_family_declares_version_2_or_3_only():
     with pytest.raises(ConfigError, match="declared field solver"):
         parse_spec(raw)
     assert parse_spec(definition(surface_pump_fixtures, "clamped", field.FLOOR_SOLVER_ID))
+    # The sparse field (FR-17 stage 1) is @3's alone: @1 and @2 refuse it, @3 binds its layout.
+    for fixtures in (surface_pump_fixtures, surface_pump_v2_fixtures):
+        with pytest.raises(ConfigError, match="declared field solver"):
+            parse_spec(definition(fixtures, "clamped", field.SPARSE_SOLVER_ID))
+    from validation.tissue import surface_pump_v3_fixtures
+
+    sparse = parse_spec(definition(surface_pump_v3_fixtures, "clamped", field.SPARSE_SOLVER_ID))
+    assert type(initialise(sparse).layout).__name__ == "SurfacePumpChannelSparseLayout"

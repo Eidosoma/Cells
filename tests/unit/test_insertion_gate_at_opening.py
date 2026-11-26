@@ -45,7 +45,7 @@ def cleft(onset, *, planted=True):
             dict(
                 id="furrow_kv",
                 membrane_id="furrow",
-                kinetic_law="kv1p5_mh@1",
+                kinetic_law="cells.channel.kv1p5_mh@1",
                 max_permeability_m_per_s=1e-9,
                 abundance=1.0,
                 initial_gate=DECLARED,

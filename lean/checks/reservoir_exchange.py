@@ -1,4 +1,4 @@
-"""Check uncatalyzed exchange rates and stochastic bookings in cells.assembly_lineages@1."""
+"""Check uncatalyzed exchange rates and stochastic bookings in cells.model.assembly_lineages@1."""
 
 import json
 import math

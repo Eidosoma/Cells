@@ -54,9 +54,9 @@ def test_the_planarian_package(monkeypatch):
     assert {e["kind"] for e in view["events"]} == {"current"}
     assert all(e["at"] == {"cell": loop.cell} for e in view["events"])
     assert view["run"]["engine_models"] == [
-        "resolved_pump_composite@1",
-        "resolved_pump_tissue@3",
-        "electrode_current_injection@1",
+        "cells.model.resolved_pump_composite@1",
+        "cells.model.resolved_pump_tissue@3",
+        "cells.operator.electrode_current_injection@1",
     ]
 
 
@@ -84,5 +84,5 @@ def test_the_cycle_probe_asks_the_engine():
     item = cycle_probe.admission(("area", "division"))
     assert (item["admitted"], item["errors"], item["added_prerequisites"]) == (True, [], [])
     inserted = cycle_probe.admission(("insertion", "division"))
-    assert inserted["added_prerequisites"] == ["membrane_entity_state@1"]
-    assert inserted["laws"][0] == "membrane_entity_state@1"
+    assert inserted["added_prerequisites"] == ["cells.operator.membrane_entity_state@1"]
+    assert inserted["laws"][0] == "cells.operator.membrane_entity_state@1"

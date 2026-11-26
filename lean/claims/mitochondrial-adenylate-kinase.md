@@ -19,7 +19,7 @@ One signed extent of 2 ADP ⇌ ATP + AMP conserves adenylates, phosphate groups 
 - [CellsProofs.Chemistry.MitochondrialReactions.kinase_peak_gap](../CellsProofs/Chemistry/MitochondrialReactions.lean#L51)
 - [CellsProofs.Chemistry.MitochondrialReactions.kinase_peak_bound](../CellsProofs/Chemistry/MitochondrialReactions.lean#L64)
 
-Direct proof subject `cells.adenylate_kinase@1`
+Direct proof subject `cells.cycle.adenylate_kinase@1`
 
 Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 
@@ -36,6 +36,8 @@ Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 ## Biological evidence
 
 **Open.** Total-nucleotide equilibrium quotient as a function of free Mg in a defined preparation.
+
+- [The apparent adenylate-kinase equilibrium quotient formed from total nucleotides depends on free Mg²⁺.](../WET_LAB_EVIDENCE.md#pair-adenylate-kinase-magnesium) · Supported by both studies
 
 Two enzyme assays support a magnesium-dependent equilibrium. The position of the predicted maximum and its transfer to the cardiac intermembrane space remain open.
 

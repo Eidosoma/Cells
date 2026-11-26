@@ -1,4 +1,4 @@
-"""cells.size_threshold_fission@1: size-triggered fission with an exact random partition.
+"""cells.operator.size_threshold_fission@1: size-triggered fission with an exact random partition.
 
 The trigger (GARD_DESIGN §1.5, 1). An assembly splits when a join brings its size N to the
 declared `size`. With single-molecule events the boundary is exact: there is no overshoot, and

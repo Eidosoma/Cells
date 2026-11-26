@@ -1,0 +1,2368 @@
+{
+ "kind": "cells.id_moves.choices@1",
+ "move": "id-rename",
+ "description": "The scripted ID rename's choices (D345, D346, D371, D380, D383; docs/ID_HIERARCHY_DESIGN.md, sections 2, 5, 6 and 11), read by scripts/id_moves.py and edited by hand. A seed names a module's constant (or, with keys, a lookup table whose keys are the IDs that no registry holds), and its family is one of registry/ids.py's words, which have no other home. Nothing waits for a word: the user's are D383's. An entry that the tree has overtaken is refused by `check` and by `table`.",
+ "scope": {
+  "dirs": [
+   "src/",
+   "tests/",
+   "validation/",
+   "scripts/",
+   "examples/",
+   "configs/"
+  ],
+  "suffixes": [
+   ".py",
+   ".json",
+   ".sh",
+   ".toml"
+  ],
+  "test_ids": [
+   "tests/tier3_record.json"
+  ]
+ },
+ "seeds": [
+  {
+   "module": "cells.numerics.surface_imex",
+   "name": "EULER_ID",
+   "family": "solver"
+  },
+  {
+   "module": "cells.numerics.surface_imex",
+   "name": "ARS222_ID",
+   "family": "solver"
+  },
+  {
+   "module": "cells.numerics.surface_imex",
+   "name": "IMPLICIT_CONDUCTANCES_ID",
+   "family": "solver"
+  },
+  {
+   "module": "cells.numerics.surface_field",
+   "name": "SOLVER_ID",
+   "family": "solver"
+  },
+  {
+   "module": "cells.numerics.surface_field",
+   "name": "FACTORED_SOLVER_ID",
+   "family": "solver"
+  },
+  {
+   "module": "cells.numerics.surface_field",
+   "name": "FLOOR_SOLVER_ID",
+   "family": "solver"
+  },
+  {
+   "module": "cells.numerics.surface_field",
+   "name": "SPARSE_SOLVER_ID",
+   "family": "solver"
+  },
+  {
+   "module": "cells.laws.routes.patch_electrodiffusion",
+   "name": "SOLVER_ID",
+   "family": "solver"
+  },
+  {
+   "module": "cells.numerics.rosenbrock_dense",
+   "name": "METHOD_ID",
+   "family": "solver"
+  },
+  {
+   "module": "cells.numerics.projective",
+   "name": "METHOD_ID",
+   "family": "execution"
+  },
+  {
+   "module": "cells.definitions.fine_window_spec",
+   "name": "METHOD_ID",
+   "family": "execution"
+  },
+  {
+   "module": "cells.definitions.energy_check_spec",
+   "name": "CHECK_ID",
+   "family": "execution"
+  },
+  {
+   "module": "cells.execution.vector_windows",
+   "name": "MAPPING_ID",
+   "family": "execution"
+  },
+  {
+   "module": "cells.definitions.surface_pump_v3_spec",
+   "name": "TRAPEZOID_JUNCTION_HEAT",
+   "family": "heat"
+  },
+  {
+   "module": "cells.definitions.surface_pump_v3_spec",
+   "name": "EXACT_FREE_ENERGY_HEAT",
+   "family": "heat"
+  },
+  {
+   "module": "cells.assembly",
+   "name": "MODEL_ID",
+   "family": "model"
+  },
+  {
+   "module": "cells.assembly_pool",
+   "name": "MODEL_ID",
+   "family": "model"
+  },
+  {
+   "module": "cells.ensemble.ionic",
+   "name": "MODEL_ID",
+   "family": "model",
+   "ruling": "D380: minted"
+  },
+  {
+   "module": "cells.laws.channels.shared_channel_catalog",
+   "name": "LAW_CODES",
+   "family": "channel",
+   "keys": true,
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the table that resolved_tissue@8 reads: its keys that no registry holds"
+  },
+  {
+   "module": "cells.laws.channels.calcium_catalog_extra",
+   "name": "LAW_CODES",
+   "family": "channel",
+   "keys": true,
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the law module's own table: no live model's table holds these laws"
+  },
+  {
+   "module": "cells.laws.channels.calcium_activated_potassium",
+   "name": "LAW_CODES",
+   "family": "channel",
+   "keys": true,
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the law module's own table: no live model's table holds these laws"
+  },
+  {
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "name": "LAW_CODES",
+   "family": "channel",
+   "keys": true,
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the law module's own table: no live model's table holds these laws"
+  },
+  {
+   "module": "cells.laws.channels.hcn_extra_channels",
+   "name": "LAW_CODES",
+   "family": "channel",
+   "keys": true,
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the law module's own table: no live model's table holds these laws"
+  },
+  {
+   "module": "cells.laws.junctions.junction_formation",
+   "name": "LAW_ID",
+   "family": "junction_formation",
+   "piece": "law (no Law record)",
+   "named_in": "junction_formation.law of the replacement operator",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.laws.reactions.ph_condition",
+   "name": "LAW_ID",
+   "family": "transfer_factor",
+   "piece": "law (no Law record)",
+   "named_in": "law of a pH condition, on a transfer's rate",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.laws.routes.k_anion_symport",
+   "name": "VOLUME_FACTOR_ID",
+   "family": "transfer_factor",
+   "piece": "law (no Law record)",
+   "named_in": "volume_factor of the symport, on a route's rate",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.laws.transport.patch_damage",
+   "name": "LAW_ID",
+   "family": "damage",
+   "piece": "law (no Law record)",
+   "named_in": "law of a patch damage",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.operators.species_regulated_availability",
+   "name": "STATE_LAW",
+   "family": "regulation",
+   "piece": "law (no Law record)",
+   "named_in": "states[].law of regulated availability",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.operators.site_occupancy",
+   "name": "BINDING_LAW",
+   "family": "site_binding",
+   "piece": "law (no Law record)",
+   "named_in": "the site operator's recorded laws",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.operators.site_occupancy",
+   "name": "INTERNALISATION_LAW",
+   "family": "site_internalisation",
+   "piece": "law (no Law record)",
+   "named_in": "the site operator's recorded laws",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.kinds.transporter",
+   "name": "HELD",
+   "family": "fuel_kind",
+   "piece": "law (no Law record)",
+   "named_in": "fuel.kind of a transporter",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.kinds.transporter",
+   "name": "FINITE",
+   "family": "fuel_kind",
+   "piece": "law (no Law record)",
+   "named_in": "fuel.kind of a transporter",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.numerics.surface_field",
+   "name": "LAW_ID",
+   "family": "field_closure",
+   "piece": "law (no Law record)",
+   "named_in": "closure.law of every @3 world",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.operators.species_reactions",
+   "name": "PASSIVE_LAW",
+   "family": "species_reaction",
+   "named_in": "reactions[].law of the species-reaction operator",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.definitions.kinetic_pump_spec",
+   "name": "METABOLISM_ID",
+   "family": "fuel_kind",
+   "named_in": "kind of a kinetic pump's pools",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.registry.species_registry",
+   "name": "POTENTIAL_SETS",
+   "family": "potential_set",
+   "keys": true,
+   "named_in": "potential_set of a world",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.assembly.graph",
+   "name": "TOPOLOGY_ID",
+   "family": "topology",
+   "named_in": "topology of capsid_graph@1 and finite_bond_assembly@1",
+   "ruling": "D383"
+  },
+  {
+   "module": "cells.analysis.stationary",
+   "name": "ANALYSIS_ID",
+   "family": "analysis",
+   "named_in": "analysis of an analysis config",
+   "ruling": "D383"
+  }
+ ],
+ "keep": {
+  "ids": {
+   "recorded label": [
+    {
+     "id": "apical_vertex_rows@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "bath_fill_exact_half_steps@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "charge_following_palindromic_half_steps@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "event_formation_ionic_formation@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "events_then_symmetric_operator_halves@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "exact_aperture_half_steps@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "exact_production_clearance_half_steps@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "exact_two_state_half_steps@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "exact_unit_chain_half_steps@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "fixed_charge_exact_half_steps@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "heun_frozen_amount_water@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "junction_tension_inference@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "located_events_exact_transfer_half_steps@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "mechanical_equilibrium_analysis@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "palindromic_exact_exchange_stages@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "positive_resolved_inventory_actual_control_charge_current@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "positive_resolved_inventory_expanded_catalog_actual_controls@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "positive_resolved_inventory_gates_atp_bounded_compliant_volumes@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "positive_resolved_inventory_gates_atp_bounded_volumes_symport@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "positive_resolved_inventory_gates_atp_operator_domains@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "positive_resolved_inventory_gates_atp_replacement_ledgers@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "positive_resolved_inventory_intrinsic_gates_atp_actual_controls@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "reaction_transport_amounts@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "read_only_accepted_grid_control_dependent_field@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "resolved_expanded_shared_catalog_accepted_grid@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "resolved_kinetic_accepted_grid_readouts@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "resolved_pump_composite_accepted_grid_readouts@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "resolved_pump_regulated_water_accepted_grid_readouts@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "resolved_pump_replacement_accepted_grid_readouts@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "resolved_pump_water_accepted_grid_readouts@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "resolved_tissue_accepted_grid_readouts@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "ssprk33_stage_condition_exact_bookings@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "ssprk33_unidirectional_stage_condition_exact_bookings@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "ssprk33_unidirectional_stage_condition_site_bookings@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "strang_water_ionic_water@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "threefry2x32_fold_in_seed_world_event_open52@1",
+     "reason": "written into a checkpoint and compared when one is read (assembly/io.py:94, 116; assembly_pool/io.py:50, 69); no definition holds it"
+    }
+   ],
+   "format or plan kind": [
+    {
+     "id": "assembly_cell_ensemble@1",
+     "reason": "the plan document's own kind (ensemble/families.py:20-25, ensemble/plan.py:52)"
+    },
+    {
+     "id": "assembly_cluster_ensemble@1",
+     "reason": "the plan document's own kind (ensemble/families.py:20-25, ensemble/plan.py:52)"
+    },
+    {
+     "id": "assembly_ensemble@1",
+     "reason": "the plan document's own kind (ensemble/families.py:20-25, ensemble/plan.py:52)"
+    },
+    {
+     "id": "cells_assembly_checkpoint@1",
+     "reason": "a checkpoint's format, compared when one is read"
+    },
+    {
+     "id": "cells_finite_bond_checkpoint@1",
+     "reason": "a checkpoint's format, compared when one is read"
+    },
+    {
+     "id": "cells_ionic_ensemble_checkpoint@1",
+     "reason": "a checkpoint's format, compared when one is read"
+    },
+    {
+     "id": "checkpoint_continuity@1",
+     "reason": "the continuity record's format (execution/continuity.py:47, 251)"
+    },
+    {
+     "id": "declarations@3",
+     "reason": "the manifest's format (registry/declarations.py FORMAT); its major covers the ID rule that the move amends (D371 Q6, D384)"
+    },
+    {
+     "id": "finite_bond_ensemble@1",
+     "reason": "the plan document's own kind (ensemble/families.py:20-25, ensemble/plan.py:52)"
+    },
+    {
+     "id": "ionic_ensemble@1",
+     "reason": "the plan document's own kind (ensemble/families.py:20-25, ensemble/plan.py:52)"
+    },
+    {
+     "id": "rate_equations_run@1",
+     "reason": "a run record's kind (models/assembly_lineages_v2/rate_equations.py:2375, 2441)"
+    },
+    {
+     "id": "relations@1",
+     "reason": "the relations record's format (records/relations.py:76-80, 112)"
+    },
+    {
+     "id": "relations@2",
+     "reason": "the relations record's format (records/relations.py:76-80, 112)"
+    },
+    {
+     "id": "run_view@1",
+     "reason": "the run view's format (records/run_view.py:149, 1792, 2108)"
+    },
+    {
+     "id": "stationary_analysis_result@1",
+     "reason": "the analysis result's kind (analysis/cli.py:156)"
+    },
+    {
+     "id": "cells.assembly_lineages.arm@1",
+     "reason": "an arm's record format (models/assembly_lineages/arms.py FORMAT)"
+    },
+    {
+     "id": "cells.assembly_lineages.checkpoint@1",
+     "reason": "a checkpoint's format (models/assembly_lineages/checkpoints.py FORMAT)"
+    },
+    {
+     "id": "cells.assembly_lineages.diagnostic@1",
+     "reason": "a diagnostic record's format (models/assembly_lineages_v2/diagnostic.py)"
+    },
+    {
+     "id": "cells.assembly_lineages.pair@1",
+     "reason": "a pair record's format (models/assembly_lineages/records.py PAIR_FORMAT)"
+    },
+    {
+     "id": "cells.assembly_lineages.run@1",
+     "reason": "a run record's format (models/assembly_lineages/records.py RUN_FORMAT)"
+    },
+    {
+     "id": "cells.assembly_lineages.run@2",
+     "reason": "a run record's format (models/assembly_lineages_v2/records.py RUN_FORMAT)"
+    },
+    {
+     "id": "cells.assembly_lineages.world@1",
+     "reason": "a world's format (models/assembly_lineages/records.py WORLD_FORMAT)"
+    },
+    {
+     "id": "cells.assembly_lineages.world@2",
+     "reason": "a world's format (models/assembly_lineages_v2/records.py WORLD_FORMAT)"
+    },
+    {
+     "id": "cells.assembly_lineages_v2.checkpoint@1",
+     "reason": "a checkpoint's format (models/assembly_lineages_v2/checkpoints.py FORMAT)"
+    }
+   ],
+   "constant, read by nothing": [
+    {
+     "id": "bounding_patch_constant_field@1",
+     "reason": "laws/routes/patch_electrodiffusion.py KIND_ID: live code reads the module's slope and solver, not this ID"
+    },
+    {
+     "id": "capacitive_regions_ghk_return_current@1",
+     "reason": "numerics/tissue_field.py LAW_ID: live code reads one function of the module"
+    },
+    {
+     "id": "cell_charge_area_resolved_capacitors@1",
+     "reason": "numerics/surface_transport.py VOLTAGE_ID: nothing reads it"
+    },
+    {
+     "id": "exponential_mean_rate_linear_target_gates@1",
+     "reason": "numerics/exponential_gates.py LAW_ID: nothing in src reads it, so it is left out of the move (D383)"
+    },
+    {
+     "id": "gauged_damped_newton@1",
+     "reason": "numerics/tissue_field.py SOLVER_ID: live code reads one function of the module"
+    },
+    {
+     "id": "resolved_surface_transport_explicit_reservoirs@1",
+     "reason": "numerics/surface_transport.py LAW_ID: nothing reads it"
+    }
+   ]
+  },
+  "files": []
+ },
+ "pinned": [
+  {
+   "path": "configs/reference/multispecies_membrane_v1.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "configs/reference/multispecies_trajectories_v1.json",
+    "configs/reference/physical_ionic_graph_v1.json",
+    "configs/reference/voltage_gated_channel_v1.json"
+   ]
+  },
+  {
+   "path": "configs/reference/physical_ionic_graph_v1.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "configs/reference/finite_extracellular_trajectories_v1.json",
+    "configs/reference/finite_extracellular_trajectories_v2.json",
+    "configs/reference/finite_extracellular_v1.json",
+    "configs/reference/physical_ionic_graph_trajectories_v1.json"
+   ]
+  },
+  {
+   "path": "configs/reference/voltage_gated_channel_v1.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "configs/reference/physical_ionic_graph_v1.json",
+    "configs/reference/voltage_gated_trajectories_v1.json"
+   ]
+  },
+  {
+   "path": "src/cells/assembly/__init__.py",
+   "kind": "src",
+   "choice": "re-spell",
+   "choices": [
+    "re-spell"
+   ],
+   "pinned_by": [
+    "validation/topology/joint_water_profile_phase_handoff_protocol.json"
+   ]
+  },
+  {
+   "path": "src/cells/assembly/graph.py",
+   "kind": "src",
+   "choice": "re-spell",
+   "choices": [
+    "re-spell"
+   ],
+   "pinned_by": [
+    "validation/topology/joint_water_profile_phase_handoff_protocol.json"
+   ]
+  },
+  {
+   "path": "src/cells/assembly_pool/__init__.py",
+   "kind": "src",
+   "choice": "re-spell",
+   "choices": [
+    "re-spell"
+   ],
+   "pinned_by": [
+    "validation/topology/joint_water_profile_phase_handoff_protocol.json"
+   ]
+  },
+  {
+   "path": "validation/betse/protocols/physical_p3_k_mem_dense.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/betse/protocols/physical_p3_k_mem_dense_l4.json"
+   ]
+  },
+  {
+   "path": "validation/betse/protocols/physical_p3_na_mem_dense.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/betse/protocols/physical_p3_na_mem_dense_l4.json"
+   ]
+  },
+  {
+   "path": "validation/betse/protocols/physical_p3_na_mem_gj_block_dense.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/betse/protocols/physical_p3_na_mem_gj_block_dense_l4.json"
+   ]
+  },
+  {
+   "path": "validation/betse/protocols/physical_p3_pump_block_dense.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/betse/protocols/physical_p3_pump_block_dense_l4.json"
+   ]
+  },
+  {
+   "path": "validation/betse/protocols/physical_p4b_kir_h_dense.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/betse/protocols/physical_p4b_kir_h_dense_l4.json"
+   ]
+  },
+  {
+   "path": "validation/betse/protocols/physical_p4b_kir_navsim_dense.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/betse/protocols/physical_p4b_kir_navsim_dense_l4.json"
+   ]
+  },
+  {
+   "path": "validation/betse/protocols/physical_p4b_nav_kirsim_dense.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/betse/protocols/physical_p4b_nav_kirsim_dense_l4.json"
+   ]
+  },
+  {
+   "path": "validation/betse/protocols/physical_p4b_nav_kleak_dense.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/betse/protocols/physical_p4b_nav_kleak_dense_l4.json"
+   ]
+  },
+  {
+   "path": "validation/geometry/conservative_polygon_geometry_protocol.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/geometry/conservative_polygon_geometry_source_map.json"
+   ]
+  },
+  {
+   "path": "validation/geometry/stable_seed_partition_advance_refinement_callers.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/geometry/stable_seed_partition_advance_refinement_initial_protocol.json"
+   ]
+  },
+  {
+   "path": "validation/geometry/stable_seed_partition_physiology_bridge_callers.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/geometry/stable_seed_partition_advance_refinement_callers.json",
+    "validation/geometry/stable_seed_partition_physiology_bridge_protocol.json",
+    "validation/geometry/stable_seed_partition_trajectory_callers.json",
+    "validation/geometry/stable_seed_partition_trajectory_protocol.json"
+   ]
+  },
+  {
+   "path": "validation/tissue/surface_dynamics_fixtures.py",
+   "kind": "python",
+   "choice": "re-spell",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/geometry/geometry_tissue_preparation_protocol.json",
+    "validation/tissue/joint_water_hcn_protocol.json",
+    "validation/topology/joint_water_profile_interventions_protocol.json",
+    "validation/topology/joint_water_profile_phase_handoff_protocol.json",
+    "validation/topology/owned_calcium_profile_interventions_protocol.json",
+    "validation/topology/owned_calcium_profile_phase_handoff_protocol.json",
+    "validation/topology/tissue_profile_composition_protocol.json"
+   ]
+  },
+  {
+   "path": "validation/tissue/surface_dynamics_protocol.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/geometry/stable_seed_partition_advance_protocol.json",
+    "validation/geometry/stable_seed_partition_advance_refinement_protocol.json",
+    "validation/geometry/stable_seed_partition_advance_refinement_source_map.json",
+    "validation/geometry/stable_seed_partition_advance_source_map.json"
+   ]
+  },
+  {
+   "path": "validation/topology/tissue_profile_preparation_protocol.json",
+   "kind": "data",
+   "choice": "leave",
+   "choices": [
+    "re-spell",
+    "leave"
+   ],
+   "pinned_by": [
+    "validation/geometry/geometry_tissue_preparation_protocol.json",
+    "validation/topology/tissue_profile_composition_protocol.json"
+   ]
+  }
+ ],
+ "frozen": {
+  "live": [
+   {
+    "path": "validation/tissue/composition_matrix.py",
+    "reason": "the tag rule catches its blob, but it is a live tool: follow-ups edit it (D364) and a test runs it"
+   },
+   {
+    "path": "validation/gene_regulation/engine_run.py",
+    "reason": "the tag fr38-v2-registered-2026-11-25 catches its blob, but it is the gene unit's live driver: five of its tools and two test files import it"
+   },
+   {
+    "path": "validation/gene_regulation/release_check.py",
+    "reason": "the tag fr38-v2-registered-2026-11-25 catches its blob, but it is the release's live check: three test files import it"
+   }
+  ],
+  "declared": [
+   {
+    "path": "validation/betse/protocols/physical_default_world_dense.json",
+    "reason": "pre-registered: its one commit, 3c098911, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_dense_fine.json",
+    "reason": "pre-registered: its one commit, 3c098911, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_mammal_dense.json",
+    "reason": "pre-registered: its one commit, 82452a0e, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_mammal_dense_fine.json",
+    "reason": "pre-registered: its one commit, 82452a0e, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_mammal_dense_fine_v2.json",
+    "reason": "pre-registered: its one commit, cecfb13d, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/betse/protocols/physical_default_world_mammal_dense_v2.json",
+    "reason": "pre-registered: its one commit, cecfb13d, begins 'Pre-register'",
+    "owner": "validation/betse"
+   },
+   {
+    "path": "validation/closed_compartment/reference_inputs.json",
+    "reason": "registered reference inputs, whose git blob FR-1's design pins and a test checks",
+    "owner": "fr1"
+   },
+   {
+    "path": "validation/energy_step_doubling/RESULTS.md",
+    "reason": "a record: the results of FR-18's criterion X, in the IDs of their time",
+    "owner": "fr18"
+   },
+   {
+    "path": "validation/ensemble_reexpression/registered_strings.json",
+    "reason": "the re-expression's registered strings, Part 1, in the IDs they were registered in (the protocol, section 5: the strings notes are frozen for the move)",
+    "owner": "the lead"
+   },
+   {
+    "path": "validation/ensemble_reexpression/registered_strings_part2.json",
+    "reason": "the re-expression's registered strings, Part 2, in the IDs they were registered in (the protocol, section 5: the strings notes are frozen for the move)",
+    "owner": "the lead"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/README.md",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/checks.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/closure.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/estimate.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/exclusions.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/inputs_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/legacy_arrays.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/legacy_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/make_inputs.py",
+    "reason": "the rehearsal's maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify.py compares the captured definitions with what it writes; the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/make_profile.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/margins_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/parse_check.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/plant_driver.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/plants_manifest_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/pool_paths.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/profile_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/reference.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/reference_paths_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/registered_strings_rehearsal.json",
+    "reason": "the rehearsal's registered strings, in the IDs they were declared with (the protocol, section 5: the strings notes and the rehearsal's files are frozen for the move)",
+    "owner": "the lead"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/rules.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/verify.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/README.md",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/checks2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/estimate2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/exclusions2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/inputs_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/legacy_arrays2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/legacy_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/make_inputs2.py",
+    "reason": "Part 2's rehearsal maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify2.py compares the captured definitions with what it writes; the protocol freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/make_profile2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/margins_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/plant_driver2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/plants_manifest_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/pool_paths2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/profile_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/reference2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/reference_paths_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/rules2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/verify2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/fr1/references/reference_inputs.json",
+    "reason": "registered reference inputs, whose git blob FR-1's design pins and a test checks",
+    "owner": "fr1"
+   },
+   {
+    "path": "validation/fr10/references/README.md",
+    "reason": "a record: the page of FR-10's registered references, in the IDs of their time",
+    "owner": "fr10"
+   },
+   {
+    "path": "validation/fr43_part1/PERFORMANCE.md",
+    "reason": "a record: FR-43 part 1's performance report (C1.4), beside its measured summary, performance.json",
+    "owner": "fr43"
+   },
+   {
+    "path": "validation/fr43_part1/performance.json",
+    "reason": "a record: the measured summary of FR-43 part 1's performance report (C1.4)",
+    "owner": "fr43"
+   },
+   {
+    "path": "validation/fr6/references/README.md",
+    "reason": "a record: the page of FR-6's registered references, in the IDs of their time",
+    "owner": "fr6"
+   },
+   {
+    "path": "validation/fr6/references/reference_inputs.json",
+    "reason": "registered reference inputs, whose git blob FR-6's design pins and a test checks",
+    "owner": "fr6"
+   },
+   {
+    "path": "validation/fr6/references/worlds.py",
+    "reason": "the generator of FR-6's registered inputs, which a test compares with it",
+    "owner": "fr6"
+   },
+   {
+    "path": "validation/gard/references/README.md",
+    "reason": "a record: the page of GARD's references (G2), in the IDs of their time",
+    "owner": "gard"
+   },
+   {
+    "path": "validation/legacy_port/README.md",
+    "reason": "the deletion's record: the page of its list and tools, as the deletion used them",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/capture.sh",
+    "reason": "the captures' runner: it runs the frozen legacy snapshot, whose IDs its worlds spell",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/capture_worlds.py",
+    "reason": "the captures' tool: it runs the frozen legacy snapshot, and its four old spellings are comments that name the captured worlds as the snapshot spells them (the plants' manifests quote an earlier version's hash, so no pin holds it)",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/carrier_plants.json",
+    "reason": "the deletion's record: the faults planted in the engine before the move, and the rows that failed on each",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/carrier_plants.py",
+    "reason": "the deletion's tool that planted faults in the engine before the move; its record is carrier_plants.json",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/edits-optional.json",
+    "reason": "the deletion's record: the optional batch's edits, as made at the deletion's head",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/edits.json",
+    "reason": "the deletion's record: its edits, with the texts and library pages they replaced, as made at the deletion's head",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/make_deletion.py",
+    "reason": "the deletion's tool, as it made the deletion",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/make_edits.py",
+    "reason": "the deletion's tool that wrote edits.json: the texts it replaced, and the pages it named, in the IDs of the tree before the move",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/reach.py",
+    "reason": "the deletion's tool that read the import graph before the move",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/long_duration/REGISTRATION_20261118.md",
+    "reason": "a record: FR-8 stage 0's registration, in the IDs of its time",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/RESULTS_20261118.md",
+    "reason": "a record: FR-8 stage 0's results, in the IDs of their time",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/RUNG0_20261119.md",
+    "reason": "a record: FR-8 rung 0's registration and results, in the IDs of their time",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/registration_20261118.json",
+    "reason": "registered before any measurement (its status)",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/rung0_20261119.json",
+    "reason": "the registration of rung 0 (its registration field)",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/rung0_results_20261119.json",
+    "reason": "the registered results of rung 0 (its registration field)",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/membrane_trafficking/references/README.md",
+    "reason": "a record: the page of FR-2's registered references, in the IDs of their time",
+    "owner": "fr2"
+   },
+   {
+    "path": "validation/morphogenesis/protocols/mg0a_gradient_v1.json",
+    "reason": "pre-registered before the judged run (its status)",
+    "owner": "mg0a"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_boundary.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_boundary_probe_states.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_closed_world_states.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_conventions.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_design.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_kernel_probe_states.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wa.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wa_closed.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wa_closed_uncatalysed.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wa_closed_x2.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wb_m20.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wb_m320.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wb_m5.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol1_wb_m80.world.json",
+    "reason": "a registered OL1 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_closed.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_closed_states.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_lysis.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_lysis_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_shared.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_shared_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_two.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_two_states.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_wa.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_wa_diffusion.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_wa_diffusion_probe_states.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol2_wa_probe_states.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_lineage.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_lineage_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_parents.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_population.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_population_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_shear_probe.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_shear_probe_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_slots_full.world2.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/ol3_slots_full_run.json",
+    "reason": "a registered OL2 or OL3 design, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_changes_nothing.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_chi_diagonal.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_coefficient.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_dilute_catalyst.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_four_products.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_four_reactants.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_non_integer.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_own_delta_G.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_singular_step_without_probe_role.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals/refuse_wrong_locus.world.json",
+    "reason": "a registered OL1 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_c_ext_below_pool_solutes.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_count_on_m_cross_phase.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_encounter_without_geometry.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_exit_declared.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_floor_below_one.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_floor_without_kept.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_founder_beyond_sigma_max.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_fresh_pool_above_c_ext.run2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_geometry_without_encounter.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_geometry_without_floor.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_interfacial_reaction.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_join_from_lumen.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_leave_declared.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_lumen_step_two_lumen_reactants.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_lysis_species_without_pool_place.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_membrane_species_without_area.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_membrane_step_lumen_reactant.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_non_integer_area_quanta.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_osmotic_without_sigma_max.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_pool_to_lumen_reaction.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_shear_without_k.run2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/designs/refusals2/refuse_sigma_max_without_source.world2.json",
+    "reason": "a registered OL2 or OL3 refusal, whose bytes a test compares with its generator's",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/engine_layout.py",
+    "reason": "the code-blind reader of the engine's OL1 records, with the references it was committed for",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/refusals2.py",
+    "reason": "the generator of the registered OL2 and OL3 refusals, whose bytes a test compares with it",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/ool/references/registered.py",
+    "reason": "the generator of the registered OL1 designs, whose bytes a test compares with it",
+    "owner": "ool"
+   },
+   {
+    "path": "validation/stationary/protocols/stationary_analysis_e_v1.json",
+    "reason": "pre-registered before the judged run (its status)",
+    "owner": "stationary"
+   },
+   {
+    "path": "validation/tissue/bath_schedule_protocol.json",
+    "reason": "registered by the lead (its status)",
+    "owner": "fr10"
+   },
+   {
+    "path": "validation/tissue/e07_v1_protocol.json",
+    "reason": "registered by the lead before any engine run (its status)",
+    "owner": "e07"
+   },
+   {
+    "path": "validation/tissue/l4_variants/g2_backend_variant.json",
+    "reason": "registered (its status); it goes with cell_replacement_protocol.json, which is frozen",
+    "owner": "validation/tissue"
+   },
+   {
+    "path": "validation/tissue/protocols/projective_c_qualification_v1.json",
+    "reason": "pre-registered before any judged run (its status)",
+    "owner": "projective"
+   },
+   {
+    "path": "validation/tissue/site_occupancy_acceptance_protocol.json",
+    "reason": "registered by the lead (its status)",
+    "owner": "fr3"
+   }
+  ],
+  "owners": {
+   "core-seams": "core-seams",
+   "fr7-": "fr7",
+   "ol6-": "ol6",
+   "ool-": "ool"
+  }
+ },
+ "plants": {
+  "apply": true,
+  "note": "D371 Q8: a plant takes the three-part shape, its family by its declaring type; those whose type the tool does not see are named here, read by hand",
+  "families": {
+   "cells.planted@1": "route",
+   "tests.second@1": "channel",
+   "tests.elsewhere@1": "cycle",
+   "seamtest.edge_pump@1": "cycle",
+   "seamtest.nowhere@1": "cycle",
+   "seamtest.synthase_cited@1": "cycle",
+   "seamtest.synthase_shifted@1": "cycle",
+   "seamtest.ref_law@1": "cycle",
+   "tests.kv_planted@1": "channel",
+   "tests.planted_view_channel@1": "channel",
+   "tests.limit_off_by_a_constant@1": "reaction",
+   "validation.ol6_plant_power_off_by_one@1": "reaction",
+   "tests.steep_fuel@1": "cycle",
+   "tests.unregistered@1": "cycle",
+   "seamtest.monomial_hydrolysis@1": "cycle",
+   "seamtest.monomial_off@1": "cycle",
+   "seamtest.monomial_total@1": "cycle",
+   "seamtest.monomial_mg@1": "cycle",
+   "seamtest.signed_basis@1": "cycle",
+   "seamtest.wrong_sign_basis@1": "cycle",
+   "tests.alpha@1": "kind",
+   "tests.beta@1": "kind",
+   "tests.b@1": "kind",
+   "tests.factor@1": "kind",
+   "tests.factor_b@1": "kind",
+   "tests.non_mover@1": "kind",
+   "tests.claimant@1": "operator",
+   "tests.event@1": "operator",
+   "tests.pools@1": "operator",
+   "tests.swap@1": "operator",
+   "tests.existing_operator@1": "operator",
+   "tests.new_operator@1": "operator",
+   "tests.newer_operator@1": "operator",
+   "tests.not_an_operator@1": "operator",
+   "tests.loose@1": "operator",
+   "tests.planted_reaction@1": "operator",
+   "tests.law_a@1": "binding",
+   "tests.law_b@1": "binding",
+   "tests.literal_last_molecule@1": "reaction",
+   "tests.one_sided@1": "reaction",
+   "tests.power_propensity@1": "reaction",
+   "tests.planted_ensemble@1": "model",
+   "tests.planted_exchange@1": "exchange",
+   "tests.planted_home_route@1": "route",
+   "tests.planted_inert_route@1": "route",
+   "tests.twice@1": "route",
+   "tests.x@1": "route",
+   "tests.y@1": "route",
+   "tests.planted_move@1": "planted",
+   "tests.pretender@1": "route",
+   "tests.undeclared@1": {
+    "tests/unit/test_model_table.py": "exchange",
+    "*": "kind"
+   },
+   "test_add0@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_add1@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_multiply0@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_multiply1@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_r0@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_r1@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "elementless@1": {
+    "tests/unit/test_pump_composite_contract.py": "operator"
+   },
+   "planted_author@1": {
+    "tests/unit/test_population_unit_turnover.py": "operator"
+   }
+  },
+  "not_plants": {
+   "tests.planted_ensemble_kind@1": "a plan document's kind",
+   "tests.planted_law@1": "an outside interface's ID",
+   "acme.a_law@1": "an example of the grammar"
+  }
+ },
+ "ids_kept": [
+  {
+   "test": "tests/unit/test_j2_bright_line.py::test_the_scan_sees_each_form",
+   "reason": "its parameters hold the partition law's ID built from two literals (the module splits them so that it holds no source of its own); the guard looks for that text inside longer strings, so it finds the new ID too"
+  }
+ ],
+ "reviewed": [
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "src/cells/kinds/transporter.py",
+   "text": "\\}@\\{|@\\\"\\)|\\.(split|rpartition|partition)\\(\\\"@\\\"",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "src/cells/laws/cycles/forms.py",
+   "text": "\\}@\\{|@\\\"\\)|\\.(split|rpartition|partition)\\(\\\"@\\\"",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "src/cells/models/assembly_lineages_v2/world.py",
+   "text": "\\}@\\{|@\\\"\\)|\\.(split|rpartition|partition)\\(\\\"@\\\"",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "src/cells/registry/species_registry.py",
+   "text": "row\\[\"role\"\\]",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "src/cells/registry/kind_registry.py",
+   "text": "row\\[\"role\"\\]",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "tests/unit/test_core_seams_references_cycles.py",
+   "text": "\\}@\\{|@\\\"\\)|\\.(split|rpartition|partition)\\(\\\"@\\\"",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "tests/unit/test_cycle_kind_references.py",
+   "text": "\\}@\\{|@\\\"\\)|\\.(split|rpartition|partition)\\(\\\"@\\\"",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "tests/unit/test_ool_references_engine_layout.py",
+   "text": "\\}@\\{|@\\\"\\)|\\.(split|rpartition|partition)\\(\\\"@\\\"",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "validation/assembly_lineages_v2/registered.py",
+   "text": "\\}@\\{|@\\\"\\)|\\.(split|rpartition|partition)\\(\\\"@\\\"",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "validation/ool/references/*.py",
+   "text": "\\}@\\{|@\\\"\\)|\\.(split|rpartition|partition)\\(\\\"@\\\"",
+   "reason": "a role and its end, or a species and its place: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "src/cells/analysis/stationary.py",
+   "text": "@",
+   "reason": "a label of a case, a time, a step or a node: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "validation/continuity/probe.py",
+   "text": "@",
+   "reason": "a label of a case, a time, a step or a node: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "validation/coupling/reference_crosschecks.py",
+   "text": "@",
+   "reason": "a label of a case, a time, a step or a node: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "validation/fr10/references/*.py",
+   "text": "@",
+   "reason": "a label of a case, a time, a step or a node: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "validation/stationary/targets.py",
+   "text": "@",
+   "reason": "a label of a case, a time, a step or a node: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "validation/stationary/heredity_turnover.py",
+   "text": "@",
+   "reason": "a label of a case, a time, a step or a node: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "validation/tissue/composite_guard.py",
+   "text": "@",
+   "reason": "a label of a case, a time, a step or a node: no ID"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "validation/tissue/resolved_scale_study.py",
+   "text": "solver",
+   "reason": "a report's key and a file's name, read by nothing else: the name carries the solver's full ID after the move"
+  },
+  {
+   "cls": [
+    "computed"
+   ],
+   "path": "tests/unit/test_modules_surface.py",
+   "text": "a\\.name",
+   "reason": "module names"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "tests/unit/test_operator_registry.py",
+   "text": "rsplit|\\{name\\}",
+   "reason": "H2: the three spellings of one operator, of which exactly the tree's own is a key"
+  },
+  {
+   "cls": [
+    "computed",
+    "cut"
+   ],
+   "path": "tests/unit/test_declarations.py",
+   "text": "rsplit\\(\\\"\\.\\\", 1\\)\\[-1\\]|^channel\\[\\\"kinetic_law\\\"\\]\\.rsplit",
+   "reason": "H2: a planted spelling that joins nothing, before and after the move"
+  },
+  {
+   "cls": [
+    "computed"
+   ],
+   "path": "validation/betse/betse_reference_extract.py",
+   "text": "cells\\.",
+   "reason": "attribute names on BETSE's own object"
+  },
+  {
+   "cls": [
+    "regex"
+   ],
+   "path": "scripts/test_tiers.py",
+   "text": "_ ",
+   "reason": "a log's ruler line"
+  },
+  {
+   "cls": [
+    "regex"
+   ],
+   "path": "validation/gene_regulation/engine_run.py",
+   "text": "A-Za-z0-9",
+   "reason": "a file name from a set's or a world's name"
+  },
+  {
+   "cls": [
+    "regex"
+   ],
+   "path": "validation/protocol_models.py",
+   "text": "\\\\b\\(",
+   "reason": "H2: a model's ID read by its name and major, one key for a bare and a full ID"
+  },
+  {
+   "cls": [
+    "cut",
+    "name"
+   ],
+   "path": "validation/protocol_models.py",
+   "text": "model\\.split|resolved_pump_tissue",
+   "reason": "H2: a model's name and major, from the one key"
+  },
+  {
+   "cls": [
+    "order"
+   ],
+   "path": "src/cells/models/pump_composite.py",
+   "text": "undeclared",
+   "reason": "column names"
+  },
+  {
+   "cls": [
+    "order"
+   ],
+   "path": "src/cells/models/surface_pump_v3.py",
+   "text": "kind_id for",
+   "reason": "kinds of one family: a uniform prefix keeps their order"
+  },
+  {
+   "cls": [
+    "order"
+   ],
+   "path": "src/cells/models/surface_pump_v3.py",
+   "text": "codes\\.__getitem__",
+   "reason": "sorted by code"
+  },
+  {
+   "cls": [
+    "width"
+   ],
+   "path": "tests/unit/test_assembly_lineages_freeze.py",
+   "text": "life_end_reason",
+   "reason": "end reasons"
+  },
+  {
+   "cls": [
+    "width"
+   ],
+   "path": "validation/assembly_lineages_v2/probes.py",
+   "text": "statuses",
+   "reason": "statuses"
+  },
+  {
+   "cls": [
+    "width"
+   ],
+   "path": "validation/reactions/network_reference.py",
+   "text": "branch",
+   "reason": "branch words"
+  },
+  {
+   "cls": [
+    "name"
+   ],
+   "path": "validation/division/cleft_*_reference.py",
+   "text": "constant_field",
+   "reason": "a reference's own word for its access law"
+  },
+  {
+   "cls": [
+    "name"
+   ],
+   "path": "validation/mitochondria/component_comparison.py",
+   "text": "adenylate_kinase",
+   "reason": "the appendix's own component key"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "scripts/gates/scope.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "a file name"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "scripts/source_moves.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "module names"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_assembly_lineages_population.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "column names"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/assembly_lineages/population_check.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "column names"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_continuity_loaders.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "a record's keys"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_j2_bright_line.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "module names"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/assembly_lineages_v2/probes2.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "a file name"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/betse/*.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "array keys and module names"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/gard/references/records.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "dotted record keys"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/gene_regulation/sheet_check.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "a number's digits"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/mitochondria/appendix_check.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "a number's digits"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/morphogenesis/*.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "a path or a name's parts"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/results_baseline.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "array keys: the last part is a column's name"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/tissue/inplace_fix_guard.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "array keys"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/tissue/sparse_field_qualification.py",
+   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
+   "reason": "array keys"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/tissue/composition_matrix.py",
+   "text": "law\\.split\\(\\\"@\\\"\\)|__module__",
+   "reason": "whether two operators are one family's versions (their IDs up to the major, equal as before), and a module's last part"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_cell_owned_compartments.py",
+   "text": "kind_id\\.rsplit\\(\\\"\\.\\\", 1\\)",
+   "reason": "H2: a planted kind's model key, its ID's last part under either shape"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "src/cells/registry/declarations.py",
+   "text": "split",
+   "reason": "the page's path and the identity: after the namespace, and at the major (H1b reads the parts)"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "src/cells/registry/laws.py",
+   "text": "split",
+   "reason": "the namespace, the first part, and the part before the major"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "src/cells/registry/operators.py",
+   "text": "split",
+   "reason": "the namespace, the first part"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "src/cells/registry/kind_registry.py",
+   "text": "identifier\\.split",
+   "reason": "qualified(): the part before the major (H1b makes it strict)"
+  },
+  {
+   "cls": [
+    "page path"
+   ],
+   "path": "tests/unit/test_library_pages.py",
+   "text": "docs/library",
+   "reason": "the page rule's"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "src/cells/*",
+   "text": "^\\\"[a-z_]+\\\" (not )?in (raw|row|record|cache|terms|name|raw\\[\\\"execution\\\"\\])",
+   "reason": "a key of a definition, a record or a layout, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/*",
+   "text": "^\\\"[a-z_]+\\\" (not )?in (world|rest|registered|entry|e|the_world|seen|name|field|entry|value|meta|want|roles|sets|stoich)$",
+   "reason": "a key of a definition, a record or a layout, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/*",
+   "text": "^\\\"[a-z_]+\\\" (not )?in (bare\\.to_dict\\(\\)\\[\\\"model\\\"\\]|body|w|v|value|world|p|k|name|reason|capsys\\.readouterr\\(\\)\\.err|local)$",
+   "reason": "a key of a definition, a record or a layout, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "scripts/*",
+   "text": "^\\\"[a-z_]+\\\" in (local|change)$",
+   "reason": "a key of a definition, a record or a layout, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/tissue/shared_inventory_references.py",
+   "text": "refusal",
+   "reason": "a word of a refusal's message"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_modules_surface.py",
+   "text": "startswith\\(\\\"cells",
+   "reason": "module names"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "*",
+   "text": "(name|field|f|k|n|key|case|label|route|q\\[0\\]|c\\.id|c\\[\\\"id\\\"\\]|control\\[\\\"channel_id\\\"\\]|group\\[\\\"channel_id\\\"\\]|cell\\[\\\"id\\\"\\])\\.(startswith|removeprefix)\\((\\(?\\\"(cell_?|pool_|membrane_?|nav_|kir_?|site_|patch_damage|gate_?|junction_|pump_|rate_|hill)\\\")",
+   "reason": "an entity's own ID, a field's or a column's name, not a piece's ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/protocol_models.py",
+   "text": "^name\\.startswith",
+   "reason": "H2: a model's name alone, from the one key"
+  },
+  {
+   "cls": [
+    "computed"
+   ],
+   "path": "tests/unit/test_j2_bright_line.py",
+   "text": "isopotential_",
+   "reason": "split on purpose, so that the guard holds no source of its own; it looks for the text inside longer strings, which hold the new ID's tail too (ids_kept)"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "scripts/source_moves.py",
+   "text": "path\\.startswith\\(p\\)",
+   "reason": "a file path of the code move, not an ID"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_kind_lifecycle_roles.py",
+   "text": "planted_law\\[",
+   "reason": "an array of codes"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "src/cells/operators/partition.py",
+   "text": "scheduled_cell_replacement@1\"\\.partition",
+   "reason": "the start of a whole ID, which the move re-spells, tested against whole IDs"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "src/cells/operators/templated_polymerisation.py",
+   "text": "REPLACEMENT_LAW\\.partition",
+   "reason": "the start of a whole ID, which the move re-spells, tested against whole IDs"
+  },
+  {
+   "cls": [
+    "cut",
+    "partial"
+   ],
+   "path": "validation/tissue/field_solver_choice.py",
+   "text": "model_id\\.index\\(\"@\"\\)",
+   "reason": "the start of a whole ID, which the move re-spells, tested against whole IDs"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "scripts/gates/scope.py",
+   "text": "\"(top|exec)\" in r",
+   "reason": "a record's key"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "scripts/gates/scope.py",
+   "text": "KIND\\.partition",
+   "reason": "the scope map's own format, a schema's ID"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "scripts/gates/scope_inject/sitecustomize.py",
+   "text": "name\\.rpartition",
+   "reason": "a module's name"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "validation/legacy_port/capture_worlds.py",
+   "text": "k\\.split\\(\":\"\\)",
+   "reason": "an array's key"
+  },
+  {
+   "cls": [
+    "cut"
+   ],
+   "path": "tests/unit/test_law_registry.py",
+   "text": "value\\.split\\(\"\\.\", 2\\)",
+   "reason": "H1b: the last part of a planted ID of three parts (the strict grammar's line, so a scan before its merge lists this review as stale)"
+  },
+  {
+   "cls": [
+    "message"
+   ],
+   "path": "tests/unit/test_fr5_source_kinds.py",
+   "text": "no set for its axis species_condition",
+   "reason": "the run view's axis (kinds/species_condition.py AXIS), a name of its own that the move keeps, not the start of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_species_condition_kind.py",
+   "text": "f\\.startswith\\(\"species_condition",
+   "reason": "the start of the kind's field names, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/calcium_store/references/second_route.py",
+   "text": "\"fuel\" in (mover|mv)\\b",
+   "reason": "a mover's own key, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/ensemble_reexpression/table.py",
+   "text": "\"assembly\" in e\\[\"inputs\"\\]",
+   "reason": "a key of an entry's inputs, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/ensemble_reexpression/worlds.py",
+   "text": "\"kind\" in fuel\\b",
+   "reason": "a fuel's own key, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_batch_windows.py",
+   "text": "n\\.startswith\\(kind\\)",
+   "reason": "the field names of a parameters tuple (cycle_, passive_, species_condition, reaction_), not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_ensemble_reexpression_part2.py",
+   "text": "\"cells\" in at\\b",
+   "reason": "a site's own key (cells or outside), not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_ensemble_reexpression_part2.py",
+   "text": "\"assembly_observable\" in entry\\[\"strings\"\\]",
+   "reason": "a label of the strings note, a key of an entry's strings, not a part of an ID"
+  }
+ ]
+}

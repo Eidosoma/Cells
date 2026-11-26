@@ -1,4 +1,4 @@
-"""FR-22, rung P: checkpoints of population worlds in cells.assembly_lineages@2 (checkpoints.py; the
+"""FR-22, rung P: checkpoints of population worlds in cells.model.assembly_lineages@2 (checkpoints.py; the
 lead's ruling of 20 November 2026: the population runner, D215's option a, cuts before or after a
 stop, never at one).
 

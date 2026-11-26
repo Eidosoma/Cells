@@ -19,6 +19,7 @@ Each claim at its cheapest level (D187), each with a planted error the check mus
 
 import copy
 from dataclasses import replace
+from decimal import Decimal
 from functools import partial
 
 import jax
@@ -26,21 +27,31 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions import surface_pump_v3_spec as spec_v3
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
+from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump_v3 as v3
+from cells.numerics import surface_imex as imex
 from cells.operators import partition
 from cells.registry import kind_registry
 from cells.registry.models import get_model
 from tests import kind_fixtures as kf
+from tests import membrane_insertion_fixtures as insertion_fixtures
+from tests import partition_fixtures
+from validation.fr51 import closed_forms as fr51_laws
+from validation.fr51 import engine as fr51
+from validation.fr51 import judge as fr51_judge
+from validation.fr51 import plants as fr51_plants
+from validation.tissue import cell_replacement_fixtures as replacement_fixtures
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as v3_fixtures
 
 FACTORS = {"f_a": 0.5, "f_b": 0.7, "f_c": 0.65}
 HELD = 0.9  # The first population's held availability: (0.9 x 0.7) x 0.65 != 0.9 x (0.7 x 0.65).
-ARS = "imex_ars222_face_electromigration@1"
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
 
 
 def bound(spec):
@@ -386,3 +397,301 @@ def test_the_roles_are_on_every_implementation_object():
     spec = parse_spec(water_fixtures.heredity_cell("D", end_time=0.004))
     assert get_model(spec.model).FIELD_ROLES is v3.FIELD_ROLES
     assert adapter.for_structure(v3.structure(spec.model)).FIELD_ROLES is v3.FIELD_ROLES
+
+
+# ------------------------------------------------------------------ FR-51: two blocking modes
+# fr51-channel-block-v1 (validation/fr51/REGISTRATION.md). The host rows compare @3's clamped entry
+# point (validation/fr51/engine.host, NumPy) with the laws' 60-digit closed forms
+# (validation/fr51/closed_forms), by the registration's bands. The code-blind references are the
+# judged run's alone.
+
+FR51_VOLTS = tuple(round(-0.120 + 0.005 * j, 3) for j in range(37))  # -120 to +60 mV.
+FR51_HOST_CASES = (
+    "P2_K_unequal",
+    "P4_Cl_unequal",
+    "Z1_zero_blocker",
+    "B1_two_modes_E1",
+    "B3_divalent_outside_E1",
+    "B4_anion_effective",
+    "B5_effective_valence_5",
+    "S2_strong_two_modes",
+    "G1_steep_K_inside_reversal",
+    "G3_steep_Na_outside_voltage",
+    "G5_steep_Cl_anion_outside",
+)
+
+
+def fr51_points(case_id):
+    """Every 5 mV, then E_ion and its two neighbours 0.5 mV away (Decimals, binary64)."""
+    e = fr51_laws.reversal(case_id)
+    points = [Decimal(str(v)) for v in FR51_VOLTS] + [
+        e,
+        e - Decimal("0.0005"),
+        e + Decimal("0.0005"),
+    ]
+    return points, np.array([float(v) for v in points])
+
+
+def fr51_criteria(case_id, values=None):
+    """{criterion: passed} on the host rows, read as the judge reads them (its own functions)."""
+    points, volts = fr51_points(case_id)
+    e, r = values or fr51.host(case_id, volts), fr51_laws.case_values(case_id, points)
+    floor = fr51_judge.FLOOR * float(np.max(np.abs(r["I_free"])))
+    out = {"P": fr51_judge.within(e["I_free"], r["I_free"], floor=floor)[0]}
+    if np.all(np.isnan(e["T_V"])):  # No block.
+        return out
+    away = np.abs(volts - r["E_ion"]) >= fr51_judge.AWAY
+    reversal = (
+        fr51.spec_of()["blocks"][
+            next(c for c in fr51.spec_of()["cases"] if c["id"] == case_id)["block"]
+        ]["reference"]
+        != "membrane_voltage"
+    )
+    return out | {
+        "B-u": fr51_judge.within(e["u"], r["u"])[0],
+        "B-ratio": fr51_judge.within(e["I_blocked"][away] / e["I_free"][away], r["u"][away])[0],
+        "R": fr51_judge.within(e["u"][len(FR51_VOLTS)], r["u"][len(FR51_VOLTS)])[0],
+        "S": fr51_judge.within(e["u"], r["u"])[0]
+        and fr51_judge.within(e["slope_part"], r["slope_part"])[0],
+        "G": fr51_judge.at_least(e["T_V"], r["dI"])[0],
+        "E": not reversal
+        or fr51_judge.at_least(e["T_co"], r["dco"])[0]
+        and fr51_judge.at_least(e["T_ci"], r["dci"])[0],
+    }
+
+
+@pytest.mark.parametrize("case_id", FR51_HOST_CASES)
+def test_a_blocked_population_s_current_fraction_and_terms_follow_the_laws(case_id):
+    """FR-51 (criteria P, B, R, S, G and E on the host; no compile, about 0.3 s each): the current,
+    the unblocked fraction u, the blocked-to-free ratio away from reversal, u read directly at
+    E_ion, each mode's theta (1 - theta), and the per-stage terms T_V and T_c bounding the exact
+    slopes."""
+    found = fr51_criteria(case_id)
+    assert all(found.values()), found
+
+
+def test_a_frozen_input_reads_through_the_id_table():
+    """D345's translator on the tagged cases.json: its populations' laws are the engine's own. With
+    an empty table it is the file's data itself; through a table and its inverse it comes back. The
+    table it reads, as data, is the engine's."""
+    import json
+
+    from cells.registry import laws as law_registry
+    from cells.registry.renamed_ids import RENAMED
+    from validation import id_table
+
+    assert id_table.renamed() == RENAMED
+    for population in fr51.spec_of()["populations"].values():
+        law_registry.active().lookup(population["law"])
+    cases = json.loads(fr51_judge.SPEC.read_text())
+    laws = {p["law"] for p in cases["populations"].values()}
+    assert id_table.translate(cases, {}) is cases
+    table = {law: f"tests.planted.{law}" for law in laws}
+    there = id_table.translate(cases, table)
+    assert {p["law"] for p in there["populations"].values()} == set(table.values())
+    assert id_table.translate(there, {new: old for old, new in table.items()}) == cases
+
+
+def capped_valence():
+    """D352's plant, engine-only like zero_plant (JUDGED keeps its eleven): each effective valence
+    capped at the blocker's |z_B|, its sign kept."""
+    original = spec_v3.ChannelBlock.steepness
+
+    def planted(self):
+        return tuple(
+            s
+            if m.effective_valence is None
+            else (1.0 if s > 0 else -1.0) * min(abs(s), abs(self.valence))
+            for s, m in zip(original(self), self.modes, strict=True)
+        )
+
+    return fr51_plants._patched(spec_v3.ChannelBlock, "steepness", planted)
+
+
+FR51_PLANTS = fr51_plants.JUDGED | {
+    # D352: an admitted effective valence above |z_B| (B5: z_B = +4 inside, z_eff = 5).
+    "D352: the effective valence capped at the blocker's valence": (
+        capped_valence,
+        "B-u",
+        ("B5_effective_valence_5",),
+    ),
+}
+
+
+@pytest.mark.parametrize("name", list(FR51_PLANTS))
+def test_each_registered_plant_fails_its_criterion(name):
+    """FR-51's plants (host, about 0.5 s each): each, planted in this process only
+    (validation/fr51/plants), fails its registered criterion on one of its cases. D352's row: the
+    cap fails B5's u against the closed forms, which B5's host row meets unplanted."""
+    plant, criterion, cases = FR51_PLANTS[name]
+    with plant():
+        found = [fr51_criteria(case_id)[criterion] for case_id in cases]
+    assert not all(found)
+
+
+def test_the_zero_blocker_and_one_count_on_the_host():
+    """FR-51's P0, Z and C on the host (about 2 s; C2 is the composite with membrane state):
+    - at c_B = 0, u is exactly 1 and the blocked current is the free one bit for bit;
+    - C1, abundance doubled: the current is exactly twice B1's, and u bitwise B1's;
+    - C2, units: the 1000-unit current is within 4 ulps of B1's, the 2000-unit one within 4 ulps
+      of twice the 1000-unit one, and u is bitwise unchanged;
+    - Z's plant (an unnormalized sum) and C's (c_B scaled by the count) fail."""
+    _, volts = fr51_points("B1_two_modes_E1")
+    zero = fr51.host("Z1_zero_blocker", volts)
+    assert np.all(zero["u"] == 1.0) and np.array_equal(zero["I_blocked"], zero["I_free"])
+    b1, c1 = fr51.host("B1_two_modes_E1", volts), fr51.host("C1_abundance_doubled", volts)
+    assert np.array_equal(c1["I_blocked"], 2.0 * b1["I_blocked"]) and np.array_equal(
+        c1["u"], b1["u"]
+    )
+    one, two = fr51.host("C2_units_declared", volts), fr51.host("C2_units_doubled", volts)
+    ulps = 4 * np.spacing(np.abs(two["I_blocked"]))
+    assert np.all(np.abs(two["I_blocked"] - 2.0 * one["I_blocked"]) <= ulps)
+    assert np.all(
+        np.abs(one["I_blocked"] - b1["I_blocked"]) <= 4 * np.spacing(np.abs(b1["I_blocked"]))
+    )
+    assert np.array_equal(one["u"], two["u"])
+    with fr51_plants.zero_plant():
+        assert not np.all(fr51.host("Z1_zero_blocker", volts)["u"] == 1.0)
+    with fr51_plants.count_scaled():
+        planted = fr51.host("C1_abundance_doubled", volts)["u"]
+        assert not np.array_equal(planted, fr51.host("B1_two_modes_E1", volts)["u"])
+
+
+def test_the_block_superposes_in_its_reference():
+    """FR-51's B-superposition (host, about 1 s): under the reversal reference, B1's u at E1 and at
+    E2 agrees at equal V - E within 1e-12 of max u; under the membrane voltage, B3's agrees at equal
+    V. Plant (ii), E with the wrong sign of its valence, breaks the first."""
+    offsets = np.array([-0.06, -0.03, 0.0, 0.03, 0.06])  # V - E (V).
+    e1, e2 = (float(fr51_laws.reversal(c)) for c in ("B1_two_modes_E1", "B1_two_modes_E2"))
+
+    def apart(first, second):
+        return np.max(np.abs(first - second)) / max(first.max(), second.max())
+
+    u1 = fr51.host("B1_two_modes_E1", e1 + offsets)["u"]
+    u2 = fr51.host("B1_two_modes_E2", e2 + offsets)["u"]
+    assert apart(u1, u2) <= 1e-12
+    v = np.array([-0.08, -0.04, 0.0, 0.04])
+    assert apart(fr51.host("B3_divalent_outside_E1", v)["u"],
+                 fr51.host("B3_divalent_outside_E2", v)["u"]) <= 1e-12  # fmt: skip
+    with fr51_plants.reversal_valence_flipped():
+        planted = (fr51.host("B1_two_modes_E1", e1 + offsets)["u"],
+                   fr51.host("B1_two_modes_E2", e2 + offsets)["u"])  # fmt: skip
+    assert apart(*planted) > 1e-12
+
+
+def fr51_block(**changes):
+    """B1's block declaration with changes applied in place by the callables given."""
+    raw = fr51.raw_world("B1_two_modes_E1")
+    block = raw["model"]["channels"][0]["block"]
+    for change in changes.values():
+        change(block, raw)
+    return raw
+
+
+FR51_REFUSALS = {
+    "both steepnesses": (
+        lambda b, r: b["modes"][0].update(effective_valence=1.0),
+        "exactly one of",
+    ),
+    "no steepness": (lambda b, r: b["modes"][0].pop("electrical_distance"), "exactly one of"),
+    "delta above 1": (
+        lambda b, r: b["modes"][0].update(electrical_distance=1.5),
+        "electrical distance lies in",
+    ),
+    "effective valence 0": (
+        lambda b, r: (
+            b["modes"][0].pop("electrical_distance"),
+            b["modes"][0].update(effective_valence=0.0),
+        ),
+        "effective valence is positive",
+    ),
+    "steepness above 8": (
+        lambda b, r: (
+            b["modes"][0].pop("electrical_distance"),
+            b["modes"][0].update(effective_valence=9.0),
+        ),
+        "exceeds 8",
+    ),
+    "valence 0": (lambda b, r: b["blocker"].update(valence=0), "nonzero integer"),
+    "valence not an integer": (lambda b, r: b["blocker"].update(valence=2.0), "nonzero integer"),
+    "weight outside [0, 1]": (lambda b, r: b["modes"][0].update(weight=1.5), "weight lies in"),
+    "weights not summing to 1": (lambda b, r: b["modes"][0].update(weight=0.5), "sum to 1"),
+    "five modes": (lambda b, r: b["modes"].extend([dict(b["modes"][1])] * 3), "at most 4"),
+    "K(0) outside its domain": (lambda b, r: b["modes"][0].update(k0_mM=1e-16), "k0_mM lies in"),
+    "c_B outside its domain": (
+        lambda b, r: b["blocker"].update(concentration_mM=2e3),
+        "blocker concentration lies in",
+    ),
+    "an unknown side": (lambda b, r: b["blocker"].update(side="through"), "outside or inside"),
+    "a reversal ion not carried": (
+        lambda b, r: b.update(reference={"reversal_of": "Na"}),
+        "does not carry",
+    ),
+    "a blocker named as a row": (lambda b, r: b["blocker"].update(id="Na"), "names a species row"),
+    "N2 beside a block": (
+        lambda b, r: r["execution"].update(solver=imex.IMPLICIT_CONDUCTANCE_IDS[0]),
+        "N2",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", list(FR51_REFUSALS))
+def test_each_block_refusal_names_its_reason(name):
+    """FR-51's V7 (host, parse only): each refusal of the registration's §1.2 fires with its
+    reason. The bounding patch's refusal is refusal 4's, a row of the compartments' tests."""
+    change, reason = FR51_REFUSALS[name]
+    with pytest.raises(ConfigError, match=reason):
+        parse_spec(fr51_block(change=change))
+
+
+FR51_SLOT_WRITERS = {
+    "cells.operator.isopotential_partition@1": lambda: partition_fixtures.divided(),
+    "cells.operator.scheduled_membrane_insertion@1": lambda: insertion_fixtures.with_operators(
+        insertion_fixtures.cleft_cell(), insertion=insertion_fixtures.furrow_insertion()
+    ),
+    "cells.operator.scheduled_cell_replacement@1": lambda: composite_spec.frozen_definition(
+        replacement_fixtures.with_replacement(replacement_fixtures.heredity_sheet(radius=1))
+    ),
+}
+
+
+@pytest.mark.parametrize("law", list(FR51_SLOT_WRITERS))
+def test_a_block_beside_an_operator_that_rewrites_channel_slots_is_refused(law, monkeypatch):
+    """FR-51's follow-up (parse only, about 1 s each; one row per operator family): replacement,
+    partition and insertion rewrite channel slots but not the block's per-slot fields, so a blocked
+    population beside one is refused by name (pump_composite.SLOT_WRITERS, @1 and @2 alike). Every
+    row is the composite form, where that refusal is the only wall (D364; the standalone replacement
+    model meets @3's BLOCK_STRUCTURE_REFUSAL too): with it planted away, the world is admitted, its
+    block kept."""
+    raw = FR51_SLOT_WRITERS[law]()
+    raw["model"]["channels"][0]["block"] = fr51_block()["model"]["channels"][0]["block"] | {
+        "reference": "membrane_voltage"
+    }
+    with pytest.raises(ConfigError, match=f"{law} rewrites channel slots"):
+        parse_spec(raw)
+    monkeypatch.setattr(pump_composite, "block_slot_errors", lambda pairs, spec: [])  # The plant.
+    assert parse_spec(raw).model.channels[0].block is not None
+
+
+def test_a_block_round_trips_alone_and_beside_factors():
+    """FR-51's declaration (host): a blocked definition round-trips through to_dict, alone and on a
+    population that also declares factors (B1's door). A population without either keeps today's
+    form. D352: B5's effective valence of 5, above its blocker's |z_B| = 4, is admitted, with the
+    signed steepness s sgn(z_B) z_eff, and round-trips."""
+    spec = parse_spec(fr51.raw_world("B1_two_modes_E1"))
+    assert parse_spec(spec_v3.to_dict(spec)) == spec
+    assert type(spec.model.channels[0]) is spec_v3.FactoredChannelPopulation
+    assert spec_v3.channel_factors(spec.model) == ()
+    b5 = parse_spec(fr51.raw_world("B5_effective_valence_5"))
+    assert b5.model.channels[0].block.steepness() == (-5.0,)  # Inside (s = -1), z_B = +4.
+    assert parse_spec(spec_v3.to_dict(b5)) == b5
+    with scoped():
+        raw = heredity(("f_b", "f_c"))
+        raw["model"]["channels"][0]["block"] = fr51.raw_world("B1_two_modes_E1")["model"][
+            "channels"
+        ][0]["block"] | {"reference": "membrane_voltage"}
+        both = parse_spec(raw)
+        assert parse_spec(spec_v3.to_dict(both)) == both
+        assert both.model.channels[0].factors == ("f_b", "f_c")
+        assert both.model.channels[0].block is not None
+        assert type(both.model.channels[1]) is not spec_v3.FactoredChannelPopulation

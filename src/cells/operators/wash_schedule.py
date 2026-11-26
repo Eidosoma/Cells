@@ -1,7 +1,7 @@
-"""scheduled_compartment_wash@1: timed partial washes of finite compartments (FR-27; D245, D246).
+"""cells.operator.scheduled_compartment_wash@1: timed partial washes of finite compartments (FR-27; D245, D246).
 
 docs/COMPARTMENT_WASH_DESIGN.md. One mechanism, a liquid exchange of a compartment, is shared with
-the assembly family's cells.pool_replacement@1 (FR-20), its whole-exchange execution in exact
+the assembly family's cells.operator.pool_replacement@1 (FR-20), its whole-exchange execution in exact
 counts; this operator is its deterministic execution at any fraction (D175, D210; D246: D175's
 representation key stays reserved, and both declare it when it exists).
 
@@ -18,6 +18,19 @@ the books show it unchanged. Its supplied record is its collected record, one ex
 are equal bit for bit at any fraction (D266). The sample f n_s and the supply f V c_buf,s are
 recorded cumulatively for every species, ions included. Bound material, which is not liquid, stays
 where it is.
+
+The latest event's sample and supply at each node are level records too, `wash_last_sample_fmol`
+and `wash_last_supply_fmol` [species, outside], as the latest heat is (an ion's supply record is
+its sample record, one expression). They exist in every washed world, labelled or not.
+
+Labels (FR-44, D327). Beside the label owner the event takes labels= (the labelled rows) and also
+returns a LiquidExchange (operators/contract.py). Its removed and supplied amounts are those two
+level records at the labelled rows where a wash is due this step, and zero elsewhere, so each is
+the event's own sample and supply, never a cumulative record's gain (a gain is inexact, and at
+f = 1 it leaves a kept part that is nonzero or negative). The state and validity are the
+unlabelled call's, bit for bit, since the report only reads the records. The owner, not the wash,
+decides the labels: the sample leaves with the node's shares, and the buffer joins the base,
+whatever window is open.
 
 For the exchanged (neutral) species it records the free energy of the sample, F_sample = f F(n, V),
 taken to its sink, and of the buffer, F_buffer = F(f V c_buf, f V), drawn from its source, with
@@ -63,11 +76,15 @@ Refused at the definition (version 1):
   - the inner model's movers, through the core's join (species_registry.inner_movers): each
     patch's permeability, channels, pumps, faces, junctions and every declared kind's moved
     rows;
-  - each operator's routes: species exchange's routes through a patch facing the node, and a
-    site population's internalisation from it;
+  - each operator's routes: species exchange's routes through a patch facing the node, a
+    site population's internalisation from it, and the gene unit's exports into the node and
+    its outside degradations there (cells.operator.templated_polymerisation@1's amendment T; D327, the
+    fail-open fix: each refused by name, since both write the node's rows outside the wash's
+    books);
   - every operator's in-step process that moves a neutral species at an outside node;
   - every operator law not shown local (SHOWN_LOCAL), with its reason (REFUSED), and a law in
     no list, until it is classified;
+  The refusal names every path it finds, not only the first.
 - ions declared other than same_as_compartment;
 - a buffer that misses a neutral species, names another, or holds a concentration <= 0 or below a
   site ligand's trace;
@@ -75,7 +92,7 @@ Refused at the definition (version 1):
 It reads its nodes' volumes, anchors and outside mask as declared: fixed reads at its event, scoped
 to its nodes (door S). So water, the lumens and insertion, which change them unscoped, are refused
 by the composite's structure check, and the bath schedule's dose at a held bath is admitted. Beside
-cell_owned_compartments@1 it is refused by that declaration's admitted list, which fails closed.
+cells.operator.cell_owned_compartments@1 it is refused by that declaration's admitted list, which fails closed.
 """
 
 import math
@@ -92,49 +109,53 @@ from cells.models import surface_pump as first
 from cells.numerics import ideal_mixing
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
-from cells.operators.contract import Operator, Read
+from cells.operators.contract import EXCHANGED, LiquidExchange, Operator, Read
 
-LAW_ID = "scheduled_compartment_wash@1"
+LAW_ID = "cells.operator.scheduled_compartment_wash@1"
 EVENTS_KEY = "compartment_wash_events"
-EXCHANGE, SITES = "scheduled_species_exchange@1", "site_occupancy@1"
+EXCHANGE, SITES = "cells.operator.scheduled_species_exchange@1", "cells.operator.site_occupancy@1"
+POLYMERISATION = "cells.operator.templated_polymerisation@1"
+# The operator laws whose routes surface_crossings reads, route by route, rather than classing
+# the law whole (SHOWN_LOCAL, REFUSED).
+READ = (EXCHANGE, SITES, POLYMERISATION)
 # The inner movers on a membrane patch, by the core's join (species_registry.NODE_KINDS): their
 # entities are patch IDs. Faces' are face IDs and junctions' junction IDs (between cells); a
 # kind's movers name the nodes they move between.
 PATCH_MOVERS = ("membrane", "channel", "pump")
 # Operator laws shown to move no species across a node's surface (D263 finding 2), each with why;
-# EXCHANGE's and SITES' routes are read (surface_crossings), and every other law is refused.
+# READ's routes are read (surface_crossings), and every other law is refused.
 SHOWN_LOCAL = {
-    "scheduled_species_turnover@1": "makes and clears species at its own cells and nodes",
-    "local_species_reactions@1": "converts species at its own sites",
-    "scheduled_bath_composition@1": "sets held baths' compositions",
-    "membrane_entity_state@1": "provides channel abundances, membrane areas and capacitances",
-    "species_regulated_availability@1": "scales other laws' availabilities; its state is its own",
-    "species_regulated_availability@2": "scales other laws' availabilities and rates",
-    "cell_owned_compartments@1": "declares which cell owns each compartment",
-    "scheduled_cell_replacement@1": "swaps a replaced cell's own pools",
-    "scheduled_cell_replacement@2": "swaps a replaced cell's own pools",
-    "site_occupant_replacement@1": "resets site pools at replacement events",
-    "electrode_current_injection@1": "moves charged carriers between an electrode and a cell",
-    "isopotential_partition@1": "splits a dividing cell's contents between its daughters",
-    "cytoplasmic_bridge_closure@1": "sets a bridge junction's availability, between two cells",
-    "population_unit_turnover@1": "consumes precursors into units in cells",
-    "ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
-    "k_anion_symport_mass_action@1": "moves its charged potassium and anion in-step (read below)",
-    # Gene regulation's option A (G4): a recorded exception naming the operators owner.
-    "templated_polymerisation@1": "makes, degrades and recharges species at its routes' cells "
-    "(it writes only amount_increment)",
+    "cells.operator.scheduled_species_turnover@1": "makes and clears species at its own cells and nodes",
+    "cells.operator.local_species_reactions@1": "converts species at its own sites",
+    "cells.operator.scheduled_bath_composition@1": "sets held baths' compositions",
+    "cells.operator.membrane_entity_state@1": "provides channel abundances, membrane areas and capacitances",
+    "cells.operator.species_regulated_availability@1": "scales other laws' availabilities; its state is its own",
+    "cells.operator.species_regulated_availability@2": "scales other laws' availabilities and rates",
+    "cells.operator.cell_owned_compartments@1": "declares which cell owns each compartment",
+    "cells.operator.scheduled_cell_replacement@1": "swaps a replaced cell's own pools",
+    "cells.operator.scheduled_cell_replacement@2": "swaps a replaced cell's own pools",
+    "cells.operator.site_occupant_replacement@1": "resets site pools at replacement events",
+    "cells.operator.electrode_current_injection@1": "moves charged carriers between an electrode and a cell",
+    "cells.operator.isopotential_partition@1": "splits a dividing cell's contents between its daughters",
+    "cells.operator.cytoplasmic_bridge_closure@1": "sets a bridge junction's availability, between two cells",
+    "cells.operator.population_unit_turnover@1": "consumes precursors into units in cells",
+    "cells.operator.ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
+    "cells.operator.k_anion_symport_mass_action@1": "moves its charged potassium and anion in-step (read below)",
+    # cells.operator.templated_polymerisation@1 left this list for READ (D327, the fail-open fix): it was entered
+    # here as writing only amount_increment (gene regulation's option A, G4), and amendment T
+    # then gave it exports into finite nodes and outside degradations there.
+    # FR-44 (D327): the label owner moves no amount and follows each wash by its report.
+    "cells.operator.neutral_arrival_labels@1": "moves no amount; it follows each wash by the wash's report",
     LAW_ID: "is this law",
 }
 REFUSED = {
-    "scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
-    "scheduled_membrane_insertion@1": "opens onset nodes with their declared contents",
-    "scheduled_membrane_insertion@2": "opens and retires nodes and patches",
-    "restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
-    "restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
-    # FR-42 (D289; the lead's direction): the label owner refuses a wash, an event writing species
-    # amounts that does not report them (no FR-42 stage plans it yet).
-    "neutral_arrival_labels@1": "follows labelled material only through reported moves, and a "
-    "wash reports none (no FR-42 stage plans it yet)",
+    "cells.operator.scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
+    "cells.operator.scheduled_membrane_insertion@1": "opens onset nodes with their declared contents",
+    "cells.operator.scheduled_membrane_insertion@2": "opens and retires nodes and patches",
+    "cells.operator.restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
+    "cells.operator.restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
+    "cells.operator.integer_unit_population@1": "moves species across its sites' patches, between cells and "
+    "outside nodes, by transfers a wash does not read",
 }
 IONS_SAME = "same_as_compartment"
 FLOOR_FMOL = 1e-12  # The own ledger's floor (each ion's sample against its supply: exactly 0).
@@ -146,6 +167,9 @@ STATE_AXES = {
     "wash_buffer_free_energy_pJ": ["extracellular_slot"],  # F of the exchanged species' buffer.
     "wash_mixing_heat_pJ": ["extracellular_slot"],  # H_mix, cumulative (a record).
     "wash_last_mixing_heat_pJ": ["extracellular_slot"],  # The latest event's H_mix (a record).
+    # FR-44: the latest event's sample and supply (level records; an ion's supply is its sample).
+    "wash_last_sample_fmol": ["species", "extracellular_slot"],
+    "wash_last_supply_fmol": ["species", "extracellular_slot"],
     "wash_energy_magnitude_pJ": ["extracellular_slot"],  # Magnitudes of the energy bookings.
     "wash_applied": ["extracellular_slot"],  # int64: the events applied at each node.
 }
@@ -208,7 +232,7 @@ def parse_declaration(raw, base):
         if outside[node].reservoir:
             raise ConfigError(
                 f"{LAW_ID} washes finite compartments only; {node!r} is a held bath, whose "
-                "composition is the bath schedule's (scheduled_bath_composition@1)"
+                "composition is the bath schedule's (cells.operator.scheduled_bath_composition@1)"
             )
         nodes.append(node)
     if len(set(nodes)) != len(nodes):
@@ -306,8 +330,9 @@ def surface_crossings(spec, declaration):
     node's surface (the module docstring's refusals; fail closed): an inner mover whose entity is
     a patch facing the node, a face touching it, or the node itself, or which names no node or
     patch it is known to sit on; an exchange route through a patch facing it; a site population
-    internalising from it; an operator's in-step process moving the species at an outside node;
-    and an operator law neither read nor shown local."""
+    internalising from it; the gene unit's export into it and its outside degradation there
+    (D327), whatever the row's charge; an operator's in-step process moving the species at an
+    outside node; and an operator law neither read nor shown local."""
     from cells.definitions import pump_composite_spec as composite_spec
     from cells.registry import species_registry
 
@@ -356,6 +381,17 @@ def surface_crossings(spec, declaration):
                     found.append(
                         (population.ligand, facing, f"{SITES}'s internalisation {population.id}")
                     )
+        elif law == POLYMERISATION:
+            # Amendment T (D327, the fail-open fix): an export carries its row from its patch's
+            # cell into the patch's finite outside node, and an outside degradation writes a row
+            # an export carries there. Its other routes stay at its cells.
+            for export in other.exports:
+                if export.node in washed:
+                    found.append((export.row, export.node, f"{law}'s export {export.id}"))
+            for loss in other.outside_degradations:
+                if loss.node in washed:
+                    path = f"{law}'s outside degradation {loss.id}"
+                    found.append((loss.polymer, loss.node, path))
         elif law not in SHOWN_LOCAL:
             why = REFUSED.get(law, "is not classified (neither read nor shown local)")
             found.append(("any species", "any node", f"{law}, which {why}"))
@@ -382,16 +418,19 @@ def check_definition(spec, declaration):
     found = surface_crossings(spec, declaration)
     if found:
         species, node, path = found[0]
+        # Every path found is named (D327), so a path behind another is refused by name too.
+        also = "".join(f"; also {s} by {p} at node {n}" for s, n, p in found[1:])
         if path.startswith("patch "):
             raise ConfigError(
                 f"{LAW_ID}: {species} crosses {path}, which faces node {node}; its booking of a "
                 "step in the node's concentration is unmeasured, as a face's: refused in version 1"
+                + also
             )
         raise ConfigError(
             f"{LAW_ID}: {species} may cross node {node}'s surface by {path}; a washed node's "
             "species cross its surface by no declared path in version 1, since the step's "
             "booking is unmeasured and the wash's books do not see the exchange (D263; fail "
-            "closed: a path is refused until it is shown not to move the species)"
+            "closed: a path is refused until it is shown not to move the species)" + also
         )
 
 
@@ -410,6 +449,8 @@ def bind(spec, declaration):
         "wash_buffer_free_energy_pJ": np.zeros(o),
         "wash_mixing_heat_pJ": np.zeros(o),
         "wash_last_mixing_heat_pJ": np.zeros(o),
+        "wash_last_sample_fmol": np.zeros((s, o)),
+        "wash_last_supply_fmol": np.zeros((s, o)),
         "wash_energy_magnitude_pJ": np.zeros(o),
         "wash_applied": np.zeros(o, dtype=np.int64),
     }
@@ -444,8 +485,10 @@ def wash_terms(n, volume, fraction, buffer_mM, ion, temperature, *, xp):
     return sample, supply, change, f_sample, f_buffer, heat
 
 
-def apply_events(state, control, p, *, xp=jnp):
-    """(state after the washes due at the step start, their validity)."""
+def apply_events(state, control, p, *, xp=jnp, labels=None):
+    """(state after the washes due at the step start, their validity). With labels (FR-44; the
+    labelled rows [m], static), also its LiquidExchange report [m, outside]: the new level records
+    at those rows where a wash is due, zero elsewhere (module docstring)."""
     node = p.wash_node
     applied = state.wash_applied
     count = control.wash_count
@@ -491,6 +534,7 @@ def apply_events(state, control, p, *, xp=jnp):
     # one product into its sum and not the other (D266: three washes of 3/7 of a 1 uL well left
     # chloride's records one ulp, 2^-25 fmol, apart, and the outside ledger refused the step).
     collected = add("wash_collected_fmol", sample, on)
+    last_sample = xp.where(on, sample, state.wash_last_sample_fmol)  # FR-44's level records.
     new = state._replace(
         extracellular_amount_increment=add("extracellular_amount_increment", change, on),
         wash_collected_fmol=collected,
@@ -501,12 +545,24 @@ def apply_events(state, control, p, *, xp=jnp):
         wash_buffer_free_energy_pJ=add("wash_buffer_free_energy_pJ", buffer_energy, due),
         wash_mixing_heat_pJ=add("wash_mixing_heat_pJ", heat_node, due),
         wash_last_mixing_heat_pJ=xp.where(due, heat_node, state.wash_last_mixing_heat_pJ),
+        wash_last_sample_fmol=last_sample,
+        wash_last_supply_fmol=xp.where(
+            p.wash_ion[:, None], last_sample, xp.where(on, supply, state.wash_last_supply_fmol)
+        ),
         wash_energy_magnitude_pJ=add("wash_energy_magnitude_pJ", magnitude, due),
         wash_applied=xp.where(due, applied + 1, applied),
     )
     flowing = xp.any(due)  # Nothing due: the start state, bitwise.
     selected = type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True)))
-    return selected, valid
+    if labels is None:
+        return selected, valid
+    # The records persist past their event, so the report is this step's alone: masked by due.
+    now = due[None, :]
+    report = LiquidExchange(
+        removed=xp.where(now, selected.wash_last_sample_fmol[labels], 0.0),
+        supplied=xp.where(now, selected.wash_last_supply_fmol[labels], 0.0),
+    )
+    return selected, valid, report
 
 
 def own_valid(state, p, *, xp):
@@ -514,7 +570,12 @@ def own_valid(state, p, *, xp):
     read on every accepted row) >= 0."""
     on = p.wash_node
     valid = xp.all(state.wash_applied >= 0) & xp.all(xp.where(on, True, state.wash_applied == 0))
-    for name in ("wash_collected_fmol", "wash_supplied_fmol"):
+    for name in (
+        "wash_collected_fmol",
+        "wash_supplied_fmol",
+        "wash_last_sample_fmol",
+        "wash_last_supply_fmol",
+    ):
         value = getattr(state, name)
         valid &= xp.all(xp.isfinite(value) & (value >= 0))
         valid &= xp.all(xp.where(on[None, :], True, value == 0))
@@ -541,6 +602,7 @@ def removed(row, p, *, xp):
 class ScheduledCompartmentWash(Operator):
     LAW_ID = LAW_ID
     EVENT = True
+    LABEL_EVENT = EXCHANGED  # FR-44: beside the label owner its event reports a LiquidExchange.
     STATE_AXES = STATE_AXES
     STATE_DTYPES = {k: np.int64 for k in INTEGER_FIELDS}
     LAYOUT_FIELDS = LAYOUT_FIELDS
@@ -559,12 +621,14 @@ class ScheduledCompartmentWash(Operator):
     LEDGER_DIAGNOSTICS = LEDGER_DIAGNOSTICS
     LEDGER_MESSAGE = LEDGER_MESSAGE
     # Its run view (docs/RUN_VIEW_DESIGN.md §3): one prescribed layer, every record a total since
-    # the start but the latest event's H_mix, and each wash an event at its node.
+    # the start but the latest event's H_mix, sample and supply, and each wash an event at its node.
     VIEW_LAYERS = ({"id": "wash", "label": "Compartment wash", "representation": "prescribed"},)
     UNITS = {"wash_applied": "1"}
     RECORD_KINDS = {
         **dict.fromkeys(STATE_AXES, "cumulative"),
         "wash_last_mixing_heat_pJ": "level",
+        "wash_last_sample_fmol": "level",
+        "wash_last_supply_fmol": "level",
     }
     ORIENTATION = {
         "wash_collected_fmol": {
@@ -576,6 +640,16 @@ class ScheduledCompartmentWash(Operator):
             "from": "exterior",
             "to": "node",
             "says": "the buffer supplied to the node's liquid, into the world from its source",
+        },
+        "wash_last_sample_fmol": {
+            "from": "node",
+            "to": "exterior",
+            "says": "the latest wash's sample from the node's liquid, out of the world",
+        },
+        "wash_last_supply_fmol": {
+            "from": "exterior",
+            "to": "node",
+            "says": "the latest wash's buffer supplied to the node's liquid, into the world",
         },
     }
 
@@ -645,7 +719,7 @@ class ScheduledCompartmentWash(Operator):
 
     def working_size(self, spec):
         x = spec.execution
-        return 8 * (3 * len(spec.model.species_ids) + 7) * x.extracellular_capacity
+        return 8 * (5 * len(spec.model.species_ids) + 7) * x.extracellular_capacity
 
     def summary(self, spec, declaration, schedule, history):
         outside = [c.id for c in spec.model.extracellular]
@@ -676,7 +750,8 @@ class ScheduledCompartmentWash(Operator):
             "compartment_wash_events": events_to_dict(schedule)[EVENTS_KEY],
             "compartment_wash_records": records,
             "compartment_wash_mechanism": (
-                "a liquid exchange of a compartment, shared with cells.pool_replacement@1 (FR-20), "
+                "a liquid exchange of a compartment, shared with cells.operator.pool_replacement@1 "
+                "(FR-20), "
                 "its whole-exchange execution in exact counts; this is its deterministic execution "
                 "(docs/COMPARTMENT_WASH_DESIGN.md; D175, D210, D246)"
             ),
@@ -689,8 +764,10 @@ class ScheduledCompartmentWash(Operator):
 
     # ------------------------------------------------------------ step parts
 
-    def event(self, state, control, p, *, xp):
-        return apply_events(state, control, p, xp=xp)
+    def event(self, state, control, p, *, xp, labels=None):
+        """The event map (apply_events). labels (FR-44; static): the labelled rows; the call then
+        also returns its LiquidExchange report."""
+        return apply_events(state, control, p, xp=xp, labels=labels)
 
     def control_valid(self, control, p, *, xp):
         on = p.wash_node

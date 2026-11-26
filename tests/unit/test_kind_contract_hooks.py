@@ -6,9 +6,14 @@ with a planted error it must catch (D187):
   registration (planted, each refused: an unknown role, a non-bool monotone, a heat-suffixed field
   declared work, a stray field, the tableau's unversioned ID, a repeated booking, a structural role
   without a fill, an intensive one with a fill, a non-finite fill, ledgers without their bounds,
-  FR-42's label transfers without label refusals and a label refusal that is not a callable);
-  today's built-in kinds declare none, but the transporter, which admits the trapezoid booking
-  (K2), and register as before;
+  FR-42's label transfers without label refusals and a label refusal that is not a callable, and a
+  factor's feedback hooks, a source's and a sink's, alone, not callable, or without the factors or
+  the routed controls they belong to); today's built-in kinds declare none, but the transporter,
+  which admits the trapezoid booking (K2), and register as before;
+- a sink's moved rows are checked when read (planted: a missing slot, a list, a row of two names, of
+  four or with an empty one, a repeated row), and a structure's loops are sorted positions of its
+  routes (planted: a list, unsorted, repeated, a route it has not, a kind that is no source of it, a
+  negative, a bool and a malformed position);
 - an undeclared state field takes today's suffix rule, a declaration overrides it (planted: a
   heat field declared non-monotone reads non-monotone; an unsuffixed field books no energy);
 - a kind's missing partition roles are its state, layout and control fields with none, on a bound
@@ -87,8 +92,8 @@ from cells.registry import laws as law_registry
 from cells.registry.kind_registry import AxisHost, EnergyRole, Kind, KindFields, PartitionRole
 from validation.tissue import pump_water_fixtures as water_fixtures
 
-TRAPEZOID, EXACT = spec3.TRAPEZOID_JUNCTION_HEAT, "exact_free_energy_heat@1"
-PLANTED_ID = "tests.booked_routes@1"
+TRAPEZOID, EXACT = spec3.TRAPEZOID_JUNCTION_HEAT, "cells.heat.exact_free_energy_heat@1"
+PLANTED_ID = "tests.kind.booked_routes@1"
 
 
 def planted(**declarations):
@@ -129,7 +134,25 @@ def test_seam_declarations_are_checked_at_registration():
     )
     assert kind_registry.declaration_errors(good) == []
     assert kind_registry.KindRegistry().register(good) is good
+    # A factor's feedback hooks (G-5): both or neither, beside the factors they belong to.
+    factors = dict(factor_sources=lambda d: (), factors=lambda read, p, *, xp: ())
+    rows = dict(factor_rows=lambda declaration: ())
+    slopes = dict(factor_log_slopes=lambda read, p, *, xp: ())
+    assert kind_registry.declaration_errors(planted(**factors, **rows, **slopes)) == []
+    # And the sink's side of it, beside the controls its slots are.
+    slots = dict(routed_controls=lambda declaration: ())
+    moved = dict(routed_rows=lambda declaration: ())
+    flux = dict(routed_flux=lambda read, potentials, control, p, *, xp: {})
+    assert kind_registry.declaration_errors(planted(**slots, **moved, **flux)) == []
     plants = {
+        "factor rows alone": dict(**factors, **rows),
+        "factor slopes alone": dict(**factors, **slopes),
+        "feedback hooks without factors": dict(**rows, **slopes),
+        "factor rows not a callable": dict(**factors, **slopes, factor_rows=()),
+        "routed rows alone": dict(**slots, **moved),
+        "routed flux alone": dict(**slots, **flux),
+        "the sink's hooks without routed controls": dict(**moved, **flux),
+        "routed flux not a callable": dict(**slots, **moved, routed_flux={}),
         "unknown role": dict(energy_roles={"booked_moved_fmol": EnergyRole("light", True)}),
         "non-bool monotone": dict(energy_roles={"booked_moved_fmol": EnergyRole("stored", 1)}),
         "suffix contradicted": dict(energy_roles={"booked_work_pJ": EnergyRole("heat", True)}),
@@ -158,7 +181,9 @@ def test_seam_declarations_are_checked_at_registration():
             kind_registry.KindRegistry().register(kind)
     # Today's built-in kinds declare none, but the transporter, which admits the trapezoid booking
     # (K2), and register on BUILTIN as before.
-    bookings = {"cells.transporter@1": ("trapezoid_nonnegative@1",)}  # K2, D234's Option 2.
+    bookings = {
+        "cells.kind.transporter@1": ("cells.heat.trapezoid_nonnegative@1",)
+    }  # K2, D234's Option 2.
     for kind in kind_registry.active().model_keys().values():
         assert kind_registry.declaration_errors(kind) == [], kind.kind_id
         assert kind.heat_bookings == bookings.get(kind.kind_id, ()), kind.kind_id
@@ -175,6 +200,35 @@ def test_an_undeclared_field_takes_the_suffix_rule_and_a_declaration_overrides_i
     assert role(plain, "booked_moved_fmol") is None
     stored = planted(energy_roles={"booked_moved_fmol": EnergyRole("stored", False)})
     assert role(stored, "booked_moved_fmol") == EnergyRole("stored", False)
+
+
+def test_a_sink_s_rows_are_checked_when_read():
+    """kind_routed_rows (a factor's feedback, the sink's side): one entry per routed slot, each of
+    distinct rows of three names; planted, each refused by name, the slot too."""
+    moved = (("Ca", "cell_0", "store_0"), ("K", "cell_0", "store_0"))
+
+    def sink(result):
+        return planted(
+            routed_controls=lambda declaration: (("booked_availability", 2, ("gate",)),),
+            routed_rows=lambda declaration: result,
+            routed_flux=lambda read, potentials, control, p, *, xp: {},
+        )
+
+    assert kind_registry.kind_routed_rows(planted(), ()) is None
+    for result in ((moved,), ((),)):
+        assert kind_registry.kind_routed_rows(sink(result), ()) == result
+    slot = re.escape("routed_rows, booked_availability[2]: ")
+    for result, match in (
+        ((), r"one entry per routed slot \(1\)"),
+        ([moved], r"one entry per routed slot \(1\)"),
+        ((list(moved),), slot + "a tuple of"),
+        ((moved[0],), slot + "a tuple of"),
+        ((((*moved[0], "end"),),), slot + "a tuple of"),
+        ((("Ca", "cell_0", ""),), slot + "a tuple of"),
+        ((moved + moved[:1],), slot + "it names a row twice"),
+    ):
+        with pytest.raises(ValueError, match=match):
+            kind_registry.kind_routed_rows(sink(result), ())
 
 
 def test_missing_partition_roles_name_each_field_left_undeclared():
@@ -220,6 +274,33 @@ BASE = dict(
     fuel_kinds=(),
     junction_heat_booking=spec3.DEFAULT_JUNCTION_HEAT,
 )
+
+
+def test_a_structure_s_loops_are_sorted_positions_of_its_routes():
+    """InnerStructure.loops: () by default; (((route, row), (source kind ID, pair)), ...)."""
+    assert inner_laws.InnerStructure(**BASE).loops == ()
+    source, other = "tests.source@1", "tests.kind.other@1"
+    routes = (
+        ("tests.kind.sink@1", "gain", 0, ((source, 0),)),
+        ("tests.kind.sink@1", "gain", 1, ((source, 1),)),
+    )
+    loops = (((0, 0), (source, 0)), ((0, 1), (source, 0)), ((1, 0), (source, 1)))
+    kept = inner_laws.InnerStructure(**BASE, routes=routes, loops=loops)
+    assert kept.loops == loops and surface_pump_v3.loops_declared(kept)
+    moves, pairs = surface_pump_v3.loop_positions(kept)
+    assert moves == ((0, 0), (0, 1), (1, 0)) and pairs == ((source, 0), (source, 1))
+    for planted_loops, words in (
+        (list(loops), "positions of the declared routes"),
+        (loops[::-1], "distinct and sorted"),
+        (loops[:1] * 2, "distinct and sorted"),
+        ((((2, 0), (source, 0)),), "positions of the declared routes"),
+        ((((0, 0), (other, 0)),), "positions of the declared routes"),
+        ((((0, -1), (source, 0)),), "positions of the declared routes"),
+        ((((0, 0), (source, True)),), "positions of the declared routes"),
+        ((((0, 0), source),), "positions of the declared routes"),
+    ):
+        with pytest.raises(ValueError, match=f"Loops of an inner structure: .*{words}"):
+            inner_laws.InnerStructure(**BASE, routes=routes, loops=planted_loops)
 
 
 def test_heat_bookings_default_to_none_listed_and_admit_each_class_s_own():
@@ -273,7 +354,7 @@ def test_heat_bookings_default_to_none_listed_and_admit_each_class_s_own():
             "calcium_pumps admit": ((inner_laws.CALCIUM_PUMPS, EXACT),),
             "faces admit": ((inner_laws.FACES, TRAPEZOID),),
             "junctions book": ((inner_laws.JUNCTIONS, TRAPEZOID),),
-            "nor a declared kind": (("tests.undeclared@1", EXACT),),
+            "nor a declared kind": (("tests.kind.undeclared@1", EXACT),),
             "admits no heat booking": ((PLANTED_ID, TRAPEZOID),),
             "pairs of names": ((inner_laws.CHANNELS,),),
         }
@@ -343,7 +424,7 @@ def test_an_entry_s_without_removes_those_hooks_from_its_bound_kind():
     stray = replace(
         kind,
         declared_fields=lambda entry: KindFields((), (), (), (), ("state_axes",)),
-        kind_id="tests.stray_without@1",
+        kind_id="tests.kind.stray_without@1",
     )
     with pytest.raises(ValueError, match="names its hooks only"):
         kind_registry.bound(stray, "any")
@@ -356,16 +437,16 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
     entry = kind_registry.FreeEnergyEntry
     hydrolysis = (("ATP", -1), ("ADP", 1), ("Pi", 1))
     formed = law_registry.CycleLaw(
-        "tests.booked_formed_cycle@1", cycle=RolesForm(), host=PLANTED_ID
+        "tests.cycle.booked_formed_cycle@1", cycle=RolesForm(), host=PLANTED_ID
     )
     version_1 = law_registry.CycleLaw(
-        "tests.booked_cycle@1", (("substrate", -1),), (), kernel, kernel, host=PLANTED_ID
+        "tests.cycle.booked_cycle@1", (("substrate", -1),), (), kernel, kernel, host=PLANTED_ID
     )
     elsewhere = law_registry.CycleLaw(
-        "tests.elsewhere_cycle@1", cycle=RolesForm(), host="cells.transporter@1"
+        "tests.cycle.elsewhere_cycle@1", cycle=RolesForm(), host="cells.kind.transporter@1"
     )
     plain = entry(hydrolysis, -12.3, 1000.0)  # Names no law: an operator's reaction, say.
-    coupled = entry(hydrolysis, -12.3, 1000.0, "tests.booked_formed_cycle@1", "coupled")
+    coupled = entry(hydrolysis, -12.3, 1000.0, "tests.cycle.booked_formed_cycle@1", "coupled")
     assert (plain.law_id, plain.mode, plain.dG_kJ_mol, plain.dG_basis) == (None,) * 4
     # A law citing kJ/mol gives dG° so, with its basis, and no temperature (D234's option (b)).
     cited = entry(
@@ -373,7 +454,7 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
         c0=1000.0,
         dG_kJ_mol=-30.5,
         dG_basis=kind_registry.TEMPERATURE_INDEPENDENT,
-        law_id="tests.booked_formed_cycle@1",
+        law_id="tests.cycle.booked_formed_cycle@1",
         mode="coupled",
     )
     assert cited.dG_RT is None and kind_registry.DG_BASES == ("temperature_independent",)
@@ -404,9 +485,15 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
             ((plain._replace(c0=-1.0),), "its c0 is finite and positive"),
             ((plain, coupled._replace(mode=None)), "entry 1: it names its law and its mode"),
             ((plain._replace(mode="coupled"),), "it names its law and its mode together"),
-            ((coupled._replace(law_id="tests.elsewhere_cycle@1"),), "is not a cycle law it hosts"),
-            ((coupled._replace(law_id="tests.unregistered@1"),), "is not a cycle law it hosts"),
-            ((coupled._replace(law_id="tests.booked_cycle@1"),), "is a version-1 law"),
+            (
+                (coupled._replace(law_id="tests.cycle.elsewhere_cycle@1"),),
+                "is not a cycle law it hosts",
+            ),
+            (
+                (coupled._replace(law_id="tests.cycle.unregistered@1"),),
+                "is not a cycle law it hosts",
+            ),
+            ((coupled._replace(law_id="tests.cycle.booked_cycle@1"),), "is a version-1 law"),
             ((coupled._replace(mode="uncoupled"),), "form has no mode 'uncoupled'"),
             # Exactly one form: both, neither, and each form's own refusals.
             ((cited._replace(dG_RT=-12.3),), "entry 0: it gives its dG° in exactly one form"),
@@ -626,7 +713,7 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
         raise AssertionError("a planted law's kernel is never called")
 
     version_1 = law_registry.CycleLaw(  # Moves-only: substrate and product at the inside.
-        "tests.booked_cycle@1",
+        "tests.cycle.booked_cycle@1",
         (("substrate", -1), ("product", "n_coupled")),
         (),
         kernel,
@@ -634,15 +721,15 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
         host=PLANTED_ID,
     )
     formed = law_registry.CycleLaw(
-        "tests.booked_formed_cycle@1", cycle=RolesForm(), host=PLANTED_ID
+        "tests.cycle.booked_formed_cycle@1", cycle=RolesForm(), host=PLANTED_ID
     )
     elsewhere = law_registry.CycleLaw(  # A cycle law another kind hosts.
-        "tests.elsewhere_cycle@1",
+        "tests.cycle.elsewhere_cycle@1",
         (("substrate", -1),),
         (),
         kernel,
         kernel,
-        host="cells.transporter@1",
+        host="cells.kind.transporter@1",
     )
     inside = kind_registry.MOVES_END
     bind = kind_registry.EntityBinding
@@ -650,19 +737,19 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
     # nodes and counts, as two transporter populations of one law do; extra ends and values pass.
     entities = (
         bind(
-            "tests.booked_cycle@1",
+            "tests.cycle.booked_cycle@1",
             roles={"substrate": "glucose", "product": "lactate"},
             ends={inside: "cell_a", "outside": "bath"},
             parameters={"n_coupled": 2},
         ),
         bind(
-            "tests.booked_formed_cycle@1",
+            "tests.cycle.booked_formed_cycle@1",
             roles={"cofactor": "ATP", "substrate": "glucose"},
             ends={"N": "cell_a", "P": "bath"},
             parameters={"n_coupled": 3},
         ),
         bind(
-            "tests.booked_cycle@1",
+            "tests.cycle.booked_cycle@1",
             roles={"substrate": "fructose", "product": "lactate"},
             ends={inside: "cell_b", "outside": "bath", "P": "bath"},
             parameters={"n_coupled": 1, "spare": 0.5},
@@ -689,8 +776,14 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
         plants = (  # Each refused when read, naming the entity.
             (list(entities), "returns a tuple of EntityBinding"),
             ((tuple(first), second, third), "returns a tuple of EntityBinding"),
-            ((first._replace(law_id="tests.elsewhere_cycle@1"), second, third), "its law is not"),
-            ((first._replace(law_id="tests.unregistered@1"), second, third), "its law is not"),
+            (
+                (first._replace(law_id="tests.cycle.elsewhere_cycle@1"), second, third),
+                "its law is not",
+            ),
+            (
+                (first._replace(law_id="tests.cycle.unregistered@1"), second, third),
+                "its law is not",
+            ),
             ((first._replace(roles={"substrate": "glucose"}), second, third), "lacks ['product']"),
             (
                 (first._replace(roles={**first.roles, "cofactor": "ATP"}), second, third),
@@ -700,20 +793,23 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
             ((first._replace(roles={**first.roles, "": "Na"}), second, third), "its roles map"),
             (
                 (first, second._replace(ends={"N": "cell_a"}), third),
-                "entity 1 ('tests.booked_formed_cycle@1'): it places no node at the ends ['P']",
+                "entity 1 ('tests.cycle.booked_formed_cycle@1'): it places no node at the ends "
+                "['P']",
             ),
             (
                 (first._replace(ends={"outside": "bath"}), second, third),
-                "entity 0 ('tests.booked_cycle@1'): it places no node at the ends ['inside']",
+                "entity 0 ('tests.cycle.booked_cycle@1'): it places no node at the ends ['inside']",
             ),
             (  # A moves-only law's outside, where its counts land with the opposite sign.
                 (first._replace(ends={inside: "cell_a"}), second, third),
-                "entity 0 ('tests.booked_cycle@1'): it places no node at the ends ['outside']",
+                "entity 0 ('tests.cycle.booked_cycle@1'): it places no node at the ends "
+                "['outside']",
             ),
             ((first._replace(ends={inside: 7}), second, third), "its ends map names to a name"),
             (
                 (first, second, third._replace(parameters={"spare": 0.5})),
-                "entity 2 ('tests.booked_cycle@1'): it gives no value for the counts ['n_coupled']",
+                "entity 2 ('tests.cycle.booked_cycle@1'): it gives no value for the counts "
+                "['n_coupled']",
             ),
             ((first._replace(parameters={"n_coupled": "2"}), second, third), "its parameters map"),
             ((first._replace(parameters={"n_coupled": True}), second, third), "its parameters map"),

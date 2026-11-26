@@ -79,7 +79,7 @@ INJECTION_A = 1e-12
 CARRIERS = {"Na": 0.3, "K": 0.5, "M": 0.2}
 # A gate fixed open, as core/partition_spec.add_bridge declares the bridge's.
 FIXED_OPEN = dict(
-    law="junction_voltage_relaxation@1",
+    law="cells.junction.junction_voltage_relaxation@1",
     threshold_voltage_V=0.0,
     minimum_open_fraction=1.0,
     initial_gate=1.0,
@@ -92,7 +92,7 @@ def passive(raw):
     raw["experiment"]["channel_controls"] = []
     raw["execution"]["channel_capacity"] = 0
     for block in raw["model"]["operators"]:
-        if block["law"] == "membrane_entity_state@1":
+        if block["law"] == "cells.operator.membrane_entity_state@1":
             block["populations"] = []
         for division in block.get("divisions", []):
             division["populations"] = []

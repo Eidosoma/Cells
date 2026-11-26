@@ -42,5 +42,8 @@ def test_carried_protons_close_every_ledger_with_the_general_term_and_fail_witho
             run(parse_spec(raw))
     # And the carrier whose law reads only the stored row is refused at the definition.
     kinds, raw = carried(carrier=kind_fixtures.carrier)
-    with kind_registry.scope(kinds), pytest.raises(ConfigError, match="lack rapid_binding@1"):
+    with (
+        kind_registry.scope(kinds),
+        pytest.raises(ConfigError, match="lack cells.binding.rapid_binding@1"),
+    ):
         parse_spec(raw)

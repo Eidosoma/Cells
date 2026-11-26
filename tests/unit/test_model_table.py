@@ -11,7 +11,8 @@ Each claim with a planted error it must catch (D187):
   module registers nothing (planted: the same module imported but not a home, which a fresh
   manifest then lacks);
 - the table's models are the ones core/specs.parse_spec dispatches itself, each with the module
-  its branch parses with (planted: a dispatch with one more model);
+  its branch parses with, and any other ID is refused by its name (planted: a dispatch with one
+  more model, and an ID that the table does not list);
 - the registries load every home, so a fresh process lists every home's pieces and the manifest's
   bytes do not depend on what was imported first (planted: a loader that misses a home, whose
   pieces a fresh manifest then lacks);
@@ -22,13 +23,19 @@ Each claim with a planted error it must catch (D187):
   definition naming one is refused and the composition cache is untouched (planted: a family
   operator under a composite operator's ID, and a cells one held outside BUILTIN);
 - the table's runners and compositions are the code's (planted: a table row with another runner
-  and one with its operators reordered).
+  and one with its operators reordered);
+- every law interface, the five and the families', has its one family word, and no word stands
+  without its interface (registry/ids.py; planted: an interface without a word);
+- the table's keys and its compositions are full IDs, and no file in the rename's scope holds an old
+  spelling outside its exclusions, by the rename tool's own rule (D345; planted: a bare key, and a
+  file with an old spelling).
 """
 
 import ast
 import copy
 import dataclasses
 import importlib
+import importlib.util
 import inspect
 import json
 import os
@@ -46,7 +53,7 @@ from cells.models import pump_composite
 from cells.models.assembly_lineages import model as lineage_model
 from cells.models.assembly_lineages_v2 import model as assembly_model
 from cells.operators import OPERATORS
-from cells.registry import declarations, model_table
+from cells.registry import declarations, ids, model_table
 from cells.registry import laws as law_registry
 from cells.registry import operators as operator_registry
 from cells.registry.model_table import MODELS
@@ -54,8 +61,8 @@ from tests.unit.test_pump_composite_contract import frozen_worlds
 
 SRC = Path(cells.__file__).resolve().parent
 ROOT = SRC.parents[1]
-LINEAGES = "cells.assembly_lineages@1"
-ASSEMBLIES = "cells.assembly_lineages@2"
+LINEAGES = "cells.model.assembly_lineages@1"
+ASSEMBLIES = "cells.model.assembly_lineages@2"
 HOMES = {home for m in MODELS.values() for home in (*m.law_homes, *m.operator_homes)}
 
 
@@ -160,8 +167,12 @@ def test_every_module_that_registers_a_piece_is_a_home_of_the_table(tmp_path):
     # Inert law modules: each is a home. Planted: an unlisted one; a registering module that also
     # binds LAW is the registering scan's, not this one's.
     assert unlisted_inert(SRC, HOMES) == []
-    (tree / "family" / "inert.py").write_text("LAW = RouteLaw('tests.x@1', ('membrane',), 'x')\n")
-    (tree / "family" / "both.py").write_text("LAW = BUILTIN.register(RouteLaw('tests.y@1'))\n")
+    (tree / "family" / "inert.py").write_text(
+        "LAW = RouteLaw('tests.route.x@1', ('membrane',), 'x')\n"
+    )
+    (tree / "family" / "both.py").write_text(
+        "LAW = BUILTIN.register(RouteLaw('tests.route.y@1'))\n"
+    )
     assert unlisted_inert(tree, {"planted.family"}) == ["planted.family.inert"]
     assert unlisted_inert(tree, {"planted.family", "planted.family.inert"}) == []
 
@@ -201,7 +212,7 @@ def test_the_table_s_models_are_parse_spec_s_own_dispatch():
     assert dispatched(source, vars(specs)) == table  # Keyed as definitions write the IDs.
     assert all(m.type in model_table.TYPES for m in MODELS.values())
     # Planted: a dispatch with one more model, which the table does not list.
-    marker = "    older = legacy().parse(data)"
+    marker = '    if not isinstance(data["model"], dict):'
     planted = source.replace(
         marker,
         '    if isinstance(data["model"], dict) and data["model"].get("id") == "planted@1":\n'
@@ -211,6 +222,13 @@ def test_the_table_s_models_are_parse_spec_s_own_dispatch():
     assert planted != source
     extra = dispatched(planted, vars(specs))
     assert extra != table and extra["planted@1"] == "cells.planted_spec"
+    # An ID that the table does not list, a family's other major among them, is refused by its
+    # name, before its fields are read.
+    for unknown in ("planted@1", "resolved_tissue@3"):
+        definition = dict(schema_version=1, model=dict(id=unknown), experiment={}, execution={})
+        with pytest.raises(ConfigError, match=f"^Unknown model: '{unknown}'; available: ") as no:
+            parse_spec(definition)
+        assert str(no.value).endswith(", ".join(MODELS))
 
 
 # ------------------------------------------------------------------ loading
@@ -255,8 +273,9 @@ def _manifest_bytes(tmp_path, name, *, first=(), extra_home=None):
 def test_a_fresh_process_lists_every_home_s_pieces_whatever_was_imported_first(tmp_path):
     (tmp_path / "planted_family_home.py").write_text(
         "from cells.registry import laws\n"
-        "LAW = laws.BUILTIN.register(laws.RouteLaw('tests.planted_home_route@1', ('membrane',),\n"
-        "    'a planted family law', host='cells.passive_routes@1'))\n"
+        "LAW = laws.BUILTIN.register(laws.RouteLaw('tests.route.planted_home_route@1', "
+        "('membrane',),\n"
+        "    'a planted family law', host='cells.kind.passive_routes@1'))\n"
     )
     home = "planted_family_home"
     fresh = _manifest_bytes(tmp_path, "fresh.json", extra_home=home)
@@ -264,7 +283,7 @@ def test_a_fresh_process_lists_every_home_s_pieces_whatever_was_imported_first(t
     reordered = _manifest_bytes(tmp_path, "reordered.json", first=everything, extra_home=home)
     assert fresh == reordered  # The same bytes, whatever was imported first.
     ids = {(e["piece"], e["id"]) for e in json.loads(fresh)["pieces"]}
-    assert ("law", "tests.planted_home_route@1") in ids
+    assert ("law", "tests.route.planted_home_route@1") in ids
     # Every piece the homes register is listed by a fresh process: those of this process, which
     # has loaded every home.
     law_registry.active(), operator_registry.active()
@@ -278,7 +297,7 @@ def test_a_fresh_process_lists_every_home_s_pieces_whatever_was_imported_first(t
     # Planted: a loader that misses the family's home. A fresh process then lists none of its
     # pieces, so the bytes would follow whatever imported the home first.
     missed = _manifest_bytes(tmp_path, "missed.json")
-    assert ("law", "tests.planted_home_route@1") not in {
+    assert ("law", "tests.route.planted_home_route@1") not in {
         (e["piece"], e["id"]) for e in json.loads(missed)["pieces"]
     }
     assert missed != fresh
@@ -287,17 +306,18 @@ def test_a_fresh_process_lists_every_home_s_pieces_whatever_was_imported_first(t
 def test_the_loader_registers_an_inert_law_module_with_it_as_its_declarer(tmp_path):
     (tmp_path / "planted_inert_home.py").write_text(
         "from cells.modules import RouteLaw\n"
-        "LAW = RouteLaw('tests.planted_inert_route@1', ('membrane',), 'a planted inert law',\n"
-        "    host='cells.passive_routes@1')\n"
+        "LAW = RouteLaw('tests.route.planted_inert_route@1', ('membrane',), 'a planted inert "
+        "law',\n"
+        "    host='cells.kind.passive_routes@1')\n"
     )
     home = "planted_inert_home"
     listed = json.loads(_manifest_bytes(tmp_path, "inert.json", extra_home=home))
-    (entry,) = (e for e in listed["pieces"] if e["id"] == "tests.planted_inert_route@1")
+    (entry,) = (e for e in listed["pieces"] if e["id"] == "tests.route.planted_inert_route@1")
     assert entry["piece"] == "law" and entry["module"] == home
     # Planted: imported first but not a home. Importing it registers nothing, so a fresh
     # manifest lacks it.
     imported = json.loads(_manifest_bytes(tmp_path, "imported.json", first=[home]))
-    assert "tests.planted_inert_route@1" not in {e["id"] for e in imported["pieces"]}
+    assert "tests.route.planted_inert_route@1" not in {e["id"] for e in imported["pieces"]}
 
 
 # ------------------------------------------------------------------ interfaces
@@ -320,10 +340,10 @@ def test_the_cells_interface_set_is_the_five_and_the_families_declared_ones():
     contracts = {declarations.KIND_INTERFACE, operator_registry.COMPOSITE_INTERFACE}
     assert not law_registry.FAMILY_INTERFACES & (set(law_registry.INTERFACES) | contracts)
     registry = law_registry.LawRegistry()
-    admitted = ExchangeLike("tests.planted_exchange@1", host=LINEAGES)
+    admitted = ExchangeLike("tests.exchange.planted_exchange@1", host=LINEAGES)
     assert admitted.errors() == [] and registry.register(admitted) is admitted
     section = operator_registry.OperatorRegistry()
-    operator = LineageOperator("tests.planted_fission@1", host=LINEAGES)
+    operator = LineageOperator("tests.operator.planted_fission@1", host=LINEAGES)
     assert operator.errors() == [] and section.register(operator) is operator
 
     # Planted: undeclared cells interfaces, and the composite's contract claimed by a family.
@@ -332,14 +352,81 @@ def test_the_cells_interface_set_is_the_five_and_the_families_declared_ones():
         interface = "cells.undeclared_law@1"
 
     with pytest.raises(ValueError, match="nor one a family declares in the model table"):
-        registry.register(Undeclared("tests.undeclared@1", host=LINEAGES))
+        registry.register(Undeclared("tests.exchange.undeclared@1", host=LINEAGES))
     for interface in ("cells.undeclared_operator@1", operator_registry.COMPOSITE_INTERFACE):
         claimant = type("Claimant", (LineageOperator,), {"interface": interface})
         with pytest.raises(ValueError, match="is not a family's interface"):
-            section.register(claimant("tests.claimant@1", host=LINEAGES))
+            section.register(claimant("tests.operator.claimant@1", host=LINEAGES))
     with pytest.raises(ValueError, match="a cited operator gives its source as a Citation"):
-        section.register(LineageOperator("tests.uncited@1", host=LINEAGES, provenance="cited"))
-    assert [d.operator_id for d in section.family_operators()] == ["tests.planted_fission@1"]
+        section.register(
+            LineageOperator("tests.operator.uncited@1", host=LINEAGES, provenance="cited")
+        )
+    assert [d.operator_id for d in section.family_operators()] == [
+        "tests.operator.planted_fission@1"
+    ]
+
+
+def wordless(interfaces):
+    """The law interfaces among `interfaces` with no family word: a family operator's takes the
+    operators' own."""
+    operators = {type(d).interface for d in operator_registry.active().family_operators()}
+    return sorted(set(interfaces) - operators - set(ids.LAW_FAMILIES))
+
+
+def test_every_law_interface_has_its_family_word():
+    declared = {*law_registry.INTERFACES, *law_registry.FAMILY_INTERFACES}
+    assert wordless(declared) == [] and set(ids.LAW_FAMILIES) <= declared
+    assert {type(law).interface for law in law_registry.active()._laws.values()} <= declared
+    words = [*ids.FIXED_FAMILIES, *set(ids.LAW_FAMILIES.values()), *ids.SUBLAW_FAMILIES]
+    assert len(words) == len(set(words))
+    # Planted: an interface without a word.
+    assert wordless({*declared, "cells.undeclared_law@1"}) == ["cells.undeclared_law@1"]
+
+
+# ------------------------------------------------------------------ one spelling (D345)
+
+
+def partial_ids(models):
+    """The table's IDs that are not a piece's of their family: its keys, and its compositions'."""
+    stated = [(key, "model") for key in models]
+    for model in models.values():
+        inner, operators = model.composition or (None, ())
+        stated += [(inner, "model")] * (inner is not None) + [(o, "operator") for o in operators]
+    return [value for value, family in stated if not ids.piece(value, family=family)]
+
+
+def test_the_table_s_keys_and_compositions_are_full_ids():
+    assert partial_ids(MODELS) == []
+    assert partial_ids({"planted_tissue@1": next(iter(MODELS.values()))}) == ["planted_tissue@1"]
+
+
+def left_over(tool, renames, root):
+    """Every old spelling in the rename's scope under `root` outside its exclusions, by the rename
+    tool's rule."""
+    out = []
+    for folder in renames.scope["dirs"]:
+        for file in sorted((root / folder).rglob("*")):
+            path = file.relative_to(root).as_posix()
+            if file.is_file() and renames.excluded(path) is None:
+                out += tool.leftovers({path: (None, file.read_bytes())}, renames)
+    return out
+
+
+def test_no_old_spelling_is_left_in_scope(tmp_path):
+    """Seconds and reason (D224): about 2 s, every file in scope read once; a branch that merges
+    after the rename brings old spellings back, and no parse reads most of them."""
+    location = ROOT / "scripts" / "id_moves.py"
+    spec = importlib.util.spec_from_file_location("id_moves", location)
+    tool = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tool)
+    choices = tool.load_choices(ROOT / tool.CHOICES)
+    frozen = tool.frozen_list(ROOT, ROOT / tool.FROZEN, choices)
+    renames = tool.load_map(ROOT / tool.MAP, frozen)
+    assert left_over(tool, renames, ROOT) == []
+    planted = tmp_path / "src" / "planted.py"
+    planted.parent.mkdir()
+    planted.write_text(f'LAW_ID = "{next(iter(ids.RENAMED))}"\n')
+    assert [found[:2] for found in left_over(tool, renames, tmp_path)] == [("src/planted.py", 1)]
 
 
 # ------------------------------------------------------------------ a family's operators
@@ -348,7 +435,9 @@ def test_the_cells_interface_set_is_the_five_and_the_families_declared_ones():
 def test_a_family_s_operators_are_a_section_apart_from_the_composite_s():
     keys, values = tuple(OPERATORS), tuple(OPERATORS.values())
     cache = pump_composite._implementation.cache_info()
-    planted = LineageOperator("tests.planted_fission@1", host=LINEAGES, test="tests/unit/x.py::y")
+    planted = LineageOperator(
+        "tests.operator.planted_fission@1", host=LINEAGES, test="tests/unit/x.py::y"
+    )
     operator_registry.BUILTIN.register(planted)
     try:
         assert tuple(OPERATORS) == keys and tuple(OPERATORS.values()) == values
@@ -378,12 +467,12 @@ def test_a_family_s_operators_are_a_section_apart_from_the_composite_s():
     assert pump_composite._implementation.cache_info() == cache  # The compositions' cache.
     # Planted: a family operator under a composite operator's ID, and a cells family operator
     # held outside BUILTIN (one object per cells ID, as for the composite's).
-    twin = LineageOperator("cells." + keys[0], host=LINEAGES)
+    twin = LineageOperator(declarations.qualified(keys[0]), host=LINEAGES)
     with pytest.raises(ValueError, match="already registered"):
         operator_registry.BUILTIN.extended(twin)
     with pytest.raises(ValueError, match="only as BUILTIN's own"):
         operator_registry.OperatorRegistry().register(
-            LineageOperator("cells.planted_lineage@1", host=LINEAGES)
+            LineageOperator("cells.operator.planted_lineage@1", host=LINEAGES)
         )
     section = operator_registry.BUILTIN.extended(planted)
     assert section.module(planted.operator_id) == __name__
@@ -424,16 +513,18 @@ def test_the_table_s_runners_and_compositions_are_the_code_s():
             module, _, function = row.runner.partition(":")
             assert callable(getattr(importlib.import_module(module), function))
     # Planted: another runner, and a composition's operators reordered.
-    lineages, water = MODELS[LINEAGES], MODELS["resolved_pump_water@2"]
+    lineages, water = MODELS[LINEAGES], MODELS["cells.model.resolved_pump_water@2"]
     inner, operators = water.composition
     planted = dict(
         MODELS,
         **{
             LINEAGES: lineages._replace(runner="cells.models.assembly_lineages.runner:other"),
-            "resolved_pump_water@2": water._replace(composition=(inner, operators[::-1])),
+            "cells.model.resolved_pump_water@2": water._replace(
+                composition=(inner, operators[::-1])
+            ),
         },
     )
     assert table_errors(planted, worlds) == [
         f"{LINEAGES}: runner 'cells.models.assembly_lineages.runner:other'",
-        f"resolved_pump_water@2: composition {(inner, operators[::-1])!r}",
+        f"cells.model.resolved_pump_water@2: composition {(inner, operators[::-1])!r}",
     ]

@@ -1,5 +1,9 @@
 # Fixed-volume tissue cotransport
 
+> **Legacy cleanup (25 November 2026, D386).** `resolved_cotransport@1` left the engine, with its
+> tests. KCC is `k_anion_symport_mass_action@1`; NKCC and the generic symport are ported as law
+> modules on the transporter kind. The tag `pre-cleanup-2026-11-25` keeps the code.
+
 `resolved_cotransport@1` extends `resolved_energy@1` with the manufactured
 reversible KCC/NKCC component. Fixed geometry, finite ATP pools, regeneration,
 channels and existing ionic laws retain their meaning. Cotransport adds no ATP

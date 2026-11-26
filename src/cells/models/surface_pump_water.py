@@ -1,6 +1,6 @@
-"""resolved_pump_water@1: resolved_pump_tissue@3 with osmotic water and compliant volumes.
+"""cells.model.resolved_pump_water@1: cells.model.resolved_pump_tissue@3 with osmotic water and compliant volumes.
 
-The ionic model is resolved_pump_tissue@3 (models/surface_pump_v3.py),
+The ionic model is cells.model.resolved_pump_tissue@3 (models/surface_pump_v3.py),
 unchanged and called, never copied. Water is the law
 numerics/osmotic_water.LAW_ID on the membranes (definitions/surface_pump_water_spec.py):
 the flow across a patch is Q = 1e15 A Lp a (psi_cell - psi_outside) pL/s with
@@ -40,8 +40,8 @@ without it, fusion and FMA contraction differed in @3's dissipation accumulators
 by about 1 ulp (bitwise again with XLA's algsimp and fusion passes disabled).
 
 Implementation (D143, docs/PUMP_COMPOSITE.md). This identity is a thin
-composition: resolved_pump_composite@1 with the single operator
-ideal_osmosis_linear_compliance_water@1 (operators/osmotic_water.py, which
+composition: cells.model.resolved_pump_composite@1 with the single operator
+cells.operator.ideal_osmosis_linear_compliance_water@1 (operators/osmotic_water.py, which
 holds the water law, its Heun half-steps and its ledgers, moved there unchanged).
 The composite's step is the splitting above, with @3's step behind the same
 barrier. Before this module became thin, the composition was bitwise equal to
@@ -112,6 +112,7 @@ STATE_AXES = _model.STATE_AXES
 STATE_TYPE = _model.STATE_TYPE
 LAYOUT_TYPE = _model.LAYOUT_TYPE
 FLOOR_LAYOUT_TYPE = _model.FLOOR_LAYOUT_TYPE
+SPARSE_LAYOUT_TYPE = _model.SPARSE_LAYOUT_TYPE
 Values = _model.VALUES_TYPE
 
 
@@ -166,7 +167,13 @@ def ionic_control(control):
 
 def ionic_layout(p, state=None):
     """The @3 layout: declared volumes, or the current ones of `state`."""
-    kind = ionic.FLOOR_LAYOUT_TYPE if hasattr(p, "field_current_floor") else ionic.LAYOUT_TYPE
+    kind = (
+        ionic.SPARSE_LAYOUT_TYPE
+        if hasattr(p, "field_capacitor_values")
+        else ionic.FLOOR_LAYOUT_TYPE
+        if hasattr(p, "field_current_floor")
+        else ionic.LAYOUT_TYPE
+    )
     q = kind(*(getattr(p, k) for k in kind._fields))
     if state is None:
         return q

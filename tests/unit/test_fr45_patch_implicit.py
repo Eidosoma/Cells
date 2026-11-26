@@ -142,4 +142,4 @@ def test_patch_wide_booking_splits_by_route_and_sums_to_the_whole():
                                     T, xp=np)
     whole = pe.step_heat_pJ(moved.sum(axis=0), mu_in, mu_out, z, -0.03, -0.031, T, xp=np)
     assert per_route.sum() == pytest.approx(whole, rel=1e-14)
-    assert pe.SOLVER_ID == "imex_ars222_face_patch_electromigration@1"
+    assert pe.SOLVER_ID == "cells.solver.imex_ars222_face_patch_electromigration@1"

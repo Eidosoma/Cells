@@ -211,6 +211,9 @@ counts under `explicit_only`. RK4 refuses kinds.
 - **@3's own routes:** an operator-written charged trace row stays refused there (under A);
   counter-ions covered by @3's bound are the exception. Any operator-written row with a channel
   route stays refused.
+  **Amended 25 November 2026** ([the calcium note](CALCIUM_STORE_AND_CHANNELS_DESIGN.md) §5.4):
+  `local_species_reactions@1` may write a row that a channel carries where the channel's law
+  declares its material term. Every other operator, and a law without the term, refuses it still.
 - **New in version 1:** the charged law on a junction that crosses a floating component, until A2.
 - **The charged law** on a closure-held row, on a neutral row, or beside its host's own
   permeability for its row; the neutral law at valence 0.
@@ -226,6 +229,10 @@ counts under `explicit_only`. RK4 refuses kinds.
   charged crossing rows. A trace charged row that a carrier moves (butyrate on the symporter)
   therefore has no material bound, and the charge rule does not hold it, for `check_counter_ion`'s
   reason. **S:** count a population's charged crossing rows in its material term, as P2's does.
+  **Built 25 November 2026, for the laws that declare it** (the calcium note §6.3): a population whose
+  law declares `material_term` bounds every row it moves, charged or neutral, by its whole rate. The
+  two sodium-anion symporters declare none, so butyrate on the symporter has no material bound
+  still.
 - **Adjacent, for the lead.** P2's patch material term is each end's own slope, D4's positivity
   form. On a patch facing a finite node of comparable volume, the mode is the two-end sum, up to
   twice that. It is unchanged here unless ruled; P2 is unqualified, and no registered world
@@ -351,3 +358,33 @@ took about 11 s. Row 3 is one composite compile, about 30–60 s.
   - or `passive_constant_field_permeation@2`, the user's alternative under D148.
 - **C5** (for the replication's owner, not this build): the microRNA's decay as the closed
   conversion, or turnover@2.
+
+## 11. As built (A1, under D310)
+
+- **Where:** `kinds/passive_routes.py` and the law module. @3, the kind contract and
+  `species_common.py` are unchanged.
+- **Three departures from §3 and §7, each a smaller change:**
+  - **No junction marker in the structure entry.** The charged law's own field (`passive_charged`,
+    present only where the law is declared) gates every change. D310 changes P2's patch worlds'
+    material term anyway, so a marker had nothing left to keep bitwise. Every world without the
+    charged law keeps its programs.
+  - **`passive_current_A` stays each route's share of `membrane_current_A`:** 0 on a junction
+    route, as the view's text says. A junction route's current is e z times its flux. Reporting it
+    in that column (§3 item 5) would have changed the view's text for every passive-routes world.
+  - **The rows have their own file,** `tests/unit/test_passive_routes_junctions.py`. In the kind
+    file they would take it past the tier runner's 90 s measuring cap, into tier 3. The kind file
+    keeps only the sanctioned row.
+- **A finding, not fixed here.** The charged law books its heat by the tableau. From a trace end
+  the tableau samples the log-singular start and books at first order in dt.
+  - In a species-only world the energy check refuses it: X at 2 µM against 1e-9 mM leaves 2.0% of
+    the route's heat at dt 25 µs and 0.86% at 12.5 µs. From a resolved start (2 and 1 µM) the
+    residual is second order: 7.2e-5 and 1.8e-5.
+  - The reactions operator has the same limit (its §3.3 (a)). Read, not measured here: the
+    operators' GUARD_STATEMENT says the shared energy bound beside ion flows is blind to such
+    bookings at µM to nM.
+  - Read from the code, not run here: P2's patch routes book the same tableau heat, so the limit
+    is theirs too. The test rows start resolved.
+  - **For the replication's owner:** the reacting row (§8's check 3) passes with its flows under
+    the energy check's 2e-8 pJ floor, so it says nothing about a microRNA at µM entering near-empty
+    cells. In a species-only world such a start is refused; in a world with ion flows it books
+    heat at first order unseen.

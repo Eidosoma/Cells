@@ -1,0 +1,116 @@
+{
+ "kind": "cells.fr43_part3_reference_spec@1",
+ "purpose": "FR-43 part 3: an independent same-draws integration of a low-count integer population coupled to continuous pools. It gives each event's time, channel and the pools at it, for comparison with Cells' integer_unit_population@1 (C3.4, and the two-way case of D315). Declared values and protocol only: no engine value is in this file.",
+ "readme": "README.md",
+ "units": {
+  "time": "s",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM (1 fmol/pL = 1 mM)",
+  "rate_constant": "1/s",
+  "conductance": "pL/s per unit",
+  "production": "fmol/s",
+  "clearance": "1/s"
+ },
+ "conventions": {
+  "falling_factorial": "ff(n, r) = n!/(n - r)! (ordered tuples; ff(n, 0) = 1, ff(n, r) = 0 for r > n)",
+  "propensity": "a_j = k_j * prod_k ff(n_k, r_jk) * phi_j; phi_j = c_read / (1 mM) when channel j declares a read (order 1), else 1; c_read = n / V of the read row at the current continuous state",
+  "total_rate": "a0 = sum_j a_j over the channels in declared order",
+  "hazard": "H(t) = integral from t_prev to t of a0(x(s), N) ds, with N constant between events; t_prev = 0 before the first event, else the previous event's time (H restarts at 0 after every event)",
+  "threshold": "event k (k = 0, 1, 2, ... in order) fires at the first t with H(t) = E_k, E_k = -ln(u1_k)",
+  "channel_rule": "at the crossing state: c_j = a_1 + ... + a_j, summed left to right in declared order; the channel is the first j with c_j > min(u2_k * a0, nextafter(a0, 0)), a0 the total at the crossing state",
+  "jump": "N <- N - r_j + p_j at the crossing; the continuous state is continuous across it",
+  "draws": "u1_k and u2_k are draw k of the site's events stream (README, the random-draw protocol); draws.json holds them as float.hex strings",
+  "stop": "events with t_k <= horizon_s; the system is integrated to horizon_s"
+ },
+ "system": {
+  "continuous_state": "x = (n_cell, n_node): the amounts of species S in the cell and in its finite outside node",
+  "integer_state": "N = (n_free, n_active), the counts of the site's unit states, in that order",
+  "transfer": "J = G * (n_cell / V_cell - n_node / V_node), G = sum_k g_k n_k (only active units conduct here): fmol/s from the cell to the node",
+  "odes": "dn_cell/dt = -J + P_cell; dn_node/dt = +J - k_node * n_node (P_cell and k_node are 0 where a world declares no turnover)",
+  "between_events": "N is constant; only x and H change",
+  "no_other_motion": "S has no other route: no membrane permeability, no face, no reaction; nothing else moves it"
+ },
+ "worlds": [
+  {
+   "id": "W1_two_subunits_feedback",
+   "description": "FR-43's world: two free subunits form one active unit, which transfers S between the cell and its finite node; the assembly rate reads S in the cell (feedback on); no other writer",
+   "volumes_pL": {"cell": 1.0, "node": 0.5},
+   "initial_amounts_fmol": {"cell": 2.0, "node": 0.05},
+   "unit_states": [{"id": "free", "subunits": 1}, {"id": "active", "subunits": 2}],
+   "initial_counts": {"free": 2, "active": 0},
+   "channels": [
+    {"id": "assembly", "reactants": {"free": 2}, "products": {"active": 1}, "rate_constant_per_s": 0.5, "read": {"species": "S", "at": "cell", "order": 1}},
+    {"id": "disassembly", "reactants": {"active": 1}, "products": {"free": 2}, "rate_constant_per_s": 1.0, "read": null}
+   ],
+   "transfer": {"species": "S", "conductance_pL_per_s_per_unit": {"free": 0.0, "active": 0.4}},
+   "turnover": null,
+   "horizon_s": 20.0,
+   "sample_times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0],
+   "stream": {"seed": 101, "site_index": 0, "events_drawn": 256}
+  },
+  {
+   "id": "W2_four_subunits_feedback",
+   "description": "Four free subunits (states (4,0), (2,1), (0,2)), so both channels compete at (2,1) and the channel rule draws on u2; feedback on; no other writer",
+   "volumes_pL": {"cell": 1.0, "node": 0.5},
+   "initial_amounts_fmol": {"cell": 2.0, "node": 0.05},
+   "unit_states": [{"id": "free", "subunits": 1}, {"id": "active", "subunits": 2}],
+   "initial_counts": {"free": 4, "active": 0},
+   "channels": [
+    {"id": "assembly", "reactants": {"free": 2}, "products": {"active": 1}, "rate_constant_per_s": 0.1, "read": {"species": "S", "at": "cell", "order": 1}},
+    {"id": "disassembly", "reactants": {"active": 1}, "products": {"free": 2}, "rate_constant_per_s": 1.0, "read": null}
+   ],
+   "transfer": {"species": "S", "conductance_pL_per_s_per_unit": {"free": 0.0, "active": 0.4}},
+   "turnover": null,
+   "horizon_s": 20.0,
+   "sample_times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0],
+   "stream": {"seed": 202, "site_index": 0, "events_drawn": 256}
+  },
+  {
+   "id": "W3_two_way_turnover",
+   "description": "The two-way case: an existing writer (scheduled turnover) produces S in the cell, the pool the assembly clock reads, and clears it at first order at the node; the active count sets the transfer, which changes the later pools and the clearance flux",
+   "volumes_pL": {"cell": 1.0, "node": 0.5},
+   "initial_amounts_fmol": {"cell": 1.0, "node": 0.05},
+   "unit_states": [{"id": "free", "subunits": 1}, {"id": "active", "subunits": 2}],
+   "initial_counts": {"free": 2, "active": 0},
+   "channels": [
+    {"id": "assembly", "reactants": {"free": 2}, "products": {"active": 1}, "rate_constant_per_s": 0.5, "read": {"species": "S", "at": "cell", "order": 1}},
+    {"id": "disassembly", "reactants": {"active": 1}, "products": {"free": 2}, "rate_constant_per_s": 1.0, "read": null}
+   ],
+   "transfer": {"species": "S", "conductance_pL_per_s_per_unit": {"free": 0.0, "active": 0.4}},
+   "turnover": {"production_cell_fmol_per_s": 0.3, "clearance_node_per_s": 0.6, "law": "constant production P in the cell; first-order clearance k n_node at the node; both constant over the horizon"},
+   "horizon_s": 20.0,
+   "sample_times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0],
+   "stream": {"seed": 303, "site_index": 0, "events_drawn": 256}
+  },
+  {
+   "id": "W4_four_subunits_node_read",
+   "description": "Four free subunits whose assembly reads S at the node (the pool the transfer fills), so the feedback runs the other way; no other writer",
+   "volumes_pL": {"cell": 1.0, "node": 0.5},
+   "initial_amounts_fmol": {"cell": 2.0, "node": 0.05},
+   "unit_states": [{"id": "free", "subunits": 1}, {"id": "active", "subunits": 2}],
+   "initial_counts": {"free": 4, "active": 0},
+   "channels": [
+    {"id": "assembly", "reactants": {"free": 2}, "products": {"active": 1}, "rate_constant_per_s": 0.5, "read": {"species": "S", "at": "node", "order": 1}},
+    {"id": "disassembly", "reactants": {"active": 1}, "products": {"free": 2}, "rate_constant_per_s": 1.0, "read": null}
+   ],
+   "transfer": {"species": "S", "conductance_pL_per_s_per_unit": {"free": 0.0, "active": 0.4}},
+   "turnover": null,
+   "horizon_s": 20.0,
+   "sample_times_s": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0],
+   "stream": {"seed": 404, "site_index": 0, "events_drawn": 256}
+  }
+ ],
+ "draws": {
+  "file": "draws.json",
+  "generator": "make_draws.py (standalone: JAX's random primitives, no engine import)",
+  "premise_check": "regenerate the draws from README's written rule with your own code and compare with draws.json bit for bit before integrating"
+ },
+ "requested_outputs": {
+  "file": "one JSON per world, {world, events, samples, method, accuracy}",
+  "events": "for each event k with t_k <= horizon_s: k, time_s, channel (id), counts_after {free, active}, cell_S_fmol and node_S_fmol at t_k, transferred_fmol (cumulative cell to node, from t = 0, at t_k), and for W3 turnover_produced_fmol and turnover_cleared_fmol (cumulative, at t_k)",
+  "samples": "at each sample time: cell_S_fmol, node_S_fmol, counts {free, active}, transferred_fmol, and for W3 the two turnover totals",
+  "method": "the integrator and its tolerances, the event location (root finder and its tolerance) and the second method used as a cross-check",
+  "accuracy": "the largest difference between the two methods, per world, in event times (s) and amounts (fmol); target event times to 1e-10 s and amounts to 1e-12 relative"
+ }
+}

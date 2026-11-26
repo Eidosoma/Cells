@@ -1,0 +1,74 @@
+{
+ "kind": "cells.fr49_reference_spec@1",
+ "purpose": "FR-49 (protocol fr49-compartment-compositions-v1): code-blind closed forms for World L (a labelled pulse carried into a compartment and cleared there), World B (ligand binding with depletion in a compartment), and the combination checks C1 (labels at a washed well) and C2 (two ligands sharing one site pool in a compartment). Declared values and protocol only: no engine value is in this file.",
+ "readme": "README.md",
+ "laws": "LAWS.md",
+ "units": {
+  "time": "s",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM (1 fmol/pL = 1 mM)",
+  "route_conductance": "pL/s (a x c is fmol/s)",
+  "production": "fmol/s",
+  "first_order_rate": "1/s",
+  "association_rate": "1/(mM s)",
+  "dissociation_rate": "1/s",
+  "copies": "molecules (a count)",
+  "sites_per_copy": "integer",
+  "accessible_fraction": "dimensionless",
+  "sites_per_fmol": "602214076 (exact)",
+  "share": "dimensionless fraction of a species' amount at a node",
+  "wash_fraction": "dimensionless, (0, 1]"
+ },
+ "worlds": {
+  "L": {
+   "description": "LAWS.md section 2. Owner O and compartment C; S produced in O at P, carried O <-> C by the route of conductance a, cleared in C at k_d; production during [t1, t2) is labelled x",
+   "V_O_pL": "1.0",
+   "V_C_pL": "0.1",
+   "a_pL_per_s": "2e-4",
+   "k_d_per_s": "1e-3",
+   "P_fmol_per_s": "1e-6",
+   "initial_fmol": {"n_O": "1e-3", "n_C": "1e-7", "x_O": "0", "x_C": "0"},
+   "pulse_s": {"t1": "600", "t2": "1200"},
+   "horizon_s": "3600",
+   "sample_times_s": {"rule": "t_i = 60 i, i = 0 ... 60"}
+  },
+  "B": {
+   "description": "LAWS.md section 3. Ligand L in compartment C, binding finite sites of capacity S that face C; binding is L's only mover in C",
+   "V_C_pL": "0.1",
+   "sites": {"copies": "60000", "sites_per_copy": 1, "accessible_fraction": "1"},
+   "k_on_per_mM_per_s": "1e3",
+   "k_off_per_s": "1e-3",
+   "initial_fmol": {"n_L": "1e-4", "B": "0"},
+   "horizon_s": "600",
+   "sample_times_s": {"rule": "t_i = 5 i, i = 0 ... 120"},
+   "wash_elsewhere": {"node": "a well W, not C", "time_s": "300", "fraction": "0.5", "note": "it changes only the well; C's equations are unaffected (LAWS.md section 3)"}
+  },
+  "C1": {
+   "description": "LAWS.md section 4. World L, plus a well W holding S with no route across its surface, washed once",
+   "world_L": "as world L above, unchanged",
+   "V_W_pL": "1.0",
+   "initial_fmol": {"x_W": "6e-4", "b_W": "4e-4"},
+   "wash": {"time_s": "900", "fraction": "0.5", "buffer_mM": {"S": "1e-9"}, "buffer_label": "base, although the wash falls inside world L's labelled pulse [600, 1200) s"}
+  },
+  "C2": {
+   "description": "LAWS.md section 5. Two ligands L1 and L2 in C competing for one site pool of capacity S; binding is their only mover",
+   "V_C_pL": "0.1",
+   "sites": {"copies": "60000", "sites_per_copy": 1, "accessible_fraction": "1"},
+   "ligands": [
+    {"id": "L1", "k_on_per_mM_per_s": "1e3", "k_off_per_s": "1e-3", "total_fmol": "6e-5"},
+    {"id": "L2", "k_on_per_mM_per_s": "5e2", "k_off_per_s": "5e-3", "total_fmol": "6e-5"}
+   ],
+   "initial_bound_fmol": {"B1": "0", "B2": "0"},
+   "horizon_s": "2000",
+   "sample_times_s": {"rule": "t_i = 20 i, i = 0 ... 100"}
+  }
+ },
+ "requested_outputs": {
+  "L": "at every sample time: n_O, n_C, x_O, x_C, the base amounts n - x, and the shares x/n at O and C",
+  "B": "at every sample time: B, n_L and c; once: S, K_d, b, c*, B*, B1, B2 and lambda",
+  "C1": "x_W and b_W just before and just after the wash, and the shares there; world L's quantities as in L",
+  "C2": "at every sample time: B1, B2, c1, c2 and R; once: the equilibrium c1*, c2*, B1*, B2*",
+  "format": "one JSON file per world, results/<world>.json, every number as a decimal string of at least 20 significant digits, plus method and provenance"
+ }
+}

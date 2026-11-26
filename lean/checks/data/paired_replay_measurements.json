@@ -1,0 +1,204 @@
+{
+  "ishihara2018_kir21_unitary@1": {
+    "doi": "10.1085/jgp.201711936",
+    "locator": "Fig. 4B–C, wild-type mouse Kir2.1, inward unitary slope of the i–V relation.",
+    "external_K_mM": [
+      150,
+      50,
+      20,
+      50,
+      20
+    ],
+    "external_Na_mM": [
+      0,
+      0,
+      0,
+      100,
+      130
+    ],
+    "slope_pS_approx": [
+      42,
+      38,
+      35,
+      27,
+      18.5
+    ],
+    "sd_pS_approx": [
+      3,
+      2,
+      5,
+      2,
+      3
+    ],
+    "patches": [
+      7,
+      3,
+      7,
+      3,
+      9
+    ],
+    "temperature_range_C": [
+      23,
+      25
+    ],
+    "scope": "Figure readings, not tabulated slopes. The pipette supplies the extracellular patch solution. Cell-attached recordings leave intracellular K activity unknown. The published power fit uses activity in the Na-substitution series. Cells takes concentrations."
+  },
+  "matsuda1991_ventricular_unitary@1": {
+    "doi": "10.1113/jphysiol.1991.sp018499",
+    "locator": "Figs. 1–2 and accompanying group slope estimates, open-cell-attached guinea-pig ventricular patches, Mg-free cytoplasm.",
+    "external_K_mM": [
+      150,
+      30,
+      150
+    ],
+    "internal_K_mM": [
+      150,
+      150,
+      45
+    ],
+    "slope_pS": [
+      31.7,
+      23.1,
+      29.7
+    ],
+    "sd_pS": [
+      1.7,
+      1.2,
+      1.3
+    ],
+    "patches": [
+      36,
+      8,
+      16
+    ],
+    "reversal_mV": [
+      0.6,
+      -34.9,
+      27.9
+    ],
+    "temperature_range_C": [
+      24,
+      25
+    ],
+    "scope": "The two rows at 150 mM internal K compare quasi-linear single-channel slopes with sugar substitution outside. Molecular identity was unresolved. The third row changes the inside concentration."
+  },
+  "jager2001_kv15_potassium@1": {
+    "doi": "10.1016/S0014-5793(00)02396-6",
+    "locator": "Fig. 2, wild-type human Kv1.5 peak outward current in RBL cells.",
+    "outside_pH": [
+      7.4,
+      6
+    ],
+    "external_K_mM": [
+      0,
+      4.5
+    ],
+    "internal_KF_mM": 134,
+    "hold_mV": -80,
+    "test_mV": 40,
+    "pulse_ms": 200,
+    "zero_over_4p5_peak_approx": [
+      1,
+      0.1
+    ],
+    "scope": "Approximate ratios within each pH condition. Authors describe the normal-pH peaks as similar. No group error or sample count given for these ratios. Intracellular free K was not measured. The pipette was titrated with KOH to pH 7.2."
+  },
+  "piasta2011_valinomycin_local@1": {
+    "doi": "10.1085/jgp.201110684",
+    "locator": "Appendix B, Fig. B1, diamond markers after valinomycin addition. Example bilayer and blocked-channel baseline.",
+    "temperature_C": 21,
+    "temperature_error_C": 1,
+    "internal_K_mM": 200,
+    "external_K_mM": 10,
+    "external_Na_mM": 190,
+    "approx_diamond_voltage_range_mV": [
+      -72,
+      -70
+    ],
+    "approx_baseline_crossing_mV": -71.3,
+    "paired_channel_minus_carrier_mV": -0.8,
+    "reported_difference_error_mV": 1.3,
+    "paired_datasets": 4,
+    "scope": "The ±1.3 mV belongs to the channel-minus-carrier reversal difference over four comparisons. Pointwise current uncertainty and ion activities for the plotted curve are unavailable. Use only the narrow window actually covered by the carrier points."
+  },
+  "leibner2009_hsa_eptfe@1": {
+    "doi": "10.1016/j.actbio.2008.11.003",
+    "locator": "Fig. 4 and Results §3.3, radiolabel distribution in one of three adsorption experiments.",
+    "wash_count": 3,
+    "starting_HSA_mg_per_mL": [
+      10,
+      30
+    ],
+    "residual_fraction_of_initial_adsorbed": [
+      0.385,
+      0.508
+    ],
+    "scope": "Bound fraction of adsorbed label after PBS rinses. Mass recovery exceeded 95% for the three trials. No uncertainty for these individual fractions, and substantial between-trial variation."
+  },
+  "goyama2023_hsa_eptfe@1": {
+    "doi": "10.1038/s41598-023-35594-7",
+    "locator": "Fig. 2 and protein adsorption methods, uncoated graft controls, post-wash extracted human serum albumin.",
+    "HSA_mg_per_mL": 1,
+    "temperature_C": 37,
+    "exposure_min": 60,
+    "uncoated_mean_ug_m2": 1.47,
+    "uncoated_sd_ug_m2": 1.36,
+    "n": 7,
+    "scope": "Uncoated ePTFE was water-washed before protein extraction and quantification. Reported mean and SD retain the paper’s units. The rinse effluent and pre-wash bound mass were unmeasured."
+  },
+  "garrahan1967_ghost_phosphate_label@1": {
+    "doi": "10.1113/jphysiol.1967.sp008298",
+    "locator": "Primary report, nucleotide labelling in resealed human erythrocyte ghosts, 15 min incorporation.",
+    "observation_min": 15,
+    "ouabain_experiments": 5,
+    "scope": "High internal K and external Na increased radiophosphate incorporation above background. Ouabain suppressed the extra signal. The measured quantity is isotope entering nucleotides."
+  },
+  "lant1968_ghost_phosphate_label@1": {
+    "doi": "10.1113/jphysiol.1968.sp008663",
+    "locator": "Primary report, human erythrocyte ghosts, membrane and soluble nucleotide fractions.",
+    "scope": "The gradient-dependent ATP label was ouabain-sensitive. Ion-independent incorporation persisted. A label can enter by exchange at zero net ATP production."
+  },
+  "sahore2018_passive_bead_split@1": {
+    "doi": "10.1039/C8AY01474D",
+    "locator": "Fig. 6d, field-off control showing the parent and two separated daughter droplets.",
+    "observed": "Beads visible in both daughter droplets of the illustrated split.",
+    "scope": "No per-split volume calibration, count table or replicated passive occupancy fraction. The adjacent 59% withdrawal estimate was obtained during magnetic retention and is excluded."
+  },
+  "kehl2002_tail_protocol": {
+    "doi": "10.1113/jphysiol.2001.014456",
+    "locator": "Fig. 2 and electrophysiology Methods, positive external K rows.",
+    "hold_mV": -80,
+    "tail_mV": -50,
+    "prepulse_ms": 300,
+    "prepulse_step_mV": 5,
+    "pipette_KCl_mM": 130,
+    "inside_pH": 7.4,
+    "outside_pH": [
+      7.4,
+      6.4
+    ],
+    "prepulse_range_mV": {
+      "3.5": [
+        [
+          -50,
+          45
+        ],
+        [
+          -30,
+          65
+        ]
+      ],
+      "140": [
+        [
+          -40,
+          55
+        ],
+        [
+          -40,
+          55
+        ]
+      ]
+    },
+    "scope": "Each within-K pair compares the fitted maximum of onset tail currents. KOH titration leaves total intracellular K unreported. Control and acid tails have the same sign within each K level. The +65 mV acidic endpoint is outside the native gate domain."
+  }
+}

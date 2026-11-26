@@ -1,4 +1,4 @@
-"""cells.transition_state_factor@1: catalysis as a factor on the common state (OL1; §2.4 b, §0.2a).
+"""cells.rate_factor.transition_state_factor@1: catalysis as a factor on the common state (OL1; §2.4 b, §0.2a).
 
 A catalyst that stabilises a step's transition state by ΔΔG‡ (k_BT) multiplies both directions'
 rates by the same factor, so the equilibrium is unchanged (transition-state theory; IUPAC's
@@ -23,7 +23,7 @@ negative ΔΔG‡ (β in (−1, 0)); g stays positive.
 - **Boundary** (`empty_catalyst_phase: uncatalysed`): g = 1 where the catalysing phase is empty at
   m.
 
-Data, per world (`rate_factor`): `{"law": "cells.transition_state_factor@1", "catalysing_phase":
+Data, per world (`rate_factor`): `{"law": "cells.rate_factor.transition_state_factor@1", "catalysing_phase":
 "membrane", "entries": [{"catalyst": "B", "step": "join_A", "ddG_kT": 0.5}, ...]}`, a sparse list,
 each (catalyst, step) at most once, generated in validation/ with a recorded seed and law when it is
 large (§2.4).
@@ -225,7 +225,7 @@ FORMULAS = {
 
 LAW = law_registry.BUILTIN.register(
     RateFactorLaw(
-        "cells.transition_state_factor@1",
+        "cells.rate_factor.transition_state_factor@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

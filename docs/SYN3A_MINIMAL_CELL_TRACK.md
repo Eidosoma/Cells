@@ -1,5 +1,8 @@
 # JCVI-syn3A as Cells' minimal-cell track: evidence audit, probes and first milestone
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 Status: **the track was adopted on 14 November 2026 (D173).**
 - **This revision (15 November)** adds the five follow-up steps D173 named:
   - the search for the missing division data;

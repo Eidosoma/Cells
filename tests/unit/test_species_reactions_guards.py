@@ -1,4 +1,4 @@
-"""Guards in the engine branch for local_species_reactions@1 (D152 v1, milestone 2; design §3.4,
+"""Guards in the engine branch for cells.operator.local_species_reactions@1 (D152 v1, milestone 2; design §3.4,
 §4.4, §6.5 and §10.4's C2).
 
 * **Energy, the face-free species-only world** (§3.4, guard 1). The network is the world's only

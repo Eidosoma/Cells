@@ -1,4 +1,4 @@
-"""na_anion_symport_factored@1: a fuel-free, electrogenic cotransporter of n Na+ and one monovalent
+"""cells.cycle.na_anion_symport_factored@1: a fuel-free, electrogenic cotransporter of n Na+ and one monovalent
 anion, in the cycle kind's factored form (seam A's general form, docs/CORE_SEAMS_DESIGN.md §3;
 D228 item 1; an SLC5-type monocarboxylate carrier's coupling).
 
@@ -32,9 +32,9 @@ A compartment consumer needs declared step terms first; no current consumer puts
 """
 
 from cells.laws.cycles.forms import CycleForm, Parameter, Saturation
-from cells.modules import Citation, CitedWork, CycleLaw
+from cells.modules import Citation, CitedWork, CycleLaw, qualified
 
-LAW_ID = "na_anion_symport_factored@1"
+LAW_ID = "cells.cycle.na_anion_symport_factored@1"
 STOICHIOMETRY_RANGE = (1, 4)  # n_Na: Na+ per cycle, an integer.
 
 # Its rows, in the form's order: Na+ at N and at P, then the anion at N and at P. Its one mode moves
@@ -69,11 +69,11 @@ CYCLE = CycleForm(
 # Its declaration on the law template (registry/laws.py): form-carried, so no version-1 moves or
 # kernels; registered by the law registry's loader as one of the model table's law homes, hosted
 # by the transporter kind's general layout.
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 LAW = CycleLaw(
     DECLARED_ID,
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="cited",
     source=Citation(
         "the Na+/monocarboxylate cotransporter SMCT1 (human SLC5A8) expressed in Xenopus oocytes",

@@ -100,12 +100,6 @@
    "admitted": "the same under ARS at 1 ms, and under RK4 at 0.1 ms",
    "check": "the step rule (solver and dt)"
   },
-  "R9_the_species_cap": {
-   "source": "design §8.2 and §8.3: the species cap (16, D165)",
-   "refused": "a scheduled world with 17 species",
-   "admitted": "the same with 16 species",
-   "check": "the species cap"
-  },
   "R10_a_charged_unit": {
    "source": "design §2.5 and §1.1: net-charged steps refused",
    "refused": "a formula unit {K: 1}",
@@ -130,7 +124,7 @@
    "admitted": "the same naming the held bath",
    "check": "the held-bath rule"
   },
-  "mapping_rule": "every refusal class of design §8.3 (R1 to R9) has a representative, each beside its admitted neighbour; R10 to R13 are the scope's other refusals (§1.1, §2.4, §2.5, §3.1). Each refusal is judged by the check its message names (J9), and each neighbour must be admitted and run"
+  "mapping_rule": "every refusal class of design §8.3 (R1 to R8; R9, the species cap, retired on 23 November 2026: see the disclosures) has a representative, each beside its admitted neighbour; R10 to R13 are the scope's other refusals (§1.1, §2.4, §2.5, §3.1). Each refusal is judged by the check its message names (J9), and each neighbour must be admitted and run"
  },
  "references": {
   "author": "the FR references agent (code-blind), from the design's Appendix A and the registered input file only (the lead's ruling of 17 November 2026). Delivered on branch fr10-references at 23b8ff58 (validation/fr10/references): its registered design README.md and designs/ (fr10_reference_design.json, fr10_reference_values.json), written before any engine output; one dated amendment before any engine output, the sign of R-ion's supply (012a3e7e). The generator's references part uses it through its usage note's API only (REFERENCES_USAGE.md)",
@@ -274,7 +268,8 @@
   "pre-run note, 17 November 2026 (FR owner): the generator, judge and drafter exist (validation/tissue/bath_schedule_qualification.py, bath_schedule_judge.py, bath_schedule_protocol.py). Development runs of every part except the references, on quick horizons (0.4 of each), tested the tools before the dt study; they are not runs of this protocol and no threshold was set from them. Two changes followed. (1) The judge read each event's dose from the record before t_e to the first at or after it; the engine's record at t_e holds the bath before the event (the event applies at the start of the step that starts at t_e), so the judge now reads from the last record before t_e to the first after it. J6's criterion is unchanged; its text now says where it reads. (2) The judge now derives two items the prose already named but the machine criteria lacked: J6's compensation charge at rounding of zero (J6_compensation: (n + 2) eps F times the dose's charge magnitude so far), and R-records' K against W3's reconciliation term within the reservoir-work ledger's bound (J5_K_reference; J5's text now names it). Both tolerances follow from rounding and the ledger's own bound, not from the runs.",
   "pre-run correction, 17 November 2026 (FR owner), before the dt study: the cytosol K's budget was '1e-3 of its change', which the judge read from R-ion's K series, so the dt study could not report it before the references exist. It is now declared in closed form from declared values, C B2 / F (about 6.37e-7 fmol): the same quantity, 1e-3 of the K that moves to the new equilibrium, since W2's cell changes its charge through K alone. J3's text now names it.",
   "pre-run correction, 17 November 2026 (FR owner), from the rehearsal (run-e8c45bcb, on a registered dry-run copy): R12's admitted neighbour ran at 0.25 ms (the prose said 0.5 ms; the builder had 0.25 ms) and was refused at run time after the K step at 0.5 s, 'Resolved pump accounting failed: energy': its wall K permeability gives a membrane rate of about 1200/s at the worst composition, so dt x the rate is about 0.3, inside @3's explicit-rate bound of 1 but past the IMEX energy ledger's 2e-3 tolerance (the residual scales about as (rate x dt)^2). A scan of the neighbour, development: refused at 0.25 ms; at 0.1 ms the largest energy ratio is 0.18 of the bound (residual over flows 3.6e-4). The neighbour now runs at 0.1 ms. The quick development run had ended at 0.4 s, before the event. Reported to the lead: the step rule's measured region bounds the face rate (kappa/V <= 10/s), not the membrane rate; the run-time energy guard holds there",
-  "17 November 2026 (FR owner): the references landed (fr10-references at 23b8ff58, merged), and the generator's references part, a stand-in until then, is the adapter above. Its development check against W3 at the full horizon: R-records' K equals the operator's term to 1.4e-10 of the reservoir-work bound; R-records' dG_b at W1's, W2's and W3's events equals the engine's records to their printed digits (-0.12409, -189.58786, -0.0086234 pJ); the zero-current potential after W2's step is -27.505 mV. No criterion or threshold changed."
+  "17 November 2026 (FR owner): the references landed (fr10-references at 23b8ff58, merged), and the generator's references part, a stand-in until then, is the adapter above. Its development check against W3 at the full horizon: R-records' K equals the operator's term to 1.4e-10 of the reservoir-work bound; R-records' dG_b at W1's, W2's and W3's events equals the engine's records to their printed digits (-0.12409, -189.58786, -0.0086234 pJ); the zero-current potential after W2's step is -27.505 mV. No criterion or threshold changed.",
+  "post-judgement retirement, 23 November 2026 (the lead's ruling): R9_the_species_cap is retired. FR-43 part 1 (D315) raises the species cap from 16 to 1,024, after this protocol's judged run of 17 November, so the class's 17-species world is admitted and the class would name no refusal. The cap is an engine limit with its own tests (tests/unit/test_species_cap*.py); a 1,024-species neighbour here would cost compiles and add nothing. The class is removed from refusal_classes and from the drafter's REFUSAL_CHECKS, and so from the judge section (its refusal checks and J9's metrics). The generator's label 'the species cap' stays, naming no class. The registered results stay reproducible at their tags."
  ],
  "judge": {
   "written": "17 November 2026, by the FR owner, after the protocol's worlds and refusal classes were fixed and before any run of the protocol (development runs of the generator's parts on quick horizons, to test the tools, had run)",
@@ -418,7 +413,6 @@
     "R6_an_unmeasured_ion_direction": "the step rule (region)",
     "R7_a_faster_face": "the step rule (face)",
     "R8_outside_the_measured_steps": "the step rule (solver and dt)",
-    "R9_the_species_cap": "the species cap",
     "R10_a_charged_unit": "the neutrality rule (integer charge)",
     "R11_an_anisosmotic_step": "the isosmotic rule",
     "R12_beyond_the_explicit_bound": "@3's explicit-rate bound",
@@ -696,7 +690,6 @@
      "derived.refusals.R6_an_unmeasured_ion_direction",
      "derived.refusals.R7_a_faster_face",
      "derived.refusals.R8_outside_the_measured_steps",
-     "derived.refusals.R9_the_species_cap",
      "derived.refusals.R10_a_charged_unit",
      "derived.refusals.R11_an_anisosmotic_step",
      "derived.refusals.R12_beyond_the_explicit_bound",

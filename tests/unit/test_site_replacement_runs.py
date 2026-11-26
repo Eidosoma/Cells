@@ -7,7 +7,7 @@ on every row across it.
 
 The world (site_occupancy_fixtures.replaced_sites): two cells with contact patches on ecs_0, cell_1
 replaced at 20 ms from template T; an outward population o1 on contact_1 (theta0 0.5) and an
-inward one i1 on wall_cell_1 (theta0 0.3), both reset by site_occupant_replacement@1 (theta' 0.1
+inward one i1 on wall_cell_1 (theta0 0.3), both reset by cells.operator.site_occupant_replacement@1 (theta' 0.1
 and 0.9, binding multipliers 2 and 0.5 against the founder's 1); o0 on cell_0's contact_0; and
 D152's S -> P in cell_1 (k 2/s), its multiplier 1 for the founder and 0.25 for T's newcomer. ARS at
 1 ms, 40 steps. On every row the runner's host checks pass (every ledger, the energy ledger

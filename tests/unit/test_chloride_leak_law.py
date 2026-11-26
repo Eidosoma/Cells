@@ -1,12 +1,13 @@
-"""The always-open chloride leak on @3, clleak_always_open@1 (D228 item 3, the H1 seam's Cl⁻ part;
+"""The always-open chloride leak on @3, cells.channel.clleak_always_open@1 (D228 item 3, the H1 seam's Cl⁻ part;
 seam F), each claim with a planted error it must catch (D187):
 
 - it is declared on the template: gate-free, its permeant ion Cl⁻ at valence -1, code 10, with
   Cells' own leak form as its cited source and this file's test; it is registered from @3's row of
   the model table, the registry's own declaration from its module, and a definition may name it,
   while today's five keep their rows (planted: another law at its code, refused);
-- a population of it parses on a patch, its ion Cl⁻ at @3's valence -1 (planted, each refused: a
-  population naming an impermeant anion @3's valence table does not admit, and one naming K);
+- a population of it parses on a patch, its ion Cl⁻ at the valence its law gives, -1 (planted, each
+  refused by name: a population naming an impermeant anion, or K, neither of them the law's; a model
+  whose Cl is +1; and a ratio that is not the law's);
 - at availability 1 and abundance 1 it moves what a Cl-only constant-field permeability of the
   same value on its patch moves: one IMEX step of each world, with half the bath's Cl⁻ swapped
   for its impermeant anion so that Cl⁻ moves, gives the same cell and outside amounts, and the
@@ -91,7 +92,9 @@ def one_step(raw):
 
 def test_the_chloride_leak_is_declared_and_registered_on_at3():
     law = clleak.LAW
-    assert law.errors() == [] and law.law_id == clleak.LAW_ID == "clleak_always_open@1"
+    assert (
+        law.errors() == [] and law.law_id == clleak.LAW_ID == "cells.channel.clleak_always_open@1"
+    )
     assert (law.code, law.gates, law.permeant) == (10, (), (("Cl", -1, 1.0),))
     assert (law.rk4_step_s, law.kinetics, law.opening, law.reads) == (None, None, None, ())
     assert law.voltage_domain_V == (-0.120, 0.060) and not law.gated
@@ -103,12 +106,13 @@ def test_the_chloride_leak_is_declared_and_registered_on_at3():
     assert callable(globals()[test_name])
     registry = law_registry.active()
     assert registry.lookup(law.law_id) is law and registry.module(law.law_id) == clleak.__name__
-    assert clleak.__name__ in MODELS["resolved_pump_tissue@3"].law_homes
+    assert clleak.__name__ in MODELS["cells.model.resolved_pump_tissue@3"].law_homes
     assert spec3.law_codes()[law.law_id] == 10 and spec3.gate_counts()[law.law_id] == 0
     assert spec3.law_permeabilities()[law.law_id] == (("Cl", 1.0),)
-    assert law.law_id not in spec3.LAW_CODES and spec3.SPECIES_VALENCE["Cl"] == -1
+    assert law.law_id not in spec3.LAW_CODES
+    assert {species: valence for species, valence, _ in law.permeant} == {"Cl": -1}
     with pytest.raises(ValueError, match="channel codes are distinct"):  # Planted: its code taken.
-        law_registry.BUILTIN.extended(dataclasses.replace(law, law_id="tests.cl_twin@1"))
+        law_registry.BUILTIN.extended(dataclasses.replace(law, law_id="tests.channel.cl_twin@1"))
 
 
 def test_a_chloride_population_parses_on_its_patch_at_valence_minus_one():
@@ -126,9 +130,19 @@ def test_a_chloride_population_parses_on_its_patch_at_valence_minus_one():
     potassium["model"]["channels"][-1]["permeant_ions"] = [
         dict(species_id="K", relative_permeability=1.0)
     ]
+    cation = chloride_world(patch=0.0, population=anion_permeability())
+    (chloride,) = [s for s in cation["model"]["species"] if s["id"] == "Cl"]
+    chloride["valence"] = 1
+    for holder in (*cation["model"]["cells"], *cation["model"]["extracellular"]):
+        holder["fixed_charge_equivalent_fmol"] -= 2 * holder["initial_amount_fmol"]["Cl"]
+    half = chloride_world(patch=0.0, population=anion_permeability())
+    half["model"]["channels"][-1]["permeant_ions"][0]["relative_permeability"] = 0.5
+    mismatch = f"its law's species and valence: {clleak.LAW_ID} carries "
     for raw, words in (  # Planted, each refused.
-        (impermeant, "its law's species and valence"),
-        (potassium, "exactly match the named law's permeability ratios"),
+        (impermeant, mismatch + "no P, and the model declares it at valence -1"),
+        (potassium, mismatch + "no K, and the model declares it at valence 1"),
+        (cation, mismatch + "Cl at valence -1, and the model declares it at valence 1"),
+        (half, "exactly match the named law's permeability ratios"),
     ):
         with pytest.raises(ConfigError, match=words):
             parse_spec(raw)

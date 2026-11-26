@@ -21,7 +21,7 @@ Filling a well-mixed cleft conserves solute. Its concentration stays between the
 - [CellsProofs.Tissue.RestrictedLumen.fills_compose](../CellsProofs/Tissue/RestrictedLumen.lean#L50)
 - [CellsProofs.Tissue.RestrictedLumen.split_volume](../CellsProofs/Tissue/RestrictedLumen.lean#L57)
 
-Direct proof subject `cells.restricted_cleft_lumen@1`, `cells.restricted_cleft_lumen@2`
+Direct proof subject `cells.operator.restricted_cleft_lumen@1`, `cells.operator.restricted_cleft_lumen@2`
 
 ## Numerical comparison
 

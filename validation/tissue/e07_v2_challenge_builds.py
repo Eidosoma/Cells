@@ -2,8 +2,8 @@
 
 E07-v2's write-clear-challenge line challenges a sheet after release. This check asks
 whether the composite admits each challenge alongside scheduled replacement, before that
-line is relied on. Both pairings use the E07-v1 sheet world: resolved_pump_replacement@1
-(scheduled_cell_replacement@1 over resolved_pump_tissue@3), with the sheet70 start and the
+line is relied on. Both pairings use the E07-v1 sheet world: cells.model.resolved_pump_replacement@1
+(cells.operator.scheduled_cell_replacement@1 over cells.model.resolved_pump_tissue@3), with the sheet70 start and the
 37-cell disc. The replacement schedule is the arm a-donor-fast-k1-d37-s1.0 at development
 seed 101; it is used only as a schedule, and nothing runs.
 
@@ -12,8 +12,8 @@ seed 101; it is used only as a schedule, and nothing runs.
    opens them on [CHALLENGE_ON_S, CHALLENGE_OFF_S), after replacement has begun. The check
    covers the replacement identity and its composite form
    (pump_composite_spec.frozen_definition).
-2. injected current: resolved_pump_composite@1 with the operators
-   [scheduled_cell_replacement@1, electrode_current_injection@1], and in the reverse order.
+2. injected current: cells.model.resolved_pump_composite@1 with the operators
+   [cells.operator.scheduled_cell_replacement@1, cells.operator.electrode_current_injection@1], and in the reverse order.
    It has one electrode in the disc's centre cell, carrying the 3 M KCl fractions with M
    (the sheet's monovalent anion) in place of Cl. The current step is on the same interval.
 
@@ -57,7 +57,7 @@ BASE_ARM, BASE_SEED = "a-donor-fast-k1-d37-s1.0", 101  # A development seed: a s
 CHALLENGE_ON_S, CHALLENGE_OFF_S = 600.0, 602.0  # After replacement has begun; sheet70's 2 s.
 CURRENT_A = -2e-11  # A hyperpolarizing step (the sign convention of current_injection).
 CARRIERS = {"K": 0.4912, "M": 0.5088}  # current_injection.DEFAULT_CARRIERS, M for Cl.
-INJECTION = "electrode_current_injection@1"
+INJECTION = "cells.operator.electrode_current_injection@1"
 
 
 def base():

@@ -1,0 +1,590 @@
+[
+ {
+  "name": "exposure_next",
+  "lines": "L2 L18",
+  "what": "the exposure with each interval's next level",
+  "edits": [
+   [
+    "src/cells/assembly_pool/schedule.py",
+    "for level, a, b in zip(self.levels, self.times, ends, strict=True)",
+    "for level, a, b in zip((*self.levels[1:], self.levels[-1]), self.times, ends, strict=True)"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_assembly_pool.py::test_a_path_s_final_state_and_exposure_are_the_pool_s_own"
+  ]
+ },
+ {
+  "name": "exposure_last",
+  "lines": "L2 L18",
+  "what": "the exposure without its last interval",
+  "edits": [
+   [
+    "src/cells/assembly_pool/schedule.py",
+    "ends = (*self.times[1:], self.end)\n        return math.fsum",
+    "ends = (*self.times[1:], self.times[-1])\n        return math.fsum"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_assembly_pool.py::test_a_path_s_final_state_and_exposure_are_the_pool_s_own"
+  ]
+ },
+ {
+  "name": "pool_resume",
+  "lines": "L5 L17",
+  "what": "a resumed pool draws its pending event again from the stop",
+  "edits": [
+   [
+    "src/cells/assembly_pool/engine.py",
+    "else validate_state(spec, state)\n    if np.any(state.time_s > until)",
+    "else validate_state(spec, state)._replace(last_event_time_s=np.array(state.time_s), pending_valid=np.zeros_like(state.pending_valid))\n    if np.any(state.time_s > until)"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_assembly_pool.py::test_pending_checkpoint_partition_and_chunk_replay"
+  ]
+ },
+ {
+  "name": "pool_resume_seed",
+  "lines": "L5 L17",
+  "what": "a resumed pool goes on with another stream",
+  "edits": [
+   [
+    "src/cells/assembly_pool/engine.py",
+    "            np.uint32(spec.seed),\n            np.uint32(spec.root_node),",
+    "            np.uint32(spec.seed + int(np.any(state.event_count))),\n            np.uint32(spec.root_node),"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_assembly_pool.py::test_pending_checkpoint_partition_and_chunk_replay"
+  ]
+ },
+ {
+  "name": "pool_chunk",
+  "lines": "L5 L17",
+  "what": "the stream's seed moves at each chunk",
+  "edits": [
+   [
+    "src/cells/assembly_pool/engine.py",
+    "        current, trace = compiled(current, *rest)\n",
+    "        current, trace = compiled(current, *rest)\n        rest = (rest[0], rest[1] + np.uint32(1), *rest[2:])\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_assembly_pool.py::test_pending_checkpoint_partition_and_chunk_replay"
+  ]
+ },
+ {
+  "name": "pool_ids",
+  "lines": "L5 L17",
+  "what": "a part's worlds are counted from 0",
+  "edits": [
+   [
+    "src/cells/assembly_pool/engine.py",
+    "np.arange(spec.world_id_start, spec.world_id_start + spec.worlds, dtype=np.uint32)",
+    "np.arange(0, spec.worlds, dtype=np.uint32)"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_assembly_pool.py::test_pending_checkpoint_partition_and_chunk_replay"
+  ]
+ },
+ {
+  "name": "flat",
+  "lines": "L6",
+  "what": "a level of one value for both still switches",
+  "edits": [
+   [
+    "src/cells/assembly_pool/schedule.py",
+    "kept = np.flatnonzero(np.concatenate(([True], level[1:] != level[:-1])))",
+    "kept = np.arange(len(level))"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_assembly_pool.py::test_the_driver_s_path_is_a_direct_walk_of_the_pool_s_kernel"
+  ]
+ },
+ {
+  "name": "cap",
+  "lines": "L19",
+  "what": "the event cap does nothing",
+  "edits": [
+   [
+    "src/cells/assembly_pool/kernel.py",
+    "over_budget = due & (state.event_count >= event_limit)",
+    "over_budget = due & (state.event_count > 2**30)"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_assembly_pool.py::test_fault_evidence_reaches_callback",
+   "tests/unit/test_composed_worlds.py::test_a_refused_file_leaves_no_output_and_a_faulted_pool_is_named"
+  ]
+ },
+ {
+  "name": "release_sign",
+  "lines": "L28",
+  "what": "the routes' fluxes the other way",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "    net = _net(flux, p, volume.shape[0], xp)\n    log_ratio",
+    "    flux = -flux\n    net = _net(flux, p, volume.shape[0], xp)\n    log_ratio"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_the_rates_at_the_start_are_the_references"
+  ]
+ },
+ {
+  "name": "route_heat",
+  "lines": "L28",
+  "what": "half of the charged routes' heat",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "heat = xp.where(p.passive_charged, species_sum(ohmic, xp=xp), heat)",
+    "heat = xp.where(p.passive_charged, 0.5 * species_sum(ohmic, xp=xp), heat)"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_the_rates_at_the_start_are_the_references"
+  ]
+ },
+ {
+  "name": "other_node",
+  "lines": "L28 L69",
+  "what": "a route's outside end booked to the other outside node",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "return into - scatter(moved, zero, (p.passive_outside,), xp=xp)",
+    "n = p.active.size; end = xp.where(p.passive_outside >= n, n + (p.passive_outside - n + 1) % (nodes - n), p.passive_outside)\n    return into - scatter(moved, zero, (end,), xp=xp)"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_the_rates_at_the_start_are_the_references"
+  ]
+ },
+ {
+  "name": "fuel_work",
+  "lines": "L28",
+  "what": "the fuel's work left out",
+  "edits": [
+   [
+    "src/cells/kinds/transporter.py",
+    "    work = -1e-3 * rt * entity_sum(e.j * e.held_x, axis=0, xp=xp)\n    stored",
+    "    work = 0.0 * entity_sum(e.j * e.held_x, axis=0, xp=xp)\n    stored"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_the_rates_at_the_start_are_the_references"
+  ]
+ },
+ {
+  "name": "release_open_held",
+  "lines": "L28 L54",
+  "what": "the release without its factors",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "        opening = opening * getattr(control, MULTIPLIER)\n",
+    "        opening = opening * 1.0\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_the_rates_at_the_start_are_the_references"
+  ]
+ },
+ {
+  "name": "window_resume",
+  "lines": "L5 L17",
+  "what": "a windowed restart starts its last field anew",
+  "edits": [
+   [
+    "src/cells/execution/windows.py",
+    "    requested = spec.experiment.observation_times\n    observation_index = bisect_left(requested, checkpoint.time)\n    previous_observed = None\n",
+    "    if plan.start_step:\n        import dataclasses\n        first = initialise(spec).state\n        checkpoint = dataclasses.replace(checkpoint, state=checkpoint.state._replace(**{first._fields[-1]: first[-1]}))\n    requested = spec.experiment.observation_times\n    observation_index = bisect_left(requested, checkpoint.time)\n    previous_observed = None\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_windows.py::test_complete_resume_can_change_window_and_recording_policy"
+  ]
+ },
+ {
+  "name": "run_restart",
+  "lines": "L5 L17",
+  "what": "a plain restart starts the channels' counts anew",
+  "edits": [
+   [
+    "src/cells/execution/runner.py",
+    "    state = jax.device_put(checkpoint.state, device)\n    layout = jax.device_put(checkpoint.layout, device)\n    step_values",
+    "    first = initialise(spec).state\n    again = checkpoint.state._replace(**{n: getattr(first, n) for n in (\"channel_transferred\",) if checkpoint.step_index and n in first._fields})\n    state = jax.device_put(again, device)\n    layout = jax.device_put(checkpoint.layout, device)\n    step_values"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_pump_composite_identity.py::test_empty_composition_vmap_batch_and_restart"
+  ]
+ },
+ {
+  "name": "batch_resume",
+  "lines": "L5 L17",
+  "what": "a batch's restart starts each world's last field anew",
+  "edits": [
+   [
+    "src/cells/execution/batch_windows.py",
+    "            result[world.world_id] = cp\n",
+    "            if cp.step_index:\n                import dataclasses\n                first = initialise(local.spec).state\n                cp = dataclasses.replace(cp, state=cp.state._replace(**{first._fields[-1]: first[-1]}))\n            result[world.world_id] = cp\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_batch_windows.py::test_independent_restart_clocks_finished_worlds_and_new_policy"
+  ]
+ },
+ {
+  "name": "batch_last",
+  "lines": "L5 L17",
+  "what": "a batch's last step of each window is not taken",
+  "edits": [
+   [
+    "src/cells/execution/batch_windows.py",
+    "            steps[i, : counts[i]] = integration_steps(local.spec, t)\n",
+    "            steps[i, : counts[i]] = integration_steps(local.spec, t)\n            steps[i, counts[i] - 1] = 0.0\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_batch_windows.py::test_exact_scalar_batch_window_parity"
+  ]
+ },
+ {
+  "name": "batch_controls",
+  "lines": "L17",
+  "what": "every world of a batch takes the first one's schedule",
+  "edits": [
+   [
+    "src/cells/execution/batch_windows.py",
+    "        device_steps, device_controls, device_counts = jax.device_put(\n",
+    "        controls = [controls[0]] * len(controls)\n        device_steps, device_controls, device_counts = jax.device_put(\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_batch_windows.py::test_ids_order_parameters_events_and_future_branch"
+  ]
+ },
+ {
+  "name": "batch_params",
+  "lines": "L17",
+  "what": "every world of a batch takes the first one's parameters",
+  "edits": [
+   [
+    "src/cells/execution/batch_windows.py",
+    "[model.parameters(w.simulation, starts[w.world_id].layout) for w in spec.worlds]",
+    "[model.parameters(w.simulation, starts[spec.worlds[0].world_id].layout) for w in spec.worlds]"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_batch_windows.py::test_ids_order_parameters_events_and_future_branch"
+  ]
+ },
+ {
+  "name": "store_restart",
+  "lines": "L33 L45 L60 L73 L81",
+  "what": "a windowed restart starts a kind's count anew",
+  "edits": [
+   [
+    "src/cells/execution/windows.py",
+    "    requested = spec.experiment.observation_times\n    observation_index = bisect_left(requested, checkpoint.time)\n    previous_observed = None\n",
+    "    if plan.start_step:\n        import dataclasses\n        first = initialise(spec).state\n        checkpoint = dataclasses.replace(checkpoint, state=checkpoint.state._replace(cycle_count=first.cycle_count))\n    requested = spec.experiment.observation_times\n    observation_index = bisect_left(requested, checkpoint.time)\n    previous_observed = None\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_compiled.py::test_the_store_world_moves_as_its_equations_and_restarts"
+  ]
+ },
+ {
+  "name": "plan_drop",
+  "lines": "L14 L109",
+  "what": "the plan loses its last task",
+  "edits": [
+   [
+    "src/cells/ensemble/plan.py",
+    "    return {\n        \"tasks\": tasks,\n        \"worlds\": offset,",
+    "    return {\n        \"tasks\": tasks[:-1],\n        \"worlds\": offset,"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_ensemble_planning.py::test_mixed_arms_keep_their_identity_through_sixteen_gpu_plans"
+  ]
+ },
+ {
+  "name": "plan_ids",
+  "lines": "L14 L109",
+  "what": "an arm's second task repeats the first one's worlds",
+  "edits": [
+   [
+    "src/cells/ensemble/plan.py",
+    "name, start + n, remaining - n, width, cost)",
+    "name, start, remaining - n, width, cost)"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_ensemble_planning.py::test_mixed_arms_keep_their_identity_through_sixteen_gpu_plans"
+  ]
+ },
+ {
+  "name": "plan_arm",
+  "lines": "L14 L109",
+  "what": "each task names the next arm",
+  "edits": [
+   [
+    "src/cells/ensemble/plan.py",
+    "                \"arm\": name,\n",
+    "                \"arm\": sorted(names)[(sorted(names).index(name) + 1) % len(names)],\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_ensemble_planning.py::test_mixed_arms_keep_their_identity_through_sixteen_gpu_plans"
+  ]
+ },
+ {
+  "name": "vmap_resume",
+  "lines": "L94",
+  "what": "a vectorized restart starts the membranes' counts anew",
+  "edits": [
+   [
+    "src/cells/execution/vector_windows.py",
+    "        return {w.world_id: checkpoints[w.world_id] for w in plan.spec.worlds}\n",
+    "        import dataclasses\n        return {w.world_id: dataclasses.replace(checkpoints[w.world_id], state=checkpoints[w.world_id].state._replace(membrane_transferred=0.0 * checkpoints[w.world_id].state.membrane_transferred)) for w in plan.spec.worlds}\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_vector_windows.py::test_ionic_vmap_pause_and_resume_is_bitwise"
+  ]
+ },
+ {
+  "name": "map_step",
+  "lines": "L94",
+  "what": "a mapped batch does not take its last step",
+  "edits": [
+   [
+    "src/cells/execution/batch_windows.py",
+    "            steps[i, : counts[i]] = integration_steps(local.spec, t)\n",
+    "            steps[i, : counts[i]] = integration_steps(local.spec, t)\n            steps[i, counts[i] - 1] = 0.0\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_surface_pump.py::test_ionic_ensemble_reproduces_the_imex_run"
+  ]
+ },
+ {
+  "name": "junction_ignores",
+  "lines": "L16",
+  "what": "the junction's control does nothing",
+  "edits": [
+   [
+    "src/cells/models/surface_pump_v3.py",
+    "control.junction * state.junction_gate",
+    "state.junction_gate"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_composed_worlds.py::test_a_composed_world_conducts_exactly_on_its_pools_paths"
+  ],
+  "every": true
+ },
+ {
+  "name": "junction_shut",
+  "lines": "L16",
+  "what": "the junction carries nothing",
+  "edits": [
+   [
+    "src/cells/models/surface_pump_v3.py",
+    "control.junction * state.junction_gate",
+    "0.0 * control.junction * state.junction_gate"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_composed_worlds.py::test_a_composed_world_conducts_exactly_on_its_pools_paths"
+  ],
+  "every": true
+ },
+ {
+  "name": "mixing",
+  "lines": "L16",
+  "what": "each patch reads 1e-6 of the other cell's potential (no junction)",
+  "edits": [
+   [
+    "src/cells/models/surface_pump_v3.py",
+    "    r = surface.transport(\n        ci,\n        co,\n        potential[:n],\n        potential[n:],\n        control.membrane,\n        control.junction * state.junction_gate,\n        s,\n        xp=xp,\n    )\n    weight, log = imex.face_weights(co, s, xp=xp)\n    diffusion = weight * log\n    channel, channel_d, target, tau, cv = channel_rates(",
+    "    r = surface.transport(\n        ci,\n        co,\n        potential[:n] + 1e-6 * potential[:n][::-1],\n        potential[n:],\n        control.membrane,\n        control.junction * state.junction_gate,\n        s,\n        xp=xp,\n    )\n    weight, log = imex.face_weights(co, s, xp=xp)\n    diffusion = weight * log\n    channel, channel_d, target, tau, cv = channel_rates("
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_composed_worlds.py::test_a_composed_world_conducts_exactly_on_its_pools_paths"
+  ]
+ },
+ {
+  "name": "driven_left",
+  "lines": "L47 L62 L76 L84",
+  "what": "the engine reads a channel's schedule left-continuous (a change acts a step late)",
+  "edits": [
+   [
+    "src/cells/definitions/surface_pump_v3_spec.py",
+    "indices = np.searchsorted(clock, times, side=\"right\") - 1\n    values = np.asarray([c.channel for c in changes], dtype=np.float64)",
+    "indices = np.maximum(np.searchsorted(clock, times, side=\"left\") - 1, 0)\n    values = np.asarray([c.channel for c in changes], dtype=np.float64)"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_compiled.py::test_a_pool_on_its_calcium_channel_drives_the_world_and_restarts"
+  ]
+ },
+ {
+  "name": "driven_leak",
+  "lines": "L47 L62 L76 L84",
+  "what": "the engine's channel conducts 1e-9 of itself where its availability is 0",
+  "edits": [
+   [
+    "src/cells/models/surface_pump_v3.py",
+    "channel_opening(gate, p.channel_laws, xp=xp, structure=structure) * availability,\n        xp=xp,\n    )\n    flux = xp.where(p.channel_active, flux, 0.0)",
+    "channel_opening(gate, p.channel_laws, xp=xp, structure=structure) * xp.maximum(availability, 1e-9),\n        xp=xp,\n    )\n    flux = xp.where(p.channel_active, flux, 0.0)"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_compiled.py::test_a_pool_on_its_calcium_channel_drives_the_world_and_restarts"
+  ]
+ },
+ {
+  "name": "driven_restart",
+  "lines": "L48 L63 L77 L85",
+  "what": "a windowed restart's gate (or first field) larger by one part in 2^52: no ledger sees it",
+  "edits": [
+   [
+    "src/cells/execution/windows.py",
+    "    requested = spec.experiment.observation_times\n    observation_index = bisect_left(requested, checkpoint.time)\n    previous_observed = None\n",
+    "    if plan.start_step:\n        import dataclasses; _s = checkpoint.state; _n = 'channel_gate' if 'channel_gate' in _s._fields and np.any(np.asarray(_s.channel_gate)) else _s._fields[0]; checkpoint = dataclasses.replace(checkpoint, state=_s._replace(**{_n: np.asarray(getattr(_s, _n)) * (1 + np.finfo(float).eps)}))\n    requested = spec.experiment.observation_times\n    observation_index = bisect_left(requested, checkpoint.time)\n    previous_observed = None\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_compiled.py::test_a_pool_on_its_calcium_channel_drives_the_world_and_restarts"
+  ]
+ },
+ {
+  "name": "batch_kind_numbers",
+  "lines": "L33 L45 L60 L73 L81",
+  "what": "run_batch gives every world the first one's kind numbers",
+  "edits": [
+   [
+    "src/cells/execution/batch.py",
+    "        parameters.append(model.parameters(s, checkpoint.layout))\n",
+    "        own = model.parameters(s, checkpoint.layout)\n        if parameters and hasattr(own, '_fields'):\n            own = own._replace(**{n: getattr(parameters[0], n) for n in own._fields if n.startswith(('cycle_', 'passive_', 'species_condition', 'reaction_', 'loop_'))})\n        parameters.append(own)\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_batch_windows.py::test_a_mapped_batch_binds_each_worlds_own_kind_numbers"
+  ]
+ },
+ {
+  "name": "batch_windows_kind_numbers",
+  "lines": "L33 L45 L60 L73 L81",
+  "what": "batch windows give every world the first one's kind numbers",
+  "edits": [
+   [
+    "src/cells/execution/batch_windows.py",
+    "                [model.parameters(w.simulation, starts[w.world_id].layout) for w in spec.worlds]",
+    "                [(lambda own, first: own._replace(**{n: getattr(first, n) for n in own._fields if n.startswith(('cycle_', 'passive_', 'species_condition', 'reaction_', 'loop_'))}) if hasattr(own, '_fields') else own)(model.parameters(w.simulation, starts[w.world_id].layout), model.parameters(spec.worlds[0].simulation, starts[spec.worlds[0].world_id].layout)) for w in spec.worlds]"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_batch_windows.py::test_a_mapped_batch_binds_each_worlds_own_kind_numbers"
+  ]
+ },
+ {
+  "name": "closed_patch",
+  "lines": "L32 L55 L72",
+  "what": "a closed patch's passive routes pass a hundredth of themselves",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "        opening = control.membrane[p.passive_membrane]\n",
+    "        opening = xp.maximum(control.membrane[p.passive_membrane], 1e-2)\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "closed_patch_tiny",
+  "lines": "L32 L55 L72",
+  "what": "a closed patch's passive routes pass 1e-9 of themselves",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "        opening = control.membrane[p.passive_membrane]\n",
+    "        opening = xp.maximum(control.membrane[p.passive_membrane], 1e-9)\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "closed_patch_flux",
+  "lines": "L32 L55 L72",
+  "what": "a closed patch's passive routes pass a hundredth of their flux (their slopes are right)",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "    opening = _opening(state, control, p, xp)\n    neutral = passive.flux_fmol_s(",
+    "    opening = _opening(state, control._replace(membrane=xp.maximum(control.membrane, 1e-2)), p, xp)\n    neutral = passive.flux_fmol_s("
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "closed_junction",
+  "lines": "L72",
+  "what": "a closed junction's passive routes pass a hundredth of themselves",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "        gated = control.junction * state.junction_gate\n",
+    "        gated = xp.maximum(control.junction, 1e-2) * state.junction_gate\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "closed_junction_tiny",
+  "lines": "L72",
+  "what": "a closed junction's passive routes pass 1e-9 of themselves",
+  "edits": [
+   [
+    "src/cells/kinds/passive_routes.py",
+    "        gated = control.junction * state.junction_gate\n",
+    "        gated = xp.maximum(control.junction, 1e-9) * state.junction_gate\n"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ },
+ {
+  "name": "abundance_0",
+  "lines": "L40",
+  "what": "a channel population of abundance 0 conducts as one of 1",
+  "edits": [
+   [
+    "src/cells/models/surface_pump_v3.py",
+    "        0.0,\n        p.channel_abundance,\n        channel_opening(gate",
+    "        0.0,\n        xp.where(p.channel_abundance > 0, p.channel_abundance, 1.0),\n        channel_opening(gate"
+   ]
+  ],
+  "rows": [
+   "tests/unit/test_calcium_store_worlds.py::test_what_is_closed_carries_nothing"
+  ]
+ }
+]

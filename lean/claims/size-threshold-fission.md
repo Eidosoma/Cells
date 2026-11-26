@@ -18,12 +18,12 @@ Single-molecule growth and conservative division at the threshold cannot oversho
 - [CellsProofs.Chemistry.LineageFission.ranked_sizes](../CellsProofs/Chemistry/LineageFission.lean#L23)
 - [CellsProofs.Chemistry.LineageFission.threshold_history](../CellsProofs/Chemistry/LineageFission.lean#L35)
 - [CellsProofs.Chemistry.LineageFission.binary_inventory](../CellsProofs/Chemistry/LineageFission.lean#L42)
-- [CellsProofs.Chemistry.LineageFission.fixed_quota_no_marker](../CellsProofs/Chemistry/LineageFission.lean#L50)
-- [CellsProofs.Chemistry.LineageFission.fair_split_no_marker](../CellsProofs/Chemistry/LineageFission.lean#L64)
-- [CellsProofs.Chemistry.LineageFission.independent_no_marker](../CellsProofs/Chemistry/LineageFission.lean#L78)
-- [CellsProofs.Chemistry.LineageFission.binomial_moments](../CellsProofs/Chemistry/LineageFission.lean#L112)
+- [CellsProofs.Chemistry.LineageFission.fixed_quota_no_marker](../CellsProofs/Chemistry/LineageFission.lean#L65)
+- [CellsProofs.Chemistry.LineageFission.fair_split_no_marker](../CellsProofs/Chemistry/LineageFission.lean#L79)
+- [CellsProofs.Chemistry.LineageFission.independent_no_marker](../CellsProofs/Chemistry/LineageFission.lean#L93)
+- [CellsProofs.Chemistry.LineageFission.binomial_moments](../CellsProofs/Chemistry/LineageFission.lean#L127)
 
-Direct proof subject `cells.size_threshold_fission@1`
+Direct proof subject `cells.operator.size_threshold_fission@1`
 
 Uses [Shear fission partitions the parent among all daughters and books discarded siblings](vesicle-shear-fission.md)
 

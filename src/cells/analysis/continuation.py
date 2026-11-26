@@ -1,6 +1,6 @@
 """Pseudo-arclength continuation of stationary states in one parameter.
 
-Part of stationary_continuation_analysis@1 (analysis/stationary.py). The branch
+Part of cells.analysis.stationary_continuation_analysis@1 (analysis/stationary.py). The branch
 is followed in w = (z, theta / scale): z the coordinates on the conservation
 set, theta the continuation parameter. Keller's pseudo-arclength corrector
 solves F(w) = 0 with t . (w - w_pred) = 0 from the predictor w + ds t, where t

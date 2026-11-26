@@ -3,7 +3,7 @@
   "status": "static_unexecuted_candidate",
   "geometry_law_id": "cells_finite_ecm_conforming_polygon_partition@1",
   "physical_law_id": "cells_finite_ecm_polygon_passive_preparation@1",
-  "actual_family": "resolved_tissue@1",
+  "actual_family": "cells.model.resolved_tissue@1",
   "public_admission": "cells.core.surface_tissue_spec.parse",
   "actual_model_type": "cells.core.surface_tissue_spec.SurfaceTissueModel",
   "positive_cases": [
@@ -146,7 +146,7 @@
       },
       {
         "domain": "Family scope",
-        "rule": "Complete actual resolved_tissue@1 only; active/Ca/fuel/water/transport/intervention/event/epoch families require their separate future bridge"
+        "rule": "Complete actual cells.model.resolved_tissue@1 only; active/Ca/fuel/water/transport/intervention/event/epoch families require their separate future bridge"
       },
       {
         "domain": "Scientific claims",

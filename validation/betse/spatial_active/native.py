@@ -5,8 +5,8 @@ import sys
 import traceback
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "fresh_rerun"))
-import common as u  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from native_hooks import successful_return, u  # noqa: E402
 
 base = u.private("active_spatial_capture", Path(__file__).parents[1] / "tissue_contact/native.py")
 
@@ -126,8 +126,6 @@ class Observer(base.Observer):
         self.network_source = str(science / "chemistry/networks.py")
 
     def observe(self, frame, event, argument):
-        from loop_observer import successful_return
-
         if (
             self.loop_frame is not None
             and frame.f_code.co_filename == self.network_source

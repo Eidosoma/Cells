@@ -2,7 +2,7 @@ import CellsProofs.Accounting.Transfer
 import CellsProofs.Transport.ChannelStep
 import CellsProofs.Transport.ProtonLeak
 
-/-! # The channel declarations of resolved_pump_tissue@3
+/-! # The channel declarations of cells.model.resolved_pump_tissue@3
 
 Voltage is inside minus outside in volts. Both gate time constants are in
 seconds. The gate-free laws have no dynamic gate rows; their dispatch fills
@@ -326,6 +326,14 @@ theorem right_shift_ratio_strictMono (mid : ℝ) {width shift : ℝ}
   have shifted : 1 < Real.exp (shift / width) := Real.one_lt_exp_iff.mpr (div_pos hs hw)
   apply (div_lt_div_iff₀ (by positivity) (by positivity)).mpr
   nlinarith only [mul_pos (sub_pos.mpr shifted) (sub_pos.mpr ordered)]
+
+/-- Within a fixed blocker preparation the fraction `u` depends only on V − E.
+At matched driving voltage, the blocked/free ratios agree for any two nonzero
+unblocked currents, including currents of different magnitudes. -/
+theorem relative_block_at_equal_drive (u : ℝ → ℝ) (drive e₁ e₂ i₁ i₂ : ℝ)
+    (h₁ : i₁ ≠ 0) (h₂ : i₂ ≠ 0) :
+    u ((drive + e₁) - e₁) * i₁ / i₁ = u ((drive + e₂) - e₂) * i₂ / i₂ := by
+  simp only [add_sub_cancel_right, mul_div_cancel_right₀ _ h₁, mul_div_cancel_right₀ _ h₂]
 
 end
 

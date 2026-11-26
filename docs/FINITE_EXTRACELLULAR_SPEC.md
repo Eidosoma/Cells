@@ -1,5 +1,10 @@
 # One finite extracellular compartment
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 SPEC-008 / D055, 2026-09-10. **Design and instantaneous reference only.**
 Accepted [CORE-008](../reports/CORE008_ACCEPTANCE.md), Cells 0.13.0, stays unchanged.
 This is not a production family, time integration, timestep selection or biology

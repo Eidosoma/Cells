@@ -1,10 +1,10 @@
-"""resolved_pump_replacement@1: scheduled cell replacement on resolved_pump_tissue@3.
+"""cells.model.resolved_pump_replacement@1: scheduled cell replacement on cells.model.resolved_pump_tissue@3.
 
-The ionic model is resolved_pump_tissue@3 (models/surface_pump_v3.py), unchanged
+The ionic model is cells.model.resolved_pump_tissue@3 (models/surface_pump_v3.py), unchanged
 and called, never copied (the precedent of models/surface_pump_water.py). The
-operation scheduled_cell_replacement@1 removes a carrier's contents from its slot
+operation cells.operator.scheduled_cell_replacement@1 removes a carrier's contents from its slot
 and supplies a newcomer from a declared template; the junctions at the slot follow
-delayed_first_order_junction_formation@1 (laws/junctions/junction_formation.py).
+cells.junction_formation.delayed_first_order_junction_formation@1 (laws/junctions/junction_formation.py).
 Definition: definitions/cell_replacement_spec.py. Design, sources and the probe of @3's
 checks: /mnt/workspaces/Cells/cell-replacement-g2-20261111-01/design-note-G2.md.
 
@@ -35,8 +35,8 @@ component's net charge, which the field law holds constant; a gauge node alone
 does not hold it).
 
 Implementation (D143, docs/PUMP_COMPOSITE.md). This identity is a thin
-composition: resolved_pump_composite@1 with the single operator
-scheduled_cell_replacement@1 (operators/cell_replacement.py, which holds
+composition: cells.model.resolved_pump_composite@1 with the single operator
+cells.operator.scheduled_cell_replacement@1 (operators/cell_replacement.py, which holds
 the event map, the formation law's half-steps and the ledgers, moved there
 unchanged). Before this module became thin, the composition was bitwise equal to
 its own implementation on the model's test and qualification worlds (evidence:
@@ -108,6 +108,7 @@ STATE_AXES = _model.STATE_AXES
 STATE_TYPE = _model.STATE_TYPE
 LAYOUT_TYPE = _model.LAYOUT_TYPE
 FLOOR_LAYOUT_TYPE = _model.FLOOR_LAYOUT_TYPE
+SPARSE_LAYOUT_TYPE = _model.SPARSE_LAYOUT_TYPE
 Values = _model.VALUES_TYPE
 
 

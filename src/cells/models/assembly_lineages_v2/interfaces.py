@@ -91,7 +91,7 @@ class ReactionLaw(Law):
     # the world's exchange_encounter token to it; and the extent's kind (EXTENTS).
     rate_key: object = "forward_rate_per_s"
     extent: str = "locus"
-    # OL6 (H1, D304): the law's large-count limit for cells.rate_equations@1, or None (refused
+    # OL6 (H1, D304): the law's large-count limit for cells.assembly_representation.rate_equations@1, or None (refused
     # there); and its formulas, written only into that representation's records.
     limit: Callable | None = None
     limit_formulas: dict | None = None
@@ -174,7 +174,7 @@ class RateFactorLaw(Law):
     update: Callable  # (state, layout, places, delta, xp) -> the state after a step.
     log_factor: Callable  # (state, layout, view, xp) -> ln g at each step's common state.
     formulas: dict
-    # OL6 (H1, D304): the law's large-count limit for cells.rate_equations@1, or None (refused
+    # OL6 (H1, D304): the law's large-count limit for cells.assembly_representation.rate_equations@1, or None (refused
     # there); and its formulas, written only into that representation's records.
     limit: Callable | None = None
     limit_formulas: dict | None = None
@@ -210,7 +210,7 @@ class FreeEnergyTerm(Law):
     value: Callable  # Host: F_term(counts) exactly, for the ledger and the check.
     delta: Callable  # (state, layout, view, delta, xp) -> F_term(n + delta) - F_term(n), per step.
     formulas: dict
-    # OL6 (H1, D304): the law's large-count limit for cells.rate_equations@1, or None (refused
+    # OL6 (H1, D304): the law's large-count limit for cells.assembly_representation.rate_equations@1, or None (refused
     # there); and its formulas, written only into that representation's records.
     limit: Callable | None = None
     limit_formulas: dict | None = None
@@ -272,9 +272,9 @@ class AssemblyHazard(Law):
 @dataclass(frozen=True)
 class AssemblyOperator(FamilyOperator):
     """cells.assembly_operator@1: an operator acting on the family's lineages at scheduled events
-    (OL3: shear fission). Its fields are what a run record states of it, as @1's lineage
-    operators' are: what it reads and writes, its energy role, its rules, its streams and its
-    contract in words."""
+    (OL3: shear fission) or at a state's trigger (OL6 S7: the size-threshold division). Its fields
+    are what a run record states of it, as @1's lineage operators' are: what it reads and writes,
+    its energy role, its rules, its streams and its contract in words."""
 
     reads: str
     writes: str

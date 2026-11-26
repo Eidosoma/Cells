@@ -1,0 +1,9 @@
+{
+  "doi": "10.1016/S0006-3495(96)79215-9",
+  "locator": "Abstract, whole-cell external-buffer comparison",
+  "preparation": "Rat alveolar epithelial cells. Voltage-gated proton current.",
+  "external_buffer_mM": [100, 1],
+  "reported_reversal_change": "No detected change",
+  "typical_current_reduction_percent": [10, 30],
+  "scope": "The reduction is the authors' descriptive range. The exact pH and uncertainty for this comparison were not extracted. It provides a separate buffer-sensitivity observation in a different membrane."
+}

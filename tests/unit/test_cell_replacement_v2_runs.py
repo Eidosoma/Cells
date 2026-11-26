@@ -1,4 +1,4 @@
-"""Compiled guards of scheduled_cell_replacement@2 over water (v2 design §2.9 B).
+"""Compiled guards of cells.operator.scheduled_cell_replacement@2 over water (v2 design §2.9 B).
 
 Through the runner and its host checks on every row, and vector windows with device checks:
 * idle: [water, @2] without events equals [water] bitwise (the heredity cell with Euler and

@@ -1,7 +1,7 @@
 """The fit on the six read points (docs/VESICLE_PORES_LAWS.md §8, tagged
 `pores-laws-sheet-registered-2026-11-22`): a disclosed comparison with no pass or fail (D287).
 
-The model is the engine's law (cells.pore_nucleation@1, src/cells/models/assembly_lineages_v2/
+The model is the engine's law (cells.assembly_hazard.pore_nucleation@1, src/cells/models/assembly_lineages_v2/
 pore_nucleation.py), with C = A·ν_A:
 
     ln k_i = ln C + ½·ln σ_i − (3/2)·ln T_i − E_A/(R·T_i) − (π/(k_B·T_i·σ_i))·Γ²
@@ -99,7 +99,7 @@ def main(argv):
     result = {
         "standing": "a disclosed comparison on the six read points, with no pass or fail (D287)",
         "sheet": SHEET_TAG,
-        "law": "cells.pore_nucleation@1 (src/cells/models/assembly_lineages_v2/pore_nucleation.py)",
+        "law": "cells.assembly_hazard.pore_nucleation@1 (src/cells/models/assembly_lineages_v2/pore_nucleation.py)",
         "data": {"path": str(data_path), "sha256": hashlib.sha256(raw).hexdigest()},
         "inputs": {
             "E_A_J_per_mol": E_A_J_PER_MOL,

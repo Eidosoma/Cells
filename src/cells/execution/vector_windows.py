@@ -65,8 +65,7 @@ from cells.execution.batch import (
 from cells.execution.batch_windows import WindowedBatchResult
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
-from cells.execution.grid import refinement_times
-from cells.execution.resources import trace_bytes
+from cells.execution.resources import fixed_bytes, row_bytes
 from cells.execution.runner import integration_steps, validate_checkpoint
 from cells.execution.schedule import control_values, event_index
 from cells.execution.state import Checkpoint, initialise
@@ -81,7 +80,7 @@ from cells.execution.windows import (
 )
 from cells.registry.models import get_model
 
-MAPPING_ID = "vmap_device_checks@1"
+MAPPING_ID = "cells.execution.vmap_device_checks@1"
 DEVICE_HOOKS = (
     "checked_step",
     "device_checks",
@@ -191,14 +190,13 @@ def cohort_limits(spec):
     upper, storage = {}, {}
     for s in parsed:
         nominal = s.experiment.end_time / s.execution.dt
-        upper[id(s)] = (
-            max(1, math.ceil(nominal)) + len(s.experiment.changes) + len(refinement_times(s))
-        )
-        storage[id(s)] = trace_bytes(s, 0, 0)
+        upper[id(s)] = max(1, math.ceil(nominal)) + len(s.experiment.changes)
+        storage[id(s)] = (fixed_bytes(s), row_bytes(s, 0, 0))
     bound = len(worlds) * max(upper.values())
     if bound > reduced.max_padded_steps:
         raise ConfigError("Conservative padded work exceeds batch max_padded_steps")
-    required = 2 * sum(storage[id(w.simulation)] for w in worlds)
+    # Each world's layout once (FR-43), its two checkpoint copies' rows.
+    required = sum(storage[id(w.simulation)][0] + 2 * storage[id(w.simulation)][1] for w in worlds)
     if required > reduced.max_working_bytes:
         raise MemoryRefusal(
             "Checkpoint aggregate arrays exceed batch max_working_bytes",
@@ -207,6 +205,26 @@ def cohort_limits(spec):
             stage="checkpoints",
         )
     return replace(reduced, worlds=worlds), bound
+
+
+def refuse_unqualified_gpu(simulation):
+    """Refuse a GPU backend for a model whose device checks failed their GPU qualification.
+
+    D330 measured cells.model.resolved_pump_composite@1's device checks on a GPU and they failed (D336): in the
+    first window the device's reading of the global material ledger departed from the host's beyond
+    the declared bound, and without XLA's deterministic ops the composite's scatter-adds accumulate
+    in an order that varies between runs. Vector windows decide on the device's word alone, so the
+    composite is refused there under every field solver, before any device is touched. Other models
+    keep their GPU path (their earlier evidence's re-check is a logged follow-up, D336)."""
+    from cells.definitions.pump_composite_spec import MODEL_ID, CompositeModel  # noqa: PLC0415
+
+    if simulation.execution.backend != "cpu" and isinstance(simulation.model, CompositeModel):
+        raise ConfigError(
+            f"vector windows' device checks are not qualified on a GPU for {MODEL_ID} (D330, "
+            "D336): the device's first-window reading of its global material ledger departs from "
+            "the host's beyond the declared bound, and its scatter-adds accumulate "
+            "nondeterministically without XLA's deterministic ops; a GPU backend is refused"
+        )
 
 
 def plan_vector_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
@@ -231,6 +249,7 @@ def _plan_vector_windows(spec, policy, checkpoints, record):
         _checkpoint_map(spec, checkpoints)
     model = get_model(spec.worlds[0].simulation.model)
     require_device_checks(model)
+    refuse_unqualified_gpu(spec.worlds[0].simulation)
     if not spec.worlds[0].simulation.execution.jit:
         raise ConfigError("Vectorized worlds require JIT execution")
     plans, shared, initial = [], {}, {}
@@ -279,12 +298,13 @@ def _plan_vector_windows(spec, policy, checkpoints, record):
             groups.append([])
         groups[position[id(local)]].append(i)
     # Resident rows per world: start, carry, candidate and endpoint states, the
-    # stored observation rows and held controls (trace_bytes rows include the
-    # model's margin). Model temporaries such as dense field matrices are
-    # measured from the compiled executable and admitted before it runs.
+    # stored observation rows and held controls (row_bytes rows include the
+    # model's margin), and the world's one parameter copy (fixed_bytes: its bound
+    # layout, counted once, FR-43). Model temporaries such as dense field matrices
+    # are measured from the compiled executable and admitted before it runs.
     rows = 4 + observation_rows + control_rows
     estimate = sum(
-        rows * trace_bytes(p.spec, 0, 0) * len(g)
+        (rows * row_bytes(p.spec, 0, 0) + fixed_bytes(p.spec)) * len(g)
         for p, g in zip((plans[g[0]] for g in groups), groups, strict=True)
     )
     if estimate > spec.max_working_bytes:

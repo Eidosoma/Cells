@@ -3,14 +3,14 @@
 Not judged. Question (E07-v1 renewal stage, docs/HEREDITY_FIRST_EXPERIMENT.md; D139):
 is a cue-written D disc on the held-bath 127-cell sheet renewed when its carriers
 are replaced oldest first by newcomers that arrive uncoupled and form gap junctions
-by delayed_first_order_junction_formation@1? Newcomers are either the isolated H
+by cells.junction_formation.delayed_first_order_junction_formation@1? Newcomers are either the isolated H
 template (D133) or a donor copy (an inheritance route: a junction neighbour divides
 into the slot, D139). The inherit rule is excluded (D139) and is not offered.
 
-Engine models run: resolved_pump_replacement@1 (scheduled_cell_replacement@1 and
-delayed_first_order_junction_formation@1) over resolved_pump_tissue@3, IMEX
+Engine models run: cells.model.resolved_pump_replacement@1 (cells.operator.scheduled_cell_replacement@1 and
+cells.junction_formation.delayed_first_order_junction_formation@1) over cells.model.resolved_pump_tissue@3, IMEX
 ARS(2,2,2) with exponential stage gates, junction_heat_booking
-trapezoid_nonnegative@1 (only the heat ledger differs from the default; the state
+cells.heat.trapezoid_nonnegative@1 (only the heat ledger differs from the default; the state
 is the same). The wrapper's checked_step and its device row checks run on every
 accepted row in jitted loops, as validation/tissue/cell_replacement_r1.py and
 heredity_pilot.part_sheetreplay step the models; a refused step or a failed row
@@ -91,7 +91,7 @@ RADIUS = pilot.SHEET_RADIUS
 THRESHOLD_V = pilot.THRESHOLD_V
 FLAG, CENSOR = pilot.OSMOTIC_FLAG, pilot.OSMOTIC_CENSOR
 SPECIES = pilot.ION_IDS
-BOOKING = "trapezoid_nonnegative@1"
+BOOKING = "cells.heat.trapezoid_nonnegative@1"
 HELD_DISCS = ((37, 1.0), (37, 0.6), (37, 0.3), (19, 0.6), (19, 0.3))
 ORDER_SEED, DONOR_SEED = 20261111, 20261112
 RECORD_S = 10.0
@@ -188,7 +188,7 @@ def start_state(size, s):
 
 
 def definition(size, s, dt, end_s, events, formation):
-    """resolved_pump_replacement@1 on the sheet from the sheet70 start (raw definition)."""
+    """cells.model.resolved_pump_replacement@1 on the sheet from the sheet70 start (raw definition)."""
     start, saved, _ = start_state(size, s)
     cells, edges, _ = sheet()
     h = v3fx.HEREDITY_STATES["H"][:4]
@@ -472,7 +472,10 @@ def predictions():
     return dict(
         kind="cells.heredity_turnover_literature_predictions@1",
         status="written before any turnover run; development pre-screen, not judged",
-        engine_models=["resolved_pump_replacement@1", "resolved_pump_tissue@3"],
+        engine_models=[
+            "cells.model.resolved_pump_replacement@1",
+            "cells.model.resolved_pump_tissue@3",
+        ],
         stop_rules=STOP_RULES,
         brackets=BRACKETS,
         general=GENERAL,
@@ -965,7 +968,9 @@ def part_arm(args):
         out / "result.json",
         dict(
             arm=name,
-            engine_models=["resolved_pump_replacement@1 (inner resolved_pump_tissue@3)"],
+            engine_models=[
+                "cells.model.resolved_pump_replacement@1 (inner cells.model.resolved_pump_tissue@3)"
+            ],
             dt=dt,
             end_step=k_end,
             end_s=k_end * dt,

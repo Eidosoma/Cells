@@ -38,6 +38,7 @@ from cells.models.assembly_lineages_v2 import (
     pore_clock,
     pore_device,
     runner,
+    size_division,
 )
 from cells.models.assembly_lineages_v2 import spec as world_spec
 from cells.models.assembly_lineages_v2 import world as world_rules
@@ -189,6 +190,78 @@ DIVISION_BASES = {
     "at its schedule time",
     "fission": DIVISION_BASE,
 }
+# OL6 S7's records, written only by a world that declares cells.operator.size_threshold_division@1
+# (size_division.py); every other bundle is unchanged.
+SIZE_DIVISION_BASE = (
+    "one row per division, in order, at its trigger: the committed join that brought the "
+    "membrane's count to the size. Times: fission_time"
+)
+SIZE_DIVISION_RECORDS = {
+    "division_work_kT": _record(
+        "row", ["row"], "k_BT", "cumulative",
+        "the divisions' work on the lineage, F_m(first) + F_m(second) - F_m(parent) per division, "
+        "from an unmodelled agent (source:unmodelled_agent), signed",
+    ),
+    "discarded_free_energy_kT": _record(
+        "row", ["row"], "k_BT", "cumulative",
+        "the second daughters' F_m, taken to the declared sink (sink:discard)",
+    ),
+    "fission_time": _record(_F, [_F], "s", "level", "the trigger's time"),
+    "fission_event": _record(
+        _F, [_F], "events", "level",
+        "the trigger's index among the lineage's committed events, from 1 (the trace's events "
+        "after it are the followed daughter's)",
+    ),
+    "fission_parent": _record(_F, [_F], "carrier key", "level", "the assembly divided"),
+    "fission_parent_generation": _record(_F, [_F], "1", "level", "its generation"),
+    "fission_size": _record(_F, [_F], "molecules", "level", "N, the membrane's count: the size"),
+    "fission_parent_counts": _record(_F, [_F, "place"], "molecules", "level",
+                                     "the parent's counts"),
+    "fission_daughters": _record(
+        _F, [_F, "daughter"], "carrier key", "level",
+        "the daughters' keys, s:c and s:c+1 from the parent's counter, the first the lower",
+    ),
+    "fission_daughter_counts": _record(
+        _F, [_F, "daughter", "place"], "molecules", "level",
+        "each daughter's membrane with the pool as it was (the exact_fraction partition)",
+    ),
+    "fission_followed": _record(
+        _F, [_F], "1", "level", "the daughter followed (continuation first: 0, the first)"
+    ),
+    "fission_work_kT": _record(_F, [_F], "k_BT", "level", "the division's work"),
+    "fission_discarded_kT": _record(_F, [_F], "k_BT", "level", "the second daughter's F_m"),
+    "partition_uniforms": _record(
+        _F, [_F, "place"], "1", "level",
+        "diagnostic: the partition's N uniforms (domain 2, the parent's key, counter 0), place k's "
+        "the k-th, the occupied membrane places listed by type in declared order",
+    ),
+}  # fmt: skip
+SIZE_DIVISION_BASES = {
+    **BASES,
+    "row": BASES["row"] + "; a size-division world adds a division row (row_kind division) after "
+    "each division, at its trigger's time, holding the followed daughter's state",
+    "fission": SIZE_DIVISION_BASE,
+}
+SIZE_DIVISION_DRAW = (
+    "two uniforms per event, (u1, u2), from the occupant's event stream (domain 1, its carrier "
+    "key) at counter = the occupant's events since its birth: a daughter's counter starts at 0 at "
+    "its birth, and its first wait is measured from its parent's trigger (no draw is discarded)"
+)
+
+
+def _size_division_record(run):
+    """run.json's `division` block of a size-division world (OL6 S7)."""
+    fissions = run.size_division["fissions"]
+    return {
+        "operator": size_division.DECLARATION,
+        "declared": size_division.data_to_dict(run.spec.model.world.size_division),
+        "fissions": int(len(fissions["fission_time"])),
+        "relations": "cells.relations@2 (relations.json, relations.npz): the lives, each "
+        "division's event paid by source:unmodelled_agent, and the second daughters' material to "
+        "sink:discard",
+    }
+
+
 # FR-31's records, written only by a world that declares the pore law (pore_clock.py).
 PORE_RECORDS = {
     "tension_hold_work_kT": _record(
@@ -292,18 +365,22 @@ def world_record(world):
 
 
 def places_table(world):
-    return [
-        {
+    out = []
+    for i, p in enumerate(world.places):
+        species = world.species_by_id(p.species)
+        row = {
             "index": i,
             "name": p.name,
             "species": p.species,
             "phase": p.phase,
             "kind": "held" if p.held else "finite",
             "held_mM": p.held_mM,
-            "standard_mu_RT": world.species_by_id(p.species).mu(p.phase),
+            "standard_mu_RT": species.mu(p.phase),
         }
-        for i, p in enumerate(world.places)
-    ]
+        if p.phase == "lumen" and species.mu_lumen is not None:  # FR-48, only when declared
+            row["lumen_offset_RT"] = species.mu_lumen - species.mu_solution
+        out.append(row)
+    return out
 
 
 def _law(law_id):
@@ -386,6 +463,7 @@ def run_record(run, world_id):
         },
         **({"osmotic": run.osmotic} if run.osmotic is not None else {}),
         **({"division": _division_record(run)} if run.division is not None else {}),
+        **({"division": _size_division_record(run)} if run.size_division is not None else {}),
         **({"population": _population_record(run)} if run.population is not None else {}),
         **(_pore_records(run) if run.pores is not None else {}),
     }
@@ -401,6 +479,8 @@ def _check(run):
 def _ssa(run):
     out = kernel.SSA_CONVENTION if run.division is None else {**kernel.SSA_CONVENTION,
                                                                "draw": SCHEDULED_DRAW}  # fmt: skip
+    if run.size_division is not None:  # OL6 S7: a daughter's stream from counter 0
+        out = {**kernel.SSA_CONVENTION, "draw": SIZE_DIVISION_DRAW}
     if run.pores is not None:  # FR-31: the clock's rule beside the draw's
         clock = pore_device.CLOCK if pore_device.clocked(run.spec) else pore_clock.CLOCK  # OL6 S4
         out = {**out, "pore_clock": clock}
@@ -409,6 +489,8 @@ def _ssa(run):
 
 def _bases(run):
     out = BASES if run.division is None else DIVISION_BASES
+    if run.size_division is not None:  # OL6 S7
+        out = SIZE_DIVISION_BASES
     if run.pores is not None:  # FR-31: the pore row
         out = {**out, "row": out["row"] + PORE_BASE}
     return out
@@ -472,6 +554,10 @@ def _mode_lifecycle(run):
             "state kept for a checkpoint (checkpoints.py)"
         )
         return {**kernel.LIFECYCLE_OSMOTIC, "statuses": statuses}
+    if run.size_division is not None:  # OL6 S7: the division between events
+        return {**kernel.LIFECYCLE, "division": size_division.CONTRACT["trigger"] + "; the "
+                "division acts at once, before the next draw; " +
+                size_division.CONTRACT["event_limit"]}  # fmt: skip
     return kernel.LIFECYCLE_OSMOTIC if run.osmotic is not None else kernel.LIFECYCLE
 
 
@@ -537,6 +623,11 @@ def _declared_by_mode(run, name):
             legend = {str(i): o for i, o in enumerate(division.POPULATION_OUTCOMES)}
             return {**DIVISION_RECORDS[name], "legend": legend}
         return {**table, **DIVISION_RECORDS, **POPULATION_RECORDS}[name]
+    if run.size_division is not None:  # OL6 S7: its records, and its division rows' kind
+        if name == "row_kind":
+            legend = {str(i): kind for i, kind in enumerate(runner.SIZE_DIVISION_ROW_KINDS)}
+            return {**table[name], "legend": legend}
+        return {**table, **SIZE_DIVISION_RECORDS}[name]
     if run.division is None:
         return table[name]
     if name == "row_kind":  # A division world's rows include its shear rows.
@@ -551,6 +642,8 @@ def _arrays(run):
     out.update(run.diagnostics)
     if run.division is not None:
         out.update(run.division["fissions"])
+    if run.size_division is not None:  # OL6 S7
+        out.update(run.size_division["fissions"])
     if run.population is not None and run.population["fissions"] is not None:
         out.update(run.population["fissions"])
     return out
@@ -730,6 +823,52 @@ def relation_tables(directory, run):
             "edges": edges, "records": records}  # fmt: skip
 
 
+AGENT = "source:unmodelled_agent"  # OL6 S7: the division's payer, as @1's fission's
+
+
+def size_division_tables(directory, run):
+    """cells.relations@2's tables of a size-division run (OL6 S7) whose records.npz is in
+    `directory`: the lives (size_division.lives), one event per division (kind fission, by the
+    operator, not scheduled, paid by source:unmodelled_agent as @1's fission is), the slot and the
+    sink, and each second daughter's molecules to the sink, per species, at its division."""
+    from cells.models.assembly_lineages import keys
+    from cells.models.assembly_lineages_v2 import SIZE_THRESHOLD_DIVISION
+    from cells.records import relations as rel
+
+    world = run.spec.model.world
+    fissions = run.size_division["fissions"]
+    lives = [rel.Life(**row) for row in run.size_division["lives"]]
+    events = [
+        rel.Event(f"event:fission/{r}", float(fissions["fission_time"][r]), "fission",
+                  SIZE_THRESHOLD_DIVISION, scheduled=False, step=-1,
+                  at=keys.carrier_id(int(fissions["fission_parent"][r])), source=AGENT)
+        for r in range(len(fissions["fission_time"]))
+    ]  # fmt: skip
+    nodes = [rel.Node(SLOT, "slot", MODEL_ID), rel.Node(SINK, "sink", SIZE_THRESHOLD_DIVISION)]
+    edges = []
+    for life in lives:
+        if life.end_reason != "not_followed":
+            continue
+        r = int(life.end_event.rsplit("/", 1)[1])
+        j = fissions["fission_daughters"][r].tolist().index(life.key)
+        for i, count in enumerate(fissions["fission_daughter_counts"][r, j].tolist()):
+            place = world.places[i]
+            if count and place.phase == "membrane":
+                edges.append(rel.Edge("removes_to", life.id, SINK, SIZE_THRESHOLD_DIVISION,
+                                      event=life.end_event, species=place.species,
+                                      weight=float(count), mode="event"))  # fmt: skip
+    sources = [rel.Source(AGENT, "unmodelled", "energy", SIZE_THRESHOLD_DIVISION,
+                          payer_of="division_work_kT")]  # fmt: skip
+    records = rel.records_in(
+        directory,
+        [ARRAYS],
+        {"division_work_kT": "cumulative", "discarded_free_energy_kT": "cumulative"},
+        times="row_time",
+    )
+    return {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
+            "edges": edges, "records": records}  # fmt: skip
+
+
 def _write_json(path, value):
     from cells.records.io import _write_json as write
 
@@ -763,6 +902,11 @@ def write_run(directory, run, *, provenance=None):
         tables = population_tables(directory, run) if run.population is not None else (
             relation_tables(directory, run))  # fmt: skip
         rel.write(directory, world=run.qualifier, version=rel.FORMAT_V2, **tables)
+    if run.size_division is not None:  # OL6 S7: its relationship tables
+        from cells.records import relations as rel
+
+        rel.write(directory, world=run.qualifier, version=rel.FORMAT_V2,
+                  **size_division_tables(directory, run))  # fmt: skip
     summary = {
         "status": run.status,
         "qualifier": run.qualifier,

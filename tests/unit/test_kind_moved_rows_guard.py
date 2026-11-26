@@ -2,7 +2,7 @@
 2026): a kind's rates move only the rows its moved_rows declares, since refusal 4 admits a kind by
 them. Checked on the host at binding, at the initial and a perturbed state, with no program change.
 
-Planted kinds from tests/kind_fixtures.py's `tests.exchange@1` (B from a heredity cell to its
+Planted kinds from tests/kind_fixtures.py's `tests.kind.exchange@1` (B from a heredity cell to its
 outside node), each with a planted error the guard must catch:
 - the honest kind, whose moved_rows names its two rows, is admitted;
 - one that declares no rows while it moves B is refused, naming the kind and the row;
@@ -78,4 +78,4 @@ def test_a_kind_whose_rates_move_nothing_needs_no_rows():
 
     spec = parse_spec(fr4_with_sources())  # FR-5's patch damage and pH condition, built in.
     kinds = dict(spec.model.kinds)
-    assert "cells.patch_damage@1" in kinds and "cells.ph_condition@1" in kinds
+    assert "cells.kind.patch_damage@1" in kinds and "cells.kind.ph_condition@1" in kinds

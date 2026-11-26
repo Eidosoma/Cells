@@ -815,12 +815,16 @@ def q6_signature(name, context):
 # judged run at 1b838d75) admits site occupancy beside the bath schedule through door S's scoped
 # reads, so its view conflict no longer exists and its planted world is refused only by the bath
 # schedule's step rule, another check. Q6's registered results stay reproducible at their tags.
+# The class species_cap is retired (the lead's ruling, 23 November 2026): FR-43 (D315, after the
+# judged run) raised the species cap from 16 to 1,024, so its 17-species world is admitted; the cap
+# is an engine limit with its own tests (tests/unit/test_species_cap*.py). The label "species cap"
+# stays, its phrase now the cap's message at any value (the old "at most 16 species" named nothing).
 CHECKS = (
     ("ligand charged", "neutral species only"),
     ("ligand undeclared", "does not declare"),
     ("ligand permeant", "zero membrane, junction"),
     ("identity", "another identity"),
-    ("species cap", "at most 16 species"),
+    ("species cap", "species per world"),
     ("trace: node below", "below its declared trace"),
     ("trace: above 1e-6 K_d", "exceeds 1e-06 K_d"),
     ("unknown patch", "unknown patch"),
@@ -847,8 +851,8 @@ CHECKS = (
     ("schedule route", "names no declared route"),
     ("unknown key", "unknown"),
     ("duplicate population", "lists a population twice"),
-    ("view conflict", "Invalid operator composition: site_occupancy@1 reads"),
-    ("stationary analysis", "not resolved_pump_composite@1"),
+    ("view conflict", "Invalid operator composition: cells.operator.site_occupancy@1 reads"),
+    ("stationary analysis", "not cells.model.resolved_pump_composite@1"),
     ("batch signature", "matching model array axes"),
 )
 
@@ -876,7 +880,9 @@ def _engine_edit(raw, edit):
 
 
 def _site_block(raw):
-    return next(op for op in raw["model"]["operators"] if op["law"] == "site_occupancy@1")
+    return next(
+        op for op in raw["model"]["operators"] if op["law"] == "cells.operator.site_occupancy@1"
+    )
 
 
 def _first_pop(raw):
@@ -900,17 +906,6 @@ def _schedule(edit):
     def apply(raw):
         edit(raw["experiment"]["site_controls"])
     return apply
-
-
-def _cap(raw):
-    for k in range(13):  # 4 + 13 = 17 species.
-        name = f"N{k}"
-        raw["model"]["species"].append(dict(id=name, valence=0))
-        for node in (*raw["model"]["cells"], *raw["model"]["extracellular"]):
-            node["initial_amount_fmol"][name] = 1e-3 * node["volume_pL"]
-        for patch in raw["model"]["membranes"]:
-            patch["permeability_m_per_s"][name] = 0.0
-        raw["execution"]["material_balance_atol_fmol"][name] = 1e-10
 
 
 def _identity(agree):
@@ -990,15 +985,21 @@ def refusal_classes():
         "ligand_undeclared": ("definition", ligand(species="X"), same),
         "ligand_permeant": ("definition", lambda: _engine_edit(W, _permeant), same),
         "identity": ("definition", lambda: _identity(False), lambda: _identity(True)),
-        "species_cap": ("definition", lambda: _engine_edit(W, _cap), same),
         "trace_node_below": ("definition", ligand(trace_mM=2e-4), same),
-        "trace_above_limit": ("definition", lambda: af.build(_w(
-            lambda w: w.update(trace_mM=1.01e-9) or w["nodes"]["cell_0"].update(L_mM=1.01e-9))),
-            lambda: af.build(_w(_threshold))),
+        "trace_above_limit": (
+            "definition",
+            lambda: af.build(
+                _w(
+                    lambda w: (
+                        w.update(trace_mM=1.01e-9) or w["nodes"]["cell_0"].update(L_mM=1.01e-9)
+                    )
+                )
+            ),
+            lambda: af.build(_w(_threshold)),
+        ),
         "unknown_patch": ("definition", pop(owner=dict(patch="nope", face="outside")), same),
         "unknown_contact": ("definition", pop(owner=dict(contact="j9", side="first")), same),
-        "held_bath": ("definition", pop(owner=dict(patch="wall_cell_0", face="outside")),
-                      inward),
+        "held_bath": ("definition", pop(owner=dict(patch="wall_cell_0", face="outside")), inward),
         "copies": ("definition", pop(copies=0.0), same),
         "sites_per_copy": ("definition", pop(sites_per_copy=1.5), same),
         "accessible_fraction": ("definition", pop(accessible_fraction=0.0), same),
@@ -1006,34 +1007,77 @@ def refusal_classes():
         "initial_occupancy": ("definition", pop(initial_occupancy=1.1), same),
         "k_on": ("definition", pop(association_rate_per_mM_per_s=0.0), same),
         "k_off": ("definition", pop(dissociation_rate_per_s=0.0), same),
-        "k_int": ("definition", pop(internalisation=dict(rate_per_s=-1.0, destination="cell")),
-                  same),
-        "internalisation_inward": ("definition", lambda: _engine_edit(inward(), lambda raw: next(
-            p for p in _site_block(raw)["populations"] if p["id"] == "r_in").update(
-                internalisation=dict(rate_per_s=0.1, destination="cell"))), inward),
+        "k_int": (
+            "definition",
+            pop(internalisation=dict(rate_per_s=-1.0, destination="cell")),
+            same,
+        ),
+        "internalisation_inward": (
+            "definition",
+            lambda: _engine_edit(
+                inward(),
+                lambda raw: next(
+                    p for p in _site_block(raw)["populations"] if p["id"] == "r_in"
+                ).update(internalisation=dict(rate_per_s=0.1, destination="cell")),
+            ),
+            inward,
+        ),
         "internalisation_compartment": ("definition", _compartment, same),
-        "destination": ("definition", pop(internalisation=dict(rate_per_s=10.0,
-                                                               destination="lysosome")), same),
+        "destination": (
+            "definition",
+            pop(internalisation=dict(rate_per_s=10.0, destination="lysosome")),
+            same,
+        ),
         "replaced_slot": ("definition", lambda: _replaced(True), lambda: _replaced(False)),
         "rk4": ("definition", lambda: af.build(_w(), dt=1e-4, solver="rk4"), same),
         "schedule_missing": ("definition", sched(lambda c: c.pop()), same),
-        "schedule_start": ("definition", sched(lambda c: c[0]["schedule"][0].update(time=0.002)),
-                           same),
-        "schedule_grid": ("definition", sched(lambda c: c[0]["schedule"].append(
-            dict(time=0.0015, multiplier=1.0))), same),
-        "schedule_horizon": ("definition", sched(lambda c: c[0]["schedule"].append(
-            dict(time=1.0, multiplier=1.0))), same),
-        "schedule_negative": ("definition", sched(
-            lambda c: c[0]["schedule"][0].update(multiplier=-1.0)), same),
-        "schedule_static_parameter": ("definition", sched(lambda c: c.append(dict(
-            population="r0", route="accessibility", schedule=[dict(time=0.0, multiplier=1.0)]))),
-            same),
+        "schedule_start": (
+            "definition",
+            sched(lambda c: c[0]["schedule"][0].update(time=0.002)),
+            same,
+        ),
+        "schedule_grid": (
+            "definition",
+            sched(lambda c: c[0]["schedule"].append(dict(time=0.0015, multiplier=1.0))),
+            same,
+        ),
+        "schedule_horizon": (
+            "definition",
+            sched(lambda c: c[0]["schedule"].append(dict(time=1.0, multiplier=1.0))),
+            same,
+        ),
+        "schedule_negative": (
+            "definition",
+            sched(lambda c: c[0]["schedule"][0].update(multiplier=-1.0)),
+            same,
+        ),
+        "schedule_static_parameter": (
+            "definition",
+            sched(
+                lambda c: c.append(
+                    dict(
+                        population="r0",
+                        route="accessibility",
+                        schedule=[dict(time=0.0, multiplier=1.0)],
+                    )
+                )
+            ),
+            same,
+        ),
         "unknown_key": ("definition", pop(colour="red"), same),
-        "duplicate_population": ("definition", lambda: _engine_edit(W, lambda raw: _site_block(
-            raw)["populations"].append(copy.deepcopy(_first_pop(raw)))), same),
-        "view_conflict_water": ("structure", ("ideal_osmosis_linear_compliance_water@1",
-                                              so.LAW_ID),
-                                ("scheduled_species_exchange@1", so.LAW_ID)),
+        "duplicate_population": (
+            "definition",
+            lambda: _engine_edit(
+                W,
+                lambda raw: _site_block(raw)["populations"].append(copy.deepcopy(_first_pop(raw))),
+            ),
+            same,
+        ),
+        "view_conflict_water": (
+            "structure",
+            ("cells.operator.ideal_osmosis_linear_compliance_water@1", so.LAW_ID),
+            ("cells.operator.scheduled_species_exchange@1", so.LAW_ID),
+        ),
         "stationary_analysis": ("analysis", same, same),
         "stage_condition": ("runtime", pop(association_rate_per_mM_per_s=2e7), same),
     }
@@ -1042,7 +1086,7 @@ def refusal_classes():
 # The check each class must name (its label in CHECKS), by class.
 EXPECTED_CHECKS = {
     "ligand_charged": "ligand charged", "ligand_undeclared": "ligand undeclared",
-    "ligand_permeant": "ligand permeant", "identity": "identity", "species_cap": "species cap",
+    "ligand_permeant": "ligand permeant", "identity": "identity",
     "trace_node_below": "trace: node below", "trace_above_limit": "trace: above 1e-6 K_d",
     "unknown_patch": "unknown patch", "unknown_contact": "unknown contact",
     "held_bath": "held bath", "copies": "copies", "sites_per_copy": "sites per copy",

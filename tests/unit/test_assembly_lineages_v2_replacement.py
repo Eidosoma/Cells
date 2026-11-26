@@ -1,4 +1,4 @@
-"""FR-20 in cells.assembly_lineages@2: cells.pool_replacement@1, a pulse and a washout
+"""FR-20 in cells.model.assembly_lineages@2: cells.operator.pool_replacement@1, a pulse and a washout
 (docs/ASSEMBLY_WASHOUT_DESIGN.md §7; D240; the lead's conditions of 20 November 2026).
 
 One three-phase world. Two vesicles carry a two-state gate (G <-> H: G speeds the tracer's
@@ -92,7 +92,7 @@ def raw_world():
         step("bind", {"S": 1, "Y": 1}, {"C": 1}, 30.0, phase="membrane"),
     ]  # fmt: skip
     w["rate_factor"] = {
-        "law": "cells.transition_state_factor@1",
+        "law": "cells.rate_factor.transition_state_factor@1",
         "catalysing_phase": "membrane",
         "entries": [{"catalyst": "G", "step": "entry", "ddG_kT": 2.0},
                     {"catalyst": "H", "step": "entry", "ddG_kT": -2.0}],
@@ -669,7 +669,7 @@ def test_a_withdrawal_keeps_every_slot_draws_each_molecule_and_closes_its_books(
 def test_a_withdrawal_books_its_mixing_heat_never_negative_and_its_limits_are_exact():
     """FR-35's booking (D261 item 4), through the operator's booking on the guarded table read:
     the heat is not negative and the books' identity holds in random realizations whose buffer
-    carries the species; at f = 1 the bookings are cells.pool_replacement@1's, with zero heat; the
+    carries the species; at f = 1 the bookings are cells.operator.pool_replacement@1's, with zero heat; the
     mean heat over k ~ Bin(n, f) is FR-27's continuum heat exactly for a tracer-free buffer, and
     exceeds it with a buffer at the pool's own concentration by less than the mixture's binomial
     entropy (the discrete surprisal of which side each molecule came from). Host arithmetic."""
@@ -856,3 +856,42 @@ def test_one_run_s_edited_check_never_reaches_a_later_run(tmp_path):
     records.write_run(tmp_path / "b", b)
     saved = json.loads((tmp_path / "b" / "run.json").read_text())["check"]
     assert saved == {"probe": clean[0], "world": clean[1]}
+
+
+# ------------------------------------------------------------------ FR-47: a shell's washes
+
+
+def test_a_shell_population_washes_in_exact_events_and_its_pool_refills():
+    """FR-47 (D323), the exact half's new path: a one-slot prescribed shell in a finite pool (the
+    (d) rows' made-up shape, 400 tracers) through a withdrawal at f = 1/2, a tracer-free full wash
+    and a withdrawal at f = 1/4. The books close; each wash's record holds the tracer's place; a
+    withdrawal books −k ln(1 − f), k the kept count; the full wash removes the whole pool; the pool
+    refills from the lumen before the last withdrawal; and the tracer balances exactly, present
+    plus every removed count equal to the founder's. One population program (K = 1) and one run,
+    with the (d) rows' module imported for the world: 17 s cold (the file's row, 58.9 to 75.9 s)."""
+    from tests.unit.test_assembly_lineages_v2_rate_equations_population import (
+        STOPS,
+        TIMES,
+        shell_definition,
+        shell_world,
+    )
+
+    spec = parse_spec(shell_definition(shell_world(tracer=400, wall=20), stops=STOPS,
+                                       times=TIMES, horizon=4.0, representation=False))  # fmt: skip
+    run = runner.run(spec).check()
+    assert run.status == "complete"
+    first, last = run.population["withdrawals"]
+    (full,) = run.population["replacements"]
+    for record, fraction in ((first, 0.5), (last, 0.25)):
+        kept = record["remaining"]["S@pool"]
+        assert record["withdrawn"]["S@pool"] + kept == record["before"]["S@pool"]
+        assert record["mixing_heat_kT"] == pytest.approx(-kept * math.log1p(-fraction),
+                                                         rel=1e-14, abs=0)  # fmt: skip
+    assert full["supplied"]["S@pool"] == 0 and full["removed"]["S@pool"] > 0
+    assert last["before"]["S@pool"] > 0  # refilled from the lumen after the full wash
+    names = [p.name for p in spec.model.world.places]
+    present = (run.rows["pool_count"][-1][names.index("S@pool")]
+               + run.rows["slot_count"][-1][0][names.index("S@lumen")])  # fmt: skip
+    removed = (first["withdrawn"]["S@pool"] + full["removed"]["S@pool"]
+               + last["withdrawn"]["S@pool"])  # fmt: skip
+    assert int(present) + removed == 400

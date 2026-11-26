@@ -1,4 +1,4 @@
-"""The coupling operator's own crossrev world set (species_regulated_availability@1; design §1.10,
+"""The coupling operator's own crossrev world set (cells.operator.species_regulated_availability@1; design §1.10,
 claim 1, and its batch signature): programs and bindings.
 
 The set is recorded with validation/tissue/composite_crossrev's own tracing and records (_setup,

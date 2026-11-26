@@ -44,6 +44,7 @@ Host only: no world runs here.
   - a crossrev refusal stops before tiers and G1;
   - a declared program change goes on;
   - a passing gate takes crossrev, then tiers, then G1, and its second run reuses the cached base;
+  - G1 reads what was saved through the head's own table of renamed IDs, where it has one (D345);
   - PRELOCK_ONLY stops after the pre-lock steps, without queueing;
   - a used OUT is refused, so a stale verdict is never reported again;
   - a flock killed while it waits runs nothing.
@@ -60,18 +61,41 @@ Host only: no world runs here.
   a tiny snapshot of four test files:
   - it records imports, reads, listings and a child the map cannot see;
   - the selection holds every file whose recorded paths changed (a read file, an imported module, a
-    new name in a listed folder, the file itself, a file that would replace a namespace package),
-    and nothing else under `--always none`; the readers and scanners are D229's always-run set;
+    new name in a listed folder, the file itself, a file that would replace a namespace package, one
+    that would shadow a module, one of pytest's configuration files), and nothing else under
+    `--always none`; the readers and scanners are D229's always-run set;
   - a planted read of a repository file pulls its test in, once the map is rebuilt;
   - a library's own discovery counts only the names it can use, a folder opened by descriptor is a
     listing, and the recorder leaves os.supports_* (so shutil's rmtree) as it found them;
-  - the selection is refused for each planted fault (stopped, failed, old or missing map, src/);
+  - the selection is refused for each planted fault (stopped, failed, old, missing or earlier map,
+    src/, each tool that every file runs through);
   - the nightly run takes the free lane, and publishes its map or stops selection;
-  - gate.sh runs only the selection's files, and CHECKS drops crossrev and G1.
+  - gate.sh runs only the selection's files, CHECKS drops crossrev and G1, and SELECT_ALWAYS names
+    D229's rule.
+- **D358's kinds and children**, on a second tiny snapshot (four test files, run under strace too):
+  - each kind of question is recorded, and only it: a folder a library listed first, a size, an
+    executable bit, a descriptor-relative open, an entry's size, a name that becomes a folder, a
+    module an import or find_spec did not find, a name that would shadow another;
+  - a child whose environment was rebuilt or replaced records itself; git on the tree and outside
+    it, uname -p, an absent interpreter and a killed child that touched nothing leave the file
+    mapped; a child masked by a recorded one, a shell that became Python, and a forked process that
+    became a program do not, and only they are named;
+  - a file that C code opened is missing from its entry: the trace marks the entry incomplete, and a
+    reader whose entry no trace checked is always run; the fallback rule counts beside it;
+  - a trace that is not whole checks nothing, and a listing or a program that it alone saw counts.
 - **Hermetic:** every tool runs here with the tools' own variables and git's dropped from the
   environment, then only what each test sets. A landing gate runs this file with its own
   ADDITIONS_FROM, LANE and the rest (T66, 20 November): planted in this process's environment, they
   reach neither a test's gate nor its stack, and the list covers every variable the tools read.
+- **Cold by construction** (D321 R1 and R2; JAX's persistent compilation cache):
+  - a caller's cache settings reach none of a gate's processes, and the cold check runs after the
+    pre-lock tests, crossrev, the tiers and G1;
+  - a cache entry planted under the gate's outputs at each stage refuses the gate there, as its own
+    fault (not bisected);
+  - every gate script disables the cache, and the check finds entries by their names only;
+  - on the real tier runner, a caller's settings reach no test process, measure marks its record
+    cold, and only run --jax-cache FOLDER runs warm, its record naming the folder;
+  - the nightly logs the cache disabled and its cold check.
 """
 
 import fcntl
@@ -80,6 +104,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -112,7 +137,7 @@ TOOL_ENV = frozenset((
     "CPUS_A", "CPUS_B", "CROSSREV_EXPECTED", "CROSSREV_SETS", "FREEZE", "GATE_CACHE", "GATE_CPUS",
     "GATE_LOCK", "HOSTPY", "LANE", "LOCK_A", "LOCK_B", "NIGHTLY", "POLL", "PRELOCK", "PRELOCK_CPU",
     "PRELOCK_NICE", "PRELOCK_ONLY", "PRELOCK_TEST_SECONDS", "PRE_CPU", "PY", "REC", "REMOVED_OK_FILE",
-    "REPO", "RESTACK", "SELECT", "SELECTION_STOPPED", "TIERS", "WAIT_FREE"))
+    "REPO", "RESTACK", "SELECT", "SELECTION_STOPPED", "SELECT_ALWAYS", "TIERS", "TRACE", "WAIT_FREE"))
 LOCALS = frozenset(("TR", "GD"))  # gate.sh's and stack.sh's own, assigned before they are expanded
 
 
@@ -602,9 +627,19 @@ args, cwd = sys.argv[1:], Path.cwd()
 def note(text):
     with open(os.environ["STUB_LOG"], "a") as f:
         f.write(text + "\n")
+def through(a):  # The table of renamed IDs a G1 call is given, in its tree.
+    if "--map" not in a:
+        return ""
+    return " through " + a[a.index("--map") + 1].removeprefix(str(cwd) + "/")
 if args[:2] == ["-I", "-c"]:  # The interpreter's identity.
     print("0.0.1 0.0.1 0.0.1"); sys.exit(0)
 a = [x for x in args if x not in ("-B", "-u")]
+if os.environ.get("JAX_ENABLE_COMPILATION_CACHE") != "false" or "JAX_COMPILATION_CACHE_DIR" in os.environ:
+    note("warm " + " ".join(a[:2]))  # A process that would use a compilation cache (D321 R2).
+PLANT = (cwd / "jax_entry.txt").read_text().strip() if (cwd / "jax_entry.txt").exists() else ""
+def plant(folder):  # The entry a process that turned the cache back on would leave.
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / ("jit_f-" + "0" * 64 + "-cache")).write_bytes(b"x")
 if a[:2] == ["-m", "pytest"]:
     note("collect " + cwd.name)
     ids = [l for l in (cwd / "ids.txt").read_text().splitlines() if "::" in l]
@@ -629,6 +664,8 @@ if a[:2] == ["scripts/test_tiers.py", "run"]:
             if bad:
                 changed.append({"file": row["file"], "why": ["failed"], "now": [1, counts]})
     out = Path(a[a.index("--out") + 1]); out.mkdir(parents=True, exist_ok=True)
+    if (PLANT == "prelock" and "9" in tiers) or (PLANT == "tiers" and tiers == ["1", "2"]):
+        plant(out / "outputs" / "x" / "Cells" / "cache" / "jax")
     (out / "run.json").write_text(json.dumps({"files": files}))
     (out / "summary.json").write_text(json.dumps({"changed_vs_record": changed}))
     note("tiers " + " ".join(tiers) + " " + cwd.name)
@@ -648,8 +685,10 @@ if a[:1] == ["-m"]:  # A crossrev action: MODULE ACTION TARGET [SET].
 if a[:2] == ["validation/results_baseline.py", "save"]:
     part, set_name = Path(a[2]), a[a.index("--sets") + 1]
     worlds = a[a.index("--worlds") + 1:a.index("--from")]
-    note("save " + set_name + " " + cwd.name)
+    note("save " + set_name + " " + cwd.name + through(a))
     (part / set_name).mkdir(parents=True, exist_ok=True)
+    if PLANT == "save":  # Beside the parts: a part's own folders are its sets, which G1 merges.
+        plant(part.parent.parent / ("jax-" + part.name))
     manifest = {"worlds": {}}
     planted = (cwd / "g1.txt").read_text().split() if (cwd / "g1.txt").exists() else []
     for w in worlds:
@@ -658,7 +697,7 @@ if a[:2] == ["validation/results_baseline.py", "save"]:
         manifest["worlds"][set_name + "/" + w] = {"seconds": 2.5, "digests": {"x": digest}}
     (part / "manifest.json").write_text(json.dumps(manifest)); sys.exit(0)
 if a[:2] == ["validation/results_baseline.py", "compare"]:
-    note("g1 compare")
+    note("g1 compare" + through(a))
     x = json.loads((Path(a[2]) / "manifest.json").read_text())["worlds"]
     y = json.loads((Path(a[3]) / "manifest.json").read_text())["worlds"]
     rows = [{"world": k, "equal": k in y and x[k]["digests"] == y[k]["digests"]} for k in sorted(x)]
@@ -714,11 +753,49 @@ def test_a_passing_gate_takes_crossrev_then_tiers_then_g1_and_reuses_the_cached_
     assert "worlds timed by the last passing G1 2" in log  # Its plan read the first run's seconds.
 
 
+def test_g1_reads_the_saved_through_the_heads_own_table_of_renamed_ids(gate):
+    table = gate["head"] / "src/cells/registry/renamed_ids.py"
+    table.parent.mkdir(parents=True, exist_ok=True)
+    table.write_text("RENAMED = {}\n")
+    code, calls, log = run_gate(gate, gate["tmp"] / "out")
+    assert code == 0, log
+    through = f" through {table.relative_to(gate['head'])}"
+    saves = [c for c in calls if c.startswith("save")]
+    assert saves and all(c.endswith(through) for c in saves) and "g1 compare" + through in calls
+
+
 def test_prelock_only_stops_before_queueing(gate):
     out = gate["tmp"] / "out"
     code, calls, log = run_gate(gate, out, PRELOCK_ONLY="1")
     assert code == 0 and "prelock passed" in log and "not queued" in log
     assert "waiting for" not in log and not any(c.startswith("crossrev") for c in calls)
+
+
+def test_the_gate_runs_every_process_cold_whatever_its_callers_environment(gate):
+    """D321 R2: a caller's cache settings (an opted-in shell) reach none of a gate's processes, and
+    the cold check runs after every stage."""
+    code, calls, log = run_gate(gate, gate["tmp"] / "out", JAX_ENABLE_COMPILATION_CACHE="true",
+                                JAX_COMPILATION_CACHE_DIR=str(gate["tmp"] / "shared"))
+    assert code == 0, log
+    assert not [c for c in calls if c.startswith("warm")], calls
+    assert "persistent compilation cache disabled in every process" in log
+    for stage in ("the pre-lock tests", "crossrev", "the tiers", "G1"):
+        assert f"cold check after {stage}: " in log, stage
+
+
+@pytest.mark.parametrize("plant, stage", [
+    ("prelock", "the pre-lock tests"), ("tiers", "the tiers"), ("save", "G1")])
+def test_a_cache_entry_under_the_gates_outputs_refuses_it(gate, plant, stage):
+    """An entry means something turned the cache back on: the gate stops there, and the stop is the
+    gate's own fault, not a head's, so a stack does not bisect it."""
+    (gate["head"] / "jax_entry.txt").write_text(plant)
+    out = gate["tmp"] / "out"
+    code, calls, log = run_gate(gate, out)
+    assert code == 1, log
+    assert f"JAX compilation cache entries appeared after {stage} (the cold check)" in log
+    assert ("lock held" in log) == (plant != "prelock")
+    assert any(c.startswith("save") for c in calls) == (plant == "save")
+    assert steps.stack_failure(out)["stage"] is None
 
 
 def test_a_prelock_refusal_never_takes_the_lock(gate):
@@ -884,8 +961,9 @@ H1 = {"tests/unit/test_h1.py": "def test_h1():\n    pass\n",
 def test_a_passing_stack_gates_its_trial_merges_once_as_they_land(stack):
     h1, h3 = add_head(stack, "h1", H1), add_head(stack, "h3", {"docs/h3.md": "three\n"})
     measured = stack["tmp"] / "h1-measured.json"
-    measured.write_text(json.dumps({"provenance": {"by": "test"}, "files": [
-        {"file": "tests/unit/test_h1.py", "seconds": 0.4, "exit_code": 0, "counts": {"passed": 1}}]}))
+    measured.write_text(json.dumps({"provenance": {"by": "test"}, "jax_compilation_cache": "disabled",
+                                    "files": [{"file": "tests/unit/test_h1.py", "seconds": 0.4,
+                                               "exit_code": 0, "counts": {"passed": 1}}]}))
     message = "Merge h1 at its head\n\nCo-Authored-By: Someone <someone@example.invalid>"
     code, calls, out, doc = run_stack(stack, [
         {"name": "h1", "rev": h1, "additions_from": ["tests/unit/test_h1.py"],
@@ -915,7 +993,7 @@ ONLY = {  # What a bisect's rerun leaves in a tree's folder: the failing check's
 @pytest.mark.parametrize("stage, plant", [
     ("tiers", {"fail.txt": "tests/unit/test_other.py\n"}),
     ("crossrev", {"program.txt": "p2\n"}),
-    ("g1", {"g1.txt": "protocol-w1/w2\n"}),
+    ("g1", {"g1.txt": "protocol-w1/w2\n", "src/cells/registry/renamed_ids.py": "RENAMED = {}\n"}),
 ])
 def test_a_planted_failure_bisects_to_its_head_rerunning_only_the_failing_check(
         stack, stage, plant):
@@ -946,6 +1024,11 @@ def test_a_planted_failure_bisects_to_its_head_rerunning_only_the_failing_check(
     if stage == "g1":
         rows = json.loads((out / "bisect" / "m2" / "compare.json").read_text())["rows"]
         assert [r["world"] for r in rows] == items == ["protocol-w1/w2"]
+        saves = {k: [c for c in calls if c.startswith("save ") and f" snap-m{k}" in c]
+                 for k in (2, 1)}
+        # Each tree's own table of renamed IDs (D345), and none for a tree before it.
+        assert saves[2] and all(c.endswith("registry/renamed_ids.py") for c in saves[2]), calls
+        assert saves[1] and not any("through" in c for c in saves[1]), calls
 
 
 def test_a_conflicting_merge_refuses_the_stack_with_its_paths(stack):
@@ -1055,9 +1138,10 @@ SCOPE_TESTS = {
 }
 
 
-def scope_snapshot(root, changes=None, rev="r" * 40):
+def scope_snapshot(root, changes=None, rev="r" * 40, executable=()):
     """A tiny execution snapshot with the real tier runner, recorder, map tool and nightly script,
-    four test files and their rows; CHANGES (path: text or None) applied over the defaults."""
+    four test files and their rows; CHANGES (path: text or None) applied over the defaults, and its
+    manifest's sizes and modes as a frozen copy's (EXECUTABLE names the executable files)."""
     files = {"validation/helper.py": "VALUE = 1\n", "docs/a.md": "a\n", "docs/b.md": "b\n",
              "src/cells/__init__.py": "", **SCOPE_TESTS}
     for name in ("scripts/test_tiers.py", "scripts/gates/scope.py", "scripts/gates/gate_steps.py",
@@ -1077,7 +1161,9 @@ def scope_snapshot(root, changes=None, rev="r" * 40):
         (root / name).write_text(text)
     (root / "SNAPSHOT.json").write_text(json.dumps({
         "status": "complete", "git_revision": rev, "patch_sha256": EMPTY, "dirty": False,
-        "files": {n: {"sha256": hashlib.sha256((root / n).read_bytes()).hexdigest()} for n in files}}))
+        "files": {n: {"sha256": hashlib.sha256(text.encode()).hexdigest(),
+                      "observation": {"size": len(text.encode())},
+                      "snapshot_mode": 0o555 if n in executable else 0o444} for n, text in files.items()}}))
     return root
 
 
@@ -1117,8 +1203,9 @@ def test_the_map_records_imports_reads_listings_and_unmapped_children(scope_map)
     assert "docs/a.md" not in paths("tests/unit/test_plain.py")
     assert files["tests/unit/test_reader.py"]["reads"] == ["docs/a.md"]
     assert paths("tests/unit/test_lister.py", "lists") == {"docs"}
-    assert "validation.py" in paths("tests/unit/test_reader.py", "exists")  # It would shadow.
+    assert {".", "src", "tests/unit"} <= paths("tests/unit/test_reader.py", "roots")
     assert files["tests/unit/test_spawner.py"]["children_unmapped"] == ["true"]
+    assert not any(e["traced"] for e in files.values())  # This run had no --trace.
     assert not any(files[f]["reads_repository"] or files[f]["children_unmapped"]
                    for f in ("tests/unit/test_plain.py",))
 
@@ -1129,7 +1216,7 @@ L, P, R, S = (f"tests/unit/test_{n}.py" for n in ("lister", "plain", "reader", "
 @pytest.mark.parametrize("changes, always, chosen", [
     ({}, "none", [S]),  # A child the map cannot see is always run.
     ({}, "scanners", [L, S]),
-    ({}, "readers", [L, R, S]),  # D229's always-run set, as the default.
+    ({}, "readers", [L, R, S]),  # D229's always-run set, the fallback.
     ({"docs/a.md": "a, changed\n"}, "none", [R, S]),
     ({"validation/helper.py": "VALUE = 1  # changed\n"}, "none", [R, S]),
     ({"docs/c.md": "new\n"}, "none", [L, S]),  # A new name in a listed folder.
@@ -1137,6 +1224,12 @@ L, P, R, S = (f"tests/unit/test_{n}.py" for n in ("lister", "plain", "reader", "
     ({"tests/unit/helper.py": "X = 1\n"}, "none", [S]),  # Nothing touched it.
     ({"validation.py": "VALUE = 2\n"}, "none", [R, S]),  # It would replace a namespace package.
     ({"validation/__init__.py": ""}, "none", [L, P, R, S]),  # pytest asks each top folder for one.
+    ({"pytest.toml": "[pytest]\n"}, "none", [L, P, R, S]),  # pytest 9's configuration names (D358).
+    ({"tests/.pytest.toml": "[pytest]\n"}, "none", [L, P, R, S]),
+    ({"json.py": "X = 1\n"}, "none", [L, P, R, S]),  # It would shadow a module each one imports (D358).
+    ({"tests/unit/helper/__init__.py": ""}, "none", [S]),  # No import looks this name up.
+    ({"validation/helper/__init__.py": "VALUE = 1\n"}, "none", [R, S]),  # A package beside helper.py.
+    ({}, "untraced", [L, R, S]),  # The default (D358): no trace checked these entries.
 ])
 def test_the_selection_holds_every_file_whose_recorded_paths_changed(scope_map, tmp_path, changes,
                                                                      always, chosen):
@@ -1169,6 +1262,30 @@ def test_a_planted_read_of_a_repository_file_pulls_its_test_in(scope_map, tmp_pa
     assert after[P] == ["touched paths changed since the map: ['docs/b.md']"]
 
 
+def planted_map(tmp_path, rows, child=()):
+    """The map of the tiny snapshot with test_plain.py's record planted: ROWS of its test process, and
+    CHILD's of another process (its number is 11)."""
+    snap = scope_snapshot(tmp_path / "nightly")
+    run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
+    logs = run / "scope" / "tests__unit__test_plain.py"
+    logs.mkdir(parents=True)
+    (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
+        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"], "root": "/t"},
+        *rows, {"exit": True, "modules": ["tests/unit/test_plain.py"]}]))
+    if child:
+        (logs / "11-b.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
+            {"process": 11, "parent": 10, "forked": False, "argv": ["python", "x"], "root": "/t"}, *child]))
+    (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
+        dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
+    (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
+    return snap, scope.build(run, snap, sys.executable)
+
+
+def chosen_for(tmp_path, snap, doc, changes):
+    head = scope_snapshot(tmp_path / "head", changes, rev="h" * 40)
+    return scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"].get(P)
+
+
 @pytest.mark.parametrize("changes, chosen", [
     ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, False),  # Not a plugin's name.
     ({"tests/unit/test_reader.py": None}, False),  # A library's stat of a file it cannot use.
@@ -1177,47 +1294,64 @@ def test_a_planted_read_of_a_repository_file_pulls_its_test_in(scope_map, tmp_pa
 def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, changes, chosen):
     """jaxlib's plugin search (pkgutil over sys.path) lists tests/unit and asks about each entry:
     only names discovery can use (DISCOVERY) count, so a new test file selects nothing."""
-    snap = scope_snapshot(tmp_path / "nightly")
-    run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
-    logs = run / "scope" / "tests__unit__test_plain.py"
-    logs.mkdir(parents=True)
-    (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
-        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]},
-        {"list": "tests/unit", "by": "library"}, {"stat": "tests/unit/test_reader.py", "by": "library"},
-        {"exit": True, "modules": ["tests/unit/test_plain.py"], "absent": []}]))
-    (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
-        dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
-    (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
-    doc = scope.build(run, snap, sys.executable)
+    snap, doc = planted_map(tmp_path, [
+        {"list": "tests/unit", "by": "library", "via": "pkgutil"}, {"root": "tests/unit"},
+        {"stat": "tests/unit/test_reader.py", "by": "library", "via": "pkgutil"}])
     assert doc["files"][P]["complete"] and not doc["files"][P]["reads_repository"]
-    head = scope_snapshot(tmp_path / "head", changes, rev="h" * 40)
-    files = scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"]
-    assert (P in files) is chosen, files.get(P)
+    assert bool(chosen_for(tmp_path, snap, doc, changes)) is chosen
+
+
+@pytest.mark.parametrize("rows, chosen", [
+    ([{"list": "docs", "by": "library"}], True),
+    ([{"stat": "docs/c.md", "by": "library"}], True),
+    ([{"list": "docs", "by": "library", "via": "pkgutil"}], True),  # Sent elsewhere than sys.path.
+    ([{"stat": "docs/c.md", "by": "library", "via": "pkgutil"}], True),
+    ([{"list": "docs", "by": "repo:tests/unit/test_plain.py", "via": "metadata"}], False),  # Not a distribution.
+    ([{"list": "docs", "by": "library", "via": "pkgutil"}, {"root": "docs"},  # Both classes of a
+      {"list": "docs", "by": "repo:tests/unit/test_plain.py"}], True),        # listing are kept (D358).
+    ([{"list": "docs", "by": "pytest"}], False),
+    ([{"list": "docs", "by": "import"}, {"root": "docs"}], False),  # Replaced by the names looked up.
+    ([{"list": "docs", "by": "import"}], True),  # A finder that code sent there itself.
+])
+def test_each_class_of_a_listing_counts_by_what_it_can_use(tmp_path, rows, chosen):
+    """A new docs/c.md, after a listing of docs (or a question about the file) of each class (D358)."""
+    snap, doc = planted_map(tmp_path, rows)
+    assert bool(chosen_for(tmp_path, snap, doc, {"docs/c.md": "new\n"})) is chosen
+
+
+CHILD = {"child": 11, "argv": ["python", "x"], "cwd": "/t", "program": "/usr/bin/python", "git": False}
+
+
+@pytest.mark.parametrize("rows, child, complete, mapped", [
+    ([], (), True, True),
+    ([{"link": "docs"}], (), False, True),  # What is read through a link carries no path of the tree.
+    ([{"fault": "open: OSError"}], (), False, True),
+    ([CHILD], [{"open": "docs/a.md", "by": "stdlib"}, {"exit": True, "modules": []}], True, True),
+    ([CHILD], [{"open": "docs/a.md", "by": "stdlib"}], False, True),  # Killed after it read the tree.
+    ([CHILD], [{"list": "src", "by": "import"}], True, True),  # Killed, and it touched nothing.
+    ([CHILD], (), True, False),  # No record of it.
+    ([dict(CHILD, argv=["bash", "x"])], [{"exit": True, "modules": []}], True, False),  # It became Python.
+    ([{"child": None, "argv": ["sh", "-c", "true"], "cwd": "/t"}], (), True, False),  # os.system
+])
+def test_a_missed_recording_keeps_the_file_running(tmp_path, rows, child, complete, mapped):
+    """Incomplete or unmapped, the file is selected whatever changed, under every rule (D358)."""
+    snap, doc = planted_map(tmp_path, rows, child)
+    e = doc["files"][P]
+    assert e["complete"] is complete and bool(e["children_unmapped"]) is not mapped, e
+    assert bool(chosen_for(tmp_path, snap, doc, {})) is not (complete and mapped)
 
 
 def test_a_folder_opened_by_descriptor_is_a_listing(tmp_path):
     """os.fwalk and scandir on a descriptor list nothing by path: the folder's open stands for it."""
-    snap = scope_snapshot(tmp_path / "nightly")
-    run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
-    logs = run / "scope" / "tests__unit__test_plain.py"
-    logs.mkdir(parents=True)
-    (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
-        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]},
-        {"open": "docs", "by": "repo:tests/unit/test_plain.py"},
-        {"exit": True, "modules": ["tests/unit/test_plain.py"], "absent": []}]))
-    (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
-        dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
-    (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
-    doc = scope.build(run, snap, sys.executable)
-    head = scope_snapshot(tmp_path / "head", {"docs/c.md": "new\n"}, rev="h" * 40)
-    assert scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"][P] == [
+    snap, doc = planted_map(tmp_path, [{"open": "docs", "by": "repo:tests/unit/test_plain.py"}])
+    assert chosen_for(tmp_path, snap, doc, {"docs/c.md": "new\n"}) == [
         "listed folders changed since the map: ['docs']"]
 
 
 def test_the_recorder_keeps_what_os_supports_says_of_its_wrappers(tmp_path):
     """shutil picks its descriptor-based rmtree by os.stat's place in os.supports_*, at import."""
     code = ("import os, shutil; print(os.stat in os.supports_follow_symlinks, os.stat in os.supports_fd,"
-            " os.lstat in os.supports_dir_fd, shutil.rmtree.avoids_symlink_attacks)")
+            " os.open in os.supports_dir_fd, shutil.rmtree.avoids_symlink_attacks)")
     seen = []
     for on in (False, True):
         env = clean_env(PYTHONPATH=str(GATES / "scope_inject"))
@@ -1228,14 +1362,25 @@ def test_the_recorder_keeps_what_os_supports_says_of_its_wrappers(tmp_path):
     assert seen[0] == seen[1] == "True True True True\n" and list((tmp_path / "log").glob("*.jsonl"))
 
 
+# The tools that every file runs through, and no test's record shows (scope.RUNNER), named here so that
+# one dropped from it fails its row.
+RUNNER = ("scripts/test_tiers.py", "scripts/gates/gate.sh", "scripts/gates/stack.sh",
+          "scripts/gates/nightly_tiers.sh", "scripts/run_detached.sh", "scripts/gates/freeze_snapshot.py",
+          "validation/source_snapshot.py", "scripts/gates/scope_inject/sitecustomize.py",
+          "scripts/gates/scope.py", "scripts/gates/gate_steps.py")
+
+
 @pytest.mark.parametrize("plant, words", [
     ("stopped", "selection stopped"), ("failed", "nightly run failed"), ("old", "hours old"),
     ("src", "a src/ change keeps the full gate"), ("missing", "no readable scope map"),
+    ("earlier", "the map is cells.scope_map@2, and this tool reads " + scope.KIND),
+    *((path, f"the gate's own tools changed (['{path}'])") for path in RUNNER),
+    ("since the map", "the gate's own tools changed since the map (['scripts/test_tiers.py'])"),
 ])
 def test_the_selection_is_refused_for_each_planted_fault(scope_map, tmp_path, plant, words):
     base = scope_snapshot(tmp_path / "base")
     head = scope_snapshot(tmp_path / "head", {"src/cells/__init__.py": "X = 1\n"} if plant == "src"
-                          else {}, rev="h" * 40)
+                          else {plant: "planted\n"} if plant in RUNNER else {}, rev="h" * 40)
     doc = json.loads(json.dumps(scope_map["doc"]))
     stopped = tmp_path / "selection-stopped"
     if plant == "stopped":
@@ -1244,14 +1389,254 @@ def test_the_selection_is_refused_for_each_planted_fault(scope_map, tmp_path, pl
         doc["verdict"] = "failed"
     if plant == "old":
         doc["built"] = "2026-01-01T00:00:00Z"
+    if plant == "earlier":
+        doc["kind"] = "cells.scope_map@2"
+    if plant == "since the map":
+        doc["runner"]["scripts/test_tiers.py"] = "f:" + "0" * 64
     why = scope.refusal(head, base, None if plant == "missing" else doc, stopped, None, 36.0)
     assert why and words in why, why
+
+
+# ------------------------------------------------------- D358's kinds, children and trace check
+
+K, C, M, H = (f"tests/unit/test_{n}.py" for n in ("kinds", "children", "masks", "hole"))
+EXECUTABLE = object()
+LIBRARY = ("import os\n\n\ndef scan(path):\n    return os.listdir(path)\n\n\n"
+           "def ask(path):\n    return os.path.exists(path)\n")
+KIND_FILES = {
+    **{f: None for f in SCOPE_TESTS}, "docs/seen/a.md": "a\n", "docs/pkg/a.md": "a\n",
+    "docs/size.md": "four\n", "docs/run.sh": "true\n", "docs/deep/b.md": "b\n",
+    "docs/entries/a.md": "a\n", "docs/walked/a.md": "a\n", "docs/rebuilt.md": "r\n",
+    "docs/replaced.md": "r\n",
+    K: """import importlib
+import importlib.util
+import os
+import sys
+
+sys.path.insert(0, LIB)
+import a_library  # noqa: E402
+from validation import helper  # noqa: E402
+
+
+def test_kinds():
+    a_library.scan("docs/seen")  # A library lists it first, then the test's own code does.
+    assert os.listdir("docs/seen") == ["a.md"]
+    a_library.scan("docs/pkg")
+    assert not a_library.ask("docs/absent.md")
+    assert os.path.getsize("docs/size.md") and not os.access("docs/run.sh", os.X_OK)
+    folder = os.open("docs/deep", os.O_RDONLY)
+    os.close(os.open("b.md", os.O_RDONLY, dir_fd=folder))
+    os.close(folder)
+    assert [entry.stat().st_size for entry in os.scandir("docs/entries")]
+    assert len(list(os.walk("docs/walked"))) == 1
+    assert helper.VALUE == 1 and importlib.util.find_spec("validation.later") is None
+    try:
+        importlib.import_module("later_top")
+    except ImportError:
+        pass
+""",
+    C: """import os
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def python(code, env):
+    return subprocess.run([sys.executable, "-B", "-c", code], cwd=ROOT, env=env).returncode
+
+
+def test_children(tmp_path):
+    rebuilt = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
+    assert python("open('docs/rebuilt.md')", rebuilt) == 0
+    assert python("open('docs/replaced.md')", {}) == 0
+    assert python("import os; os.kill(os.getpid(), 9)", rebuilt) == -9
+    repo = str(tmp_path / "repo")
+    for args in (["uname", "-p"], ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+                 ["git", "init", "-q", repo], ["git", "-C", repo, "status", "--", "src/cells"]):
+        subprocess.run(args, capture_output=True)
+    try:
+        subprocess.run([str(ROOT / ".venv/bin/python"), "-c", "pass"])
+    except FileNotFoundError:
+        pass
+""",
+    M: """import multiprocessing
+import os
+import subprocess
+import sys
+
+
+def test_masks():
+    child = multiprocessing.get_context("spawn").Process(target=os.getpid)  # It records itself,
+    child.start()
+    child.join()
+    subprocess.run(["cat", "docs/a.md"], stdout=subprocess.DEVNULL)  # and stands for no other.
+    subprocess.run(["bash", "-c", f"cat docs/b.md > /dev/null; exec {sys.executable} -c pass"])
+    pid = os.fork()
+    if pid == 0:
+        os.execv("/usr/bin/cat", ["cat", "/dev/null"])
+    os.waitpid(pid, 0)
+""",
+    H: """import ctypes
+
+
+def test_hole():
+    libc = ctypes.CDLL(None)
+    assert libc.close(libc.open(b"docs/a.md", 0)) == 0 and libc.system(b"true") == 0
+"""}
+
+
+def kinds_snapshot(root, lib, changes=None, rev="r" * 40):
+    """The tiny snapshot of D358's kinds and children (LIB holds the library that test_kinds.py uses)."""
+    files = dict(KIND_FILES, **{K: KIND_FILES[K].replace("LIB", repr(str(lib)))}, **(changes or {}))
+    return scope_snapshot(root, {n: "true\n" if t is EXECUTABLE else t for n, t in files.items()}, rev,
+                          [n for n, t in files.items() if t is EXECUTABLE])
+
+
+def traceable():
+    """Whether strace can trace here. It cannot where the process is traced already: the nightly
+    runs this file under strace, so these tests hold both ways."""
+    return shutil.which("strace") is not None and "TracerPid:\t0\n" in Path("/proc/self/status").read_text()
+
+
+@pytest.fixture(scope="module")
+def kinds_map(tmp_path_factory):
+    """Its map, from the real tier runner with the recorder on, and strace where it can trace (about 5 s)."""
+    tmp = tmp_path_factory.mktemp("kinds")
+    lib = tmp / "site-packages"
+    lib.mkdir()
+    (lib / "a_library.py").write_text(LIBRARY)
+    snap = kinds_snapshot(tmp / "nightly", lib)
+    cpu = str(sorted(os.sched_getaffinity(0))[0])
+    run = subprocess.run([sys.executable, "-B", "scripts/test_tiers.py", "run", "--tiers",
+                          "tests/test_tiers.json", "--tier", "1", "2", "--out", str(tmp / "run"), "--cpus",
+                          cpu, "--cap", "120", "--scope-map", str(tmp / "run" / "scope"), "--trace",
+                          str(tmp / "run" / "trace")], cwd=snap, capture_output=True, text=True, timeout=300,
+                         env=clean_env(PYTHONPATH=str(snap / "src")))
+    assert run.returncode == 0, run.stdout + run.stderr
+    doc = scope.build(tmp / "run", snap, sys.executable)
+    assert doc["trace"]["traced"] == (4 if traceable() else 0), doc["trace"]
+    assert bool(json.loads((tmp / "run/run.json").read_text()).get("trace_refused")) != traceable()
+    return {"tmp": tmp, "lib": lib, "snap": snap, "doc": doc}
+
+
+@pytest.mark.parametrize("changes, chosen", [
+    ({}, []),
+    ({"docs/other.md": "n\n"}, []),
+    ({"docs/seen/new.md": "n\n"}, [K]),  # Its own listing, after a library's.
+    ({"docs/pkg/new.md": "n\n"}, [K]),  # A library's listing of a folder it was given.
+    ({"docs/absent.md": "n\n"}, [K]),  # A library's question.
+    ({"docs/size.md": "fours\n"}, [K]),
+    ({"docs/size.md": "five\n"}, []),  # The same size, all that was asked of it.
+    ({"docs/run.sh": EXECUTABLE}, [K]),
+    ({"docs/deep/b.md": "c\n"}, [K]),  # Opened relative to a descriptor.
+    ({"docs/entries/a.md": "longer\n"}, [K]),  # An entry's own stat.
+    ({"docs/entries/a.md": "b\n"}, []),
+    ({"docs/walked/a.md": "longer\n"}, []),  # Only its name and kind were read.
+    ({"docs/walked/a.md": None, "docs/walked/a.md/b": "b\n"}, [K]),  # The name becomes a folder.
+    ({"validation/later.py": "X = 1\n"}, [K]),  # find_spec found none.
+    ({"later_top.py": "X = 1\n"}, [K]),  # import_module found none.
+    ({"colorsys.py": "X = 1\n"}, []),  # No import looked this name up.
+    ({"docs/rebuilt.md": "s\n"}, [C]),  # A child whose PYTHONPATH was rebuilt,
+    ({"docs/replaced.md": "s\n"}, [C]),  # and one whose whole environment was replaced.
+    ({"HEAD": "ref\n"}, [C]),  # git on the tree asks for a repository in it.
+    ({".venv/bin/python": "true\n"}, [C]),  # An absent interpreter is a question.
+])
+def test_each_kind_of_question_is_recorded_and_only_it(kinds_map, tmp_path, changes, chosen):
+    """test_masks.py is always selected (unmapped), and test_hole.py where it was traced."""
+    base = kinds_snapshot(tmp_path / "base", kinds_map["lib"])
+    head = kinds_snapshot(tmp_path / "head", kinds_map["lib"], changes, rev="h" * 40)
+    _, report = scope.select(head, base, kinds_map["doc"], "tests/test_tiers.json", "none")
+    assert sorted(set(report["files"]) - {M, H}) == chosen and M in report["files"], report["files"]
+
+
+def test_only_the_children_without_a_record_leave_a_file_unmapped(kinds_map):
+    files = kinds_map["doc"]["files"]
+    assert files[C]["complete"] and not files[C]["children_unmapped"], files[C]
+    named = [" ".join(c.split()[:2]) for c in files[M]["children_unmapped"]]
+    assert files[M]["complete"] == (not traceable()), files[M]["why"]  # bash read docs/b.md.
+    assert sorted(named) == ["bash -c", "cat /dev/null", "cat docs/a.md"]
+
+
+def test_the_trace_marks_what_the_recorder_missed_and_only_a_traced_reader_is_released(kinds_map, tmp_path):
+    doc = kinds_map["doc"]
+    hole, found = doc["files"][H], doc["trace"]["found"].get(H, {})
+    if traceable():
+        assert hole["why"] == ["the trace shows what the entry lacks: ['docs/a.md']"]
+        assert "docs/a.md" in found["files"]["docs/a.md"] and "execve" in found["programs"][0]
+        assert hole["children_unmapped"][0].startswith("(the trace) execve(")
+        scope.build(kinds_map["tmp"] / "run", kinds_map["snap"], sys.executable, prune=True)
+        kept = {p.name for p in (kinds_map["tmp"] / "run" / "trace").iterdir()}
+        assert kept == {H.replace("/", "__")}  # test_masks.py's finds only what its children explain.
+    assert doc["files"][K]["reads_repository"] and doc["files"][K]["complete"], doc["files"][K]
+    base = kinds_snapshot(tmp_path / "base", kinds_map["lib"])
+    head = kinds_snapshot(tmp_path / "head", kinds_map["lib"], rev="h" * 40)
+    for traced in (True, False):
+        doc = json.loads(json.dumps(doc))
+        doc["files"][K]["traced"] = traced
+        _, report = scope.select(head, base, doc, "tests/test_tiers.json")
+        assert (K in report["files"]) is not traced and report["always"] == "untraced", report["files"]
+        assert report["readers_rule"]["selected"] == len({*report["files"], K, C})  # D229's, for comparison.
+
+
+TREE_LINE = 'openat(AT_FDCWD</t>, "/t/docs/a.md", O_RDONLY) = 3</t/docs/a.md>\n'
+
+
+@pytest.mark.parametrize("plant, words", [
+    ("whole", None), ("no trace", "no trace"), ("no end", "t.11 has no end"),
+    ("missing child", "no trace of the process or thread 11"), ("io_uring", "t.10 holds io_uring_setup"),
+])
+def test_a_trace_that_is_not_whole_checks_nothing(tmp_path, plant, words):
+    """strace's lines for a process (10), a thread of it (12) and a child (11); /t is the tree."""
+    logs = {10: 'execve("/usr/bin/python", ["python"], 0x1 /* 2 vars */) = 0\n'
+                "clone3({flags=CLONE_VM|CLONE_THREAD, child_tid=0x1}, 88) = 12\nvfork() = 11\n",
+            11: 'execve("/usr/bin/cat", ["cat"], 0x1 /* 2 vars */) = 0\n' + TREE_LINE,
+            12: 'openat(AT_FDCWD</t>, ".", O_RDONLY|O_DIRECTORY) = 3</t>\n'
+                'openat(AT_FDCWD</t>, "/tt/x", O_RDONLY) = 3</tt/x>\n'}
+    if plant == "no trace":
+        logs = {}
+    if plant == "missing child":
+        del logs[11]
+    if plant == "io_uring":
+        logs[10] += "io_uring_setup(8, 0x1) = 5</t>\n"
+    for thread, text in logs.items():
+        end = "" if plant == "no end" and thread == 11 else "+++ exited with 0 +++\n"
+        (tmp_path / f"t.{thread}").write_text(text + end)
+    trace, why = scope.read_trace(tmp_path, "/t")
+    assert (why or "").startswith(words or "") and (trace is None) == bool(words), (trace, why)
+    if plant == "whole":
+        assert trace["opened"]["docs/a.md"] == TREE_LINE.strip() and len(trace["opened"]) == 2
+        assert trace["by"] == {10: {"."}, 11: {"docs/a.md"}}  # Thread 12's open is process 10's.
+        assert trace["parent"] == {11: 10} and sorted(trace["ran"]) == [10, 11]
+
+
+@pytest.mark.parametrize("argv, cwd, asks", [
+    (["git", "-C", "/t", "rev-parse", "HEAD"], "/", {".git", ".git/HEAD", "HEAD"}),
+    (["git", "status"], "/t/docs", {".git", ".git/HEAD", "HEAD", "docs/.git", "docs/.git/HEAD", "docs/HEAD"}),
+    (["git", "-C", "/t", "log", "-1", "--", ".", ":(exclude)docs"], "/", {".git", ".git/HEAD", "HEAD"}),
+    (["git", "-C", "/t", "diff", "--", "a", "b"], "/", None),  # Outside a repository it compares the two.
+    (["git", "-C", "/t", "--git-dir=/r", "status"], "/", None),
+    (["git", "-C", "/r", "-c", "user.name=t", "add", "src/cells"], "/t", set()),
+    (["git", "init", "-q", "/r"], "/t", set()),
+    (["git", "-C", "/r", "add", "../t/docs/a.md"], "/", None),  # A path in the tree.
+    (["git", "-C", "/r", "-c", "core.hooksPath=/t/hooks", "commit"], "/", None),
+    (["uname", "-p"], "/t", set()), (["uname", "-a"], "/t", None),
+    (["fc-list", "--help"], "/t", set()), (["cat", "docs/a.md"], "/t", None),
+])
+def test_the_argument_rules_hold_exactly_what_was_traced(argv, cwd, asks):
+    assert scope.answered(argv, f"/usr/bin/{argv[0]}", cwd, False, "/t") == asks
+    assert scope.answered(argv, None, cwd, False, "/t") == set()  # No such program: no child ran.
+    assert scope.answered(argv, f"/t/bin/{argv[0]}", cwd, False, "/t") is None  # The tree's own program.
+    if argv[0] == "git":
+        assert scope.answered(argv, "/usr/bin/git", cwd, True, "/t") is None  # GIT_DIR names the tree.
 
 
 @pytest.mark.parametrize("fail", [False, True])
 def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path, fail):
     """Lane A's lock is held, so the run takes lane B's. A passing run publishes its map; a file
-    that no longer matches its row writes the stop marker and keeps the last passing map."""
+    that no longer matches its row writes the stop marker and keeps the last passing map. The
+    second runs with TRACE=0."""
     out = tmp_path / "nightly"
     scope_snapshot(out / "snapshot", {"tests/unit/test_plain.py": "def test_plain():\n    assert 0\n"}
                    if fail else {})
@@ -1260,13 +1645,17 @@ def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path
     (cache / "scope-map.json").write_text("{\"kind\": \"the last passing map\"}\n")
     env = clean_env(GATE_CACHE=str(cache), PY=sys.executable, HOSTPY=sys.executable,
                PRE_CPU=cpu, CPUS_A=cpu, CPUS_B=cpu, LOCK_A=str(tmp_path / "a.lock"),
-               LOCK_B=str(tmp_path / "b.lock"), POLL="1", WAIT_FREE="60")
+               LOCK_B=str(tmp_path / "b.lock"), POLL="1", WAIT_FREE="60", TRACE=str(int(not fail)))
     with open(tmp_path / "a.lock", "w") as held:
         fcntl.flock(held, fcntl.LOCK_EX)
         done = subprocess.run(["bash", str(out / "snapshot/scripts/gates/nightly_tiers.sh"), "--run",
                                str(out)], env=env, capture_output=True, text=True, timeout=300)
     log = (out / "nightly.log").read_text()
     assert "lane B, lock held" in log and done.returncode == int(fail), log
+    trace = json.loads((out / "verdict.json").read_text())["trace"]  # What the trace found is recorded,
+    assert trace["traced"] == (4 if traceable() and not fail else 0) and trace["found"] == {}, trace
+    assert not list((out / "tiers-1+2").glob("trace/*/t.*"))  # and a trace that found nothing goes.
+    assert "compilation cache disabled in every process" in log and "cold check after the tiers: " in log
     published = json.loads((cache / "scope-map.json").read_text())
     if fail:
         assert (cache / "selection-stopped").is_file() and published["kind"] == "the last passing map"
@@ -1275,24 +1664,29 @@ def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path
 
 
 def test_a_gate_with_a_selection_runs_only_its_files_and_may_drop_crossrev_and_g1(gate):
-    """gate.sh's SELECT: the map leaves test_other.py out (none of its paths changed), so the tiers
-    run the guard set alone; CHECKS drops crossrev and G1 (no src/ change). A missing map runs the
-    full tiers."""
+    """gate.sh's SELECT: the map leaves test_other.py out (none of its paths changed, and a trace
+    checked its entry), so the tiers run the guard set alone; CHECKS drops crossrev and G1 (no src/
+    change). SELECT_ALWAYS=readers is D229's rule, under which it runs (about 2 s, pre-lock only). A
+    missing map runs the full tiers."""
     m = gate["tmp"] / "map.json"
     m.write_text(json.dumps({
         "kind": scope.KIND, "built": steps.utc(), "revision": "b" * 40, "verdict": "passed",
         "interpreter": steps.interpreter(gate["envs"]["PY"]), "paths": ["tests/unit/test_other.py"],
-        "content": ["-"], "kind_of": ["-"], "names": ["-"], "discovery": ["-"],
+        "content": ["-"], "asked": ["-"], "names": ["-"], "discovery": ["-"], "tops": [], "subs": [],
+        "importable": {}, "runner": dict.fromkeys(scope.RUNNER, "-"),
         "files": {"tests/unit/test_other.py": {
-            "complete": True, "why": [], "content": [0], "exists": [], "lists": [], "finds": [],
-            "reads_repository": False, "scans": False, "reads": [], "children_unmapped": [],
-            "row": {"exit_code": 0, "counts": {"passed": 1}}}}}))
+            "complete": True, "why": [], "traced": True, "content": [0], "exists": [], "lists": [],
+            "finds": [], "roots": [], "tops": [], "subs": [], "reads_repository": True, "scans": False,
+            "reads": [], "children_unmapped": [], "row": {"exit_code": 0, "counts": {"passed": 1}}}}}))
     code, calls, log = run_gate(gate, gate["tmp"] / "out", SELECT=str(m), CHECKS="tiers")
     assert code == 0 and "selection: " in log and "tiers: the selection" in log, log
     assert "crossrev not run" in log and "G1 not run" in log
     assert not any(c.startswith(("crossrev", "save")) for c in calls)
     subset = json.loads((gate["tmp"] / "out" / "prelock" / "selection" / "subset.json").read_text())
     assert sorted(r["file"] for r in subset["tiers"]["1"]) == sorted(steps.GUARDS)
+    code, _, _ = run_gate(gate, gate["tmp"] / "old", SELECT=str(m), SELECT_ALWAYS="readers", PRELOCK_ONLY="1")
+    subset = json.loads((gate["tmp"] / "old" / "prelock" / "selection" / "subset.json").read_text())
+    assert code == 0 and "tests/unit/test_other.py" in [r["file"] for r in subset["tiers"]["1"]]
     code, calls, log = run_gate(gate, gate["tmp"] / "out2", SELECT=str(gate["tmp"] / "absent.json"))
     assert code == 0 and "selection not used (exit 3)" in log and "tiers: the selection" not in log
 
@@ -1339,3 +1733,71 @@ def test_every_variable_the_tools_read_is_dropped_from_the_tests():
         read |= set(py.findall((GATES / name).read_text()))
     assert {"ADDITIONS_FROM", "LANE", "TIERS", "BASE_S", "PRE_CPU", "CELLS_SCOPE_LOG"} <= read
     assert read - LOCALS <= TOOL_ENV, sorted(read - LOCALS - TOOL_ENV)
+
+
+# --------------------------------------------------------------- cold by construction (D321)
+
+@pytest.mark.parametrize("script, guard, checks", [
+    ("gate.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("stack.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("nightly_tiers.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("weekly_tier3.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("fr_landing_set.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("fr_landing_holder.sh", "--env JAX_ENABLE_COMPILATION_CACHE=false", False),  # Its queue units.
+])
+def test_every_gate_script_disables_the_compilation_cache(script, guard, checks):
+    """R2: each gate disables the cache for all it starts, drops any folder it was given, and runs
+    the cold check (the holder's units are checked by fr_landing_set.sh)."""
+    text = (GATES / script).read_text()
+    assert guard in text
+    assert ("unset JAX_COMPILATION_CACHE_DIR" in text) == guard.startswith("export")
+    assert ("jax-entries" in text) == checks
+
+
+def test_the_cold_check_finds_cache_entries_by_their_names(tmp_path):
+    key = "0123456789abcdef" * 4
+    names = [f"a/b/jit_f-{key}-cache", f"jit__window_rollout-{key}-cache", "x-cache",
+             f"jit_f-{key[:-1]}-cache", f"jit_f-{key}-cache.txt", "ids-820bc1ea2a8a-d034178668872798"]
+    for name in names:
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text("")
+    found = [Path(p).relative_to(tmp_path).as_posix() for p in steps.jax_entries([tmp_path])]
+    assert found == names[:2]
+    assert steps.main(["jax-entries", str(tmp_path / "a")]) == 1
+    assert steps.main(["jax-entries", str(tmp_path / "missing")]) == 0
+
+
+ENV_TEST = ("import os\n\n\ndef test_env():\n"
+            "    assert os.environ['JAX_ENABLE_COMPILATION_CACHE'] == os.environ['EXPECT_ENABLED']\n"
+            "    assert os.environ.get('JAX_COMPILATION_CACHE_DIR', '') == os.environ['EXPECT_DIR']\n")
+
+
+def test_the_tier_runner_is_cold_unless_a_run_names_a_cache(tmp_path):
+    """R1, on the real tier runner (about 3 s, no JAX): a caller's cache settings never reach a test
+    process; measure runs cold and marks its record so; only run --jax-cache FOLDER runs warm, with
+    the qualified settings, and its record names the folder."""
+    snap = scope_snapshot(tmp_path / "snap", {"tests/unit/test_env.py": ENV_TEST})
+    only = tmp_path / "only.json"
+    only.write_text(json.dumps({"tiers": {"1": [{"file": "tests/unit/test_env.py", "seconds": 1.0,
+                                                 "exit_code": 0, "counts": {"passed": 1}}]}}))
+    shared, mine = tmp_path / "shared", (tmp_path / "mine").resolve()
+    caller = clean_env(PYTHONPATH=str(snap / "src"), JAX_ENABLE_COMPILATION_CACHE="true",
+                       JAX_COMPILATION_CACHE_DIR=str(shared))
+    cpu = str(sorted(os.sched_getaffinity(0))[0])
+
+    def tool(*args, enabled, folder=""):
+        done = subprocess.run([sys.executable, "-B", "scripts/test_tiers.py", *args, "--cpus", cpu],
+                              cwd=snap, capture_output=True, text=True, timeout=120,
+                              env=dict(caller, EXPECT_ENABLED=enabled, EXPECT_DIR=folder))
+        assert done.returncode == 0, done.stdout + done.stderr
+
+    tool("run", "--tiers", str(only), "--out", str(tmp_path / "cold"), enabled="false")
+    tool("run", "--tiers", str(only), "--out", str(tmp_path / "warm"), "--jax-cache", str(mine),
+         enabled="true", folder=str(mine))
+    tool("measure", "--only", str(only), "--out", str(tmp_path / "m"), enabled="false")
+    cold, warm = (json.loads((tmp_path / d / "run.json").read_text()) for d in ("cold", "warm"))
+    measured = json.loads((tmp_path / "m" / "measured.json").read_text())
+    assert cold["jax_compilation_cache"] == measured["jax_compilation_cache"] == "disabled"
+    assert warm["jax_compilation_cache"] == str(mine)
+    assert [r["exit_code"] for r in cold["files"] + warm["files"] + measured["files"]] == [0, 0, 0]
+    assert not shared.exists()

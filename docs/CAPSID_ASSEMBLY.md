@@ -220,6 +220,10 @@ scientific families. Test/run evidence is linked from [Progress](../PROGRESS.md)
 
 ## One-way assembly regulation of a cell
 
+> **Parked (legacy cleanup, 25 November 2026, D386).** `cells assembly-cell`, `assembly_regulated_cell@1` and its ensemble kind left the
+> engine; the tag `pre-cleanup-2026-11-25` keeps them. The coupling is re-expressed as a CPU driver that
+> writes a pool's switch path into a channel schedule; its GPU path waits.
+
 Assembly can provide an explicit molecular state between cell chemistry and
 membrane function. Candidate mechanisms include a regulatory scaffold that
 changes channel availability, a receptor complex that retains a response after
@@ -299,6 +303,10 @@ provides that first composition; feedback and inheritance remain separate work.
 
 ## Assembly regulation in interacting cells
 
+> **Parked (legacy cleanup, 25 November 2026, D386).** `cells assembly-cluster`, `assembly_regulated_cluster@1` and its ensemble kind left the
+> engine; the tag `pre-cleanup-2026-11-25` keeps them. The coupling is re-expressed as a CPU driver that
+> writes a pool's switch path into a channel schedule; its GPU path waits.
+
 `assembly_regulated_cluster@1` composes a finite assembly pool for each cell
 with `spatial_extracellular@2`. The example
 [assembly_regulated_cluster.json](../configs/assembly_regulated_cluster.json)
@@ -358,3 +366,90 @@ exchange and junction transport disabled to test zero transmission.
 This remains a one-way kinetic hypothesis about assembly organization controlling
 a channel. Chemical feedback, protein energetic costs, cross-region junctions,
 experimental validation and multi-GPU scaling are separate work.
+
+## Driving ionic channels from pools
+
+A pool can drive channel populations of an ionic world, one way: the pool reads nothing of the ionic
+side. `cells assembly-pool resolve` turns a composed file into ordinary definitions, so the ionic
+world needs no new model and no new operator
+([the design](IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md), Part II). The drive is a hypothesis
+of the composed file: no experiment says that an assembly's topology sets a channel's availability.
+
+**The composed file** is a strict JSON object with exactly three keys:
+
+```json
+{
+  "schema_version": 1,
+  "ionic": { "schema_version": 1, "model": {"id": "resolved_pump_tissue@3"} },
+  "pools": [
+    {
+      "channels": ["kv_0"],
+      "observable": "root_component_has_cycle@1",
+      "levels": {"false": 0.0, "true": 1.0},
+      "pool": {"model": "finite_bond_assembly@1", "recording": "events", "seed": 2027}
+    }
+  ]
+}
+```
+
+- `ionic` is a whole definition of `resolved_pump_tissue@3` or `resolved_pump_composite@1` (cut short
+  here). Its channels' declared schedules are the base.
+- `channels` are the populations the pool sets. A population is set by one pool at most.
+- `observable` is the ID of a registered law that reads the assembly
+  ([the library](library/README.md) has its page, under `cells.assembly_observable@1`).
+  `root_component_has_cycle@1` is true where the assembly has at least as many bonds as occupied
+  sites. The assembly is one connected piece, so that means at least one closed ring. The ID commits
+  the readout alone. The `levels` are data, one number in [0, 1] for each of its values.
+- `pool` is an ordinary `finite_bond_assembly@1` definition (cut short here). Every pool declares the
+  same worlds, `"recording": "events"`, the ionic definition's `end_time` as its horizon, and its
+  own seed. Two pools with one seed are refused, since they would draw the same numbers.
+
+```bash
+PYTHONPATH=src /mnt/workspaces/Cells/venv-cpu/bin/python -B -m cells assembly-pool resolve composed.json --output /mnt/workspaces/Cells/composed-example-01
+PYTHONPATH=src /mnt/workspaces/Cells/venv-cpu/bin/python -B -m cells run /mnt/workspaces/Cells/composed-example-01/worlds/world-0.json --inputs /mnt/workspaces/Cells/composed-example-01/inputs.json --output /mnt/workspaces/Cells/composed-example-01-run
+```
+
+**The rule.** Each committed event of a pool gives a value of the observable, and so a level. A
+switch is an event that changes the level; an event that leaves it as it was is none. The level of a
+switch is the one after its event. A driven population's availability is its declared schedule times
+the level, both right-continuous:
+
+$$a(t) = b(t)\,\ell(t)$$
+
+Switch times are the pool's own, never rounded to a step. The clock splits the step that holds one,
+so a world takes one step more for each distinct switch time, and its `max_steps` must cover them.
+
+**What resolve writes**, in a new folder: the pools' own runs (`pools/`), one ordinary definition for
+each of the pools' worlds (`worlds/world-ID.json`, by the pools' world IDs), and two records.
+- `resolution.json` says how each schedule was made: each pool's definition fingerprint and seed,
+  and in each world its events, its switches as (time, level, event count), its exposure (the
+  integral of the level) and the pool's final state.
+- `inputs.json` holds the composed file's SHA-256, the pools' fingerprints and seeds, the observable
+  and every world's switches. A run command given `--inputs inputs.json` records it as
+  `provenance.inputs` of its manifest, so the run's record says what its schedule came from. A run
+  given none records null there. The option is general: any JSON object is recorded as it is, and
+  one that lists `definitions_sha256` is refused beside a definition it does not list.
+
+`--batch MAX_WORKING_BYTES` also writes the worlds as one `independent_worlds` batch
+(`batch.json`; batch world IDs start at 1, so they are the pools' plus 1). `--backend gpu` runs the
+pools on a GPU. The same composed file gives the same bytes on one machine; nothing is claimed across
+CPU and GPU.
+
+**Refused by name**, before any ionic run: an unknown key; another ionic model; a channel that is not
+declared or is set twice; an unregistered observable; levels outside [0, 1]; pools that differ in
+their worlds or horizon, share a seed, or do not record events; a pool that faults, with its world
+and its event cap; a `max_steps` that is too small; free field offsets without the floor solver
+(D147); and an operator that replaces, divides or takes membrane from a driven cell, since a pool's
+path belongs to a channel's slot and would outlive the cell. A switch that misses a point of the
+clock by more than rounding but by at most a millionth of the step is refused as the clock refuses
+it (D283). `--near-misses-to-grid` declares it at the point instead, and records the shift.
+
+**Its limits.**
+- The pool cannot read the ionic state. Voltage, calcium or an amount acting on a rate would be a new
+  pool law.
+- A switch costs a step and a control record of every channel, so it suits up to a few hundred
+  cells.
+- No energy passes between the two sides. The pool's ring has no free energy in the ionic ledger.
+- A checkpoint of the ionic world holds the pool's path, not its state. The pool's own checkpoint and
+  `resolution.json` hold that. A longer horizon keeps the pool's past switches, so a saved world
+  resumes or branches by the ordinary rules.

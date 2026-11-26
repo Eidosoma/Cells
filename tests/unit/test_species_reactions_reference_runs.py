@@ -1,4 +1,4 @@
-"""Compiled face-free runs of local_species_reactions@1 against the independent references
+"""Compiled face-free runs of cells.operator.local_species_reactions@1 against the independent references
 (validation/reactions, used through REFERENCES_USAGE.md only; D152 v1, milestone 2; §3.4 guards 1,
 4 and 5).
 

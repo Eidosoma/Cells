@@ -31,7 +31,14 @@ def _water_worlds():
 
     aquaporin = 5e-4
 
-    def cell(state="H", *, end=0.2, dt=1e-3, solver="imex_ars222_face_electromigration@1", **kw):
+    def cell(
+        state="H",
+        *,
+        end=0.2,
+        dt=1e-3,
+        solver="cells.solver.imex_ars222_face_electromigration@1",
+        **kw,
+    ):
         raw = fx.heredity_cell(state, dt=dt, end_time=end, solver=solver)
         raw["experiment"]["observation_times"] = [0.0, round(end / 2, 6), end]
         return fx.with_water(raw, **kw)
@@ -42,7 +49,7 @@ def _water_worlds():
                 group["schedule"] = [dict(time=0.0, availability=0.0)]
         return raw
 
-    def kicked(dt, end, solver="imex_ars222_face_electromigration@1"):
+    def kicked(dt, end, solver="cells.solver.imex_ars222_face_electromigration@1"):
         state = v3.kicked(v3.HEREDITY_STATES["D"], 4.0)
         raw = v3.heredity_cells(
             [state], dt=dt, end_time=end, solver=solver, observation_times=[0.0, end / 2, end]
@@ -52,7 +59,7 @@ def _water_worlds():
     def sheet(end=0.03):
         raw = fx.gated_sheet(end_time=end)
         raw["experiment"]["observation_times"] = [0.0, end / 2, end]
-        raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+        raw["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
         return fx.with_water(raw, pf_m_s=aquaporin)
 
     def regulated(raw):
@@ -73,7 +80,9 @@ def _water_worlds():
         "osmometer": lambda: closed_ions(
             cell(end=0.5, dt=2e-3, pf_m_s=aquaporin, bulk_modulus_Pa=0.0, pressure_offset_Pa=0.0)
         ),
-        "euler_kicked": lambda: kicked(1e-3, 0.064, "imex_euler_face_electromigration@1"),
+        "euler_kicked": lambda: kicked(
+            1e-3, 0.064, "cells.solver.imex_euler_face_electromigration@1"
+        ),
         "rk4_coupled": lambda: kicked(2.5e-6, 2.5e-4, "rk4"),
         "sheet_trapezoid": sheet,
         "route_on": lambda: regulated(cell("D", end=0.2, pf_m_s=aquaporin)),
@@ -86,18 +95,19 @@ def _water_worlds():
     }
     for world in ("cell_H", "cell_D", "sheet7"):
         for label, solver in (
-            ("euler", "imex_euler_face_electromigration@1"),
-            ("ars", "imex_ars222_face_electromigration@1"),
+            ("euler", "cells.solver.imex_euler_face_electromigration@1"),
+            ("ars", "cells.solver.imex_ars222_face_electromigration@1"),
         ):
             worlds[f"closed_{world}_{label}"] = lambda w=world, s=solver: equivalence(w, s)
     return worlds
 
 
 def _w1_worlds():
+    from validation import id_table
     from validation.tissue import pump_water_qualification as w1q
 
     root = Path(w1q.__file__).parent  # The predictions of the revision under test.
-    predictions = json.loads((root / "pump_water_predictions.json").read_text())
+    predictions = id_table.load(root / "pump_water_predictions.json")
     return {
         "W1_" + name: (
             lambda path=path: w1q.with_step(w1q.item(predictions, path)["definition"], 1e-3)
@@ -107,10 +117,11 @@ def _w1_worlds():
 
 
 def _w2_worlds():
+    from validation import id_table
     from validation.tissue import pump_water_kcc_qualification as w2q
 
     root = Path(w2q.__file__).parent
-    predictions = json.loads((root / "pump_water_kcc_predictions.json").read_text())
+    predictions = id_table.load(root / "pump_water_kcc_predictions.json")
 
     def trajectory(arm):
         raw = copy.deepcopy(w2q.definition(predictions, arm))
@@ -129,7 +140,7 @@ def _replacement_worlds():
     dt = 1e-3
     t1, t2, t3 = exact_event_times((10, 20, 30), dt)
 
-    def sheet(solver="imex_ars222_face_electromigration@1"):
+    def sheet(solver="cells.solver.imex_ars222_face_electromigration@1"):
         raw = fx.heredity_sheet(1, 0, dt=dt, end_time=0.05, solver=solver)
         raw["experiment"]["observation_times"] = list(
             exact_event_times((0, 10, 11, 30, 31, 50), dt)
@@ -158,7 +169,10 @@ def _replacement_worlds():
 
     def donors():
         raw = sheet()
-        fast = dict(fx.NO_ROUTES, channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3e-7})
+        fast = dict(
+            fx.NO_ROUTES,
+            channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7},
+        )
         return fx.with_replacement(
             raw,
             [*templates(raw), fx.route_template("fast_nav", fast)],

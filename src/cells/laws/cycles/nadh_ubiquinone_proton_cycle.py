@@ -11,10 +11,10 @@ S = X e^(-x°) [NADH] [Q] [QH2]^-1 h_N^5 h_P^-4 e^(-4u).
 
 from cells.laws.cycles.forms import CitedConstant, CycleForm, MonomialForm, MonomialRate, Reference
 from cells.laws.cycles.mitochondria_source import citation
-from cells.modules import CycleLaw
+from cells.modules import CycleLaw, qualified
 
-LAW_ID = "nadh_ubiquinone_proton_cycle@1"
-DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+LAW_ID = "cells.cycle.nadh_ubiquinone_proton_cycle@1"
+DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 CYCLE = CycleForm(
     kinetics="monomial",
     roles=(("NADH", -2), ("Q", 0), ("NAD", -1), ("QH2", 0), ("H", 1)),
@@ -38,10 +38,13 @@ CYCLE = CycleForm(
 )
 LAW = CycleLaw(
     DECLARED_ID,
-    reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    reads=(
+        "cells.binding.rapid_binding@1",
+    ),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Frame B: every move in base forms, every proton counted (D236).
+    material_term="material_term",  # The kind's: its rate over all the rows it moves.
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="cited",
     source=citation(
         "the appendix's §1.1 (Eqs. 2 and 3; Table 2's Delta G°_C1)",

@@ -27,7 +27,7 @@ The saturable import route has a unique positive remaining amount for every fini
 - [CellsProofs.Transport.SpeciesExchange.iterate_bounds](../CellsProofs/Transport/SpeciesExchange.lean#L152)
 - [CellsProofs.Transport.SpeciesExchange.amount_error_le_residual](../CellsProofs/Transport/SpeciesExchange.lean#L165)
 
-Direct proof subject `cells.scheduled_species_exchange@1`
+Direct proof subject `cells.operator.scheduled_species_exchange@1`
 
 ## Numerical comparison
 
@@ -41,11 +41,42 @@ Direct proof subject `cells.scheduled_species_exchange@1`
 
 [Tested engine b09b53f85835](https://github.com/Eidosoma/Cells/commit/b09b53f8583524a7c0b5526f3cd11ad4c33695ad) · [Evidence checkpoint de5b4621d8b6](https://github.com/Eidosoma/Cells/commit/de5b4621d8b624709302ee9d5c91f395e592ab1a)
 
+**Engine** `cells.assembly_lineages@2`, `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `cells.bilayer_geometry@1`, `cells.osmotic_lumen@1`, `cells.inward_rectifier_linear_driving_force@1`
+
+**Operators** `cells.pool_withdrawal@1`, `cells.scheduled_compartment_wash@1`, `cells.site_occupancy@1`, `cells.scheduled_species_exchange@1`
+
+[Bilayer area](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/models/assembly_lineages_v2/geometry.py#L249) · [Lumen tension and volume](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/models/assembly_lineages_v2/lumen.py#L265) · [Deterministic rupture decision](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/models/assembly_lineages_v2/kernel.py#L350) · [Bead-equivalent count withdrawal](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/models/assembly_lineages_v2/withdrawal.py#L150) · [Full wash at a bound wall](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/operators/wash_schedule.py#L472) · [Saturable uptake](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/operators/species_exchange.py#L335) · [Potassium reversal](https://github.com/Eidosoma/Cells/blob/153449799f4d301a34f2be58172becc4dc562806/src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L55) · [Paired measurements](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/paired_wet_lab_measurements.json) · [Potassium changes in Müller cells](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/paired_calibration_measurements.json) · [Kir4.1 temperature and concentrations](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/tada1998_kir41.json) · [POPC molecular areas](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/leaflet_packing.json) · [First independent deflation study](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/fujiwara2014_vesicle.json) · [Survival during a tension hold](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/vesicle_rupture_holds.json) · [First bead-count groups](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/fornell2017_partition.json) · [Remaining bead counts and volume observations](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/data/pool_withdrawal_measurements.json) · [Bilayer area harness](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/leaflet_packing.py) · [Vesicle world](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/vesicle.py) · [Retained-osmole comparison](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/vesicle_events.py) · [Whole draw and site stocks](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/wall_wash.py) · [Pool event and count reconstruction](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/pool_withdrawal.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/checks/paired_response_endpoints.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/9f27f80116ed324e1adbbef7cddb5671d71f12f7/lean/PROGRESS.md#paired-law-replays)
+
+[Tested engine 153449799f4d](https://github.com/Eidosoma/Cells/commit/153449799f4d301a34f2be58172becc4dc562806) · [Evidence checkpoint 9f27f80116ed](https://github.com/Eidosoma/Cells/commit/9f27f80116ed324e1adbbef7cddb5671d71f12f7)
+
 ## Biological evidence
 
 **Open.** Initial neutral-solute uptake rate versus external concentration and a matched time course of extracellular depletion and intracellular gain.
 
+- [Early 3-O-methylglucose influx into sugar-depleted human erythrocytes is half-saturated near 1–2 mM under cold conditions.](../WET_LAB_EVIDENCE.md#pair-cold-red-cell-sugar-affinity) · Supported by both studies
+- [Initial 3-O-methylglucose influx saturates with increasing extracellular sugar in intact human erythrocytes on ice and at 15 °C.](../WET_LAB_EVIDENCE.md#pair-red-cell-sugar-saturation) · Supported by both studies
+
 **Unit** µmol/L/min
+
+### klepper2001_cold_red_cell_influx@1
+
+Washed human erythrocytes, healthy adult intra-assay control, zero-trans radiolabeled 3-O-methyl-D-glucose influx. §2.4, Fig. 3B–C, Table 1 (pp. 105–108). [Klepper et al. (2001), Fig. 3B–C and Table 1](https://doi.org/10.1016/S0014-5793(01)02463-2)
+
+- **Evidence role** descriptive
+
+No uncertainty reported for the control Km. The larger healthy reference group in Fig. 3A is a different comparison.
+
+The healthy control gave Kₘ 1.3 mM and maximal rate 1,275 ± 32 fmol/s per million cells (SD). It independently supports the half-saturation scale of the cold Cells calibration. Differing rate denominators limit the capacity comparison. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
+
+### batt1973_red_cell_influx@1
+
+Two separate human blood samples, intact erythrocytes with zero trans sugar. Table V (p. 1692), influx column for 3-O-methyl-D-glucose. [Batt and Schachter (1973), Table V](https://doi.org/10.1172/JCI107350)
+
+- **Evidence role** descriptive
+
+Each row is a separate blood sample. Table V gives point estimates without errors.
+
+The two influx Kₜ estimates, 5.0 and 6.1 mM at 15 °C, support saturable entry. They set a limit on transferring the cold calibration across preparations. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-wet-lab-evidence)
 
 ### sage2014_zero_trans@1
 

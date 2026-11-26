@@ -1,7 +1,7 @@
 """MG0b independent reduced model: single-cell I(V) and the discrete bistable chain.
 
 numpy/scipy only; no Cells code is imported. The equations transcribe the laws
-that resolved_pump_tissue@3 declares (src/cells/laws/channels/potassium_channels.py,
+that cells.model.resolved_pump_tissue@3 declares (src/cells/laws/channels/potassium_channels.py,
 sodium_channels.py, kinetic_pump.py, the constant-field membrane flux), applied
 to one cell facing a held bath, with gates at their voltage steady states and
 the cytoplasm composition held fixed ("fast" I-V). The engine solves the full

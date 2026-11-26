@@ -1,7 +1,7 @@
-"""cell_owned_compartments@1: closed compartments owned by cells, on @3's layout (FR-1, D169).
+"""cells.operator.cell_owned_compartments@1: closed compartments owned by cells, on @3's layout (FR-1, D169).
 
 docs/CLOSED_COMPARTMENT_DESIGN.md. A compartment is a finite outside node of
-resolved_pump_tissue@3 that no face names, bounded by exactly one membrane patch whose inside is its
+cells.model.resolved_pump_tissue@3 that no face names, bounded by exactly one membrane patch whose inside is its
 owner cell (§1.1). Its volume, amounts, fixed charge and charge anchor are @3's own fields of that
 node, and its species are @3's rows there; the patch's area and capacitance are its membrane. The
 node is a free node of @3's capacitor solve, so the bounding patch's voltage is V_b = -q/C_b
@@ -36,12 +36,14 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    checkpoint: where refusal 4 admits charged routes (a world that declares kinds and steps with
    an IMEX tableau; version 1.1), and where an operator of the admitted list moves charge into
    that compartment (its routes, through the contract's charged_compartments: the pool of
-   scheduled_membrane_trafficking@1's routes; version 1.2). Elsewhere (the silent version, and
+   cells.operator.scheduled_membrane_trafficking@1's routes; version 1.2). Elsewhere (the silent version, and
    RK4 without such routes) the content is electroneutral, so q = 0 and V_b = 0. Version 1.2
    reads the composition, so it is checked at the definition with refusal 7, after it;
-6. an owner whose capacitor component (cells and outside nodes joined by membrane patches, as
-   numerics/surface_field.bind joins them) holds no held bath (version 1). In such a component no
-   representative is chosen, so the compartment is a free node of the capacitor solve (§3.5);
+6. a node that is the representative of its capacitor component (cells and outside nodes joined by
+   membrane patches, as numerics/surface_field.bind joins them; version 1.1, §3.5.1): the gauge
+   where the component holds it, else its first outside node, and none where it holds a held bath
+   (surface_field.representative, bind's own rule). Any other node is a free node of the capacitor
+   solve (§3.5), in a held-bath topology, a closed world and a floating component alike;
 7. a composition beyond the admitted list of §4, which fails closed: a new operator may treat
    outside nodes as environment. Replacement@1 schedules no event on an owner's slot and names no
    owner as a donor (§1.5): a newcomer would inherit the compartment's content, and a donor copy
@@ -51,13 +53,23 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    reference reads (D217): the declaration reads the declared bounding patch as data, its
    identity, so a provider of them is no conflict. Membrane state, which provides them, is
    admitted only together with one of its admitted writers, and only where every writer of its
-   fields is one of them (the membrane-state wall's door): scheduled_membrane_trafficking@1
+   fields is one of them (the membrane-state wall's door): cells.operator.scheduled_membrane_trafficking@1
    (FR-2), whose routes write areas, capacitances and units, and FR-7's unit producer
-   population_unit_turnover@1, which writes units only, never an area or a capacitance (the
+   cells.operator.population_unit_turnover@1, which writes units only, never an area or a capacitance (the
    lead's ruling of 20 November 2026, amending that of 19 November on FR-2's question 11). The
-   producer acts in its populations' cells only, and species_regulated_availability@2 reads its
+   producer acts in its populations' cells only, and cells.operator.species_regulated_availability@2 reads its
    sources in its elements' cells and refuses an outside-node element (FR-7's U2 world with a
-   releasing compartment, D217).
+   releasing compartment, D217). FR-49 (D327; validation/fr49/REGISTRATION.md, Part H) admits two
+   more laws, each with its own check:
+   - cells.operator.templated_polymerisation@1, whose own check refuses an export into a compartment's node and
+     an outside degradation there (an export into a compartment is a later step, with its books
+     at the compartment's node); its routes in the owner's cytosol never touch the compartment;
+   - cells.operator.neutral_arrival_labels@1, refused here beside membrane state (FR-49's ruling 4, World L's
+     scope): today the labels refuse membrane state's admitted writers anyway, and this check
+     names the reason and stays fail closed if the labels' list widens. It runs before the
+     membrane-state wall's rule, so its reason is the one given.
+   Site occupancy, the compartment wash and cells.operator.site_occupant_replacement@1 stay off the list until
+   their own FR-49 pieces land.
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
@@ -82,11 +94,12 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
+from cells.numerics import surface_field
 from cells.operators.contract import Operator, Read
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
 
-LAW_ID = "cell_owned_compartments@1"
+LAW_ID = "cells.operator.cell_owned_compartments@1"
 # Refusal 4's step terms (version 1.3, §3.4.4; docs/CORE_SEAMS_DESIGN.md §4.4 and §18 as amended).
 # Each is a field the cycle and route law types declare (registry/laws.STEP_TERMS, §8.1: its
 # kernel's name, or None), held at the step by the kind hook it maps to: a charge slope in the
@@ -126,29 +139,36 @@ SOURCE_ABSENT = (
 # hold B7's and the kinds' definition-time terms (surface_pump_v3.StepChecks). Refusal 4 admits
 # routes beside a compartment only with an IMEX tableau (§3.4.1).
 RK4_SOLVER = "rk4"
-REPLACEMENT_LAW = "scheduled_cell_replacement@1"
-STATE_LAW = "membrane_entity_state@1"
+REPLACEMENT_LAW = "cells.operator.scheduled_cell_replacement@1"
+STATE_LAW = "cells.operator.membrane_entity_state@1"
 # FR-2's operator (docs/MEMBRANE_RETRIEVAL_DESIGN.md; D217): named here before its module lands,
 # so that the admission is on main for its builder (the lead's ruling of 19 November 2026).
-TRAFFICKING_LAW = "scheduled_membrane_trafficking@1"
+TRAFFICKING_LAW = "cells.operator.scheduled_membrane_trafficking@1"
 # FR-7's unit producer (docs/ABUNDANCE_TO_FUNCTION_DESIGN.md; D217, D232): it writes membrane
 # state's units only, in its populations' cells (the lead's ruling of 20 November 2026).
-PRODUCER_LAW = "population_unit_turnover@1"
+PRODUCER_LAW = "cells.operator.population_unit_turnover@1"
+# FR-49 (D327): expression, whose own check refuses exports and outside degradations at a
+# compartment's node (templated_polymerisation.check_compartments), and the labels, refused here
+# beside membrane state (refuse_labels_beside_membrane_state).
+EXPRESSION_LAW = "cells.operator.templated_polymerisation@1"
+LABELS_LAW = "cells.operator.neutral_arrival_labels@1"
 # §4's admitted list (fails closed). @3 itself is the composite's inner model. Membrane state is
 # admitted only together with one of its admitted writers (check_definition).
 ADMITTED = (
     LAW_ID,
-    "electrode_current_injection@1",
-    "scheduled_species_exchange@1",
-    "scheduled_species_turnover@1",
-    "local_species_reactions@1",
-    "species_regulated_availability@1",
+    "cells.operator.electrode_current_injection@1",
+    "cells.operator.scheduled_species_exchange@1",
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.local_species_reactions@1",
+    "cells.operator.species_regulated_availability@1",
     REPLACEMENT_LAW,
-    "scheduled_bath_composition@1",
+    "cells.operator.scheduled_bath_composition@1",
     STATE_LAW,
     TRAFFICKING_LAW,
-    "species_regulated_availability@2",
+    "cells.operator.species_regulated_availability@2",
     PRODUCER_LAW,
+    EXPRESSION_LAW,
+    LABELS_LAW,
 )
 # Membrane state's fields that its writers write (membrane_state.ACCEPTS_WRITES): the wall's door
 # admits a writer of any of them only if it is one of the admitted writers (check_definition).
@@ -248,6 +268,23 @@ def capacitor_components(model):
     for membrane in model.membranes:
         parent[root(membrane.outside)] = root(membrane.inside)
     return {name: root(name) for name in parent}
+
+
+def representatives(model):
+    """The outside nodes that the capacitor solve fixes as representatives, their IDs: one per
+    capacitor component without a held bath. surface_field.representative, the rule that bind
+    applies, on the declared topology; a bound layout's are surface_field.representatives."""
+    nodes = [c.id for c in (*model.cells, *model.extracellular)]
+    first = len(model.cells)
+    reservoirs = {first + k for k, o in enumerate(model.extracellular) if o.reservoir}
+    gauge = {first + k for k, o in enumerate(model.extracellular) if o.id == model.gauge_reference}
+    components, members = capacitor_components(model), {}
+    for k, name in enumerate(nodes):
+        members.setdefault(components[name], []).append(k)
+    chosen = [
+        surface_field.representative(found, first, reservoirs, gauge) for found in members.values()
+    ]
+    return frozenset(nodes[k] for k in chosen if k is not None)
 
 
 def held_terms(kind, law_id):
@@ -430,8 +467,7 @@ def parse_declaration(raw, base):
     m = base.model
     outside = {c.id: c for c in m.extracellular}
     cells = {c.id for c in m.cells}
-    components = capacitor_components(m)
-    held = {components[c.id] for c in m.extracellular if c.reservoir}
+    fixed = representatives(m)
     imex = base.execution.solver != RK4_SOLVER  # Refusal 4's admissions need an IMEX tableau.
     taken = world_ids(m)
     compartments = []
@@ -492,12 +528,14 @@ def parse_declaration(raw, base):
             )
         refuse_ion_routes(m, node, bounding, imex)  # 4.
         # 5. is checked at the definition (check_definition): version 1.2 reads the composition.
-        # 6. A held-bath topology.
-        if components[owner] not in held:
+        # 6. Never its component's representative.
+        if node in fixed:
             raise ConfigError(
-                f"{LAW_ID}: the owner {owner!r} of compartment {node!r} lies in a capacitor "
-                "component with no held bath; version 1 requires one, so that the compartment is a "
-                "free node of the capacitor solve, never a representative"
+                f"{LAW_ID}: compartment {node!r} is the representative of its capacitor component "
+                f"(no held bath and no gauge is in it, and {node!r} is its first outside node); "
+                "the capacitor solve fixes a representative, so its row would carry the "
+                "component's net charge. Declare another outside node of the component first "
+                "(refusal 6, version 1.1)"
             )
         label = _metadata(entry["label"], "label")
         reference = _metadata(entry["reference"], "reference")
@@ -564,9 +602,26 @@ def refuse_unwritten_state(entries):
             )
 
 
+def refuse_labels_beside_membrane_state(entries):
+    """7. FR-49's ruling 4 (D327): cells.operator.neutral_arrival_labels@1 is qualified beside a compartment
+    without membrane state (fr49-compartment-compositions-v1, World L), so a compartment world
+    that declares both is refused by name. Today the labels refuse membrane state's admitted
+    writers beside a compartment (trafficking and the unit producer), and membrane state alone is
+    the wall's own refusal, so no admitted world changes. The check names the reason and keeps the
+    pair refused if the labels' list widens before a world qualifies it."""
+    laws = {op.LAW_ID for op, _, _ in entries}
+    if LABELS_LAW in laws and STATE_LAW in laws:
+        raise ConfigError(
+            f"{LAW_ID}: {LABELS_LAW} beside a compartment is qualified without {STATE_LAW} "
+            "(FR-49's World L; ruling 4), so a compartment world that declares both is refused "
+            "until a world qualifies labels beside membrane state there"
+        )
+
+
 def check_definition(spec, declaration):
-    """7. The admitted list, which fails closed, replacement@1's owners, and membrane state only
-    with its admitted writers; then 5. (version 1.2), which reads the admitted operators' routes."""
+    """7. The admitted list, which fails closed, replacement@1's owners, the labels without
+    membrane state (FR-49), and membrane state only with its admitted writers; then 5. (version
+    1.2), which reads the admitted operators' routes."""
     owners = {c.owner for c in declaration.compartments}
     entries = composite_spec.entries(spec)
     for op, _, schedule in entries:
@@ -590,6 +645,7 @@ def check_definition(spec, declaration):
                     "a donor; a donor copy takes the donor's cytosolic amounts only, so the "
                     "newcomer would not be a copy (door R)"
                 )
+    refuse_labels_beside_membrane_state(entries)  # FR-49: before the wall's rule, so its reason.
     refuse_unwritten_state(entries)
     # 5., version 1.2: per compartment, in declared order (positional: bypasses in the silence
     # tests and FR-1's plants replace it with a positional-only lambda).
@@ -661,8 +717,9 @@ class CellOwnedCompartments(Operator):
             "compartments_role_default": ROLE,  # Entries with role_declared False carry it.
             "compartments_role_physics": "none in version 1: a role is metadata",
             "compartments_scope": (
-                "refusal 4 version 1.3, refusal 5 version 1.2: a held-bath topology at a fixed "
-                "volume; on a bounding patch no ion route but refusal 4's admitted ones (@3's "
+                "refusal 4 version 1.3, refusal 5 version 1.2, refusal 6 version 1.1: a node that "
+                "its capacitor component does not take as its representative, at a fixed volume; "
+                "on a bounding patch no ion route but refusal 4's admitted ones (@3's "
                 "permeabilities, and the kinds' moves at the compartment's node, each held by a "
                 "step term its law declares, when the world declares kinds, with an IMEX step), "
                 "and a zero charge anchor except in those same worlds and where an admitted "

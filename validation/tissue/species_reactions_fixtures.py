@@ -1,4 +1,4 @@
-"""Small worlds for local_species_reactions@1 (D152 version 1, the shared-inventory design).
+"""Small worlds for cells.operator.local_species_reactions@1 (D152 version 1, the shared-inventory design).
 
 All values are synthetic. Every world is D150's quiescent species-only world
 (secreted_species_fixtures.world: passive cells, every node at the bath's ion composition with a
@@ -32,8 +32,8 @@ import numpy as np
 from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import secreted_species_fixtures as fx
 
-REACTIONS = "local_species_reactions@1"
-PASSIVE = "ideal_detailed_balance_mass_action@1"
+REACTIONS = "cells.operator.local_species_reactions@1"
+PASSIVE = "cells.species_reaction.ideal_detailed_balance_mass_action@1"
 TRACE_mM = fx.TRACE_mM
 FLOOR_FMOL = fx.FLOOR_FMOL
 D_SPECIES = fx.D_S

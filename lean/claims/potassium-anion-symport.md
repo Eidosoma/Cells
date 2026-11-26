@@ -28,7 +28,7 @@ The active 1:1 route moves outward when the inside concentration product is larg
 - [CellsProofs.Transport.PotassiumAnionSymport.explicit_step](../CellsProofs/Transport/PotassiumAnionSymport.lean#L116)
 - [CellsProofs.Transport.PotassiumAnionSymport.step_points_inward](../CellsProofs/Transport/PotassiumAnionSymport.lean#L123)
 
-Direct proof subject `cells.k_anion_symport_mass_action@1`
+Direct proof subject `cells.operator.k_anion_symport_mass_action@1`
 
 ## Numerical comparison
 
@@ -86,9 +86,44 @@ Direct proof subject `cells.k_anion_symport_mass_action@1`
 
 **Open.** External cation concentration at reversal normalized by internal potassium, plotted against the inside/outside chloride ratio.
 
+- [Changing external potassium can reverse the direction of K–Cl cotransport.](../WET_LAB_EVIDENCE.md#pair-kcl-gradient-reverses-transport) · Supported by both studies
+- [Equality of the nominal intracellular and extracellular K–Cl concentration products locates zero flux in swollen sheep erythrocytes across protocols.](../WET_LAB_EVIDENCE.md#pair-kcl-null-across-sheep-protocols) · Independent replication unconfirmed
+- [The red-cell K–Cl cotransporter carries approximately one potassium ion per chloride ion.](../WET_LAB_EVIDENCE.md#pair-erythrocyte-kcl-stoichiometry) · Supported by both studies
+- [Chloride contributes to the direction of volume-sensitive erythrocyte K–Cl cotransport.](../WET_LAB_EVIDENCE.md#pair-erythrocyte-kcl-combined-gradient) · Supported by both studies
+
 Rabbit red cells gave an outward K:Cl flux ratio of 1.12 ± 0.26 (SD, five preparations), consistent with the model’s 1:1 stoichiometry. The investigators measured rubidium as a potassium tracer and calibrated its relative flux. [Jennings and Adame, Fig. 5](https://pubmed.ncbi.nlm.nih.gov/11502559/)
 
 **Unit** dimensionless normalized reversal slope
+
+### jarolimek1999_dendritic_chloride_reversal@1
+
+Dendrites of cultured rat midbrain neurons. The furosemide-induced shift in GABA-current reversal was measured at two external K⁺ concentrations. Fig. 6B and adjoining low-pipette-anion results. [Jarolimek et al. (1999), Fig. 6B](https://doi.org/10.1523/JNEUROSCI.19-12-04695.1999)
+
+- **Evidence role** descriptive
+
+Values are mean ± SEM. Pipette permeant anion and local free chloride activity are distinct. Transport direction is inferred from the blocker-sensitive voltage shift.
+
+The opposite dendritic voltage responses support a reversal in K–Cl transport direction as external K⁺ rises. No absolute K–Cl flux or independently measured product of activities at zero transport is available. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
+
+### delpire1991_sheep_kcl_flux_null@1
+
+Hyposmotically swollen low-K sheep red cells. Net K flux was compared across concentrations and temperatures. Abstract and results on net potassium efflux at equal and reversed concentration products. [Delpire and Lauf (1991), net-flux results](https://doi.org/10.1085/jgp.97.2.173)
+
+- **Evidence role** descriptive
+
+Approximate concentration-product ratio reported by the authors. The exact zero and an uncertainty were not reported for this summary.
+
+Net efflux persisted at equal concentration products and approached zero near twice the internal product. Lauf’s later pH- and volume-clamped study tested this discrepancy with a different protocol. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
+
+### jennings2001_rabbit_kcl_flux@1
+
+N-ethylmaleimide-stimulated rabbit erythrocytes. The sulfate bath and anion-exchanger inhibition allowed comparison of K and Cl efflux. Fig. 5 and accompanying K:Cl outward-flux ratio results. [Jennings and Adame (2001), Fig. 5](https://doi.org/10.1152/ajpcell.2001.281.3.C825)
+
+- **Evidence role** descriptive
+
+Mean ± SD over five experiments. The two ionic fluxes define a stoichiometric ratio away from the null.
+
+The independently measured outward K:Cl flux ratio of 1.12 ± 0.26 is compatible with 1:1 coupling in this preparation. Its zero-flux concentration product was not measured. [Dataset manifest](../checks/data/paired_wet_lab_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
 
 ### lauf1996_sheep_kcc_reversal@1
 
@@ -100,5 +135,15 @@ Low-potassium sheep red cells with pH and volume clamped. The assay compared out
 Eight points contributed to the normal-magnesium fit and ten to the low-magnesium fit. The paper gives correlations of 0.912 and 0.976. It gives no uncertainty for either slope.
 
 The ideal product rule predicts a slope of 1. The measured slopes were 1.12 at normal magnesium and 1.08 at low magnesium. Rubidium substitutes for external potassium. The volume dependence of net flux remains open. [Dataset manifest](../checks/data/lauf1996_kcc_reversal.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--potassium-and-anion-cotransport)
+
+### brugnara1989_human_kcl
+
+Volume-sensitive transport in human red cells. Permeant substitute anions stabilized membrane potential while anion exchange was inhibited. Net K flux under opposed gradients, pp. C994–C1003. [Brugnara, Van Ha and Tosteson (1989)](https://doi.org/10.1152/ajpcell.1989.256.5.C994)
+
+- **Evidence role** descriptive
+
+The direction is reported directly. A matched sweep of internal and external activities through a measured zero is unavailable here.
+
+An outward chloride gradient drove net K efflux against the K gradient. This constrains the direction under combined ion gradients. [Dataset manifest](../checks/data/paired_preparation_controls.json) · [Comparison verdict](../PROGRESS.md#preparation-evidence-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

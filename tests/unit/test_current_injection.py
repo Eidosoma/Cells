@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of electrode_current_injection@1 (docs/PUMP_COMPOSITE_V2_DESIGN.md §4).
+"""Tier-1 smoke test of cells.operator.electrode_current_injection@1 (docs/PUMP_COMPOSITE_V2_DESIGN.md §4).
 
 The operator's half-step on a bound @3 heredity cell, in NumPy (no compile): both polarities
 booked at f I h / (z F), the host ledgers closing after injection, the start state selected
@@ -119,7 +119,7 @@ def test_the_rm1_judged_run_needs_a_registered_protocol_and_a_clean_snapshot(tmp
 
 # ---------------------------------------------------------------- at a capacitance view (S3)
 
-LAW = "electrode_current_injection@1"
+LAW = "cells.operator.electrode_current_injection@1"
 LIMITS = dict(charge=1e-24, electrode=1e-24, global_charge=1e-24)
 
 

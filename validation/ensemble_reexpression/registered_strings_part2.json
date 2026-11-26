@@ -1,0 +1,3713 @@
+{
+ "kind": "ensemble-reexpression registered strings, version 1",
+ "revision": "7bfa656aff2d7f5e3a1b7faa6b4590220c346d3a",
+ "rehearsal_revision": null,
+ "labels": {
+  "inner_model": "resolved_pump_tissue@3",
+  "imex": "imex_ars222_face_electromigration@1",
+  "field_solver_floor": "capacitive_reduction_gauged_damped_newton@3",
+  "closure": "resolved_capacitor_components_current_continuity@1",
+  "constant_field": "constant_field@1",
+  "kv15_mh": "kv1p5_mh@1",
+  "nak_pump_positive": "nak_atp_mass_action_positive@1",
+  "maintained_fuel": "maintained_chemical_reservoirs@1",
+  "junction_relaxation": "junction_voltage_relaxation@1",
+  "logmean_face": "logmean_electrodiffusion@1",
+  "pool_model": "finite_bond_assembly@1",
+  "pool_topology": "dodecahedron_g10_2@1",
+  "assembly_observable": "root_component_has_cycle@1",
+  "composite_model": "resolved_pump_composite@1",
+  "passive_routes_kind": "cells.passive_routes@1",
+  "transporter_kind": "cells.transporter@1",
+  "species_condition_kind": "cells.species_condition@1",
+  "compartment_law": "cell_owned_compartments@1",
+  "local_reactions": "local_species_reactions@1",
+  "mass_action_passive": "ideal_detailed_balance_mass_action@1",
+  "calcium_pump_positive": "cells.atp_driven_transporter_mass_action_positive@2",
+  "exchanger_3na_1ca": "cells.sodium_calcium_exchange_symmetric_barrier@1",
+  "cav12_m2h": "cav1p2_m2h@1",
+  "hill_product_factor": "cells.hill_product_factor@1",
+  "passive_constant_field": "passive_constant_field_permeation@1"
+ },
+ "runs": {
+  "spatial_calcium h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "spatial_calcium h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "spatial_calcium h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "plasma_calcium h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "plasma_calcium h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "plasma_calcium h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "gated_calcium h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "gated_calcium h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "gated_calcium h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "ip3_calcium h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "ip3_calcium h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "ip3_calcium h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "cluster_spatial_calcium s0 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s0 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s0 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s0 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s0 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s0 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s0 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s1 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s1 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s1 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s1 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s1 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s1 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s1 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s2 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s2 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s2 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s2 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s2 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s2 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s2 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s3 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s3 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s3 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s3 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s3 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s3 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_spatial_calcium s3 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s0 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s0 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s0 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s0 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s0 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s0 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s0 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s1 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s1 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s1 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s1 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s1 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s1 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s1 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s2 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s2 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s2 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s2 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s2 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s2 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s2 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s3 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s3 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s3 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s3 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s3 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s3 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_plasma_calcium s3 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s0 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s0 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s0 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s0 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s0 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s0 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s0 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s1 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s1 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s1 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s1 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s1 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s1 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s1 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s2 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s2 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s2 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s2 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s2 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s2 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s2 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s3 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s3 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s3 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s3 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s3 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s3 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_gated_calcium s3 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s0 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s0 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s0 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s0 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s0 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s0 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s0 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s1 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s1 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s1 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s1 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s1 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s1 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s1 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s2 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s2 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s2 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s2 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s2 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s2 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s2 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s3 pool": {
+   "model": "pool_model",
+   "solver": null,
+   "field_solver": null,
+   "operators": [],
+   "kinds": [],
+   "laws": [],
+   "pool": [
+    "pool_model",
+    "pool_topology"
+   ],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s3 w0 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s3 w0 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s3 w0 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s3 w1 h=1.25e-05": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s3 w1 h=6.25e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "cluster_ip3_calcium s3 w1 h=3.125e-06": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  },
+  "ip3_calcium h=1.25e-05 restart": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "ip3_calcium plant release": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": null
+  },
+  "cluster_gated_calcium plant swapped": {
+   "model": "composite_model",
+   "solver": "imex",
+   "field_solver": "field_solver_floor",
+   "operators": [
+    "compartment_law",
+    "local_reactions"
+   ],
+   "kinds": [
+    "passive_routes_kind",
+    "species_condition_kind",
+    "transporter_kind"
+   ],
+   "laws": [
+    "calcium_pump_positive",
+    "cav12_m2h",
+    "closure",
+    "constant_field",
+    "exchanger_3na_1ca",
+    "hill_product_factor",
+    "inner_model",
+    "junction_relaxation",
+    "kv15_mh",
+    "logmean_face",
+    "maintained_fuel",
+    "mass_action_passive",
+    "nak_pump_positive",
+    "passive_constant_field"
+   ],
+   "pool": [],
+   "observable": "assembly_observable"
+  }
+ }
+}

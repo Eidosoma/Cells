@@ -1,5 +1,10 @@
 # Prepare passive tissue from native geometry
 
+> **Legacy cleanup (25 November 2026, D386).** The commands below (`tissue-geometry`,
+> `tissue-profiles`) and the families they prepared left the engine, except `resolved_tissue@1`
+> itself. Nothing replaces the preparation in BETSE's mesh order. The tag `pre-cleanup-2026-11-25`
+> keeps the code.
+
 Use a complete initial geometry recipe to create an ordinary `resolved_tissue@1`
 definition. These commands prepare and verify files; they do not run a trajectory.
 Run them from the repository with its installed Cells environment, or set

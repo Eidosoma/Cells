@@ -6,7 +6,7 @@ definition, its serialization and its run keep today's energy check. Present, ce
 scalar runner and its windows check the energy ledger by step doubling instead
 (cells.execution.energy_check). Every field is required:
 
-  check                    "step_doubled_energy@1"
+  check                    "cells.execution.step_doubled_energy@1"
   integration_error_cap    the registration's own cap on the integration error relative to the
                            flows, checked at every row (sum |a| <= cap x F + floor); finite and
                            positive, with no default
@@ -24,7 +24,7 @@ from dataclasses import dataclass, replace
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.numerics.surface_imex import ARS222_ID, IMPLICIT_CONDUCTANCE_IDS
 
-CHECK_ID = "step_doubled_energy@1"
+CHECK_ID = "cells.execution.step_doubled_energy@1"
 # The schemes X2 admits: ARS(2,2,2), and N2's IDs on its tableau (D235), whose admission rests on
 # RUNG1's I3, X2's qualification rows run under the ID.
 SCHEMES = (ARS222_ID, *IMPLICIT_CONDUCTANCE_IDS)

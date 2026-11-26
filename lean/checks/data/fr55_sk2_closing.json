@@ -1,0 +1,24 @@
+{
+  "doi": "10.1074/jbc.M010001200",
+  "locator": "Figure 2A top and bottom, and Results pp. 9764–9765",
+  "preparation": "Recombinant rat SK2 in inside-out oocyte patches. The untreated gray traces were used. Pairing of individual patches between panels was unspecified.",
+  "final_bath": "Both pulses ended in the EGTA-buffered solution without added calcium. Residual free calcium during washout was unmeasured.",
+  "reading": "In each untreated trace, measured time from the end of the calcium bar to baseline plus 1/e of the pre-wash excursion. The time bar is 200 ms.",
+  "low_pulse_graph_read": {
+    "pulse_calcium_uM": 0.5,
+    "decay_ms_approx": 40
+  },
+  "high_pulse_graph_read": {
+    "pulse_calcium_uM": 10,
+    "decay_ms_approx": 32
+  },
+  "reading_precision_ms_approx": 5,
+  "precision_scope": "Graph-reading allowance only. No absolute low-pulse group mean or uncertainty was reported.",
+  "reported_control": {
+    "pulse_calcium_uM": 10,
+    "tau_off_ms": 39.4,
+    "sd_ms": 4.1,
+    "experiments": 7
+  },
+  "archived_publication": "https://web.archive.org/web/20180724072427id_/http://www.jbc.org/content/276/13/9762.full.pdf#page=3"
+}

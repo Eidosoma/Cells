@@ -4,7 +4,7 @@ docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §6, §7, §11.2-§11.4 and Appendix A
 is held at c0 by a bath; shells R + i dr to R + (i + 1) dr are finite outside nodes with their exact
 volumes; an outer bath at the trace holds the far boundary. The species diffuses on the radial
 faces only (every ion diffusivity is 0, every patch impermeable: the species-only world), and is
-cleared at every shell by scheduled_species_turnover@1's node clearance k, so the acceptance runs
+cleared at every shell by cells.operator.scheduled_species_turnover@1's node clearance k, so the acceptance runs
 the operator, not @3 alone. A quiescent cell faces every shell through a capacitive patch, so every
 node lies in a capacitor component with a held bath.
 

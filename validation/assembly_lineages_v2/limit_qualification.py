@@ -1,4 +1,4 @@
-"""OL6 Protocol D: cells.rate_equations@1 against cells.assembly_lineages@2's exact events at large
+"""OL6 Protocol D: cells.assembly_representation.rate_equations@1 against cells.model.assembly_lineages@2's exact events at large
 counts (docs/OL6_PROTOCOL_D.md; D304), as registered worlds, rungs, seeds, observables, criteria and
 plants.
 
@@ -34,11 +34,11 @@ SEED_BASE = {"first": 1, "retry": 100001}  # seeds SEED_BASE + 0 .. M - 1, envir
 MIN_COUNT = 10.0  # the qualification runs' envelope (the note's §5.1), below every rung's counts
 ENVELOPE = {"min_count": MIN_COUNT, "provenance": "Protocol D's qualification runs"}
 INTEGRATORS = {
-    "density": {"id": "rosenbrock_rodas4_dense@1", "rtol": 1e-10, "atol_count": 1e-6,
+    "density": {"id": "cells.solver.rosenbrock_rodas4_dense@1", "rtol": 1e-10, "atol_count": 1e-6,
                 "step_limit": 1000000},
     # The clock's bound (the lead's ruling (a)): 1e-10 absolute per step on H's embedded estimate
     # needs rtol 1e-12 and atol_count 1e-9 in a σ-from-F world; D4-D6 take the same, as D7's twins.
-    "vesicle": {"id": "rosenbrock_rodas4_dense@1", "rtol": 1e-12, "atol_count": 1e-9,
+    "vesicle": {"id": "cells.solver.rosenbrock_rodas4_dense@1", "rtol": 1e-12, "atol_count": 1e-9,
                 "step_limit": 1000000},
 }  # fmt: skip
 EXACT = {"chunk_events": 4096, "event_limit": 2**31 - 1}
@@ -691,7 +691,9 @@ def d0_stationary():
 # -------------------------------------------------------------------------------- the plants
 
 PLANTS = ("P-D1", "P-D2", "P-D3", "P-D4", "P-D5", "P-D6", "P-D7")
-PLANTED_LAW = "validation.ol6_plant_power_off_by_one@1"  # P-D2's law, in a scoped registry only
+PLANTED_LAW = (
+    "validation.reaction.ol6_plant_power_off_by_one@1"  # P-D2's law, in a scoped registry only
+)
 
 
 def plant_definition(plant, name, rung, seed):
@@ -882,12 +884,13 @@ def header():
     return {
         "kind": "cells.ol6.protocol_d@1",
         "status": "proposed for registration: tag ol6-protocol-d-registered-2026-11-23, before any "
-        "comparison of cells.rate_equations@1 with exact events; D7 held for the lead's choice "
+        "comparison of cells.assembly_representation.rate_equations@1 with exact events; D7 held "
+        "for the lead's choice "
         "(the protocol's §7), by an amendment tagged before it runs",
         "document": "docs/OL6_PROTOCOL_D.md",
         "engine_models": {
             "representation": [RATE_EQUATIONS, "cells.assembly_representation@1",
-                               "rosenbrock_rodas4_dense@1"],
+                               "cells.solver.rosenbrock_rodas4_dense@1"],
             "exact": [MODEL_ID],
             "worlds": {"D0": chem, "D1": chem, "D2": chem + [TRANSITION_STATE],
                        "D3": chem + [REGULAR_MIXING], "D4": ves + [MEMBRANE_PERMEATION],
@@ -898,7 +901,8 @@ def header():
         "stationary mean against the rate-equation fixed point, closed form, 2.0% at T = 12) were "
         "read; the parity item of the limit's check (the builders' tests) compares each limit with "
         "its exact kernel at scaled states; S3's clock table (STATE.md); the author ran "
-        "cells.rate_equations@1 alone at snapshot 8df9b012 to size every world (seed 1; D7 also "
+        "cells.assembly_representation.rate_equations@1 alone at snapshot 8df9b012 to size every "
+        "world (seed 1; D7 also "
         "seeds 1-12) and to compute the plants' effects; no exact-event run of any registered "
         "world was made, and exact definitions were parsed only",
     }

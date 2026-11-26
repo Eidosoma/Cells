@@ -1,0 +1,27 @@
+{
+  "citation": "Jovanovic et al. (2015), Science 347, 1259038, Figure 1 and GEO series GSE59792",
+  "doi": "10.1126/science.1259038",
+  "series": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE59792",
+  "matrix": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE59nnn/GSE59792/matrix/GSE59792_series_matrix.txt.gz",
+  "gene": "Actn1",
+  "preparation": "Mock-treated mouse bone marrow-derived dendritic cells",
+  "time_hours": 5,
+  "unit": "Relative iBAQ signal, scaled to a proteome-wide medium plus heavy total of one million per sample",
+  "observable": "Heavy signal divided by the paired heavy and medium sum within each replicate. The light spike supplies the shared reference. Recycling can place medium amino acids in newly produced protein.",
+  "replicates": [
+    {
+      "replicate": 1,
+      "medium_sample": "GSM1446467",
+      "medium": 123.2715261,
+      "heavy_sample": "GSM1446509",
+      "heavy": 25.59001184
+    },
+    {
+      "replicate": 2,
+      "medium_sample": "GSM1446488",
+      "medium": 119.2445764,
+      "heavy_sample": "GSM1446530",
+      "heavy": 13.4106089
+    }
+  ]
+}

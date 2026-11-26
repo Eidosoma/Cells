@@ -3,18 +3,18 @@
 docs/CELL_DIVISION_S3_PLAN.md §1. The engine egg is R-full's own egg:
 cleft_egg_reference.build(declared inputs, default values, the record's p_old_m_s and
 a_over_l_m) from validation/division/j1_declared_inputs.json and j1_prediction_of_record.json,
-written as a resolved_pump_composite@1 definition the way validation/tissue/injection_rm1.py
+written as a cells.model.resolved_pump_composite@1 definition the way validation/tissue/injection_rm1.py
 writes the uncleaved egg. Engine models:
-* resolved_pump_composite@1 over resolved_pump_tissue@3: the cytosol (egg), the held Steinberg
+* cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3: the cytosol (egg), the held Steinberg
   bath, the old membrane facing the bath, the new membrane facing the cleft (declared at its
   activation area A_on), the cleft node (declared at its onset volume w A_on / 2 and at bath
-  composition, uncharged) and its access face to the bath (logmean_electrodiffusion@1 with
+  composition, uncharged) and its access face to the bath (cells.route.logmean_electrodiffusion@1 with
   A/L x D_s; the face length is 1 m, so area / length is A/L exactly);
-* membrane_entity_state@1 (no channel populations: both membranes are passive);
-* scheduled_membrane_insertion@1: the new membrane opens at the onset with A_on and grows at
+* cells.operator.membrane_entity_state@1 (no channel populations: both membranes are passive);
+* cells.operator.scheduled_membrane_insertion@1: the new membrane opens at the onset with A_on and grows at
   R-full's rate r = (A_J1 - A_on) / (t_J1 - onset), continuing to the horizon;
-* restricted_cleft_lumen@1: the cleft's volume w A / 2, filled with bath fluid as it grows;
-* electrode_current_injection@1: dLB74's pulse train throughout, carried by K and Cl in J1's
+* cells.operator.restricted_cleft_lumen@1: the cleft's volume w A / 2, filled with bath fluid as it grows;
+* cells.operator.electrode_current_injection@1: dLB74's pulse train throughout, carried by K and Cl in J1's
   registered fractions (rm_definition), the same field R-full's Pulses read.
 Event times (onset, pulse edges) and observation times are k dt; at the steps of the study they
 are R-full's times to one ulp (compare reports it). Observations: every pulse's front edge and
@@ -59,19 +59,19 @@ if __name__ == "__main__":
         if str(entry) not in sys.path:
             sys.path.insert(0, str(entry))
 
-STATUS = "Development definition of S3's cleft egg (restricted_cleft_lumen@1); not judged."
+STATUS = "Development definition of S3's cleft egg (cells.operator.restricted_cleft_lumen@1); not judged."
 RECORD = ROOT / "validation/division/j1_prediction_of_record.json"
 JUDGED_DT = 2.5e-4  # The lead's choice (plan §6).
 STUDY_DTS = (5e-4, 2.5e-4, 1.25e-4)
 FACE_LENGTH_M = 1.0  # Only area / length enters the face law: area_m2 is A/L itself.
 BATH_PL = 1.0  # The held bath's nominal volume (only its composition enters).
-SOLVER = "imex_ars222_face_electromigration@1"
-FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
+SOLVER = "cells.solver.imex_ars222_face_electromigration@1"
+FIELD_SOLVER = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
 LAWS = dict(
-    state="membrane_entity_state@1",
-    insertion="scheduled_membrane_insertion@1",
-    lumen="restricted_cleft_lumen@1",
-    injection="electrode_current_injection@1",
+    state="cells.operator.membrane_entity_state@1",
+    insertion="cells.operator.scheduled_membrane_insertion@1",
+    lumen="cells.operator.restricted_cleft_lumen@1",
+    injection="cells.operator.electrode_current_injection@1",
 )
 
 
@@ -100,7 +100,7 @@ def pulses(egg, end):
 
 
 def definition(dt=JUDGED_DT, *, end=None):
-    """The engine egg (R-full's) as a resolved_pump_composite@1 definition (raw)."""
+    """The engine egg (R-full's) as a cells.model.resolved_pump_composite@1 definition (raw)."""
     from cells.definitions import pump_composite_spec as cs
     from cells.laws.electrochemistry import CHARGE_PER_FMOL
     from validation.division import cleft_egg_reference as ref
@@ -130,7 +130,7 @@ def definition(dt=JUDGED_DT, *, end=None):
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=egg.temperature_K,
             species=[dict(id=s, valence=z[s]) for s in ids],
             cells=[
@@ -173,7 +173,7 @@ def definition(dt=JUDGED_DT, *, end=None):
                     permeability_m_per_s={
                         s: egg.p_old * w for s, w in zip(ids, egg.old_relative, strict=True)
                     },
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=None,
                     calcium_pump=None,
                 ),
@@ -184,7 +184,7 @@ def definition(dt=JUDGED_DT, *, end=None):
                     area_m2=area_on,
                     capacitance_F=egg.new_specific_capacitance_F_m2 * area_on,
                     permeability_m_per_s=dict(zip(ids, egg.new_permeability, strict=True)),
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=None,
                     calcium_pump=None,
                 ),
@@ -198,11 +198,12 @@ def definition(dt=JUDGED_DT, *, end=None):
                     area_m2=egg.a_over_l_m * FACE_LENGTH_M,
                     length_m=FACE_LENGTH_M,
                     diffusivity_m2_per_s=dict(zip(ids, egg.access_D, strict=True)),
-                    law="logmean_electrodiffusion@1",
+                    law="cells.route.logmean_electrodiffusion@1",
                 )
             ],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=[],
         ),
@@ -368,7 +369,10 @@ def compare(raw):
             [face["diffusivity_m2_per_s"][s] * face["area_m2"] / face["length_m"] for s in ids],
             [egg.a_over_l_m * D for D in egg.access_D],
         ),
-        access_law=(face["law"], {"logmean": "logmean_electrodiffusion@1"}[egg.access_law]),
+        access_law=(
+            face["law"],
+            {"logmean": "cells.route.logmean_electrodiffusion@1"}[egg.access_law],
+        ),
         gap_width_m=(lumen_entry["gap_width_m"], egg.gap_width_m),
         lumen_onset_volume_m3=(cleft_volume * 1e-15, vc),
         onset_s=(onset, egg.onset_s),
@@ -407,7 +411,8 @@ DECLARED_DIFFERENCES = dict(
     ),
     lumen_energy=(
         "R-full books only the insertion heat; the engine also books the fill's supply work, the "
-        "fluid's volume work and the mixing heat (restricted_cleft_lumen@1), which change no state."
+        "fluid's volume work and the mixing heat (cells.operator.restricted_cleft_lumen@1), which "
+        "change no state."
     ),
     units=(
         "The engine holds volumes in pL and amounts in fmol (m^3 x 1e15); relative conversion "

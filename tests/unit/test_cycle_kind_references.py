@@ -50,20 +50,21 @@ from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
+from validation import id_table
 from validation.core_seams.references import api
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 EPS = np.finfo(float).eps
 FLOORS = 16  # Above the references' ten floors; their plants' margins lie far above it.
 HERE = Path(api.__file__).parent
-INPUTS = json.loads((HERE / "reference_inputs.json").read_text())
+INPUTS = id_table.load(HERE / "reference_inputs.json")
 VALUES = json.loads((HERE / "designs" / "core_seams_reference_values.json").read_text())
 A = INPUTS["seam_a"]
 REGISTRY = A["registry"]
 C0 = REGISTRY["standard_concentration_mM"]
 VERSION_1 = {  # Each factored law's role and its K's parameter name.
-    "cells.proton_atp_mass_action_positive@1": ("proton", "K_H_mM"),
-    "cells.atp_driven_transporter_mass_action_positive@1": ("role", "K_Y_mM"),
+    "cells.cycle.proton_atp_mass_action_positive@1": ("proton", "K_H_mM"),
+    "cells.cycle.atp_driven_transporter_mass_action_positive@1": ("role", "K_Y_mM"),
 }
 FUEL = ("ATP", "ADP", "Pi")
 SKIPPED = {"planted_negative_S_n1": "the lead's substitution (a planted evaluation)"}
@@ -72,7 +73,8 @@ OTHER_END = {"a": "b", "b": "a"}
 
 
 def engine_id(law):
-    return f"seamtest.ref_{re.sub(r'[^a-z0-9_]', '_', law['id'].lower())}@1"
+    name = "ref_" + re.sub(r"[^a-z0-9_]", "_", law["id"].lower())
+    return "seamtest.cycle.ref_law@1".replace("ref_law", name)
 
 
 def law_rows(law):

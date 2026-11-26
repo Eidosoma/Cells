@@ -1,0 +1,525 @@
+{
+ "world": {
+  "name": "W1D",
+  "type": "shell_washes",
+  "spec": "SPEC.md section 2, W1 with a lumen potential (W1 Delta)",
+  "V_out_L": "2e-18",
+  "V_in_L": "2.5e-19",
+  "A_sh_m2": "1.2e-15",
+  "P_s_m_per_s": "1.5e-7",
+  "tracer_potentials_kBT": {
+   "solution": "0.7",
+   "lumen": "0.7 + ln(2)"
+  },
+  "founder_molecules": {
+   "S@pool": 30000,
+   "S@lumen": 0,
+   "B@wall": 120
+  },
+  "stops": [
+   {
+    "time_s": "2.5",
+    "kind": "withdrawal",
+    "f": "1/2"
+   },
+   {
+    "time_s": "5.0",
+    "kind": "withdrawal",
+    "f": "1/4"
+   },
+   {
+    "time_s": "7.0",
+    "kind": "replacement"
+   },
+   {
+    "time_s": "9.0",
+    "kind": "withdrawal",
+    "f": "1/2"
+   }
+  ],
+  "observation_times_s": [
+   "1.25",
+   "2.0",
+   "3.5",
+   "4.5",
+   "6.0",
+   "6.5",
+   "8.0",
+   "10.5"
+  ],
+  "horizon_s": "11.0",
+  "plants": [
+   "P1",
+   "P7"
+  ],
+  "constants": {
+   "N_A_per_mol": "6.02214076e23",
+   "c0_mol_per_L": "1",
+   "temperature_K": "296.15",
+   "note": "the temperature enters nothing: every energy is in k_BT (SPEC.md section 0)"
+  }
+ },
+ "units": {
+  "counts": "molecules in one place: one species in one compartment (the pool, the lumen of one shell, or the shell's wall); never a concentration, an amount in moles or a count per shell (SPEC.md section 0)",
+  "pairs": "mean and value in molecules, var in molecules^2, mu4 in molecules^4",
+  "stops.removed": "mean and value in molecules, var in molecules^2, mu4 in molecules^4",
+  "stops.mixing_heat": "mean and value in k_BT, var in (k_BT)^2, mu4 in (k_BT)^4",
+  "stops.f": "the withdrawn fraction of the pool, dimensionless (1.0 at the replacement)",
+  "d.pairs.value": "molecules",
+  "d.stops.removed": "molecules",
+  "d.stops.mixing_heat": "k_BT",
+  "d.intervals.heat": "k_BT",
+  "gap.gap": "molecules",
+  "gap.resolution": "dimensionless: |gap| / (SD / sqrt(128)), SD in molecules",
+  "plants": "honest and planted in the unit of the named quantity (molecules for counts, removed and tracer_moiety; k_BT for mixing_heat and heat); distance_in_bounds dimensionless",
+  "times": "s",
+  "world": "as declared: volumes in L, area in m^2, permeability in m/s, times in s, rates per s per molecule or per copy, potentials and barrier shifts in k_BT"
+ },
+ "pairs": [
+  {
+   "observable": "S@pool",
+   "time_s": 1.25,
+   "class": "spread",
+   "mean": 28495.959967049643,
+   "var": 1428.6354855931147,
+   "mu4": 6124018.487703078
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 2.0,
+   "class": "spread",
+   "mean": 28318.037109211746,
+   "var": 1587.6629185886295,
+   "mu4": 7563104.157394071
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 3.5,
+   "class": "spread",
+   "mean": 14758.247846774993,
+   "var": 7498.051863213703,
+   "mu4": 168658599.12584195
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 4.5,
+   "class": "spread",
+   "mean": 14892.792116320601,
+   "var": 7499.616882322566,
+   "mu4": 168729010.91105893
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 6.0,
+   "class": "spread",
+   "mean": 11369.879271002757,
+   "var": 7060.740783096818,
+   "mu4": 149559271.14696187
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 6.5,
+   "class": "spread",
+   "mean": 11397.27236451098,
+   "var": 7067.34511948279,
+   "mu4": 149839178.98534355
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 8.0,
+   "class": "spread",
+   "mean": 534.5354631737183,
+   "var": 525.0111911273735,
+   "mu4": 827380.1362679163
+  },
+  {
+   "observable": "S@pool",
+   "time_s": 10.5,
+   "class": "spread",
+   "mean": 371.1062699576366,
+   "var": 366.51560783757424,
+   "mu4": 403340.7212353194
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 1.25,
+   "class": "spread",
+   "mean": 1504.0400329503586,
+   "var": 1428.6354855931147,
+   "mu4": 6124018.487703078
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 2.0,
+   "class": "spread",
+   "mean": 1681.9628907882557,
+   "var": 1587.6629185886295,
+   "mu4": 7563104.157394071
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 3.5,
+   "class": "spread",
+   "mean": 1104.8535336387915,
+   "var": 1064.1634892789875,
+   "mu4": 3398169.4704461847
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 4.5,
+   "class": "spread",
+   "mean": 970.3092640931839,
+   "var": 938.925928493682,
+   "mu4": 2645508.3071418223
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 6.0,
+   "class": "spread",
+   "mean": 765.05360353822,
+   "var": 745.5433696619929,
+   "mu4": 1668139.1245273293
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 6.5,
+   "class": "spread",
+   "mean": 737.6605100299979,
+   "var": 719.5224090947407,
+   "mu4": 1553753.471478155
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 8.0,
+   "class": "spread",
+   "mean": 190.37811097255172,
+   "var": 189.16998346796916,
+   "mu4": 107537.8608627541
+  },
+  {
+   "observable": "S@lumen",
+   "time_s": 10.5,
+   "class": "spread",
+   "mean": 28.666575990578302,
+   "var": 28.639183571277513,
+   "mu4": 2489.083649892147
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 1.25,
+   "class": "constant",
+   "value": 120
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 2.0,
+   "class": "constant",
+   "value": 120
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 3.5,
+   "class": "constant",
+   "value": 120
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 4.5,
+   "class": "constant",
+   "value": 120
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 6.0,
+   "class": "constant",
+   "value": 120
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 6.5,
+   "class": "constant",
+   "value": 120
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 8.0,
+   "class": "constant",
+   "value": 120
+  },
+  {
+   "observable": "B@wall",
+   "time_s": 10.5,
+   "class": "constant",
+   "value": 120
+  }
+ ],
+ "stops": [
+  {
+   "time_s": 2.5,
+   "kind": "withdrawal",
+   "f": 0.5,
+   "removed": {
+    "class": "spread",
+    "mean": 14136.898619586214,
+    "var": 7475.168533570927,
+    "mu4": 167630733.3554793
+   },
+   "mixing_heat": {
+    "class": "spread",
+    "mean": 9798.951420027966,
+    "var": 3591.467251500654,
+    "mu4": 38695056.85966664
+   }
+  },
+  {
+   "time_s": 5.0,
+   "kind": "withdrawal",
+   "f": 0.25,
+   "removed": {
+    "class": "spread",
+    "mean": 3728.1685058728076,
+    "var": 3264.8604922667446,
+    "mu4": 31979075.099578228
+   },
+   "mixing_heat": {
+    "class": "spread",
+    "mean": 3217.5817266568465,
+    "var": 580.5461738170861,
+    "mu4": 1011082.2195962559
+   }
+  },
+  {
+   "time_s": 7.0,
+   "kind": "replacement",
+   "f": 1.0,
+   "removed": {
+    "class": "spread",
+    "mean": 11410.019300394708,
+    "var": 7070.40128588205,
+    "mu4": 149968795.31662485
+   },
+   "mixing_heat": null
+  },
+  {
+   "time_s": 9.0,
+   "kind": "withdrawal",
+   "f": 0.5,
+   "removed": {
+    "class": "spread",
+    "mean": 325.1407281980551,
+    "var": 321.6168450936164,
+    "mu4": 310613.11450999783
+   },
+   "mixing_heat": {
+    "class": "spread",
+    "mean": 225.37037903568944,
+    "var": 154.5217825520913,
+    "mu4": 71700.40890911393
+   }
+  }
+ ],
+ "d": {
+  "pairs": [
+   {
+    "observable": "S@pool",
+    "time_s": 1.25,
+    "value": 28495.959967049643
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 2.0,
+    "value": 28318.037109211746
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 3.5,
+    "value": 14758.247846774993
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 4.5,
+    "value": 14892.792116320601
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 6.0,
+    "value": 11369.879271002757
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 6.5,
+    "value": 11397.27236451098
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 8.0,
+    "value": 534.5354631737183
+   },
+   {
+    "observable": "S@pool",
+    "time_s": 10.5,
+    "value": 371.1062699576366
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 1.25,
+    "value": 1504.0400329503586
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 2.0,
+    "value": 1681.9628907882557
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 3.5,
+    "value": 1104.8535336387915
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 4.5,
+    "value": 970.3092640931839
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 6.0,
+    "value": 765.05360353822
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 6.5,
+    "value": 737.6605100299979
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 8.0,
+    "value": 190.37811097255172
+   },
+   {
+    "observable": "S@lumen",
+    "time_s": 10.5,
+    "value": 28.666575990578302
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 1.25,
+    "value": 120
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 2.0,
+    "value": 120
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 3.5,
+    "value": 120
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 4.5,
+    "value": 120
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 6.0,
+    "value": 120
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 6.5,
+    "value": 120
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 8.0,
+    "value": 120
+   },
+   {
+    "observable": "B@wall",
+    "time_s": 10.5,
+    "value": 120
+   }
+  ],
+  "stops": [
+   {
+    "time_s": 2.5,
+    "removed": 14136.898619586214,
+    "mixing_heat": 9798.951420027966
+   },
+   {
+    "time_s": 5.0,
+    "removed": 3728.1685058728076,
+    "mixing_heat": 3217.5817266568465
+   },
+   {
+    "time_s": 7.0,
+    "removed": 11410.019300394708,
+    "mixing_heat": null
+   },
+   {
+    "time_s": 9.0,
+    "removed": 325.1407281980551,
+    "mixing_heat": 225.37037903568944
+   }
+  ],
+  "intervals": [
+   {
+    "start_s": 0.0,
+    "end_s": 2.5,
+    "heat": 1818.2892864139621
+   },
+   {
+    "start_s": 2.5,
+    "end_s": 5.0,
+    "heat": 290.05795047659734
+   },
+   {
+    "start_s": 5.0,
+    "end_s": 7.0,
+    "heat": 37.85879574946102
+   },
+   {
+    "start_s": 7.0,
+    "end_s": 9.0,
+    "heat": 2043.2890045912563
+   },
+   {
+    "start_s": 9.0,
+    "end_s": 11.0,
+    "heat": 38.59086047168011
+   }
+  ]
+ },
+ "plants": [
+  {
+   "plant": "P1",
+   "criterion": "C1",
+   "observable": "S@lumen",
+   "time_s": 3.5,
+   "honest": 1104.8535336387915,
+   "planted": 2301.602916188865,
+   "distance_in_bounds": 71151.94925550433
+  },
+  {
+   "plant": "P7",
+   "criterion": "C2",
+   "observable": "S@lumen",
+   "time_s": 8.0,
+   "honest": 190.37811097255172,
+   "planted": 776.3550930487828,
+   "distance_in_bounds": 80.33562526307777
+  }
+ ],
+ "provenance": {
+  "references_revision": "266baec88333a8c9f157bf4de117da8be6caa32d",
+  "references_clean": true,
+  "writer_version": "fr47-references-writer 1",
+  "regeneration_hash_seeds": [
+   "random (unset)",
+   0,
+   1,
+   4242
+  ]
+ }
+}

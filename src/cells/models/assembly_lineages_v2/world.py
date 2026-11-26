@@ -11,12 +11,12 @@ that carries meaning is a list, so the canonical JSON that names a world fixes i
                 "membrane": {"species": ["A", "B"]},
                 "lumen": {"volume_L": V, "species": ["S"]}},
      "steps": [{"id", "reactants", "products", "phase" | "locus", "law", "forward_rate_per_s"}],
-     "free_energy": [{"law": "cells.ideal_mixing@1"}, {"law": "cells.regular_mixing@1", ...}],
-     "rate_factor": {"law": "cells.transition_state_factor@1", ...},        optional
+     "free_energy": [{"law": "cells.free_energy.ideal_mixing@1"}, {"law": "cells.free_energy.regular_mixing@1", ...}],
+     "rate_factor": {"law": "cells.rate_factor.transition_state_factor@1", ...},        optional
      "founder": {"A@membrane": 10, ...},                      every finite place, explicitly
      "world_role": "probe",                                    optional (§0.2b rule 8)
-     "sites": [{"site": "R", "complex": "XR"}, ...],           optional (FR-21; §0.2f)
-     "hazard": {"law": "cells.pore_nucleation@1", ...}}        optional (FR-31; pore_nucleation.py)
+     "sites": [{"site": "R", "complex": "XR"}, ...],           optional (FR-21; §0.2f; FR-46's face)
+     "hazard": {"law": "cells.assembly_hazard.pore_nucleation@1", ...}}        optional (FR-31; pore_nucleation.py)
 
 **Species** take D152's species form (SHARED_INVENTORY_REACTIONS_DESIGN §2.1): `moieties` (positive
 integer counts, or null: the species is its own moiety), the identity (`catalogue`, `evidence`,
@@ -26,6 +26,13 @@ as
 the solution potential. A species placed in a phase has that phase kind's potential. The world's
 table is the one authority for standard potentials until the registry has them per phase (R7): no
 step carries a ΔG° of its own.
+
+**A lumen potential** (FR-48; D323): `"lumen": μ°/RT at c0 in the lumen`, an absolute value beside
+the solution one, which it replaces at the species' lumen place alone. Undeclared, the lumen takes
+the solution potential, as before. Δ = μ°_lumen − μ°_solution is then a reversible free-energy
+difference across the shell, read by every step through the place's μ°; the shell law keeps all of
+it on the exit (shell_permeation.py). Version 1 admits it in a prescribed shell only, on a species
+with a lumen place and a solution potential (spec._lumen_potential_refusals).
 
 **Phases.** The membrane (condensed) is required; the pool and the lumen (dilute, each with its
 volume_L) are optional. A pool species is `finite` (a count in the state) or `held` (a concentration
@@ -43,8 +50,13 @@ phase has that phase. Held places take part only as pool places.
 **Sites** (FR-21; §0.2f, the lead's rulings of 20 November 2026, D244 and D246). A pair declares a
 membrane species as a binding site and another as its complex, the site with one bound molecule.
 In a world with a geometry, rule 3 admits one interfacial step for a declared pair, exactly
-X@pool + site@membrane -> complex@membrane under cells.stochastic_mass_action@1 with count_on_m
+X@pool + site@membrane -> complex@membrane under cells.reaction.stochastic_mass_action@1 with count_on_m
 (spec._geometry_refusals); an undeclared pair stays refused. On a bilayer both take area.
+
+**A pair's face** (FR-46; D323): `"face": "outer"` (the default, never written) or `"inner"`. An
+inner pair binds from the lumen, X@lumen + site@membrane -> complex@membrane, in a prescribed shell
+only (version 1). One face per complex: the faces propagate by ligand moiety over every wall state,
+and a wall that joins the two faces is a carrier, refused by name (spec._face_rule).
 """
 
 import math
@@ -106,8 +118,11 @@ class Species:
     mu_bilayer: float | None  # μ°/RT at mole fraction 1 in the membrane.
     catalogue: tuple | None
     evidence: str | None
+    mu_lumen: float | None = None  # FR-48: μ°/RT at c0 in the lumen, or None: the solution's.
 
     def mu(self, phase):
+        if phase == LUMEN and self.mu_lumen is not None:
+            return self.mu_lumen
         return self.mu_bilayer if KIND_OF[phase] == "bilayer" else self.mu_solution
 
     def moiety_counts(self):
@@ -158,7 +173,13 @@ class World:
     division: dict | None = None  # OL3: the shear fission's declaration (division.py), or None.
     population: dict | None = None  # OL2 milestone 3: the shared pool's slots and founders.
     sites: tuple | None = None  # FR-21: declared ((site, complex), ...) pairs, or None.
+    # FR-46: the declared pairs whose face is the lumen's, ((site, complex), ...), or None (every
+    # declared pair binds from the pool, as FR-21's do).
+    inner_sites: tuple | None = None
     hazard: tuple | None = None  # FR-31: a vesicle hazard, (law ID, parsed data), or None.
+    # OL6 S7: cells.operator.size_threshold_division@1's declaration (size_division.py), or None. It is
+    # declared in the world's division block, by law, and kept apart from `division` (shear's).
+    size_division: dict | None = None
 
     @property
     def place_names(self):
@@ -219,19 +240,21 @@ def _moieties(raw, name):
 
 
 def _potentials(raw, name):
-    """(solution, bilayer): D152's single number is the solution potential."""
+    """(solution, bilayer, lumen): D152's single number is the solution potential; `lumen` is
+    FR-48's, absolute, None when undeclared."""
     if isinstance(raw, dict):
-        if not raw or set(raw) - {"solution", "bilayer"}:
+        if not raw or set(raw) - {"solution", "bilayer", "lumen"}:
             raise ConfigError(
                 f"world: species {name}'s standard_mu_RT is a number (solution) or an object of "
-                "solution and bilayer potentials"
+                "solution, bilayer and lumen potentials"
             )
-        solution, bilayer = raw.get("solution"), raw.get("bilayer")
+        solution, bilayer, lumen = raw.get("solution"), raw.get("bilayer"), raw.get("lumen")
         return (
             None if solution is None else _signed(solution, f"species {name}: solution μ°/RT"),
             None if bilayer is None else _signed(bilayer, f"species {name}: bilayer μ°/RT"),
+            None if lumen is None else _signed(lumen, f"species {name}: lumen μ°/RT"),
         )
-    return _signed(raw, f"species {name}'s standard_mu_RT"), None
+    return _signed(raw, f"species {name}'s standard_mu_RT"), None, None
 
 
 def parse_species(raw):
@@ -248,7 +271,7 @@ def parse_species(raw):
         identity = species_registry.parse_identity(
             entry["catalogue"], entry["evidence"], f"world: species {name}"
         )
-        solution, bilayer = _potentials(entry["standard_mu_RT"], name)
+        solution, bilayer, lumen = _potentials(entry["standard_mu_RT"], name)
         out.append(
             Species(
                 name,
@@ -257,6 +280,7 @@ def parse_species(raw):
                 bilayer,
                 identity.catalogue,
                 identity.evidence,
+                mu_lumen=lumen,
             )
         )
     if len({s.id for s in out}) != len(out):
@@ -491,15 +515,24 @@ def _rate_key(raw, laws, encounter):
     return key[encounter]
 
 
+FACES = ("outer", "inner")  # FR-46: the pool's face and the lumen's
+
+
 def parse_sites(raw, places):
-    """FR-21's declared pairs, [{"site", "complex"}, ...] -> ((site, complex), ...): both membrane
-    species, distinct, each complex the complex of one site (§0.2f)."""
+    """FR-21's declared pairs, [{"site", "complex"}, ...] -> (((site, complex), ...), inner): both
+    membrane species, distinct, each complex the complex of one site (§0.2f). FR-46: a pair may
+    declare its face, outer (the default) or inner; `inner` is the inner pairs, or None."""
     if type(raw) is not list or not raw:
         raise ConfigError("world: sites is a non-empty list of {site, complex} pairs")
     membrane = {p.species for p in places if p.phase == MEMBRANE}
-    out, complexes = [], set()
+    out, complexes, inner = [], set(), []
     for entry in raw:
-        require_fields(entry, {"site", "complex"}, "world: sites: a pair")
+        keys = {"site", "complex"} | ({"face"} if isinstance(entry, dict) and "face" in entry
+                                      else set())  # fmt: skip
+        require_fields(entry, keys, "world: sites: a pair")
+        face = entry.get("face", "outer")
+        if face not in FACES:
+            raise ConfigError(f"world: sites: a pair's face is outer or inner, not {face!r}")
         site, complex_ = identifier(entry["site"]), identifier(entry["complex"])
         for role, name in (("site", site), ("complex", complex_)):
             if name not in membrane:
@@ -512,11 +545,17 @@ def parse_sites(raw, places):
             )
         complexes.add(complex_)
         out.append((site, complex_))
-    return tuple(out)
+        if face == "inner":
+            inner.append((site, complex_))
+    return tuple(out), (tuple(inner) or None)
 
 
-def sites_to_dict(sites):
-    return [{"site": site, "complex": complex_} for site, complex_ in sites]
+def sites_to_dict(sites, inner=None):
+    """The sites block; FR-46's face is written only for an inner pair (D148)."""
+    inner = set(inner or ())
+    return [{"site": site, "complex": complex_, **({"face": "inner"} if (site, complex_) in inner
+                                                    else {})}
+            for site, complex_ in sites]  # fmt: skip
 
 
 def parse_founder(raw, places):
@@ -569,6 +608,8 @@ def species_to_dict(species):
             potentials["solution"] = s.mu_solution
         if s.mu_bilayer is not None:
             potentials["bilayer"] = s.mu_bilayer
+        if s.mu_lumen is not None:  # FR-48: written only when declared (D148)
+            potentials["lumen"] = s.mu_lumen
         out.append(
             {
                 "id": s.id,

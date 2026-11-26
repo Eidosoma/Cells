@@ -9,7 +9,7 @@ tests/unit/test_model_table.py holds the table to the code: every module under `
 registers a piece is one of its homes, and its keys are the models that core/specs.parse_spec
 dispatches itself.
 
-**Its rows**, keyed by the model's ID as definitions write it (a bare ID is in `cells`, D185):
+**Its rows**, keyed by the model's ID as definitions write it (`cells.model.name@major`, D345):
 - `type`: "inner" (the inner model, which hosts its own laws and its kinds), "composite" (an inner
   model and any ordered list of operators), "composition" (the composite with a fixed operator
   list, as core/pump_composite_spec.frozen_definition rewrites it) or "family" (a model family of
@@ -59,7 +59,7 @@ class Model(NamedTuple):
 
 MODELS = MappingProxyType(
     {
-        "resolved_pump_tissue@3": Model(
+        "cells.model.resolved_pump_tissue@3": Model(
             type="inner",
             module="cells.definitions.surface_pump_v3_spec",
             # Its own laws, each an inert law module (CORE_SEAMS §8.2), its passive kind's two,
@@ -79,6 +79,8 @@ MODELS = MappingProxyType(
                 "cells.laws.channels.kv1p6_mh",
                 # The always-open Cl⁻ leak, code 10 (D228 item 3, the H1 seam's Cl⁻ part).
                 "cells.laws.channels.clleak_always_open",
+                "cells.laws.channels.cav1p2_m2h",  # The CaV1.2-type calcium channel, code 11.
+                "cells.laws.channels.open_channel_block",  # FR-51's block (D371).
                 "cells.laws.junctions.junction_voltage_relaxation",
                 # FR-30, development only (D262; the @3 owner's recorded exception, F's file).
                 "cells.laws.junctions.junction_series_gates",
@@ -97,6 +99,7 @@ MODELS = MappingProxyType(
                 # The transporter's two laws' modules: their declarations move in as inert LAWs
                 # (the kinds owner's, CORE_SEAMS §18); until then they register nothing here.
                 "cells.laws.pumps.atp_transporter",
+                "cells.laws.pumps.atp_transporter_v2",  # One species of any valence, held fuel.
                 "cells.laws.pumps.proton_pump",
                 "cells.laws.cycles.na_anion_symport_factored",  # The kinds owner's (D228 item 1).
                 "cells.laws.cycles.na2_anion_symport_diagram",  # Its version 2, the same item.
@@ -111,36 +114,58 @@ MODELS = MappingProxyType(
                 "cells.laws.cycles.potassium_proton_exchange",
                 "cells.laws.cycles.held_reductant_supply",
                 "cells.laws.cycles.adenylate_kinase",
-                # The general binding closure (rapid_binding@1), seam C's: the binding owner's
+                "cells.laws.cycles.sodium_calcium_exchange_symmetric_barrier",  # A synthetic form.
+                # Two manufactured forms of electroneutral symport (no outside source).
+                "cells.laws.cycles.na_k_2anion_symport_reversible_tanh",
+                "cells.laws.cycles.electroneutral_symport_reversible_tanh",
+                # The general binding closure (cells.binding.rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",
+                "cells.laws.reactions.hill_product_factor",  # G-5's factor.
                 "cells.kinds",
+                # G-7: what is read from a pool's assembly, whose levels set this model's channel
+                # controls. Its host, the pool's model, is dispatched elsewhere and has no row.
+                "cells.assembly_pool.observables",
+            ),
+            interfaces=(
+                "cells.channel_block_law@1",  # FR-51's block (D371).
+                "cells.assembly_observable@1",  # G-7.
+                "cells.transfer_factor_law@1",  # G-5's factor.
             ),
         ),
-        "resolved_pump_composite@1": Model(
+        "cells.model.resolved_pump_composite@1": Model(
             type="composite",
             module="cells.definitions.pump_composite_spec",
             operator_homes=("cells.operators",),
         ),
-        "resolved_pump_water@1": Model(
+        "cells.model.resolved_pump_water@1": Model(
             type="composition",
             module="cells.definitions.surface_pump_water_spec",
-            composition=("resolved_pump_tissue@3", ("ideal_osmosis_linear_compliance_water@1",)),
+            composition=(
+                "cells.model.resolved_pump_tissue@3",
+                ("cells.operator.ideal_osmosis_linear_compliance_water@1",),
+            ),
         ),
-        "resolved_pump_water@2": Model(
+        "cells.model.resolved_pump_water@2": Model(
             type="composition",
             module="cells.definitions.surface_pump_water_v2_spec",
             composition=(
-                "resolved_pump_tissue@3",
-                ("ideal_osmosis_linear_compliance_water@1", "k_anion_symport_mass_action@1"),
+                "cells.model.resolved_pump_tissue@3",
+                (
+                    "cells.operator.ideal_osmosis_linear_compliance_water@1",
+                    "cells.operator.k_anion_symport_mass_action@1",
+                ),
             ),
         ),
-        "resolved_pump_replacement@1": Model(
+        "cells.model.resolved_pump_replacement@1": Model(
             type="composition",
             module="cells.definitions.cell_replacement_spec",
-            composition=("resolved_pump_tissue@3", ("scheduled_cell_replacement@1",)),
+            composition=(
+                "cells.model.resolved_pump_tissue@3",
+                ("cells.operator.scheduled_cell_replacement@1",),
+            ),
         ),
-        "cells.assembly_lineages@1": Model(
+        "cells.model.assembly_lineages@1": Model(
             type="family",
             module="cells.models.assembly_lineages.spec",
             law_homes=(
@@ -158,7 +183,7 @@ MODELS = MappingProxyType(
             ),
             runner="cells.models.assembly_lineages.runner:run",
         ),
-        "cells.assembly_lineages@2": Model(
+        "cells.model.assembly_lineages@2": Model(
             type="family",
             module="cells.models.assembly_lineages_v2.spec",
             law_homes=(
@@ -183,6 +208,7 @@ MODELS = MappingProxyType(
                 "cells.models.assembly_lineages_v2.replacement",  # FR-20 (D240)
                 "cells.models.assembly_lineages_v2.withdrawal",  # FR-35 (D261)
                 "cells.models.assembly_lineages_v2.tension_hold",  # FR-31 (D287)
+                "cells.models.assembly_lineages_v2.size_division",  # OL6 S7 (D304)
             ),
             interfaces=(
                 "cells.reaction_law@1",
@@ -198,9 +224,24 @@ MODELS = MappingProxyType(
         ),
         # The older active families (D189): their laws are tables inside them, and they declare
         # no piece.
-        "apical_vertex_mechanics@1": Model(type="family", module="cells.definitions.apical_vertex_spec"),  # noqa: E501
-        "reaction_transport@1": Model(type="family", module="cells.definitions.specs"),
-        "resolved_pump_tissue@1": Model(type="family", module="cells.definitions.surface_pump_spec"),  # noqa: E501
-        "resolved_pump_tissue@2": Model(type="family", module="cells.definitions.surface_pump_v2_spec"),  # noqa: E501
+        "cells.model.apical_vertex_mechanics@1": Model(
+            type="family", module="cells.definitions.apical_vertex_spec"
+        ),  # noqa: E501
+        "cells.model.reaction_transport@1": Model(type="family", module="cells.definitions.specs"),
+        "cells.model.resolved_pump_tissue@1": Model(
+            type="family", module="cells.definitions.surface_pump_spec"
+        ),  # noqa: E501
+        "cells.model.resolved_pump_tissue@2": Model(
+            type="family", module="cells.definitions.surface_pump_v2_spec"
+        ),  # noqa: E501
+        "cells.model.resolved_tissue@1": Model(
+            type="family", module="cells.definitions.surface_tissue_spec"
+        ),
+        "cells.model.resolved_tissue@2": Model(
+            type="family", module="cells.definitions.surface_kinetic_spec"
+        ),
+        "cells.model.resolved_tissue@8": Model(
+            type="family", module="cells.definitions.surface_kinetic_spec"
+        ),
     }
 )

@@ -23,7 +23,7 @@ When the buffer supplies exactly the fraction f of the starting count at each pl
 - [CellsProofs.Chemistry.MatchedBuffer.per_molecule_bound](../CellsProofs/Chemistry/MatchedBuffer.lean#L168)
 - [CellsProofs.Chemistry.MatchedBuffer.per_molecule_limit](../CellsProofs/Chemistry/MatchedBuffer.lean#L176)
 
-Direct proof subject `cells.pool_withdrawal@1`
+Direct proof subject `cells.operator.pool_withdrawal@1`
 
 Proof sources [Mathlib adjacent binomial coefficient identity, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Choose/Basic.lean#L120-L126) · [Mathlib logarithm tangent bound, specialized to the uniform count distribution](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L288-L290) · [Mathlib sublinear growth of log, imported for the per-molecule limit](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L399-L402) · [Mathlib reciprocal limit for natural counts, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecificLimits/Basic.lean#L36-L40) · [Cells binomial energy and finite word calculation](../CellsProofs/Chemistry/PoolWithdrawalEnergy.lean#L102-L115) · [Matched-concentration design and finite-pool reference](../../docs/ASSEMBLY_WITHDRAWAL_DESIGN.md#L182-L191)
 

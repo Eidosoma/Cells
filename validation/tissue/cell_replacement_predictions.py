@@ -1,4 +1,4 @@
-"""Frozen predictions for protocol G2-Q1 (resolved_pump_replacement@1), from the references only.
+"""Frozen predictions for protocol G2-Q1 (cells.model.resolved_pump_replacement@1), from the references only.
 
 No engine run. The world definitions are built here and stored, whole, with their
 predictions, so the judged run uses exactly these definitions. The predictions come

@@ -2,7 +2,7 @@ import Mathlib.Data.Complex.Exponential
 
 /-! # Constant-field junction transport
 
-Cells' `constant_field@1` uses the Goldman–Hodgkin–Katz flux from sender to receiver.
+Cells' `cells.route.constant_field@1` uses the Goldman–Hodgkin–Katz flux from sender to receiver.
 Concentrations are in mM, voltage is sender potential minus receiver potential in V,
 and flux is in fmol/s. The same proofs apply to the analytic Bernoulli factor
 and the engine's near-zero series, both interpreted over the reals.

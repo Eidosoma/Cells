@@ -8,7 +8,13 @@ same without any pump, the gated sheet (junctions), the five-law padded release 
 pumps, ARS(2,2,2)) and the RK4 single patch (all five laws). Probe P2 showed the channel half on
 seven worlds; this is its guard in the engine, with the pumps and the junction law. The worlds
 are split over three test files (test_inner_dispatch_steps*.py) so each fits a tier's cap.
+
+Fix (A) (D273) is a static switch of the declared structure, set from the parsed topology where a
+junction joins two capacitor components and one floats; the catalogue (no structure) cannot take
+it. Such a world (CROSSING) is stepped with that switch off, after asserting that runs have it on.
 """
+
+import dataclasses
 
 import jax
 import jax.numpy as jnp
@@ -21,8 +27,9 @@ from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
-ARS = "imex_ars222_face_electromigration@1"
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
 STEPS = 12
+CROSSING = {"release": ("junction_0",)}  # Fix (A)'s worlds here; () for the others.
 
 
 def without_pumps(raw):
@@ -55,6 +62,10 @@ def check_world(name):
     spec = parse_spec(WORLDS[name]())
     impl = get_model(spec.model)
     state, p = impl.initial_values(spec)
+    assert impl.structure.crossing_junctions == CROSSING.get(name, ()), name
+    if impl.structure.crossing_junctions:  # Fix (A) off: the catalogue cannot take it.
+        off = dataclasses.replace(impl.structure, crossing_junctions=())
+        impl = surface_pump_v3.implementation(off)
     controls = control_values(spec, [0.0])
     control = type(controls)(*(np.asarray(v[0]) for v in controls))
     state, control, p = jax.tree.map(jnp.asarray, (state, control, p))

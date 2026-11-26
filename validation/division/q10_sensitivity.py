@@ -5,10 +5,10 @@ run. No tolerance is registered yet, so every change is reported raw, absolute a
 the nominal run, and nothing is called insensitive. Once tolerances are registered, a quantity
 whose change exceeds its tolerance takes t_p and a_0 into its band.
 
-Engine models: resolved_pump_composite@1 over resolved_pump_tissue@3, with
-membrane_entity_state@1, isopotential_partition@1 and cytoplasmic_bridge_closure@1 (linear
-closure over 1 ms); scheduled_membrane_insertion@2 and restricted_cleft_lumen@2 in the furrow
-world; electrode_current_injection@1 in the injected variants.
+Engine models: cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, with
+cells.operator.membrane_entity_state@1, cells.operator.isopotential_partition@1 and cells.operator.cytoplasmic_bridge_closure@1 (linear
+closure over 1 ms); cells.operator.scheduled_membrane_insertion@2 and cells.operator.restricted_cleft_lumen@2 in the furrow
+world; cells.operator.electrode_current_injection@1 in the injected variants.
 
 Worlds (tests/partition_fixtures; nominal values around the heredity cell, built from neither J1
 input, so the J2 bright line holds):
@@ -176,14 +176,14 @@ def main(output, dt=fx.DT):
         status=STATUS,
         dt_s=dt,
         engine_models=[
-            "resolved_pump_composite@1",
-            "resolved_pump_tissue@3",
-            "membrane_entity_state@1",
-            "isopotential_partition@1",
-            "cytoplasmic_bridge_closure@1",
-            "scheduled_membrane_insertion@2",
-            "restricted_cleft_lumen@2",
-            "electrode_current_injection@1",
+            "cells.model.resolved_pump_composite@1",
+            "cells.model.resolved_pump_tissue@3",
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.isopotential_partition@1",
+            "cells.operator.cytoplasmic_bridge_closure@1",
+            "cells.operator.scheduled_membrane_insertion@2",
+            "cells.operator.restricted_cleft_lumen@2",
+            "cells.operator.electrode_current_injection@1",
         ],
         ranges=dict(
             aperture_range_at_partition_time_s=APERTURE_TP,

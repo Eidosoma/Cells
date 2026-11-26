@@ -1,7 +1,7 @@
 """The Kv1 port pilot's five laws (D211, D213; seam F's step 2, docs/CORE_SEAMS_DESIGN.md §8.2 and
 §8.6 as amended, the lead's ruling (B) of 18 November 2026), each claim with a planted error it
-must catch (D187). Legacy-free: the reference checks of tests/unit/test_surface_calcium_kv1.py,
-moved beside the laws (D196's safeguard), which keeps its own family's tests.
+must catch (D187). Legacy-free: an older family's reference checks, moved beside the laws (D196's
+safeguard).
 
 - Each law's kernels match both references: BETSE v1.5.0's unchanged Kv1 classes, run out of
   process in their own environment (validation/betse/kv1_native.py) against the source the Kv1
@@ -19,12 +19,34 @@ moved beside the laws (D196's safeguard), which keeps its own family's tests.
   parser reads its channel table from the law registry (the Kv1 trigger): each the registry's
   own declaration from its module, under its code, while today's five keep their rows and stay
   the full catalogue's (planted: a registry without one of the five).
+
+And the calcium channel law beside them, cells.channel.cav1p2_m2h@1 (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md
+§5.2; code 11, Ca²⁺ at valence 2). The rows that plant another record of it (a valence, a term or an
+RK4 bound of their own) use a twin, its kernels under tests.channel.calcium_twin@1 (code 99).
+- It is declared and registered on @3, its Citation kept as its source and its material term named
+  for the kernel that the host runs (test_calcium_store.py), and a definition that names it is
+  admitted (planted, each refused: a material term that is not a name, and a second law at its
+  code).
+- Its kernels meet the independent 80-digit equations (validation/tissue/cav_reference.py) at 1,801
+  voltages, in NumPy and compiled (planted: the 10 mV shift dropped, m³ h for m² h).
+- The parser reads each ion's valence from its law, the one authority (planted, each refused by
+  name: a law that says Ca is +1, a model whose Ca is +1, and a model without Ca; a law and a model
+  that agree on +1 are admitted, so no table holds it).
+- A law with an ion outside Na, K and Cl and no material term is refused by name.
+- A calcium channel runs on no RK4 grid (planted: a twin that declares the 25 us bound, admitted).
+- Its flux, the charge it carries, its transfer and its heat at a state, inward and outward, are the
+  constant-field closed form's at valence 2, in 50-digit decimals from the SI constants (planted: a
+  law and a model at valence 1, which miss all four).
 """
 
+import dataclasses
+import functools
 import json
 import math
+import re
 import subprocess
 import types
+from decimal import Decimal, localcontext
 from pathlib import Path
 
 import jax
@@ -33,17 +55,31 @@ import numpy as np
 import pytest
 
 from cells.definitions import surface_pump_v3_spec as spec3
-from cells.laws.channels import kv1_channels, kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.runner import timeline
+from cells.laws.channels import (
+    cav1p2_m2h,
+    kv1_channels,
+    kv1p1_mh2,
+    kv1p2_mh,
+    kv1p3_mh,
+    kv1p4_mh,
+    kv1p6_mh,
+)
+from cells.laws.routes import constant_field_permeation
 from cells.registry import laws as law_registry
 from cells.registry.model_table import MODELS
-from validation.tissue import kv1_reference
+from cells.registry.models import get_model
+from validation.tissue import cav_reference, kv1_reference
+from validation.tissue import pump_water_fixtures as water_fixtures
+from validation.tissue import species_reactions_fixtures as rfx
 
 ROOT = Path(__file__).resolve().parents[2]
 BETSE_PYTHON = "/mnt/workspaces/Cells/venv-betse/bin/python"
 PROTOCOL = ROOT / "validation/tissue/surface_calcium_kv1_protocol.json"
 LAWS = {1: kv1p1_mh2, 2: kv1p2_mh, 3: kv1p3_mh, 4: kv1p4_mh, 6: kv1p6_mh}  # BETSE family -> law
 CODES = {kv1p1_mh2: 5, kv1p2_mh: 6, kv1p3_mh: 7, kv1p4_mh: 8, kv1p6_mh: 9}  # @3's channel codes
-HOST3 = "cells.resolved_pump_tissue@3"
+HOST3 = "cells.model.resolved_pump_tissue@3"
 TODAYS_CODES = {  # Today's five rows, codes 0-4, which the Kv1 laws leave as they were.
     spec3.KV1P5_LAW_ID: 0,
     spec3.KIR2P1_LAW_ID: 1,
@@ -62,20 +98,24 @@ def ulps(a, b):
     return int(np.max(np.abs(a.view(np.int64) - b.view(np.int64))))
 
 
-def reference_errors(law, family, voltage, opening=None):
+@functools.cache
+def reference_kinetics(reference, family, voltage):
+    """A Decimal reference's (targets, time constants) at one voltage, as floats."""
+    return tuple(tuple(map(float, part)) for part in reference.kinetics(voltage, family))
+
+
+def reference_errors(law, family, voltage, opening=None, reference=kv1_reference):
     """Where a law's kernels leave the Decimal reference (empty: they keep it)."""
     target, tau = law.kinetics(voltage, xp=np)
-    expected = [
-        np.asarray([[float(x) for x in kv1_reference.kinetics(v, family)[i]] for v in voltage]).T
-        for i in (0, 1)
-    ]
+    rows = [reference_kinetics(reference, family, v) for v in voltage]
+    expected = [np.asarray([row[i] for row in rows]).T for i in (0, 1)]
     out = []
     for name, actual, wanted in (("target", target, expected[0]), ("tau", tau, expected[1])):
         if not np.allclose(actual, wanted, rtol=RTOL, atol=ATOL):
             out.append(name)
     gates = np.stack((np.linspace(0.0, 1.0, 101), np.linspace(1.0, 0.0, 101)))
     opened = (opening or law.opening)(gates, xp=np)
-    wanted = [float(kv1_reference.opening(pair, family)) for pair in gates.T]
+    wanted = [float(reference.opening(pair, family)) for pair in gates.T]
     if not np.allclose(opened, wanted, rtol=3e-15, atol=3e-16):
         out.append("opening")
     return out
@@ -217,7 +257,7 @@ def test_each_law_is_declared_on_the_template_and_held_until_at3_reads_the_regis
     Kv1 trigger), so the collected test IDs stay the base's: each law is now registered on @3."""
     hosted = law_registry.active().laws(law_registry.CHANNEL_LAW, HOST3)
     today = {law.code for law in hosted if law.law_id in TODAYS_CODES}
-    at3_homes = MODELS["resolved_pump_tissue@3"].law_homes
+    at3_homes = MODELS["cells.model.resolved_pump_tissue@3"].law_homes
     for law, code in CODES.items():
         declared = law.LAW
         assert declared.errors() == [] and declared.law_id == law.LAW_ID and declared.code == code
@@ -252,3 +292,220 @@ def test_each_law_is_declared_on_the_template_and_held_until_at3_reads_the_regis
         f"{kv1p3_mh.LAW_ID}: not its module's declaration, from its module",
         f"@3's codes for {[kv1p3_mh.LAW_ID]} are { ({kv1p3_mh.LAW_ID: None}) }",
     ]
+
+
+# ------------------------------------------------------------------ the calcium law
+
+TWIN = "tests.channel.calcium_twin@1"
+CALCIUM_GATES = (0.2, 0.7)
+NO_TERM = (
+    "Channel ca_0: {law} carries Ca, which is not Na, K or Cl, and declares no material_term; the "
+    "charge rule alone does not hold a scarce ion's amounts"
+)
+
+
+def twin(**changes):
+    """A planted law with cells.channel.cav1p2_m2h@1's record and kernels, its material term included (code 99,
+    reserved for plants); `changes` plant the rest."""
+    planted = dataclasses.replace(cav1p2_m2h.LAW, law_id=TWIN, code=99)
+    return dataclasses.replace(planted, **changes)
+
+
+def with_laws(*laws):
+    return law_registry.scope(law_registry.BUILTIN.extended(*laws))
+
+
+def calcium_world(law_id=TWIN, *, valence=2, cell_mM=1e-4, bath_mM=1.8, **cell):
+    """The heredity cell with calcium (at `valence`) and one population of `law_id` on its patch;
+    `cell` goes to the fixture. NaV1.2 is left out, so under RK4 only Kir2.1 and the calcium law
+    bound the step."""
+    raw = water_fixtures.heredity_cell("D", **(dict(end_time=0.004) | cell))
+    raw = rfx.with_charged_trace(
+        raw, "Ca", valence, concentrations_mM=dict(cell_0=cell_mM, bath_0=bath_mM)
+    )
+    m, e = raw["model"], raw["experiment"]
+    m["channels"] = [c for c in m["channels"] if c["kinetic_law"] != spec3.NAV1P2_LAW_ID]
+    m["channels"].append(
+        dict(
+            id="ca_0",
+            membrane_id=m["membranes"][0]["id"],
+            kinetic_law=law_id,
+            max_permeability_m_per_s=2e-6,
+            abundance=0.5,
+            initial_gate=list(CALCIUM_GATES),
+            permeant_ions=[dict(species_id="Ca", relative_permeability=1.0)],
+        )
+    )
+    e["channel_controls"] = [
+        dict(channel_id=c["id"], schedule=[dict(time=0.0, availability=0.8)]) for c in m["channels"]
+    ]
+    raw["execution"]["channel_capacity"] = len(m["channels"])
+    return raw
+
+
+def test_the_calcium_law_is_declared_and_registered_on_at3():
+    law = cav1p2_m2h.LAW
+    assert law.errors() == [] and law.law_id == cav1p2_m2h.LAW_ID
+    assert (law.code, law.gates, law.permeant) == (11, ("m", "h"), (("Ca", 2, 1.0),))
+    assert law.rk4_step_s is None and law.voltage_domain_V == (-0.120, 0.060)
+    assert law.kinetics is cav1p2_m2h.kinetics and law.opening is cav1p2_m2h.opening
+    assert law.provenance == "parity" and isinstance(law.source, law_registry.Citation)
+    assert "vg_ca.py:292" in law.source.place and "(not read)" in law.source.place
+    test_file, test_name = law.test.split("::")
+    assert (ROOT / test_file).resolve() == Path(__file__).resolve()
+    assert callable(globals()[test_name])
+    registry = law_registry.active()
+    assert registry.lookup(law.law_id) is law and registry.module(law.law_id) == cav1p2_m2h.__name__
+    assert cav1p2_m2h.__name__ in MODELS["cells.model.resolved_pump_tissue@3"].law_homes
+    assert spec3.law_codes()[law.law_id] == 11 and spec3.gate_counts()[law.law_id] == 2
+    assert spec3.law_permeabilities()[law.law_id] == (("Ca", 1.0),)
+    assert law.law_id not in spec3.LAW_CODES
+    # It names the kernel of its material term, so a definition that names the law is admitted.
+    assert law.material_term == constant_field_permeation.material_slope_per_s.__name__
+    assert parse_spec(calcium_world(law.law_id)).model.channels[-1].kinetic_law == law.law_id
+    for value in ("", 1):  # Planted: a material term that is no name.
+        with pytest.raises(ValueError, match="its material_term is named, or None"):
+            law_registry.LawRegistry().register(twin(material_term=value))
+    with pytest.raises(ValueError, match="channel codes are distinct"):  # Planted: its code taken.
+        law_registry.BUILTIN.extended(twin(code=11))
+
+
+def test_the_calcium_law_meets_its_reference_and_each_plant_misses_it():
+    voltage = np.linspace(-0.12, 0.06, 1801)
+    check = functools.partial(reference_errors, family="Cav1p2", reference=cav_reference)
+    assert check(cav1p2_m2h, voltage=voltage) == []
+    compiled = jax.jit(cav1p2_m2h.kinetics)
+    jitted = types.SimpleNamespace(
+        kinetics=lambda v, *, xp: compiled(v), opening=cav1p2_m2h.opening
+    )
+    assert check(jitted, voltage=voltage) == []
+    # Planted: the 10 mV shift dropped, and m³ h for m² h.
+    unshifted = types.SimpleNamespace(
+        kinetics=_kinetics_with(cav1p2_m2h, {"SHIFT_V": 0.0}), opening=cav1p2_m2h.opening
+    )
+    assert check(unshifted, voltage=voltage[::100]) == ["target", "tau"]
+    cubed = lambda gates, *, xp: gates[..., 0, :] ** 3 * gates[..., 1, :]  # noqa: E731
+    assert check(cav1p2_m2h, voltage=voltage[::100], opening=cubed) == ["opening"]
+
+
+def test_a_law_is_the_one_authority_for_its_ions_valences():
+    univalent = twin(permeant=(("Ca", 1, 1.0),))
+    for law, valence in ((twin(), 2), (univalent, 1)):  # No table of valences beside the law's.
+        with with_laws(law):
+            spec = parse_spec(calcium_world(valence=valence))
+        assert spec.model.channels[-1].kinetic_law == TWIN
+    magnesium = calcium_world()
+    magnesium["model"]["channels"][-1]["permeant_ions"][0]["species_id"] = "Mg"
+    own = f"^Channel ion requires its law's species and valence: {TWIN} carries "
+    for law, raw, words in (  # Planted, each refused by name.
+        (univalent, calcium_world(), "Ca at valence 1, and the model declares it at valence 2$"),
+        (
+            twin(),
+            calcium_world(valence=1),
+            "Ca at valence 2, and the model declares it at valence 1$",
+        ),
+        (
+            twin(permeant=(("Mg", 2, 1.0),)),
+            magnesium,
+            "Mg at valence 2, and the model declares no such species$",
+        ),
+    ):
+        with with_laws(law), pytest.raises(ConfigError, match=own + words):
+            parse_spec(raw)
+
+
+def test_a_law_with_a_scarce_ion_and_no_material_term_is_refused_by_name():
+    refusal = f"^{re.escape(NO_TERM.format(law=TWIN))}$"
+    with with_laws(twin(material_term=None)), pytest.raises(ConfigError, match=refusal):
+        parse_spec(calcium_world())
+    with with_laws(twin()):  # The same law with its term, admitted.
+        parse_spec(calcium_world())
+
+
+def test_a_calcium_channel_runs_on_no_rk4_grid():
+    raw = calcium_world(dt=2.5e-6, end_time=1e-4, solver="rk4")
+    raw["experiment"]["observation_times"] = [0.0, 1e-4]
+    refusal = (
+        rf"^Resolved gated channels \({TWIN}\) declare no RK4 step bound, so they run on no RK4 "
+        "grid: use an IMEX solver$"
+    )
+    with with_laws(twin()), pytest.raises(ConfigError, match=refusal):
+        timeline(parse_spec(raw))
+    with with_laws(twin(rk4_step_s=25e-6)):  # Planted: the older gated laws' bound, admitted.
+        timeline(parse_spec(raw))
+
+
+def closed_form(cell_mM, bath_mM, voltage_V, temperature_K, area_m2, permeability_m_s, valence):
+    """(outward flux in fmol/s, its current in A, its heat in pJ/s) of one ion's constant-field
+    flux, in 50-digit decimals from the SI constants and the floats' exact values."""
+    with localcontext() as context:
+        context.prec = 50
+        avogadro = Decimal("6.02214076e23")
+        faraday = avogadro * Decimal("1.602176634e-19")
+        gas = avogadro * Decimal("1.380649e-23")
+        inside, outside, v, t = map(Decimal, (cell_mM, bath_mM, voltage_V, temperature_K))
+        x = valence * faraday * v / (gas * t)
+        weight = lambda y: y / (y.exp() - 1)  # noqa: E731  B(y)
+        scale = Decimal("1e15") * Decimal(area_m2) * Decimal(permeability_m_s)
+        flux = scale * (inside * weight(-x) - outside * weight(x))
+        drop = gas * t * (inside / outside).ln() + valence * faraday * v
+        return flux, Decimal("1e-15") * faraday * valence * flux, Decimal("1e-3") * flux * drop
+
+
+def calcium_errors(spec, valence=2):
+    """(which of the flux, the current, the transfer and the heat at the world's start leave the
+    closed form at `valence`, the flux's sign). What the cell loses the bath takes, exactly, and the
+    heat is positive."""
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    controls = spec3.control_values(spec, [0.0])
+    control = type(controls)(*(c[0] for c in controls))
+    ca = spec.model.species_ids.index("Ca")
+    slot = [c.id for c in spec.model.channels].index("ca_0")
+    closed = control.channel.copy()
+    closed[slot] = 0.0
+    on = model.readouts(state, control, p, xp=np)
+    off = model.readouts(state, control._replace(channel=closed), p, xp=np)
+    rate = on.derivative
+    moved = float(rate.channel_transferred[ca, slot])
+    assert moved == -rate.amount_increment[ca, 0] == -rate.reservoir_supplied[ca, 0]
+    heat = float(rate.channel_dissipated_energy_pJ[ca, slot])
+    assert heat > 0
+    (patch,) = spec.model.membranes
+    m, h = CALCIUM_GATES
+    flux, current, dissipated = closed_form(
+        float(p.amount_reference[ca, 0] / p.volume[0]),
+        float(p.extracellular_amount_reference[ca, 0] / p.extracellular_volume[0]),
+        float(on.field.rates.membrane_voltage_V[0]),
+        spec.model.temperature_K,
+        patch.area_m2,
+        2e-6 * 0.5 * 0.8 * (m * m * h),
+        valence,
+    )
+    carried = on.field.rates.membrane_current_A[0] - off.field.rates.membrane_current_A[0]
+    found = dict(
+        flux=(on.channel_flux_fmol_s[ca, slot], flux, 1e-13),
+        current=(carried, current, 1e-9),  # A difference of two readings of the patch's current.
+        transfer=(moved, flux, 1e-13),
+        heat=(heat, dissipated, 1e-13),
+    )
+    wrong = [
+        name
+        for name, (value, wanted, bound) in found.items()
+        if abs(float(Decimal(float(value)) / wanted - 1)) > bound
+    ]
+    return wrong, np.sign(moved)
+
+
+@pytest.mark.parametrize("direction, cell_mM, bath_mM", [(-1, 1e-4, 1.8), (1, 1.0, 0.05)])
+def test_the_calcium_flux_charge_transfer_and_heat_are_the_closed_forms(
+    direction, cell_mM, bath_mM
+):
+    """At the start of the planted twin's world, on the host. `direction` is the flux's sign,
+    outward positive."""
+    given = dict(cell_mM=cell_mM, bath_mM=bath_mM)
+    with with_laws(twin()):
+        assert calcium_errors(parse_spec(calcium_world(**given))) == ([], direction)
+    with with_laws(twin(permeant=(("Ca", 1, 1.0),))):  # Planted: z = 1.
+        wrong, _ = calcium_errors(parse_spec(calcium_world(valence=1, **given)))
+    assert wrong == ["flux", "current", "transfer", "heat"]

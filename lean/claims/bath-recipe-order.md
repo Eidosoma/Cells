@@ -16,7 +16,7 @@ Each species’ target is the original amount plus the fixed bath volume times t
 - [CellsProofs.Tissue.BathSchedule.recipe_order](../CellsProofs/Tissue/BathSchedule.lean#L42)
 - [CellsProofs.Tissue.BathSchedule.recipe_residual](../CellsProofs/Tissue/BathSchedule.lean#L49)
 
-Direct proof subject `cells.scheduled_bath_composition@1`
+Direct proof subject `cells.operator.scheduled_bath_composition@1`
 
 Uses [A held bath can return to its original composition after supplying solute and work to tissue](scheduled-bath-exchange.md)
 

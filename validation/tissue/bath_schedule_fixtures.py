@@ -1,4 +1,4 @@
-"""Small worlds for scheduled_bath_composition@1 (FR-10, docs/BATH_SCHEDULE_DESIGN.md).
+"""Small worlds for cells.operator.scheduled_bath_composition@1 (FR-10, docs/BATH_SCHEDULE_DESIGN.md).
 
 All values are synthetic. The worlds are secreted_species_fixtures' quiescent worlds (passive
 cells, zero membrane permeability, zero ion diffusivity on every face, every node at the bath's ion
@@ -24,7 +24,7 @@ import math
 
 from validation.tissue import secreted_species_fixtures as fx
 
-LAW = "scheduled_bath_composition@1"
+LAW = "cells.operator.scheduled_bath_composition@1"
 CARGO = {"cargo": {fx.SPECIES: 1}}  # S is neutral: its own formula unit.
 SALTS = {"NaCl": {"Na": 1, "Cl": 1}, "KCl": {"K": 1, "Cl": 1}}
 
@@ -239,23 +239,6 @@ def _neutral_step(c0, c1, *, solver=ARS, dt=None, face=FACE_10, steps=50):
     return with_bath_schedule(raw, ["bath"], CARGO, [(10 * dt, ["bath"], {"cargo": c1 - c0})])
 
 
-def _with_neutral_species(raw, count):
-    """count more neutral species, 1e-3 mM at every node, immobile and impermeant."""
-    out = copy.deepcopy(raw)
-    m, x = out["model"], out["execution"]
-    for k in range(count):
-        name = f"N{k}"
-        m["species"].append(dict(id=name, valence=0))
-        for node in (*m["cells"], *m["extracellular"]):
-            node["initial_amount_fmol"][name] = 1e-3 * node["volume_pL"]
-        for patch in m["membranes"]:
-            patch["permeability_m_per_s"][name] = 0.0
-        for face in m["faces"]:
-            face["diffusivity_m2_per_s"][name] = 0.0
-        x["material_balance_atol_fmol"][name] = 1e-10
-    return out
-
-
 def bound_permeability():
     """R12's wall K permeability (m/s): the constant-field slope conductance of the explicit-rate
     bound, F^2/RT P A max(c) over the cell's capacitance (surface_pump.explicit_rate_bound's
@@ -281,7 +264,11 @@ def refusal_pairs():
     """Every refusal class of the protocol (refusal_classes), as {class: (refused, admitted)}:
     raw definitions, the refused one refused at the definition by the check the class names, its
     neighbour admitted. R12's neighbour runs at 0.1 ms, and R12 adds the declared composition
-    alone at 1 ms (admitted: the worst composition decides). R3's neighbour is W7's staircase."""
+    alone at 1 ms (admitted: the worst composition decides). R3's neighbour is W7's staircase.
+    R9_the_species_cap is retired (the lead's ruling, 23 November 2026): FR-43 (D315) raised the
+    species cap from 16 to 1,024 after the judged run, so its 17-species world is admitted; the cap
+    is an engine limit with its own tests (tests/unit/test_species_cap*.py). The registered results
+    stay reproducible at their tags."""
     short = dict(end=0.6, event_s=0.5)
     salt_units = {"bad": {"K": 1}}
     big_units = {"big": {"Na": 1000, "Cl": 1000}}
@@ -296,7 +283,6 @@ def refusal_pairs():
     big = copy.deepcopy(held_bath)
     block = next(op for op in big["model"]["operators"] if op["law"] == LAW)
     block["formula_units"] = {**block["formula_units"], **big_units}
-    cap_world = _neutral_step(1e-3, 1.5e-3, face=(1e-10, 1e-5))
     return {
         "R1_past_a_neutral_corner": (_neutral_step(1e-3, 1.01e-2), _neutral_step(1e-3, 1e-2)),
         "R2_a_measured_failure": (_neutral_step(1e-6, 1e-3), _neutral_step(1e-5, 1e-3)),
@@ -312,8 +298,6 @@ def refusal_pairs():
         "R8_outside_the_measured_steps": (
             [_neutral_step(1e-3, 1e-2, dt=2e-3), _neutral_step(1e-3, 1e-2, solver=RK4, dt=2e-4)],
             [_neutral_step(1e-3, 1e-2), _neutral_step(1e-3, 1e-2, solver=RK4)]),
-        "R9_the_species_cap": (
-            _with_neutral_species(cap_world, 13), _with_neutral_species(cap_world, 12)),
         "R10_a_charged_unit": (charged, big),
         "R11_an_anisosmotic_step": (water_world({"KM": 10.0}),
                                     water_world({"NaM": -10.0, "KM": 10.0})),

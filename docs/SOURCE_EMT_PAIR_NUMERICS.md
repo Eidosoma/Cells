@@ -1,5 +1,10 @@
 # Source-compatible pair: numerical contract
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 NUM-004 / D025, 2026-09-08. Independent CPU qualification is complete for the
 frozen 14-case panel. The candidate is **RK4 with a maximum step of 0.01 source
 nominal-time units and checked cubic observations**. This is not 10 ms and is

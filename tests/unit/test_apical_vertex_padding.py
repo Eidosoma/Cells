@@ -1,4 +1,4 @@
-"""apical_vertex_mechanics@1: padded capacities follow the same trajectory.
+"""cells.model.apical_vertex_mechanics@1: padded capacities follow the same trajectory.
 
 The same world in larger vertex, junction, cell and half-edge capacities runs to
 the same positions and energies (to rounding: reductions may reorder), and its

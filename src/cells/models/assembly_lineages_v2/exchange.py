@@ -1,4 +1,4 @@
-"""cells.phase_exchange@1: one molecule joins the membrane from the pool (OL2; §2.5, §0.2b rule 1,
+"""cells.reaction.phase_exchange@1: one molecule joins the membrane from the pool (OL2; §2.5, §0.2b rule 1,
 §0.2c rules 2 and 3, §0.2d item 2; docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1.2).
 
 **The law.** A step of this law is a join: one molecule of a pool place (finite or held) to the
@@ -18,7 +18,7 @@ molecule's activity drawn without replacement, ff(n_i, 1)/ff(N − c, 1), at the
 k⁻ = k·exp(Σ ν μ°) and the same extent on m, as for every law of this family (mass_action.py). So
 ln a⁺ − ln a⁻ = −ΔF + w for every pair (the kernel's check, balance.py).
 
-`geometric_log_direction` is shared with cells.membrane_permeation@1 (permeation.py).
+`geometric_log_direction` is shared with cells.reaction.membrane_permeation@1 (permeation.py).
 """
 
 import numpy as np
@@ -76,7 +76,7 @@ FORMULAS = {
 
 LAW = law_registry.BUILTIN.register(
     ReactionLaw(
-        "cells.phase_exchange@1",
+        "cells.reaction.phase_exchange@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

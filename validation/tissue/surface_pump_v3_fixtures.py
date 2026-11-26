@@ -1,13 +1,13 @@
-"""Synthetic resolved pump worlds with channel populations for resolved_pump_tissue@3.
+"""Synthetic resolved pump worlds with channel populations for cells.model.resolved_pump_tissue@3.
 
-definition(): the resolved_pump_tissue@2 fixture (validation/tissue/
+definition(): the cells.model.resolved_pump_tissue@2 fixture (validation/tissue/
 surface_pump_v2_fixtures.py) declared as @3, with eight populations covering
 the five laws: one Kv1.5, Kir2.1, NaV1.2 or leak population per patch plus
 Kir2.1 and NaV1.2 on patch 0, so populations share patches and the leaks are
 mixed with gated laws. Parameters are synthetic, not measurements. With
 channels=False the world has no populations: the @2 equivalence world.
 
-reference(): the same world as resolved_tissue@8 (RK4, dense field), whose
+reference(): the same world as cells.model.resolved_tissue@8 (RK4, dense field), whose
 shared catalog holds the same Kv1.5, Kir2.1, NaV1.2 and leak equations under
 their earlier law IDs; the IDs are read from the catalog modules so the
 reference follows their renaming.
@@ -89,7 +89,7 @@ def definition(
         calcium=calcium,
     )
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
-    m["id"] = "resolved_pump_tissue@3"
+    m["id"] = "cells.model.resolved_pump_tissue@3"
     rows = CHANNELS if channels else ()
     m["channels"] = [channel(*row) for row in rows]
     schedule = (
@@ -105,12 +105,12 @@ def definition(
 
 
 def reference(arm="open", *, backend="cpu", padded=True):
-    """The calcium-free definition() world as resolved_tissue@8 (RK4, dense field)."""
+    """The calcium-free definition() world as cells.model.resolved_tissue@8 (RK4, dense field)."""
     return catalog_reference(definition(arm, backend=backend, padded=padded, calcium=False))
 
 
 def catalog_reference(raw):
-    """A calcium-free @3 definition at 298.15 K as resolved_tissue@8 (RK4, dense field)."""
+    """A calcium-free @3 definition at 298.15 K as cells.model.resolved_tissue@8 (RK4, dense field)."""
     raw = copy.deepcopy(raw)
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     m["id"] = surface_kinetic_spec.CATALOG_MODEL_ID
@@ -126,11 +126,11 @@ def catalog_reference(raw):
         c["kinetic_law"], c["initial_gate"] = old[c["kinetic_law"]], c["initial_gate"] or [1, 1]
     for p in m["membranes"]:
         if p.pop("calcium_pump") is not None:
-            raise ValueError("resolved_tissue@8 has no calcium pump")
+            raise ValueError("cells.model.resolved_tissue@8 has no calcium pump")
     for p in m["junctions"]:
         p["gate"]["law"] = junction_gate.LAW_ID
     del e["calcium_pump_controls"]
-    x.update(solver="rk4", field_solver="capacitive_reduction_gauged_damped_newton@1")
+    x.update(solver="rk4", field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@1")
     return raw
 
 
@@ -164,7 +164,7 @@ def steady_gates(voltage):
     return [float(v) for v in target[:, 0]], [float(v) for v in target[:, 1]]
 
 
-def heredity_cells(cells, *, dt=1e-3, end_time=1.0, solver="imex_ars222_face_electromigration@1",
+def heredity_cells(cells, *, dt=1e-3, end_time=1.0, solver="cells.solver.imex_ars222_face_electromigration@1",
                    observation_times=None, backend="cpu", nav_m_s=HEREDITY_NAV_M_S,
                    kir_m_s=HEREDITY_KIR_M_S, gate_voltages=None,
                    temperature_K=HEREDITY_TEMPERATURE_K):  # fmt: skip
@@ -212,10 +212,10 @@ def heredity_cells(cells, *, dt=1e-3, end_time=1.0, solver="imex_ars222_face_ele
                 area_m2=HEREDITY_AREA_M2,
                 capacitance_F=HEREDITY_CAPACITANCE_F,
                 permeability_m_per_s=dict(HEREDITY_PERMEABILITY),
-                law="constant_field@1",
+                law="cells.route.constant_field@1",
                 pump=dict(
                     id=f"pump_{i}",
-                    law="nak_atp_mass_action_positive@1",
+                    law="cells.cycle.nak_atp_mass_action_positive@1",
                     roles=dict(sodium="Na", potassium="K"),
                     stoichiometry=dict(Na=-3, K=2),
                     capacity_fmol_per_s=1e-7 * HEREDITY_AREA_M2 * 1e15,
@@ -223,7 +223,7 @@ def heredity_cells(cells, *, dt=1e-3, end_time=1.0, solver="imex_ars222_face_ele
                     km_k_mM=0.2,
                     km_atp_mM=0.5,
                     metabolism=dict(
-                        kind="maintained_chemical_reservoirs@1",
+                        kind="cells.fuel_kind.maintained_chemical_reservoirs@1",
                         atp_mM=1.5,
                         adp_mM=0.1,
                         pi_mM=0.1,
@@ -254,7 +254,7 @@ def heredity_cells(cells, *, dt=1e-3, end_time=1.0, solver="imex_ars222_face_ele
     return dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=temperature_K,
             species=[dict(id=s, valence=v) for s, v in HEREDITY_SPECIES],
             cells=model_cells,
@@ -263,7 +263,8 @@ def heredity_cells(cells, *, dt=1e-3, end_time=1.0, solver="imex_ars222_face_ele
             junctions=[],
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=channels,
         ),
@@ -294,7 +295,7 @@ def heredity_cells(cells, *, dt=1e-3, end_time=1.0, solver="imex_ars222_face_ele
             jit=True,
             precision="float64",
             solver=solver,
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=int(math.ceil(end_time / dt)) + 8,
             max_trace_bytes=2**31,
             material_balance_atol_fmol={s: 1e-10 for s in ids},
@@ -352,17 +353,19 @@ def single_patch(*, dt=2.5e-6, end_time=0.001, solver="rk4", temperature_K=298.1
 
 
 def as_pump_tissue(raw, version):
-    """A channel-free @3 definition as resolved_pump_tissue@1 or @2 (same world)."""
+    """A channel-free @3 definition as cells.model.resolved_pump_tissue@1 or @2 (same world)."""
     raw = copy.deepcopy(raw)
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     if m.pop("channels") or e.pop("channel_controls"):
         raise ValueError("Only channel-free worlds have an @1/@2 counterpart")
     x.pop("channel_capacity")
-    m["id"] = f"resolved_pump_tissue@{version}"
+    m["id"] = {1: "cells.model.resolved_pump_tissue@1", 2: "cells.model.resolved_pump_tissue@2"}[
+        version
+    ]
     if version == 1:
         for p in m["membranes"]:
             if p.pop("calcium_pump") is not None:
-                raise ValueError("resolved_pump_tissue@1 has no calcium pump")
+                raise ValueError("cells.model.resolved_pump_tissue@1 has no calcium pump")
         e.pop("calcium_pump_controls")
     return raw
 

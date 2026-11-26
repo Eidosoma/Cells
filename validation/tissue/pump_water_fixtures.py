@@ -1,6 +1,6 @@
-"""resolved_pump_water@1 worlds: resolved_pump_tissue@3 definitions with a water block.
+"""cells.model.resolved_pump_water@1 worlds: cells.model.resolved_pump_tissue@3 definitions with a water block.
 
-with_water(raw, ...) declares water on a resolved_pump_tissue@3 definition: every
+with_water(raw, ...) declares water on a cells.model.resolved_pump_tissue@3 definition: every
 cell and finite outside node becomes a compliant compartment, every reservoir a
 held bath, every membrane a water route. The default parameters are the approved
 heredity water-arm values (docs/PUMP_WATER_MODEL.md, each with its source):
@@ -53,16 +53,16 @@ def with_water(
     availability=1.0,
     bath_pressure_Pa=0.0,
 ):
-    """A resolved_pump_water@1 definition of a resolved_pump_tissue@3 definition."""
+    """A cells.model.resolved_pump_water@1 definition of a cells.model.resolved_pump_tissue@3 definition."""
     raw = copy.deepcopy(raw)
     m, e = raw["model"], raw["experiment"]
-    if m["id"] != "resolved_pump_tissue@3":
-        raise ValueError("with_water() takes a resolved_pump_tissue@3 definition")
-    m["id"] = "resolved_pump_water@1"
+    if m["id"] != "cells.model.resolved_pump_tissue@3":
+        raise ValueError("with_water() takes a cells.model.resolved_pump_tissue@3 definition")
+    m["id"] = "cells.model.resolved_pump_water@1"
     lp = hydraulic_permeability(pf_m_s, m["temperature_K"])
     finite = [c for c in m["extracellular"] if not c.get("reservoir", False)]
     m["water"] = dict(
-        law="ideal_osmosis_linear_compliance_water@1",
+        law="cells.operator.ideal_osmosis_linear_compliance_water@1",
         compartments=[
             dict(
                 compartment_id=c["id"],
@@ -105,9 +105,9 @@ def symport_capacity(flux_mmol_L_h, volume_pL):
 
 
 def with_symport(raw, *, flux_mmol_L_h=15.0, steepness=1.0, availability=1.0, membranes=None):
-    """A resolved_pump_water@2 definition of a resolved_pump_water@1 definition.
+    """A cells.model.resolved_pump_water@2 definition of a cells.model.resolved_pump_water@1 definition.
 
-    One KCC-type route (k_anion_symport_mass_action@1, roles K and M) on each
+    One KCC-type route (cells.operator.k_anion_symport_mass_action@1, roles K and M) on each
     listed membrane (default all), capacity from a red-cell flux per cell volume
     (default 15 mmol/(L cells h), Lew et al. 1991), set volume the cell's water
     reference volume, the given steepness (1: Lew 1991; 0.12: Kaji 1986, derived).
@@ -115,15 +115,15 @@ def with_symport(raw, *, flux_mmol_L_h=15.0, steepness=1.0, availability=1.0, me
     """
     raw = copy.deepcopy(raw)
     m, e = raw["model"], raw["experiment"]
-    if m["id"] != "resolved_pump_water@1":
-        raise ValueError("with_symport() takes a resolved_pump_water@1 definition")
-    m["id"] = "resolved_pump_water@2"
+    if m["id"] != "cells.model.resolved_pump_water@1":
+        raise ValueError("with_symport() takes a cells.model.resolved_pump_water@1 definition")
+    m["id"] = "cells.model.resolved_pump_water@2"
     cells = {c["id"]: c for c in m["cells"]}
     reference = {c["compartment_id"]: c["reference_volume_pL"] for c in m["water"]["compartments"]}
     chosen = [p for p in m["membranes"] if membranes is None or p["id"] in membranes]
     m["symport"] = dict(
-        law="k_anion_symport_mass_action@1",
-        volume_factor="exponential_volume_activation@1",
+        law="cells.operator.k_anion_symport_mass_action@1",
+        volume_factor="cells.transfer_factor.exponential_volume_activation@1",
         roles=dict(potassium="K", anion="M"),
         routes=[
             dict(
@@ -157,7 +157,11 @@ def scheduled(raw, *, channel_change=(0.4, 0.5), pump_change=(0.6, 0.8)):
     """
     raw = copy.deepcopy(raw)
     m, e = raw["model"], raw["experiment"]
-    nav = {c["id"] for c in m["channels"] if c["kinetic_law"].startswith("nav1p2")}
+    nav = {
+        c["id"]
+        for c in m["channels"]
+        if c["kinetic_law"] == "cells.channel.nav1p2_m3h_regularized@1"
+    }
     for group in e["channel_controls"]:
         if group["channel_id"] in nav:
             held = group["schedule"][0]["availability"]

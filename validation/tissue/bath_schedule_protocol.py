@@ -41,7 +41,9 @@ REFUSAL_CHECKS = {
     "R6_an_unmeasured_ion_direction": "the step rule (region)",
     "R7_a_faster_face": "the step rule (face)",
     "R8_outside_the_measured_steps": "the step rule (solver and dt)",
-    "R9_the_species_cap": "the species cap",
+    # R9_the_species_cap is retired (the lead's ruling, 23 November 2026; the protocol's
+    # disclosures): FR-43 (D315) raised the cap from 16 to 1,024, so its 17-species world is
+    # admitted.
     "R10_a_charged_unit": "the neutrality rule (integer charge)",
     "R11_an_anisosmotic_step": "the isosmotic rule",
     "R12_beyond_the_explicit_bound": "@3's explicit-rate bound",

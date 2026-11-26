@@ -1,0 +1,35 @@
+{
+  "eicher2012_pgi_direction": {
+    "doi": "10.3390/metabo2040818",
+    "workbook": "https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip",
+    "locator": "supp_data.ods, PGI sheet, upper unsmoothed concentration block",
+    "preparation": "E. coli K-12 W3110 extract, 100 mM PIPES at pH 7.2",
+    "temperature_C": 25,
+    "fitted_F6P_over_G6P": 0.286,
+    "columns": ["nominal_time_min", "G6P_mM", "F6P_mM"],
+    "courses": [
+      {
+        "dataset": 2,
+        "cells": ["F4:H4", "F33:H33"],
+        "first": [1.33, 1.11663210181879, 5.77059276644389],
+        "last": [39.9, 3.36847948916568, 1.98384727824784]
+      },
+      {
+        "dataset": 3,
+        "cells": ["K4:M4", "K29:M29"],
+        "first": [1.33, 9.15928777529814, 0.42516258927673],
+        "last": [34.58, 8.08632677393566, 1.59742569023438]
+      }
+    ],
+    "uncertainty": "The worksheet supplies nominal times and no per-point uncertainty. The runs have separate tubes and their extract batch identity is unspecified."
+  },
+  "dyson1968_pgi_equilibrium": {
+    "doi": "10.1016/S0021-9258(18)93559-3",
+    "locator": "Table I, Figure 13 and equilibrium determination",
+    "preparation": "Purified rabbit muscle enzyme, pH 8.5, ionic strength 0.12",
+    "temperature_C": 30,
+    "kinetic_F6P_over_G6P": 0.32,
+    "measured_F6P_over_G6P": 0.30,
+    "uncertainty": "Both starting sugars approached the endpoint. Table I gives no uncertainty for the measured ratio."
+  }
+}

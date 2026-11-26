@@ -7,7 +7,7 @@
   "base_finite_ECM_bundle_manifest_sha256": "232f5762460fd03d8990a65648e7f264dccb4b8f6ee5e2514f431d127041bc9f",
   "family_topology_matrix": [
     {
-      "actual_model_id": "resolved_tissue@2",
+      "actual_model_id": "cells.model.resolved_tissue@2",
       "public_parser": "cells.core.surface_kinetic_spec.parse",
       "actual_model_module": "cells.models.surface_kinetic",
       "actual_model_type": "cells.core.surface_kinetic_spec.SurfaceKineticModel",
@@ -63,7 +63,7 @@
       "public_parser": "cells.core.surface_calcium_spec.parse",
       "actual_model_module": "cells.models.surface_calcium",
       "actual_model_type": "cells.core.surface_calcium_spec.SurfaceCalciumModel",
-      "nested_ionic_identity": "resolved_tissue@2",
+      "nested_ionic_identity": "cells.model.resolved_tissue@2",
       "calcium": true,
       "finite_fuel": false,
       "finite_bath_face_topology": "Actual inherited resolved face topology retained by public admission",
@@ -167,7 +167,7 @@
       "public_parser": "cells.core.surface_calcium_energy_spec.parse",
       "actual_model_module": "cells.models.surface_calcium_energy",
       "actual_model_type": "cells.core.surface_calcium_energy_spec.SurfaceCalciumEnergyModel",
-      "nested_ionic_identity": "resolved_tissue@8",
+      "nested_ionic_identity": "cells.model.resolved_tissue@8",
       "calcium": true,
       "finite_fuel": true,
       "finite_bath_face_topology": "Actual inherited resolved face topology retained by public admission",
@@ -300,7 +300,7 @@
     }
   ],
   "positive_case_models": {
-    "ionic-basic": "resolved_tissue@2",
+    "ionic-basic": "cells.model.resolved_tissue@2",
     "ionic-full": "resolved_tissue@12",
     "calcium-basic": "resolved_calcium@1",
     "calcium-full": "resolved_calcium@11",
@@ -538,7 +538,7 @@
         "independent_limit_pJ_s": 1e-10,
         "scope_note": "HCN catalog compare checks full derivative and actual residual, not an independent total residual. Its prospective independent gate must be described as reuse of the field identity limit."
       },
-      "resolved_tissue@2": {
+      "cells.model.resolved_tissue@2": {
         "actual_evidence": [
           "tests/unit/test_surface_kinetic.py:92",
           "tests/unit/test_surface_kinetic.py:334"

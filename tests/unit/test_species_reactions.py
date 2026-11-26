@@ -1,4 +1,4 @@
-"""Tier-1 smoke of local_species_reactions@1: its contract (D152 version 1, milestones 1 and 2).
+"""Tier-1 smoke of cells.operator.local_species_reactions@1: its contract (D152 version 1, milestones 1 and 2).
 
 docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.4, §2.1-§2.5, §3.3, §4.5, §4.6, §10.4 (C1) and §11.
 Host side, no compile, on the canonical enzyme network (species_reactions_fixtures):
@@ -69,13 +69,8 @@ def test_the_operator_is_registered_with_its_declarations():
         "reaction_outside_dissipated_energy_pJ",
     )
     assert op.WORK_FIELDS == ("reaction_work_pJ", "reaction_outside_work_pJ")
-    assert op.CONFLICTS_VIEW == (
-        "volume",
-        "extracellular_volume",
-        "active",
-        "outside_active",
-        "extracellular_amount_reference",
-    )
+    assert op.CONFLICTS_VIEW == ("active", "outside_active", "extracellular_amount_reference")
+    assert op.VIEW_READS == ("volume", "extracellular_volume")  # Read current (FR-43 / D315).
     assert dict(op.ENTITY_WRITES) == {
         "amount_increment": ("reaction_produced_fmol", "reaction_consumed_fmol"),
         "extracellular_amount_increment": (
@@ -472,7 +467,7 @@ def test_the_domain_refuses_its_own_misbookings(bound):
 def test_the_stationary_analysis_does_not_admit_the_composite():
     from cells.analysis import stationary
 
-    with pytest.raises(ConfigError, match="not resolved_pump_composite@1"):
+    with pytest.raises(ConfigError, match="not cells.model.resolved_pump_composite@1"):
         stationary.problem(parse_spec(rfx.enzyme_network()))
 
 

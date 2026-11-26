@@ -1,4 +1,4 @@
-"""Device checks of resolved_pump_tissue@3 against its host check_values.
+"""Device checks of cells.model.resolved_pump_tissue@3 against its host check_values.
 
 surface_pump_v3.device_checks evaluates check_values' tests for one accepted row
 with jax.numpy (models/surface_pump_checks.py), with the same domain function,

@@ -1,11 +1,11 @@
-"""Operator restricted_cleft_lumen@1: a restricted compartment filled with bath fluid as it grows.
+"""Operator cells.operator.restricted_cleft_lumen@1: a restricted compartment filled with bath fluid as it grows.
 
 docs/CELL_DIVISION_S3_PLAN.md §1; the law is docs/CELL_DIVISION_DESIGN.md §4.2 and §7. The
 compartment is general: a finite outside node opened at an insertion onset, lying between the
 two apposed sheets of the one patch that faces it (a cleavage cleft is one use; D144).
 
 Law, per half-step of the split part, on each declared lumen node c with its source bath b and
-gap width w: the lumen's volume follows its patch's area A (membrane_entity_state@1's view),
+gap width w: the lumen's volume follows its patch's area A (cells.operator.membrane_entity_state@1's view),
 V = V_on + w (A - A_on) / 2 with V_on and A_on the declared (onset) values, and the added volume
 dV fills with fluid of the bath's declared composition, dn_s = c_b,s dV. There is no water flow.
 The volume is state, and each fill books its amounts with the same dV, so the lumen's amounts and
@@ -74,7 +74,7 @@ from cells.operators import membrane_insertion as insertion
 from cells.operators import membrane_state
 from cells.operators.contract import Operator
 
-LAW_ID = "restricted_cleft_lumen@1"
+LAW_ID = "cells.operator.restricted_cleft_lumen@1"
 STEP_ID = "bath_fill_exact_half_steps@1"
 ONSET_VOLUME_RTOL = 1e-12  # The declared onset volume against w A_on / 2.
 NEUTRALITY_RTOL = 1e-12  # |sum z c| against sum |z| c of a source's declared composition.
@@ -419,6 +419,9 @@ def own_valid(state, p, *, xp):
 
 class RestrictedCleftLumen(Operator):
     LAW_ID = LAW_ID
+    # FR-43 part 3: a conversion, filling each lumen's node with its source bath's fluid
+    # (written_rows).
+    ROW_MOVES = "conversion"
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -450,6 +453,12 @@ class RestrictedCleftLumen(Operator):
 
     def to_dict(self, declaration, base):
         return lumens_to_dict(declaration)
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: every species at each lumen's node, which its fill brings in at the
+        source bath's composition (a scheduled bath may hold any species)."""
+        species = spec.model.species_ids
+        return tuple((s, lumen.node_id) for lumen in declaration.lumens for s in species)
 
     def check_definition(self, spec, declaration, schedule, model):
         check_definition(spec, declaration)

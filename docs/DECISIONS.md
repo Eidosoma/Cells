@@ -9754,7 +9754,7 @@ fr15-f2-design-landed-2026-11-23), under the user's go on the cancer lanes and t
 
 ## D311: FR-30's benchmark is Revilla, Castro and Barrio (1999), held out at -80 and +80 mV; the trace criterion is a dated amendment (the user)
 
-2026-11-23, about 13:05 UTC. The user chose (a), "Sounds good", on the lead's description and blind to every
+2026-11-23, about 12:08 UTC. The user chose (a), "Sounds good", on the lead's description and blind to every
 value, after the advisor endorsed it with a precedent check, which came back clean. The section 13.4
 extraction is in /mnt/workspaces/Cells/fr30-candidates4-extraction/ (README.md, LOG.txt).
 
@@ -9831,3 +9831,3634 @@ e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285. All 12 entries
 - Then the fitter starts, working from fit.json and protocol.json only. Its exclusions are all of lean/,
   the four papers, and everything else under fr30-candidates4-extraction/.
 - The lead's draft is /mnt/workspaces/Cells/fr30-benchmark-20261123/RULING_DRAFT.md.
+
+## D312: XC0's comparison rule is registered; the lead's answers to its three questions
+
+2026-11-23, about 12:15 UTC. The Xenopus lane's XC0 rule is tagged on its branch head,
+xc0-rule-registered-2026-11-23 (98351456), and merged at 1030280a. It names its reader,
+validation/xenopus_bioelectric/xc0_compare.py, as D308 requires. Nothing has been compared.
+1. **The manifest: option B, without the text.**
+   - The tagged reader's keys stage runs first. It prints family names, kinds, units and row keys only.
+   - The claim and quantity strings are not printed, because they can carry numbers. The families'
+     meaning comes from the confirmer (answer 2).
+   - The erratum that maps the undocumented families is then written once and tagged before the table is
+     built, and the table is built once.
+2. **The semantics come from a confirmer who is code-blind and value-silent.**
+   - An agent that may read the references' values and notes, but never Cells' engine code or outputs,
+     writes one file. It covers the nine readings to confirm (each "matches" or "differs"), the families
+     REFERENCES_USAGE.md does not map, and C3's worlds S2 to S8.
+   - It states no value, band, floor or tolerance, and no word that gives away an outcome. A mechanical
+     check confirms that every number in it is a key token, a unit, a declared input or a number already
+     in REFERENCES_USAGE.md.
+   - The builder reads only that file.
+3. **T1 and T2 stay unscored calibrations in XC0.**
+   - DESIGN gives no plausibility range for P_GlyR or the m_kleak availability, and a range set now would
+     be the lead's guess.
+   - The calibrated values are reported with the verdict, which states that they are unconstrained.
+- **Disclosed in the rule's not_blind:**
+  - the builder's refused listing of the designs files, of which nothing was read;
+  - the reference figures printed in DESIGN's erratum, declared_inputs.json and the references' README;
+  - one engine value at a registered state, pump_dG_atp at the declared pump conditions, printed by a
+    first invented input set and then replaced.
+- **The engine gap stays queued for the kinds lane** (D310's list): a declared zeta on every edge of
+  `cells.na2_anion_symport_diagram@1`. Until it lands, version 2's charge-placement rows are "not run on
+  main".
+
+## D313: FR-38's registered comparison failed: R1 failed, R2 inconclusive
+
+2026-11-23, about 13:32 UTC. The independent judge's verdict under the rule (tag fr38-rule-registered-2026-11-23)
+and its erratum 1 (tag fr38-rule-erratum-1-registered-2026-11-23, 57ff66b0).
+- **Provenance:**
+  - the runs came fresh from a clean frozen snapshot of 3f485ee9;
+  - the table and the verdict came from a clean frozen snapshot of the erratum's tag;
+  - the record is /mnt/workspaces/Cells/fr38-judged-20261123/verdict.json, sha256
+    f4e868de1c72520cee5d88b8d2db33027bd0990237059ea098d5ba4beeb3da3a, with verdict_notes.json beside it.
+- **Per run:**
+  - passed: R1 at p = 0.25 and p = 0.75, for both machine options;
+  - failed:
+    - R1 at p = 0 (survivors_R) and at p = 1 (survivors_R_s);
+    - R1's blank (G_minus_G0);
+    - R1L at p = 0.75 (label_R_cohort and label_R_s_cohort);
+  - inconclusive: R2, on C_tx_3's observed order. The first triple gave 3.94. The one retry, at 1, 0.5 and
+    0.25 s, gave 3.69 and 3.67, still above the 3.5 cap, although all 69 readouts of each run were within
+    tolerance at 0.25 s.
+- **The failures, by clause:**
+  - **Zero-rate survivors, four runs.** The engine's |n_F - blank| is at most 5.3e-24 fmol, against a floor
+    of 1e-21. They fail only on the lead's sixth ruling, which required the reference to be exactly 0. It is
+    not 0: it matches the engine's value to within 5e-27 fmol. **That ruling was wrong.** Without it these
+    four runs fail on nothing else, but R1 still fails.
+  - **The blank's G_minus_G0, two runs.** The gap is 1.51e-16 pJ, against a floor of 9.98e-17 pJ (1e-9 of
+    the row's own 1e-7 pJ scale). The absolute gap is 1.1 to 1.8e-16 pJ in all twelve R1 runs; the others
+    pass because their scales are 4 to 7e-3 pJ.
+  - **Route 1, two runs (R1L).** The gaps are 3.56e-9 and 5.78e-9 of their scales, against the 1e-9 floor.
+- **The judge's hypotheses about the causes. None is verified.**
+  - **Route 1:** erratum F's gross-versus-net difference. The engine's cohort leaves at the gross loss rate,
+    while the references' route1_blank (row minus blank) loses at the net rate. Its closed form reproduces
+    the short-lived gap (5.78e-9), but predicts 1.72e-9 for the durable readout against 3.56e-9 observed.
+    So route 1 is not explained.
+  - **The blank's G:** rounding of G's large terms, about one ulp of M times its potential.
+  - **The zero-rate survivors:** both sides compute the same coupling through M.
+- **The verdict stands as registered.**
+  - FR-38's functional acceptance (D306) is unchanged; the judged comparison failed.
+  - Re-scoring this table under any corrected rule would be a labelled, non-blind diagnostic beside the
+    failed verdict, never a replacement. R2's retry is spent.
+- **What follows is the user's decision.** The options, put to the user on 23 November:
+  1. record and stop: FR-38 stays development-only, with no validation claim;
+  2. record, diagnose route 1, then decide. The diagnosis covers the engine-side gap per time, and the
+     references' author stating in words what route1_blank is defined to be;
+  3. a new registered comparison on fresh worlds, with the rule fixed before new references exist. This is
+     the only route to a pass.
+
+## D314: The user's three decisions of 23 November afternoon, and BITSEY's role
+
+2026-11-23, about 13:39 UTC. The user chose the lead's recommendation on each.
+1. **FR-38 (D313): diagnose route 1 before deciding.**
+   - The diagnosis gives the engine-side gap per sample time for R1L's two readouts, each tested against
+     erratum F's gross-versus-net closed form.
+   - The references' definition of route1_blank is stated in words.
+   - It is a non-blind diagnosis and replaces no verdict.
+2. **OL6 Protocol D: erratum 2 for P-D1, using its registered closed form.**
+   - P-D1's planted (d) run is refused by its own books (residual 7.26e-8 k_BT against 1.00e-8) before
+     criterion B can read it. Under section 8, a plant not caught makes the protocol fail.
+   - The erratum has B read P-D1's (d) side from the registered `pd1_closed_form` (`d0_stationary`), so no
+     new number is introduced. P-D1 gets one attempt under it.
+   - It also records the lead's ruling on P-D2(ii): its process computes the engine's generic verdict
+     before entering its scope. That plant then reproduces the registered effect bit for bit
+     (0.20764924410295305).
+   - It is tagged after every plant has been attempted, which is now done, and before any honest
+     comparison is computed or opened. None has been.
+3. **GJ-N1's 2D field takes the faster path first.**
+   - GJ-N1 is registered as written (gj-neither-registered-2026-11-23), and the 1D line, about 8 CPU-hours,
+     runs now.
+   - The field would cost about 350 to 410 CPU-hours at 0.16 to 0.19 s per step. Before it runs, the
+     engine's per-cell cost is profiled and the GPU tried, as development timings only, with no outcome
+     read.
+- **BITSEY's role, the lead's ruling on D219's "an additional reference":** the pinned run is reported
+  beside the verdicts and never judged.
+  - BITSEY integrates by explicit adaptive Euler, which has no a priori error bound, so no band could be
+    set honestly.
+  - The judged reference is the code-blind integration with its stated accuracy (GJ-N1's check A).
+
+## D315: FR-43's design decided: part 3 in the composite (B); the cap to 1,024; two writers with one potential (the user)
+
+2026-11-23, about 14:13 UTC. The user reviewed docs/FR43_SHARED_INVENTORIES_DESIGN.md (branch fr43-design, 398a6e64)
+and gave the five rulings it asks of the lead, with part 3's host.
+1. **Part 1, networks above 16 species:**
+   - the cap rises to 1,024 species;
+   - the existing sum is kept through 16 terms and the scan fold is used above 16, so every world at 16 or
+     fewer keeps its program text;
+   - the trace budget's over-estimate is fixed now;
+   - the per-entry sparse layout is staged afterwards.
+2. **Part 1, the step:** the accuracy-limited timestep is reported, and the stiff integrator is deferred
+   (D152's door, a separate law).
+3. **Part 2, fixed volume:** two writers are allowed on one shared row, with one registry potential and
+   separate material and energy accounts for each writer.
+4. **Part 2, changing volume:**
+   - the reaction law keeps its ID;
+   - current-volume reads are delivered for both writers, the reactions and the gene unit, within FR-43;
+   - a test must run both writers active while the volume changes.
+5. **Part 3:** the host is option B, an integer-population operator in the composite. B requires no OL6
+   exemptions, so OL6's refusals 9 and 11 stay.
+   - The split is the new token independent_segregation (each unit to the first recipient with
+     probability f), and exact_fraction is preserved, with Protocol G's contract untouched.
+   - Event timing is verified under step halving, the partition at division is verified, and a same-seed
+     restart is verified.
+- **Next:**
+  - the build, on the extra cores that are the priority item's;
+  - the code-blind references for part 2's coupled calculation and part 3's same-draws integration, by a
+    separate agent;
+  - the GPU column folded into the note.
+
+## D316: FR-38's route 1 diagnosis: every failure is definitional, with no engine or reference defect found
+
+2026-11-23, about 14:26 UTC. The judge's non-blind diagnosis (D314, the user's option 2). The judge read the references'
+code and values for it, so it is no longer a blind judge for FR-38. The D313 verdict stands as scored. Files:
+/mnt/workspaces/Cells/fr38-judged-20261123/diagnosis/ (diagnosis.json and the three scripts with their records).
+- **Route 1 is definitional.**
+  - The engine's label cohort leaves at the gross rate, which is erratum F's definition and what the rule
+    asks: the forward loss k n leaves at the row's shares, and the re-synthesis k n e^y enters at the base
+    label.
+  - The references' route1_blank (row minus blank) loses at the net rate, k(1 - e^y). The references were
+    built on 22 November, the day before erratum F.
+  - The per-time gaps equal the gross-minus-net closed form, to the engine's own split-step error. The
+    durable readout's 3.56e-9 is that form at 7200 s, normalised by the 3600-s scale.
+  - The engine meets the references' own gross closed form, first_order_limit, to 2e-14.
+  - The mapping that failed was the lead's: erratum 1's reading that "the blank-free label row is the same
+    quantity".
+  - Route 2 has the same mismatch, hidden by its known-rate grid error.
+- **The blank's G_minus_G0** is mu_M times the engine's float rounding of n_M (0.85 ulp at 7200 s). With
+  the exact M, the engine meets the reference to 7.7e-22 pJ.
+- **The zero-rate survivors.** The reference's n_F_minus_blank carries the row's real coupling through M,
+  and the closed form gives the same value. The engine departs from it by 4 to 5e-27 fmol, within its own
+  step noise. The sixth ruling's premise, that this quantity is exactly 0, was wrong.
+- **A side finding:** the short-lived split error is 1.10 times erratum C's stated bound, so that bound is
+  not strict. A sheet correction is on the backlog.
+- **The judge's recommendation:** a corrected rule for a new comparison, with these parts:
+  - routes 1 and 2 mapped to the gross reading, either through first_order_limit or through a new code-blind
+    gross tracker;
+  - the survivors compared with the reference at a floor of 1e-9 times the row's magnitude;
+  - G's floor set as a reasoned multiple of |mu_M| ulp(n_M);
+  - R2's order window argued from the split scheme before any run;
+  - fresh runs and a new judge, with the non-blindness disclosed.
+
+  Such a comparison on these worlds is weaker evidence than the first. The decision is the user's.
+
+## D317: Three choices of 23 November afternoon, and a disclosure for FR-30
+
+2026-11-23, about 15:20 UTC.
+1. **FR-38 (D316): a new registered comparison, after FR-43** (the user). The corrected rule is fixed first. Then come
+   fresh worlds, new code-blind references for the gross reading, and a new judge. It waits until FR-43's build
+   has its agents.
+2. **OL6 Protocol D: erratum 3 before D0, D3 and D5 are judged** (the user).
+   - D6 fails criterion M as registered through an arithmetic artifact. At three pre-shear times all 128 exact
+     replicas equal (d) bitwise, yet the registered mean_error's rounding gives z of about sqrt(128), against a
+     threshold of 6.
+   - The erratum excludes from M a pair that is exact at the top rung. D6's registered fail stands, and it is
+     rescored under the erratum only as a labelled diagnostic.
+   - **The registered verdict stands:** Protocol D fails as registered through D6, and the full repair of M
+     belongs to a re-registration.
+   - **Zero-SE check:** the checker found no (observable, time) pair with a zero combined SE and a nonzero
+     error in D1, D2, D4 or D6.
+3. **GJ-N1's 2D field** (the user, on the owner's profiling). The registered cost was overstated: it is about
+   0.11 to 0.14 CPU-s per step, about 300 CPU-hours for the field search. The plan:
+   - first, two bitwise-identical engine fixes: the Hill evaluation's padded double branch, and the window
+     path's per-step overhead;
+   - then a sparse solve for the arrowhead-shaped field matrix, as part of FR-17, qualified against the dense
+     solve and named in a tagged GJ-N1 amendment before any field point runs;
+   - then the field runs on a gate lane.
+- **A disclosure for FR-30 (D311, section 13.5).** The lead ruled one parameter set for both polarities after
+  reading, with every number masked, the Lean lane's line that a polarity-symmetric gate misses one fitted curve
+  at 80 mV. The ruling follows the law as declared, junction_series_gates@1 being symmetric in |V_j|. It does not
+  tune toward a pass.
+
+## D318: OL6 Protocol D fails as registered, on D6's M alone; everything else passes
+
+2026-11-23, about 17:05 UTC. The independent checker's verdict on D0–D7 under errata 1–3. The record is
+/mnt/workspaces/Cells/ol6-checker-20261123/ol6-protocol-d-3e50d48d/verdict_protocol_d_D0_D7.json, with 30 disclosures.
+- **The protocol fails as registered on D6's criterion M alone** (10.47, against the fail threshold of 6). It is
+  the arithmetic artifact of D317: all 128 exact replicas equal (d) bitwise at three pre-shear times.
+  - Under erratum 3's rule, D6's labelled, non-blind diagnostic is 2.293, and D6's other criteria pass.
+  - D5 passes under erratum 3 (M 1.66, with 16 exact pairs excluded). Over every pair, the registered value
+    would be 10.98, the same artifact.
+- **Every other world passes:**
+  - D0 is refused at parse at min_count 10, as registered;
+  - D1, D2 and D3 pass, with P slopes of -0.498, -0.500 and -0.496, M at 2.9 or below, and B's c_r at 2.08 or
+    below;
+  - D4 passes, with E's mean_z at 0.49;
+  - D7 passes under D309's bound: E's mean_z is 1.01, and all 384 of 384 are paired by the pore.
+- **Every plant is caught.** P-D1, under erratum 2, needs c_r 15.94 against 5. P-D2 through P-D7 are caught as
+  registered.
+- **Other results:**
+  - n_min: none, since M fails at the ladder.
+  - Zero-SE pairs with a nonzero error: none.
+  - N: passes.
+- **Protocol G scope 1 still passes.** The checker corrected its physical-measure note: paired on the same seeds,
+  the measure is -1.80% against section 7's predicted -1.75%.
+- **Scope 2 is running.**
+- **The user's decision (23 November): re-register Protocol D after FR-43.** M is repaired, the seeds are fresh,
+  and the fail and its diagnosis stay on record meanwhile.
+
+## D319: FR-43 part 3's registered comparison passes
+
+2026-11-23, about 17:26 UTC. The builder ran the integer-unit population operator, option B (D315), at 52935908 from a
+clean frozen snapshot. It was judged under the criteria tagged fr43-part3-criteria-2026-11-23, which were fixed before the
+references returned, against the code-blind references tagged fr43-part3-references-2026-11-23. The verdict is in
+/mnt/workspaces/Cells/fr43-part3-20261123/evidence-52935908/compare/verdict.json (sha256 548b7928b04c6a4d...).
+- **W1, W2 and W4 agree with the references at rounding,** at 20 and 5 ms: event times within 1.8e-14 s and amounts within
+  6.4e-15 fmol, against bounds of 1e-9. The events, channels and counts are the same. W4 is the first use of the
+  node-side read.
+- **W3, the two-way coupling, converges at order 1.96** under step halving from 20 to 1.25 ms, inside [1.7, 2.3]. Its
+  RMS/dt^2 varies by a factor of 1.82, against a bound of 4. The RMS at 1.25 ms is 1.47e-7 s, against a bound of 1e-6.
+- **C3.3:** at 16,384 sites with feedback off, the fraction with no active unit falls inside its band at all ten times
+  (z = 3.89). The k_a +10% plant misses at all ten.
+- **C3.5:** at f = 1/2 exactly (64 seeds x 128 sites), exactly one recipient receives each draw. The frequency is 0.4954,
+  inside 0.5 +- 0.0182. The f = 0.55 plant falls outside.
+- **The plants are data per world,** so the cached-rollout hazard cannot reach them.
+- **Disclosed:** the builder chose W3's window and phase band after its own engine and development runs. That is
+  recorded in the registration's section 5.
+- **It lands after FR-43 part 1,** gated against main.
+
+## D320: FR-30's registered benchmark on Revilla 1999 fails: 4 of 6 comparisons, both misses at -80 mV
+
+2026-11-23, about 17:44 UTC. The independent checker's score, under section 13's rule 4 and D311.
+- **Provenance:**
+  - the registration is tag fr30-revilla1999-registered-2026-11-23, and the reader erratum is tag
+    fr30-revilla1999-reader-erratum-1-2026-11-23, which changes resolve's container step only;
+  - the score ran from a clean snapshot of 00bc183e;
+  - the inputs are predictions.json 20ca2a4a... and held_out.json e8368083..., both unchanged;
+  - the verdict is /mnt/workspaces/Cells/fr30-benchmark-20261123/verdict/checker_verdict.json (af9f402d...), with
+    the scorer's own verdict.json (c28010d5...);
+  - the checker recomputed all six comparisons without the scorer, and they agree.
+- **The six comparisons:**
+  - **-80 mV:** tau_fast passes (1.51 against 1.75 s, within 2 SEM). tau_slow fails (19.40 against 13.39 s, ln ratio
+    0.370, outside 2 SEM). G_ss/G_0 fails (0.397 against 0.478, off by 0.081, beyond 2 SEM's 0.053).
+  - **+80 mV:** tau_fast passes, through 2 SEM only (1.51 against 2.17 s). tau_slow passes (19.40 against 16.45 s).
+    G_ss/G_0 passes (0.397 against 0.384).
+- **Rule 4 as written also fails,** so the verdict does not rest on D311's "both" reading:
+  - G_ss fails at one voltage of two;
+  - tau_slow passes at one of two, not more than half;
+  - the 75% clause holds, at 3 of 4.
+- **What the fail does and does not show** (corrected 23 November; the first reading here overstated it):
+  - **The +-80 mV acceptance windows overlap for every observable:** tau_fast 0.47-3.77 s, tau_slow 12.1-16.8 s and
+    G_ss/G_0 0.4245-0.4339. So one |V_j|-symmetric prediction could have passed all six.
+  - **The fail shows that this fit missed, not that symmetry fails.** Its tau_slow (19.40 s) lies above both
+    polarities' observations.
+  - **The polarity difference is one study's indication:** G_ss/G_0 differs between -80 and +80 mV by about 2.6
+    combined SEM, tau_slow by 1.1 and tau_fast by 0.3. The in-sample fit's G_ss residuals at +-60 and +-100 mV
+    point the same way, from the same paper. One wet-lab experiment is never fully trusted (the user, 23 November).
+- **Disclosed:**
+  - the checker wrote the reader erratum from value-free structure logs before reading any held-out value;
+  - the lead ruled one parameter set after reading, masked, the Lean lane's line on polarity-symmetric gates
+    (D317).
+- **FR-30's law stays development-only** (D262).
+- **The user's decision (23 November): a polarity-aware gate within FR-16, with a fresh blind benchmark on
+  Ek-Vitorin 2016, extractor first.**
+  - The FR-16 design starts by checking polarity dependence in independent sources, including whether the
+    benchmark's junction is homotypic. It does not open Ek-Vitorin 2016, which stays sealed for the benchmark.
+  - The law's form changes only if independent sources support it.
+
+## D321: speeding up current runs: the shared compile cache, cold where seconds are measured, and a first L4 timing for the gap-junction field
+
+2026-11-23, about 18:19 UTC. The user's two decisions on the speed-up note,
+/mnt/workspaces/Cells/speedup-20261123/NOTE.md. The note measured from a clean snapshot of main f721e1d8.
+- **The shared JAX compilation cache is adopted in two steps.**
+  - **Background:** it passed qualification on this machine's CPU on 20 November
+    (/mnt/workspaces/Cells/cache-qualify-20261119/run-1), with every output bitwise, and was never adopted.
+    - Warm, it cut G1 from 541 to 177 s and tiers 1+2 from 1,496 to 1,027 s.
+    - Today's sample of 12 G1 worlds, from all five families, is bitwise cold and warm.
+  - **Step 1, now, scripts only:**
+    - **Tier seconds are always measured with the cache disabled.** test_tiers.py enforces this, and fold refuses
+      a measurement without the cold marker. Measured warm, 77 tier-2 files would refile as tier 1, and even an
+      empty shared cache moves 27.
+    - **Gates are cold by default.** gate.sh, stack.sh, nightly_tiers.sh and the fr_landing scripts disable the
+      cache, log it and check that no entry appeared.
+    - run_detached.sh disables the cache in every unit that is not run with --jax-cache, so judged and
+      registered runs stay cold.
+    - **Development runs may opt in** with run_detached.sh --jax-cache. That uses one CPU-only folder per jaxlib
+      version and CPU model under /mnt/workspaces/Cells/jax-cache/, in JAX's default mode as qualified. A nightly
+      sweep caps it at 8 GB. JAX's own eviction under filelock is not adopted: it is unqualified and scans every
+      entry on each write.
+  - **Step 2, after a replay of about one lane-hour:**
+    - Gates read and write the cache. That saves about 15-20 minutes per full gate.
+    - The replay must cover two lanes writing from two trees at once, a case the qualification did not cover.
+    - The nightly full tier run stays cold, as the control.
+- **The gap-junction field on the L4: a measured timing first.**
+  - One windowed timing goes through the vector path, which is already admitted on a GPU, with no src change.
+  - It runs in a short block announced to the visualizer, after FR-43's GPU needs.
+  - The projected gain is 2-5x per point, not measured. The full qualification of the device row checks on the
+    GPU (about 1-1.5 agent-days and 1.5-2 L4-hours), and the tagged GJ-N1 amendment it would need, are decided
+    on the measured number.
+- **The lead's rulings:**
+  - **A routine fix:** configure_caches() stops turning a cache on implicitly for cells ensemble workers, and is
+    off on the GPU. That removes the path of the 8 November L4 bitwise failure.
+  - **Deferred:** resolved_pump_composite@1 in cells ensemble, since no current run uses cells ensemble, and the
+    assembly_lineages@2 ensemble adapter, which would gain no speed.
+
+## D322: OL6 Protocol G passes in both scopes
+
+2026-11-23, about 19:06 UTC. The independent checker's verdict under the tag ol6-protocol-g-registered-2026-11-23 is
+/mnt/workspaces/Cells/ol6-checker-20261123/verdict_protocol_g_both_scopes.json.
+- **The runs:**
+  - scope 1 ran at 3e50d48d;
+  - scope 2 (50 fissions) ran at 2263d11c, the first main head holding S7;
+  - both ran from clean frozen snapshots whose registered files are byte-identical to the tag.
+- **Tier 1 passes in both scopes:** 1,280 of 1,280 seeds.
+  - Scope 2 runs through the 50th trigger, 2,030-2,398 events.
+  - Every uniform, first daughter, trigger index and partition's uniforms are bitwise equal.
+  - There are no coincidences, and the largest time ratio is 0.167 against a threshold of 1.
+- **Tier 2 passes:** 180 statistics in scope 1 and 360 in scope 2. The largest |z| is 3.81 against a pass bound of
+  4.5. None is in the band, and none is censored.
+- **The plants are caught:**
+  - G-P1 in 64 of 64 seeds in every world, with counts equal to the registered power table;
+  - G-P2 in every world, with the smallest per-world largest |z| at 29.0 (scope 1) and 41.8 (scope 2). Its z
+    equals the registered power to 1e-15 and 5e-14.
+- **Independent checks:** the checker re-derived tier 1, tier 2 and the worlds with its own code, and spot-checked
+  the raw arrays outside the judge.
+- **Reported only (section 7):** paired on the same seeds, the physical measure moves the passage time by -1.80%
+  on average, negative in 20 of 20 worlds, against the predicted -1.75%.
+- **Not run:**
+  - @1 under pair_consistent@2, since "reported beside" has no procedure;
+  - a scope-2 physical arm.
+- **Disclosed:**
+  - the checker's event limit (8,192 events, 2.34 s), which the lead kept;
+  - a claim-and-skip change to the run driver;
+  - an I/O-only change to the judge after its first freeze, with its self-test identical;
+  - timing smokes on unregistered seeds 900001+.
+- **Protocol D's fail stands as D318.** It is to be re-registered after FR-43.
+
+## D323: FR-46, FR-47 and FR-48: the user's rulings with a reviewer's additions; FR-48 is built first, then FR-46, and FR-47 is registered before its build
+
+2026-11-23, about 19:10 UTC. These rule on the design note /mnt/workspaces/Cells/fr46-48-design-20261123/DESIGN.md, with its
+section 9. The user agreed with the recommendations and relayed a reviewer's comments, which are adopted.
+- **FR-48, a lumen standard potential (R1-R3):**
+  - The species owns an absolute `lumen` standard potential. Records report Delta = mu0_lumen - mu0_solution.
+  - The shell law keeps all of Delta on the exit.
+  - **What the qualification claims:** the equilibrium ratio, Binomial(N, 1/(1 + e^Delta)) at equal volumes, and
+    detailed balance. The relaxation time follows the law's rate convention and is not claimed.
+  - **Rows:** a nonzero solution potential, with a plant that reads the lumen value as an offset; and the undeclared
+    default.
+  - **Version 1** covers prescribed shells only, with the rest refused by name. The key is statically absent unless
+    declared (D148).
+- **FR-46, binding from a shell's inner face (R4-R6):**
+  - One face per complex, and shells only in version 1.
+  - **The face rule propagates faces by ligand moiety over every wall state,** from the stoichiometry, not from
+    declared pairs. A reviewer reproduced a carrier that passed the proposed check: the ligand went through a
+    ligand-bearing wall state that had no binding pair of its own.
+  - **Rows:**
+    - the reviewer's counterexample first, as a failing row;
+    - carriers with zero, one and two intermediates refused;
+    - a same-face isomerization admitted;
+    - a run-level row: a shell closed to the ligand keeps the lumen at zero.
+  - **Rule 3's recorded message** is revised in FR-46's own landing, with the one recorded string declared in probes2's
+    compare. All 22 historical refusal inputs still refuse.
+- **FR-47, shell exchange and washes in the deterministic representation (R7-R9, R11):**
+  - **Gates:** autonomous switching gates, meaning forms interconverting by a wall step. Gates driven by bound states
+    are refused in (d).
+  - **Zeros (E2):** true zeros for first-order tracer places, through the difference form.
+  - **Site binding** in (d) shell worlds is refused by name in version 1.
+  - **min_count 10** is recorded as the run setting only, not as a qualified n_min.
+  - **E2's derivative.** At an empty place, the flux's one-sided derivative must be the first-order law's, not the
+    zero that exp(safe_log(n)) gives, because the Rosenbrock stages use it.
+    - Rows test the flux and its one-sided derivative at an empty reactant and at an empty product.
+    - A row tests the step-halving order across a step that starts at zero, with the old factored form as its plant.
+    - A stated rule for stage or step results below zero at E2 places replaces the envelope's guard there.
+- **FR-47's qualification (R10, R12),** tagged before the build, with C9 and P9 (the heat against the reference's
+  closed form):
+  - **Zero uncertainty is classified from the reference, before the run.**
+    - Where the reference predicts a constant, every replica must match it, and one wrong replica fails.
+    - Where it predicts spread, identical replicas still face the spread test.
+    - A tolerance exists only where it is derived, for two routes to one constant by different arithmetic, as
+      release_check's bound is. The lead's earlier proposal of a declared rounding floor is withdrawn.
+    - **The same rule serves Protocol D's re-registration,** which must justify any excluded pair from the model, not
+      from the replicas.
+  - **C6's spread test** takes its fourth moment from the reference, or another justified spread test is chosen.
+  - **C8's slope** is claimed as measured only where 128 replicas resolve it by the reference's own estimate.
+    Elsewhere it is reported.
+  - **Seeds:** fresh seeds, disjoint from every probe and smoke seed, are named in the tag.
+  - **The judge** is first run on a file written by the references' own writer, on invented inputs.
+  - **FR-43 part 2's lessons apply:**
+    - the reference spec states the unit of every declared count;
+    - the references agent shows bitwise regeneration under other hash seeds;
+    - there is one tag, at the final head.
+- **Order:**
+  - FR-48, then FR-46, in one gate if both are ready together.
+  - FR-47's protocol and reference spec come next, and its build follows FR-48.
+  - Gates wait for FR-43's lanes.
+  - FR-47's exact ensemble, about 3 CPU-hours, runs after Protocol D's re-registration or on other CPUs.
+
+## D324: FR-43 part 2's registered comparisons pass: C2.3, C2.6/C2.7 and C2.8
+
+2026-11-23, about 19:24 UTC.
+- **The judgements:** the builder's, run against the code-blind references tagged fr43-part2-references-2026-11-23
+  (0172e1b9, under the spec's amendments 1 and 2) by CRITERIA.md, with a floor of 1e-8 and a band of [3.6, 4.4].
+  Each ran once, from a clean frozen snapshot.
+- **The records:** /mnt/workspaces/Cells/fr43-20261123/part2/registered-20261123/.
+- **C2.3, two writers on one shared stock at fixed volume (2A at 205dbaa5): passes in the sink and in the source.**
+  - The gene unit's books are judged, at ratios 4.004 (sink) and 4.009 (source).
+  - The other quantities fall below the floor at both steps. In the source, the network's books and route rate
+    agree at rounding, since X -> N does not read N.
+  - The planted 1%-fast network fails in n_N and in the network's books, at ratio 1.000.
+- **C2.6 and C2.7, the swelling cell (2B at ea813fae): pass, with every ratio judged.**
+  - amounts 3.930 and V 3.999;
+  - the engine's endpoint energy identity 4.006;
+  - F against the reference 4.017;
+  - water's heat 4.000, the bath's water work 3.999 and the network's heat 3.986.
+  - The plant that reads V0 is refused by the energy ledger.
+- **C2.8, the swelling pair (2B): passes.**
+  - n_W, the network's books and the network's rate are judged, at 4.000, 4.000 and 3.999.
+  - The rest fall below the floor.
+  - The two plants that read V0 (the gene unit and the network) fail in amounts by factors of 1.7e5 to 1.3e8,
+    at ratio 1.000.
+- **On record:**
+  - c23-judge-a8444119, as failed evidence. Its stage-1 reference read machines = 100 as fmol, the spec's
+    unstated unit, which amendment 2 fixed.
+  - c26-judge-3455afd2, as development evidence.
+  - The superseded reference tags fr43-part2-references-c23-2026-11-23 and fr43-part2-references-c26-c27-2026-11-23.
+- **2A and 2B land after their gates.**
+
+## D325: the gap-junction replication's GJ-L1 comparison passes
+
+2026-11-23, about 19:24 UTC. The GJ owner's registered engine run and judgement are in
+/mnt/workspaces/Cells/gap-junction-20261123/judged/.
+- **The verdict:** 57 of 57 real entries pass, 45 arms and 12 chains.
+  - The two plants, each scaling every junction permeability by 1.01 in the definition, are caught, with margins
+    of 2.0e9 and 1.0e3. They are the only failures, as required.
+  - No entry is inconclusive, so no retry is owed.
+  - The largest real margin, gap against tolerance, is 0.333 on the as-written arms. That is the registration's
+    expectation: the dt/4 error is about a third of its estimate, since the tolerance is three times the
+    estimate.
+- **The engine run:**
+  - one registered invocation (figure3, figure5, figure8, control and aswritten, at the 600 s horizon);
+  - from the clean snapshot of main 23593267, equal to the tag in src/ and validation/ except unrelated files;
+  - on CPU 8, under lane B's lock, paused by the holder's yields and never stopped;
+  - the table was built from the engine alone before any reference was read. Its sha256 is
+    672373c7a747c6c4791d14fe70ee9853bd7a30a2682de00185c19ed335c601df.
+- **The judgement:**
+  - from a clean snapshot of main 9eb9890a, with the judge unchanged since its tag;
+  - the interface is byte-identical to gj-linear-references-2026-11-23's;
+  - the verdict's sha256 is b3e9c1cc4185462341b81f72c38777a00004791153b660c13690969723f1a94f.
+- **The plants' isolation:** each plant's definition fingerprint differs from its reference arm's at every step taken
+  (plants-isolation.json), so a program cached per model computed the planted values.
+- **Next:** GJ-N1's 1D line runs now, about 8 CPU-hours. The 2D field waits for the sparse solver (FR-17's stage 1)
+  and a GJ-N1 amendment that names it.
+
+## D326: the gap-junction field on the L4 is measured; the user's decision is to place GJ-N1's field after the sparse solver lands
+
+2026-11-23, about 22:30 UTC. This follows D321's first item.
+- **The timing.** It is development only, with no outcome read, in /mnt/workspaces/Cells/speedup-20261123/l4-timing/.
+  - It ran from a clean snapshot of main 31fde682, which includes the field-path change d6d42b46.
+  - It ran GJ-N1's field at D = 1e-13 (dt 1/128 s): one world, 9 windows of 32 steps, through run_vector_windowed,
+    with no src change.
+  - The L4 took 21.2 ms per world-step after the first window, and 19.7 ms in steady windows. The same driver,
+    snapshot and arm on one CPU took 65.5 ms. That is 3.1x, inside the projected 2-5x.
+  - Compiling took 73.4 s on the L4 against 40.2 s on the CPU. Device memory peaked at 388 MB. An L4 run also keeps
+    one host CPU busy.
+  - **Agreement after 288 steps:** 31 of 39 state arrays are bitwise equal, and the other 8 differ by at most
+    4.3e-16 of their own array's scale.
+  - The block followed the GPU protocol (the gpu.reserved flag and the exclusive gpu.lock), with the visualizer on
+    hold. The lock was held for about 1.5 of the 10 allowed minutes.
+- **What it means for GJ-N1, as estimates:**
+  - the upper end of the search (2.56 million steps) would take about 47 h on one CPU, or about 15 h on the L4;
+  - with the sparse solve on a CPU, it would take about 30 h (amendment 1);
+  - the whole search would occupy the L4 for 40-55 hours one point at a time, and the visualizer uses the same
+    GPU.
+- **The user's decision:** time the sparse solver on both the CPU and the L4 once it lands, then choose the field's
+  placement on those numbers. The GPU qualification of the device row checks waits until then.
+  - Any GPU placement needs a further tagged GJ-N1 amendment before field points run.
+- **Disclosures for GJ-N1's record, made before any field point runs:**
+  - this timing ran the field for 288 steps (2.25 s simulated) and compared CPU and L4 state arrays for agreement
+    only;
+  - the GJ owner's development timings ran the 25 x 25 field for up to 36 s at D = 0 and 2.25 s at 1e-13. They
+    were window timing, host and trace checks, the bit check and the D148 guard dumps;
+  - no criterion was computed and no state was printed in either. The short field states saved in
+    probes/field-profile-01 and gj-fieldpath-20261123/d148 were never read.
+
+## D327: FR-44, FR-45, FR-49, FR-50 and FR-51: the user's approval of the designs, with two reviewers' qualification details; build order and file ownership
+
+2026-11-23, about 22:36 UTC. These rule on the design notes /mnt/workspaces/Cells/fr44-45-design-20261123/DESIGN.md and
+/mnt/workspaces/Cells/fr49-51-design-20261123/DESIGN.md. The user approved the designers' recommendations, with two
+reviewers' additions. Names follow the notes.
+- **The fail-open fix comes first** (FR-44 note section 5.2).
+  - Today a wash is admitted at a node that templated_polymerisation@1 exports into, or degrades outside at.
+  - The fix refuses both by name, each with its own row, plus a passing control where the wash is at a different
+    node.
+  - Before it lands, it lists every existing and registered world the refusal would catch, and discloses any judged
+    run that used one.
+  - It lands after FR-43 part 3, before anything widens wash admission.
+- **FR-44, labels across a wash:**
+  - **The core ships first.** The wash reports a typed LiquidExchange, read from each wash event's own
+    wash_last_sample_fmol and wash_last_supply_fmol, not from cumulative deltas.
+  - The incoming buffer carries the base label, even during an active label window.
+  - Labelled ions at a washed node are admitted: their amount is kept and their shares are diluted.
+  - label_outside_removed_fmol joins same_physics's exact extra-field set.
+  - The regression for a full wash that follows an earlier wash is kept.
+  - **Admission by species** (the written_species hook, about 0.5 agent-day) comes as step 3, after FR-44 and FR-45
+    land. Sites as label reporters, and crossings at a washed node, stay priced follow-ups.
+- **FR-45, competing ligands:**
+  - Shared site_sets inside site_occupancy@1, widened in place under D148 with crossrev renewed.
+  - Internalisation and the occupant-replacement operator are refused beside site_sets in version 1.
+  - The coupling operator @2 is admitted, reading a shared set's theta_b.
+  - **Before renewing the baseline:**
+    - show D148 compatibility on FR-3's existing worlds, their derivative programs included, and check whether FR-3's
+      judges take derivative programs;
+    - write the full new crossrev record first, so the renewal is against one clean baseline.
+  - **A registered protocol** (R-eq, R-ode and R-dG, with code-blind references) covers the finite-volume
+    equilibrium, the per-ligand balances and the shared-site heat.
+  - **Bound-site retention** is tested on the wash operator alone: bound arrays bitwise before and after. Saved rows
+    are not used, because binding resumes within the same step.
+- **FR-49, compartment compositions:**
+  - Its rulings 1-9 are as recommended, with the registered protocol fr49-compartment-compositions-v1 over World L
+    and World B.
+  - **Checks for combinations two changes create.** Whichever change lands second carries a check, or a refusal by
+    name, in that same landing for:
+    - a compartment with labels and a wash at a separate node;
+    - competing ligands sharing sites at a compartment;
+    - the inherited composition (cell_owned_compartments@1, neutral_arrival_labels@1, scheduled_compartment_wash@1 at
+      an external node), and its four-way form with unlabelled site_occupancy@1 once Admission by species lands.
+  - Each combination is enabled only once its check passes. The second builder lists what newly parses at its merged
+    head.
+- **FR-50, one-way records:**
+  - Its rulings 1-8 are as recommended. Phase 1, then phase 2 after FR-51, with the registered protocol
+    fr50-one-way-records-v1 and one_way_gap_relative.
+  - The gap is measured before any correction.
+  - The channel split is built from channel_rates' own factors, so opening, availability and block are shared by
+    construction.
+  - **The planted fault** leaves FR-51's block out of both directions. At zero net current that doubles both records
+    while the net, ratio and gap all pass.
+  - Each direction is checked against an independent absolute value from the reference. Transporters get the same
+    absolute equilibrium check, and the gap is defined when both directions are zero.
+- **FR-51, two blocking modes:**
+  - Its rulings 1-6 and 8-9 are as recommended. These are Option A, a constant blocker in version 1, s = +1 from
+    outside and -1 from inside, N2 refused beside a blocked population, blocked_channels and block_modes, the readout
+    channel_unblocked_fraction, and the registered protocol fr51-channel-block-v1.
+  - **Ruling 7:** each mode declares exactly one of electrical_distance (delta in [0, 1], giving s z_B delta) or
+    effective_valence (> 0, signed by s sgn(z_B), with blocker.valence nonzero kept for the charge's sign). A check
+    and a plant row cover that branch.
+    - The slope-bound probe is rerun at the steepest admitted value.
+    - The step bound must see u's dependence on E under V - E.
+  - **The unblocked fraction u and the slope term's (1 - theta) must be right at both ends:** exactly 1 at zero
+    blocker, and relatively accurate at strong block. A single mode with c/K = 1e18 must give about 1e-18, not 0,
+    which the literal 1 - sum(w theta) cannot do in binary64. Both ends are proved on the compiled program.
+  - At reversal the fraction is checked directly. The current ratio is used only away from reversal.
+  - The coupled-ion steepness case (polyamine block of an inward rectifier) rests on one study, recalled from memory.
+    Its source is checked before it enters the repo, and it is worded as an indication.
+- **Order and file ownership** (one owner per file at a time; each builder merges main just before hand-off,
+  regenerates the composition table with --write, and lands serially):
+  - **the wash files:** FR-43 part 3, then the fail-open fix, then FR-44, then FR-49's wash narrowing;
+  - **site_occupancy.py:** FR-45, then FR-49's site-occupancy pairing;
+  - **surface_pump_v3.py:** FR-17's call-site refactor (about 30-60 lines: readouts, imex_step, layout types), then
+    FR-51, then FR-50. Amended the same evening, after the FR-17 builder's report; FR-17 is on GJ-N1's critical path;
+  - **FR-49's other pieces** proceed in parallel.
+  - Each registered protocol and its spec are tagged before its engine build. Gates wait for FR-43 2B's landing.
+
+## D328: FR-43's three planned parts are on main; a correction to 2B's merge message
+
+2026-11-24, about 11:37 UTC.
+- **The landings:**
+  - part 1, the 1,024-species capacity (bbc99163);
+  - part 2A, two writers of one shared pool at fixed volume (c9687d68);
+  - part 3, the integer-unit population with its division hook (7fb0ad87);
+  - part 2B, both writers reading the current volume (2ca07dcb).
+- **Every registered comparison passed:** part 2's C2.3, C2.6/C2.7 and C2.8 (D324), and part 3's (D319).
+- **A correction.** 2B's merge message says "FR-43's build is complete". That overstates it, and the commit is
+  pushed, so the correction is recorded here.
+  - Part 3 stays open until D152 reactions and the gene unit can co-write a moved row.
+  - The version-1 refusals stand: integer_unit_population@1 beside scheduled_compartment_wash@1, and in the region
+    readouts.
+  - Each lifts only as its own qualified extension.
+- **The follow-up queued for after FR-43:** fixed_working_size gains a factor-width term. It is pre-existing, and
+  covered far above any declared network.
+
+## D329: the Xenopus lane's XC0 registered comparison fails; diagnostics before any next step
+
+2026-11-24, about 11:37 UTC.
+- **The run:** an independent runner, who built none of XC0, ran the procedure of erratum 1
+  (xc0-rule-erratum-1-2026-11-23) exactly.
+  - the snapshot of 260d7c7f;
+  - the manifest, equal to coverage.counts;
+  - the six P1LB segments on lane A;
+  - the table;
+  - the tagged retry, once, under the lead's ruling: the first judge refused, reading no value, on 46 refused table rows,
+    none of them C8b;
+  - the judge.
+- **The record:** /mnt/workspaces/Cells/xenopus-lane-20261119/xc0-judged/, with verdict.json
+  79bd2b243b0552a1a0b342d8d6e274edb4968e1ebf315c822a11c1400fc53669 and VERDICT.md.
+- **The registered verdict: fail.**
+  - C0-C5 pass. C6 is not testable. C7 and C8 fail.
+  - Rows: 7,382 pass, 4 fail, 44 engine-refused, 242 not run, 272 not mappable, 736 info.
+- **The four failures:**
+  - C7.pump_cell_charge_per_fmol: a relative gap of 3.43e-11 against a band of 1e-12;
+  - C8.b_final_c for Cl, K and Na: the bare run's 64 s node concentrations miss their 1e-6 bands by 6.4e-6, 5.0e-4
+    and 1.1e-5 relative. The engine's h and h/2 values agree to about 1e-13.
+- **C6:** 44 rows are refused by the engine's scan, with no sign change found at 24 or at 48 points. The retry
+  recovered 2 rows, which pass.
+- **No cause is attributed yet.** The runner flagged candidates without settling them:
+  - for C7, a rounded Faraday constant on one side;
+  - for C8, whether the reference's "final" is its own 64 s value or an end state;
+  - for C6, a root that the coarse scan misses.
+- **Three labelled diagnostics come first,** run by someone who built none of XC0:
+  - C7: the declared constant, and whether the rule has the engine read it;
+  - C8: each ion's miss at 32 s against 64 s, and the rule's and DESIGN's own text for "final";
+  - C6: where the reference's roots sit in the scan domain, and how many there are.
+- **Any v2 cannot be blind on these rows.**
+- **T1 and T2** are reported as unconstrained calibrations. Where they rest on one wet-lab source, they are
+  indications only.
+
+## D330: GJ-N1: the 1D line's engine table is hashed; the user's decision, qualify the device checks on the GPU and run the field's longest points on the L4
+
+2026-11-24, about 11:37 UTC.
+- **The line search finished** (search_exit 0, cells_exit 0) from main 23593267 under amendment 1's record. The hashes
+  are in /mnt/workspaces/Cells/gap-junction-20261123/judged/line-01/SHA256SUMS:
+  - cells-line.json 92fad3a4f938288fe500a12e5f2006f7b8a373fe00d66cb3fd6d1f1af8b1bf7b
+  - run/search.json 0ee59228bdc9b0f25c0e72fa4faba969319611f32dba0234e456ba23175d8d37
+  - run/points.jsonl 798afd4bd7f7222c56364dff6ae72d0ac0c291d491dd575bc84d59499afea24b
+  - run/half_step.jsonl ea8d6567d1bf1fea1f5c016bf407863589766f7a6b6e3975de6379ff266a3613
+  - run/uncoupled.json 870025e978ece6685b24d5c8842fc5ed665ef87ad0f8d0843a2e0be686285e98
+- **The references stay sealed** until the field's table is hashed too.
+- **The four placement numbers** (FR-17), in ms per world-step for the field at D = 1e-13:
+  - on one CPU: @2 53.3, the sparse solver 29.2;
+  - on the L4: @2 13.1, the sparse solver 10.1.
+  - On the production path on a CPU, the sparse solver is bitwise equal to @2.
+- **The user's decision: qualify the device row checks on the GPU, then run the field's longest points on the L4.**
+  - The qualification uses the sparse solver on the production path: the host-against-device spread, the bitwise
+    and band tests, and memory.
+  - A tagged amendment 2 comes before any field point. It fixes in advance which points run where, and keeps every
+    pair the judge compares (h against h/2, the bracket's ends) on one device, since the CPU and the L4 differ at
+    rounding.
+  - The visualizer is on hold (the user), so the L4 blocks need no notice for now.
+
+## D331: FR-49's first landing: World L's registered judgement passes
+
+2026-11-24, about 12:23 UTC.
+- **What landed:** parts H and L of fr49-compartment-compositions-v1 (with amendment 1 and the judge tag), at the
+  merge 7d021548.
+  - The gene unit and neutral arrival labels are admitted beside cell-owned compartments.
+  - Each has its own check: outside degradations and exports at a compartment's node are refused, and labels
+    beside membrane state are refused by name.
+- **World L's judgement:** run once from a clean snapshot of the tagged judge's head (0cfdffaa) against the code-blind
+  references fr49-references-2026-11-24 (35c91d25), at the registered 3600 s horizon with dt 2 s and 1 s. **It passes.**
+  - L1, L2, L3, L6 and L7 pass. L7 is a bitwise restart at 900 s.
+  - L4's order ratios are 4.0037, 4.0034, 4.0043 and 4.0011, in the band 3.6-4.4. L5's sizes are 1.0e-7 to 6.6e-7,
+    against 1e-3.
+  - Plants (a)-(c) fail L4 at a ratio of about 1, and plant (d) fails L7, as registered.
+  - The record is /mnt/workspaces/Cells/fr49-expression-labels-20261123/judged-0cfdffaa/ (verdict.json sha256 begins
+    509118c73f3fde72).
+- **Still to come:**
+  - World B and the combination checks C1 and C2, after FR-49's site pairing (following FR-45) and its wash
+    narrowing (following FR-44);
+  - C4's four-way form, by amendment, once admission by species lands.
+
+## D332: XC0's failures diagnosed (labelled, post-verdict): rule-side definitions and an engine parse tolerance, not physics
+
+2026-11-24, about 12:26 UTC. These are labelled diagnostics by an agent who built none of XC0, run after D329's verdict and
+re-judging nothing. They are in /mnt/workspaces/Cells/xenopus-lane-20261119/xc0-diagnostics/DIAGNOSTICS.md. **D329's
+fail stands.**
+- **C7 (pump_cell_charge_per_fmol): two Faraday constants.**
+  - The rule declares F = 96485.33212, to 10 digits, 3.43e-11 below the exact SI value N_A*e. The reference uses the
+    declared value.
+  - The engine uses its SI constant. No XC0 code has the engine read the declared F, and the rule's
+    declared_deviations doesn't mention it.
+  - The gap equals the ratio of the two constants, 34 times the 1e-12 band.
+- **C8 (b_final_c): "final" means two things.**
+  - The reference, its README, SEMANTICS.md and DESIGN's erratum mean the analytic Donnan end state. Erratum 1 maps
+    "final" to the bare run's value at 64 s.
+  - The engine's bare run matches the reference's own RK4 bare values to 1.1e-10 at every time. The reference's own
+    64 s values miss its b_final_c by the same amounts.
+  - The miss decays at the run's slow mode, tau 9.35 s, a charge-neutral exchange of K for Na. That accounts for K's
+    47-78 times larger relative miss.
+  - 64 s was set from Na's single-ion time, which is too short for the slowest mode.
+- **C6 (v1_eq_ratio and v1_eq_x, 44 rows): the reader's settings meet a parse check.**
+  - Each key has exactly one root. At the reader's B_out of 10 mM, the cell holds 1e6-1e10 fmol of B at the roots.
+  - There the parse check |q - initial_charge_C| > 1e-20 C is finer than float64 can resolve, so the worlds are
+    refused, and the scans see no sign change.
+  - Four roots also lie beyond the reading's domain of 1e6.
+- **What a v2 would change (it cannot be blind on these rows):**
+  - **C7:** declare the SI constants, or the deviation, with no band tighter than the constants agree.
+  - **C8b:** define "final" once, and settle whether the bare node is compared.
+  - **C6:** state B_out and the domain, and keep B_in within float64's charge resolution.
+  - **The engine, separately:** the parse check's absolute 1e-20 C tolerance could scale with float64 resolution.
+- **What follows is the user's decision.**
+
+## D333: the user's decision on XC0: a v2 for the diagnosed rows, and a separate engine fix
+
+2026-11-24, about 12:36 UTC, following D332.
+- **D329's fail stays on record.**
+- **XC0 v2 is registered as rule erratum 2,** disclosed as not blind on these rows. It changes only what D332 found:
+  - **C7:** declare the SI constants the engine uses, or the deviation, with no band tighter than the two sides'
+    constants agree.
+  - **C8b:** define "final" once, and settle whether the bare node is compared.
+  - **C6:** state B_out and the reading's domain, keep every B_in within float64's charge resolution, and count the
+    points a parse drops in a scan's refusal.
+  - Only those families are rerun, on the same frozen engine (260d7c7f), by an independent runner, with code-blind
+    references regenerated where a declared constant changes.
+- **The engine fix, separately:** surface_tissue.check_definition's absolute 1e-20 C tolerance on the charge anchor
+  scales with float64's resolution of the terms.
+  - It is a definition-time check, so no program changes.
+  - It is a gated src change, after FR-17 lands, since FR-17 also edits that file.
+
+## D334: FR-30's next benchmark keeps the symmetric law; FR-38's second comparison is registered with arms A and B deciding
+
+2026-11-24, about 12:45 UTC. The user's decisions on the two drafts, with the advisor's review applied:
+/mnt/workspaces/Cells/fr30-next-20261124/ (POLARITY.md, REGISTRATION_DRAFT_13_7.md) and
+/mnt/workspaces/Cells/fr38-next-20261124/REGISTRATION_DRAFT.md.
+- **FR-30, superseding D320's "polarity-aware gate" line:**
+  - **The law.** The Ek-Vitorin 2016 benchmark fits junction_series_gates@1 as declared, with one parameter block.
+    - Identical hemichannels whose gates read only V_j are symmetric by construction, so a polarity-aware gate cannot
+      change a homotypic prediction.
+    - Independent sources indicate near-symmetry for homotypic Cx43, each one study's indication. Revilla's one-cell
+      protocol ties the sign of V_j to one cell's V_m.
+  - **@2** (placement and polarity per gate) is logged as a design note under FR-16 F3, for heterotypic junctions
+    only. A correction: what the gap-junction replication needs is F3's two-state Cx45 gate in Chen-Izu's manner. No
+    heterotypic junction is documented in it.
+  - **The one-cell protocol** (the user's ruling, made mechanical before Tag A):
+    - the extractor records the protocol type as an enumerated, value-free field, including what "not stated" maps
+      to;
+    - under a one-cell protocol, disjoint +-V_j windows are reported per observable as confounded by V_m, neither
+      pass nor fail. Overlapping observables are still judged;
+    - a minimum judged set is stated, below which the result is undetermined;
+    - the justification is non-identifiability, not a claim that V_m gating is real.
+  - **The rest, as recommended, with provisos:**
+    - a separate predictor;
+    - a fresh fitter, barred from D311, D320, POLARITY.md and Revilla's extraction;
+    - Part S only as a separately named steady-state result, with FR-30's own verdict staying undetermined;
+    - SD converted only where the paper states what n counts;
+    - generic modules, with the harness authored by the polarity check's author, who never fits, predicts or checks;
+    - withheld cross-voltage summaries;
+    - POLARITY.md committed without its two accidental quotes, naming fallbacks 7 and 9 as exposed and each source
+      at its strength.
+  - **What a pass licenses** is stated in section 13.7: one study's agreement. D262's status changes only by the
+    user's decision.
+  - **No fallback is opened** and nothing is downloaded for this decision.
+  - **BITSEY's GJ_lib.py** names Jose Ek Vitorin as an expert colleague, a person, not the sealed paper. There is no
+    exposure (the lead checked, by name only).
+  - **Before Tag A:**
+    - finish the exposure sweep;
+    - rehearse Tag A's whole chain on Revilla's spent files in the new layout, reproducing section 13.5's
+      conventions and D320's six lines.
+- **FR-38's second registered comparison:**
+  - **Scope:** arms A and B decide FR-38's verdict, and arms C and D (FR-43's shared pools and swelling cells) carry
+    separate verdicts reported beside it.
+  - **Changes to the draft's recommendations:**
+    - in arm A, the stage complexes are reported, not judged, the designer's fallback. The first comparison went
+      inconclusive on a stage complex's order;
+    - the references are written afresh, since the net-rate blank lived in the old ones;
+    - the near world's synthetic potentials are accepted, as a numerical-discrimination world with no biology
+      claimed (D306's precedent). The registration states in advance what a miss there means, since its potentials
+      lie outside section 3.3's range.
+  - **The rest, as recommended:**
+    - D271's order window, with the larger-pair estimate;
+    - fresh worlds only;
+    - a new judge, blind to the first comparison;
+    - a pass recorded beside D313's failure, never in place of it;
+    - the sheet's erratum I tagged before the rule;
+    - export, producer identity, routed p and the observation layer left to later registrations;
+    - no optional engine counters now;
+    - A1's swelling-cell gap logged, not built.
+  - **A correction to D316's reading:** R2's inconclusive verdict came from C_tx_3's observed order (3.94, then 3.69
+    and 3.67 against the 3.5 cap), as D313's verdict records. It did not come from gross against net, which explains
+    R1's failure.
+  - Its judge uses FR-47's agreement.py, which reaches main with FR-47. Its 8-12 CPU-hours queue behind Protocol D's
+    re-registration and FR-47's ensemble.
+
+## D335: FR-17's GPU qualification (D330): block 2's findings, and the lead's rulings before block 3′
+
+2026-11-24, about 13:35 UTC.
+- **Block 2** ran on the L4 from snapshot 04032172, with the host thread on CPU 4 and its sibling 20 idle under
+  the timed lock. CPUs 6 and 22 were never quiet for 30 s. The autotune was unpinned and no determinism flag was
+  set.
+  - **G1 fails at both D.**
+    - Host and device modes differ by bytes from window 1 on: 16 arrays at D = 1e-13 (28 by window 8), and 12 at
+      D = 0. They are amount increments, passive-route transfers and heats, and reaction ledgers.
+    - The field arrays, which come from the sparse solver with no scatter, agree.
+    - The builder's diagnosis, inferred and not yet shown by a repeat: the rollout's 94 scatter-adds run as atomic
+      adds on the GPU, in an order that varies from run to run.
+    - On the CPU, G1 passes, and a second process repeats bit for bit (G6's baseline: 8 of 8 window digests, 37 of
+      37 arrays).
+  - **G2 has not passed.**
+    - Every window the device decided is within the amended bound: at D = 1e-13, "total" 0.0165 against 0.291; at
+      D = 0, energy 1e-17.
+    - Window 1 at D = 1e-13 was handed back to the host (device ratio 0.727, against the CPU device's 0.088). Its
+      host ratio was not recorded, so it is unassessed.
+  - **G5:** the device peak is 199 MB; the check's temporaries are 539 KB (D = 1e-13) and 459 KB (D = 0).
+  - **G7, ms per step on the production path, whole core:**
+
+    | | D = 1e-13 | D = 0 |
+    | --- | ---: | ---: |
+    | L4, device mode | 16.9 | 13.7 |
+    | L4, host mode | 29.6 | 22.8 |
+    | CPU timed lane, device mode | 32.0 | 28.3 |
+
+    That is about 2×, before any determinism cost. D326 and D330's decision rested on about 3×.
+  - **CPU against L4, final states:**
+    - D = 1e-13 (2 s): 29 of 37 arrays identical, the rest within 5.5e-16 of scale.
+    - D = 0 (32 s): reaction ledgers and amounts differ by up to 8.6e-8 of scale. That is well above rounding, and
+      its cause is unknown.
+- **The lead's rulings,** all made before any further L4 number:
+  1. **G2's bound, amended** (amendment 1 of GPU_CRITERIA.txt, recorded before any L4 G2 value): on each ledger,
+     the L4's largest spread ≤ min(0.4, max(0.1, 1.5 × the CPU's on the same definition)).
+     - The reason: at steps 0 and 1 the bound is the bare atol, 1e-20 fmol, and a 625-cell global sum's rounding is
+       a large fraction of it. The CPU's device mode, already in production, shows 0.194 there.
+     - **G4's sampled spread takes the same bound.**
+  2. **Handed-back windows count in G2 and G4.** Both read "every window", and the amendment changed the bound, not
+     the windows. Handback counts are reported beside G2.
+  3. **Registered and qualified GPU device mode requires XLA's deterministic-ops setting,** beside the pinned
+     autotune file.
+     - Before block 3′, the builder verifies the flag's effect in the installed jaxlib, including on autotuning, and
+       records which flag is used and what it implies.
+     - `admit` refuses GPU device mode without it. That check is a tripwire reading `XLA_FLAGS`, not enforcement;
+       the bitwise G1 and G6 evidence is the guard.
+     - It is an engine change, so tiers 1 and 2 and the admission gate run on its head.
+  4. **The stop rule.** If G1 or G6 fails with the flag, the fail is recorded and the qualification stops, with no
+     further amendment to G1, G2, G4 or G6. GPU device mode then stays unqualified, and the field's longest points
+     run on the CPU.
+  5. **Block 3′** adds:
+     - one unflagged device-mode repeat, labelled diagnostic, to show the run-to-run variation directly;
+     - the D = 0 CPU-against-L4 comparison, rerun, with Newton iteration counts per step on both devices.
+  6. **Amendment 2 does not let R be compared across devices** until the D = 0 spread is explained and shown to lie
+     below R's resolution.
+  7. **The user's D330 decision goes back to them** once G7′, which includes the determinism cost, is measured,
+     since its speed premise was about 3×.
+- Block 2's unpinned, nondeterministic results stay on record as found.
+
+## D336: the user's decisions: XC0's t_e stays out of v2, and FR-17's GPU qualification closes as failed, with the field's longest points on CPUs
+
+2026-11-24, about 13:54 UTC. The user agreed with the lead's and the advisor's recommendation on both.
+
+**XC0 rule erratum 2 (D333): `C8.bc_t_e` stays out of v2.**
+- **Why it was raised.** The row passed in D329 under erratum 1's "final", the bare run's value at 64 s. SEMANTICS.md
+  measures t_e "not from a late value of the run", so that pass rests on a definition that conflicts with the
+  references.
+- **Why it stays out.** D332 diagnosed b_final_c only, and D333 limits v2 to D332's findings. The erratum's author has
+  seen the verdict, so adding a passed row would widen the user's decision.
+- **What v2 reruns:** 349 rows. D329's pass on t_e is carried, and the mismatch is recorded in the erratum as a
+  labelled post-verdict observation.
+- **The lead's other rulings before the tag:**
+  - **C7's tolerance:** |F_declared − F_SI|/F_SI plus the row's float64 allowance, evaluated and stated, so the
+    tolerance is exactly as loose as the two constants' disagreement.
+  - **C6:**
+    - the erratum names the law that makes v1_eq_ratio and v1_eq_x independent of B_out: DESIGN.md's equilibrium
+      ratio (B_in/B_out)_eq = (Na_out/Na_in)^n exp(−(n−1)FV/RT);
+    - it derives B_out = 1e-5 mM from the 2^19 fmol bound over the declared scan domain, not from where the roots
+      lie;
+    - a rerun row whose key carries a B_out token would need its references regenerated before the tag.
+  - **An independent cross-check of the C6 bound.** An exact-rational check of the frozen parser (17 controls)
+    finds every refused balanced input at or above 2^20 fmol. Below 2^19 fmol the worst-case budget, 5.6e-21 C, is
+    under the native 1e-20 C.
+  - **The judge's source check** compares at run time with D329's recorded snapshot manifest, with no source hash as
+    a literal. The six digests in the erratum are of D329's evidence files.
+- **Disclosure:** the lead has seen D329's numbers on these rows (D332).
+- **The tag** waits on the revised head and on the base rerun's CPU-hours. A new independent agent runs it.
+
+**FR-17's GPU qualification (D330, D335) closes as failed.**
+- **Block 3′a** ran from snapshot bc438c6c on the L4, with the host thread on CPU 4 and its sibling 20 idle under
+  the timed lock, and `--xla_gpu_deterministic_ops=true` set.
+  - **G1 passes.** Host and device modes are identical by bytes in all 8 windows, so the flag removes block 2's
+    scatter nondeterminism.
+  - **G2 fails as declared.**
+    - In window 1 (steps 0–32) the device read "total" at 0.715 and handed the window back; the host read 0.202.
+    - The spread, 0.514, is above the amended bound (0.291) and the cap (0.4). In windows 2–8 it is at most 0.016.
+    - The device erred high, so the window went to the host and safety held. The criterion still fails, and D335
+      bars amending it after the data.
+  - **G7 with the flag,** ms per step: device mode 21.8 (16.9 unflagged), host mode 34.0 (29.6). That is about 1.5×
+    the CPU's device mode (32.0), against the about 3× that D326 and D330 assumed.
+  - **G6** is recorded when it lands. G4 was not run, and blocks 3′b, 4′ and 5′ are cancelled.
+- **Consequences:**
+  - **GPU device mode is not qualified.** The field's longest points run on CPUs, as amendment 1 places them. A
+    tagged amendment 2 says so before any field point.
+  - **The admission code.** If main admits GPU device mode, a plain refusal lands, with no XLA_FLAGS check, which
+    nothing qualified could reach. If main already refuses it, only the driver and the criteria record land.
+  - **A new GPU attempt would be a fresh registration** and the user's decision: for example, compensated summation
+    in the device check, or the GH200.
+- **Corrections to D335:**
+  - **The D = 0 line.** The 8.6e-8 was measured against the increments' and gross ledgers' own scale. Against the
+    amounts, the CPU and the L4 differ by at most 2.1e-16, one ulp. A one-ulp change of the start on the CPU alone
+    gives the same picture, with no growth over 32 s.
+  - **The pinned autotune file plays no part under the flag.** The flag disables timing-based autotuning: the
+    flagged dumps hold no results.
+  - **Two items D335 ordered did not run:**
+    - the unflagged repeat, because the admit tripwire refused device mode;
+    - the Newton iteration counts, because the hypothesis is excluded by construction: the reaction operator is
+      explicit (SSPRK(3,3)), and the field arrays were identical between the devices.
+
+    The scatter diagnosis rests on one shared executable, together with the flag contrast.
+- **A finding for any device.** At steps 0–1 the bound is the bare atol, and the host itself reads 0.20–0.28 of it
+  on 625 cells. Whether that fraction grows with cell count is being estimated. If it does, a larger tissue could
+  refuse window 1 on rounding alone.
+
+**FR-47's judged run and its checker's driver use the landed engine,** main at ec7e8c7d (the merge of 43763a36),
+from a frozen snapshot. The registration was tagged before the build, so it names no engine revision. The fix for
+inert wall places, in progress, is not in the judged engine.
+
+## D337: XC0's erratum 2 and FR-30's Tag A are tagged before reading; the user's decisions on a core, FR-53 and a refused removal; SK2's one closing rate is flagged provisional
+
+2026-11-24, about 14:22 UTC.
+
+**XC0 rule erratum 2 is tagged `xc0-erratum-2-2026-11-24` at b477f433** (branch xc0-erratum-2). Its src/ tree equals
+260d7c7f's, D329's engine.
+- **What reruns:** 349 rows (C6 eq_ratio 172, C6 eq_x 172, C7 1, b_final_c 3, b_final_psi 1). C8.bc_t_e is
+  carried (D336).
+- **No reference changes.** No rerun row's key carries a B_out token, so no reference is regenerated.
+- **C7's tolerance:** |F_declared − N_A·e|/(N_A·e) + 16·2⁻⁵³, evaluated exactly as 3.4307699621628870747e-11.
+- **C6's B_out** is 1e-5 mM: the largest power of ten below 2¹⁹ fmol / (1e8 × 65.45 pL) = 8.0e-5 mM. The largest
+  charge-anchor term over the scan domain is then 81,100 fmol.
+- **Cost:** about 3.5 core-hours, or 2.5 h of wall time in three gate-lane batches of under 45 minutes plus the
+  table. A C8b retry would add about 4.4 core-hours, and the procedure asks the lead first.
+- **The runner** is a new independent agent, working from a frozen snapshot of the tag.
+
+**FR-30's Tag A is tagged `fr30-ekvitorin2016-tag-a-2026-11-24` at 9c53fd76** (branch fr30-next).
+- **The exposure sweep finished** (pass 5). It searched text files only, and never the sealed folder.
+- **The lead's two files are confirmed.** They name the 2016 paper only by name, identifier and status:
+  - LEAD-NOTES.md: its filing, the user's decision, and the registration's progress;
+  - MORNING-BRIEF-20261123.md: its name and PMC identifier.
+
+  Both stay barred for the fitter.
+- **The fourth choice is confirmed.** Part S judges every held-out G_ss, those at decay-list magnitudes included,
+  and starts from at least two held-out G_ss entries. Part S is reported only; FR-30's verdict does not depend on
+  it.
+- **Not exercised by any test, as the record states:**
+  - of_G0 amplitude scoring;
+  - reference_step predictions;
+  - a G_ss sampling time other than T;
+  - the symmetric protocol's holding difference.
+- **Next:**
+  - the branch lands later, with its tier measurement folded onto main's record (D222);
+  - the sealed extractor is a new agent, started when a slot frees.
+
+**The user's decisions:**
+- **GJ-N1's upper end runs on CPU 13, with its sibling 29 idle.** That is about 23 h, and another 45–73 h if its
+  h/2 is needed. The user lends this one visualizer core while the viewer is on hold. The rest of the search stays on
+  a gate lane under its lock; amendment 2 is tagged with its driver change.
+- **FR-53 is logged, high:** a rounding allowance for global ledgers at every row, from D336's finding.
+- **A refused removal.**
+  - The safety check refused the FR-38 references agent's `rm -f out/*`, a glob after a `cd`. No one retried it.
+  - The user gave permission to remove the four untracked smoke-test files by their explicit paths, and the lead did.
+  - The regeneration then runs from a clean tree.
+
+**SK2's timing is flagged provisional** (the Lean lane, 24 November).
+- **Half-activation.** Two independent labs place rat SK2's half-activation near 0.7 µM Ca²⁺. That is close to the
+  fit of 0.728 µM with `cells.species_regulated_availability`.
+- **The bound.** Lean proves that, with a fixed closing rate, the 20–80% rise time is at most ln 4 times the washout
+  time constant. Both compiled versions of the operator passed that check.
+- **One study indicates otherwise.** Oliver et al. (Neuron, doi:10.1016/S0896-6273(00)81197-6) report a mean
+  high-dose washout that implies a 48.1 ms ceiling, and about 80 ms at low calcium.
+- **So reusing one closing rate across doses is provisional.** A rise and a washout measured on the same low-dose
+  patch would settle it. One study is an indication, and no law's form changes on it.
+- **The operator's docstring gains this scope line** at its next src landing, batched with other docstring-only
+  updates.
+
+## D338: corrections and additions to D336 and D337: the vector path refuses the composite only; D330's G6 and CPU cost; SK2's evidence stated exactly; FR-30's earlier extractor never opened the 2016 paper
+
+2026-11-24, about 14:26 UTC.
+
+**The vector path refuses the composite only** (amends D336's admission line).
+- **Where things stood:**
+  - main's scalar row checks already refused a GPU (D187), so that path needed no src change;
+  - `run_vector_windowed` decides on the device alone and had no refusal.
+- **What changes:** the vector path refuses `resolved_pump_composite@1`, under every field solver, on a GPU. That
+  is the family D330 measured and failed.
+- **Why not a blanket refusal.** A blanket refusal would break GPU uses that have evidence:
+  - the calcium ensemble's ionic families;
+  - `resolved_pump_tissue@1` and @3's batched GPU runs (9 and 10 November);
+  - their GPU tests.
+- **A logged follow-up, not started:** re-check those families' GPU evidence under D330's criteria, run-to-run
+  determinism included.
+
+**D330's closing evidence:**
+- **G6 passes under the flag.** A fresh process and one loading the saved autotune file each reproduce the pair's 8
+  windows by bytes. The flagged autotune dumps hold no results.
+- **What D330 closes on:** G1 and G6 pass under the flag; G2 fails. G3–G5 and G7′ were not run; the flag's cost
+  was measured in block 3′a.
+
+**The CPU cost of GJ-N1's field search:**
+- about 70–115 thread-hours in all;
+- the upper end at h: 2.56 M steps, about 23 h on a whole core;
+- its h/2, if it ends as a final bracket end: another 45–73 h;
+- a base-step point: 1.3–2.3 h, or 2.8–4.6 h at h/2.
+
+**Correction to D337: amendment 2 is not yet tagged.**
+- It will be tagged with its driver change (`--upper-cpu`, `--lane-lock`, `--lane-after`).
+- The upper end starts at launch on CPU 13. The lane part takes its lock from 20:00 UTC, so the bisection runs
+  overnight rather than holding a lane for about 10 h of daytime gates.
+
+**SK2's evidence, stated exactly** (refines D337, from the Lean lane's record at lean-paired-transport-mechanics,
+41f3de69).
+- **The steady response.**
+  - Hirschberg et al. (1998, doi:10.1085/jgp.111.4.565) measured absolute open probability at four calcium doses in
+    one inside-out patch from a Xenopus oocyte expressing rat SK2.
+  - The Cells curve calibrated on those data gives half-activation at 0.728 µM.
+  - Syme's independent, untreated rat SK2 dose response gives 0.700 µM.
+- **The proved identity.** For a held input, the 20–80% rise time equals ln 4/(a + b). It is at most ln 4 times the
+  zero-input washout time constant when the closing rate b is positive and shared.
+- **The replay.** In a compiled held-dose world (a = b = 16/s), both versions of
+  `cells.species_regulated_availability` bracket the exact 43.32 ms within 42.97–43.95 ms, on a 0.488 ms grid.
+- **Two tests of carrying one closing rate across recordings disagree with it:**
+  - Hirschberg's single-channel plateau and macropatch washout predict a 10.63 ms activation time constant, against
+    4.1 ± 0.6 ms measured;
+  - Oliver et al. (2000, doi:10.1016/S0896-6273(00)81197-6), with separate recombinant SK2, measured a 6.18 ±
+    1.91 ms 20–80% rise and a 34.7 ± 6.5 ms washout at 10 µM Ca²⁺. Reusing that mean closing rate at 0.5 µM gives
+    a ceiling of ln 4 × 34.7 = 48.1 ms, against a reported rise of about 80 ms.
+- **Limits of the evidence.** The low-dose record has no reported uncertainty, no sample count and no paired washout,
+  and the two groups' data come from separate preparations.
+- **So reusing one closing rate across doses stays provisional,** as an indication, with no change of law. A rise and
+  a washout measured on the same low-dose patch would settle it.
+
+**FR-30: the earlier sealed extractor never opened the 2016 paper.**
+- It ran on 23 November and filed four candidates. Its README lists Ek-Vitorín 2016 as candidate 4, "not opened",
+  because the procedure stops at the first paper that qualifies: Revilla 1999.
+- Its folder holds extractions for Shibayama 2006, Elenes 2001 and Revilla 1999 only.
+- So Tag A's message ("tagged before the sealed extraction") and section 13.7's "no record shows anyone opening the
+  paper" stand.
+- At landing, the branch gains a dated pointer to D337 for the lead's two files and the fourth choice, with no
+  criteria change.
+
+**FR-47's inert-wall fix ran FR-47's registered worlds before their verdict,** for its before-and-after comparison.
+- It printed statuses and booleans only, never a value.
+- The folder (`/mnt/workspaces/Cells/fr47-inert-wall-20261124/`) is barred to FR-47's checker. Its brief will say
+  so.
+
+## D339: a reviewer's four points (FR-47's scorer gets a registered schedule supplement and a tightened acceptance; FR-52's premise is corrected; the GPU guard; the feature index); GJ-N1 amendment 2 and FR-38 v2's references are tagged
+
+2026-11-24, about 14:46 UTC. The advisor reviewed the four points with the lead.
+
+**FR-47's frozen scorer does not check the washes against the registered schedule.**
+- **Confirmed by reading `fr47_judge.py` at the registration tag:**
+  - `judge_d` takes each stop's kind from the run, and never compares stop times or the heat intervals' ends;
+  - `judge_exact` indexes each replica's stops by the references' count, and ignores time, kind and any extra
+    stop.
+
+  The reviewer's three invented cases pass it: a relabelled withdrawal with its heat removed, both washes 10 s late,
+  and an extra trailing wash in every replica.
+- **The frozen scorer stays the official verdict, unchanged.** There is no erratum.
+- **A schedule supplement is registered before any judged run.** It is
+  `validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT.md`, tagged `fr47-schedule-supplement-2026-11-24`.
+  It checks, exactly:
+  - count, order, time and kind, for the references and for every saved run;
+  - a heat at every scheduled withdrawal;
+  - the heat intervals' ends.
+
+  Before any saved run is read, its controls must behave: the three cases fail and an honest record passes.
+- **The lead tightens D323:** FR-47 leaves development-only only if both the frozen verdict and the supplement pass.
+  D323 named the verdict alone. The user is told.
+- **FR-47's independent checker implements the supplement.** Its brief also bars the inert-wall fix's
+  before-and-after folder (D338).
+
+**FR-52: one event can move several units.**
+- A channel carries integer stoichiometry over the unit states, and `integer_change` is products minus reactants.
+  So the reader uses each event's declared change, E <- E·(n − d)/n. Restricting version 1 to single-unit events,
+  by name, is the fallback.
+- **An acceptance row:** two original units and one new; one event removes two, chosen uniformly. The expected
+  survivors are 2/3 original and 1/3 new.
+- **A mutant:** a reader assuming one unit per event gives a total of 2 against the engine's 1, and must fail the
+  integrity check.
+- **For the design note:** whether a channel may list the active state on both sides. If so, the stored change is
+  net there.
+
+**The GPU guard.**
+- 478664a0 refuses the composite on a GPU in the vector path. It waits for lane B, with FR's set and the D148
+  proofs.
+- After it lands, its refusal row is rerun at main's head and recorded.
+- Judged runs of the composite run on CPUs (D338, GJ-N1 amendment 2).
+
+**The feature index is brought up to date:**
+- FR-43: all three parts on main (D328);
+- FR-46 and FR-48: landed at d702f13a;
+- FR-49: parts H and L at 7d021548, with World L passing (D331); World B, C1, C2 and C4 are still to come.
+
+**Tags:**
+- **`gj-n1-amendment-2-2026-11-24` at 750076a7.**
+  - The field runs on CPUs. The upper end runs on CPU 13 from launch; the base-step points, bisection and half steps
+    run on lane A from 20:00 UTC.
+  - One engine revision serves both geometries: the line's stage 1 and one line point are checked by bytes at the
+    field's snapshot before launch.
+- **`fr38-v2-references-2026-11-24` at 8bd81c7e** (generated at 55c52c4b from a clean tree).
+  - Six files, 19,957,976 bytes in `out/`, byte-identical across PYTHONHASHSEED 0, 1 and 4242. The hashes are in
+    `out/SHA256SUMS` at the tag.
+  - The worst judged accuracy is 1.3e-16 of scale, against 1e-11. Every must-catch plant is at least 72 times its
+    honest tolerance.
+  - **The user's limit:** about 20 MB is the ceiling for any committed data set. This one is at it.
+
+**The ledger limit, recorded here** because the builder's note sits in a scratch folder. Small E2 worlds at a loose
+`atol_count` can fail their own ledger: its tolerance is 100·rtol·max(1, |Q| + |W| + events), with no atol term. The
+fix is an atol term derived from the integrator's declared `atol_count`. It is a follow-up after Protocol D's
+re-registration.
+
+## D340: two parameter-transfer flags from the Lean lane (a bilayer footprint across temperature; Kir4.1's square-root potassium scaling across preparations)
+
+2026-11-24, about 15:01 UTC. These come from the Lean lane's paired wet-lab records (candidate 8634e566, in its gate).
+They concern carrying a parameter across conditions. No law's form changes.
+
+**A bilayer's molecular footprint is declared for one temperature.**
+- `cells.bilayer_geometry@1` takes each membrane species' area per molecule as a declaration, and the engine does
+  not vary it with temperature.
+- Two independent methods find fluid POPC expanding on warming:
+  - scattering (Kučerka's group): 64.3 ± 1.3 to 67.3 ± 1.3 Å² over 30 to 50 °C, +4.7%;
+  - solid-state NMR (Leftin's group): 60.4 ± 3.6 to 70.5 ± 4.2 Å² over 28 to 48 °C, +16.7%.
+- The Lean lane's compiled replay shows that a fixed footprint hides that expansion completely.
+- **So a world compared across temperatures declares the footprint measured at each temperature.** A common
+  expansion coefficient is still open: the two methods disagree on its size.
+
+**Kir4.1's square-root potassium scaling stays scoped to its preparation.**
+- `inward_rectifier_linear_driving_force@1` scales as (c_o/K_ref)^(1/2), and its coefficients are the route's
+  declaration (its docstring already says they must be sourced before a claim rests on them).
+- **One preparation supports the exponent.** Tada's group (rat Kir4.1 in HEK293T, three patches per level) fitted
+  0.51 over 15–153 mM.
+- **Another departs from it.** Edvinsson's series (human Kir4.1) reaches about 19 pS at 40 mM, against 13.9 pS
+  from a square root anchored at their 110 mM value of 23 pS.
+- Figure precision, species and solutions limit what the difference shows. One dataset is an indication, so the law's
+  form stays, and a calibration carries only within its preparation.
+
+**Both scope lines** go into the laws' docstrings (`geometry.py`, `inward_rectifier_linear_driving_force.py`) in
+the next docstring-only landing, with the regulated-availability one closing rate (D337, D338) and the charge-anchor
+fix's citation of the Lean claim, merged at 29d69f1d.
+
+## D341: FR-30's Ek-Vitorín 2016 benchmark is undetermined by structure for the filed PDF; the user files its Supporting Material, added by a tagged amendment; FR-54 is high priority
+
+2026-11-24, about 15:16 UTC.
+
+**The extraction of the filed PDF** (the sealed extractor, under Tag A):
+- **The kinetic part is undetermined under any expression of the data.**
+  - Fig. 2B shows one illustrative record pair, labelled jointly ±100 mV.
+  - It carries the paper's own second-order exponential fits, with no amplitudes, dispersion or n.
+  - No other wild-type time constant appears in the text or the seven figures.
+  - So the decay list has at most one magnitude (S2, P6.1).
+- **The steady part cannot be expressed in the layout as tagged (E9).**
+  - Fig. 2C plots wild-type points individually: n = 3, with what n counts unstated, in 9 clusters per polarity
+    against the Methods' 10-step grid.
+  - Some markers share one abscissa (K3), or are hidden. Pairing them across polarities depends on digitizing
+    resolution.
+- **The lead's ruling (advisor concurring):**
+  - §13.7 applies as tagged;
+  - no rule for summarizing plotted points is written after the paper was opened. If the user wants one for Part S,
+    it is a separately tagged amendment, drafted by someone other than the extractor.
+- **The seal.** No `fit.json`, `held_out.json` or `protocol.json` was written, so there is no held-out digest.
+  - The folder `/mnt/workspaces/Cells/fr30-ekvitorin2016-extraction/` is read-only, and its SHA256SUMS digest
+    begins 066b20d2.
+  - It holds a value-free structure record, the LOG, and the unfinished digitizer scripts, with their working state
+    kept private.
+- **Disclosed by the extractor:** it read D334, which summarizes the polarity check's conclusions, and D337 at the
+  lead's direction, before sealing. The lead's brief had erred on that point, and on the training file's name.
+  `docs/JUNCTION_GATE_POLARITY.md` stays unopened (E11).
+
+**The user's decision: file the paper's Supporting Material.**
+- Two files, identified by their PDF metadata only and unopened, are filed read-only at
+  `ek-vitorin-2016/supporting-material/`:
+  - `mmc1.pdf`: 6 pages, the Supporting Material, sha256 d36e5964…;
+  - `mmc2.pdf`: 20 pages, the article with its Supporting Material, sha256 3ace545d….
+- **§13.7 amendment 1 adds them as a source before anyone opens them.** It is Part 12, tagged
+  `fr30-ekvitorin2016-amendment-1-2026-11-24` at b725c702.
+  - The same extractor reads them under the unchanged rules.
+  - If they give per-voltage τ_fast and τ_slow at two or more magnitudes, the extraction proceeds; otherwise the
+    benchmark is undetermined for the paper with its Supporting Material.
+- **The fitter, the predictor and the checker start only after a seal under amendment 1.**
+- A third file the user added, Tanis et al. (2017) on CALHM channels, is not part of this benchmark. Its use waits
+  for the user.
+
+**FR-54** (passive neutral diffusion against the exact two-well solution, then a wash at a diffusion-connected node)
+is **high priority, the user's decision.** It takes the next free builder after FR-50.
+
+## D342: FR-30 stays undetermined with the Supporting Material, and stays development-only; FR-38 v2's roles are restored; a branch pushed by mistake is deleted after its landing
+
+2026-11-24, about 15:23 UTC.
+
+**FR-30: the Supporting Material doesn't decide it.** The extractor read it under §13.7 amendment 1.
+- **mmc1** (6 pages) is almost all single-channel work. Its only wild-type macroscopic decay record (Fig. S1 C's
+  inset) is under halothane, a treated arm (E1), and is not fitted (E2).
+- **mmc2** (20 pages) is the article followed by mmc1. Its pages and images are identical to theirs.
+- **So Part 12's condition is not met.** The benchmark is undetermined by structure, now for the paper with its
+  Supporting Material.
+- **The seal:** no data file was written, and no held-out digest exists. The new folder
+  `/mnt/workspaces/Cells/fr30-ekvitorin2016-extraction-a1/` is read-only, and its SHA256SUMS digest begins 5f410db7.
+  It stays barred like the first, since its scratch holds the paper's text and figures.
+- **FR-30 stays development-only (D262).** As the user's choice of 24 November provides, the next step is a
+  metadata-only search for another source. It is registered before anything is opened, and every paper the record
+  names as exposed is excluded. It queues behind FR-50's builder for an agent slot.
+
+**FR-38 v2's roles are restored.**
+- The lead's brief gave one agent both the builder's and the judge's role. The protocol
+  (`docs/FR38_SECOND_COMPARISON_PROTOCOL.md` §5) requires a different agent for each.
+- **The builder's reader is retired unused and never tagged.** It was 9dc73d57, and history keeps it.
+- **The builder continues as builder:** the worlds, and `engine_run.py`'s exports for families C and D.
+- **A new judge, blind to the first comparison and to the builder's retired reader, writes its own reader and
+  mapping.** It starts when a slot frees.
+
+**A branch was pushed by mistake.**
+- The OL6 builder pushed `fr47-inert-wall` to origin at 14:37 UTC. Its own delete was refused by the safety
+  check, and nobody retried it.
+- The branch holds only the inert-wall fix's commits, which passed the privacy scan.
+- **The user's decision:** the lead deletes it once the fix has landed on main. If the deletion is refused, the user
+  is told.
+
+**FR-50's phase-1 builder has started.** Its judge comes first (D308), on the branch from FR-51's head.
+
+## D343: the user's decision: FR-30 is parked, development-only, with one labelled diagnostic on Revilla's data; D342's metadata search is withdrawn
+
+2026-11-24, about 15:30 UTC. The advisor reviewed FR-30's record with the lead; the decision is the user's.
+
+**The record since FR-30's benchmark began: twelve papers, one qualified, and it failed.**
+- **Undetermined by their data's structure:**
+  - Lin 2003, Desplantez 2004, Moreno 2002 and Snipas 2020;
+  - Sahu and Bera 2013;
+  - Xu 2013, Lin 2010 and Ek-Vitorín 2018 (D291);
+  - Shibayama 2006 and Elenes 2001;
+  - Ek-Vitorín 2016, with its Supporting Material (D341, D342).
+- **Revilla 1999 qualified, and failed** (D320: 4 of 6). Its ±80 mV windows overlap, so the fit missed (§13.7 W2), which
+  says nothing against symmetry.
+- **§13.7 W5:** "undetermined" means no test, and triggers nothing.
+
+**Nothing depends on FR-30's law.** `junction_series_gates@1` is used only by the Revilla benchmark's scripts. GJ-N1
+runs the single gate, pinned open. Under the single-study rule, a second paper passing would leave one pass and one
+fail, and D262 would stand either way.
+
+**The decision: FR-30 is parked.**
+- **It stays development-only (D262).**
+- **Its scope line:** two relaxation times at the cited voltages; the voltage dependence is unvalidated.
+- **It reopens:**
+  - when an experiment or a registered world needs the series-gate law beyond development; or
+  - when a source with per-voltage τ_fast and τ_slow at two or more magnitudes, at both polarities, is in hand.
+
+  The three papers still registered unopened in §13.4's order (Bukauskas 2001, Rackauskas 2007 and Moreno 1994) come
+  first then. Wang 1992 and Lin, Xu and Veenstra 2014 are exposed.
+- **Not done:** pooling across papers. Parameters fail to carry across preparations, as D338 and D340 record today
+  for SK2, Kir4.1 and POPC, so a miss would say nothing about the law.
+
+**One diagnostic, labelled and non-blind.**
+- **What:** a joint fit of `junction_series_gates@1`, with one symmetric block, to all six of Revilla's voltages.
+- **Who:** an agent that never fits FR-30 again.
+- **What it reports:** whether one parameter set can sit inside every registered window, with each residual in
+  window units. It decides nothing (W6), and changes no verdict and no law.
+- **When:** it takes the next free small slot.
+
+**Correction to D342.** D342 called a metadata-only search "the user's choice of 24 November". The user's answer then
+only filed the Supporting Material. That search is withdrawn.
+
+## D344: the user's rule for confirmed findings; four Lean wet-lab rows sorted by it; FR-30 reopened narrowly; FR-55 and FR-56 logged; FR-50's judge tagged
+
+2026-11-24, about 15:48 UTC. The advisor reviewed this with the lead. The decisions are the user's.
+
+**The user's rule.** "For Cells, if we have something confirmed that doesn't work the same in Cells, we should find
+out why and fix." Confirmed means two or more independent wet-lab studies agree. One study stays an indication.
+- Each confirmed row is read at the Lean lane's record (`lean/WET_LAB_EVIDENCE.md`), not from a handoff.
+- **The test:** does Cells reproduce the confirmed part when run with that preparation's own inputs?
+  - **Yes:** a comparison rule or a scope line.
+  - **No, because the law cannot produce it:** a law-form gap, diagnosed and then fixed by a general FR.
+  - **Not run:** running it is the first step.
+
+**Four rows, read at the Lean tip d5a2c138:**
+1. **Cx43, the decay at −100 mV.**
+   - **What is confirmed:** two phases. Revilla's paired oocytes gave 417 ± 175 ms and 7.06 ± 1.28 s; Sahu and
+     Bera's N2a pairs gave 70 ± 5 and 931 ± 54 ms. Both data sets are already in D343's table.
+   - **What is not:** a shared magnitude. The time scales differ six- to eightfold across preparations.
+   - **The rule fires.** The shipped single gate, `junction_voltage_relaxation@1`, has one relaxation by design.
+2. **Mixed-ion reversal** (Hodgkin and Katz's intact squid axons; Ohki and Aono's six perfused axons).
+   - **What is confirmed:** the direction. Raising K depolarizes.
+   - **Cells reproduces the direction.** Its +12.63 mV against the measured +2.0 mV carried intact-axon permeability
+     ratios to perfused axons, whose own ratios were never measured.
+   - **A comparison rule:** quantitative comparisons use preparation-specific ratios.
+3. **Receptor turnover** (Strack, ten muscles: 1.1 and 13.1 day half-lives; Stanley and Drachman: 18.7 h and 12.4
+   days).
+   - **What is confirmed:** a mixture of lifetimes, with a fast fraction of 13–20%.
+   - **Cells can represent it.** `population_unit_turnover@1` declares one removal rate per population, so the fast
+     and slow cohorts are two declared populations.
+   - **Guidance, no engine change.**
+4. **Proton reversal** (Kapus's macrophages and Morihata's microglia; Bertholet's mitoplasts and Cherny's alveolar
+   cells).
+   - **What is confirmed:** the Nernst direction.
+   - **Cells reproduces it.** At large gradients the nominal pipette and bath pH overstate the magnitude.
+   - **A comparison rule:** quantitative comparisons use the intracellular pH at the time of the current measurement.
+
+**Earlier flags, re-sorted by the rule:**
+- **SK2 (D338) fires.** Two separate groups' recordings each contradict carrying one closing rate across conditions,
+  and the operator's closing rate cannot depend on the dose.
+- **POPC (D340) partly fires.** Two methods confirm expansion on warming, and Cells shows it only through a footprint
+  declared per temperature.
+- **Kir4.1 (D340) does not fire.** It rests on one series.
+
+**The user's decisions:**
+- **FR-30 reopens narrowly** (amends D343).
+  - `junction_series_gates@1` becomes usable for two phases at a declared voltage, calibrated per preparation.
+  - The voltage dependence stays marked unvalidated, and the law's predicted third amplitude stays flagged as
+    unmeasured.
+  - The Revilla joint fit, labelled and non-blind, moves up as the first diagnosis step.
+  - D262's development flag is narrowed to that scope by a design note and a gated landing, never by this entry alone.
+- **FR-55, high:** an input-dependent closing rate for regulated availability (dose-dependent deactivation).
+- **FR-56, normal:** a temperature-dependent molecular footprint with a declared, sourced expansion coefficient per
+  lipid.
+- **Lean is asked, through the user,** for every row of its 46 where two studies agree and the Cells replay does not.
+
+**The comparison rules and guidance** go into the docstring-only batch, with D337's and D340's scope lines.
+
+**FR-50's judge is tagged** `fr50-judge-2026-11-24` (3cec272b). Its builder reads the references' spec folder only
+after that tag, by the user's permission. The read was refused once earlier, before the judge existed, and was not
+retried.
+
+**The Lean tip d5a2c138** contains 8634e566, 41f3de69, 0bb50d8b, cb961e34 and 73e7e9d7. One merge covers them once
+its gate passes.
+
+## D345: the user's decision: law IDs become hierarchical, keyed by interface, starting on 25 November in the morning
+
+2026-11-24, about 16:18 UTC.
+
+**Today's IDs.** Law IDs are `namespace.name@major`, and 185 of 187 registered IDs are bare, in `cells`. The
+families exist as folders and as interfaces, but not in the key.
+
+**The decision: Option 1.** The key carries the law's family, read as its interface:
+`cells.<interface>.<name>@major`, for example `cells.channel.inward_rectifier_linear_driving_force@1`. Folders mirror
+interfaces. Outside modules take the same shape in their own namespace.
+
+**Rejected:**
+- family as metadata only, which leaves the key flat;
+- a family prefix inside a flat name.
+
+**The conditions:**
+- **Timing:** it starts on the morning of 25 November, after tonight's runs and this round of landings, so it never
+  collides with the branches in flight.
+- **One mechanical, scripted move,** as D188's source moves were, with a committed old→new mapping table. Past
+  decision entries and Lean's claims stay readable through the table, and old tags and snapshots keep their names.
+- **No aliases.** An old ID is refused at parse, and the refusal names its new ID.
+- **Codes and majors are unchanged.**
+
+**Open until the morning:**
+- the scope: laws only, or models, operators and kinds too;
+- the advisor's review of identity stability across the module system and the Lean lane.
+
+## D346: the user's decisions on the ID rename's scope and on legacy (amends D345)
+
+2026-11-24, about 16:35 UTC. The advisor reviewed the plan with the lead. The decisions are the user's.
+
+**The scope is everything live.** Laws, models, operators, kinds, solvers, the heat choice and execution mappings all
+take `cells.<family>.<name>@major`, from a short closed list of families:
+- model, operator, kind, solver, heat and execution;
+- one family per law interface: channel, route, reaction, cycle, junction, exchange, rate_factor and free_energy.
+
+Interface IDs (`cells.route_law@1` and the like) and schema IDs (`cells.declarations@2`) keep their names.
+
+**No compatibility beyond this repository.** The user's private experiments run no legacy model, and the user renames
+them.
+
+**Legacy (`src/cells/legacy`, 321 files and about 75,600 lines; 195 of 888 test files import it):**
+- **The parts used by neither BETSE nor the calcium ensemble are deleted,** together with the tests and drivers that
+  depend only on them. The exact removal list is prepared read-only tonight, for the user's OK tomorrow.
+- **The legacy-based BETSE comparisons (39 drivers) and the calcium ensemble families, with their GPU tests, are
+  ported to the modern models first.** Their legacy remainder goes after the ports.
+- **The one live law that imports legacy, `kinetic_pump_binding.py`, is ported.**
+- **Main is tagged before any deletion,** as the BETSE-native removal was.
+- **Until legacy is gone,** its remaining IDs stay bare and frozen, and old live IDs are refused by a table that names
+  their new keys.
+
+**The scale priorities:**
+- **Catalogue size:** the rename.
+- **Gate throughput:** about an hour locked per gate on two lanes. The time the deletion saves is measured.
+
+**The order, from 25 November:**
+1. Land what is gated.
+2. Tag main.
+3. Delete legacy's unused part, with its own gate, a removal list (D224) and re-measured tiers.
+4. Run the rename's three read-only checks: IDs feeding numbers, the registry-built list, and the parse sites. Then
+   generate the mapping from the registries, with a collision report.
+5. The rename, with its own gate.
+6. Re-merge the branches in flight.
+
+The BETSE and ensemble ports are a separate, multi-day work item.
+
+**Never rewritten by the rename script:**
+- tagged specs, references, judges and their errata still in the tree (FR-50's `judge.py`, `REGISTRATION.md`,
+  `JUDGE_ERRATUM_1.md` and `references/` among them);
+- the crossrev replication record;
+- `lean/`;
+- past decision entries.
+
+The Lean lane gets the mapping table, through the user, before the landing.
+
+## D347: FR-43 checked item by item against its request: what is judged, what only tested, and four gaps
+
+2026-11-24, about 16:58 UTC. This is the lead's read-only check, with the advisor. Evidence counts only as a test body
+or a verdict file at main.
+- **The two texts.** The user's paste of 24 November differs from the request saved on 23 November only in part 1's
+  first lines, which now note that part 1 raised the limit to 1,024. Every acceptance clause is unchanged.
+- **Judged by a registered criterion:**
+  - C2.3, C2.6, C2.7 and C2.8 (D324). C2.7, the work of changing volume, was judged by convergence order (ratios
+    near 4), consistent with water's second-order bookings.
+  - C3.3, C3.4 and C3.5 (D319).
+- **Covered by the builder's tests only:**
+  - C1.1 at 32 and 1,024 rows, with C1.2 and C1.3 (`test_species_cap_runs.py`, `test_species_cap_large.py`);
+  - part 2's two baseline refusals, now admitted;
+  - C2.2, C2.4 and C2.5;
+  - C3.1 and C3.2;
+  - C3.6, the same-seed restart (`test_integer_unit_population.py`), which settles FR-52's restart premise.
+- **No FR-43 evidence test imports `legacy/`.**
+- **The gaps:**
+  1. **Part 1's 16-row control and 256-row case** have no test at main: they ran only in the design phase.
+  2. **Part 1's performance report** (compile time, time per simulated second, peak memory, device and precision,
+     C1.4) lives only in the design note. Its L4 numbers were taken on a path D336 now refuses: the composite on a
+     GPU.
+  3. **Part 1 has no registered criterion at all,** only the builder's tests.
+  4. **Turnover in a swelling cell** (D301's queue, A1) is still refused at parse ("reads volume as declared"), as
+     D334 logged.
+- **Any fix waits for the user:** a row in an existing test, or an FR. Nothing is built from this check.
+
+## D348: the user's decision: port legacy's used families first, then delete legacy whole (amends D346)
+
+2026-11-24, about 17:03 UTC.
+
+**The removal list** (read-only; `/mnt/workspaces/Cells/legacy-removal-20261124/`) traced imports and legacy model
+IDs together.
+- **What is used:**
+  - BETSE's legacy-based comparisons use 5 legacy model IDs.
+  - The calcium ensemble's tests and drivers exercise 6: `assembly_regulated_cell@1`, `assembly_regulated_cluster@1`
+    and `spatial_calcium@1` to `@4`. Its adapter table, `ensemble/ionic.py`, lists 98.
+- **What keeping those 11 would mean:**
+  - 133 of legacy's 321 modules stay;
+  - 187 modules could go now, but 180 files outside legacy use both the kept and the deletable parts. 101 of them
+    are unit tests, mostly through shared fixtures and legacy's core.
+
+**The decision: no partial deletion.**
+- A builder ports the 11 legacy families that BETSE and the calcium ensemble use to the modern models.
+- Then legacy is deleted whole, with one gate. The 195 test files go with it.
+- The ID rename of live code goes ahead from the morning of 25 November, with legacy's IDs bare and frozen until the
+  deletion.
+- **The parity rule holds throughout:** BETSE stays an outside reference, and nothing named BETSE enters `src/`.
+
+**A correction to D346:** `kinetic_pump_binding.py` does not import legacy. It only names its origin in a docstring,
+so there is nothing to port there.
+
+## D349: an umbrella request on shared finite pools, checked: covered, apart from one restart row and a per-solver view
+
+2026-11-24, about 17:05 UTC. The user's request on operators that share a finite pool maps onto existing work, checked
+read-only at main:
+- FR-43 part 2 (judged, D324);
+- the gene unit beside the unit producer (`test_shared_inventory_unit_writers.py`);
+- FR-38, FR-42, FR-33, FR-34 and FR-44 for tracking;
+- regulated availability and FR-51 for availability;
+- the wash against the bath schedule (FR-27, FR-10);
+- the generated composition table.
+
+Its acceptance check (stock identity, the sink off, the source off) is C2.2 and C2.4. Three points were checked
+separately:
+1. **Material already in production at the start is covered, as a bound.**
+   - The gene unit's production bound caps release at κ times the pool's machines, whatever is already in
+     production, since occupied chains never exceed the machines.
+   - The unit producer takes it times the horizon once, and counts its own units in transit at the start
+     separately.
+   - No exact "total available over an interval" readout exists. None is built until a target needs one.
+2. **A restart exactly at a production source's switch-off is a gap.**
+   - Restarts at a change are tested for cell-owned compartments, in process and through a snapshot, and for the
+     surface-repair pulse's end. FR-44's resume through a wash plants a redo and a skip.
+   - **Queued:** one row in the existing shared-inventory test, cut exactly at the switch, compared bitwise with the
+     uninterrupted run, with a planted redo and a planted skip of the switch caught.
+3. **Support per solver is partly listed.**
+   - The generated composition table lists each solver refusal as its own row, with source and test.
+   - There is no operator × solver view, and the species cap (1,024) is global.
+   - **Queued:** a per-solver view, generated from the existing refusal rows, with no engine change. It belongs to the
+     catalogue work of 25 November.
+
+## D350: FR-30's symmetric law stands; no FR-51 registration against V − E_K yet; an external review's findings (an FR-47 supplement erratum, the rename's design inputs, follow-ups)
+
+2026-11-24, about 17:21 UTC. These are the lead's decisions with the advisor, under the user's delegation ("decide on the
+two questions with adviser").
+
+**1. FR-30: D334 stands, and `junction_series_gates@1` keeps one symmetric block.**
+- **The diagnostic's first deliverable** (non-blind, deciding nothing) found G_ss/G_0's ±60 mV windows disjoint in
+  Revilla's data: a gap of 0.052, which is robust. At ±100 the gap is 0.0016, which is marginal. The +V windows sit on
+  the registered 0.05 floor, since 2·SEM is smaller there (n = 6 pairs).
+- **It is confounded.** Revilla steps one cell from a common holding level (`protocol.json`; `JUNCTION_GATE_POLARITY.md`),
+  so under §13.7 W3's reading the difference is confounded by that cell's V_m, neither a pass nor a fail. It is one
+  study.
+- **D334 was made with it in view:** the polarity note at Tag A already weighed Revilla's oocyte asymmetry, which
+  prompted that check.
+- **Corrections:**
+  - D320 had 4 of 6 comparisons passing and 2 missing, both at −80 mV (τ_slow and G_ss). It failed on the 75% rule.
+  - D343's "says nothing against symmetry" holds for those two judged ±80 lines only.
+  - D344's narrow scope names a signed V_j and the stepped cell, since −100 and +100 differ.
+- **The second deliverable is running.** It asks whether parameter sets compatible with the training data can reach
+  the −80 τ_slow window.
+
+**2. FR-51 against V − E_K: no registration now.**
+- Two independent fits put Kir2.1's steep spermine valence above 4. "About 5" is less firm: 5.33–5.37 derives from one
+  fit's e-fold, which has no stated uncertainty.
+- FR-51's law admits a declared effective valence above |z_B| (ruling 7), and its test rows use values up to 9, so it
+  is representable by declaration.
+- The testable content is block against V − E_K at a second K level in one preparation, and no such source is in hand.
+- **Next:** FR-51's entry gets a dated status line once it lands, and Lean is asked, through the user, for a two-K,
+  same-preparation row.
+- Cells' Kir2.1 law is a parity law with its own rectifying gates. A block on top could double-count, which is a later
+  design question.
+
+**3. An external code review, read-only over main and the active branches, checked and triaged:**
+- **FR-47's schedule supplement has two defects, both confirmed in the code:**
+  - `d.stops` carries no `kind`;
+  - check 4 would confirm itself.
+
+  Erratum 1 is registered before any judged run: `validation/assembly_lineages_v2/FR47_SCHEDULE_SUPPLEMENT_ERRATUM_1.md`,
+  tagged `fr47-schedule-supplement-erratum-1-2026-11-24`.
+- **The rename's design inputs, settled in the design note on 25 November before any script runs:**
+  - **Five live interfaces are missing from D346's family list:** `cells.binding_law@1`, `cells.assembly_geometry@1`,
+    `cells.population_structure@1`, `cells.assembly_hazard@1` and `cells.assembly_representation@1`. Whether
+    `cells.lineage_operator@1` and `cells.assembly_operator@1` share `cells.operator.*` is also open.
+  - **A folder does not always match its interface.** `rapid_binding@1` sits under `laws/reactions` but implements
+    `cells.binding_law@1`.
+  - **FR-51's `open_channel_block_weighted_modes@1` has no Law record or model-table home.** A mapping built from the
+    registries would miss it. It gets registered on the slot-refusal follow-up branch, never on e4bbf0ec.
+  - **The ID grammar.** `laws._ID` admits one dot, and `kind_registry.qualified()` would read `<family>.<name>@major`
+    as an outside namespace. `registry/declarations.py` splits on the first dot.
+  - **A name collision.** The declarations manifest already uses a field named `family` for the host model family,
+    and the viewer reads it, so the ID segment's word and that field must not collide.
+  - **Judged runs and Lean.** A judged run not finished before the rename runs from a pre-rename snapshot. Lean's
+    check drivers need the mapping table before their next gate merge.
+- **Follow-ups:**
+  - **Before gating FR-50,** it merges the slot refusal (fr51-slot-refusal) or main after that lands, so
+    `block_slot_errors` is not dropped.
+  - **FR-44's two new wash records** join every washed world's state. Any frozen checkpoint of a washed world needs
+    renewing, which goes in FR-44's landing text.
+  - **The charge-anchor budget** is exact for valences 0, ±1, ±2, ±4 and ±8. Builders summing ±3, ±5, ±6 or ±7 terms
+    rationally may add half a spacing per term. That check is queued.
+  - **Two untracked files** in the main checkout's `lean/claims/incoming/` belong to the Lean lane. The lead leaves
+    them, and the user asks that lane to file them.
+
+## D351: the wet-lab gap diagnosis: three rows confirmed, none wrong inside its claimed domain; FR-55 goes to normal (the user)
+
+2026-11-24, about 17:29 UTC.
+
+**What was done.** A read-only diagnosis of the Lean register's eight "law misses" rows at af4a8000, plus the vacuolar
+pump. It used one definition: confirmed means two independent labs measuring the same quantity on the same molecular
+system under like conditions. The records are in `/mnt/workspaces/Cells/wetlab-gap-diagnosis-20261124/`. Every engine
+revision Lean tested is on main.
+
+**Confirmed:**
+- **Kv1.5's acid shift**, in direction. Three labs agree in sign: +11.7, +17.3 and +7.8 mV, so the size differs.
+  `kv1p5_mh@1` is a parity law with no pH input. A scope line, kept off the parity law's code; no target needs
+  acidified worlds.
+- **POPC's expansion on warming**, in the direction of the central estimates. Covered by D340 and FR-56.
+- **Cx43's two decay phases**, in form. Covered by FR-30's narrowed reopening (D344, D350).
+
+**Indications, not confirmed:**
+- **Kv1.5's K–pH interaction:** different readouts. The same scope line.
+- **DOPC rupture timing:** hold against ramp, different observables. FR-31's pore model covers it.
+  - The registered worlds' fixed lysis thresholds are illustrative and claim nothing about DOPC: Protocol D's D4, D5, D6
+    and D7, and OL5's references.
+  - Recorded only.
+- **SK2's closing rate.** The two labs contradict one fixed closing rate in opposite directions:
+  - Hirschberg's rise is faster than one rate allows;
+  - Oliver's low-dose rise is slower;
+  - the one shared quantity agrees: the high-dose rise, 4.1 against 4.46 ms.
+
+  A monotone input-dependent closing rate fits both only if the macropatch plateau is at least 0.93.
+- **One permeability across voltage:** red-cell chloride and a valinomycin bilayer miss in opposite directions. A
+  scope line on the constant-field law.
+- **Kir in Na-poor solutions:** the same direction in two preparations, but the with-Na arm comes close to the square
+  root (exponent about 0.40). So `inward_rectifier_linear_driving_force@1` is silent on external Na. A scope line, kept
+  separate from D340's Kir4.1. No world runs it Na-free; XC0 uses it as Kir4.1, with sodium.
+- **The vacuolar pump:** yeast and Arabidopsis, two organisms. FR-29 stays parked (D268).
+
+**The verdict: no law is wrong inside its own claimed domain.** The confirmed gaps are a missing input (pH,
+temperature) or a known one-gate design.
+
+**The user's decision: FR-55 goes from high to normal.** D344 had read SK2 as firing. The plateau ≥ 0.93 condition, and
+a same-patch rise and washout, go to FR-55's design note.
+
+**FR-51 for the spermine target.** FR-51's law admits an effective valence up to 8, so the steep spermine component
+(5.0–5.37) can be declared on an @3 population once FR-51 lands. Its qualification ran only the leak laws, so that use
+is untested.
+
+**The docstring batch gains three scope lines:**
+- external Na on the Kir route law;
+- one permeability across voltage on the constant-field law;
+- pH on Kv1.5, on its library page rather than its parity code.
+
+## D352: corrections and checks after D350 and D351; Lean's two-potassium rows for FR-51; FR-57's growing collector
+
+2026-11-24, about 17:36 UTC. The lead's checks, with the advisor.
+
+- **A correction to D350.** FR-51's test row with an effective valence of 9.0 is a refusal: "steepness above 8",
+  refused as "exceeds 8". So no test exercises an admitted effective valence above |z_B|. One admitted row (spermine,
+  z_B = +4, z_eff = 5) is queued on the slot-refusal follow-up branch, never on e4bbf0ec.
+- **FR-44's resume** cuts exactly at the wash row: the checkpoint holds the state the wash acts on, and the resumed run's
+  first step applies it, with planted redo and skip. That meets the request's "a checkpoint immediately before the
+  event".
+- **FR-50's pre-gate run:** one failure in 1,284, `test_library_pages.py`, because the generated library pages are
+  stale after FR-50's new records. FR-51's snapshot passes the same test. FR-50 regenerates them with
+  `scripts/library_pages.py --write` after each merge, as with the composition table.
+- **FR-38 v2's smoke-3** passed, with nothing failed.
+- **Lean's two-potassium rows for FR-51** (the user's relay):
+  - **External K.** Panama and Lopatin measured Kir2.1 at four external K levels in one preparation. The steep block's
+    midpoint moved 0.98 ± 0.01 mV per mV of measured reversal, over two patches. Ishihara and Yan give fixed-dose
+    conductance curves at 150, 50 and 20 mM external K.
+  - **Internal K.** Lopatin and Nichols report a slope of −0.15 when internal K changes, from one study.
+  - **What this means for FR-51's law.** A block referenced to V − E moves exactly 1 mV per mV of E for both changes,
+    and one referenced to V moves 0. So:
+    - the external arm gives FR-51's reference real teeth;
+    - the internal arm is an indication against V − E for internal changes, so the reference is supported for
+      external changes only. That scope line also touches `inward_rectifier_linear_driving_force@1`, which reads
+      u = V − E and runs in XC0.
+  - **Main's Kir2.1** (`kir2p1_mh2@1`, a parity law) gates on absolute V, so it has no external-K shift. Once a second
+    external slope is extracted (Ishihara and Yan's curves), the user's rule fires there, and the fix is a new law or
+    major.
+  - **Non-blind:** the lead has seen 0.98, so any comparison now is not blind.
+  - **Registration is the user's call** after FR-51 lands. It needs both an external and an internal arm.
+- **FR-57's growing collector** is appended to FR-57 and settles that open point: a tube at zero volume holds no trace,
+  so the collector starts as a record. The case's numbers check: 1 fmol·ln(1/2) + 3 fmol·ln(3/2) = 0.523248 RT·fmol. The
+  reversed order gives the same total with different per-portion losses.
+
+## D353: the user's decisions: FR-63 (a pH-dependent Kv1.5 activation, normal) and FR-51's two-potassium registration after its landing
+
+2026-11-24, about 17:40 UTC.
+- **FR-63 is logged, normal.** D351 found Kv1.5's acid shift confirmed in direction by three labs, and `kv1p5_mh@1` is a
+  parity law with no pH input. The fix is a new law: the parity law stays unchanged, for BETSE parity. The size of the
+  shift is a declaration, since the labs differ.
+- **FR-51's reference voltage gets a registration after FR-51 lands.** It has two arms:
+  - **external:** Panama and Lopatin's slope of 0.98 ± 0.01 mV per mV of measured reversal; Ishihara and Yan's
+    fixed-dose curves at 150, 50 and 20 mM;
+  - **internal:** Lopatin and Nichols' −0.15.
+
+  It is recorded as non-blind, since the lead has seen 0.98. The data come through Lean's rows, read at their commit
+  before the registration is written.
+
+## D354: FR-38 v2's amendment 3 is tagged; the user's decision: three uncovered readout controls go to a later registration; FR-47's wall-marker fix landed
+
+2026-11-24, about 17:49 UTC.
+- **FR-38 v2's amendment 3** is tagged `fr38-v2-amendment-3-2026-11-24` at 5859006b (branch fr38-registration). The
+  protocol author wrote it:
+  - **Family D's energy identity** is now a stepped entry with p = 2, passing if max|r_h| ≤ 3 est + e_round in C3's
+    order window. Holding it to rounding was an error carried over from the fixed-volume worlds, and the amendment
+    discloses it. The builder's invented-cell figures (order 2.003) were seen before the ruling. D is reported only,
+    and no registered world has run.
+  - **`release_check`'s narrowed scope** is as the spec intended. It is not a registered criterion: the gross against
+    net discrimination rests on C2 with plants P1, P1′ and P1″.
+  - **The four readout controls,** from a user's note:
+    - (b), survival by detachment, is covered and judged in arms A and B;
+    - (a), producers reordered and replaced, is not covered (D334). D306's checker holds development evidence;
+    - (c): the degradation is covered, but the same molecule leaving and returning through export is not;
+    - (d): zero loss, two loss routes on one row, and a constant-stock control are not covered. The resolution limit is
+      covered in host form.
+- **The user's decision:** the three uncovered controls, (a), (c) and (d), go to a later registration (FR-38 v3) with
+  its own verdict. v2 stays as registered, so its judge and judged run are not delayed.
+- **FR-47's wall-marker fix landed** at 9d8c42be (tag `fr47-inert-wall-landed-2026-11-24`): gate G1 113 of 113, and
+  the D148 proofs identical but for provenance. The origin branch `fr47-inert-wall`, pushed by mistake, is deleted, as
+  the user approved in D342.
+
+## D355: Lean's two-potassium evidence for FR-51: the external arm meets D351 in direction and rough size; FR-51's reversal reference answers it; the internal arm and chloride are indications
+
+2026-11-24, about 18:07 UTC. The lead, with the advisor, on Lean's results relayed by the user.
+
+**What arrived.** Lean's results are at Lean commit fccbb5e5 (branch lean-paired-replay-audit-20261124), with its
+readings and drivers at 59fe4896. They are non-blind exploratory results for the registration after FR-51's landing
+(D353).
+- **The engine:** FR-51's follow-up at 7ca7c9c1 (branch fr51-slot-refusal), not e4bbf0ec, with
+  `resolved_pump_tissue@3`, `kir2p1_mh2@1` and `open_channel_block_weighted_modes@1`.
+- **What ran is FR-51's block factor, not Kir2.1.** Lean divides a blocked population's current by a matched free
+  population's, with their Kir gates held equal. "Absolute voltage" below is FR-51's block on the membrane-voltage
+  reference.
+
+**The external arm.** The half-conductance shift against the measured reversal shift, with each preparation's
+two-mode block fitted to its first K level and then held fixed:
+
+| Series, external K (mM) | Half-conductance shift (mV) | Measured reversal shift (mV) | Cells, from concentrations (mV) | RMS: reversal reference | RMS: membrane voltage | RMS: measured shift (diagnostic) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Panama, 5.4 → 60 | +51.6 | +53.2 | +62.3 | 0.226 | 0.397 | 0.044 |
+| Ishihara, 150 → 50 | −26.1 | −26.9 | −28.2 | 0.026 | 0.479 | 0.010 |
+| Ishihara, 150 → 20 | −48.1 | −48.9 | −51.7 | 0.043 | 0.533 | 0.015 |
+
+- **The definition is met in direction and rough size only.** The independent pair is Panama against Ishihara.
+  Ishihara's two rows share one 150 mM calibration. On Lean's half-conductance reading the slopes are 0.97 (Panama),
+  and 0.97 and 0.98 (Ishihara). The exact slope stays open, since readings are good to about 1 mV and some half
+  crossings sit in 10 mV brackets.
+- **A correction to D352 and D353:** Panama's 0.98 ± 0.01, which they quote, is a fitted steep component, a different
+  observable. The pair is on the half-conductance reading.
+- **The user's rule (D344) is answered by FR-51's `{"reversal_of": ion}` reference,** which is in flight. D352's "a
+  new law or major" for main's Kir2.1 is withdrawn: FR-51's block law is that new law. `kir2p1_mh2@1` stays unchanged,
+  as a parity law, with a scope line on its library page:
+  - its own gates read absolute voltage, so they do not shift with external K;
+  - a world in which external K changes declares FR-51's block with a reversal reference.
+- **Concentration-based against measured reversal: no cause is assigned.**
+  - Cells' shift is larger in all three series, by 9.1, 1.3 and 2.8 mV, and only Panama's difference is large.
+  - Panama's zero crossings and curves come from different panels, with unspecified specimen linkage.
+  - The measured-shift arm is a clamp offset in Lean's driver: one lab's indication, and no request.
+
+**The internal arm is an indication.** It comes from one lab (Lopatin and Nichols), with one to three patches per K
+level.
+- Raising internal K from 150 to 625 mM moved the half-block voltage about +5 mV, from about −20 to −15.
+- FR-51 predicts −36.3 mV with the reversal reference and 0 with the membrane-voltage reference.
+- The full series' slope is −0.15.
+
+D352's scope line stands, now with numbers: the reversal reference is supported for external-K changes only. One study
+adds no reference option.
+
+**Red-cell chloride is recorded only.** One permeability fits both of Freedman and Novak's mean currents only with an
+intracellular to extracellular chloride ratio of 0.187, against a measured initial 0.67 ± 0.02. Intracellular chloride
+was not measured at each test voltage, so D351's scope finding stands.
+
+**Where the scope lines go:**
+- FR-51's landing message, which the lead writes;
+- the block law's docstring on `fr51-slot-refusal`, never on e4bbf0ec, which is in its gate.
+
+They cite Lean by commit (fccbb5e5), since Lean's files are not on main.
+
+**Lean's tip fccbb5e5 merges only when both hold:**
+- the slot-refusal branch has landed by merge with 7ca7c9c1 in its history (its builder adds commits, and never
+  rebases or squashes);
+- a gate has run on fccbb5e5 itself, since the branch has moved past 59fe4896.
+
+**For the registration (after FR-51 lands, D353), before any run:**
+- **Judged quantities.** Fix which slope and which reversal are judged. The lead's proposal: judge the
+  concentration-based reversal, and report the measured one.
+- **Panama's other K levels.** Panama recorded four K levels, and Lean scored one pair. The lead asks Lean, through
+  the user, whether the other levels are unscored. Until then `kir_spermine_potassium.json` stays unopened, since those
+  levels could be the one arm still blind.
+
+## D356: Kir2.1 is a composition, not a law; the user's decision: one declared voltage shift on the channel population (FR-64), with FR-63 re-formed; Panama's 10 and 20 mM become holdouts
+
+2026-11-24, about 18:19 UTC.
+
+**Kir2.1 (the lead with the advisor, at the user's request for the cleanest form).** There is no Kir2.1 law. Kir2.1
+is an always-open K population (`kleak_always_open@1`) carrying FR-51's block on a K reversal reference.
+- **Why no law.** The two labs confirm the block's shift (D355), each with its own fitted modes. A Kir2.1 law would
+  freeze one lab's fit. The confirmed part is the form, and FR-51's reference gives it to any channel population.
+- **The block stays off `kir2p1_mh2@1`.**
+  - Its m target falls with depolarisation at absolute voltage, so stacking the block on it would rectify twice, and
+    the gate half could not shift.
+  - Lean's ratio cancelled the gates, and no gates on V − E have evidence here.
+- **FR-51's registration already runs this pairing:** `validation/fr51/REGISTRATION.md` names the always-open hosts,
+  and its references' cases use them. D353's registration judges the composition itself. Until it passes, both
+  library pages (`kir2p1_mh2@1`'s and the block law's) call the composition development-only.
+- **What the pages say is not claimed:**
+  - the unblocked current's shape and size against external K, which Lean leaves open;
+  - internal K, an indication (D355);
+  - the block's own limits in version 1: the blocker is held at a declared constant concentration rather than a
+    species row; the block has no kinetics; and binding is trace, with no count.
+- **No values tonight.** The fitted modes stay in Lean's driver and JSON, unopened.
+
+**The user's decision: one general mechanism, logged as FR-64.** FR-51's reversal reference and FR-63's pH shift have
+one shape: the voltage a factor reads, shifted by a declared function of a local activity. It becomes one mechanism,
+declared on the channel population:
+- **The shifts are a small closed set:** an ion's reversal, V − E from its compartment concentrations, and a sourced
+  shift per pH unit.
+- **Who reads it:** the factors that declare it, the gates and the block.
+- **Parity laws are untouched.** A population that declares no shift runs bit for bit as now.
+- **FR-63** becomes a declared pH shift on Kv1.5's population, instead of a new law.
+- **FR-51** lands as is. Its block's `reference` key then moves into the mechanism, with no aliases (pre-alpha).
+- **A design note comes first,** before FR-51's block law is registered and before the rename's design note
+  (25 November).
+- **Where it sits today** (the lead's read of `fr51-slot-refusal`):
+  - `channel_block` in `surface_pump_v3.py` computes V − E per population, for the block only;
+  - `channel_kinetics` hands the gating laws the plain membrane voltage;
+  - the block law, `open_channel_block.py`, already takes any reference voltage.
+
+  So the change is in the model's plumbing, not in any law.
+
+**Lean's answer on Panama's other levels** (relayed by the user):
+- **What Lean scored.** Its frozen replay fitted Panama at 5.4 mM and scored only 60 mM. Panama's 10 and 20 mM
+  normalized-current curves and half-conductance shifts are unscored; the 20 mM row in D355's table is Ishihara's. Lean
+  verified this from the saved run output and left the input data file unopened.
+- **The registration** (after FR-51 lands, D353) reserves both levels as within-study holdouts. The 5.4 mM fit, the
+  readout and the scoring rule are frozen before the two levels are extracted.
+- **Prior exposure, disclosed.** Lean's search saw the full figure, including the intermediate traces, and had read
+  their reversal voltages and the published four-level fit. By its recall it extracted normalized currents only at the
+  endpoints. So the registration can claim a prospective test of the two intermediate responses, with that exposure
+  disclosed.
+- **The lead** keeps `kir_spermine_potassium.json` unopened.
+
+## D357: OL6 Protocol D v2 is registered; the judged revision is pinned at eced4ef8
+
+2026-11-24, about 18:29 UTC. The lead, with the advisor.
+
+**The tag.** `ol6-protocol-d-v2-registered-2026-11-24` is at eced4ef8 (branch `ol6-protocol-d-v2`).
+- **The judged revision is eced4ef8.** Its src is main 9d8c42be's, FR-47's inert-wall landing. The branch merged main
+  once, at 0087818d, and never again: main now carries FR-44's src.
+- **The authority** is `docs/OL6_PROTOCOL_D_V2.md`, with `protocol_d_v2.py` and `protocol_d_v2.json`. The files it
+  judges with are unchanged since their own tags.
+- **Checks at eced4ef8:**
+  - `protocol_d_v2 check`: 29 of 29;
+  - the JSON regenerates byte for byte;
+  - the guard set: 87 passed;
+  - the privacy scan of the branch's diff: clean.
+
+**Rulings on the builder's four calls:**
+- **The pin** goes in this entry, as the document says. 0087818d predates the last text commits.
+- **`moments` stays.** Without it, identical replicas would miss the zero-SE rule in 14 of the 54 constants. A pair
+  wrongly classed as spread would then read the same artifact that failed the first registration (D318).
+  - A check row shows that `moments` equals the registered `mean_error` bit for bit on columns whose replicas are not
+    all identical.
+- **A missing row keeps failing (§6).** An exact run that loses a vesicle that (d) keeps floppy is a real
+  disagreement. Counting it as tense would make it unfailable.
+- **Erratum 2's frozen module stays as it is.** One docstring line ("P-D1's (d) side, in place of the refused (d) run")
+  names a plant outcome of the first check. §7 already states that P-D1's (d) side is computed from the closed form and
+  never run. The tag message discloses the line, and the checker lists it.
+
+**Seeds:**
+- **First:** 670001 to 670000 + M.
+- **Retry:** 690001 to 690000 + M, once, and for inconclusive worlds only.
+- **D7's clock convergence** reads the first six seeds of the set it checks.
+- **Withdrawn:**
+  - 640001 onwards: its first 128 were consumed by a (d)-only clock-room probe; the retry range was never run;
+  - 740001 onwards: never run.
+
+**P-D8, the one-ulp plant,** moves a read value; it is not an engine run. This records its limit: moving N_L by 1 to
+16 ulps leaves V's bits unchanged, so these constant pairs cannot see a small lumen-count error.
+
+**Two routes to inconclusive** (a correction to the lead's "about 1 in 10²⁰" to the user, which covered the first
+only):
+- **A tense replica:** about 1.8e-20 at the worst rung M reads, from the linear-noise variance, which was checked
+  against 128 exact replicas of an unregistered 12.5 nm D5.
+- **A D7 clock refusal on the new seeds,** which are unscreened by design. It has no number. On the withdrawn seeds
+  the worst case used 0.39 of the bound.
+
+**Cost:** about 13.5 process-hours for the first seed set, with D5 at 6 hours and its 100 nm rung at 4.5 hours in one
+chain. With a retry, at most about 27.
+
+**The checker** is fresh and independent: neither the builder nor the first checker. It is briefed with the tag, the
+document and §10, and with its CPUs. It reports before any retry.
+
+## D358: the user's decision on gate speed: refresh the scope map after engine landings, record the 37 unmapped files, and narrow D229's readers rule after a file-open check
+
+2026-11-24, about 18:32 UTC. The user: "think practically about testing as much as we can try to be optimized without
+sacrificing quality". The lead measured, with the advisor.
+
+**What a gate with no src change runs today.** The gate for the Lean calibration tip, whose diff is 52 files, all under
+`lean/`, selected 561 of 666 tier files: 12,633 of 13,307 test-seconds, and 2,354 s of wall time on lane A. Two terms
+dominate:
+- **Drift: 442 files.** `scope.py select` compares each test's recorded paths with the nightly map's snapshot (03:09),
+  so every test that touches src changed by the day's landings is re-run by every later gate, whatever the gate's own
+  change.
+- **D229's always-run readers: 469 files.** Every test that reads repository files always runs.
+
+The same estimate for two other diffs, with the drift term removed:
+
+| Always-run rule | Lean tip (52 files) | D356 (two docs files) | Protocol D v2 (three files) |
+| --- | --- | --- | --- |
+| Recorded reads only | 49 files, 735 s | 50 files, 794 s | 51 files, 815 s |
+| Folder scanners | 295 files, 7,824 s | 296 files, 7,930 s | 296 files, 7,930 s |
+| Readers (D229) | 479 files, 10,496 s | 480 files, 10,602 s | 480 files, 10,602 s |
+
+- **The floor.** In every variant, 37 files run because their child processes are not recorded, and a few because they
+  are missing from the map.
+- **No tier test reads `lean/`.**
+- **Tracing is nearly free.** The traced nightly ran 662 files in 2,301 s of wall time.
+
+**Why not simply select from the landing's own diff.** That would change what a gate certifies. Main also changes
+without a gate:
+- the lead's decision commits, which pass only the privacy scan;
+- the merged state after each `land.sh`, whose trial runs only the named test files.
+
+FR-50's stale library pages are that class of failure. So main's drift stays tested, once rather than in every gate.
+
+**The user's decision: build all three tomorrow.** Each is qualified before use, and the full nightly run stays the
+backstop: a nightly failure still stops selection until it is explained.
+1. **Refresh the map after each engine landing,** with one traced full run on main. Later gates then select against a
+   map of the current main. No rule changes, and no coverage is lost.
+2. **Record the 37 files whose children are unmapped,** so they run only when their inputs change.
+3. **Narrow D229's always-run readers rule,** amending D229 rule 3. Tests that read repository files then run when the
+   recorded files they read, or the folders they list, change.
+   - The evidence comes first: a file-open trace (`strace -f -e trace=openat`) of a sample of reader files, compared
+     with the map's paths. A repository path the map lacks is a hole, and it blocks the change.
+   - The guard set still always runs.
+
+**Tonight nothing changes** in `scripts/gates` or `gate-cache/scope-map.json`, because gates are queued.
+- The queued Lean gates are Lean's, and the lead does not stop them.
+- The user passes Lean the advice: one gate per merge point. 647b4c15 covers d5a2c138, 3a5f40d7 and af4a8000.
+  fccbb5e5 is superseded by c1924c89, which cannot merge before FR-51's follow-up lands.
+
+## D359: XC0 v2 (rule erratum 2) passes on its independent run; D329's fail stays on record
+
+2026-11-24, about 19:57 UTC. The independent runner's report, under the tag `xc0-erratum-2-2026-11-24` (b477f433) and
+D333's terms: only the diagnosed families rerun, on the same frozen engine, disclosed as not blind on those rows.
+
+**The verdict: pass.** The judge (step 7, exit 0) gives every claim, C0 to C8, a pass. Its counts:
+
+| Pass | Not mappable | Not run | Information |
+| ---: | ---: | ---: | ---: |
+| 7,430 | 272 | 242 | 736 |
+
+- **The five changed families pass:** C6.v1_eq_ratio, C6.v1_eq_x, C7.pump_cell_charge_per_fmol, C8.b_final_c and
+  C8.b_final_psi.
+- **The rows:** all 349 rerun rows pass, and 8,331 are carried from D329.
+- **Of 129 families,** 98 pass, 19 are information, 7 not mappable and 5 not run. None fails, none is not testable,
+  and none lacks power.
+- **The record** is `/mnt/workspaces/Cells/xenopus-lane-20261119/xc0-erratum2-run/`: `step7/judge.json`,
+  `verdict/verdict.json` and `RUN.json`.
+
+**The engine's identity:**
+- **The tree:** the tag's src tree equals 260d7c7f's (tree 2c5a51cb).
+- **The snapshot** is clean: 5,345 files at b477f433, with an empty patch, frozen with `--scope full --require-clean`.
+- **The imports:** all 109 loaded cells and validation modules came from the snapshot.
+- **The judge's checks** pass: the same engine as D329's snapshot, the base record's digest, and the carried judge
+  record's digest.
+
+**The runner's procedure:**
+- **Coverage.** The key check and the carry check pass, and the changed manifest equals the builder's.
+- **The charge anchor** bounds all 344 rows below 524,288 fmol.
+- **The segments.** All six bare segments, at factors 1 and 0.5, end cleanly and pass the segment check.
+- **The table** has 349 numeric rows, and every C8b step check converged. No retry was needed.
+- **Refusals and errors:** none.
+- **Cost:** about 3.78 core-hours, over the estimate of about 3.5. The wall time was about 5.5 h, of which about 2.5 h
+  was spent waiting for lane locks.
+
+**The runner's disclosures, recorded here; the sealed record is unchanged:**
+- **Batches.** Two of three lane batches ran slightly over 45 minutes (45:55 and 45:16). The lane flock is not first
+  in, first out, so a batch may have gone ahead of a waiting gate.
+- **The launcher.** It used main's `scripts/run_detached.sh`, which is newer than the tag's and turns JAX's
+  compilation cache off, adding `python -B`, `/usr/bin/time -v` and CPU pinning.
+- **One small scratch file** went to `/tmp` against the brief, and was removed.
+- **The sealed not_blind file is slightly inaccurate:**
+  - it says lines 1530 to 2193 of `xc0_engine.py` were read, but lines 1930 to 1948 were not;
+  - it omits that a grep of DECISIONS.md printed D332's title line.
+
+**What it means.** XC0's registered comparison failed in v1 (D329). The diagnosed rows were rule-side definitions and
+an engine parse tolerance, not physics (D332). They now pass in v2, on the same frozen engine. The engine fix of
+D333, the charge anchor, landed separately (82c26ddd).
+
+## D360: a correction to D352: admitted effective valences above |z_B| were already tested; FR-51's follow-up is gating
+
+2026-11-24, about 20:06 UTC.
+
+**The correction.** D352 said that no FR-51 test exercises an admitted effective valence above |z_B|. That was wrong:
+the lead read only the refusal row at 9.0 ("exceeds 8").
+- **B5** is D352's spermine case itself: z_B = +4, inside, z_eff = 5, on a K reversal reference. It is a host row
+  compared with the 60-digit closed forms at 40 voltages.
+- **B4** (1.5 on |z_B| = 1) and **G1, G3 and G5** (8 on |z_B| = 1) are admitted rows too.
+- **The judged run covered them:** REGISTRATION.md's B-u cases include B4, B5 and G1 to G5.
+
+**What the follow-up adds instead** (branch `fr51-slot-refusal`, head e79cbade, with 7ca7c9c1 kept in its history):
+- **A plant** that caps each effective valence at |z_B|. It is a row in the existing plants test, and it must fail B5's
+  B-u. It does: planted, the relative error is about 2.4e2 at +60 mV, while unplanted B5 sits at 0.4% of the 1e-12
+  band.
+- **B5's round trip:** it parses with steepness exactly −5.0, and round-trips through `to_dict`. That is the
+  effective-valence form's first round trip.
+- **The slot refusal:** a blocked population beside cell replacement @1 or @2, partition@1, or membrane insertion @1
+  or @2 is refused by name at `Composition.check_definition`.
+- **The block law's scope lines (D355, D356),** in its module docstring only. The law is not registered (D356).
+
+**State.**
+- **The gate** is on lane B and the FR set follows it (`/mnt/workspaces/Cells/fr51-slot-refusal-20261124/`).
+- **Fifteen related files** matched their rows at the head, in 171 s.
+- **The populations file's tier row** is 23.65 s, 61 passed, measured cold.
+
+**Two notes for later:**
+- The slot refusal has no entry yet in `composition_matrix.RULES`.
+- `kir2p1_mh2@1` has no library page, so D355's and D356's page line waits for the docstring batch. A docstring edit
+  would change a parity law's source.
+
+## D361: FR-64's design note: the user's decisions (all four pairings admitted, two claimed; priority normal) and the lead's rulings
+
+2026-11-24, about 20:22 UTC. The note is `docs/VOLTAGE_SHIFT_DESIGN.md` on branch `fr64-design` (6fb3b7bb). It contains
+no engine code.
+
+**The mechanism.**
+- **The schema:** one optional key on the channel population, `voltage_shift: {"gates": {"m": shift}, "block":
+  shift}`.
+- **The rule:** each reader reads V_ref = V − ΔV. ΔV is an ion's reversal E, or σ(pH − pH_ref) at a declared side.
+- **ΔV never depends on V.** So dV_ref/dV = 1, and the block's charge term keeps its form. Permeation, its heat and its
+  charge still read V.
+- **Where it is computed:** one function in @3, for every reader, at every stage and on every path. No law changes,
+  and the declaration adds no new ID.
+
+**The user's decisions:**
+- **All four reader and kind pairings are admitted in version 1, and two are claimed:**
+  - the claimed two are the block on an ion's reversal (D355) and the gates on pH (D351);
+  - the qualification proves all four as engine arithmetic, including the block on pH's new material term through h
+    and its bound;
+  - the gates on reversal, and the block on pH, carry no wet-lab claim.
+- **FR-64's priority is normal.**
+
+**The lead's rulings, as the note recommends:**
+- **Readers:** each gate and the block separately. A gate shift moves its target and τ together. τ's shift is
+  unmeasured, since D351's records give the activation midpoint only.
+- **The pH sign:** σ = dΔV/dpH in V per pH unit, negative for Kv1.5.
+- **Sources:** carried by the world's registration.
+- **The build** comes after FR-51's follow-up and the rename land.
+
+**Moved to the rename's design note (25 November):** the block law's family (its ID is live but in no registry),
+together with how tagged files that are never rewritten keep being read after a spelling changes. That covers FR-51's
+engine translator and FR-50's exclusions. The pre-alpha rule argues against a shim.
+
+**Before the pH window is ruled:** the note's example puts the reference pH on the window's edge, so a world resting at
+its reference would be refused through drift or rounding. The note must state the rule at the edges.
+
+**Coverage the note adds:**
+- the slot writers' stale-slot hazard for any declared shift, not only a block;
+- plants for the two gaps it found: an IMEX stage gate reading unshifted V, and a stored total read in place of free h
+  at a buffered node;
+- §9: the linear pH form interpolates each lab's two points, and only the direction is confirmed.
+
+**Order:** D353's two-arm registration must not straddle the key move. It is written after the migration, or pinned
+to FR-51's landed revision (955765ef). The note lands with the rename note as one stack with no src change.
+
+## D362: FR-54 and FR-57's design note: one liquid router that takes over the wash; the user's decisions; a correction to D352's reversed-order line
+
+2026-11-24, about 20:35 UTC. The note is `docs/LIQUID_ROUTING_DESIGN.md` on branch `fr54-57-design` (df9361a4). It
+contains no engine code.
+
+**The recommendation.** One new operator, `liquid_routing@1`, moves well-mixed liquid between inlets, finite nodes and
+records, as portions at declared times (a wash is one case) or as prescribed flows.
+- **A flow is stepped exactly,** by the matrix exponential of the declared network. It is computed once per schedule
+  segment on the host, so the trajectory, the volume and every solute are exact to rounding.
+- **Heat is booked per portion,** in the wash's ideal-mixing form, never as a remainder. Its split among holders is
+  first order in the step.
+- **The collector** starts from zero volume, and its first portion loses exactly 0.
+- **The estimate** is 7.25 to 9 agent-days, plus 1 to 1.5 to retire the wash.
+
+**The user's decisions:**
+- **The router takes over the wash.** `scheduled_compartment_wash@1` is retired after a bitwise check, under the
+  pre-alpha rule.
+  - The retirement waits for FR-49's registered World B and C1 runs, or pins them to an earlier snapshot.
+  - FR-45's worlds W2 and W7 also wash. Its protocol, not yet tagged, is written against the router or pinned the same
+    way.
+- **The collector is a record that can later open as a node** whose liquid keeps reacting. That adds 1 to 1.5
+  agent-days now.
+
+**The lead's rulings,** as the note recommends:
+- **One operator for events and flows,** with flows by the exact network step.
+- **Networks:** any balanced network of up to 64 nodes, qualified on a chain, a split and merge, and a loop.
+- **Heat:** records outside the energy check's flow bound, like the wash's.
+- **The default face heat** at a face-connected exchanged node is admitted for events within the resolved domain, and
+  a flow's face-connected nodes take the exact heat only. The domain edge is the author's desk arithmetic, so it is
+  measured before any tag, with the 8 and 2 fmol world confirmed inside.
+- **Flow beside diffusion** comes in the same build, once FR-54's two arms pass.
+- **One registered protocol,** with a verdict per request.
+- **FR-54's item 3** is read plainly: the wash's events at a connected finite node, on the dt grid.
+
+**Cautions for the build:**
+- **The exponential's bits.** The host routine is pinned or its version recorded, since its bits set restart identity
+  and crossrev.
+- **Three readout classes:**
+  - flow alone is exact, judged with a rounding bound, never an order window;
+  - flow beside diffusion carries Strang's second order;
+  - the heat's split is first order.
+- **The references** need the repeated-eigenvalue closed form for a chain of identical wells. FR-57's 26.42% is that
+  case.
+- **The label owner's new field,** `label_collected_fmol`, is absent where there is no collector, or else FR-49's
+  judge needs an erratum first, as today's erratum 1 did for one field.
+- **The build comes after the rename,** so the operator's ID is minted once. The note lands in that no-src stack. Its
+  author has read the engine, so a separate code-blind agent writes the references.
+
+**A correction to D352 and FR-57's addition.** "The reversed order gives the same total, with different per-portion
+losses" was wrong for two deliveries.
+- **The first delivery** into the empty tube loses 0 in either order, so the second carries the whole 0.523248
+  RT·fmol. Only the second delivery's split between resident and arriving liquid differs: 0.306853 and 0.216395
+  forward, reversed in the other order.
+- **A third delivery** makes the per-delivery losses differ, with the same total:
+  - 1, 3 and 3 mM gives (0, 0.523248, 0.137341);
+  - 3, 3 and 1 mM gives (0, 0, 0.660589).
+- **The case's control** is that three-delivery form, with the two-delivery split recorded too. The line was the
+  lead's, on the advisor's suggestion. The author's figures check by hand.
+
+## D363: FR-50 phase 1's registered comparison passes (fr50-one-way-records-v1)
+
+2026-11-24, about 20:35 UTC.
+
+**The run.** At 4872266d, once, from a clean snapshot frozen before the run, on the timed lane (CPUs 4 and 5 under
+its lock, siblings idle). It took 2 min 31 s of wall time.
+- **The order:** the tagged reader's pre-flight read the results first, and all ten cases parsed, none invented. The
+  judge ran after it.
+- **The sources:** the tagged judge (3cec272b) with erratum 1 (a6e48ce9), and the code-blind references (5a59b3c5),
+  taken with `git archive`.
+
+**Every criterion passes:**
+
+| Criterion | Measured | Band |
+| --- | --- | --- |
+| K1-1 | 8.4e-15 relative | 1e-11 |
+| K1-2 | gap 0 | 1e-12 |
+| K1-3 | closure 0 | rounding bound |
+| K2-1 | order ratios 4.0021 and 4.0019 | 3.6–4.4 |
+| K2-2 | gap 9.98e-7 at 0.1 s; ratio 4.000 | ≤ 1e-5; ratio 3–5 |
+| K2-3 | closure 0.040 of its bound | ≤ 1 |
+| K2-4 | restart at 100 s, bit for bit | bitwise |
+| K3 | 2.3e-16 | 1e-12 |
+| K4-1 | 5.7e-15 | 1e-11 |
+| K4-2 | gap 0 | 1e-12 |
+| K4-3 | closure 0.026 of its bound | ≤ 1 |
+| K4h | 1.8e-16 | 1e-12 |
+| K5 | the four refusal rows | all pass |
+
+- **All five plants** are caught as registered.
+- **The record** is `/mnt/workspaces/Cells/fr50-build-20261124/judged-4872266d/`.
+
+**The landing head** will be 4872266d plus the ruling's docstring and comment (452db412), plus a merge of main after
+FR-51's follow-up lands. The merge message states that FR-50's src differs from the judged head in docstrings and
+comments only. The gate follows, on lane B, with the FR set.
+
+## D364: corrections to D362 (FR-45 is registered; the label field); FR-54 and FR-57's note is final; no gap in the standalone replacement model
+
+2026-11-24, about 20:54 UTC.
+
+**FR-45's registration is tagged.** D362 said FR-45's protocol was not yet tagged and would be written against the
+router. That was wrong.
+- **The tags:** `fr45-site-competition-v1-registered-2026-11-24` (6e92d0ec) names `scheduled_compartment_wash@1` for
+  W2, and its amendment 1 is tagged. Only amendment 2 (ff99fead on `fr45-protocol`, which adds W7) is untagged.
+- **So:** FR-45's judged runs (W2 and W7) stay on the wash, or are pinned to an earlier snapshot. The wash's
+  retirement waits for them, as it does for FR-49's B and C1 runs.
+
+**The label field.** The router's label owner gains `label_collected_fmol` [labelled species, label, collector],
+attributed to each portion's node of origin. That is exact for a chain, where reusing FR-44's field is not.
+- **Without collectors** the field is zero-size, as FR-44's field is.
+- **FR-49's judge erratum 2** (the name added to `LABELS_ONLY`) lands with the router, before any FR-49 judged run on
+  an engine that has the router. A run pinned to an earlier snapshot needs none.
+- **The absent-field form,** with per-declaration field sets in the contract (0.75 to 1 day of central code), is not
+  taken now. It stays a candidate if owner fields keep growing.
+
+**The note is final:** `docs/LIQUID_ROUTING_DESIGN.md` at f66a4828 on `fr54-57-design`.
+- **The exponential** is `scipy.linalg.expm`, with scipy pinned and recorded in each run's identity, and BLAS at one
+  thread (D190). Each source node's kept part absorbs the column-sum remainder.
+  - The author probed it against a 40-digit exponential on equal-rate and unequal chains, and on looped networks of 8
+    and 64 nodes. It was within 1.0 eps per entry.
+  - The note's 4 and 8 eps checks are re-measured before the tag.
+- **The three readout classes** are judged as D362 set out.
+- **The default face heat's domain** and the energy check's stop are desk arithmetic, measured on today's engine
+  before the protocol is tagged. By that arithmetic the 8 and 2 fmol world lies inside the domain at kh ≤ 0.2, and it
+  completes under the default heat only at kh ≤ 0.05.
+- **The price** is 8.25 to 10.5 agent-days with the wash's takeover, plus 1 to 1.5 for the collector's later opening
+  as a node.
+
+**No gap in the standalone replacement model.** The lead suspected that `resolved_pump_replacement@1` admits FR-51's
+block, and it does not.
+- **On `fr51-slot-refusal`:** its `check_definition` calls the composite's, so a block there is refused at parse by
+  the slot refusal.
+- **On main:** @3's `BLOCK_STRUCTURE_REFUSAL` already refused it.
+- **Only the composite form** carries the stale-slot hazard, and the follow-up covers it. The probes are in
+  `/mnt/workspaces/Cells/fr51-replacement-refusal-20261124/probe/`.
+- **Two small follow-ups** go to the next no-src stack: a `composition_matrix.RULES` entry for the slot refusal, and
+  the replacement row moved to the composite form, where that refusal is the only wall.
+
+## D365: the user's decisions on FR-43's gaps (two closed next, turnover at changing volume logged as FR-65) and FR-58 to FR-62's priority
+
+2026-11-24, about 21:10 UTC.
+
+**FR-43's four gaps (D347).** The user chose three to close next:
+- **Part 1's 16-row control and 256-row case,** as rows in the existing species-cap tests (D224).
+- **Part 1's performance report, measured on CPU:** compile time, time per simulated second and peak memory. Its L4
+  figures were taken on a path D336 now refuses, the composite on a GPU. FR-43 is the user's top priority, so its
+  timing takes the timed cores under their lock.
+- **Turnover in a swelling cell,** logged as FR-65 (high, as part of FR-43's request). This is D301's composition M3:
+  turnover beside water, partition or insertion, reading the current volume and masks.
+
+**Not now:** a registered criterion for part 1.
+
+**FR-58 to FR-62 are normal priority.** Their design notes follow the high items.
+
+**Tonight's slots** (the user: "use tonight well even if we have to pause something in the morning for the big delete
+/ rename"). Four agents write without CPU:
+- the rename's design note, with a read-only candidate mapping;
+- the legacy families' port plan;
+- FR-52's design note;
+- FR-53's design note.
+
+FR-43's builder takes the next free slot.
+
+## D366: FR-30's Revilla diagnostic, second deliverable: the registered split had little power to test the law; D320 stands; Ek-Vitorín's fit waits for a power check
+
+2026-11-24, about 21:21 UTC. The lead, with the advisor.
+
+**The terms.** The diagnostic is labelled and non-blind (D343, D344). It decides nothing (W6), and changes no verdict
+and no law. D320 stands. Every result is one study's indication, and D334's caveat applies to the steady-state
+polarity difference, since Revilla's one-cell protocol ties V_j's sign to one oocyte's V_m.
+
+**Identity, checked before the search, with no refit:**
+- the tagged `predict` stage reproduced `predictions.json` byte for byte, apart from its time stamp;
+- the objective at the judged parameters is bit-equal to the record;
+- one shared slope and midpoint per gate set both the rates and the steady target.
+
+**The declared reading, on the law's full box (free split).** This box has ten parameters on nine distinct targets,
+so it is saturated (D1), and "could not test" was nearly forced there by counting.
+- **The compatible sets:** 383, 397 and 411 at margins 0.5, 1.0 and 2.0 of excess over the polarity floor.
+- **Their predictions at 80 mV,** all inner bounds:
+  - τ_slow(80) spans 4.15 to 135 s;
+  - τ_fast(80) spans 1.10 to 3.77 s;
+  - G_ss/G_0(80) spans 0.332 to 0.473 (the lead, from `exact.jsonl`).
+
+  Each covers both polarities' windows.
+- **A witness on the floor,** S804 (excess 0.0000), predicts τ_slow(80) = 15.81 s, passing both ±80 lines.
+
+**The judged family (split ½, eight parameters).** This is beside and post hoc, since the declaration gave the slice
+no meaning on a premise the run refuted. Three sets fit the training data comparably and score differently on the six
+judged lines:
+- S59, at excess 0.0125: 3 of 6;
+- S444, at 0.1456: 5 of 6;
+- the judged fit, at 1.1242: 4 of 6.
+
+What follows from that:
+- **The local minimum cost no pass.** The registered fit stopped in one, but the family's better minimum scores fewer
+  lines. D1's reading of the 1.124 excess, as the cost of eight parameters on nine targets, is superseded; no entry
+  had quoted it.
+- **In this family G_ss/G_0(80) is pinned,** at 0.434 to 0.450 (margins 0.5 and 1.0, 116 sets), just above +80's
+  window top of 0.4339.
+
+**Narrowed:**
+- **"Could not test" holds for the two time constants.** The −80 steady-state line is failed by 79 of the 91 sets
+  scoring 5 of 6. That is the polarity difference again, confounded as D350 left it.
+- **The one set passing all six lines** (S247, post hoc) is recorded only:
+  - it is 1 of 383, and one split sits on the box edge;
+  - its G_ss(80) lies in a band 0.0094 wide, against a 0.007 digitising error;
+  - it was checked with uncommitted code.
+- **"Kinetics alone, feasible"** fits six distinct numbers with eight or more parameters, and supports nothing.
+
+**The named witnesses** are scored through the tagged predict, readout and scorer (`d2/verify_key_sets.txt`): S804, S444
+and S913 score 5 of 6, and S59 3 of 6.
+
+**What it means.**
+- **D344's "voltage dependence unvalidated"** now has its reason: two training magnitudes do not pin the law's
+  interpolation to the held-out magnitude.
+- **FR-30's next fit, Ek-Vitorín's** (tag A and amendment 1), fits `junction_series_gates@1` to `train.json` and
+  predicts the held-out voltages. It has no power check and no stated starts. Before any fit, an amendment adds two
+  rules:
+  1. **A power check, judged first from the training data alone.** Over the parameter sets compatible with the
+     training fit within a declared margin, compare each held-out prediction's span with its pass band. A comparison
+     whose span covers both a pass and a fail is "not tested by the split", reported and not judged. The benchmark
+     counts only tested comparisons, and is undetermined if too few remain.
+  2. **Multistart,** with declared starts and a reported check of the global minimum.
+
+  The fitter starts only after that amendment's tag. The extraction is not yet tagged (no tag B).
+- **The diagnostic lands by merge** in the next stack with no src change, keeping its declaration (7c9f6ea0) ahead of
+  its driver (64fbd84a). Branch `fr30-revilla-diagnostic`.
+
+**Cost:** 3 h 33 min of wall time and 10.8 CPU-hours, on CPUs 6, 7, 22 and 23. The record is
+`/mnt/workspaces/Cells/fr30-revilla-diagnostic-20261124/d2/`, with its SHA256SUMS.
+
+## D367: FR-38 v2's judge is built from the spec alone; amendment 4 rules its questions and registers the export contract
+
+2026-11-24, about 21:27 UTC.
+
+**The judge.** A separate agent built it from the spec folder alone, at amendment 3's tag. It is on branch
+`fr38-v2-judge` (4c98bd7a), untagged, and has read no engine output.
+- **C0:** its reader accepted all six reference files, the invented one first.
+- **Sizing:** every C2 must-catch unit clears the 10× rule. The smallest margins are P6 in AF at 72×, P1′ in AN at 159×
+  and P3a at 786×.
+- **Tests:** 23 host-only tests on invented inputs, taking 19 to 39 s.
+- **Disclosed:**
+  - It opened the six real reference files with ad hoc scripts, the invented file first, before its reader existed. It
+    took their key names and entry shapes from them, and set its 1-ulp echo tolerances with them in view. No accept or
+    refuse rule changed after the reader's first run on them.
+  - It read no engine code and no engine output, and none of the references' code or README.
+
+**Amendment 4,** tagged `fr38-v2-amendment-4-2026-11-24` (b4af13df). It is written by the protocol author, without
+the judge's code, and value-silent:
+- **Arm B's G scale** is the sheet's §3.4 reading, covering every chain's residues in transit. It is reported only, so
+  no verdict depends on it. C0 checks a stated scale only where a judged entry's accuracy rests on it.
+- **C4 runs at every rung,** each with its own step count, retry rungs included. Family D's energy identity is the
+  exception, being stepped since amendment 3.
+- **Blanks are judged runs,** and AF's two engine blanks must be bitwise equal.
+- **P8's negative control** follows the literal text: a failure leaves family C inconclusive, never FR-38.
+- **The judge forms P1, P1′, P1″ and P6 itself.** Builder entries for them are excluded from scoring and recorded.
+- **A missing index** is recorded and flagged to the checker. A missing run, or a run without provenance, is still
+  refused.
+- **The judge's readings are confirmed,** with two corrections:
+  - route 2's "every second output" counts even indices from the grid's start, which is the same in every registered
+    world;
+  - the restart comparison includes the labels and `released_present_gross`.
+
+  An unscorable core plant leaves FR-38 at best inconclusive.
+- **The export contract is registered (§8):** the builder's hashed per-family engine tables, hashed before any
+  reference value is read. The judge's reader conforms to §8 before its tag, and the builder adds P9's V₀ patch to
+  P9's record.
+
+**Next:**
+1. The judge adapts on its branch, then the lead tags it.
+2. The builder's table follows §8.
+3. The judged run waits for both, and for the lead's go.
+
+## D368: OL6 Protocol D v2 passes its independent check on the first seed set; D318's failure stays on record
+
+2026-11-24, about 21:38 UTC. The checker is fresh, neither the builder nor the first checker, working under the tag
+`ol6-protocol-d-v2-registered-2026-11-24` (D357).
+- **The snapshot** is at eced4ef8 (`snap-eced4ef8`), clean. Its src is exactly main 9d8c42be's, and the four files it
+  judges with are byte-identical to their own tags.
+- **The check:** `protocol_d_v2 check` passes 29 of 29.
+- **The verdict** is `/mnt/workspaces/Cells/ol6-protocol-d-v2-checker-20261124/verdict/verdict.json`, with its
+  disclosures and choices in `record.json`.
+
+**The verdict: pass.** All seven worlds pass on the first seed set (670001 to 670000 + M), so no retry is needed.
+
+| World | M (z) | B | Other |
+| --- | --- | --- | --- |
+| D1 | 1.38 | passes at all 4 rungs | P slope −0.504 |
+| D2 | 2.52 | passes at all 4 rungs | P −0.512 |
+| D3 | 2.23 | passes at all 4 rungs | P −0.500 |
+| D4 | 1.57 | passes at all 3 rungs | E: mean z 0.38, SD ratio 0.19 |
+| D5 | 1.94, on 56 spread pairs | passes at all 3 rungs | 16 constant pairs exact at both rungs |
+| D6 | 1.97, on 29 spread pairs | passes at all 3 rungs | 11 constant pairs exact at both rungs |
+| D7 | — | — | E on the paired Δ: mean z −0.15, RMS ratio 0.2385 |
+
+- **The constant pairs:** all 27 hold, 128 replicas each, with (d)'s bits matching.
+- **The precondition:** no exact replica and no (d) run was tense, and no pair was left unjudged.
+- **The plants,** P-D1 to P-D8, are all caught. P-D8, the one-ulp plant, is caught 22 of 22.
+- **The bounds:**
+  - L: all 423 honest (d) runs close, with the largest moiety drift 1.5e-14 against 1e-12;
+  - n_min is 98;
+  - no clock refusal in 384 paired runs, the largest fraction of the bound used being 0.389.
+- **Cost:** 7.79 CPU-hours against the estimated 13.5. Lane B was held for 59 minutes in batches between gates.
+
+**The checker's disclosures:**
+- **Erratum 2's module:** it read it in full to use `pd1_b`, including the disclosed docstring line.
+- **Erratum 3's module:** three of its searches spanned that module's text, and none printed a line.
+- **Commit subjects:** a `git log` printed one merge subject (9dac867b), which states no result. The session context
+  showed main's recent commit subjects, D357's included.
+- **A probe of other locks:** a non-blocking shared-lock probe briefly took, and at once released, the timed-cores,
+  GPU and gap-junction locks. A checker should not probe locks it does not use, so this goes into future briefs.
+- **PROGRESS:** following the brief, it wrote only to its own folder, so the PROGRESS line §10 asks for is the lead's.
+
+**What it means.** OL6's deterministic representation (d) agrees with the exact stochastic chemistry on D1 to D7,
+under the shared agreement rule.
+- **D318's failure stays on record:** the first registration failed on D6's M alone, the zero-spread artifact. Version 2
+  passes on fresh seeds after M's repair.
+- **FR-47's** schedule supplement and independent check are next in this lane.
+
+## D369: the user's direction on legacy: everything actually used leaves legacy, in Cells' canonical formats
+
+2026-11-24, about 22:18 UTC. The user, on reading the port plan's summary: "the legacy work is clearly important cleanup we
+need to make sure to get everything we're actually using out of there in our canonical formats".
+
+**What it settles:**
+- **The end state is canonical.** Everything Cells uses from legacy is re-expressed in the engine's canonical forms:
+  its laws, models, operators and definitions, under the rename's IDs. Relocation alone, a legacy island moved into
+  `src/cells`, is ruled out as an end state. That is the port plan's Q2 (c).
+- **The scope is a test of use, not a list of IDs.** The port plan's "the 11 families" (D348) gives way to everything
+  actually used. This restates the user's 17 November rule: legacy is removed in one batch after a check that covers
+  every capability.
+
+**Not settled: the sequence.** Whether a bitwise relocation comes first, as an interim step, is still the user's call;
+D348 never defined "port". The morning's review prices both routes.
+
+**The port plan is reworked** (plan only, by its author) around:
+1. **A coverage table by capability and consumer,** not by ID or import closure. Each row gets one class: canonical
+   already, expressible today, needs an engine feature, or dropped.
+2. **A definition of "used," fixed before counting.** A test whose only subject is a legacy model is not a use. The
+   plan's dry-run deletion, with a tiers run, measures it.
+3. **The 18 BETSE drivers on other legacy IDs:** whether their evidence is still claimed anywhere. That decides the
+   plan's Q1 and the rename's Q3.
+4. **The "blocked today" list,** checked by reading each refusal site: calcium-permeant channels on @3, finite fuel,
+   an ER store, and assembly coupling. Each confirmed gap is a candidate request for the user, not a logged FR.
+5. **The BETSE rule (AGENTS.md, 8 November):** nothing in `src/cells` re-hosts or copies BETSE code or carries its
+   conventions or names. A relocated family must meet that, which may rule relocation out for some families.
+6. **Qualifying a re-expression** needs science-length runs, with a tolerance derived, never tuned. Five-step captures
+   prove only a bitwise move.
+
+**Order:**
+- **The rename's Q3,** the 18 live pieces also spelled inside legacy, waits until the sequence is chosen.
+- **In the morning,** before the rename's move lands, main is tagged and the pre-rename snapshot frozen. Every capture
+  can run from it later.
+
+## D370: a correction to FR-53's premise (the global ledgers' row-1 bound), from its design note
+
+2026-11-24, about 22:19 UTC. The note is `docs/LEDGER_ROUNDING_DESIGN.md` on branch `fr53-design` (774fdcd5). Its
+probe ran four worlds on CPU 4 under the timed lock: GJ-N1's line and 9×9 sheet, and synthetic sheets of 15×15 and
+27×27 cells. The evidence is in `/mnt/workspaces/Cells/fr53-design-20261124/`.
+
+**The correction.** In the `ledger_limits` family (`resolved_pump_tissue@1` to `@3`, the water models, the replacement
+model and the composite), the bound at row 1 is not the bare material atol.
+- **Row 0** has every residual exactly zero.
+- **From row 1** the running allowance (2.5 ε k M) is already 97.6% to 99.9% of the total ledger's bound.
+
+So FR-53's "zero at steps 0 and 1", and the "bare material atol" in D335 and the GPU criteria, do not hold for these
+models. They do hold for `resolved_tissue@1` to `@10`, reached through legacy.
+
+**What grows is the check's own summation, not the stored state:**
+- **The row's exact residual** stays at or below 0.12 of the bound, and does not grow with the cell count.
+- **The check's sum** reaches 0.12 of the bound on the host at 225 and 729 cells, and up to 0.19 on the CPU device. It
+  is also the part that differs between host and device: D336 recorded the L4's two sums 0.51 apart.
+- **No clean √N law fits.** The host's first-window shares are 0.044, 0.122, 0.169 and 0.115 at 25, 81, 225 and 729
+  cells.
+
+**The note recommends:**
+- **One compensated sum** (fixed-order TwoSum), with the same code on host and device.
+- **One bound form for every ledger,** with three declared classes: exact, rounding, and truncation. The truncation
+  class carries its own term, as FR-38's amendment 3 taught, and FR-47's `atol_count` term belongs there.
+
+Its five questions go to the user in the morning batch with the advisor.
+
+**A note on the probe:** it held the timed lock for about four minutes while an FR-43 profile, the user's top priority,
+was waiting. Briefs now say to release the lock between probes.
+
+## D371: the user's decisions on the rename's family words, FR-52's form and scope, and FR-53's priority; the lead's rulings on the notes' other questions
+
+2026-11-24, about 22:29 UTC. The lead brought the three notes' questions to the advisor, as the user asked; four went to
+the user.
+
+**The user's decisions:**
+- **The rename's family words:** short where unambiguous, prefixed where a collision could come. For the five missing
+  interfaces and the block law:
+
+| Old ID | New ID |
+| --- | --- |
+| `rapid_binding@1` | `cells.binding.rapid_binding@1` |
+| `shared_pool@1` | `cells.population.shared_pool@1` |
+| `bilayer_geometry@1` | `cells.assembly_geometry.bilayer_geometry@1` |
+| `pore_nucleation@1` | `cells.assembly_hazard.pore_nucleation@1` |
+| `rate_equations@1` | `cells.assembly_representation.rate_equations@1` |
+| `open_channel_block_weighted_modes@1` | `cells.channel_block.open_channel_block_weighted_modes@1` |
+
+  The note's `block` is not used, since "block" already names a definition section throughout the code.
+- **FR-52's form:** an engine record kept at each event, with the trace reader kept in `validation/` as the
+  independent check.
+- **FR-52's scope:** chains are needed now. Version 1 covers dimer-to-tetramer chains and single-subunit activation,
+  through a declared identity map across states, rather than the note's two-state limit.
+- **FR-53 goes to normal.** Its premise was corrected (D370), and on CPU nothing fails. FR-47's small ledger fix, an
+  atol term for counts, lands on its own now that Protocol D has passed.
+
+**The lead's rulings, as the notes recommend, with the advisor's cautions:**
+- **FR-52:**
+  - **Q3:** an observed state on both sides of a channel is refused in version 1; the page states how returns are
+    counted.
+  - **Q4:** the new tier-2 file, with one integer-unit world added to G1 and crossrev at landing, rather than a routine
+    twin.
+  - **Q5:** an optional `cohorts` key on `@1`; omission is the only spelling, and an empty list is refused.
+  - **Independence:** the author's enumerated fractions are frozen in the note before the build, and the note states
+    the float record's rounding bound.
+- **FR-53:**
+  - **Q3:** X2's registered floor is unchanged.
+  - **Q4:** the fixed multipliers stay until evidence retires each one.
+  - **Q1, Q2 and Q5** wait for the build, now normal priority, after reads of what the new sum changes in G1's and
+    crossrev's saved fields, its compiled cost, and evidence on the L4.
+- **The rename:**
+  - **Q2:** the block law gets its own family, `channel_block`, with its law and interface registered in the hand
+    refactors, so the mapping holds no seeded law row. The interface's name follows the family word.
+  - **Q3:** the 18 live pieces also spelled inside legacy are re-spelled in legacy's files too, after a check for
+    pinned legacy config digests. Every route left after D369 has legacy outliving the rename.
+  - **Q4:** the ten sub-laws and the field closure law are in scope, since D346 names laws; the 35 recorded labels are
+    not. Any that needs a new family word comes back to the user.
+  - **Q5:** folders move separately, after the rename.
+  - **Q6:** the manifest keeps `@2`'s keys, with its ID rule amended. The note checks the library pages' paths, and
+    the viewer session is told.
+  - **Q7:** tagged files are pinned or translated at live drivers, with an erratum only where a judge must change. The
+    note lists every tagged registration with a run still to come (FR-38, FR-45, FR-49, Ek-Vitorín), each marked
+    pinned or translated.
+  - **Q8:** test plants take the three-part shape. The note states the grammar for outside modules, and the user is
+    told that private IDs change shape.
+- **The move's order:**
+  - FR-38's build runs its judged run before it merges main after the rename.
+  - The scripted move stays pure, with the long-line rewrap as a separate commit.
+  - The scope map is refreshed right after the landing.
+
+**FR-45, a coordinator's ruling.** P5's sizing on W7 covers both C6 and C4a, as for W2. CRITERIA's plant row, as
+amendment 2 amended it, names both, and it governs the narrower per-world table in amendment 2 §3.
+
+## D372: FR-50 phase 1 lands; FR-43 part 1's two gaps are closed on their branch, with the report committed by the lead on the user's approval; FR-66 is logged
+
+2026-11-24, about 22:41 UTC.
+
+**FR-50 phase 1 landed** at 1939563e (tag `fr50-phase1-landed-2026-11-24`). The landing trial passed 261 tests in 376 s.
+- **The judged comparison passed** (D363).
+- **The gate:** crossrev 11 of 11 identical; tiers 1+2, 671 files, none changed; G1 113 of 113 equal.
+- **FR's set** passed.
+- **The landing engine is the judged engine,** apart from docstrings and comments, by an AST comparison.
+
+**FR-43 part 1's two gaps (D365)** are closed on branch `fr43-part1-gaps` (10338924). Its selection gate follows.
+- **The missing cases are rows (D224), each with a plant:**
+  - the 16-row control in tier 2 (24.35 s);
+  - the 256-row case in tier 3 (35.5 s), which would push the tier-2 file past its 90 s cap.
+
+  The planted fast link is caught at 9.3× to 10.1× the accuracy.
+- **The CPU performance report (C1.4)** is `validation/fr43_part1/PERFORMANCE.md`, with `performance.json`. It ran on CPU
+  4 under the timed lock, three fresh-process repeats per size, at 4f4c4812's frozen snapshot. Every repeat met the
+  declared accuracy.
+
+| Rows | Compile s | ms per step | s per simulated s | Peak RSS MiB |
+| --- | --- | --- | --- | --- |
+| 16 | 18.4 | 0.23 | 0.046 | 833 |
+| 32 | 21.0 | 0.48 | 0.095 | 866 |
+| 256 | 24.3 | 16.5 | 3.3 | 939 |
+| 1,024 | 47.0 | 455 | 91 | 1,746 |
+
+- **Against the design note:**
+  - its comparable arms agree;
+  - its headline 1,024-row figures (214 s, 3.9 GiB) are its unrolled arm, which the landed engine never runs above 16
+    terms;
+  - its L4 column is kept, labelled as taken on the path D336 found unqualified.
+- **The refusal, and the user's decision.**
+  - The harness refused the builder's write of a report draft ("Subagents should return findings as text, not write
+    report files"). The builder held and did not retry.
+  - The user approved the lead committing the report: the builder's text, and its measured JSON byte-identical.
+- **For the morning:**
+  - **Verify a finding:** the builder reports that the plain `runner.run` still admits the composite on a GPU, where
+    only the vector windows refuse it (D336, D338). Check this against D187.
+  - **Stale texts** go to the docstring batch: the large file's 1,024-row bullet, and the runs file's docstring (66 s
+    against the record's 70.48 s).
+
+**FR-66 is logged** (medium, the user): a passive fluorescence reader over FR-33's regional amount exports, with several
+masks over one accepted trajectory.
+
+## D373: FR-47's independent check passes, and its schedule supplement passes separately; FR-47's development-only status is lifted
+
+2026-11-24, about 22:50 UTC. The checker is fresh: not FR-47's builder, its protocol's author or its references agent. It
+ran under the tag `fr47-shell-exchange-registered-2026-11-24`, with the supplement and its erratum 1 at their tags.
+
+**The frozen scorer's verdict: pass.**
+- **The worlds:** all six pass (W1, W1Δ, and W2 at N_g 64, 256, 1,024 and 4,096). None was inconclusive, so no retry
+  ran. No pair fell in the band; the largest |z| was 3.67.
+- **The plants:** all nine are caught. Each predicted size the references gave is matched: for example P3 at 2.90e4
+  bounds, P8 at 191.6 fail bands and P9 at 428.7.
+- **The first read and regeneration:** the judge's first read of both invented files passed before any engine run.
+  The references regenerate bitwise under two other hash seeds.
+- **The books:** every ledger closes in 768 exact replicas and 6 (d) runs.
+- **The snapshot:** f8c6c326, clean. Every tagged FR-47 file in it is byte-identical to its tag.
+- **The record:** `/mnt/workspaces/Cells/fr47-checker-20261124/judgement/verdict.json`.
+
+**The schedule supplement passes,** a separate result, never merged into the verdict.
+- **The controls,** run before any saved run was read: the honest invented record passes, and cases A, B and C fail
+  as designed.
+- **The schedule:** every exact replica and (d) run records exactly the scheduled stops, in count, order, kind and
+  time, with a clock bound of 0 s derived from the code beforehand.
+- **The heats:** every scheduled withdrawal carries a finite heat. Every (d) run's intervals have the scheduled
+  edges.
+
+**So FR-47's development-only status is lifted** (D339: both must pass).
+
+**The checker's disclosures:**
+- **The plants** are scoped patches in its own driver, with its readings of P1, P3, P5, P6 and P7 stated.
+- **Supplementary variants:** for P1 and P7, CRITERIA names only C1 and C2. Variants with the refusing check made a
+  no-op exercised those criteria, and were kept out of the plant verdicts.
+- **Two driver faults** (v1) were fixed and rerun (v2), with the v1 folders kept as evidence.
+- **Cost:** about 1.06 CPU-hours, against the estimate of about 3.
+- **Cleanup:** its two worktrees are pruned.
+
+## D374: the user's decisions on legacy: keep and re-express the calcium ensemble; retire the physiology stack
+
+2026-11-24, about 22:53 UTC. The port plan reworked for D369 is on branch `legacy-port-plan` (3b7c729f). Its finding:
+measured by use, most of D348's eleven IDs are not used. Only the calcium ensemble is substantial, together with
+`spatial_extracellular@2` for the JUPITER readiness check, `resolved_tissue@8` as @3's reference world, and
+`source_decay@1` as the test conftest's world. The advisor sent two questions to the user, because both revisit the
+user's answer of earlier the same day, "keep BETSE and ensemble".
+
+**The calcium ensemble is kept, and re-expressed in canonical form.**
+- **What it is:** the assembly-regulated cell and cluster on `spatial_calcium@1` to `@4`, run by the GPU ensemble
+  runner and the JUPITER readiness check.
+- **What it needs:** five engine features, the plan's G-1, G-4, G-5, G-7 and G-8: calcium-permeant channels on @3,
+  an ER store, IP3-gated release, assembly coupling, and the composite on a GPU. The author's rough guess is 16 to 28
+  agent-days. These are candidate requests, sized by their own design notes, not FRs yet.
+- **The route** comes back to the user with prices:
+  - relocate first, then re-express (route A);
+  - re-express directly (route B);
+  - prune legacy in place to the used cores, then re-express.
+
+**The physiology stack is retired.**
+- **What goes:** the 17 drivers on legacy's five BETSE IDs and the 18 REF-era drivers. No current document claims a
+  result from them, and their helpers are BETSE glue throughout.
+- **What stays:** the BETSE parity that PROGRESS claims, which runs on the live `resolved_pump_tissue@1` to `@3`
+  ladder, and BETSE itself as an outside reference. The ladder's one legacy import, a re-export of a live helper,
+  becomes a direct import.
+- **How:** the drivers and their tests retire in the approved deletion batch, with their records kept. That batch
+  needs the dry-run deletion, a tag, and a removal list the user approves.
+
+**The lead's rulings,** with the advisor:
+- **No retirement before the rename's move.** It would save about a dozen files, but a deletion needs the measured
+  dry run and the user's approved batch.
+- **Inside that batch:**
+  - the plan's Q5: @3's checks against `resolved_tissue@8` stay for now, and move to an independent validation
+    reference at the end;
+  - the plan's Q6: `source_decay@1`, `emt_mirna@1` and `passive_pair@1` are deleted, and the conftest's users point at
+    a live world.
+- **Waiting for the route:** which engine gaps to request, and the plan's three lead rulings. Tolerances are derived
+  in each re-expression's registration, never ruled.
+- **For the plan:** check that its coverage table has the protein inventory's law records that point into legacy
+  (13 of 81 on 17 November).
+
+**Tonight:** a dry-run deletion of legacy in a scratch copy of a frozen snapshot measures what depends on it, on lane B
+after FR-43's gate. It changes nothing on main.
+
+## D375: the user's decisions on FR-52's splits and FR-65's scope; FR-45's amendment 3 is tagged
+
+2026-11-24, about 23:10 UTC.
+
+**FR-52: a split makes a new unit.** When a tetramer formed from two original dimers splits back into two dimers inside
+the window, one dimer keeps the original identity, and the other counts as newly assembled.
+- **What follows:** "initial" stays a true survival count, and every split adds one to "newly assembled". The round
+  trip ends at 1 initial and 1 new.
+- **This refines D371's sentence:** a partial-assembly step does not count a unit as new, but a split does create one.
+- **The note** (`fr52-design`, ed0bd135) froze both readings' values in advance, so this needs no erratum. It now keeps
+  reading (a).
+- **The lead's rulings, as recommended:**
+  - P1: a channel step with one tracked unit on each side keeps its identity with no declaration;
+  - P3: the G1 and crossrev world is added with its cohort declared.
+- **The price** is 4.25 to 5 agent-days, after the rename.
+
+**FR-65: the first build also admits a lumen,** at nodes turnover does not read. That adds about 1 to 1.5 agent-days to
+the note's pairwise, lumen-free core, for about 3.25 to 4.5 in all.
+- **The note** is `fr65-design` (3dd81578).
+- **The lead's rulings,** as the note recommends:
+  - Q1 (b): turnover first, then the coupling's reads of the current volume, so that A1 in a swelling cell is admitted.
+    It adds about 2 to 2.5 agent-days, and the coupling's contract extension is designed in that step.
+  - Q2 (a): the builder's tests, with no new registered criterion. The Q5 assertion of D150 flips, amended in place with
+    disclosure as on 20 November.
+- **Not now:** partition beside water (M4) and water's current area and masks (M2).
+
+**FR-45's amendment 3 is tagged** `fr45-site-competition-v1-amendment-3-2026-11-24` (98cd33db).
+- **W7s's horizon** is 2.0 s (47 time constants), so every interval's heat stays resolved. The sizing rule gains an
+  upper side.
+- **dt · max L ≤ 0.03** holds, as §4 registers. W7 and W7s now step at 0.0025 s, and amendment 2's sentence confusing
+  h with dt is withdrawn.
+- **Plant entries are keyed** (plant, criterion, world, time_s). P5 under C6 on W7 keeps two entries.
+- **Next:** the references agent regenerates W7 and W7s before the references' tag.
+
+## D376: FR-43 part 1's gaps land; FR-45's references v2 are tagged; a privacy slip on a Lean merge, the user's decision on the Lean tips, and the merge check that now runs
+
+2026-11-24, about 23:35 UTC.
+
+**FR-43 part 1's two gaps landed** at 14f19f9f (tag `fr43-part1-gaps-landed-2026-11-25`), with the selection gate at
+a4e638c2 done 0: 572 of 671 files, none changed. The landing trial passed 219 tests in 164 s.
+- **The tag's name is a day ahead:** the landing was at 23:34 UTC on 24 November. The pushed tag stays as named.
+- **The gate certifies the test rows and the report.** Two docs-and-record changes followed it: the report's text, and
+  the tier-3 record entry for the 256-row case (0 blocking and 0 reported against the run).
+- **The report's text was corrected.** The builder rechecked it against its twelve records after the gate and found
+  errors, among them a claim that the step cost follows the sibling thread's load, which it withdraws. The lead checked
+  each corrected figure from the records. The measured figures did not change. The landing message's own step-cost
+  sentence was wrong at 16 rows and was corrected before the commit: within 6% of the design note at 32, 256 and 1,024
+  rows, and 12% below it at 16.
+
+**FR-45's references v2 are tagged** `fr45-references-v2-2026-11-24` (b62ce23c). W7 and W7s conform to amendment 3:
+the methods agree to about 1e-68, every W7s interval's heat is resolved, and the files regenerate byte for byte
+(774,060 bytes). Its judge comes after the rename.
+
+**A privacy slip, and the user's decision.**
+- **The slip.** The lead merged a Lean branch (1b3bde45) without running the privacy scan on it, because the Lean check
+  looked at paths, citations and gates only. Five of its lines match the list kept for a private review. The matched
+  word is one main already carried in 37 files of published citations and viewer data. No project name appears in it,
+  in any Lean merge of the day or in any waiting Lean tip, and the lead's own commits and landings that day are clean
+  on both lists. A push cannot be undone, so it stays.
+- **What the user decided.** The waiting Lean tips add published-paper evidence that uses another word on that list,
+  as well as that one. The user asked Lean to reword first, and Lean is doing so. The tips are held until then. Since a
+  merge publishes every commit in its history, Lean rebuilds the unpublished commits instead of rewording on top. The
+  commit numbers the records cite will change, and Lean sends a map.
+- **The check now runs before every Lean merge,** as a tool in the lead's folder (`lean-ready.sh`, not in the
+  repository). It requires: the gate done 0 on exactly the tip; a clean trial merge that touches only `lean/`; every
+  cited commit on main, lean-only on the tip's history, or a tagged commit; and both lists at 0 in the merged lines, in
+  every unpublished commit and in every commit message. It held the waiting tip and passed an earlier clean one when
+  tested.
+
+**FR-52's note:** the lead accepted its rule that a merge or split declares exactly min(R, P) pairs, and ruled that a
+channel with only one legal pairing resolves by rule, with a declaration of it refused.
+
+**Also noted.**
+- **A correction to the lead's own summary:** the lead told the user on the evening of 24 November that the FR-51
+  holdout registration was waiting for Lean's answer on re-reading the 5.4 mM anchor. The request had not been sent. It
+  is now with Lean, through the user. Extraction waits for the registration's tag.
+
+## D377: FR-51's judged pass is recorded; PROGRESS and the feature index are brought up to date; three design notes are final; corrections to the legacy plan's figures
+
+2026-11-24, about 23:57 UTC.
+
+**FR-51's judged comparison (fr51-channel-block-v1) passes.** It ran once, at the clean snapshot d3b3cf0b, whose code
+equals the landed head's, with the tagged judge (`fr51-channel-block-v1-judge-2026-11-24`, 5b9b4c90), against the
+code-blind references (`fr51-references-2026-11-24`, 1360c925). Every registered criterion passes and none is
+inconclusive: P (4 cases), B-u (18), B-ratio (7), R (8), S (2), G (12) and E (8). All eleven reference-judged plants
+are caught, and RUN, Z and C hold in the tests. The record is
+`/mnt/workspaces/Cells/fr51-build-20261124/judged-d3b3cf0b/` (`verdict.json`, sha256 bb04eeba…). The landing message
+(955765ef) and the FR's index row stated it, but no decision entry did until now.
+
+**PROGRESS.md** is refreshed from the decision log and the tags, after 22 November. An agent drafted it
+(`progress-refresh`, 619cfa47, not merged); the lead reviewed it, replaced 33 tag-object hashes with the commits they
+point at, and corrected the stale lines it flagged. **The feature index** had five rows behind the decisions (FR-17,
+FR-38, FR-44, FR-45, FR-47), which are now current. FR-45 has no engine code on main.
+
+**Three design notes are final,** each on its own branch, landing in the next no-src stack:
+- **FR-52** (`fr52-design`, c43f9a4a): the declared pairings need exactly min(R, P) pairs; a channel with one legal
+  pairing resolves by rule, and declaring it is refused (D376). The reviewer's gap is closed: a host test of the update
+  against enumeration on small random tables, whose plant applies one pair per channel, and a row G in the same compile
+  (a channel carrying two identities). The compiled qualification world also gains the declared pairing's two
+  channels; if the file passes tier 2's cap it falls back to the host row, and the landing text says which.
+- **FR-65** (`fr65-design`, df473a02): the lumen by the host-only hook, which changes no lumen program; parse rows and
+  one tier-3 run each for the two pairings that newly parse; first build 3.1 to 4.45 agent-days, the coupling step 2 to
+  2.5 more. Turnover's readouts (solute amount and volume at every accepted row) already exist in the run files, as
+  read from the code; the build checks them against a saved file. The note cites its commit 3dd81578, whose message
+  claimed a review that had not happened: the author disclosed it, and the history is kept because D375 cites it.
+- **FR-64** (`fr64-design`, 377a1b34).
+
+**Corrections to the legacy plan's figures** (plan at `legacy-port-plan`, ef344334):
+- Route C's first batch removes at least 58% of legacy's lines, not the 63% the lead had called firm. Higher figures are
+  estimates.
+- "About 15 hand edits" is 15 direct edits, with another 50 fixture files open.
+- `resolved_tissue@1` and `@2` are used by live-subject tests, and their code is live; only their dispatch sits in
+  legacy. The kept set now includes them, with `@8`, and route C's first batch moves their dispatch to the live
+  registry, using exact-type checks, since legacy classes that stay derive from the two spec classes.
+- The choice for the user is whether a CPU re-expression of the calcium ensemble counts as leaving legacy, with its GPU
+  path parked, or whether legacy's core waits for the GPU. The plan recommends the first.
+
+## D378: Lean's rebuilt tip is merged with its commit map; FR-51's two-potassium registration and FR-38's amendment 5 are tagged; the legacy dry run, the gate-speed evidence, and a correction to D339 and D371
+
+2026-11-25, about 01:18 UTC.
+
+**Lean's tip dfe2a723 is merged unedited at 18198688** (71 files, all under `lean/`). Lean reworded published-paper
+evidence at the user's request and rebuilt its 17 unpublished commits, so their numbers changed. The gate passed on
+exactly that tip, run by the lead on lane B from Lean's own frozen snapshots, because lane A holds the GJ-N1 run
+(`/mnt/workspaces/Cells/lean-dfe2a723-laneb-20261125`). The check of D376 was GO. **Earlier entries name commits by
+their old numbers.** They map as:
+
+| Cited as | Now |
+| --- | --- |
+| 59fe4896 (D355, D356) | 369431f7 |
+| fccbb5e5 (D355, D356, D360 and FR-51's follow-up; the block law's docstring) | 48fb7e0f |
+| c1924c89 (D376) | 2473ba85 |
+| 647b4c15 (D351) | d8c90f12 |
+| 27d641a6, e28a6046, 0cd4bab4 (D376) | e43b2757, 7d74bbcc, 8aba3211 |
+
+The docstring is updated in the next docstring batch. The old entries stay as written.
+
+**FR-51's two-potassium registration is tagged** `fr51-two-potassium-registered-2026-11-25` (28e8e734,
+`validation/fr51_two_potassium/REGISTRATION.md`), before either held-out curve is read.
+- **The scope.** Panama and Lopatin's 10 and 20 mM levels, on the 5.4 mM calibration that Lean re-read on the 5 mV grid
+  (half crossing −74.05 mV, bracket [−75, −70]), with FR-51's landing 955765ef as the engine and the frozen scorer and
+  calibration at 18198688.
+- **The rule was written knowing this study's 60 mM result (ratio 0.83), and says so.** The 20 mM level decides and
+  10 mM supports. A pass rejects a shift under about seven tenths of the concentration-based one at 20 mM. It cannot tell
+  a Nernst shift from one that tracks the measured reversal, D355's open gap. The label a pass would lift says
+  direction, and that size is not judged.
+- **Safeguards.** Two fresh readers with a blind control on the 5.4 mM trace, a sheet of the panel's labels written by
+  another agent, no re-read and no third reader, and no other extraction scored. The engine check uses Lean's K(0) rule
+  and catches a wrong external K, a wrong internal K, the membrane-voltage reference and a flipped sign.
+- **The advisor's review** found the first draft's faults: a planted error that could not fail, readers with choices,
+  and a rule written knowing a result without saying so.
+
+**FR-38's second comparison: amendment 5 is tagged** `fr38-v2-amendment-5-2026-11-25` (fcbcb8e7). The builder's tables'
+shapes are pinned by a registered format sample (`/mnt/workspaces/Cells/fr38-v2-format-sample-20261124/`, read-only) that
+holds invented worlds only: 0 of its numbers match 99,441 numbers of the run records, the registered definitions and the
+spec's literals. It shows every key, name and type; a judge may not take values, lengths, identities or orders from it.
+The judge conforms next, and must parse the sample before its tag. The sample took three attempts: the first let one
+number survive the scrub, and the second had the wrong number of transcription stages in four families, which the
+builder's own check missed and later caught.
+
+**Legacy: the dry run** (tool `validation/legacy_port/dry_delete.py` on `legacy-dry-run`, 144e0ef9; records in
+`/mnt/workspaces/Cells/legacy-dry-run-20261124/`). With `src/cells/legacy/` deleted from a scratch copy:
+- **Tiers 1 and 2:** 508 of 671 files pass, 147 fail, 16 failures unchanged from the control. Classes: 105 test only
+  legacy models (30 physiology, 8 in route C's kept core, 67 not checked row by row), 27 test live code with a legacy
+  vehicle, 4 fail through one validation tool, and 11 are helpers and lists.
+- **Tier 3:** all 11 files run failed. 211 were not run, among them the calcium ensemble's own tests.
+- **A gap:** two refusals of a wrong execution or experiment type live in legacy's `to_dict`, and no test covers them.
+  After deletion a live model with a wrong type raises an `AttributeError`. They move to live code with the first batch,
+  with a test.
+- **The lead's rulings:** the eight planning tests and test_recovery_response_grid are live code with a legacy vehicle;
+  test_spatial_extracellular_acceptance_resources is in the kept core. The plan (`legacy-port-plan`) is being corrected.
+
+**Gate speed (D358): the evidence for the third change.** Of 469 reader files, 243 were traced, and for regular files
+the map is complete in all 216 the change would release. One bug blocks it: `sitecustomize.py:148` keys a folder listing by
+the folder alone, so a test's own listing is dropped when a library lists that folder first. It is fixed, the map is
+re-recorded from a passing nightly, and a standing trace check is added, before the change is built. The 37 files with
+unmapped children are explained: 31 can be mapped by small rules. On a lean-only change, today's readers rule selects 475
+files (10,271 test-seconds), the change 66 (1,452), and both changes 37 (1,052). Evidence:
+`/mnt/workspaces/Cells/d358-evidence-20261125/`.
+
+**FR-47's ledger limit: a correction to D339 and D371.** They tie the limit to E2 places and a zero start. A builder
+measured otherwise: it comes from Q's absolute tolerance in any world whose energy bookings are small. Plain one-molecule E1
+worlds are refused too, and W1, W1Δ and W2 have zero starts. A term gated on a zero start would loosen W1's closing test up
+to 24 times and still refuse those worlds. The form that follows the cause adds a term at every controlled step of every (d)
+world, in its own ledger column (D370's truncation class). That is larger than the small fix D371 recorded, so it waits for
+the user: build it as its own gated change, or keep the documented limit until FR-53. FR-47's `FORMAT_RATE_EQUATIONS.md`
+wording is corrected on its branch. A tiny world is refused, never wrong.
+
+**FR-55's design note** (`fr55-design`, 6109cfad) recommends no build: the two published records do not support a
+dose-dependent closing rate, and a same-patch low-dose rise and washout would reopen it. The user's decision is pending.
+
+## D379: FR-51's two-potassium engine check passes, and its readers wait; FR-47's ledger limit, measured; six design notes filed; corrections to D366, D372, D377 and D378
+
+2026-11-25, about 02:05 UTC. The lead.
+
+**FR-51's two-potassium registration** (`fr51-two-potassium-registered-2026-11-25`):
+- **The engine check of section 2 passes.** It ran once, from a clean snapshot of 955765ef, with the script committed
+  first (`fr51-two-k-engine-check`, 09b718d3). The reversal arm's half crossings are −74.159891523, −58.230247578 and
+  −40.311006814 mV at 5.4, 10 and 20 mM. Its shifts, +15.929643945 and +33.848884709 mV, equal the predictions to
+  5.3e-15 mV, against the registered 1e-6. The absolute-voltage arm moves by 0, and all four plants are caught by the
+  criteria the registration names for them. The record is
+  `/mnt/workspaces/Cells/fr51-two-k-engine-check-20261125/run-01/result.json` (sha256 7a40b3dc…).
+- **A wording fault it found.** Section 1 reads as if the composition's own 5.4 mM crossing were the reading's, −74.05 mV.
+  It is −74.160, inside the bracket, and no shift depends on it. It becomes erratum 1, with the blocker's side and
+  valence, tagged before any curve is read.
+- **The readers' sheet is not filed, and no reader has started.** Its writer found that the panel labels its traces by
+  circled 5, 10, 20 and 60, and that two lines leave the circled 10. Section 3 stops the registration if the sheet cannot
+  say which trace is which, so the question is with Lean through the user. If Lean cannot say from the caption, a
+  dated erratum comes before any reading: both lines are read, and 10 mM is unresolved if they differ. The 20 mM level
+  decides in any case, and 10 mM supports.
+
+**FR-47's ledger limit, measured** (branch `fr47-ledger-atol`, 2c5b84ef; records
+`/mnt/workspaces/Cells/fr47-ledger-atol-20261124/`). D378 left the form that follows the cause, (c), to the user. Built
+as a candidate and not landed, it costs more than it gives:
+- **It loosens closings that registered worlds meet:** W1 24 times on its first row and 2.2 times at its end, W2 42
+  times, D1 up to 594, D3 108 and D5 65. A heat leak of half the bound now passes, and P-D1, a registered plant,
+  would be admitted on a rerun. No code reads its old refusal.
+- **The remedy exists today:** a tighter `atol_count`. In the case measured, 1e-7 closes it, at 149 steps against 83
+  (about 0.5 s).
+- **The lead's recommendation is changed:** keep the documented limit and do not build (c); FR-53 takes the class. The two
+  commits that correct `FORMAT_RATE_EQUATIONS.md` (9efe77b0, 2c5b84ef) land in the next no-src stack. A small gated
+  change that makes the refusal name the remedy is optional. D371's line, that the fix lands on its own, waits for the
+  user's decision.
+
+**Legacy, corrections to D377** (plan `legacy-port-plan`, 4781e141, frozen until the user chooses a route). "At least
+58%" stands.
+- **"15 direct edits, with another 50 fixture files open" is replaced.** With the dry run and the reading after it, about
+  49 surviving files change by hand at route C's first deletion. Most of them change on every route, because they drop a
+  world that goes. None of the 50 fixture files needs a hand edit. The pruned tree's own run fixes the number.
+- **The saving in tiers 1 and 2 at that deletion** is 99 files and 2,398 test-seconds, about 7.5 minutes of a full gate.
+- **Every route costs 2 to 3 agent-days more** than the prices the lead gave: A 20 to 30, B 15 to 22, C 16 to 25, beyond
+  the engine features.
+- **The kept core's own tests are weak.** Five of its ten test files in tiers 1 and 2 already fail in the record, and
+  `spatial_extracellular@2` has none, so the bitwise windows taken before the prune carry its proof.
+- **D211's cotransport kernel leaves with the first deletion,** and no route ports it. It goes to the user with the route.
+
+**Six design notes are filed, each on its own branch; none is built,** and each lands in the next no-src stack with the
+user's answers:
+- **FR-55** (`fr55-design`, 6109cfad): recommends no build (D378).
+- **FR-58** (`fr58-design`, 0d54e2e9): a label on an exchangeable group. The reactions already compute both one-way
+  extents; the pairing of donor and product is lost before the label owner sees them. An optional `groups` key,
+  4 to 4.75 agent-days. It found a latent fault: the gene unit's label report doubles what its hold carries when a species
+  row is given twice.
+- **FR-59** (`fr59-design`, 8e12ce53): the flux is finite at an empty pool; every logarithm of the row is not. It needs an
+  exact charged heat booking, which D217 left unapproved, so it is the user's. 4.8 to 6.1 agent-days.
+- **FR-60** (`fr60-design`, 179ec8fa): an external potential on a declared place, with the work formed from integers and
+  declared values. 2.5 to 3 agent-days. FR-60's own acceptance example cannot see the change act on the wrong state.
+- **FR-61 and FR-62** (`fr61-62-design`, 6fd4dd85): one rotor, with its own angle, on the cycle kind. A kind may already
+  own a ledger, so rule (a) of MODULE_SYSTEM §7 no longer bars it. 5 to 7 agent-days.
+- **FR-66** (`fr66-design`, 1ba73040): a host-only reader in `src/cells/assays`. 1.05 to 1.2 agent-days.
+
+**Corrections:**
+- **D366 calls Ek-Vitorín 2016 "FR-30's next fit".** It is not. D341 and D342 found that benchmark undetermined by its
+  data's structure, so no data file exists and nothing can be fitted, and D343 parked FR-30. D366's two rules, a power
+  check and multistart with declared starts, bind any later registered fit. No amendment is owed now.
+- **D372's question, whether a plain run admits the composite on a GPU, is answered by reading main.** It does. A plain run
+  checks every row on the host. What D330 measured and D336 closed is the device's own checks:
+  `row_checks="device"` is refused on a GPU (`execution/row_checks.py:71`), and the vector windows refuse the composite.
+  D338's "main's scalar row checks already refused a GPU" means the device row checks. No refusal is missing. Two texts
+  still say the GPU is unmeasured (`row_checks.py:65`, ARCHITECTURE.md:112), and are corrected in the docs steps of the
+  next stack.
+- **FR-58's note found a live law missing from the rename's table** (`ideal_detailed_balance_mass_action@1`). The
+  author is checking every live ID.
+
+**Started overnight, on branches, none landing yet:** the rename's hand refactors, staged so that each passes today's
+tests before any ID moves (`id-rename-hand`, with the strict grammar last on `id-rename-strict`); the capture tools for
+the calcium ensemble's science set, which every legacy route needs (`legacy-captures`), with a pilot before any lane is
+taken; D358's gate-speed changes; FR-38's judge; FR-56's note. The advisor was asked about the first two and did not
+answer (it timed out twice), so starting them is the lead's own choice.
+
+**The docstring batch is done on its branch** (`docstring-batch`, a182e5da, 14 commits; not landed): the scope lines of
+D337, D338, D340, D344, D351 and D355, the block law's Lean commit, D364's two follow-ups (the `RULES` entry and the
+replacement row's composite form), and two species-cap texts. For items that touch `src`, only docstrings differ, by two AST
+tools; the two species-cap test files also differ in docstrings only. The wording is the lead's to review before it lands.
+Two lines have no page to go on yet (`kir2p1_mh2@1`, and the block law's page, which the rename's hand refactors add).
+
+## D380: a correction to D379 on the composite on a GPU; FR-38's amendment 6; the rename's table gains 52 missing IDs; FR-51's erratum drafted; notes on FR-56 and FR-43's co-writers
+
+2026-11-25, about 03:07 UTC. The lead, with the advisor.
+
+**A correction to D379 (the advisor's finding).** D379 answered D372's GPU question with "no refusal is missing", and
+PROGRESS called it settled. That was the lead's ruling, written as if it were read from the code. What the records show:
+- **The plain path on a GPU has judged evidence, for some worlds.** The composite's L4 agreement run of 14 November passed
+  W1, W2 and G2-Q1's Q1 to Q6 unflagged. It failed Q7, which asks for bitwise equality with @3 on the 825-node tissue; Q7
+  passed on 16 November, judged alone under XLA's deterministic flag (D168, D181).
+- **An unflagged run varies from one repeat to the next,** by up to 1.9e-11 relative on that tissue. D335's block 2 found
+  the host and device modes differing in amount increments, passive-route transfers and heats, and reaction ledgers.
+  Those are the rollout's own arrays, and the builder's cause, the order of its scatter-adds, is inferred. So the
+  variation would reach any composite run on a GPU, host-checked or not (D182 left it open). Under the flag, 15 of 15
+  pairs repeat bitwise.
+- **What D336 closed is the device's own row checks.** D347 and FR-43's `PERFORMANCE.md` call the whole of "the composite
+  on a GPU" a path D336 found unqualified, which is wider than D336's words. Their labels are corrected with the next
+  docs landing, as is PROGRESS.
+- **What to do about a plain, unflagged run is the user's,** since D336 was: admit it with the caveat stated, require the
+  flag, or refuse it. The lead leans to the first, since D181's judged runs use the plain path. `row_checks.py`'s raised
+  message still says "until a GPU measurement exists"; it changes with the next `src` landing, with its test.
+
+**FR-51's two-potassium erratum 1 is drafted, not tagged** (branch `fr51-two-k-erratum-1`, bdfc9e3e). It fixes what the
+registration left open, before any curve is read: how the two files are scored (a script, `score_readers.py`, that calls
+the frozen scorer unedited and applies sections 3 and 5; its self-test plants nine kinds of faulty file), the reading
+of the control (the half crossing lies in [−75, −70] mV, ends included), the form of a file, and the fallback if the
+circled 10 stays ambiguous (the 10 mM level is not read and is unresolved). Readers get a bare folder with the image,
+the sheet and a form check that prints no value. The figure's legend, read in part by the sheet's writer, does not say
+what the two lines are.
+
+**FR-56's design note is filed** (`fr56-design`, 172fce4c): a preparation's own (temperature, area) rows beside the species'
+sourced area, read at parse to the integer quanta the engine already uses. One agent-day, host rows only, no compiled
+world, no registered comparison. A change of temperature inside a run stays refused, because worlds declare no
+enthalpies. The direction of POPC's expansion is confirmed, the size is not (2.33e-3 against 8.36e-3 per K, about 1.3
+combined errors apart). Five questions go to the user.
+
+**The rename's table was incomplete: 52 live IDs were missing** (`rename-design`, 2dd54f72). FR-58's note found one of them
+(D379), and the author then checked every quoted ID, 2,062 in all. Each of the 1,869 that are not in the table has a
+recorded reason.
+- **Now:** 193 rows and 386 old spellings, with no collisions. 127 rows are settled, 17 wait for the user's words, and 49
+  for the lead.
+- **Why they were missed:** an ID held by any legacy module had been classed as legacy's; every `kind` key as a schema key;
+  mixed-case IDs, and IDs built at run time, were not seen.
+- **45 sites need a hand change, and five of them fail silently,** so the script alone is not complete. Among them, a
+  test fixture's `startswith("nav1p2")` would set no channel change. The hand refactors take the list.
+- **The lead's rulings, to be confirmed with the user's words:** the three `resolved_tissue` models and 45 catalogue laws
+  stay bare until C-1, as a stated exception; `ionic_worlds@1` is minted; of the 36 hash-pinned files, the Python ones
+  are re-spelled and the 18 data files left; the 8 example artifacts' outcomes are declared and their tests leave with
+  legacy, unless regenerating them proves easy.
+- **The tool is being built** by another agent (`id-rename-tool`). Its generated table must equal the author's, row by row.
+
+**FR-38's second comparison: amendment 6 is tagged** `fr38-v2-amendment-6-2026-11-25` (f555dcec), before any engine run of a
+registered world. The judge had conformed to amendment 5 and reported five readings that could change a verdict. The
+lead ruled on them from the registered text, and the protocol's author wrote them down, with three corrections:
+- **A refusal never hides a fail.** The judge scored a run "refused" when its twin, blank or restart was refused, even
+  where an entry of its own failed, which could read a fail as inconclusive. An entry that can be formed and fails now
+  fails its run. One exception is kept and stated: an entry that C0 refuses for a malformed leaf.
+- **A refused P9 is caught;** a refused blank leaves P1″ unscorable; AN's missing restart refuses the restart alone; the
+  equalities run over named things, a narrowing disclosed before any run.
+- **A dry C0 by the lead:** the judge's own definition check on the builder's registered definitions, with made-up
+  readouts: 76 entries with no fault and no flag, ten plants that differ only by their registered change, and 15 of 15
+  planted wrong inputs named (`/mnt/workspaces/Cells/fr38-v2-dry-c0-20261125/`).
+- **The registered engine is main's at the merge** of main with the three branches, so the checks the amendment names are
+  re-run there before the registration tag: the builder's own, the judge's, the dry C0, the author's arm-A probe and the
+  regenerated format sample, on made-up values only.
+
+**Legacy: the science captures are queued on lane B** (`legacy-captures`, 1dc62bdf; about 70 MB under a 1 GiB cap). They
+are the calcium ensemble's present results, from a frozen snapshot of 76a498ae, at h, h/2 and h/4, and every legacy route
+needs them. The pilot corrects the plan's section 8: about 1.8 CPU-hours, not 6 to 8; JUPITER's configuration is at
+100 µs, not 50; the whole run in one window is refused at h/2 and h/4, so it is saved in 256-step windows. A short
+bitwise check, run again at the pre-rename tag, will show that the stack's earlier commits do not reach the captured
+worlds.
+
+**FR-43 part 3's open item has a design note** (`fr43-part3-cowriters`, c82d8d42; docs only): local reactions and the gene unit
+may share a row that the integer-unit population moves, as turnover and exchange do, by one general rule on shared
+rows. It is refused today only by definition checks; with those lifted in process, both pairs ran compiled with every
+host check passing and restarted bit for bit. Event times and amounts are second order in the step, and exact where rates
+are constant. 3.75 to 5.25 agent-days with one judged comparison. Four questions go to the user. It also found that
+`site_occupancy@1` writes moved rows with no check, and that the hazard bound ignores what co-writers make.
+
+**FR-54 and FR-57:** the registered protocol's author and the recorded dt study have started, as the note's order has it
+(the protocol is tagged before the build). The study measures the default face heat's domain on today's engine; the
+protocol's spec is value-silent, and its references come from a code-blind agent.
+
+## D381: FR-38's second registered comparison passes, and its independent checker agrees; the pre-rename stack lands; FR-54 and FR-57's protocol is tagged
+
+2026-11-25, about 06:31 UTC. The lead, with the advisor.
+
+**FR-38's second comparison passes as registered** (`fr38-v2-registered-2026-11-25`, b0974a06: main at acc080c5 with the spec,
+amendments 1 to 6, the references, the builder and the judge; the engine is main's). It is recorded beside D313's failed
+verdict, never in its place.
+- **The campaign:** 86 jobs from the tag's clean frozen snapshot, on lane B in 30 minutes; every job exited 0 and the
+  engine refused none. The tables were hashed and written down before any reference value was read. The record is
+  `/mnt/workspaces/Cells/fr38-v2-campaign-20261125/`.
+- **The judge** (`judge/verdict.json`, sha256 15b5a104…): AF, AN, B, C and D pass, and so do arms A and B. All 12 plants are
+  caught and P8's negative control passes. No run is inconclusive or refused and no retry is owed. The largest gap over
+  tolerance among 605 judged readouts is 0.542 (`E_tx` at 30 s, AF and AN `p=0 returned`). No difference was flagged.
+- **An independent checker** recomputed C0, every criterion and every plant with its own code from the registered text and
+  the hashed tables. Its verdict was written and frozen before it opened the judge's (`fr38-v2-checker-20261125/out/`,
+  90ce0afb…): it passes, and 6,959 flags and 7,791 numbers of the two agree with no flag differing. The references
+  regenerate byte for byte under two other hash seeds. Of its 130 perturbation probes, 127 are flagged, the honest
+  control passes, and two are missed (below).
+- **What the pass cannot show,** by the checker:
+  - **An error at the finest step alone.** A label changed by 1e-6 at h alone, with the membership sum kept, passes in two
+    of seven such probes. At p = 2 the tolerance is at least the step difference itself, so C2 cannot fail it, and C3 sees
+    it only where the orders are resolved (243 judged p = 2 series are not). It is a property of the registered rule. No
+    readout here has that pattern.
+  - **Order coverage is thin:** resolved orders are 21 of 224 (AF), 15 of 149 (AN), 22 of 50 (B), 7 of 56 (C) and 34 of
+    58 (D); no label order in AF or AN is resolved.
+  - **Four judged readouts** (AN and C `E_tx`, B `H_tx_release` and `n_R_s`) have a tolerance above ten times the
+    registered expectation and are failed by no registered plant of their family.
+  - AF's excess at the four idle fates has a tolerance above the readout's own size.
+- **Two disagreements in bookkeeping, none deciding a verdict:** the judge counts P1″ as caught at AF's eight active-fate
+  entries, where no reference distance exists (amendment 4, item 7); and the references' inputs omit three structural
+  declarations that SPEC.md §7's "every input" names.
+- **What it claims and does not** is the protocol's §2. It is a second registration after a definitional failure, whose
+  author had read the diagnosis (D316), so it is weaker evidence than a first-time pass would have been. Nothing about
+  biology. FR-38's functional acceptance (D306) stands. FR-38 v3 (the three uncovered readout controls, D354) is open.
+- **Disclosed:** the checker went round a harness refusal of `sleep 120` with other waits, until the advisor pointed it out,
+  and says no result depends on it. The judge amended two unpushed commit messages earlier in the night. Neither is to be
+  repeated.
+
+**The legacy science captures finished clean:** 90 of 90 jobs and 12 of 12 check jobs, 67 MB, in 19 minutes on lane B
+(`/mnt/workspaces/Cells/legacy-captures-20261125/`, read-only).
+
+**The pre-rename stack is landed** at 260a9138 (tag `pre-rename-stack-landed-2026-11-25`): docstrings only in ten `src` files,
+one fix of an exception's order (a sparse-field refusal), D349's restart row and per-solver view, the legacy capture
+tools, FR-51's engine-check script and FR-30's diagnostic. Its gate at 7f54a32c: crossrev 11 of 11, tiers 1 and 2 (671
+files, none changed), G1 113 of 113, FR's bitwise set passed; the landing's trial, 182 passed. The per-solver view found
+the defect the fix repairs: four live operators were refused with an `AttributeError`, not the intended error.
+
+**FR-54 and FR-57: the registered protocol is tagged** (`liquid-routing-criteria-2026-11-25`, e2b19380; amendment 1 at
+915ac820). It was reviewed by the lead and by the advisor (eleven items). The recorded dt study corrected three statements
+of the design note: the domain of the default face heat is the lower well's relative change per step, not kh times the
+concentration ratio; the 0.08 energy stop is a table by ratio; and the propagator's 4 and 8 eps bounds do not hold at
+the note's "up to 10" throughput.
+- **The lead's ruling:** version 1 of the router admits a flow only where a node's throughput per half-step is at most 1
+  (two residence times per step), refused by name above, and the registered worlds stay at or under 0.625. Below it 657
+  networks hold both bounds, and the first sampled failure is at 2. A sub-stepped propagator is the later widening.
+- **The order is two snapshots:** arm 6 (a flow beside a face) runs from the landing that lifts its refusal, after FR-54
+  passes. The engine gains no declared key for it.
+- **The references** are being computed by a code-blind agent from the spec folder alone.
+
+**D358's build is at its gate** (`d358-gate-speed`, 5bb7cdcb). The advisor's first check found that a change to the test
+runner itself would have been selected around, and ten runner files now refuse a selection. On a Lean-only change the
+selection falls from 484 files and 10,915 test-seconds to 42 and 1,153.
+
+**The rename's hand refactors are built** (`id-rename-hand`, aa2bd2b7; `id-rename-strict`, 9000d5d7). They cover the 45 sites
+of D380 and three more that nobody had listed, two of them in the engine: each tests the start of an ID and would have
+matched nothing after the move, letting a refused operator order through.
+- **The lead's rulings:** 91 further files are declared frozen; `configs/resolved_hcn_extra_ionic.json` is re-spelled
+  although a log line pins it; the gate scripts' table option and the fingerprints' go to the tool's builder after D358.
+
+## D382: FR-38's second comparison is landed; D358's map is live; the rename's tool is built, for two landings; the routing spec's amendments 2 to 4; a correction on FR-51's fallback
+
+2026-11-25, about 08:26 UTC. The lead, with the advisor.
+
+**FR-38's second comparison is landed** at 4039dcba (tag `fr38-v2-landed-2026-11-25`): the spec with its six amendments, the
+references, the engine side and the judge, with no `src` change. The registered files are byte-identical to the
+registration's tag. D381 has the results and what they cannot show.
+
+**D358 is landed** (2c82a048, tag `d358-landed-2026-11-25`) and its map is live. The nightly run on demand at 2c82a048 passed:
+671 files, none changed, all 671 traced. The trace found only the two gate-tool files it was expected to find, and
+five files have children that are not mapped.
+- **The first gate under it** (FR-38's, 955a9dcc): 48 of 672 files and 1,352 of 13,775 test-seconds, 8 minutes in all. The
+  readers rule it replaces would have taken 482 files and 10,890.
+- **Open for the user:** the 28 readers of `SNAPSHOT.json`, and the wording of D229's rule 3 in AGENTS.md.
+
+**The rename's tool is built, not landed** (`id-rename-tool`, a43beab9: main at 2c82a048, the hand refactors, and
+`scripts/id_moves.py` with its choices file; the gate scripts and the fingerprints gain a table option). On rehearsal trees
+the move changes 888 files and 7,382 tokens; the verifier finds 0 problems; a second move changes nothing; 21,918 test IDs
+are collected on both sides, 194 of them renamed. No hazard stands and no live ID is unplaced. The rehearsal did not
+yet include FR-38's folder and is being repeated with it.
+- **Two landings (the lead's ruling, after the advisor):** first the hand refactors and the tool with an empty table,
+  which changes no value; then, after the user's words, the move, the strict grammar, the rewrap and the docs, each its own commit.
+- **The first landing has one addition that is content:** FR-51's block law is registered, with its library page (D371, Q2).
+- **The lead's rulings, waiting for the user's words:** the plants' declarations are in the move; the 25 live pages under
+  `validation/` are in its docs commit; 932 long lines are left as they are. The choices file marks the family words as
+  pending, and the tool refuses to write its table while one is.
+- **Order:** the pre-rename tag, snapshot and the legacy captures' bitwise check come after the first landing and before
+  the move, so that the captures also check the hand refactors independently. A nightly on demand follows the first landing,
+  since it changes two of D358's ten runner files.
+- **One ruling is being checked before it goes to the user:** whether the eight example artifacts can be regenerated by
+  their own tools. The earlier ruling (declare their outcomes until legacy goes) would carry declared failures on
+  main to a date that is not set, and presupposes a legacy route the user has not chosen.
+
+**FR-54 and FR-57: amendments 2 to 4 of the spec are tagged together** (`liquid-routing-amendment-4-2026-11-25`, 49691515). They are
+value-silent and change no band. They correct two errors of the spec's author (arm 2's sums, and the scale of an event's own
+amount) and state what a judge could not have built from the text: which holders have a mixing heat, where arm 2's
+interval starts, what a miss on any stop does, arm 7's registered runs (nothing passes empty), the retry, no-router and restart
+runs, the ID echoes and the rehearsal's table.
+- **The references are built** by a code-blind agent (`liquid-routing-references`, 35a7d69d): 867 check rows, 605 of 605
+  self-check rows, 45 of 45 mutations flagged, and byte-identical under two other hash seeds. They are not tagged.
+- **An independent auditor** reads the spec folder alone before the references are tagged and before any judge is built.
+
+**FR-51's external-K fallback: a correction (the advisor's finding).** D380 records, as part of the drafted erratum, that if
+the circled 10 stays ambiguous the 10 mM level is not read and is unresolved. Two things were not said. The registration
+itself stops if the sheet cannot say which traces are which. And the 10 mM level can only block a pass, so dropping
+it makes a pass easier, in a registration that is not blind. The draft stays untagged. The choice is the user's: wait for
+Lean's answer, stop, or an erratum that discloses this.
+
+**Disclosed:** the hand-refactor builder asked to remove its 18 scratch trees (3.2 GB), and the harness refused. Nobody has run it,
+and it waits for the user. `/mnt/workspaces` is at 93%.
+
+## D383: the user's decisions on legacy, the rename's words and FR-43 part 3: one cleanup branch with one test at its end; the routing spec's audit and amendment 5
+
+2026-11-25, about 10:20 UTC. The user's answers this morning, then the lead's plan for them, with the advisor.
+
+**The user's decisions.**
+- **Legacy's route,** verbatim: "Re-express and put everything else on hold and test just once after the re-expression, fine to
+  prune in place but we want to get this cleanup done and not run any tests until it's more or less done (so save test time
+  by testing many coding things at the same time) - we're still in pre-alpha dev, I'm the only user of Cells so we can
+  move as we like". The lead read it back as: one branch, nothing lands, no gate, tier or suite runs until the cleanup is coded, then
+  one full test of it all. The user confirmed ("Yes, go").
+- **A CPU re-expression of the calcium ensemble counts** as leaving legacy. Its GPU path, which works today at about 1.5 times the
+  speed, is parked until a GPU qualification passes. No date is set for one.
+- **Four design notes are written now:** calcium-permeant channels, an ER store, IP3-gated release, and assembly topology
+  setting channel availability. Each build comes back to the user with a price.
+- **While coding, a builder may run the rows it writes or changes,** and nothing else.
+- **The rename's words: all 12,** for 16 IDs. `exponential_mean_rate_linear_target_gates@1` is left out of the move, since
+  nothing in `src` reads it.
+
+| Family word | Pieces |
+| --- | --- |
+| `species_reaction` | `ideal_detailed_balance_mass_action@1` |
+| `transfer_factor` | `ph_conditioned_factor@1`, `exponential_volume_activation@1` |
+| `junction_formation` | `delayed_first_order_junction_formation@1` |
+| `damage` | `bounding_patch_damage@1` |
+| `regulation` | `hill_regulated_two_state@1` |
+| `site_binding` | `langmuir_site_binding@1` |
+| `site_internalisation` | `site_conserving_internalisation@1` |
+| `fuel_kind` | `maintained_held_rows@1`, `finite_fuel_rows@1`, `maintained_chemical_reservoirs@1` |
+| `field_closure` | `resolved_capacitor_components_current_continuity@1` |
+| `potential_set` | `beard2005@1`, `beard2005@2` |
+| `topology` | `dodecahedron_g10_2@1` |
+| `analysis` | `stationary_continuation_analysis@1` |
+
+- **FR-43 part 3's four questions** are accepted as the note recommends (`fr43-part3-cowriters`, c82d8d42): split writers, one judged run with
+  code-blind references, part 3 closes at that landing, and the declared general rule. Its spec and references start
+  now. Its build waits for the cleanup.
+- **The scratch trees** of two finished agents are deleted: 17 under `id-rename-hand-20261125/` and 39 under
+  `id-rename-tool-20261125/rehearsal/` (219 to 230 GB free). Logs, scripts and outputs stay.
+
+**How it is run (the lead, with the advisor).**
+- **Integration branch `legacy-cleanup`,** from the rename's first landing (43b22d40, at its gate). The order on it: the live side
+  without legacy; the deletion, whole; the four features; the re-expressed ensemble; and the ID move last.
+- **The move comes last** so that it runs once on a smaller tree, over code that is already final. Two rulings fall away
+  with that. The example artifacts leave with the commands they serve, so none is regenerated or declared. And the 48 IDs that were to stay
+  bare until legacy's first deletion are in the move, since their dispatch is live by then. D348's single deletion stands;
+  the plan's two-deletion route is not taken.
+- **"Once" is an order.** The re-expression's criteria are tagged before any re-expressed run. Then come the registered
+  qualification against the captures, the user's approval of the removal list, and one full gate with tier 3 and FR's set. Nothing lands
+  ungated.
+- **What goes on meanwhile:** the first landing's gate, which was already running and gives the final test the table option it
+  needs; GJ-N1's field run; FR-43 part 3's spec and references; and closing the routing amendments, after which routing
+  holds. Everything else waits, every other queued build included. The cleanup is roughly 30 to 45 agent-days, spread over at
+  most seven agents. Main moves by docs and Lean's merges only. No nightly on demand follows the first landing.
+
+**FR-54 and FR-57: the spec was audited before any judge was built.** An independent agent read the spec folder alone, wrote a reader and
+honest tables for every registered run, and perturbed them. The numeric core holds: every honest entry passes and every plant is
+caught. The text did not: 9 findings that change a verdict, 10 refusals or passes with nothing judged, and 18 places with two
+readings. Read literally, an honest engine could not have passed FR-57, and some wrong tables could have passed.
+- **Amendment 5** (`liquid-routing-amendment-5-2026-11-25`, 3c71ab61) settles all of them after two re-runs of the audit on the
+  amended text. It moves no constant, window, scale or existing count, and states what it changes in classes and in what is judged. The audit's own
+  numbers are used for nothing.
+- **Two rulings to know:** arm 6 (a flow beside a face) is rehearsed from an unlanded branch before the registration, so that no bound
+  moves after a registered run; and a retry can still forgive one wrong coarse run, which the protocol says.
+- **Two of the lead's rulings were wrong and are reversed.** An order outside its window with an error above the tolerance was to be a fail.
+  FR-25's and FR-38's precedent makes it inconclusive with a retry, and that stands. And "any fault" on an expected stop
+  was narrowed by the author, since the stop is itself a refused entry.
+- **The references agent,** conforming to amendment 5, found one clause it cannot meet (R8 for a remainder bound at a trace start) and three
+  wordings. Amendment 6 follows. Then the references are tagged, and the line holds: no judge is started.
+- **Disclosed:** the lead read the references' README layout section and printed key names, no value, to answer the author.
+  Eight subagents ran for some minutes, one over the cap.
+
+**Lean's message of last night** (its rebuilt tip, the citation map, the 5.4 mM anchor) was relayed by the user this morning. All of it was done
+overnight (D378 to D381): the tip is merged at 18198688, its map is in D378, the docstring cites the new commit, and FR-51's
+external-K registration is tagged. The 15 files outside `lean/` that its audit lists hold one published cell line's name in
+ordinary citations, and are left as they are unless the user says otherwise.
+
+## D384: the rename's first landing; the cleanup's baseline is tagged and checked; the routing references are tagged and that line holds; what the re-expression map found
+
+2026-11-25, about 10:42 UTC. The lead.
+
+**The rename's first landing** is at 49529e71 (tag `id-rename-landing-1-2026-11-25`). No ID changes. Its gate at 43b22d40: IDs
+additions only (26), crossrev 11 of 11 identical, tiers 1 and 2 (672 files, 0 changed), G1 113 of 113, FR's bitwise set passed; the landing's
+trial 479 passed.
+
+**The baseline of the cleanup's one test:** tag `pre-cleanup-2026-11-25` at 49529e71, its frozen snapshot under
+`/mnt/workspaces/Cells/pre-cleanup-20261125/`. The first steps of every captured legacy world were run again from that snapshot and
+compared with the captures of 76a498ae: 12 of 12 jobs identical, bit for bit. So the captures stand at the baseline, and the hand refactors
+moved none of these worlds.
+
+**FR-54 and FR-57:** amendment 6 is tagged (`liquid-routing-amendment-6-2026-11-25`, dd21509b) and the code-blind references conform to all six
+(`liquid-routing-references-2026-11-25`, fa3eccbd): 867 check rows, 626 of 626 self-check rows, 54 of 54 mutations flagged, byte-identical
+under two other hash seeds; every `accuracy` is within its bound (the largest at 0.102 of it); the smallest plant margin is 13.2 on the
+registered worlds. The line holds here (D383).
+
+**The re-expression map** (`legacy-port-plan`, a1db6ab9, section 14) corrects the plan and shrinks the work.
+- **The sodium-calcium exchanger needs no engine feature.** The plan said the transporter kind refuses a mode that moves charge. It refuses one
+  that creates charge. The exchanger is one law module, and the plasma calcium pump is a re-parameterisation of the live one.
+- **The calcium-gated opening of the store blocks all four calcium clusters,** not the IP3 one alone. It and the IP3 factor are one per-stage
+  factor source on one route, so one note owns the source and the other the route.
+- **A calcium row with a channel route on the pump tissue cannot be buffered today.** Either a per-stage bound for channels is added, or
+  the channel's gates become a factor source on a passive route. The note weighs both.
+- **Four consumers need no new piece:** the JUPITER world, the assembly cluster's base, the assembly cell and the integrated ensemble's world.
+  The last has no capture yet and is captured from the baseline.
+- **The assembly half is one-way and live already.** An assembly world can be written today as a live pool run whose event path becomes a channel
+  schedule. The note weighs that against an operator.
+- **The calcium worlds keep their equations and change their integrator** (fourth-order RK4 to a second-order split), so no bitwise
+  comparison with legacy is possible for them. The criteria are written and tagged before any candidate run (D383).
+
+**Rulings (the lead):** the live side owns the ensemble families' file, the command line and the ionic list until its merge, with a refusal by
+name for the two assembly commands and the two kinds; the manifest's `legacy` key leaves under a new major (`cells.declarations@3`), which also
+covers the ID rule the move amends (D371, Q6); and the shared test worlds move to `reaction_transport@1`.
+
+## D385: a review the user relayed, checked: the rename's seam with the cleanup, FR-58's pump question and FR-61 and FR-62; rulings on the calcium store note
+
+2026-11-25, about 11:18 UTC. The lead, with the advisor; the two open points of the review were delegated by the user.
+
+**A review of the cleanup branch and five design notes** was relayed by the user and checked against the branches.
+- **The rename's seam with the cleanup: its four points hold,** none a fault of the cleanup branch, all of them due before the move, which runs
+  last. Two were known: the tool calls a manifest function that has left, and `cells.declarations@3` is in no kept list. Two are new: three seeds
+  of the choices file name constants that have left, and the models' rows now silently override the choice "bare" of the group
+  `three_models`, while `catalogue` still says bare. Minting is what D383 decides, so both groups are set to mint explicitly.
+- **What follows for the tool:** its whole legacy side leaves, the 11 kept constants whose reason is "read by legacy" are decided again, it refuses a seed,
+  path or ID in the choices that is gone or shadowed, and the rehearsal's counts are taken again on the final tree.
+- **The manifest's readers,** the viewer's two tools and Lean's `generate_claims.py`, refuse the new major. They are told before the landing. The
+  final test does not read the viewer's copy of the manifest.
+- **The five notes:** prices and recommendations agree with the notes. A "latent bug" that FR-58's note is said to have found is not one: a species
+  listed twice is refused at parse today.
+
+**FR-58's question 2, pump cycles, is ruled by the lead with the advisor:** option (b), a flux-force law carries the label in complete cycles, forward
+and reverse, about 1.5 to 2 agent-days more, with a limited claim. The label is a lower bound wherever partial steps of the cycle exchange it, and
+any comparison with a measurement of incorporation is one-sided. The note refused these laws "until a study needs it". Two labs' papers on the Na/K pump
+running in reverse in red cells are that study: one reports ouabain-sensitive incorporation of labelled phosphate in high-sodium,
+potassium-free media (doi:10.1113/jphysiol.1967.sp008298), the other ouabain-sensitive, sodium-dependent potassium efflux
+(doi:10.1113/jphysiol.1970.sp009062). Both were read as abstracts and search records only. Incorporation through partial steps at zero net
+flux is not what (b) carries. The state-resolved form (the note's (c)) is for diagram laws, and the live Na/K law is
+a mass-action cycle, so it would be a new law with sourced step rates: a separate request.
+- **What (b) does not reach on its own:** the live pump takes its fuel from maintained reservoirs, not species rows, so the label on ATP needs row fuel
+  for the Na/K pump. That is a candidate request, the user's to log, in the order FR-59, row fuel, then FR-58 with (b).
+
+**FR-61 and FR-62 leave the round of "accept the note's recommendations".** The note defers two requested items, the finite-reservoir version
+with the capacitor charge at each event (its Q4) and the calibration-range readout (its Q6). Both go to the user singly when those builds come
+off hold. The rest of the two requests is in the note. The part of the review that claims scope gaps was not in what the user relayed.
+
+**The calcium store note** (`calcium-store-design`, c5006ff6) measures that a one-cell store world already parses and steps on the composite with two
+planted law modules, and prices the missing pieces at 6 to 7.5 agent-days, against the plan's 7.5 to 13. No piece changes the ensemble's
+equations. **Rulings, as recommended:** a calcium channel stays a channel population on the pump tissue, its law the one authority for
+its ions' valences (L1); one ATP-driven transport law on the transporter kind serves both calcium pumps (L2); the bound on the feedback of a factor
+read by what it opens is built (L3); a compartment is admitted where its node is not its component's representative (L4); the door for
+buffered calcium rows is for `local_species_reactions@1` alone (L5); conservation is judged by the engine's own ledger rule (L6); no schedules for passive
+routes and no non-negative booking for them now (L7, L9); the independent calcium reference is kept (L8). One question goes to the user, the
+exchanger's two kinetic forms. The note has had no second reader yet; one is given before its build.
+
+## D386: the user's answers on the cleanup's open questions; the legacy list is corrected against D211; a live stage-bound gap found by the second reader; a correction to D383
+
+2026-11-25, about 12:12 UTC. The user's answers, then the lead's, with the advisor.
+
+**The user's decisions,** "agreed" on each and on the rest as below.
+- **The exchanger (A2):** the ensemble's form is registered now, labelled synthetic (only its reversal is supported). Whether it stays beside the cardiac
+  plan's law or retires is decided when that law lands.
+- **The assembly coupling (A3):** a driver that writes a live pool's switch path into a channel schedule, in `src/cells/assembly_pool`. It is one-way, and no
+  claim is made above a few hundred cells. An operator waits for a need.
+- **The release factor (A4):** a general source any route or channel can name, after one check that it does not duplicate the live pH source.
+- **The assembly observable (A5):** a registered law with an ID and a page, family word `assembly_observable`.
+- **The builds (A6)** start in stages: the driver and the exchanger first, then the source, then the calcium core edits. The notes' prices are their authors' own: 7 to 9 days for
+  the calcium pieces after the second reader (6 to 7.5 before), 1 to 1.75 for the source, 1 to 1.5 for the driver.
+- **What the deletion loses (A1):** the list below, with the cell-zone transporter left at the tag ("leave it") and "yes" to the rest. Final counts are shown before
+  the deletion is merged.
+
+**A1 was wrong against D211, and is corrected.** The user asked why the modules on the "lost" list are not ported. Crossed with the cleanup tree, D211's 54
+laws stand as: 5 registered; 36 of the 47 "port as is" with their kernels kept in live `laws/`, without a host on the pump tissue; 3 built by name; and 3 that lose their source, the
+NKCC and generic symport laws and the cell-zone transporter. The last is BETSE's transporter network, which AGENTS.md bars from `src`. The page had listed
+the first two as lost, and had not named D211.
+- **NKCC and the generic symport are ported in the cleanup,** as law modules on the transporter kind, after a check of their tanh form against the cycle forms.
+- **The other D211 ports follow the cleanup:** the voltage-only sodium and potassium laws need one module each and no engine feature; calcium and HCN
+  laws need calcium through channels, which is being built; the instantaneous ones need G-2; the calcium-activated one needs channels that read a
+  species, which the cardiac plan holds.
+- **Kept for that:** the kernels, their references and a kernel-level test for each, so that no one sweeps them.
+- **The rest of the list is lost or not carried over:** the refinement clock (`execution.fine_windows` gives declared finer steps on live models); ceilings on an ion's total (a check, not
+  physics); lateral redistribution and mobile proteins; cutting cells out (the composite's operator is new work, named by the pattern-recovery plan); the finite-fuel pools (row fuel for the
+  Na/K pump is a request the user may make); the four commands that prepare meshes in BETSE's order; the assembly GPU path, parked.
+
+**A correction to D383 (the advisor's finding).** D383 says the criteria for the re-expression are tagged before any re-expressed run exists. One consumer breaks it: a design author ran
+two of the sixteen worlds of the cluster base in composed form against legacy at three steps before the criteria's tag. The protocol names the two worlds, the verdict
+reports them apart, and no band rests on them. The lead is not blind either: the lead has read both notes' numbers.
+
+**The calcium and release notes had a second reader** (`/mnt/workspaces/Cells/d172-restructure-20261115-01/second-reader/`): no equation, unit or sign is wrong and no ledger is booked
+twice or missed. Sixteen findings are ruled; the notes are being revised.
+- **A live-engine gap (row 1).** A stage bound divides a cell's slopes by the capacitance of all its patches, a cell-owned store's included, though a plasma current charges
+  the plasma patches alone while the store floats along (`surface_pump_v3.py:3674`, `surface_pump.py:487`, `transporter.py:2330`). A probe at 3.3 times the store's share admits a step
+  the membrane cannot take, and the run stops at the domain or the energy ledger. It is not silent, and no JSON world of today exceeds 0.67. The fix is one D148 round,
+  first, with a scan of the Python-built compartment worlds behind FR-1, FR-4 and FR-5; a hit is a recorded erratum.
+- **The driver is legacy's model:** pool end states bit for bit over four worlds, with step boundaries at the switch times (legacy also splits where nothing switches).
+- **The rule for which worlds declare the other field solver is D147's** and not "every world": the lead's first ruling was too broad.
+
+**Two parsers scaled a shared junction schedule in place** (`surface_pump_spec` and `surface_kinetic_spec`): a Python-built definition that used one schedule object for several controls had the others scaled too. Fixed on
+the cleanup branch with a row that fails on the old code. A static scan of 92 files found no built definition that shares one, so no judged run is known to be affected.
+
+**The removal list** (stream A) was read past its first hop: 246 files reach a going file by import, bare-name import or path, and ten live parity tests use part of the REF-era chain, one of them
+(`test_betse_tissue_contact.py`) in every gate. Those files stay. The rule is to keep whatever something in use runs; the final list and counts follow.
+
+**Streams merged into `legacy-cleanup`:** the live engine without legacy (the deletion itself is held), the live tests on live worlds (window and batch-window tests at 75 and 171 CPU seconds, from 162 and 411), the two
+fixes. The rename's tool is fitted to the cleanup tree, and minting the catalogue leaves no ID bare. FR-43 part 3's registration is written and an independent auditor reads it before its tag.
+Eight agents ran for some minutes, one over the cap.
+
+## D387: a review of the cleanup checked; a solver guard's old condition met late; the calcium core built; two sets of criteria tagged; the removal's second reader and the user's answers
+
+2026-11-25, about 16:32 UTC. The lead's entry, with the advisor. Everything named here is on `legacy-cleanup`, on the branches it names or at the tags it names; nothing has landed on
+main since D386.
+
+**An external review of the cleanup** (as of 12:44, relayed by the user) was checked point by point, with the advisor. Its status and prices are right, but for two statements: the two calcium
+transporters need the transporter's material bound as well as their equations, and 419 worktrees are registered (the review said over 150). Its four points: the exchanger's step terms disagreed between the code, the
+store note and a ruling (settled: none until the bound exists, then both in one commit); the rename's three seams (one moot, two found by a trial run); the solver guard, below; and the missing owners and the disk
+(owners named; 229 GB free, so nothing is pruned).
+
+**The floor guard with constants (D147, D148).** The condition of 13 November, that the guard be rerun with constants before field solver version 3 serves a run of record, had not been met, and the tool could not do it.
+Three judged runs used the version without it: D172's L4 parity (16 November, passed), XC0 (judged fail) and XC0 erratum 2 (passed). The tool now compares the two programs equation by equation with every literal and array, and
+its twelve plants fail as they must. All three runs' definitions and the base and qualification sets are clean at their own snapshots and at the pre-cleanup snapshot (eight sets). No result changes. It is repeated on the
+re-expression's own frozen snapshot, before its first registered run. Records: `/mnt/workspaces/Cells/floor-guard-constants-20261125/`.
+
+**The charge rule beside a floating node (D386, row 1), built and merged** (engine commit e7871b95, parent f38f6789). It is wider than first ruled: a component's representative that no face names, and a node that two cells share, were open too.
+- FR-1's W+ and load_and_react and FR-4's declared world agree in 2,807 of 2,807 arrays before and after (scalar, windowed, vector). The traces differ in exactly the seven worlds that have a floating node, and only in `checked_step`.
+- A scan of the definitions, FR-7's registered worlds and the saved trajectories found no world that the rule would have refused; the largest step times rate is 0.109.
+- **A limit stays, stated:** a face with no charged diffusivity holds nothing, so a conducting patch beside such a gap is still admitted at a step it cannot take. No scanned world has the shape. The fix (a conductive-face set, or a refusal by name) follows the cleanup.
+- Two existing expectations change with the rule (`test_fr4_world_engine.py`, `test_cell_owned_compartments.py`). Its own D148 round is part of the final test.
+
+**The calcium core, steps 1 to 7 of the store note, is built and merged:** the parser reads an ion's valence from its law; `cav1p2_m2h@1`; refusal 6 version 1.1; the sodium-calcium exchanger; `atp_driven_transporter_mass_action_positive@2`
+for both pumps; the two reversible symports (D211); the channel and transporter material bounds; the feedback bound with the source and sink hooks; `species_condition@1` with `hill_product_factor@1`; the assembly driver and its
+observable; the store worlds. Every step has its own before/after traces; only the worlds that gained a term change. The mitochondria's host-P world had read its fastest rate 336 times too low without the new term (a probe). The store
+world agrees with references whose writer saw neither the code nor a result: 56 quantities at three steps, with fitted orders between 2.001 and 2.061; the pump, exchanger and symport forms at 153 states. The lead's rulings L10 to L13 went as recommended,
+but that a law declares a step term only when its bound exists. No claim beyond the tests: the re-expressed worlds are judged by the criteria below.
+
+**The ensemble's criteria.** Part 1 (jupiter, cell, base, integrated) had an independent audit in two readings. It said "not ready" first, for the wording alone; twenty-one rulings revised it, and one of them was the lead's own error (the judge's practice
+tables cannot come from no capture). Tagged `ensemble-reexpression-criteria-part1-2026-11-25` (77680d9e) and amendment 1 (8833f749, eight clarifications the builder asked for; one check is weaker by name and accepted). A second amendment,
+from the judge's questions, is owed. Part 1's definitions, run driver and exporter are built and merged; all 214 registered definitions parse, and none has been run. The judge writes its reader and
+scorer from the rules and the captures alone. The order of the end is kept: criteria, judge, rehearsal, registration, the guard, the campaign, then the user sees the result and the counts, then the deletion, the rename and the one full
+test. Part 2 (the calcium clusters) is being completed. The retry's rule for entries near rounding was written after a builder of invented worlds had reported how such entries behaved; its author must say so, and the audit starts there.
+
+**FR-43 part 3's co-writers:** the criteria, after three readings by an independent auditor, are tagged `fr43-part3-cowriters-criteria-2026-11-25` (6752e526), and the code-blind references `fr43-part3-cowriters-references-2026-11-25` (4eb797ba): every C0 clause passes
+on the registered numbers and on the invented set. The build waits for the cleanup.
+
+**The removal.** The list is final (1,529 files by the script's dry run) and had a second reader, whose verdict is "safe with named corrections"; they are being made. D196 was checked for all 133 registered or kept laws: three lost their last direct reference check
+(Kv1.5's channel law, the junction's voltage relaxation, the mass-action kernel), and each now has a small row beside its law. The reader also found a file that a Lean check imports, which stays, a live test on no list, and that R1's gate check needs declared
+removals and additions. **The user's answers,** verbatim "1. Yes I agree / 2. Yes I agree": the EMT-miRNA two-cell model goes, kept at the tag, which ends D149's exception; and `network_reactions@1` with `network_control_factors@1` go, kept at the tag, which answers the open question
+of `SHARED_INVENTORY_REACTIONS_DESIGN.md` §9 (11) and closes D152's "stays separate" for them. The pair was captured first (the baseline twice, bit for bit; nothing to compare it with, since the earlier recorded runs were not found). The final counts and one optional batch
+of old references are still to be shown before the deletion is merged.
+
+**The rename** was tried end to end on the merged tree with the deletion applied: no unplaced ID, no standing hazard, the engine loads after the strict step. One tool bug and one clean-looking but wrong merge were found and fixed.
+
+**A test review is queued** by the user for after the merge: regression rows for small slips told apart from tests that a feature works, pruned and made faster, "safely but sensibly", with a list before any deletion.
+
+**Slips.** The lead ran sparse-checkout on an old worktree by mistake and restored it at once, whole and clean. Several times typed into private notes were guesses, and are corrected. Agents' privacy scans had been run against the main checkout's HEAD and so tested nothing:
+they were rerun by branch name on every branch, all zero, and the rule is corrected.
+
+**Correction to this entry (17:23 UTC).** The removal list is not final and its script's dry run removes 1,528 files, not 1,529. The check of D196 was rebuilt under one standard and has 134 rows (71 registered laws, 44 kernels of the
+catalogues and 19 that live models import), not 133: 44 of the 71 declare a test, and all 44 are collected after the deletion. Four, not three, lost their only direct check: three are closed and one is open (the flux of the standalone
+reaction-transport model). The list's open rows and their owners are being settled.
+
+## D388: GJ-N1 is judged: the "neither" threshold passes on the line and on the 2D field
+
+2026-11-25, about 17:34 UTC. Registered verdict of `docs/GJ_NEITHER_REGISTRATION.md` (tag `gj-neither-registered-2026-11-23`, amendments 1 and 2). It agrees with a code-blind integration of one preprint's model, on the 1 x 1 x 25 line and the
+1 x 25 x 25 field. It is an indication for that model, on those geometries, and no more.
+
+- **The field's search** ended at 17:23 UTC, from the frozen snapshot of 750076a7 on a gate lane: exit 0, 48 points, none refused, monotone, converged, and the two half-step reruns keep their outcomes. Its tables were hashed
+  (`field-01/SHA256SUMS`) before any reference was read. The line's were hashed on 23 November.
+- **The verdict:** passed on both geometries (R, C and A true for each). The line's interval is [7.1696e-15, 7.1798e-15] and the field's [1.8870e-15, 1.8876e-15] (D, in m²/s); each overlaps the code-blind reference's bracket, and the ratio of thresholds is 1.0 for both.
+- **BITSEY is reported, never judged:** its historical log and the pinned run at b2cb370 give brackets that overlap Cells' on both geometries.
+- **How it was judged:** from a clean execution snapshot of a local merge of main 322c91f6 with the tagged references (`gj-neither-references-2026-11-23`), the commit 575af4cc, kept as tag `gj-n1-judged-2026-11-25`. The judge, its rule and its log reader are unchanged since
+  amendment 2's tag, the hash of the interface file equals the references' tag, and the script rechecks the tables' hashes. Verdict: `/mnt/workspaces/Cells/gap-junction-20261123/judged/neither-01-verdict/verdict.json` (sha256 9dcab368...).
+- **What it does not show:** the 3D field was not run; a model of one preprint; the agreement of numbers at the registered tolerance, not the biology. The references land with the next landing.
+- **Disclosed.** The lead read the run's raw points, and so its values, while estimating when it would end, before the judge ran. Nothing was changed after that. The judge ran from a local merge and not from a landed main, as the references were to stay out of main until
+  both tables were hashed.
+
+## D389: the ensemble's re-expression: Part 1 judged and passes; Part 2 run and sealed by the user's decision; the test review moves before the gate
+
+2026-11-25, written at 23:18 UTC (the events of 19:51 to 23:16 UTC). The registered qualification `ensemble-reexpression-v1` (`docs/ENSEMBLE_REEXPRESSION_PROTOCOL.md`, D383) on branch `legacy-cleanup`.
+It is a port check: it shows that the live engine computes legacy's written equations at the steps run. It validates no physics (the protocol's §9, item 18), and legacy was never itself validated.
+
+- **Part 1 passes** (`jupiter`, `cell`, `base` in both of its sets, `integrated`). Its 214 registered runs were made from the frozen snapshot of the registration tag
+  `ensemble-reexpression-registered-2026-11-25` (8f8099cf), 22:07 to 22:24 UTC, cold, one thread each, on lanes A and B under their locks and CPUs 6, 7, 22 and 23. None was refused or stopped.
+  - **Tags, in order:** criteria `ensemble-reexpression-criteria-part1-2026-11-25` (77680d9e), amendment 1 (8833f749), amendment 2 (c8fdf306); the registration (8f8099cf); the strings note
+    `ensemble-reexpression-strings-2026-11-25` (78331c58; note sha256 4f0dbb7a...).
+  - **Before the first run:** the judge's C0 on the captures, its self-test and the format sample passed at the registration head; the trial merge with main was clean; D147's floor guard with constants passed on the
+    registered snapshot for all ten definitions that declare the floor variant (`jaxprs` and `bindings`, every program equal, constants equal).
+  - **The tables** were hashed by the lead at 22:25:00 (`table_base` 15c86db3..., `table_cell` ab149302..., `table_integrated` 138e7c65..., `table_jupiter` c86fe0b6...; `SHA256SUMS` 986d98f2...).
+  - **The judge** (its code at 7896e5cc): `power.json` c545a38c... was recorded by the lead before stage 2. The first pass held `jupiter`, `cell` and `base` pending on one "restart to confirm" each, and owed no retry
+    (`retry_owed.json` 917f3f53..., recorded).
+  - **The independent checker** scored the same tables with its own code, saved and hashed before it opened the judge's record. It confirmed the three restarts and its record duties from the run records, and settled the
+    three flags `by the rule` (settlements 2d2b79fa...). The judge's settled record (273a2145..., verdict 2f9341df...): all four consumers pass, final; 4,559 of 4,592 entries pass and 33 are reported.
+    The checker's comparison agrees entry by entry, with every class S number bit for bit (91a48c96...). The largest ratio of an S entry to its band is 6.6 × 10⁻⁴.
+  - **The rehearsal before it:** three sets of the 94 invented runs. The third, from the registered code, was scored by the judge and the checker together through the same settlement loop: as designed, `integrated` fails
+    by its planted stop and the other three pass.
+- **Part 2 is run and sealed, not judged.** The user was offered: full as registered; "run and seal"; drop. The user's answer, verbatim: "2." Part 2's Amendment 1 (`ensemble-reexpression-criteria-part2-amendment-1-2026-11-25`,
+  c4ddfedd) writes it down and says what is weaker. The lead confirmed PART2.md §3's nine conditions, the captured forms against the live ones (the calcium channel's constants read in both codes): no consumer is a changed model.
+  - **Tags:** the registration `ensemble-reexpression-registered-part2-2026-11-25` (7bfa656a), the strings note `ensemble-reexpression-strings-part2-2026-11-25` (bbe32742; `registered_strings_part2.json` cb885f08...).
+  - **Before the runs:** the floor guard with constants passed on its snapshot for all 33 distinct definitions, the retry runs' among them.
+  - **The runs,** 22:42 to 23:01 UTC: all 127 registered runs and all 36 retry runs completed, none refused or stopped, so the engine's own checks held in every run. The tables were exported, checked against the note,
+    hashed by the lead at 23:02:35 (`SHA256SUMS` f47a411a...) and sealed: nobody has opened them. Every file of the retry runs' records is hashed (500 files, list sha256 0147cd11...).
+  - **What is weaker:** no verdict; after the deletion nothing compares a live calcium cluster with anything outside the engine. The captures, the independent scalar reference and the pre-cleanup tag stay. A later scoring is a new
+    decision of the user's.
+- **The user's words on the scope,** verbatim: "just wondering if we are overengeering this", "but we never really proofed the old legacy code gave anything useful", "we're jsut starting real validation", "and we have the Lean tracks",
+  "this would be different if we were already "live" we are but we are pre-alpha an im the only user and we haven't really calirated Cells yet".
+- **The test review moves before the gate** (the user: "then look into moving the 11k test review before running the whole suite"). With the adviser: removals only before the one full gate (a row whose planted slip another staying row
+  catches by an assertion, code gone, a cheaper row proving the same, or exact numbers of an uncalibrated model with no reference behind them), as the last commit before the gate, after the user's yes on its list. Merging, slimming and
+  moves to nightly come after the landing, so that the final gate tests the code as it lands. Sized from the tier record: after the cleanup 619 test files stay (1,003 now); 194 files over 40 s hold 248 of 309 CPU-minutes.
+- **Found and fixed on the way:**
+  - The run records now say what was raised, the definition's check options, the path taken and the engine's own counts (fix5), so that the checker can confirm that no check was off. It was narrowed from a list of every engine
+    call, which AGENTS.md bars as a per-call attestation layer.
+  - A species-sum guard failed on the branch since calcium step 5. The new sum runs over the law's rows, an entity axis, and is added to the frozen allow-list (01ab9503).
+  - The fresh reader of the retiring tests found no live claim that only a retiring row holds. Live claims that no row held got four small rows (a closed patch or junction and abundance 0 carry nothing; a pool-driven store
+    world and its restart; a mapped batch keeps each world's kind numbers; the neighbour row's bound at 10⁻⁶). Four rows need not retire, so 193 retire.
+  - The independent scalar reference agrees with the eight captured driven calcium cluster worlds within 1.2 × 10⁻⁵ of its bound (3 × 10⁻⁹ relative, 3 × 10⁻¹² absolute).
+  - The 94 invented Part 1 runs, made again from Part 2's registration snapshot, give tables equal leaf by leaf to the registered code's but for provenance: Part 2's rewrite leaves Part 1's outputs unchanged.
+- **Disclosed:**
+  - The judge's tag (the protocol's §5, step 5) was missed at the registration and put on 7896e5cc at 23:07 UTC (`ensemble-reexpression-judge-2026-11-25`). That commit is an ancestor of the registration tag, pushed before the
+    first run, and no verdict changes.
+  - The checker found the third rehearsal set's folder before the lead's message, after its tables were hashed.
+- **Next:** the user's yes on the 193 retirements and the deletion; the deletion and the retirements; the ID move with a third trial; the step-13 repeats on the final head (Part 1's by the protocol, Part 2's by its amendment, equal
+  or not by program); the review's removals; the one full gate; the landing.
+
+## D390: the legacy cleanup is landed; what the one gate found first; the user's answers of 26 November
+
+2026-11-26, written at 15:16 UTC. Main 805c48a4 (tag `legacy-cleanup-landed-2026-11-26`), then the post-landing records 67c0de27 (tag `post-landing-records-2026-11-26`).
+
+- **The user's yes** (26 November, verbatim "yes") to retiring the 193 test rows and the deletion: 1,704 files removed and 48 edited; 11,131 tests collect, none fails to import. The deletion, the retirements, the
+  removal list, the user's page, the step-13 comparator, the ID move (M, strict, W, D) and the test review's last commit were merged on `legacy-cleanup` in that order.
+- **The ID move** needed one line of engine code beyond its textual conflicts: the declarations manifest spells a host that no model table names as its laws spell it (the assembly pool's observable law). Metadata
+  only; the labels of every registered run are identical before the move and after strict.
+- **Step 13** (the protocol's §5, and Part 2's Amendment 1): on the landing tree 66970801, Part 1's six named runs equal their registered tables and Part 2's twelve equal their sealed tables, compared by program
+  through the move's map (repeat.py). The same held at 9bab3698. The two snapshots' tags (`ensemble-reexpression-step13-2026-11-26`, `-step13-final-2026-11-26`) are local and not pushed.
+- **The one full gate** ran on 2e3a0bfc against main 11d6b953 (scratch `/mnt/workspaces/Cells/final-gate-20261126`):
+  - gate.sh passed: crossrev 8 sets identical and 3 as declared; tiers 1 and 2, 520 files, none changed; G1 113 of 113 identical to c1.
+  - **What failed first:** tier 3, in two files (23 rows), defects of the ID move that only tier 3 reaches (code that read a law ID by character position, and a test that looked for a planted kind's old name);
+    a third of the same kind and a comment in an old spelling were fixed with them, tests and validation only. Before the gate, the measurement found three more test rows that the move's grammar or a frozen
+    snapshot broke, fixed the same way.
+  - FR's bitwise set failed on its definitions' hashes alone (the move re-spelled them); every record was bitwise identical. Its frozen baselines were renewed (each definition built at main, read through the
+    move's table, equals the landed one); they live in `/mnt/workspaces/Cells/final-gate-20261126/fr-baselines-805c48a4`, which is load-bearing and is not to be deleted.
+  - R1 differed in nine host-side worlds, attributed to the cleanup's commits (empty ExperimentSpec fields, a module out of legacy, refusal texts), and is equal with them declared.
+  - The D148 rounds of step 0 and of steps 2 and 6 were clean but for step 0's by-design programs.
+  - Tiers 1 and 2 ran again in full on the landing tree (none changed), with the corrected tier-3 files. tests/tier3_record.json was frozen anew (74 files, 1,105 tests).
+- **Corrections, dated:**
+  - **D387's count:** step 0's charge rule changes eight checked_step programs, not seven: `reactions_face_free` (a face-free node of the reactions set, which step 0's builder did not trace) is the eighth. Its
+    runs are physically identical before and after; the vector and batch programs of the eight were not rerun.
+  - **D276:** its first condition ("no tier verdict depends on the moved values") did not hold for two tier-3 rows that no gate ran (the gates-equivalence identity of ARS(2,2,2) and the dispatch comparison
+    of the release world); its second ("existing test bodies stay as they are") is lifted for those two rows, which now compare with fix (A)'s switch off on the one crossing world and assert that it is on by
+    default.
+  - **D172 and D176:** the bitwise equality of the declared dispatch and of @3 with @2 now holds with fix (A)'s switch off on worlds where a junction crosses a floating capacitor component. The structure-free
+    module step cannot take fix (A); `validation/tissue/excitable_probe.py` uses it, and is not known to have run since 22 November.
+  - A third tier-3 row was a stale pin: the sparse field solver's node bound (D317).
+- **The test review** (the user, 25 November: before the full suite): 594 files reviewed; 5 rows removed by the plant rule with one 0.5 s row added (about 107 s a full run); the slow time is in the science checks
+  (identities, restarts, references, ledgers), and slimming them after the landing would save about 2 CPU-hours a full run.
+- **The user's answers, 26 November** (verbatim "1. agreed 2. agreed 3. agreed 4. agreed 5. on hold for today 6. sounds good 7. yes", and "yes, and no lets wait on jupiter"):
+  - FR-43 part 3's co-writers are qualified as tagged (judge, rehearsal and an independent checker), after their engine build.
+  - FR-65 is built alongside, and one agent slims the heavy tests after the landing.
+  - The parked decodability and re-hosting assays' tests move to tier 3.
+  - Tier 3 runs weekly on idle cores.
+  - The viewer stays on hold today; CPUs 12 to 15 and 28 to 31 return to it when it resumes.
+  - AGENTS.md's gate sentence gains D358's map refresh.
+  - FR-47's ledger limit stays and its alternative is not built; FR-55 is not built, and is reopened on one lab's paired low-dose record (its retitle and a request to the Lean track follow).
+  - The scratch trees of the cleanup are deleted; the JUPITER check's rebuild waits.
+
+## D391: FR-51's two-potassium registration stops by its own §3; FR-64's build is free
+
+2026-11-26, written at 15:48 UTC. The user's choice (verbatim "a"), between stopping as registered and a tagged erratum that would read 20 mM alone.
+
+- **Why it stops.** The registration (`validation/fr51_two_potassium/REGISTRATION.md`, tag `fr51-two-potassium-registered-2026-11-25`) says in §3: "If it cannot say which traces are which, the
+  registration stops." The reader's sheet (831ed099, branch `fr51-reader-sheet`) found that the panel's legend does not settle which of two lines at the circled 10 in Panama and Lopatin (2006), Fig. 3E, is
+  the 10 mM trace. The Lean track and its search, reading the original figure, found the same: two strokes below the circled 10 and no key in the legend (relayed by the user, 26 November).
+- **What was read:** nothing of the held-out curves. Neither reader was started; neither the 10 nor the 20 mM curve was read or scored. The lead has not opened the figure, and
+  `kir_spermine_potassium.json` stays unopened, so both levels stay reserved for any later registration.
+- **What it leaves:** the composition keeps its development-only label for changes of external potassium; no law changes; the stop is recorded under D351. The engine check of §2 passed
+  (09b718d3) and stands. The internal arm (§6) was never a test and is unchanged. The drafted erratum (`fr51-two-k-erratum-1`, bdfc9e3e) stays untagged and is not used.
+- **Not chosen:** an erratum to read 20 mM alone. The 10 mM level could only block a pass, so dropping it would make a pass easier, in a registration whose rule was written knowing the study's 60 mM
+  result (D382).
+- **FR-64:** its build was to follow FR-51's follow-up and the rename (D361). Both are now done, so FR-64 (a declared voltage shift on a channel population, with FR-63 re-formed as a pH shift) is free to
+  build at normal priority.
+
+## D392: an external review of the landing, checked; a correction of D390's test count
+
+2026-11-26, written at 15:56 UTC. A review of main at c52d0998, relayed by the user and checked with the adviser.
+
+- **It agrees with the record** on the landing, the re-expression's two parts, the rename's step 13, what tier 3 caught, and the gate's scope rule.
+- **Where it was wrong, by the record:**
+  - The three loose ends it puts under fix (A) (D273) are two of step 0's charge rule (D387: a face with no charged conductance beside a conducting patch, admitted at a step it cannot take; the vector and
+    batch programs of the eight changed checked_step programs, not rerun) and one of fix (A)'s (the structure-free step of `validation/tissue/excitable_probe.py`).
+  - 1,704 files are 1,693 by the deletion and 11 by the retirements' commit; the 193 retirements are test rows, not files.
+  - FR's renewed baselines are read by three gate scripts (`fr_landing_holder.sh`, `fr_landing_set.sh`, `cache_qualify.sh`); no test reads them.
+  - It predates D391.
+- **Correction of D390, dated:** the 11,131 tests that collect is the count before the ID move; at the landed head 11,144 collect (the final gate's ID step).
+- **Adopted:**
+  - The folder of FR's renewed baselines is marked load-bearing, and the baselines move to a dated permanent folder (as D307's were), with the three scripts repointed, in the next landing that touches
+    `scripts/gates`.
+  - Step 0's two follow-ups (the neutral-face gap, and a vector and batch-window check of the changed programs) come before any multi-cell store run of record.
+  - The calcium laws re-expressed in Part 2 are ported and regression-sealed, not calibrated against data (D389, D390).
+- **To the user:** the order of the queue, and any new requests, which the user logs.
+
+## D393: the user's answers on the review's seven calls; Protocol D's development label lifted; FR-67 and FR-68 logged; ten cache folders removed
+
+2026-11-26, written at 16:32 UTC. The user: "sounds good on the calls but get adviser in on those as well if not already". The adviser was in on each call.
+
+- **The queue is kept:** FR-43 part 3 and FR-65 now; then FR-52, liquid routing (FR-54, FR-57) and FR-64. FR-61 and FR-62 follow them and still need the
+  user's answers to their note's Q4 and Q6. No third engine build starts before the co-writers land.
+- **Two requests are logged,** design first, with no build scheduled: FR-67 (pressure-driven flow on a network of compliant tubes) and FR-68 (a consistency
+  check on standard potentials). The commit checks stay as they are.
+- **Protocol D's development label is lifted** on D368's evidence: Protocol D v2 passed its independent check at its registered tag
+  `ol6-protocol-d-v2-registered-2026-11-24`. No earlier entry said so. The run record's wording changes with FR-47's (lifted by D373) and with the GPU
+  refusal message's (owed by D380, missed by the cleanup's landing), on one small branch that lands stacked with the next engine landing.
+- **The ten tier-1 and tier-2 failures,** none an engine fault:
+  - the five assembly command-line tests write under /tmp, which the command's output guard (there since 11 October) refuses. They are fixed on that
+    branch, keeping a check that the guard refuses;
+  - three tests of BETSE references (the calcium and sodium leak references, the native multi-cell environment) assert that the engine is not loaded in
+    their process, but `tests/conftest.py` imports it into every test process (its present import since D188's move of 18 November). The references
+    import clean in a fresh process. The fourth, the voltage-domain reference, fails because its catalogue no longer refuses one calcium channel at
+    0.2 V. All four are held for a keep-or-remove question on the BETSE modules they test;
+  - the unstimulated diagnostic differs from its field by 1.7e-10 relative where it asserts equality. It is looked at first.
+- **Ten cache-only folders** under `src/cells` (no tracked file in any) are removed from the main checkout, so `import cells.legacy` fails there as it does
+  in a snapshot.
+- **FR-45's judge** is briefed after the co-writers builder's host sweep covers FR-45's and FR-49's registered worlds, since sites on a listed row now refuse
+  (the build's L1).
+- **FR-43 part 3's judge:** C0 passes at the judge's head 3e8523dc with the lead's hash record of the eight registered files. The record was made on
+  26 November from the references tag, after the judge's first pass. Readings 4 and 13 are settled by published values; the other readings are ruled from
+  the criteria's text before any table exists.
+
+## D394: the user's answers on FR-55, the BETSE files and FR-45; a correction of D393 on FR-45's judge; FR-43 part 3's readings ruled
+
+2026-11-26, written at 17:16 UTC. The user: "Yes as you suggest", to five calls the lead put with the adviser's view.
+
+- **A correction of D393.** D393 said FR-45's judge would be briefed after the co-writers' host sweep. FR-45's registration makes the judge the
+  builder's own (its protocol §5, "`validation/fr45/judge.py`, the build's"; amendment 1 §2.2), with no separate blind judge and no C0. The judge
+  briefed today saw this and stopped before writing anything. Its reading notes go to FR-45's builder; its scripts do not.
+- **FR-45's build** (planned in D327; no engine code on main, D377) starts when the co-writers land. Before any builder runs, the lead rules from
+  the record which tag binds the registration (6e92d0ec, or a later protocol tag its text proposes), P5 on W7, and the open readings.
+- **FR-55 stays closed.** The Lean track's search found:
+  - one lab's closing after a low and a high calcium pulse (Pedarzani et al.: about 40 and 32 ms, read from a figure to about 5 ms, not stated to
+    be one patch);
+  - one patch's openings at three calcium levels (Hirschberg et al.: the share of long openings rises; the closing times do not trend).
+
+  Neither is a same-patch closing record at two calcium levels (D351's condition). A single study is an indication only.
+- **The BETSE files.** 397 files under `validation/` and their tests were checked. None came from the engine, none imports it, and no decision after
+  D131 keeps them, except where named below.
+  - Removed: 307 files that nothing runs, with the three tests that read only them (the native capture budget, comparison runtime and prefix payload
+    tests). Among them is `validation/geometry/betse_geometry_native.py`, which the removal of 8 November kept: it was the only BETSE import outside
+    `validation/betse/`.
+  - Removed: the ECM and material references (18 files), with the six tests that read only them: the calcium-leak, sodium-leak and voltage-domain
+    references, the ECM failure test and the two material tests. They compare BETSE with a re-derivation of BETSE, not with Cells (D131). The
+    voltage-domain failure was a stale test: d61f8875 (31 October) admits the constant calcium leak at any voltage, on purpose.
+  - Renamed: `betse_normal_channel_join_runtime.py`, which a test kept on 8 November imports. After the batch, no `betse_normal_*` or
+    `betse_native_*` file remains, so AGENTS.md's sentence holds as written.
+  - Kept: 46 files by decisions or live use (D211's seven channel captures, compared with the engine; D374's and D386's spatial drivers and their
+    hooks; the extraction tools), and 23 that the user kept on 25 November (none of which compares with the engine).
+  - The work runs as one batch on its own branch after the test-slimming landing. Its proof is all three tiers collected, before and after.
+  - **A finding:** the two largest tests that read the spatial drivers have been skipped since 8 November ("awaits re-hosting on a Cells physical
+    model"), so the comparison those files are kept for does not run in the gate today.
+- **The ten tier-1 and tier-2 failures** (D393) are settled.
+  - The five assembly tests are fixed.
+  - Three BETSE-reference failures go with their references.
+  - The native multi-cell environment test now checks its import in a fresh process.
+  - The unstimulated diagnostic compares with a stated tolerance (relative 1e-9, absolute 1e-12 V). The frozen run of 12 October predates the
+    compensated charge summation (296af182, 18 October), and changing the diagnostic's order instead broke all 280 of its replays.
+- **FR-43 part 3's judge readings are ruled** before any table or format sample exists. A reader who read the criteria tag alone gathered the
+  governing sentences, and the judge quoted the registered inputs.
+  - Of 19 readings, 6 were changed, each to the reading that cannot make a pass easier: a missing recorded-only key, a null `definition`, a null
+    extra echo key, CRITERIA:321 for plants with an unscorable entry, C0's own recomputations (now findings for the lead, not faults), and
+    provenance.
+  - Two are settled by published values (S in an event's bound; the planted reference's "also has").
+  - One open ruling takes the easier reading, and is disclosed: R compares numerically, so −0.0 is zero. The judge lists every −0.0 it accepts.
+  - The rulings file is committed on the judge's branch, and the judge's tag follows the protocol's own order: the format sample, hashed by the
+    lead, is read for structure only, then any dated change to the contract, then the tag.
+
+## D395: FR-43 part 3's co-writers engine build is landed; the lead's rulings on its three open items; crossrev's record gains one world
+
+2026-11-26, written at 17:29 UTC.
+
+- **Landed** at 4be34f74 (tag `fr43-part3-cowriters-landed-2026-11-26`), from the head d4da1931. Its last two commits change only the design note,
+  which no test reads; every gate result below ran on 34928328. The landing's trial merge ran the seven changed tier-1 and tier-2 files and the guard
+  set: 605 passed.
+- **What it builds** (155293d0):
+  - the contract's row moves, `written_rows`, `sole_rows` and `SHARED_ROW_POTENTIAL` (Q1 (a));
+  - `check_row_writers` in the three guards;
+  - the row moves of the eleven split writers;
+  - `production_bound` declared by turnover, the reactions, exchange, the population and the producer;
+  - the population's hazard bound summed over its conversions;
+  - the gene unit's rows claimed by `sole_rows`;
+  - one volume rule for the producers' bounds.
+
+  The co-writer worlds are newly admitted, and sites on a listed row are now refused (L1).
+- **The D148 round** at 34928328, against c52d0998:
+  - crossrev: 10 of 11 sets are identical. In reactions, the 8 existing worlds are identical, and the listing adds exactly the new world's nine files. The
+    lead checked that listing.
+  - G1: 113 of 113 identical.
+  - FR's set passes before and after.
+  - The judges' derivative programs: 257 files identical. The worlds outside crossrev: 56 files identical.
+  - The host sweep of 238 definitions and FR-49's worlds shows only the designed changes. R1 keeps its 65 keys.
+  - Tiers 1 and 2: 520 files, none changed. Tier 3's statistics file passes 12 of 12.
+  - The 21 new refusal rows each fail with their check planted away.
+  - Test IDs: 53 added in 8 files and 1 removed, all declared.
+- **Crossrev's record** (`record-cda5dc82`) gains the new world `reactions_integer_source`. Its nine files were copied byte for byte from the builder's
+  run, which was set beside the record (the lead's L4 (c)). The addition is dated in the record's `ADDED-20261126-reactions-cowriters.txt`. Changing the
+  gate's verdict to accept declared additions is a separate tooling item for later, never inside the landing it judges.
+- **The lead's rulings on the note's three open items (§10):**
+  1. A gene unit with no pool, chain, degradation, transfer or export no longer asks the shared-row question. Accepted: no definition has one.
+  2. The gene unit's and the producer's branches read rows, not species. An operator that declares a listed species or the precursor without writing
+     it is now admitted, where it was refused before. Accepted as designed: no swept definition has one.
+  3. The two new refusals by name are accepted: the producer refuses site occupancy on its precursor, and the gene unit refuses a transfer of a listed
+     row at a compartment's node.
+- **Process:** two of the builder's privacy scans ran just after their commits instead of before. All printed zeros.
+- **Next:** the registered comparison's second part, up to the format sample. The sample goes to the lead, then the judge reads it for structure only,
+  then the judge's tag and the registration tag. FR-65 runs its D148 round on main with the small fixes stacked.
+
+## D396: the test slimming is landed; the weekly tier 3 is installed; FR's baselines have a permanent folder
+
+2026-11-26, written at 17:39 UTC.
+
+- **Landed** at 033bde25 (tag `test-slimming-landed-2026-11-26`), merged from 62e63e69. It changes no src file.
+  - The tier record is merged three ways with `scripts/test_tiers.py merge` (base c52d0998, the branch's, main's), so main's six rows from the
+    co-writers' fold stay.
+  - `tests/tier3_record.json` is the branch's; main's is unchanged since the base.
+  - The scoped gate, run on a trial merge onto 663edb44, covered the guard set and the six files the change reaches: 294 passed.
+- **What it moves:**
+  - The thirteen parked assays' tests and the three reference regenerations go to tier 3. Their fast integrity checks stay in tier 1.
+  - The frozen=composite rows now check all 16 worlds at the definition (`validation/tissue/one_computation.py`), comparing execution blocks and
+    parameters bit for bit. Each of the seven replacement worlds compiles once, and the lineage is read through both summaries.
+  - On the 13 changed rows the plants catch everything the old rows caught, plus one they missed (rc1).
+  - `test_site_occupancy_idle_empty.py` is merged into `test_site_occupancy_idle.py`.
+- **The savings:**
+  - per gate, about 97 s in tiers 1 and 2 (the assays), 302 s in tier 2 (the regenerations) and 15 s (the merge);
+  - per weekly tier-3 run, about 527 s (the frozen=composite rows).
+- **Slimming found little elsewhere.**
+  - Most split pairs share no compiled program, so merging them saves only import time.
+  - The restart and identity families cost one compile per run length.
+  - An engine-side idea goes to the backlog: bucketed scan lengths with masked steps, so that resumes and horizons reuse one compile.
+- **The weekly tier 3** runs on Sundays at 04:00 UTC (`cells-weekly-tier3.timer`, installed by the lead today; first run 29 November). Its verdict
+  goes to `/mnt/workspaces/Cells/weekly/DATE/verdict.json`.
+- **FR's baselines** (D392) are copied byte for byte to `/mnt/workspaces/Cells/fr-baselines/805c48a4-20261126`. The three gate scripts that read
+  them now point there, and the old folder is left as it was.
+
+## D397: the BETSE file removal is landed; the user's answers on the rest of the cleanup; the per-event counts go into the engine
+
+2026-11-26, written at 18:06 UTC.
+
+- **Landed** at fc94f893 (tag `betse-cleanup-landed-2026-11-26`), from 3554c7eb. It changes no src file.
+  - Removed: 331 files, 322 of them validation files and 9 tests, and 132,008 lines. One module is renamed
+    (`betse_normal_channel_join_runtime.py` becomes `loaded_module_inventory.py`, for a test kept on 8 November).
+  - **Against D394's figures:**
+    - the files nothing runs are 302, not 307. One L3 module stays, because kept modules import it. Two protocol files moved to the
+      second commit. The geometry replay and its driver went, since nothing runs them;
+    - the ECM and material references are 20 files, not 18, with those two protocol files.
+    - The removal list's one "kept as a record" file was restored, and one orphaned geometry module was removed.
+  - Test IDs fall from 11,197 to 10,859 across all three tiers. Exactly the 338 declared IDs differ, all in tier 1.
+  - No `betse_normal_*` or `betse_native_*` file remains, so AGENTS.md's sentence holds as written. Nothing imports BETSE outside
+    `validation/betse/`.
+  - The rename tool's check gives 69 problems before and after. Those 69 predate the batch: the ID move's record lags the tree, and that is
+    a cleanup item of its own.
+  - The scoped gate ran on a trial merge onto a4646968: 102 passed.
+- **The user's answers on the rest of the cleanup** (verbatim "1. yes 2. as you suggest 3. yes 4. as you suggest 5. as you suggest"):
+  1. A list of branches and worktrees is prepared first, read-only. Anything a record cites stays, and nothing is deleted before the user
+     sees the list.
+  2. The re-hosting of the short decodability assays on Cells physics stays planned, so their nine switched-off tests stay. That is the
+     lead's reading of "as you suggest".
+  3. The docs are refreshed after FR-65 lands: the README, FR-55's retitle, the feature index, and D380's two owed labels. The README diff
+     is shown to the user before it is pushed.
+  4. After FR-65, the lead checks what uses the older major of each of the seven pieces that have two. Only what nothing uses is retired.
+  5. AGENTS.md's gate sentence now says that tier 3 runs weekly (Sundays 04:00 UTC, D396), and deliberately when a change needs it.
+- **FR-43 part 3's event counts** (the user, "1. sounds good"; the adviser agrees). The engine's trace records each event's time and channel
+  but not its counts, so an exporter would have had to derive them, and the registered check of counts against channel would hold by
+  construction. `integer_unit_population@1` gains a write-only trace field, `integer_trace_counts`.
+  - It stays in place under @1 (MODULE_SYSTEM §2.3).
+  - The field is written from the counts the loop carries after each event, never as counts before plus the jump.
+  - A plant row proves that a wrong but balanced jump breaks the channel rule.
+  - It gets its own round after FR-65, and every existing field must stay bit for bit. Crossrev's and G1's records for the co-writer world
+    are renewed.
+  - The rehearsal and the registration tag wait for it.

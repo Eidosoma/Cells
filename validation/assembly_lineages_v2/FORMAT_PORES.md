@@ -1,4 +1,4 @@
-# The engine's output format for vesicle pores, Phase A (`cells.assembly_lineages@2`; FR-31)
+# The engine's output format for vesicle pores, Phase A (`cells.model.assembly_lineages@2`; FR-31)
 
 This page adds to `FORMAT.md` and `FORMAT_OL2.md` what a world writes when it declares the pore law.
 A world that declares neither the pore law nor a hold writes exactly what those pages describe: no
@@ -11,7 +11,7 @@ once.
 
 ## The world: `hazard`
 
-`{law: cells.pore_nucleation@1, nu_A, gamma_N, E_A_J_per_mol, eta_298_Pa_s_m}`. Each parameter is
+`{law: cells.assembly_hazard.pore_nucleation@1, nu_A, gamma_N, E_A_J_per_mol, eta_298_Pa_s_m}`. Each parameter is
 `{value, provenance}`, positive, for one lipid composition:
 
 | Key | Unit | What |
@@ -26,7 +26,7 @@ It reads the tension, the area and the world's temperature, draws on the stream 
 its outcome is a lysis. T is the world's `units.temperature_K`.
 
 **Refused at parse:**
-- the law without `cells.bilayer_geometry@1`: with no geometry, or with FR-21's prescribed shell.
+- the law without `cells.assembly_geometry.bilayer_geometry@1`: with no geometry, or with FR-21's prescribed shell.
   The vesicle's area is the bilayer's, A = q·W/2.
 - any step that changes a membrane place's count (its net change at any membrane place, not the
   membrane's total), so each vesicle's area, and its rate, stay fixed through a hold;
@@ -36,7 +36,7 @@ its outcome is a lysis. T is the world's `units.temperature_K`.
 ## The experiment: `tension_holds`
 
 `[{index, sigma_N_per_m, start_s, end_s}]`: a tension σ held on every living vesicle over
-[start_s, end_s), whatever its counts. It is `cells.tension_hold@1`, an assembly operator with a
+[start_s, end_s), whatever its counts. It is `cells.operator.tension_hold@1`, an assembly operator with a
 work role: an applied protocol, a pipette's, so it lives in the experiment, not in the world id.
 
 **Refused:**
@@ -140,9 +140,9 @@ how the heat divides between the opening and the release.
     per vesicle's draw.
   - No step event is marked `event_lysed` for a rupture.
 - **relations@2 (a population):**
-  - each rupture is a `lysis` event at its life, `by` `cells.pore_nucleation@1`, paid by
+  - each rupture is a `lysis` event at its life, `by` `cells.assembly_hazard.pore_nucleation@1`, paid by
     `source:tension_hold/<index>`;
-  - that source has kind `schedule`, class `energy`, `declared_by` `cells.tension_hold@1` and
+  - that source has kind `schedule`, class `energy`, `declared_by` `cells.operator.tension_hold@1` and
     `payer_of` `tension_hold_work_kT`;
   - a single lineage writes no relations, as for a lysis.
 

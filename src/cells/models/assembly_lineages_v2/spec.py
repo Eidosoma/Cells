@@ -1,7 +1,7 @@
-"""The definition of a run of version 2 (cells.assembly_lineages@2).
+"""The definition of a run of version 2 (cells.model.assembly_lineages@2).
 
     {"schema_version": 1,
-     "model": {"id": "cells.assembly_lineages@2", "world": {...}},     world.py's record
+     "model": {"id": "cells.model.assembly_lineages@2", "world": {...}},     world.py's record
      "experiment": {"time_horizon_s", "event_limit", "row_every_events",
                     "observation_times_s", "trace", "uniforms"},
      "execution": {"backend", "precision", "mode", "stream": {seed, environment, lineage, branch},
@@ -11,8 +11,8 @@
 **The world** (world.py) holds everything two runs of it share; its id is the SHA-256 of its
 canonical JSON, computed here, never written as a literal. Beside world.py's parts it resolves the
 laws: every step's law is a reaction law of this family (`cells.reaction_law@1`, hosted by
-cells.assembly_lineages@2); `free_energy` lists the terms of F, `cells.ideal_mixing@1` first and
-exactly once, then the excess terms (`cells.regular_mixing@1`), each at most once; `rate_factor`
+cells.model.assembly_lineages@2); `free_energy` lists the terms of F, `cells.free_energy.ideal_mixing@1` first and
+exactly once, then the excess terms (`cells.free_energy.regular_mixing@1`), each at most once; `rate_factor`
 is optional, a `cells.rate_factor_law@2` of this family. A law of another family or interface is
 refused by name, so GARD's two forms (hosted by @1) cannot be named here.
 
@@ -57,6 +57,7 @@ from cells.models.assembly_lineages_v2 import (
     IDEAL_MIXING,
     MASS_ACTION,
     MEMBRANE_PERMEATION,
+    MODE,
     MODEL_ID,
     MODES,
     PHASE_EXCHANGE,
@@ -66,6 +67,7 @@ from cells.models.assembly_lineages_v2 import (
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
     SHELL_PERMEATION,
+    SIZE_THRESHOLD_DIVISION,
     streams,
 )
 from cells.models.assembly_lineages_v2 import conventions as conventions_rules
@@ -235,8 +237,9 @@ def parse_world(raw):
     world = world_rules.World(
         units, conventions, species, volumes, places, steps, terms, rate_factor, founder, role
     )
-    if "sites" in raw:  # FR-21: declared binding sites and their complexes (§0.2f).
-        world = dataclasses.replace(world, sites=world_rules.parse_sites(raw["sites"], places))
+    if "sites" in raw:  # FR-21: declared binding sites and their complexes (§0.2f); FR-46's face.
+        pairs, inner = world_rules.parse_sites(raw["sites"], places)
+        world = dataclasses.replace(world, sites=pairs, inner_sites=inner)
     _convention_refusals(world, founder="population" not in raw)  # a population's: per founder
     if "geometry" in raw:
         block = raw["geometry"]
@@ -244,6 +247,12 @@ def parse_world(raw):
             raise ConfigError("world: geometry names its law")
         law = _law(block["law"], GEOMETRY_INTERFACE, "geometry")
         world = dataclasses.replace(world, geometry=(law.law_id, law.parse_data(block, world)))
+    _lumen_potential_refusals(world)  # FR-48: absent unless a species declares one
+    if world.inner_sites and (world.geometry is None or world.geometry[0] != PRESCRIBED_SHELL):
+        raise ConfigError(  # FR-46 (R6): even when no step binds from the lumen
+            f"world: sites: an inner pair is declared, which version 1 admits in a "
+            f"{PRESCRIBED_SHELL} world only (FR-46)"
+        )
     founders = (world.founder,)
     if "population" in raw:  # OL2 milestone 3: K slots on one pool (population.py).
         from cells.models.assembly_lineages_v2 import population as population_rules
@@ -257,7 +266,13 @@ def parse_world(raw):
         _convention_refusals(probe)
         _geometry_refusals(probe)
         _osmotic_refusals(probe)
-    if "division" in raw:  # OL3 milestone 1: shear fission (division.py).
+    if "division" in raw and _sized(raw["division"]):  # OL6 S7 (size_division.py), by law
+        from cells.models.assembly_lineages_v2 import size_division
+
+        world = dataclasses.replace(
+            world, size_division=size_division.parse_data(raw["division"], world)
+        )
+    elif "division" in raw:  # OL3 milestone 1: shear fission (division.py).
         from cells.models.assembly_lineages_v2 import division as division_rules
 
         world = dataclasses.replace(
@@ -270,6 +285,39 @@ def parse_world(raw):
         law = _law(block["law"], HAZARD_INTERFACE, "hazard")
         world = dataclasses.replace(world, hazard=(law.law_id, law.parse_data(block, world)))
     return world
+
+
+def _lumen_potential_refusals(world):
+    """FR-48 (D323): a species' lumen potential, version 1's scope. It is admitted in a world whose
+    geometry is a prescribed shell (a declared lumen at a fixed volume: no osmotic lumen, lysis
+    return or division reads it), on a species placed in the lumen, beside its solution potential
+    (the records report Δ = μ°_lumen − μ°_solution). Each other case is refused by name."""
+    declared = [s for s in world.species if s.mu_lumen is not None]
+    if not declared:
+        return
+    names = ", ".join(s.id for s in declared)
+    if world.geometry is None or world.geometry[0] != PRESCRIBED_SHELL:
+        raise ConfigError(
+            f"world: species {names} declare a lumen potential, which version 1 admits in a "
+            f"{PRESCRIBED_SHELL} world only (FR-48): a bilayer's osmotic lumen, its lysis returns "
+            "and its division would each read it"
+        )
+    in_lumen = {p.species for p in world.places if p.phase == world_rules.LUMEN}
+    for s in declared:
+        if s.id not in in_lumen:
+            raise ConfigError(
+                f"world: species {s.id} declares a lumen potential but has no lumen place (FR-48)"
+            )
+        if s.mu_solution is None:
+            raise ConfigError(
+                f"world: species {s.id} declares a lumen potential without a solution potential; "
+                "the records report Δ = μ°_lumen − μ°_solution (FR-48)"
+            )
+
+
+def _sized(block):
+    """Whether a division block names cells.operator.size_threshold_division@1 (OL6 S7)."""
+    return isinstance(block, dict) and block.get("law") == SIZE_THRESHOLD_DIVISION
 
 
 def _osmotic_refusals(world):
@@ -366,10 +414,18 @@ def _declares_shell(raw):
 
 
 def _declared_binding(step, world, by_name):
-    """FR-21 (§0.2f): exactly one pool molecule and one declared site forming the site's declared
-    complex, X@pool + site@membrane -> complex@membrane, declared in that direction, under
-    cells.stochastic_mass_action@1 with count_on_m. Its encounter is the site count: the law's
-    membrane factor cancels to n_site, so a+ = k_f theta+ n_site (mass_action.py)."""
+    """FR-21 (§0.2f) and FR-46 (D323): exactly one dilute molecule and one declared site forming
+    the site's declared complex, declared in that direction, under cells.reaction.stochastic_mass_action@1
+    with count_on_m, on the pair's own face: X@pool + site@membrane -> complex@membrane for an outer
+    pair, and, in a prescribed shell, X@lumen + site@membrane -> complex@membrane for an inner pair.
+    Its encounter is the site count: the law's membrane factor cancels to n_site, so
+    a+ = k_f theta+ n_site (mass_action.py), theta+ the ligand's own phase's activity."""
+    return _binding_face(step, world, by_name) is not None
+
+
+def _binding_face(step, world, by_name):
+    """(face, ligand species, complex species) of an admitted binding step, or None. The reactants
+    are listed in place order (pool, membrane, lumen), so the ligand is found by its phase."""
     if (
         world.sites is None
         or step.law != MASS_ACTION
@@ -377,15 +433,82 @@ def _declared_binding(step, world, by_name):
         or len(step.reactants) != 2
         or len(step.products) != 1
     ):
-        return False
-    (ligand, a), (site, b) = step.reactants
+        return None
+    dilute = [(n, k) for n, k in step.reactants if by_name[n].phase in world_rules.DILUTE]
+    wall = [(n, k) for n, k in step.reactants if by_name[n].phase == world_rules.MEMBRANE]
+    if len(dilute) != 1 or len(wall) != 1:
+        return None
+    (ligand, a), (site, b) = dilute[0], wall[0]
     (complex_, c) = step.products[0]
-    shape = (a, b, c) == (1, 1, 1) and (by_name[ligand].phase, by_name[site].phase,
-                                         by_name[complex_].phase) == (
-        world_rules.POOL, world_rules.MEMBRANE, world_rules.MEMBRANE
-    )  # fmt: skip
+    if (a, b, c) != (1, 1, 1) or by_name[complex_].phase != world_rules.MEMBRANE:
+        return None
     pair = (by_name[site].species, by_name[complex_].species)
-    return shape and pair in world.sites
+    if pair not in world.sites:
+        return None
+    face = "outer" if by_name[ligand].phase == world_rules.POOL else "inner"
+    if face == "inner" and (world.geometry is None or world.geometry[0] != PRESCRIBED_SHELL):
+        return None  # R6: inner-face binding in a prescribed shell only, in version 1
+    if (face == "inner") != (pair in (world.inner_sites or ())):
+        return None  # a pair binds on its own face only
+    return face, by_name[ligand].species, by_name[complex_].species
+
+
+def _face_rule(world, by_name):
+    """FR-46 (D323): one face per complex, propagated by ligand moiety over every wall state.
+
+    Each admitted binding step seeds its complex with its face, for each moiety of its ligand.
+    Every step, binding steps included, joins per moiety each membrane reactant that holds the
+    moiety with each membrane product that holds it: the stoichiometry decides, not the declared
+    pairs, so a wall state with no binding pair of its own carries the face on, and so does a
+    binding step whose site already holds the ligand (a co-ligand bound from the other face). A
+    component that holds both faces for one moiety lets that moiety pass through the wall from the
+    pool to the lumen: a carrier, refused by name with its wall states. Stepwise binding of one
+    ligand from both faces on one site is refused with it, conservatively: the moieties cannot
+    tell which molecule is which."""
+    moieties = {s.id: set(s.moiety_counts()) for s in world.species}
+    seeds = []  # (moiety, wall species, face)
+    for step in world.steps:
+        found = _binding_face(step, world, by_name)
+        if found is not None:
+            face, ligand, complex_ = found
+            seeds += [(m, complex_, face) for m in sorted(moieties[ligand])]
+    if {face for _, _, face in seeds} != {"outer", "inner"}:
+        return  # one face, or none: no carrier is possible
+    parent = {}
+
+    def root(node):
+        parent.setdefault(node, node)
+        while parent[node] != node:
+            parent[node] = parent[parent[node]]
+            node = parent[node]
+        return node
+
+    ligand_moieties = sorted({m for m, _, _ in seeds})
+    wall = world_rules.MEMBRANE
+    for step in world.steps:
+        for m in ligand_moieties:
+            left = [by_name[n].species for n, _ in step.reactants
+                    if by_name[n].phase == wall and m in moieties[by_name[n].species]]  # fmt: skip
+            right = [by_name[n].species for n, _ in step.products
+                     if by_name[n].phase == wall and m in moieties[by_name[n].species]]  # fmt: skip
+            for a in left:
+                for b in right:
+                    parent[root((m, a))] = root((m, b))
+    faces = {}
+    for m, species, face in seeds:
+        faces.setdefault(root((m, species)), set()).add(face)
+    for top, found in sorted(faces.items()):
+        if len(found) > 1:
+            m = top[0]
+            states = sorted({sp for (mm, sp) in list(parent) if mm == m and root((mm, sp)) == top}
+                            | {sp for mm, sp, _ in seeds
+                               if mm == m and root((mm, sp)) == top})  # fmt: skip
+            raise ConfigError(
+                f"world: the ligand moiety {m} can pass through the wall's states {states} from "
+                "an outer-face complex to an inner-face one: a carrier across the wall, refused "
+                "(FR-46's face rule: one face per complex, propagated by ligand moiety over every "
+                "wall state)"
+            )
 
 
 def _geometry_refusals(world):
@@ -408,17 +531,21 @@ def _geometry_refusals(world):
         if not geometric:
             if step.locus == world_rules.MEMBRANE and len(phases) > 1:
                 if _declared_binding(step, world, by_name):
-                    continue  # FR-21: rule 3's one admitted interfacial shape (§0.2f).
+                    continue  # FR-21 and FR-46: rule 3's admitted interfacial shapes.
                 raise ConfigError(
                     f"world: step {step.id} crosses phases at the membrane; in a world with a "
                     "geometry a cross-phase step takes a geometric encounter law (phase exchange "
                     "for a join, permeation for an entry), and other interfaces are refused until "
-                    "one is declared (§0.2c rule 3). One shape is admitted (§0.2f): a pool "
-                    "molecule binding a declared site to form its declared complex, X@pool + "
-                    "site@membrane -> complex@membrane, under mass action with count_on_m"
+                    "one is declared (§0.2c rule 3). Two shapes are admitted, each for a declared "
+                    "pair on its own face, under mass action with count_on_m: a pool molecule "
+                    "binding an outer site, X@pool + site@membrane -> complex@membrane (§0.2f), "
+                    "and, in a prescribed shell, a lumen molecule binding an inner site, X@lumen + "
+                    "site@membrane -> complex@membrane (FR-46)"
                 )
             continue
         _geometric_shape(step, law, by_name)
+    if world.sites is not None:
+        _face_rule(world, by_name)  # FR-46: one face per complex
     if world.geometry is None:
         return
     if world.conventions.last_molecule != "kept":
@@ -440,7 +567,7 @@ def _geometry_refusals(world):
 
 
 def _refuse_other_kind(step_id, law_id, geometry):
-    """FR-21: a shell world takes cells.shell_permeation@1 and refuses joins and the bilayer's
+    """FR-21: a shell world takes cells.reaction.shell_permeation@1 and refuses joins and the bilayer's
     permeation; a bilayer world refuses the shell's permeation."""
     if geometry == PRESCRIBED_SHELL and law_id in (PHASE_EXCHANGE, MEMBRANE_PERMEATION):
         reason = (
@@ -536,12 +663,16 @@ def world_to_dict(world):
         from cells.models.assembly_lineages_v2 import division as division_rules
 
         out["division"] = division_rules.data_to_dict(world.division)
+    if world.size_division is not None:  # OL6 S7
+        from cells.models.assembly_lineages_v2 import size_division
+
+        out["division"] = size_division.data_to_dict(world.size_division)
     if world.population is not None:
         from cells.models.assembly_lineages_v2 import population as population_rules
 
         out["population"] = population_rules.data_to_dict(world.population)
     if world.sites is not None:
-        out["sites"] = world_rules.sites_to_dict(world.sites)
+        out["sites"] = world_rules.sites_to_dict(world.sites, world.inner_sites)
     if world.hazard is not None:
         law_id, data = world.hazard
         out["hazard"] = registry.lookup(law_id).data_to_dict(data)
@@ -681,6 +812,10 @@ def parse(data):
     _mode_refusals(model.world, execution.mode)
     experiment = parse_experiment(raw["experiment"], model.world)
     _capacity_refusals(model.world, experiment, execution)
+    if model.world.size_division is not None:  # OL6 S7: its experiment's and execution's checks
+        from cells.models.assembly_lineages_v2 import size_division
+
+        size_division.cross_checks(model.world, experiment, execution)
     if model.world.hazard is not None or experiment.tension_holds:  # FR-31: the cross-checks
         from cells.models.assembly_lineages_v2 import tension_hold
 
@@ -791,6 +926,11 @@ def _mode_refusals(world, mode):
             )
         if mode != POPULATION and continuation is None:
             raise ConfigError("world: division: a single lineage declares its continuation")
+    if world.size_division is not None and mode != MODE:  # OL6 S7
+        raise ConfigError(
+            f"world: division ({SIZE_THRESHOLD_DIVISION}): a single lineage in version 1 (a "
+            "population's comes when a consumer needs it)"
+        )
 
 
 def stream_identity(spec):

@@ -18,7 +18,8 @@ and the lead's rulings are in §11:
   energy booking is a known limit, so production worlds should start resolved too;
 - RK4 with a diffusing species is guarded, not refused;
 - version 1 refuses a donor copy with different route values, the stationary analysis on the
-  composite, and worlds of more than 16 species (7 until FR-9 / D165, §13).
+  composite, and worlds of more than 1,024 species (16 until FR-43 / D315, §14; 7 until FR-9 /
+  D165, §13).
 
 D150 promoted this feature. The user's words were: "we do have plans to be able to run special
 modes of Cells at differnt timescales, so down the road nothing right now but for sure the
@@ -100,7 +101,7 @@ division design.
    refuses these, by the lead's rulings (§11.5):
    - a donor copy whose route values differ from the slot's;
    - the stationary analysis on the composite;
-   - worlds of more than 16 species (7 until FR-9 / D165, §13).
+   - worlds of more than 1,024 species (16 until FR-43 / D315, §14; 7 until FR-9 / D165, §13).
 8. **The guards of record** (§7, §11.4).
    - **Energy.** The shared IMEX energy bound is the ions' and cannot see the species' bookings
      at µM–nM: it is 1.7 to 1,721 times the species' whole free-energy change. So the energy
@@ -557,8 +558,8 @@ primitive replaces the sink as a new law ID, and transport is unchanged.
 - **No ECM entity** (its item 5).
 - **No convection.**
 - **A continuum** (§1.3).
-- **At most 16 species per world** (FR-9 / D165, §13; the lead's ruling at 7, §11.5). The cap
-  counts every species, ions included.
+- **At most 1,024 species per world** (FR-43 / D315, §14; 16 by FR-9 / D165, §13; the lead's
+  ruling at 7, §11.5). The cap counts every species, ions included.
   - **The refusal.** Every species operator's definition check refuses a world with more:
     turnover, exchange and D152's local reactions. The refusal names the cap and its reason. No
     model changes.
@@ -1764,7 +1765,36 @@ is taken without the user's choice (D148):
   transfers and reservoir supply by up to about 3,600 ulp, and the face and reservoir energies by
   the extra species' own contributions.
 - **Worlds above 7 species are outside D150's judged scope** until a protocol covers them.
-- **Above 16 species needs another probe.**
+- **Above 16 species needs another probe.** FR-43's was that probe (§14).
+
+## 14. FR-43 / D315: the species cap raised to 1,024, an in-place change under D148 (23 November 2026)
+
+The user's decision (D315) on docs/FR43_SHARED_INVENTORIES_DESIGN.md, whose §1 holds the probe and
+its records (`/mnt/workspaces/Cells/fr43-20261123/`).
+- **The change.** `species_common.MAX_SPECIES` from 16 to 1,024, with its refusal message. The cap
+  is read only at the definition, so no program changes.
+- **The fold's gate.** `numerics/species_sums.species_sum` keeps the unrolled fold up to 16 terms
+  and folds by `lax.scan` (unroll 8) above, the same additions in the same order. A world at 16
+  species or fewer keeps its program text: the jaxpr and StableHLO of the fold are main's for 1 to 16
+  terms, and crossrev's sets fold at most 10. Above 16 the scan's values equal the unrolled fold's
+  bitwise, on the host and the device. At 1,024 species the scan compiles 5.1 times faster at 43%
+  of the memory, and on the L4 the unrolled fold did not fit in 16 GiB of host memory.
+- **The probe** (the design note's §1.2–§1.4): FR-43's chain at 16, 32, 256 and 1,024 species met
+  its closed form at one accuracy (2 × 10⁻⁵ of the largest amount at a 5 ms step) with every ledger
+  at rounding; W4's idleness, restart and batch parts held bitwise at 32 and 256; every operator that
+  shares the cap ran at 32 species and at 1,024 (eight of nine worlds), beside idle padding rows; no
+  ledger, guard or promised idleness rests on a shared module's sum order above 16.
+- **What it does not claim.** Worlds above 16 species stay outside D150's judged scope until a
+  protocol covers them. The operators other than the reactions acted on their own 1 to 8 rows only.
+  Above 1,024 the dense network layout's cost (about the square of the count) and the ledgers,
+  restart and batches are unprobed, so a larger world needs another probe.
+- **The trace estimate** counts the reactions' bound layout once per resident copy, not per saved
+  row (`execution/resources.fixed_bytes`): 256 species at 400 steps are admitted under a 2 GiB
+  budget, where the old estimate was 9.5 GiB.
+- **Tests:** the cap's refusal at 1,025 (`test_species_cap.py`), each operator's call to it with the
+  cap set to 16 for the test (`test_secreted_species.py`, `test_species_reactions_refusals.py`), the
+  fold's gate (`test_species_sums.py`), the 32-species chain run (`test_species_cap_runs.py`, tier 2)
+  and the 1,024-species run (`test_species_cap_large.py`, tier 3).
 
 ## Appendix A. Equations for the independent references
 

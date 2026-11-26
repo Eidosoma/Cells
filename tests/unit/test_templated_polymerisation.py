@@ -1,4 +1,4 @@
-"""templated_polymerisation@1's kernel (gene regulation's option A, G4), on its own half-steps in
+"""cells.operator.templated_polymerisation@1's kernel (gene regulation's option A, G4), on its own half-steps in
 NumPy (validation/gene_regulation/kernel.py): no world is compiled. Each row advances a world of
 validation/gene_regulation/worlds.py for a few seconds of model time.
 
@@ -157,6 +157,81 @@ def test_the_declaration_refuses(edit, words):
         parse_spec(raw)
 
 
+def _beside_a_compartment(*, export=True, degradation=True):
+    """R1 with its export node `space_0` declared as cell_0's compartment (FR-49, D327): with or
+    without the export into it, and with or without the outside degradation there."""
+    from validation.tissue import compartment_fixtures as cfx
+
+    raw = worlds.with_export(worlds.r1(0.75))
+    block = kernel.block(raw)
+    dropped = set()
+    if not degradation:
+        block.pop("outside_degradations")
+        dropped.add(f"deg_R_{worlds.SPACE}")
+    if not export:
+        block.pop("exports")
+        dropped.add("export_R")
+    controls = raw["experiment"]["polymerisation_controls"]
+    raw["experiment"]["polymerisation_controls"] = [
+        c for c in controls if c["route_id"] not in dropped
+    ]
+    patch = f"{worlds.EXPORT_PATCH}_{worlds.CELL}_{worlds.SPACE}"
+    return cfx.with_compartments(
+        raw, [cfx.compartment(cid="lumen_0", node=worlds.SPACE, patch=patch, owner=worlds.CELL)]
+    )
+
+
+# FR-49 (validation/fr49/REGISTRATION.md, Part H): (world, words of the refusal, or None where
+# the world is admitted). Each refusal names the compartment; routes in the owner only compose.
+BESIDE_A_COMPARTMENT = {
+    "routes in the owner only": (
+        lambda: _beside_a_compartment(export=False, degradation=False),
+        None,
+    ),
+    "an export into the compartment": (
+        lambda: _beside_a_compartment(degradation=False),
+        f"export export_R opens onto '{worlds.SPACE}', compartment 'lumen_0'",
+    ),
+    "an outside degradation at the compartment": (
+        _beside_a_compartment,
+        f"outside degradation deg_R_{worlds.SPACE} is at '{worlds.SPACE}', compartment 'lumen_0'",
+    ),
+    # FR-43 part 3: a transfer may move a listed row, but not across a compartment's patch.
+    "a transfer of a listed row across the compartment's patch": (
+        lambda: _with_exchange_of_n(_beside_a_compartment(export=False, degradation=False)),
+        f"moves the listed row 'N' at '{worlds.SPACE}', compartment 'lumen_0'",
+    ),
+}
+
+
+def _with_exchange_of_n(raw):
+    from validation.fr43_part3 import worlds as part3
+
+    patch = f"{worlds.EXPORT_PATCH}_{worlds.CELL}_{worlds.SPACE}"
+    return part3.with_exchange_of(raw, "N", patch, worlds.CELL)
+
+
+@pytest.mark.parametrize("name", sorted(BESIDE_A_COMPARTMENT))
+def test_beside_a_compartment(name):
+    """FR-49's expression entry: the compartments' list names cells.operator.templated_polymerisation@1, and the
+    operator's own check refuses an export into a compartment's node and an outside degradation
+    there, each with its reason. Host only: a parse, no compile."""
+    build, words = BESIDE_A_COMPARTMENT[name]
+    if words is None:
+        spec = parse_spec(build())
+        assert worlds.POLYMERISATION in [d.law for d in spec.model.operators]
+        return
+    with pytest.raises(ConfigError, match=words):
+        parse_spec(build())
+
+
+def test_beside_a_compartment_the_operators_check_is_the_only_wall(monkeypatch):
+    """The plant (Part H): without check_compartments, the export into the compartment parses, so
+    the refusal is the operator's own and nothing else stands behind it."""
+    monkeypatch.setattr(polymerisation, "check_compartments", lambda spec, declaration: None)
+    parse_spec(_beside_a_compartment(degradation=False))
+
+
 def test_the_cited_entries_reach_the_registry_which_refuses_a_perturbed_one():
     raw = worlds.a1(end=60.0)
     (block,) = [d for d in parse_spec(raw).model.operators if d.law == worlds.POLYMERISATION]
@@ -188,7 +263,7 @@ def _control(raw, route):
 
 
 def _replaced(raw, templates=True):
-    """R1 beside scheduled_cell_replacement@1, which replaces its one cell at 120 s by a newcomer
+    """R1 beside cells.operator.scheduled_cell_replacement@1, which replaces its one cell at 120 s by a newcomer
     from template T (amendment S, §9.16), in place; with templates, T's values are the founder's
     time-0 values, as the occupant rule (item 6) requires."""
     from validation.tissue import secreted_species_fixtures as sfx
@@ -210,6 +285,19 @@ def _unused_template(raw):
     replacement["template_capacity"] = 2
     block = kernel.block(raw)
     block["templates"].append(dict(block["templates"][0], template_id="U"))
+
+
+def _another_version(raw):
+    """_replaced's R1 over water, with replacement@2 in place of replacement@1 (§9.16, item 1)."""
+    from validation.tissue import shared_inventory_fixtures as inventories
+
+    raw.update(inventories.with_water_first(_replaced(raw)))
+    (block,) = [
+        o
+        for o in raw["model"]["operators"]
+        if o["law"] == "cells.operator.scheduled_cell_replacement@1"
+    ]
+    block.update(law="cells.operator.scheduled_cell_replacement@2", impermeant_species=[])
 
 
 # R1's refusals (§9.1-§9.6, and §9.16's beside a replacement): (edit of R1's raw definition at
@@ -243,6 +331,11 @@ RELEASE_REFUSALS = [
     ),
     (_unused_template, "template U's value for deg_R applies to no schedule"),
     (
+        _another_version,
+        "composes with cells.operator.scheduled_cell_replacement@1 only, not "
+        "cells.operator.scheduled_cell_replacement@2",
+    ),
+    (
         lambda raw: _control(_replaced(raw), "deg_R")["schedule"].append(
             dict(time=180.0, value=1e-4)
         ),
@@ -270,9 +363,15 @@ def _export(raw, k_E=None, **changes):
 
 
 @pytest.mark.parametrize(("edit", "words"), RELEASE_REFUSALS)
-def test_the_release_refuses(edit, words):
+def test_the_release_refuses(edit, words, monkeypatch):
     raw = worlds.r1(0.75)
     edit(raw)
+    if edit is _another_version:  # Refused first as a second volume changer; that planted away:
+        with pytest.raises(
+            ConfigError, match="cells.operator.scheduled_cell_replacement@2 changes the volumes"
+        ):
+            parse_spec(raw)
+        monkeypatch.setattr(polymerisation.species_reactions, "check_volume_changers", lambda *_: 0)
     with pytest.raises(ConfigError, match=words):
         parse_spec(raw)
 

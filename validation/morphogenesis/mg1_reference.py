@@ -1,6 +1,6 @@
 """MG1 independent reference: the Farhadifar vertex energy in numpy/scipy.
 
-No Cells code is imported; only the definition JSON of apical_vertex_mechanics@1 is
+No Cells code is imported; only the definition JSON of cells.model.apical_vertex_mechanics@1 is
 shared. The reference has its own parsing of that JSON, its own geometry, a
 closed-form gradient (not automatic differentiation), a Hessian from central
 differences of that gradient, scipy minimizers and a box stress from finite

@@ -3,7 +3,7 @@
 The assay is a new run of a definition whose initial values are imported. It records the source
 checkpoint's manifest digest and identities, claims no continuity, and is judged on its own
 (EXCITABLE_TISSUE_DESIGN.md section 4.5). v1 takes one world's complete numerical checkpoint of
-resolved_pump_tissue@3 (`world-N/manifest.json` and `state.npz`, as the engine writes them).
+cells.model.resolved_pump_tissue@3 (`world-N/manifest.json` and `state.npz`, as the engine writes them).
 
 What it carries (D170 ruling 5):
 - every cell's and extracellular compartment's amounts at the checkpoint (reference plus
@@ -17,7 +17,7 @@ What it carries (D170 ruling 5):
 - the source's membrane, pump and channel availabilities at the import time, frozen.
 
 What it refuses, at definition time:
-- any source other than one world of resolved_pump_tissue@3. Composites, Track R's among them,
+- any source other than one world of cells.model.resolved_pump_tissue@3. Composites, Track R's among them,
   wait for their carriage (the formation factor's effective availability), which D170 ruling 5
   names but whose state this v1 does not read;
 - water: a model with water, or cell volumes that differ from the definition's ("until the
@@ -26,7 +26,7 @@ What it refuses, at definition time:
   coupling is each junction's permeability and area against the E07-v1 junction's (s = 1) times
   its effective availability; the smallest species ratio is used.
 
-The driver rule: excitable runs book junction heat with trapezoid_nonnegative@1 (design note
+The driver rule: excitable runs book junction heat with cells.heat.trapezoid_nonnegative@1 (design note
 section 4.4; the run-time dissipation refusal backs it). `require_trapezoid` enforces it.
 
 `rest_check` executes the engine: the unstimulated imported state at the assay's own step for
@@ -46,10 +46,10 @@ from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from validation.stationary import worlds
 from validation.tissue import field_solver_choice
 
-SOURCE_MODEL = "resolved_pump_tissue@3"
+SOURCE_MODEL = "cells.model.resolved_pump_tissue@3"
 CHECKPOINT_KIND = "cells_complete_numerical_checkpoint"
-TRAPEZOID = "trapezoid_nonnegative@1"
-JUNCTION_GATE_LAW = "junction_voltage_relaxation@1"
+TRAPEZOID = "cells.heat.trapezoid_nonnegative@1"
+JUNCTION_GATE_LAW = "cells.junction.junction_voltage_relaxation@1"
 FLOOR = 20.0
 VOLUME_RTOL = 1e-12
 REST_BAND_V = 1e-3

@@ -1,10 +1,10 @@
-"""Operator cytoplasmic_bridge_closure@1: the cytoplasmic bridge between two daughters closes (S5).
+"""Operator cells.operator.cytoplasmic_bridge_closure@1: the cytoplasmic bridge between two daughters closes (S5).
 
 docs/CELL_DIVISION_S5_DESIGN.md §4; the law is docs/CELL_DIVISION_DESIGN.md §4.2. The name is
 general: a cleaving egg's bridge is one use (D144).
 
 The bridge is an @3 junction between the two daughters of one division of
-isopotential_partition@1. Its constant-field junction law has P_s A_j = 2 a_0 D_s^cyt, with
+cells.operator.isopotential_partition@1. Its constant-field junction law has P_s A_j = 2 a_0 D_s^cyt, with
 D_s^cyt the cytoplasmic diffusivities: area 2 a_0 x 1 m and permeability D_s^cyt / (1 m). For equal
 concentrations its conductance is 2 a sigma_cyt, the access conductance of an aperture in a thin
 wall. Its gate is fixed open (minimum open fraction 1, initial gate 1). It opens with both
@@ -46,7 +46,7 @@ from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one pre
 from cells.operators import partition
 from cells.operators.contract import Operator
 
-LAW_ID = "cytoplasmic_bridge_closure@1"
+LAW_ID = "cells.operator.cytoplasmic_bridge_closure@1"
 STEP_ID = "exact_aperture_half_steps@1"
 LAWS = ("linear", "exponential")
 PERMEABILITY_RTOL = 1e-12

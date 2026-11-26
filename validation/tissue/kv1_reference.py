@@ -7,7 +7,14 @@ separately by executing the unchanged pinned implementation.
 
 from decimal import Decimal, localcontext
 
-LAWS = {f"kv1p{i}_mh{'2' if i == 1 else ''}@1": i for i in range(1, 7)}
+LAWS = {
+    "cells.channel.kv1p1_mh2@1": 1,
+    "cells.channel.kv1p2_mh@1": 2,
+    "cells.channel.kv1p3_mh@1": 3,
+    "cells.channel.kv1p4_mh@1": 4,
+    "cells.channel.kv1p5_mh@1": 5,
+    "cells.channel.kv1p6_mh@1": 6,
+}
 
 
 def kinetics(voltage, family):

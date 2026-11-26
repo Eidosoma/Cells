@@ -1,5 +1,10 @@
 # Stateful selective contact: first physical pair
 
+> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools
+> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps
+> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without
+> this note.
+
 SPEC-002 / D021, 2026-09-08. Accepted design with verified instantaneous
 equations; subsequent [NUM-003](SELECTIVE_CONTACT_NUMERICS.md) now qualifies
 independent trajectories and a bounded numerical candidate. **Production is now

@@ -1,4 +1,4 @@
-"""The opt-in trapezoid_nonnegative@1 junction-heat booking of resolved_pump_tissue@3.
+"""The opt-in cells.heat.trapezoid_nonnegative@1 junction-heat booking of cells.model.resolved_pump_tissue@3.
 
 ARS(2,2,2) books route heat with the explicit weights (delta, 1 - delta), delta < 0,
 so a junction whose voltage crosses zero within a step books a negative heat

@@ -15,11 +15,30 @@ from urllib.parse import quote
 
 LANE = Path(__file__).resolve().parents[1]
 REPOSITORY = "https://github.com/Eidosoma/Cells"
+D351 = (
+    f"{REPOSITORY}/blob/main/docs/DECISIONS.md#d351-the-wet-lab-gap-diagnosis-"
+    "three-rows-confirmed-none-wrong-inside-its-claimed-domain-fr-55-goes-to-normal-the-user"
+)
 BEGIN = "<!-- generated: claims-index -->"
 END = "<!-- /generated -->"
 NOTE = "<!-- Generated from lean/claims.json by scripts/generate_claims.py. -->"
 COVERAGE_NOTE = "<!-- Generated from lean/registry.json and lean/claims.json. -->"
 CLAIM_HEADER = "| Claim | Lean proof | Numerical check | Biological measurements and limits |"
+PAIR_OUTCOMES = {
+    "both_support": "Supported by both studies",
+    "both_challenge": "Challenged by both studies",
+    "different_results": "Different experimental results",
+    "inconclusive": "Comparison unresolved",
+    "not_independent": "Independent replication unconfirmed",
+}
+REPLAY_STATUS = {
+    "missed": "Replay discrepancy",
+    "reproduced": "Shared observable reproduced",
+    "represented": "Representable with declared inputs",
+    "partial": "Partial replay or missing inputs",
+    "unconfirmed": "Replicated target unresolved",
+    "pending": "Awaiting replay",
+}
 
 
 def unique_keys(pairs):
@@ -186,11 +205,15 @@ def comparison_text(check):
     return "\n\n".join([*lines, " · ".join(links), " · ".join(revisions)])
 
 
-def publication_link(e):
+def publication_url(e):
     source = f"https://doi.org/{e['doi']}" if e.get("doi") else e["url"]
     if not source.startswith("https://"):
         raise ValueError(f"expected an HTTPS primary source for {e['dataset_id']}")
-    return f"[{e['citation']}]({source})"
+    return source
+
+
+def publication_link(e):
+    return f"[{e['citation']}]({publication_url(e)})"
 
 
 def experiment_text(e, unit, repo):
@@ -236,6 +259,135 @@ def biological_summary(biology, verdict):
     return f"**{label}.** " + " ".join(findings)
 
 
+def wet_lab_register(claims):
+    groups = {outcome: [] for outcome in PAIR_OUTCOMES}
+    replay_counts = Counter()
+    misses = []
+    seen = set()
+    reviewed_claims = 0
+    pending = []
+    single_source = []
+    for key, claim in claims.items():
+        biology = claim["biology"]
+        evidence = {e["dataset_id"]: e for e in biology["evidence"]}
+        pairs = biology.get("pairs", [])
+        claim_link = f"[{claim['title']}](claims/{key}.md#biological-evidence)"
+        if not pairs:
+            if len(evidence) >= 2:
+                pending.append(claim_link)
+            elif len(evidence) == 1:
+                single_source.append(claim_link)
+            continue
+        reviewed_claims += 1
+        if len(evidence) != len(biology["evidence"]):
+            raise ValueError(f"{key}: ambiguous dataset ID in paired evidence")
+        compared = set()
+        for pair in pairs:
+            pair_id, outcome, ids = pair["id"], pair["outcome"], pair["datasets"]
+            if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", pair_id) or pair_id in seen:
+                raise ValueError(f"{key}: invalid or repeated wet-lab comparison ID {pair_id!r}")
+            seen.add(pair_id)
+            if len(ids) != 2 or len(set(ids)) != 2 or not set(ids) <= evidence.keys():
+                raise ValueError(f"{pair_id}: name two distinct datasets belonging to this claim")
+            identifier = (pair["assumption"].strip().casefold(), frozenset(ids))
+            if identifier in compared:
+                raise ValueError(f"{pair_id}: repeated comparison for this assumption")
+            compared.add(identifier)
+            studies = [evidence[i] for i in ids]
+            publications = {publication_url(e).split("#")[0].rstrip("/").lower() for e in studies}
+            if outcome not in groups or (len(publications) < 2 and outcome != "not_independent"):
+                raise ValueError(f"{pair_id}: invalid outcome for these publications")
+            if not all(pair[k].strip() for k in ("assumption", "comparison", "independence")):
+                raise ValueError(f"{pair_id}: missing assumption, measurements or independence")
+            sources = " · ".join(publication_link(e) for e in studies)
+            replay = pair.get("replay")
+            state = replay["status"] if replay else "pending"
+            note = replay["assessment"].strip() if replay else "Awaiting an engine comparison."
+            studies_agree = outcome in ("both_support", "both_challenge")
+            if state not in REPLAY_STATUS or not note:
+                raise ValueError(f"{pair_id}: invalid Cells replay status or assessment")
+            if (state in ("missed", "reproduced") and not studies_agree) or (
+                state == "unconfirmed" and studies_agree
+            ):
+                raise ValueError(f"{pair_id}: replay status conflicts with the paired evidence")
+            replay_counts[state] += 1
+            if state == "missed":
+                misses.append(f"- [{pair['assumption']}](#pair-{pair_id})")
+            cells = [
+                f'<a id="pair-{pair_id}"></a>{pair["assumption"]} {claim_link}',
+                pair["comparison"],
+                pair["independence"] + " " + sources,
+                f"**{REPLAY_STATUS[state]}.** {note}",
+            ]
+            cells = [" ".join(c.splitlines()).replace("|", r"\|") for c in cells]
+            groups[outcome].append("| " + " | ".join(cells) + " |")
+
+    summary = (
+        f"[Paired wet-lab evidence](WET_LAB_EVIDENCE.md) covers {reviewed_claims} of "
+        f"{len(claims)} claims. Across {len(seen)} comparisons, two independent studies support "
+        f"the stated assumption in {len(groups['both_support'])} and challenge it "
+        f"in {len(groups['both_challenge'])}. "
+        "[Cells replay results](WET_LAB_EVIDENCE.md#cells-replay-results) "
+        f"flag {len(misses)} discrepancies. Of the original eight, D351 confirmed three "
+        "findings and classified five as indications. It found no errors within the laws’ "
+        f"stated domains. [D351 ruling on main]({D351})"
+    )
+    parts = [
+        NOTE,
+        "# Paired wet-lab evidence",
+        "Each row names one Cells assumption and two public primary experimental records. "
+        "A supporting pair requires independently collected data from separate research groups "
+        "and a comparable observable. Direction, approximate scale and pointwise numerical "
+        "agreement are identified separately. A study may inform several rows. The linked "
+        "claim page identifies calibration data and gives the full biological verdict.",
+        "| Outcome | Reviewed pairs |\n| --- | ---: |\n"
+        + "\n".join(f"| {label} | {len(groups[k])} |" for k, label in PAIR_OUTCOMES.items()),
+        "## Cells replay results",
+        "The last column records what Cells predicts for the observable the studies share. "
+        "A fitted input or a synthetic control establishes representability. A partial replay "
+        "names the missing input or readout. Each claim links its source and numerical checks.",
+        "| Cells result | Pairs |\n| --- | ---: |\n"
+        + "\n".join(f"| {label} | {replay_counts[s]} |" for s, label in REPLAY_STATUS.items()),
+    ]
+    if misses:
+        parts += [
+            '<a id="replicated-observations-missed-by-the-tested-law"></a>',
+            "### Observations missed in the tested replays",
+            "D351 requires at least two independent labs to measure the same quantity on the "
+            "same molecular system under comparable conditions to confirm a finding. Of the "
+            "original eight discrepancies, three met that rule. Acidification shifts Kv1.5 "
+            "activation toward more positive voltages, and the central estimates show POPC "
+            "expands on warming. Both findings concern direction. For Cx43, the confirmed "
+            "finding is the two-phase decay of junctional current. Five rows remained "
+            "indications. The review found no errors within the laws’ stated domains. "
+            f"[D351 definition and row-by-row ruling on main]({D351})",
+            "\n".join(misses),
+        ]
+    for outcome, rows in groups.items():
+        if rows:
+            parts += [
+                f"## {PAIR_OUTCOMES[outcome]}",
+                "| Assumption and claim | Measurements and scope | Independence and sources | "
+                "Cells replay |\n"
+                "| --- | --- | --- | --- |\n" + "\n".join(rows),
+            ]
+    parts += [
+        "## Awaiting paired review",
+        f"Claims with at least two datasets awaiting their first paired review ({len(pending)}). "
+        "Several datasets can come from one paper or measure different quantities.",
+    ]
+    if pending:
+        parts.append("\n".join("- " + link for link in sorted(pending)))
+    if single_source:
+        parts += [
+            "## Seeking a second dataset",
+            f"<details><summary>Claims with one recorded dataset ({len(single_source)})</summary>",
+            "\n".join("- " + link for link in sorted(single_source)),
+            "</details>",
+        ]
+    return "\n\n".join(parts) + "\n", summary
+
+
 def render_claim(claim, claims, comparisons, repo):
     formal, numerical, biology = (claim[k] for k in ("formal", "numerical", "biology"))
     proof = status(formal["status"], ("proved", "open"))
@@ -274,6 +426,14 @@ def render_claim(claim, claims, comparisons, repo):
     parts += ["## Numerical comparison", f"**{tested}.** {numerical['result']}"]
     parts.extend(comparisons[i] for i in numerical["comparisons"])
     parts += ["## Biological evidence", f"**{empirical}.** {biology['observable']}"]
+    if pairs := biology.get("pairs"):
+        parts.append(
+            "\n".join(
+                f"- [{p['assumption']}](../WET_LAB_EVIDENCE.md#pair-{p['id']}) "
+                f"· {PAIR_OUTCOMES[p['outcome']]}"
+                for p in pairs
+            )
+        )
     if finding := biology.get("finding"):
         parts.append(finding)
     parts.append(f"**Unit** {biology['unit']}")
@@ -294,7 +454,7 @@ def live_inventory(lane):
         manifest = declarations.manifest()
     finally:
         sys.path.pop(0)
-    if manifest["kind"] != "cells.declarations@2":
+    if manifest["kind"] != "cells.declarations@3":
         raise ValueError(f"unsupported engine declarations format {manifest['kind']!r}")
     return {
         kind: {
@@ -306,7 +466,13 @@ def live_inventory(lane):
     }
 
 
-def coverage(inventory, claims, comparisons, repo, category_sections):
+def coverage(inventory, claims, comparisons, repo, category_sections, wet_lab_summary):
+    # The comparison names its original declarations; join them to today's inventory.
+    sys.path.insert(0, str(LANE.parent))
+    try:
+        from validation.id_table import translate
+    finally:
+        sys.path.pop(0)
     direct, exercised = {}, {}
     for claim in claims.values():
         for piece in claim["formal"].get("about", []):
@@ -319,7 +485,7 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
             continue
         for kind in ("law", "operator"):
             for spelling in record.get(kind + "s", []):
-                piece = spelling if "." in spelling else "cells." + spelling
+                piece = translate(spelling if "." in spelling else "cells." + spelling)
                 if any(piece in rows for other, rows in inventory.items() if other != kind):
                     raise ValueError(f"{key}: {piece} is classified under the wrong registry type")
                 link = pinned_link(key, record["record"], record["record_revision"])
@@ -339,6 +505,7 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
         "Partial evidence covers a measured part of a claim. A result marked not assessable "
         "has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · "
         "[Registered laws](#registered-laws) · [Registered operators](#registered-operators)",
+        wet_lab_summary,
         "## Failing numerical checks",
         "\n".join(failing) or "The register lists zero numerical failures.",
         *category_sections,
@@ -398,6 +565,7 @@ def render(lane, live_registry=False):
     outputs = {}
     if live_registry:
         outputs[inventory_path] = json.dumps(inventory, indent=2, sort_keys=True) + "\n"
+    outputs[lane / "WET_LAB_EVIDENCE.md"], wet_lab_summary = wet_lab_register(claims)
     for key, claim in claims.items():
         try:
             note, row = render_claim(claim, claims, comparisons, lane.parent)
@@ -468,16 +636,15 @@ def render(lane, live_registry=False):
                 )
             )
     outputs[lane / "COVERAGE.md"], registry_summary = coverage(
-        inventory, claims, register["comparisons"], lane.parent, sections
+        inventory, claims, register["comparisons"], lane.parent, sections, wet_lab_summary
     )
     readme = lane / "README.md"
     before, start, rest = readme.read_text(encoding="utf-8").partition(BEGIN)
     body, end, after = rest.partition(END)
     if not start or not end or BEGIN in rest or "<!-- generated:" in body:
         raise ValueError("expected one claims-index block in the Lean README")
-    outputs[readme] = (
-        before + "\n\n".join([BEGIN, registry_summary, "\n".join(overview), END]) + after
-    )
+    index = "\n\n".join([BEGIN, registry_summary, "\n".join(overview), wet_lab_summary, END])
+    outputs[readme] = before + index + after
     return outputs
 
 
@@ -493,9 +660,11 @@ def generate(lane, check=False, live_registry=False):
         old = path.read_text(encoding="utf-8") if path.exists() else None
         if old is not None:
             marker = COVERAGE_NOTE if path == lane / "COVERAGE.md" else NOTE
-            if (path.parent == directory or path == lane / "COVERAGE.md") and not old.startswith(
-                marker + "\n"
-            ):
+            generated_page = path.parent == directory or path.name in {
+                "COVERAGE.md",
+                "WET_LAB_EVIDENCE.md",
+            }
+            if generated_page and not old.startswith(marker + "\n"):
                 raise ValueError(f"handwritten file occupies generated path {path.name}")
         if old != content:
             changed.append(path)

@@ -1,0 +1,433 @@
+{
+ "execution": {
+  "backend": "cpu",
+  "capacity": 1,
+  "channel_capacity": 0,
+  "dt": 0.5,
+  "edge_capacity": 0,
+  "extracellular_capacity": 1,
+  "face_capacity": 1,
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "jit": true,
+  "material_balance_atol_fmol": {
+   "ADP": 1e-16,
+   "ATP": 1e-16,
+   "K": 1e-10,
+   "M": 1e-16,
+   "N": 1e-16,
+   "Pi": 1e-16,
+   "R": 1e-16,
+   "W": 1e-20,
+   "X": 1e-20,
+   "Y": 1e-10
+  },
+  "max_steps": 1208,
+  "max_trace_bytes": 2147483648,
+  "membrane_capacity": 1,
+  "precision": "float64",
+  "solver": "imex_ars222_face_electromigration@1"
+ },
+ "experiment": {
+  "calcium_pump_controls": [],
+  "channel_controls": [],
+  "end_time": 600.0,
+  "junction_controls": [],
+  "membrane_controls": [
+   {
+    "membrane_id": "patch_0",
+    "schedule": [
+     {
+      "availability": 1.0,
+      "time": 0.0
+     }
+    ]
+   }
+  ],
+  "observation_times": [
+   0.0,
+   30.0,
+   60.0,
+   90.0,
+   120.0,
+   150.0,
+   180.0,
+   210.0,
+   240.0,
+   270.0,
+   300.0,
+   330.0,
+   360.0,
+   390.0,
+   420.0,
+   450.0,
+   480.0,
+   510.0,
+   540.0,
+   570.0,
+   600.0
+  ],
+  "polymerisation_controls": [
+   {
+    "route_id": "tx",
+    "schedule": [
+     {
+      "time": 0.0,
+      "value": 2500000.0
+     }
+    ]
+   },
+   {
+    "route_id": "deg_R",
+    "schedule": [
+     {
+      "time": 0.0,
+      "value": 0.003
+     }
+    ]
+   },
+   {
+    "route_id": "recharge",
+    "schedule": [
+     {
+      "time": 0.0,
+      "value": 0.01
+     }
+    ]
+   }
+  ],
+  "pump_controls": [],
+  "reaction_controls": [
+   {
+    "reaction_id": "spend_N",
+    "schedule": [
+     {
+      "multiplier": 1.0,
+      "time": 0.0
+     }
+    ],
+    "site": null
+   }
+  ]
+ },
+ "model": {
+  "cells": [
+   {
+    "fixed_charge_equivalent_fmol": 0.0,
+    "id": "cell_0",
+    "initial_amount_fmol": {
+     "ADP": 0.5,
+     "ATP": 5.0,
+     "K": 140.0,
+     "M": 0.05,
+     "N": 5.0,
+     "Pi": 5.0,
+     "R": 1e-12,
+     "W": 1e-06,
+     "X": 5.0,
+     "Y": 140.0
+    },
+    "initial_charge_C": 0.0,
+    "volume_pL": 1.0
+   }
+  ],
+  "channels": [],
+  "closure": {
+   "gauge_reference": null,
+   "law": "resolved_capacitor_components_current_continuity@1"
+  },
+  "extracellular": [
+   {
+    "boundary_potential_V": 0.0,
+    "fixed_charge_equivalent_fmol": 0.0,
+    "id": "bath_0",
+    "initial_amount_fmol": {
+     "ADP": 1e-15,
+     "ATP": 1e-15,
+     "K": 140.0,
+     "M": 1e-15,
+     "N": 1e-15,
+     "Pi": 1e-15,
+     "R": 1e-15,
+     "W": 1e-09,
+     "X": 1e-09,
+     "Y": 140.0
+    },
+    "initial_charge_C": 0.0,
+    "reservoir": true,
+    "volume_pL": 1.0
+   }
+  ],
+  "faces": [],
+  "id": "resolved_pump_composite@1",
+  "inner_model": "resolved_pump_tissue@3",
+  "junctions": [],
+  "membranes": [
+   {
+    "area_m2": 1e-10,
+    "calcium_pump": null,
+    "capacitance_F": 1e-12,
+    "id": "patch_0",
+    "inside": "cell_0",
+    "law": "constant_field@1",
+    "outside": "bath_0",
+    "permeability_m_per_s": {
+     "ADP": 0.0,
+     "ATP": 0.0,
+     "K": 0.0,
+     "M": 0.0,
+     "N": 0.0,
+     "Pi": 0.0,
+     "R": 0.0,
+     "W": 0.0,
+     "X": 0.0,
+     "Y": 0.0
+    },
+    "pump": null
+   }
+  ],
+  "moieties": [
+   {
+    "id": "adenine",
+    "weights": {
+     "ADP": 1,
+     "ATP": 1
+    }
+   },
+   {
+    "id": "phosphorus",
+    "weights": {
+     "ADP": 2,
+     "ATP": 3,
+     "M": 1,
+     "N": 3,
+     "Pi": 1,
+     "R": 1200,
+     "W": 3
+    }
+   },
+   {
+    "id": "nucleoside",
+    "weights": {
+     "M": 1,
+     "N": 1,
+     "R": 1200,
+     "W": 1
+    }
+   }
+  ],
+  "operators": [
+   {
+    "chains": [
+     {
+      "draws": {
+       "N": 1
+      },
+      "id": "tx",
+      "pool": "pol",
+      "product": "R",
+      "releases": {
+       "Pi": 2
+      },
+      "residues": 1200,
+      "saturation_mM": {
+       "N": 0.02
+      },
+      "speed_per_s": 50.0,
+      "stages": 8,
+      "template": {
+       "copies": 10
+      }
+     }
+    ],
+    "degradations": [
+     {
+      "cell": "cell_0",
+      "id": "deg_R",
+      "monomers": {
+       "M": 1
+      },
+      "polymer": "R",
+      "residues": 1200,
+      "standard_free_energy": {
+       "basis": "temperature_independent",
+       "dG_RT_offset": 0.0,
+       "dG_kJ_mol": -26610.24
+      }
+     }
+    ],
+    "law": "templated_polymerisation@1",
+    "pools": [
+     {
+      "cell": "cell_0",
+      "id": "pol",
+      "machines": 100.0
+     }
+    ],
+    "species": [
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "N",
+      "standard_mu_RT": 24.8672029410015
+     },
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "M",
+      "standard_mu_RT": 0.0
+     },
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "ATP",
+      "standard_mu_RT": 12.409206388416035
+     },
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "ADP",
+      "standard_mu_RT": 0.0
+     },
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "Pi",
+      "standard_mu_RT": 0.0
+     },
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "R",
+      "standard_mu_RT": 10319.123756415122
+     }
+    ],
+    "standard_concentration_mM": 1000.0,
+    "transfers": [
+     {
+      "cell": "cell_0",
+      "id": "recharge",
+      "saturation_mM": {
+       "ATP": 0.1,
+       "M": 0.1
+      },
+      "share": 2,
+      "standard_free_energy": {
+       "dG_RT": 0.048790164169432
+      },
+      "stoichiometry": {
+       "ADP": 2,
+       "ATP": -2,
+       "M": -1,
+       "N": 1
+      }
+     }
+    ]
+   },
+   {
+    "law": "local_species_reactions@1",
+    "reactions": [
+     {
+      "factors": [],
+      "id": "spend_N",
+      "law": "mass_action",
+      "products": {
+       "W": 1
+      },
+      "rate_constant": 0.0001,
+      "reactants": {
+       "N": 1,
+       "X": 1
+      },
+      "sites": {
+       "cells": [
+        "cell_0"
+       ]
+      }
+     }
+    ],
+    "species": [
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "N",
+      "moieties": {
+       "n": 1
+      },
+      "standard_mu_RT": 17.959447662019365
+     },
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "X",
+      "moieties": {
+       "x": 1
+      },
+      "standard_mu_RT": 0.0
+     },
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "W",
+      "moieties": {
+       "n": 1,
+       "x": 1
+      },
+      "standard_mu_RT": 17.959447662019365
+     }
+    ],
+    "standard_concentration_mM": 1.0
+   }
+  ],
+  "species": [
+   {
+    "id": "K",
+    "valence": 1
+   },
+   {
+    "id": "Y",
+    "valence": -1
+   },
+   {
+    "id": "M",
+    "standard_mu_RT": 0.0,
+    "valence": 0
+   },
+   {
+    "id": "ATP",
+    "standard_mu_RT": 12.409206388416035,
+    "valence": 0
+   },
+   {
+    "id": "ADP",
+    "standard_mu_RT": 0.0,
+    "valence": 0
+   },
+   {
+    "id": "Pi",
+    "standard_mu_RT": 0.0,
+    "valence": 0
+   },
+   {
+    "id": "N",
+    "standard_mu_RT": 24.8672029410015,
+    "valence": 0
+   },
+   {
+    "id": "R",
+    "standard_mu_RT": 10319.123756415122,
+    "valence": 0
+   },
+   {
+    "id": "X",
+    "valence": 0
+   },
+   {
+    "id": "W",
+    "valence": 0
+   }
+  ],
+  "standard_concentration_mM": 1000.0,
+  "temperature_K": 310.15
+ },
+ "schema_version": 1
+}

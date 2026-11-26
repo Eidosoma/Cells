@@ -29,11 +29,12 @@ import jax.numpy as jnp
 import numpy as np
 
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
+from cells.numerics import sparse_cholesky as sparse
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import logmean, scatter
 
-EULER_ID = "imex_euler_face_electromigration@1"
-ARS222_ID = "imex_ars222_face_electromigration@1"
+EULER_ID = "cells.solver.imex_euler_face_electromigration@1"
+ARS222_ID = "cells.solver.imex_ars222_face_electromigration@1"
 # N2 (FR-8 rung 1, D235): ARS(2,2,2) with each membrane's and junction's slope conductance in the
 # operator beside the faces', frozen for the step, and each junction gate advanced by its
 # exponential update at the stages, as the channel gates are ((a)), so no junction-gate step bound
@@ -41,7 +42,7 @@ ARS222_ID = "imex_ars222_face_electromigration@1"
 # wherever the ionic step is @3's (water@1 and the composite too). The development ID without
 # (a), imex_ars222_implicit_conductances_n2_alone@0, ran only from frozen snapshots and never lands
 # (RUNG1 §6, §10.20).
-IMPLICIT_CONDUCTANCES_ID = "imex_ars222_implicit_conductances@1"
+IMPLICIT_CONDUCTANCES_ID = "cells.solver.imex_ars222_implicit_conductances@1"
 IMPLICIT_CONDUCTANCE_IDS = (IMPLICIT_CONDUCTANCES_ID,)
 _GAMMA = 1.0 - 1.0 / math.sqrt(2.0)
 _DELTA = 1.0 - 1.0 / (2.0 * _GAMMA)
@@ -106,6 +107,19 @@ class Operator(NamedTuple):
     free: object
 
 
+class SparseOperator(NamedTuple):
+    """Operator's sparse form (surface_field.SPARSE_SOLVER_ID): the same quantities on the bound
+    patterns, with the plans its solve and products run on."""
+
+    factor: object  # The reduced matrix's factor on its pattern (sparse_cholesky's storage).
+    scale: object  # Symmetric diagonal scaling of free rows/columns.
+    matrix: object  # Unreduced C + a dt L on its pattern (its ProductPlan's order), for residuals.
+    held: object  # Clamp potentials (boundary at clamps, zero elsewhere).
+    free: object
+    product: object  # sparse_cholesky.ProductPlan of the unreduced pattern.
+    solve: object  # sparse_cholesky.SolvePlan of the reduced matrix.
+
+
 def face_weights(co, s, *, xp=jnp):
     """W [species, face], fmol/s per unit dimensionless driving force, and ln(a/b).
 
@@ -137,6 +151,23 @@ def face_laplacian(weight, s, *, xp=jnp):
         - scatter(conductance, zero, (a, b), xp=xp)
         - scatter(conductance, zero, (b, a), xp=xp)
     )
+
+
+def laplacian_values(weight, s, p, *, xp=jnp):
+    """face_laplacian's values on a SparseLayout's operator pattern (S, its ProductPlan's order):
+    each face's conductance, as face_laplacian computes it, summed into its four entries in the
+    layout's fixed order (surface_field._bind_sparse)."""
+    conductance = CHARGE_PER_FMOL * F / (R * s.temperature) * xp.sum(s.valence**2 * weight, axis=0)
+    terms = p.operator_laplacian_sign * conductance[p.operator_laplacian_face]
+    return sparse.fold(terms, p.operator_laplacian_pairs, p.operator_laplacian_out, xp=xp)
+
+
+def operator_laplacian(weight, s, p, *, xp=jnp):
+    """The face Laplacian in the form p's factor_operator takes: face_laplacian's dense matrix, or a
+    SparseLayout's values on its operator pattern (laplacian_values)."""
+    if isinstance(p, field.SparseLayout):
+        return laplacian_values(weight, s, p, xp=xp)
+    return face_laplacian(weight, s, xp=xp)
 
 
 def forms_face_weights(left, right, forms, *, xp=jnp):
@@ -174,7 +205,11 @@ def forms_face_laplacian(weight, temperature, size, offset, forms, *, xp=jnp):
 
 
 def factor_operator(coefficient, laplacian, boundary_V, p, *, xp=jnp):
-    """Factor (C + coefficient L) on free nodes; clamps are reservoirs or the gauge."""
+    """Factor (C + coefficient L) on free nodes; clamps are reservoirs or the gauge. A SparseLayout
+    takes L as its values on the operator pattern (operator_laplacian), and gives a
+    SparseOperator."""
+    if isinstance(p, field.SparseLayout):
+        return _factor_sparse(coefficient, laplacian, boundary_V, p, xp=xp)
     s = p.surface
     n = s.cell_active.size
     clamp = xp.concatenate((xp.zeros(n, dtype=bool), s.reservoir | p.gauge_mask))
@@ -190,9 +225,54 @@ def factor_operator(coefficient, laplacian, boundary_V, p, *, xp=jnp):
     return Operator(factor, scale, matrix, held, free), valid
 
 
+def _factor_sparse(coefficient, laplacian, boundary_V, p, *, xp):
+    """factor_operator on a SparseLayout: the dense path's operations on the bound patterns, entry
+    by entry. C + coefficient L on the operator pattern; the Jacobi scaling from its diagonal on the
+    free nodes; each reduced entry (M_ij s_i) s_j, symmetrized as the dense Cholesky symmetrizes its
+    input ((A + A^T) / 2, which leaves a diagonal entry exactly), and 1 on the held diagonal; then
+    the sparse factor. A reduced entry is zero off the free nodes in both paths, and an entry of M
+    is never -0.0, so the masks' and the held diagonal's additions of +0.0 are left out."""
+    s = p.surface
+    n = s.cell_active.size
+    clamp = xp.concatenate((xp.zeros(n, dtype=bool), s.reservoir | p.gauge_mask))
+    free = p.active & ~clamp
+    held = xp.where(clamp, xp.concatenate((xp.zeros(n), boundary_V)), 0.0)
+    matrix = p.operator_capacitor_values + coefficient * laplacian
+    product = field.operator_product_plan(p)
+    diagonal = xp.where(free, matrix[product.diagonal], 1.0)
+    scale = 1.0 / xp.sqrt(xp.where(diagonal > 0, diagonal, 1.0))
+    entry = p.operator_assembly_entry
+    value = matrix[entry]
+    row, column = scale[product.row[entry]], scale[product.column[entry]]
+    reduced = (value * row * column + value * column * row) / 2
+    plan = field.operator_factor_plan(p)
+    values = xp.zeros(plan.column.shape[0], dtype=matrix.dtype)
+    if xp is np:
+        values[p.operator_assembly_position] = reduced
+        values[p.operator_assembly_ones] = 1.0
+    else:
+        values = values.at[p.operator_assembly_position].set(reduced)
+        values = values.at[p.operator_assembly_ones].set(1.0)
+    factor = sparse.factor(values, plan, xp=xp)
+    valid = xp.all(diagonal > 0) & sparse.finite(factor, xp=xp)
+    solve = field.operator_solve_plan(p)
+    return SparseOperator(factor, scale, matrix, held, free, product, solve), valid
+
+
+def operator_product(operator, x, *, xp=jnp):
+    """(C + a L) x with an Operator's unreduced matrix, or a SparseOperator's on its pattern."""
+    if isinstance(operator, SparseOperator):
+        return sparse.product(operator.matrix, x, operator.product, xp=xp)
+    return operator.matrix @ x
+
+
 def solve_operator(charge, operator, *, xp=jnp):
     """Stage potentials and their charge residual (C + aL) phi - q on free nodes."""
     o = operator
+    if isinstance(o, SparseOperator):
+        rhs = xp.where(o.free, (charge - operator_product(o, o.held, xp=xp)) * o.scale, 0.0)
+        phi = xp.where(o.free, sparse.solve(o.factor, rhs, o.solve, xp=xp) * o.scale, o.held)
+        return phi, xp.where(o.free, operator_product(o, phi, xp=xp) - charge, 0.0)
     rhs = xp.where(o.free, (charge - o.matrix @ o.held) * o.scale, 0.0)
     phi = xp.where(o.free, field.cholesky_solve(o.factor, rhs, xp=xp) * o.scale, o.held)
     return phi, xp.where(o.free, o.matrix @ phi - charge, 0.0)

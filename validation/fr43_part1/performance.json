@@ -1,0 +1,1079 @@
+{
+ "declared_accuracy": 2e-05,
+ "design_cpu": [
+  {
+   "arm": "scan",
+   "compile_seconds": 19.73036763095297,
+   "device": "cpu:0",
+   "device_peak_mib": null,
+   "error_over_largest": 1.628775855161413e-05,
+   "host_check_seconds": 0.8642622410552576,
+   "ms_per_step": 0.24520671751815826,
+   "parse_seconds": 0.8245046619558707,
+   "peak_rss_mib": 837.1875,
+   "peak_rss_mib_at_end": 837.1875,
+   "plant_over_largest": 0.00021606878826407883,
+   "platform": "cpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/v2/run-16-scan.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 16,
+   "seconds_per_simulated_second": 0.04904134350363165,
+   "steps": 400
+  },
+  {
+   "arm": "unrolled",
+   "compile_seconds": 20.400928562972695,
+   "device": "cpu:0",
+   "device_peak_mib": null,
+   "error_over_largest": 1.628775855161413e-05,
+   "host_check_seconds": 0.8682893309742212,
+   "ms_per_step": 0.259026910061948,
+   "parse_seconds": 1.1317823070567101,
+   "peak_rss_mib": 834.76171875,
+   "peak_rss_mib_at_end": 834.76171875,
+   "plant_over_largest": 0.00021606878826407883,
+   "platform": "cpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/v2/run-16-unrolled.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 16,
+   "seconds_per_simulated_second": 0.0518053820123896,
+   "steps": 400
+  },
+  {
+   "arm": "scan",
+   "compile_seconds": 20.1556667300174,
+   "device": "cpu:0",
+   "device_peak_mib": null,
+   "error_over_largest": 1.628775798770509e-05,
+   "host_check_seconds": 0.9270641780458391,
+   "ms_per_step": 0.4649661251460202,
+   "parse_seconds": 0.8399735810235143,
+   "peak_rss_mib": 867.0546875,
+   "peak_rss_mib_at_end": 867.0546875,
+   "plant_over_largest": 0.0002522837945077998,
+   "platform": "cpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/v2/run-32-scan.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 32,
+   "seconds_per_simulated_second": 0.09299322502920404,
+   "steps": 400
+  },
+  {
+   "arm": "unrolled",
+   "compile_seconds": 20.349054930964485,
+   "device": "cpu:0",
+   "device_peak_mib": null,
+   "error_over_largest": 1.628775798770509e-05,
+   "host_check_seconds": 0.9573796739568934,
+   "ms_per_step": 0.4498772823717445,
+   "parse_seconds": 0.8946876699337736,
+   "peak_rss_mib": 851.8515625,
+   "peak_rss_mib_at_end": 851.8515625,
+   "plant_over_largest": 0.0002522837945077998,
+   "platform": "cpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/v2/run-32-unrolled.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 32,
+   "seconds_per_simulated_second": 0.0899754564743489,
+   "steps": 400
+  },
+  {
+   "arm": "scan",
+   "compile_seconds": 23.113671549013816,
+   "device": "cpu:0",
+   "device_peak_mib": null,
+   "error_over_largest": 1.628775798770509e-05,
+   "host_check_seconds": 1.907943150959909,
+   "ms_per_step": 16.360723774996586,
+   "parse_seconds": 0.9495484699727967,
+   "peak_rss_mib": 934.8359375,
+   "peak_rss_mib_at_end": 937.3046875,
+   "plant_over_largest": 0.00018593526174703293,
+   "platform": "cpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/v2/run-256-scan.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 256,
+   "seconds_per_simulated_second": 3.2721447549993172,
+   "steps": 400
+  },
+  {
+   "arm": "unrolled",
+   "compile_seconds": 39.11634102696553,
+   "device": "cpu:0",
+   "device_peak_mib": null,
+   "error_over_largest": 1.628775798770509e-05,
+   "host_check_seconds": 1.4717814050382003,
+   "ms_per_step": 17.33471541228937,
+   "parse_seconds": 0.956264859996736,
+   "peak_rss_mib": 1128.25,
+   "peak_rss_mib_at_end": 1129.25,
+   "plant_over_largest": 0.00018593526174703293,
+   "platform": "cpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/v2/run-256-unrolled.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 256,
+   "seconds_per_simulated_second": 3.466943082457874,
+   "steps": 400
+  },
+  {
+   "arm": "scan",
+   "compile_seconds": 42.235332101001404,
+   "device": "cpu:0",
+   "device_peak_mib": null,
+   "error_over_largest": 1.628775798770509e-05,
+   "host_check_seconds": 4.025517984060571,
+   "ms_per_step": 430.85429160739295,
+   "parse_seconds": 1.721281204954721,
+   "peak_rss_mib": 1737.65234375,
+   "peak_rss_mib_at_end": 1737.65234375,
+   "plant_over_largest": 0.0002733455399494951,
+   "platform": "cpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/v2/run-1024-scan.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 1024,
+   "seconds_per_simulated_second": 86.17085832147859,
+   "steps": 400
+  },
+  {
+   "arm": "unrolled",
+   "compile_seconds": 213.88384232402314,
+   "device": "cpu:0",
+   "device_peak_mib": null,
+   "error_over_largest": 1.628775798770509e-05,
+   "host_check_seconds": 3.264925491064787,
+   "ms_per_step": 436.3542512175627,
+   "parse_seconds": 1.8196361369919032,
+   "peak_rss_mib": 4014.6484375,
+   "peak_rss_mib_at_end": 4014.6484375,
+   "plant_over_largest": 0.0002733455399494951,
+   "platform": "cpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/v2/run-1024-unrolled.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 1024,
+   "seconds_per_simulated_second": 87.27085024351254,
+   "steps": 400
+  }
+ ],
+ "design_cpu_label": "The design probe's CPU records (the note's sections 1.2 and 1.4): the design snapshot 92e18df4 with the species cap raised in its process only, before part 1 landed. Its unrolled arm folds every species sum unrolled, which the landed fold's gate keeps only up to 16 terms; its scan arm rebinds every species sum to the scan, which the gate takes only above 16 terms. So 16 rows compare with the unrolled arm, and 32, 256 and 1,024 rows with the scan arm.",
+ "design_gpu": [
+  {
+   "arm": "unrolled",
+   "compile_seconds": 49.66471967101097,
+   "device": "cuda:0",
+   "device_peak_mib": 80.0771484375,
+   "error_over_largest": 1.628775855161413e-05,
+   "host_check_seconds": 2.6856561999302357,
+   "ms_per_step": 1.292953719967045,
+   "parse_seconds": 2.999650856014341,
+   "peak_rss_mib": 1090.1328125,
+   "peak_rss_mib_at_end": 1090.90625,
+   "plant_over_largest": 0.00021606878826407883,
+   "platform": "gpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/gpu/run-16-unrolled.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 16,
+   "seconds_per_simulated_second": 0.258590743993409,
+   "steps": 400
+  },
+  {
+   "arm": "scan",
+   "compile_seconds": 98.21986573305912,
+   "device": "cuda:0",
+   "device_peak_mib": 99.764892578125,
+   "error_over_largest": 1.628775798758118e-05,
+   "host_check_seconds": 3.074035722995177,
+   "ms_per_step": 24.04434116993798,
+   "parse_seconds": 3.41358740394935,
+   "peak_rss_mib": 1400.09375,
+   "peak_rss_mib_at_end": 1407.8984375,
+   "plant_over_largest": 0.00018593526174703293,
+   "platform": "gpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/gpu/run-256-scan.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 256,
+   "seconds_per_simulated_second": 4.808868233987596,
+   "steps": 400
+  },
+  {
+   "arm": "unrolled",
+   "compile_seconds": 352.18575404095463,
+   "device": "cuda:0",
+   "device_peak_mib": 99.764892578125,
+   "error_over_largest": 1.628775798758118e-05,
+   "host_check_seconds": 7.693957958021201,
+   "ms_per_step": 5.587586949986871,
+   "parse_seconds": 2.653291549999267,
+   "peak_rss_mib": 2864.5859375,
+   "peak_rss_mib_at_end": 2864.5859375,
+   "plant_over_largest": 0.00018593526174703293,
+   "platform": "gpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/gpu/run-256-unrolled.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 256,
+   "seconds_per_simulated_second": 1.1175173899973743,
+   "steps": 400
+  },
+  {
+   "arm": "scan",
+   "compile_seconds": 376.979006923968,
+   "device": "cuda:0",
+   "device_peak_mib": 124.47607421875,
+   "error_over_largest": 1.628775798758118e-05,
+   "host_check_seconds": 12.582300106994808,
+   "ms_per_step": 104.61040132766357,
+   "parse_seconds": 5.46206391195301,
+   "peak_rss_mib": 2848.1640625,
+   "peak_rss_mib_at_end": 2848.1640625,
+   "plant_over_largest": 0.0002733455399494951,
+   "platform": "gpu",
+   "precision": "float64",
+   "record": "/mnt/workspaces/Cells/fr43-20261123/out/gpu/run-1024-scan.json",
+   "revision": "92e18df4713e7c6db3ceaa221e4517afc1f73ab8",
+   "rows": 1024,
+   "seconds_per_simulated_second": 20.922080265532713,
+   "steps": 400
+  }
+ ],
+ "design_gpu_label": "The design probe's L4 column (the note's section 1.8), kept and not re-measured: the design snapshot 92e18df4 with the species cap raised in its process only, through the runner with every host check, on the NVIDIA L4 in float64, its host thread on a shared CPU. It was taken on the composite on a GPU, the path D336 found unqualified (the composite's device checks failed their GPU qualification, D330); the vector windows refuse it since D336 (execution/vector_windows.refuse_unqualified_gpu).",
+ "environment": {
+  "affinity": [
+   4
+  ],
+  "blas": [
+   {
+    "architecture": "SkylakeX",
+    "internal_api": "openblas",
+    "num_threads": 1,
+    "prefix": "libscipy_openblas",
+    "version": "0.3.34.106.0"
+   },
+   {
+    "architecture": "SkylakeX",
+    "internal_api": "openblas",
+    "num_threads": 1,
+    "prefix": "libscipy_openblas",
+    "version": "0.3.31.dev"
+   }
+  ],
+  "compilation_cache": {
+   "jax_compilation_cache_dir": null,
+   "jax_enable_compilation_cache": false
+  },
+  "cpu_count": 32,
+  "cpu_model": "Intel(R) Xeon(R) CPU @ 2.20GHz",
+  "device": "cpu:0",
+  "device_kind": "cpu",
+  "environ": {
+   "CUDA_VISIBLE_DEVICES": "",
+   "JAX_COMPILATION_CACHE_DIR": null,
+   "JAX_ENABLE_COMPILATION_CACHE": "false",
+   "JAX_ENABLE_X64": "1",
+   "JAX_PLATFORMS": "cpu",
+   "OPENBLAS_NUM_THREADS": "1",
+   "PYTHONPATH": "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/snapshot-4f4c4812/src",
+   "XLA_FLAGS": null
+  },
+  "platform": "cpu",
+  "precision": "float64",
+  "python": "3.13.5",
+  "python_executable": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+  "runtime": {
+   "cells_version": "0.16.0.dev0",
+   "machine": "x86_64",
+   "numerical_environment": {
+    "JAX_DISABLE_JIT": null,
+    "XLA_FLAGS": null
+   },
+   "packages": {
+    "jax": "0.11.1",
+    "jaxlib": "0.11.1",
+    "ml_dtypes": "0.6.0",
+    "numpy": "2.5.3",
+    "opt_einsum": "3.4.0",
+    "scipy": "1.18.1"
+   },
+   "platform": "Linux",
+   "python": "3.13.5"
+  }
+ },
+ "kind": "cells.fr43_chain_performance@1",
+ "models": {
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "inner_model": "resolved_pump_tissue@3",
+  "model": "resolved_pump_composite@1",
+  "operators": [
+   "local_species_reactions@1"
+  ],
+  "reaction_laws": [
+   "ideal_detailed_balance_mass_action@1"
+  ],
+  "solver": "imex_ars222_face_electromigration@1"
+ },
+ "sizes": [
+  {
+   "accuracy_met": true,
+   "build_seconds": {
+    "max": 0.002784429001621902,
+    "median": 0.002230720012448728,
+    "min": 0.0021992619149386883,
+    "values": [
+     0.002784429001621902,
+     0.0021992619149386883,
+     0.002230720012448728
+    ]
+   },
+   "chain_species": 13,
+   "commands": [
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "16",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-16-r1.json"
+    ],
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "16",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-16-r2.json"
+    ],
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "16",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-16-r3.json"
+    ]
+   ],
+   "compile_seconds": {
+    "max": 19.106640231097117,
+    "median": 18.408738187979907,
+    "min": 18.390242527937517,
+    "values": [
+     19.106640231097117,
+     18.408738187979907,
+     18.390242527937517
+    ]
+   },
+   "cpu_busy_during_run": [
+    {
+     "20": 0.214,
+     "21": 0.238,
+     "4": 1.0,
+     "5": 0.277
+    },
+    {
+     "20": 0.163,
+     "21": 0.232,
+     "4": 1.0,
+     "5": 0.23
+    },
+    {
+     "20": 0.083,
+     "21": 0.262,
+     "4": 1.0,
+     "5": 0.273
+    }
+   ],
+   "device": "cpu:0",
+   "error_over_largest": {
+    "max": 1.628775855161413e-05,
+    "median": 1.628775855161413e-05,
+    "min": 1.628775855161413e-05,
+    "values": [
+     1.628775855161413e-05,
+     1.628775855161413e-05,
+     1.628775855161413e-05
+    ]
+   },
+   "execute_seconds": {
+    "max": 0.14359686896204948,
+    "median": 0.09155181597452611,
+    "min": 0.09151835704687983,
+    "values": [
+     0.09155181597452611,
+     0.14359686896204948,
+     0.09151835704687983
+    ]
+   },
+   "heat_residual_relative": {
+    "max": 1.2124006625425389e-14,
+    "median": 1.2124006625425389e-14,
+    "min": 1.2124006625425389e-14,
+    "values": [
+     1.2124006625425389e-14,
+     1.2124006625425389e-14,
+     1.2124006625425389e-14
+    ]
+   },
+   "host_check_seconds": {
+    "max": 1.216481268987991,
+    "median": 1.1701705800369382,
+    "min": 0.8536714229267091,
+    "values": [
+     1.1701705800369382,
+     1.216481268987991,
+     0.8536714229267091
+    ]
+   },
+   "max_trace_bytes": 2147483648,
+   "ms_per_step": {
+    "max": 0.3589921724051237,
+    "median": 0.22887953993631527,
+    "min": 0.22879589261719957,
+    "values": [
+     0.22887953993631527,
+     0.3589921724051237,
+     0.22879589261719957
+    ]
+   },
+   "parse_seconds": {
+    "max": 1.8639422140549868,
+    "median": 1.7400046010734513,
+    "min": 1.6975961329881102,
+    "values": [
+     1.8639422140549868,
+     1.7400046010734513,
+     1.6975961329881102
+    ]
+   },
+   "peak_rss_mib": {
+    "max": 836.171875,
+    "median": 833.02734375,
+    "min": 827.17578125,
+    "values": [
+     833.02734375,
+     836.171875,
+     827.17578125
+    ]
+   },
+   "peak_rss_mib_at_end": {
+    "max": 836.171875,
+    "median": 833.02734375,
+    "min": 827.17578125,
+    "values": [
+     833.02734375,
+     836.171875,
+     827.17578125
+    ]
+   },
+   "plant_over_largest": {
+    "max": 0.00021606878826407883,
+    "median": 0.00021606878826407883,
+    "min": 0.00021606878826407883,
+    "values": [
+     0.00021606878826407883,
+     0.00021606878826407883,
+     0.00021606878826407883
+    ]
+   },
+   "precision": "float64",
+   "records": [
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-16-r1.json",
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-16-r2.json",
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-16-r3.json"
+   ],
+   "repeats": 3,
+   "routes": 12,
+   "rows": 16,
+   "seconds_per_simulated_second": {
+    "max": 0.07179843448102474,
+    "median": 0.045775907987263054,
+    "min": 0.045759178523439914,
+    "values": [
+     0.045775907987263054,
+     0.07179843448102474,
+     0.045759178523439914
+    ]
+   },
+   "trace_bytes_estimate": 4847584
+  },
+  {
+   "accuracy_met": true,
+   "build_seconds": {
+    "max": 0.006617464008741081,
+    "median": 0.005537763005122542,
+    "min": 0.005300868069753051,
+    "values": [
+     0.005537763005122542,
+     0.005300868069753051,
+     0.006617464008741081
+    ]
+   },
+   "chain_species": 29,
+   "commands": [
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "32",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-32-r1.json"
+    ],
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "32",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-32-r2.json"
+    ],
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "32",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-32-r3.json"
+    ]
+   ],
+   "compile_seconds": {
+    "max": 21.371372558991425,
+    "median": 20.974126243963838,
+    "min": 20.878063299925998,
+    "values": [
+     21.371372558991425,
+     20.878063299925998,
+     20.974126243963838
+    ]
+   },
+   "cpu_busy_during_run": [
+    {
+     "20": 0.189,
+     "21": 0.113,
+     "4": 1.0,
+     "5": 0.228
+    },
+    {
+     "20": 0.127,
+     "21": 0.389,
+     "4": 1.0,
+     "5": 0.233
+    },
+    {
+     "20": 0.129,
+     "21": 0.204,
+     "4": 1.0,
+     "5": 0.349
+    }
+   ],
+   "device": "cpu:0",
+   "error_over_largest": {
+    "max": 1.628775798770509e-05,
+    "median": 1.628775798770509e-05,
+    "min": 1.628775798770509e-05,
+    "values": [
+     1.628775798770509e-05,
+     1.628775798770509e-05,
+     1.628775798770509e-05
+    ]
+   },
+   "execute_seconds": {
+    "max": 0.2004786420147866,
+    "median": 0.19025588396470994,
+    "min": 0.18295419006608427,
+    "values": [
+     0.2004786420147866,
+     0.18295419006608427,
+     0.19025588396470994
+    ]
+   },
+   "heat_residual_relative": {
+    "max": 2.1003871704569296e-14,
+    "median": 2.1003871704569296e-14,
+    "min": 2.1003871704569296e-14,
+    "values": [
+     2.1003871704569296e-14,
+     2.1003871704569296e-14,
+     2.1003871704569296e-14
+    ]
+   },
+   "host_check_seconds": {
+    "max": 1.0881620200816542,
+    "median": 0.9412691759644076,
+    "min": 0.9392028070287779,
+    "values": [
+     1.0881620200816542,
+     0.9392028070287779,
+     0.9412691759644076
+    ]
+   },
+   "max_trace_bytes": 2147483648,
+   "ms_per_step": {
+    "max": 0.5011966050369665,
+    "median": 0.47563970991177484,
+    "min": 0.45738547516521066,
+    "values": [
+     0.5011966050369665,
+     0.45738547516521066,
+     0.47563970991177484
+    ]
+   },
+   "parse_seconds": {
+    "max": 1.8741347300820053,
+    "median": 1.8513339080382138,
+    "min": 1.7516335539985448,
+    "values": [
+     1.8513339080382138,
+     1.7516335539985448,
+     1.8741347300820053
+    ]
+   },
+   "peak_rss_mib": {
+    "max": 872.56640625,
+    "median": 866.25390625,
+    "min": 864.89453125,
+    "values": [
+     866.25390625,
+     864.89453125,
+     872.56640625
+    ]
+   },
+   "peak_rss_mib_at_end": {
+    "max": 872.56640625,
+    "median": 866.25390625,
+    "min": 864.89453125,
+    "values": [
+     866.25390625,
+     864.89453125,
+     872.56640625
+    ]
+   },
+   "plant_over_largest": {
+    "max": 0.0002522837945077998,
+    "median": 0.0002522837945077998,
+    "min": 0.0002522837945077998,
+    "values": [
+     0.0002522837945077998,
+     0.0002522837945077998,
+     0.0002522837945077998
+    ]
+   },
+   "precision": "float64",
+   "records": [
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-32-r1.json",
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-32-r2.json",
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-32-r3.json"
+   ],
+   "repeats": 3,
+   "routes": 28,
+   "rows": 32,
+   "seconds_per_simulated_second": {
+    "max": 0.1002393210073933,
+    "median": 0.09512794198235497,
+    "min": 0.09147709503304213,
+    "values": [
+     0.1002393210073933,
+     0.09147709503304213,
+     0.09512794198235497
+    ]
+   },
+   "trace_bytes_estimate": 9419232
+  },
+  {
+   "accuracy_met": true,
+   "build_seconds": {
+    "max": 0.18486180703621358,
+    "median": 0.18098433804698288,
+    "min": 0.17604096699506044,
+    "values": [
+     0.18486180703621358,
+     0.17604096699506044,
+     0.18098433804698288
+    ]
+   },
+   "chain_species": 253,
+   "commands": [
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "256",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-256-r1.json"
+    ],
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "256",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-256-r2.json"
+    ],
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "256",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-256-r3.json"
+    ]
+   ],
+   "compile_seconds": {
+    "max": 24.81614444195293,
+    "median": 24.30383265693672,
+    "min": 22.962070928071626,
+    "values": [
+     24.81614444195293,
+     24.30383265693672,
+     22.962070928071626
+    ]
+   },
+   "cpu_busy_during_run": [
+    {
+     "20": 0.174,
+     "21": 0.535,
+     "4": 1.0,
+     "5": 0.459
+    },
+    {
+     "20": 0.246,
+     "21": 0.418,
+     "4": 1.0,
+     "5": 0.396
+    },
+    {
+     "20": 0.066,
+     "21": 0.141,
+     "4": 1.0,
+     "5": 0.109
+    }
+   ],
+   "device": "cpu:0",
+   "error_over_largest": {
+    "max": 1.628775798770509e-05,
+    "median": 1.628775798770509e-05,
+    "min": 1.628775798770509e-05,
+    "values": [
+     1.628775798770509e-05,
+     1.628775798770509e-05,
+     1.628775798770509e-05
+    ]
+   },
+   "execute_seconds": {
+    "max": 7.2873019659891725,
+    "median": 6.604034816962667,
+    "min": 6.350245520006865,
+    "values": [
+     6.604034816962667,
+     7.2873019659891725,
+     6.350245520006865
+    ]
+   },
+   "heat_residual_relative": {
+    "max": 7.796747388627201e-14,
+    "median": 7.796747388627201e-14,
+    "min": 7.796747388627201e-14,
+    "values": [
+     7.796747388627201e-14,
+     7.796747388627201e-14,
+     7.796747388627201e-14
+    ]
+   },
+   "host_check_seconds": {
+    "max": 2.1640009350376204,
+    "median": 1.4157396990340203,
+    "min": 1.4009327529929578,
+    "values": [
+     1.4157396990340203,
+     2.1640009350376204,
+     1.4009327529929578
+    ]
+   },
+   "max_trace_bytes": 2147483648,
+   "ms_per_step": {
+    "max": 18.21825491497293,
+    "median": 16.510087042406667,
+    "min": 15.875613800017163,
+    "values": [
+     16.510087042406667,
+     18.21825491497293,
+     15.875613800017163
+    ]
+   },
+   "parse_seconds": {
+    "max": 2.651019325014204,
+    "median": 1.988261868013069,
+    "min": 1.97050588298589,
+    "values": [
+     2.651019325014204,
+     1.988261868013069,
+     1.97050588298589
+    ]
+   },
+   "peak_rss_mib": {
+    "max": 942.24609375,
+    "median": 938.87890625,
+    "min": 938.21875,
+    "values": [
+     938.21875,
+     942.24609375,
+     938.87890625
+    ]
+   },
+   "peak_rss_mib_at_end": {
+    "max": 944.5078125,
+    "median": 941.24609375,
+    "min": 940.48828125,
+    "values": [
+     940.48828125,
+     944.5078125,
+     941.24609375
+    ]
+   },
+   "plant_over_largest": {
+    "max": 0.00018593526174703293,
+    "median": 0.00018593526174703293,
+    "min": 0.00018593526174703293,
+    "values": [
+     0.00018593526174703293,
+     0.00018593526174703293,
+     0.00018593526174703293
+    ]
+   },
+   "precision": "float64",
+   "records": [
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-256-r1.json",
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-256-r2.json",
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-256-r3.json"
+   ],
+   "repeats": 3,
+   "routes": 252,
+   "rows": 256,
+   "seconds_per_simulated_second": {
+    "max": 3.6436509829945862,
+    "median": 3.3020174084813334,
+    "min": 3.1751227600034326,
+    "values": [
+     3.3020174084813334,
+     3.6436509829945862,
+     3.1751227600034326
+    ]
+   },
+   "trace_bytes_estimate": 94066144
+  },
+  {
+   "accuracy_met": true,
+   "build_seconds": {
+    "max": 2.6484399680048227,
+    "median": 2.6073727619368583,
+    "min": 2.4529608950251713,
+    "values": [
+     2.6073727619368583,
+     2.6484399680048227,
+     2.4529608950251713
+    ]
+   },
+   "chain_species": 1021,
+   "commands": [
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "1024",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-1024-r1.json"
+    ],
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "1024",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-1024-r2.json"
+    ],
+    [
+     "/mnt/workspaces/Cells/venv-cpu/bin/python",
+     "scripts/profile_species_chain.py",
+     "run",
+     "--rows",
+     "1024",
+     "--out",
+     "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-1024-r3.json"
+    ]
+   ],
+   "compile_seconds": {
+    "max": 47.11604581400752,
+    "median": 47.01291282300372,
+    "min": 44.08829742099624,
+    "values": [
+     47.01291282300372,
+     47.11604581400752,
+     44.08829742099624
+    ]
+   },
+   "cpu_busy_during_run": [
+    {
+     "20": 0.091,
+     "21": 0.254,
+     "4": 1.0,
+     "5": 0.317
+    },
+    {
+     "20": 0.204,
+     "21": 0.343,
+     "4": 1.0,
+     "5": 0.372
+    },
+    {
+     "20": 0.265,
+     "21": 0.321,
+     "4": 1.0,
+     "5": 0.343
+    }
+   ],
+   "device": "cpu:0",
+   "error_over_largest": {
+    "max": 1.628775798770509e-05,
+    "median": 1.628775798770509e-05,
+    "min": 1.628775798770509e-05,
+    "values": [
+     1.628775798770509e-05,
+     1.628775798770509e-05,
+     1.628775798770509e-05
+    ]
+   },
+   "execute_seconds": {
+    "max": 185.27619346010033,
+    "median": 182.11282693501562,
+    "min": 171.77067732601427,
+    "values": [
+     171.77067732601427,
+     182.11282693501562,
+     185.27619346010033
+    ]
+   },
+   "heat_residual_relative": {
+    "max": 1.9320347038330695e-13,
+    "median": 1.9320347038330695e-13,
+    "min": 1.9320347038330695e-13,
+    "values": [
+     1.9320347038330695e-13,
+     1.9320347038330695e-13,
+     1.9320347038330695e-13
+    ]
+   },
+   "host_check_seconds": {
+    "max": 4.346501260995865,
+    "median": 3.9299291770439595,
+    "min": 3.499138168990612,
+    "values": [
+     3.499138168990612,
+     3.9299291770439595,
+     4.346501260995865
+    ]
+   },
+   "max_trace_bytes": 2147483648,
+   "ms_per_step": {
+    "max": 463.1904836502508,
+    "median": 455.28206733753905,
+    "min": 429.42669331503566,
+    "values": [
+     429.42669331503566,
+     455.28206733753905,
+     463.1904836502508
+    ]
+   },
+   "parse_seconds": {
+    "max": 3.391401542001404,
+    "median": 2.824986466090195,
+    "min": 2.750971070025116,
+    "values": [
+     2.824986466090195,
+     3.391401542001404,
+     2.750971070025116
+    ]
+   },
+   "peak_rss_mib": {
+    "max": 1748.27734375,
+    "median": 1745.71484375,
+    "min": 1742.0234375,
+    "values": [
+     1748.27734375,
+     1745.71484375,
+     1742.0234375
+    ]
+   },
+   "peak_rss_mib_at_end": {
+    "max": 1748.27734375,
+    "median": 1745.71484375,
+    "min": 1742.0234375,
+    "values": [
+     1748.27734375,
+     1745.71484375,
+     1742.0234375
+    ]
+   },
+   "plant_over_largest": {
+    "max": 0.0002733455399494951,
+    "median": 0.0002733455399494951,
+    "min": 0.0002733455399494951,
+    "values": [
+     0.0002733455399494951,
+     0.0002733455399494951,
+     0.0002733455399494951
+    ]
+   },
+   "precision": "float64",
+   "records": [
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-1024-r1.json",
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-1024-r2.json",
+    "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/perf/out/run-1024-r3.json"
+   ],
+   "repeats": 3,
+   "routes": 1020,
+   "rows": 1024,
+   "seconds_per_simulated_second": {
+    "max": 92.63809673005017,
+    "median": 91.05641346750781,
+    "min": 85.88533866300713,
+    "values": [
+     85.88533866300713,
+     91.05641346750781,
+     92.63809673005017
+    ]
+   },
+   "trace_bytes_estimate": 676836832
+  }
+ ],
+ "source": {
+  "clean": true,
+  "git_revision": "4f4c48121ee0fc6b6f900c0c5a461347e13f9dbe",
+  "kind": "execution_snapshot",
+  "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "snapshot": "/mnt/workspaces/Cells/fr43-part1-gaps-20261124/snapshot-4f4c4812"
+ },
+ "world": {
+  "dt": 0.005,
+  "end": 2.0,
+  "every": 0.25,
+  "steps": 400
+ },
+ "written_utc": "2026-11-24T22:15:44Z"
+}

@@ -1,8 +1,10 @@
-"""Positive-domain BETSE 1.5 ER pump and instantaneous calcium release laws.
+"""The calcium pump's kernel from the cytosol into a store, on positive concentrations.
 
-The source pump transports one Ca per formal turnover and uses a numeric mM
-metabolic quotient. This identity deliberately does not imply a two-Ca SERCA
-cycle or proton exchange. Maintained ATP/ADP/Pi supply external chemical work.
+One calcium per formal turnover, with a numeric-mM metabolic quotient: BETSE v1.5.0's pumpCaER
+(betse/science/sim_toolbox.py; docs/ER_CALCIUM.md). It deliberately does not imply a two-calcium
+SERCA cycle or proton exchange. Maintained ATP, ADP and Pi supply external chemical work. The
+plasma membrane's pump evaluates it too (laws/reactions/plasma_calcium.py). The factor of a store's
+release is laws/reactions/hill_product_factor.py.
 """
 
 from typing import NamedTuple
@@ -11,9 +13,6 @@ import jax.numpy as jnp
 
 from cells.laws.electrochemistry import F, R
 
-PUMP_LAW = "er_calcium_pump_positive@1"
-RELEASE_LAW = "er_calcium_release@1"
-METABOLISM = "maintained_mM_quotient@1"
 MAX_AFFINITY_RT = 80.0
 
 
@@ -48,11 +47,3 @@ def pump_rates(cytosol_mM, er_mM, voltage, temperature, p, availability, *, xp=j
     )
     departure = xp.where(affinity >= 0, xp.expm1(-affinity), -xp.expm1(affinity))
     return xp.where(enabled, magnitude * departure, 0.0), energy, drive
-
-
-def release_open(ca_mM, activation_mM, activation_n, inhibition_mM, inhibition_n, *, xp=jnp):
-    log_ca = xp.log(ca_mM)
-    return xp.exp(
-        -xp.logaddexp(0.0, activation_n * (xp.log(activation_mM) - log_ca))
-        - xp.logaddexp(0.0, inhibition_n * (log_ca - xp.log(inhibition_mM)))
-    )

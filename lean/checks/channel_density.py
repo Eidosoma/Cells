@@ -52,7 +52,7 @@ def reporter_availability(density, half, maximum):
 def kv15_clamp(area_um2, density, availability):
     raw = chloride_world(patch=0.0)
     raw["model"]["membranes"][0]["area_m2"] = area_um2 * 1e-12
-    raw["model"]["channels"] = [channel("kv", 0, "kv1p5_mh@1", "K", 4e-9,
+    raw["model"]["channels"] = [channel("kv", 0, "cells.channel.kv1p5_mh@1", "K", 4e-9,
                                         density / REFERENCE_PER_UM2, [0.65, 0.8])]
     raw["experiment"]["channel_controls"] = [
         dict(channel_id="kv", schedule=[dict(time=0.0, availability=availability)])

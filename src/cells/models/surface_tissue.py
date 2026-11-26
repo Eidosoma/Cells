@@ -7,6 +7,7 @@ boundaries. No hidden field cache or charge projection enters a checkpoint.
 
 import math
 from dataclasses import make_dataclass, replace
+from fractions import Fraction
 from typing import NamedTuple
 
 import jax
@@ -42,6 +43,18 @@ STATE_AXES = {
     "electrode_work_pJ": ["extracellular_slot"],
 }
 STATE_TYPE = NamedTuple("SurfaceTissueState", [(k, object) for k in STATE_AXES])
+TISSUE_LAYOUT_FIELDS = (
+    "active",
+    "ids",
+    "volume",
+    "extracellular_volume",
+    "amount_reference",
+    "extracellular_amount_reference",
+    "initial_cell_charge_C",
+    "initial_outside_charge_C",
+    "boundary_V",
+    "initial_membrane_voltage_V",
+)
 LAYOUT_TYPE = NamedTuple(
     "SurfaceTissueLayout",
     [
@@ -49,16 +62,7 @@ LAYOUT_TYPE = NamedTuple(
         for k in (
             *surface.Layout._fields,
             *("field_" + k for k in field.Layout._fields if k != "surface"),
-            "active",
-            "ids",
-            "volume",
-            "extracellular_volume",
-            "amount_reference",
-            "extracellular_amount_reference",
-            "initial_cell_charge_C",
-            "initial_outside_charge_C",
-            "boundary_V",
-            "initial_membrane_voltage_V",
+            *TISSUE_LAYOUT_FIELDS,
         )
     ],
 )
@@ -71,6 +75,19 @@ FACTORED_LAYOUT_TYPE = NamedTuple(
 FLOOR_LAYOUT_TYPE = NamedTuple(
     "SurfaceTissueFloorLayout",
     [(k, object) for k in (*FACTORED_LAYOUT_TYPE._fields, "field_current_floor")],
+)
+# Only identities that declare field.SPARSE_SOLVER_ID bind this layout: the field's arrays are the
+# SparseLayout's, so it holds no n x n matrix. Its marker field is field_capacitor_values.
+SPARSE_LAYOUT_TYPE = NamedTuple(
+    "SurfaceTissueSparseLayout",
+    [
+        (k, object)
+        for k in (
+            *surface.Layout._fields,
+            *("field_" + k for k in field.SparseLayout._fields if k != "surface"),
+            *TISSUE_LAYOUT_FIELDS,
+        )
+    ],
 )
 
 
@@ -101,7 +118,9 @@ def working_size(spec):
 
 def field_layout(p):
     kind = (
-        field.FloorLayout
+        field.SparseLayout
+        if hasattr(p, "field_capacitor_values")
+        else field.FloorLayout
         if hasattr(p, "field_current_floor")
         else field.FactoredLayout
         if hasattr(p, "field_capacitor_factor")
@@ -174,10 +193,10 @@ def initial_values(spec):
     gauge = np.zeros(o, dtype=bool)
     if m.gauge_reference is not None:
         gauge[oids.index(m.gauge_reference)] = True
-    # Only an exact factored (version 2 or 3) declaration changes the binding;
+    # Only an exact factored (version 2 or 3) or sparse declaration changes the binding;
     # all others are version 1.
     solver = getattr(x, "field_solver", None)
-    if solver not in (field.FACTORED_SOLVER_ID, field.FLOOR_SOLVER_ID):
+    if solver not in (field.FACTORED_SOLVER_ID, field.FLOOR_SOLVER_ID, field.SPARSE_SOLVER_ID):
         solver = field.SOLVER_ID
     bound = field.bind(surface.Layout(**v), gauge, solver=solver)
     v.update({"field_" + k: value for k, value in bound._asdict().items() if k != "surface"})
@@ -233,6 +252,7 @@ def initial_values(spec):
     kind = {
         field.FACTORED_SOLVER_ID: FACTORED_LAYOUT_TYPE,
         field.FLOOR_SOLVER_ID: FLOOR_LAYOUT_TYPE,
+        field.SPARSE_SOLVER_ID: SPARSE_LAYOUT_TYPE,
     }.get(solver, LAYOUT_TYPE)
     return state, kind(**v)
 
@@ -355,11 +375,12 @@ def capacitor_change(state, p, *, xp):
     charge_increment, which the field solve uses, is unchanged. NumPy sums axis 0 in the
     same order, except for a single column of 8 or more species. Exact on the CPU when
     valences have magnitude 0, 1, 2, 4 or 8, which makes z n exact; the kernels contract
-    it into the accumulate. The spec admits integers in [-8, 8], and every world in use has
-    0, ±1 or ±2. Also needed: the solve's zero boundary (one kernel contracts F q - C b),
-    and no held node coupled to three or more charged free nodes, whose node sum XLA could
-    also associate differently. Held baths in tissue worlds couple to many free nodes, so
-    their electrode ledgers still rest on the bound. Not claimed for GPUs.
+    it into the accumulate. The spec admits integers in [-8, 8]; the valences 0, ±1, ±2, ±4 and
+    ±8 are exact, so a row with ±3, ±5, ±6 or ±7 is outside the exactness claim (z n rounds,
+    and the kernels may contract it differently). Also needed: the solve's zero boundary (one
+    kernel contracts F q - C b), and no held node coupled to three or more charged free nodes,
+    whose node sum XLA could also associate differently. Held baths in tissue worlds couple to
+    many free nodes, so their electrode ledgers still rest on the bound. Not claimed for GPUs.
     """
     amount, outside = state.amount_increment, state.extracellular_amount_increment
     q = CHARGE_PER_FMOL * xp.concatenate(
@@ -369,7 +390,7 @@ def capacitor_change(state, p, *, xp):
     dv = xp.where(
         p.membrane_active, dp[p.membrane_cell] - dp[p.active.size + p.membrane_outside], 0.0
     )
-    return q, p.field_capacitor_matrix @ dp, dv
+    return q, field.capacitor_product(field_layout(p), dp, xp=xp), dv
 
 
 def domain_valid(state, p, active, *, xp=jnp):
@@ -418,15 +439,51 @@ def control_domain_valid(state, control, p, active, *, xp=jnp):
 domain_valid.with_control = control_domain_valid
 
 
+# A node's charge anchor agrees with its inventory and fixed background within this (C), or
+# beyond it within anchor_rounding_C (D333).
+ANCHOR_FLOOR_C = 1e-20
+
+
+def anchor_rounding_C(anchor_C, fixed_fmol, terms, charge_C):
+    """The rounding budget (C) of a node's charge anchor, exact: check_definition's bound above
+    ANCHOR_FLOOR_C (D333).
+
+    The anchor rule writes a node's fixed background as fl(fl(anchor / CHARGE_PER_FMOL) -
+    fsum(z n)) over its stored terms z n. check_definition reads back charge_C =
+    fl(CHARGE_PER_FMOL fsum(fixed, z n)) and the residual fl(charge_C - anchor). Each of the six
+    results is correctly rounded, so each lies within half its spacing of its exact value: the
+    quotient, fsum(z n), the background and the net sum in fmol (at CHARGE_PER_FMOL), then
+    charge_C and the residual in C. Their sum bounds the residual of every node the rule writes,
+    at any inventory, and a background whose charge is off by more than the larger of the floor
+    and the sum, plus the sum, is refused. It is summed in fractions, so the bound is closed.
+
+    The floor alone is finer than float64 at large inventories: from 2^19 fmol the background's
+    and the ionic sum's half spacings reach 1.12e-20 C, and XC0's balanced nodes of 1e6 to 1e10
+    fmol were refused (D332's C6). The budget is the independent Lean project's
+    (lean/claims/xc0-charge-anchor.md, merged at 29d69f1d), an exact-rational check of 24 November
+    2026. Its 17 controls, 15 balanced nodes and two backgrounds four spacings off, are rows of
+    tests/unit/test_component_net_charge.py.
+    """
+    stages_fmol = (
+        anchor_C / CHARGE_PER_FMOL,
+        math.fsum(terms),
+        fixed_fmol,
+        math.fsum((fixed_fmol, *terms)),
+    )
+    spacings_C = Fraction(CHARGE_PER_FMOL) * sum(map(Fraction, map(math.ulp, stages_fmol)))
+    return (spacings_C + Fraction(math.ulp(charge_C)) + Fraction(math.ulp(charge_C - anchor_C))) / 2
+
+
 def check_definition(spec):
     for c in (*spec.model.cells, *spec.model.extracellular):
-        q = CHARGE_PER_FMOL * math.fsum(
-            (
-                c.fixed_charge_equivalent_fmol,
-                *(z * a for z, a in zip(spec.model.valence, c.initial_amount_fmol, strict=True)),
-            )
-        )
-        if not math.isfinite(q) or abs(q - c.initial_charge_C) > 1e-20:
+        terms = [z * a for z, a in zip(spec.model.valence, c.initial_amount_fmol, strict=True)]
+        q = CHARGE_PER_FMOL * math.fsum((c.fixed_charge_equivalent_fmol, *terms))
+        residual = q - c.initial_charge_C
+        if not math.isfinite(q) or (
+            abs(residual) > ANCHOR_FLOOR_C
+            and Fraction(abs(residual))
+            > anchor_rounding_C(c.initial_charge_C, c.fixed_charge_equivalent_fmol, terms, q)
+        ):
             raise ConfigError(
                 "Initial inventory, fixed background and explicit charge anchor disagree"
             )
@@ -501,7 +558,8 @@ def balances(state, p, *, intracellular_energy_change_pJ=None):
         initial_q, np.r_[np.zeros(n), p.boundary_V], field_layout(p), xp=np
     )
     required = p.field_active & ~np.r_[np.zeros(n, dtype=bool), p.reservoir]
-    charge = np.where(required, p.field_capacitor_matrix @ base - initial_q + cap - q, 0.0)
+    image = field.capacitor_product(field_layout(p), base, xp=np)
+    charge = np.where(required, image - initial_q + cap - q, 0.0)
     electrode = state.electrode_charge_transferred_C - np.where(p.reservoir, cap[n:], 0.0)
     supply_charge = CHARGE_PER_FMOL * np.sum(p.valence * state.reservoir_supplied)
     global_charge = np.sum(state.electrode_charge_transferred_C) + supply_charge

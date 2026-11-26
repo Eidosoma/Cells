@@ -1,6 +1,6 @@
-"""Sixteen isolated CPU workers: full cohorts, scalar windows and cohort windows.
+"""Eight isolated CPU workers: full cohorts, scalar windows and cohort windows.
 
-Two ten-unit workloads, 4/16 worlds, full batch or 32/256-step cohort windows
+One ten-unit workload, 4/16 worlds, full batch or 32/256-step cohort windows
 and sequential scalar 256-step windows. Common declared budgets, three warm
 calls, fresh initial state, and an untimed exact full-trajectory digest pass.
 Never run alongside the verification suite; no speedup acceptance threshold.
@@ -31,6 +31,7 @@ from cells.records.io import load_snapshot, runtime_identity, source_hashes  # n
 from cells.records.window_io import write_windowed_run  # noqa: E402
 from scripts.profile_windows import definition as scalar_definition  # noqa: E402
 from scripts.profile_windows import stream_digest  # noqa: E402
+from scripts.profile_worlds import WORKLOADS  # noqa: E402
 from tests.batch_fixtures import definition  # noqa: E402
 
 POLICIES = (("full", 0), ("scalar", 256), ("cohort", 32), ("cohort", 256))
@@ -182,7 +183,7 @@ def worker(args):
 
 def preflight():
     result = {}
-    for name in ("graph32", "source_pair"):
+    for name in WORKLOADS:
         for count in (4, 16):
             spec = workload(name, count)
             result[f"{name}-{count}"] = {
@@ -204,7 +205,7 @@ def profile(output):
     write_json(output / "preflight.json", preflight())
     sources, runtime = source_hashes(), runtime_identity()
     records, comparisons = {}, {}
-    for name in ("graph32", "source_pair"):
+    for name in WORKLOADS:
         for count in (4, 16):
             outcomes = {}
             for mode, width in POLICIES:
@@ -274,7 +275,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=Path)
     parser.add_argument("--preflight-only", action="store_true")
     parser.add_argument("--worker", action="store_true")
-    parser.add_argument("--workload", choices=("graph32", "source_pair"))
+    parser.add_argument("--workload", choices=WORKLOADS)
     parser.add_argument("--worlds", type=int)
     parser.add_argument("--mode", choices=("full", "scalar", "cohort"))
     parser.add_argument("--width", type=int)

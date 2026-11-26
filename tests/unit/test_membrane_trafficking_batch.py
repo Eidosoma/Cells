@@ -1,4 +1,4 @@
-"""T7 of scheduled_membrane_trafficking@1 (FR-2 version 1), batches: a vmapped batch of three
+"""T7 of cells.operator.scheduled_membrane_trafficking@1 (FR-2 version 1), batches: a vmapped batch of three
 cycle worlds (retrieval at 0.05, 0.1 and 0.15 of the plasma area per ms) is bitwise against the
 same worlds in reversed order, and reproduces each world's own run to 1e-12 of each field's scale;
 the carriers' work, whose terms cancel, to 1e-14 of its terms' accumulated magnitude.

@@ -1,4 +1,4 @@
-"""junction_voltage_relaxation@1: a junction's voltage-gated conductance, the law and its
+"""cells.junction.junction_voltage_relaxation@1: a junction's voltage-gated conductance, the law and its
 declaration on @3.
 
 Continuous physical-time junction conductance from the BETSE v1.5.0 rate equations. The rate
@@ -7,7 +7,7 @@ g in [minimum, 1] relaxes at rates alpha (opening) and beta (closing) of the jun
 magnitude past its threshold; availability multiplies conductance without changing g. Native
 per-ion updates, stored-state blocking and class initialization belong to the separate
 validation compatibility adapter, not this physical law. No temperature scaling, connexin
-catalog or biological fit is implied. The junction law of resolved_pump_tissue@3
+catalog or biological fit is implied. The junction law of cells.model.resolved_pump_tissue@3
 (cells.junction_law@1), registered by the law registry's loader (docs/CORE_SEAMS_DESIGN.md
 §8.2). Moved from laws/junctions/junction_gate.py, which re-imports these names.
 """
@@ -18,7 +18,7 @@ import jax.numpy as jnp
 
 from cells.modules import JunctionLaw
 
-LAW_ID = "junction_voltage_relaxation@1"
+LAW_ID = "cells.junction.junction_voltage_relaxation@1"
 # Alias kept for importers that still use the earlier name; same law.
 RELAXATION_LAW_ID = LAW_ID
 MAX_ABS_VOLTAGE_V = 0.120
@@ -104,5 +104,7 @@ LAW = JunctionLaw(
     rhs,
     domain_valid,
     MAX_ABS_VOLTAGE_V,
-    host="cells.resolved_pump_tissue@3",
+    host="cells.model.resolved_pump_tissue@3",
+    test="tests/unit/test_junction_series_gates.py"
+    "::test_the_one_gate_law_meets_the_independent_decimals_and_each_plant_misses_them",
 )

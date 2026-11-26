@@ -1,6 +1,6 @@
-"""MG1 driver: passive 2-D apical vertex mechanics (apical_vertex_mechanics@1).
+"""MG1 driver: passive 2-D apical vertex mechanics (cells.model.apical_vertex_mechanics@1).
 
-Engine models: apical_vertex_mechanics@1 (dynamics), mechanical_equilibrium_analysis@1
+Engine models: cells.model.apical_vertex_mechanics@1 (dynamics), mechanical_equilibrium_analysis@1
 (minima, moduli, barriers) and junction_tension_inference@1. References: the
 analytic hexagonal-network values (mg1_theory.py), the independent numpy/scipy
 reference (mg1_reference.py, no Cells code) and tyssue 1.1.0 run out of process
@@ -47,7 +47,7 @@ from validation.morphogenesis import mg1_reference as ref
 from validation.morphogenesis import mg1_theory as theory
 from validation.morphogenesis.mg0a_gradient import _jsonable, evaluate
 
-MODEL_ID = "apical_vertex_mechanics@1"
+MODEL_ID = "cells.model.apical_vertex_mechanics@1"
 LAMBDA, GAMMA = 0.12, 0.04  # Farhadifar 2007 case I
 CASE_II = (0.0, 0.1)
 EULER_DT = 0.0625  # dt * rho = 0.79 for case I (rho 12.6); tyssue parity steps

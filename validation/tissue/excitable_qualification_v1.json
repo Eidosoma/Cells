@@ -1,12 +1,12 @@
 {
  "schema": "cells.excitable_protocol@1",
  "id": "excitable-generic-qualification-v1",
- "title": "Track E M2: the generic excitable cell (candidate A) on resolved_pump_tissue@3 against independent references: one cell, the passive cable, the propagated wave and the domain limits",
+ "title": "Track E M2: the generic excitable cell (candidate A) on cells.model.resolved_pump_tissue@3 against independent references: one cell, the passive cable, the propagated wave and the domain limits",
  "status": "PROPOSED (drafted 15 November 2026 by Track E during M1, from M1's development runs and the independent references' results; not registered; no judged run before the lead registers it; tolerances below carry their bases, and the development runs named under development_runs_needed decide whether the engine meets them before registration)",
  "rung": "M2 (D170: M1 and M2 on @3)",
- "question": "Does resolved_pump_tissue@3, running the generic cell A (c_m 0.01 F/m^2; NaV1.2 1e-6, Kir2.1 1e-8, Kv1.5 3e-7 m/s; the heredity cell's leaks and pump), reproduce independent references for one cell, the passive cable, the propagated wave in chains (with a mid-chain segment), and the block-site junction voltages and peaks against the laws' domains, with closed accounting, at the declared steps on CPU?",
+ "question": "Does cells.model.resolved_pump_tissue@3, running the generic cell A (c_m 0.01 F/m^2; NaV1.2 1e-6, Kir2.1 1e-8, Kv1.5 3e-7 m/s; the heredity cell's leaks and pump), reproduce independent references for one cell, the passive cable, the propagated wave in chains (with a mid-chain segment), and the block-site junction voltages and peaks against the laws' domains, with closed accounting, at the declared steps on CPU?",
  "engine_models": [
-  "resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, src/cells/models/surface_pump_v3.py): nav1p2_m3h_regularized@1, kir2p1_mh2@1, kv1p5_mh@1, kleak_always_open@1, naleak_always_open@1, constant_field@1 leaks and junctions, nak_atp_mass_action_positive@1, junction_voltage_relaxation@1 pinned open, IMEX ARS(2,2,2) with exponential stage gates, trapezoid_nonnegative@1 junction heat, field solver version 2 declared through field_solver_choice.declare() with 0 free offsets, CPU, float64"
+  "cells.model.resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, src/cells/models/surface_pump_v3.py): cells.channel.nav1p2_m3h_regularized@1, cells.channel.kir2p1_mh2@1, cells.channel.kv1p5_mh@1, cells.channel.kleak_always_open@1, cells.channel.naleak_always_open@1, cells.route.constant_field@1 leaks and junctions, cells.cycle.nak_atp_mass_action_positive@1, cells.junction.junction_voltage_relaxation@1 pinned open, IMEX ARS(2,2,2) with exponential stage gates, cells.heat.trapezoid_nonnegative@1 junction heat, field solver version 2 declared through field_solver_choice.declare() with 0 free offsets, CPU, float64"
  ],
  "scope": "Candidate A only; held-bath chains of 20 and 40 cells, and the 127-cell sheet at s = 300 for self-consistency only (no independent sheet reference exists); couplings s in {10, 30, 100, 300, 1000, 3000} for chains, and every perturbed junction at s * r_gj >= 20 (D170 ruling 3, provisional); steps 5 and 2.5 us (chains), 5 and 2.5 us (sheet at s = 300); stimuli as the equations appendix section 8 states them (fixed windows, rows every 5 us, APD from the stimulus end in stimulus runs). It does not qualify: candidate B or any other cell; gated junctions; any world with free field offsets; GPU; steps outside the declared set; block below the floor; the sheet's conduction against a reference; re-entry; any biological or species claim.",
  "driver": "validation/tissue/excitable_qualification.py (to be written: excitable_probe's chain and segment parts promoted once its step ladder includes its own cap and probe 1's C4 and C5 measurement fixes are made (D170 ruling 6), reading validation/tissue/conduction_observables.py for every observable)",
@@ -37,7 +37,7 @@
   "refusals": "a refusal is attributed (domain, step, check) and fails the criterion it touches; it is never read as an outcome"
  },
  "criteria": [
-  {"id": "D147", "metrics": "free field offsets and the declared field solver of every world", "comparison": "0 free offsets; capacitive_reduction_gauged_damped_newton@2 declared", "threshold": "exact", "basis": "D147, D156"},
+  {"id": "D147", "metrics": "free field offsets and the declared field solver of every world", "comparison": "0 free offsets; cells.solver.capacitive_reduction_gauged_damped_newton@2 declared", "threshold": "exact", "basis": "D147, D156"},
   {"id": "CELL_rest", "metrics": "A's rest after 2 s from H", "comparison": "engine minus reference (-79.558918 mV)", "threshold": "|difference| <= 0.01 mV", "basis": "a physical scale: 1 % of the 1 mV composition drift band; the reference's error is 3e-14 V"},
   {"id": "CELL_kick_threshold", "metrics": "the kick threshold bracket", "comparison": "the reference's threshold (24.84478 mV) lies within the engine's bracket widened by 0.05 mV", "threshold": "containment", "basis": "the bisection's width; the reference's bracket is 6e-5 mV"},
   {"id": "CELL_AP", "metrics": "at twice threshold (capped at 60 mV) and at kicks to -20 and 0 mV: peak, time to peak, largest dV/dt, APD50, APD90", "comparison": "engine minus reference", "threshold": "peak within 0.1 mV; times within 1 % or 10 us, whichever is larger; dV/dt within 2 %", "basis": "physical scales: 0.1 mV against A's 3.3 mV channel margin; 10 us is two rows; 2 % covers the row interval's sampling of a 247 V/s peak"},
@@ -85,7 +85,7 @@
  },
  "guards_of_record": {
   "tests": "the tier gate at the landed revision (scripts/test_tiers.py, tiers 1 and 2), tests/unit/test_conduction_observables.py and tests/unit/test_excitable_references.py",
-  "identity": "crossrev's record of resolved_pump_tissue@3's programs unchanged from the baseline of record",
+  "identity": "crossrev's record of cells.model.resolved_pump_tissue@3's programs unchanged from the baseline of record",
   "verdict_rule": "the combined verdict: every judged criterion and every guard of record"
  },
  "reported_not_judged": [

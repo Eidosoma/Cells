@@ -1,4 +1,4 @@
-"""stationary_continuation_analysis@1: laws, parameters, continuation and CLI contract.
+"""cells.analysis.stationary_continuation_analysis@1: laws, parameters, continuation and CLI contract.
 
 No model is compiled here (solves are in test_stationary_solve.py). Checks the
 structural conservation laws of a closed synthetic @1 world (species totals and
@@ -25,7 +25,7 @@ from cells.definitions.specs import ConfigError, parse_spec
 from validation.stationary import worlds
 from validation.tissue import surface_pump_fixtures as pump_fixtures
 
-ARS = "imex_ars222_face_electromigration@1"
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
 
 
 @pytest.fixture(scope="module", autouse=True)

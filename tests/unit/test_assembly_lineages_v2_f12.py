@@ -1,4 +1,4 @@
-"""F12, generation inheritance, restored futures and population lines on cells.assembly_lineages@2's
+"""F12, generation inheritance, restored futures and population lines on cells.model.assembly_lineages@2's
 saved bundles (validation/assembly_lineages_v2: f12.py, generation_inheritance.py, futures.py,
 population_lines.py and worlds.py; the lead's rulings of 20 November 2026, D245 and R4).
 

@@ -1,5 +1,5 @@
 """R-cell and R-feedback: constant-field cells with regulated availabilities, an independent
-reference for species_regulated_availability@1.
+reference for cells.operator.species_regulated_availability@1.
 
 Written from docs/INVENTORY_COUPLING_DESIGN.md Appendix A.5 (with §4.3) and S5's Appendix A.1-A.3
 (docs/CELL_DIVISION_S5_DESIGN.md), in the style and state layout of R-tissue
@@ -19,7 +19,7 @@ The world (pump-free; SI units, amounts in fmol, volumes in pL, so n/V is in mM 
   per unit area). The capacitor graph is then diagonal: phi_i = Q_i / sum_k C_k (S5 A.2).
 * channel populations p on patch k (A.5): one more constant-field route per species, with P_ks A_k
   replaced by P r_s N o a_p(t) A_k (permeability P, relative permeability r_s, abundance N,
-  opening o, 1 for a gate-free law such as kleak_always_open@1, and availability a_p(t)).
+  opening o, 1 for a gate-free law such as cells.channel.kleak_always_open@1, and availability a_p(t)).
 * contacts e between cells a(e) (first) and b(e) (second): J_es = P_es A_e g a_e(t) psi(x)
   (c_s,a - c_s,b e^(-x)), x = z_s F (phi_a - phi_b)/(R T), with a fixed gate g.
 * every route: J = PA psi(x) (c_in - c_out e^(-x)), psi(x) = x/(1 - e^(-x)) (S5 A.3), outward
@@ -108,7 +108,7 @@ class Population:
 
     patch: str
     permeability_m_s: float
-    relative: tuple  # r_s, every species (kleak_always_open@1: 1 for K, 0 otherwise)
+    relative: tuple  # r_s, every species (cells.channel.kleak_always_open@1: 1 for K, 0 otherwise)
     abundance: float = 1.0
     opening: float = 1.0
     schedule: tuple = ((0.0, 1.0),)  # ((t_start_s, a_sched), ...), from 0, piecewise constant
