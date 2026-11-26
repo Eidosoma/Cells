@@ -7,6 +7,7 @@ constants of the criteria (CRITERIA.md).
 
 from __future__ import annotations
 
+import functools
 import math
 from dataclasses import dataclass, field
 from decimal import Decimal, localcontext
@@ -58,6 +59,7 @@ def dec(value: float | int) -> Decimal:
     return Decimal(repr(value)) if isinstance(value, float) else Decimal(value)
 
 
+@functools.lru_cache(maxsize=65536)
 def steps(t: float, h: float) -> Fraction:
     """S = t/h from the registered grid, as an exact rational of the declared decimals (an integer on the grid)."""
     with localcontext() as ctx:
@@ -281,9 +283,18 @@ class Inputs:
 
 
 def relative_equal(a: float, b: float, rel: float) -> bool:
-    """|a - b| <= rel |b|; a declared zero exactly zero (CRITERIA.md §4.1, TABLE.md §3)."""
+    """|a - b| <= rel |b|; a declared zero exactly zero (CRITERIA.md §4.1, TABLE.md §3). Decided in doubles where
+    the margin is clear, and exactly near the boundary."""
     if b == 0:
         return a == 0
+    if a == b:
+        return True
+    diff = abs(a - b)
+    limit = rel * abs(b)
+    if diff < limit * (1 - 1e-6):
+        return True
+    if diff > limit * (1 + 1e-6):
+        return False
     return abs(Fraction(a) - Fraction(b)) <= Fraction(rel) * abs(Fraction(b))
 
 

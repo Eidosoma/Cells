@@ -33,13 +33,12 @@ def ratio(stat: Fraction | float, tol: Fraction | float) -> float:
 
 @dataclass
 class IdentityValue:
-    residual: Fraction
-    s_id: Fraction
-    bound: Fraction
+    """The residual, s_id and bound as doubles (for the record); `passes` is decided exactly."""
 
-    @property
-    def passes(self) -> bool:
-        return abs(self.residual) <= self.bound
+    residual: float
+    s_id: float
+    bound: float
+    passes: bool
 
     @property
     def ratio(self) -> float:
@@ -48,16 +47,26 @@ class IdentityValue:
 
 def identity_at(terms: Sequence[tuple[str, float, str]], at_t: dict[str, float], at_0: dict[str, float],
                 s_steps: Fraction) -> IdentityValue:
-    """READOUTS.md §4: the sum of the identity's terms, and its bound 16 (S + 1) u s_id, s_id = Σ |coef × value|."""
-    residual = Fraction(0)
-    s_id = Fraction(0)
-    for readout, coefficient, when in terms:
-        value = at_t[readout] if when == "t" else at_0[readout]
-        term = Fraction(coefficient) * Fraction(value)
-        residual += term
-        s_id += abs(term)
-    bound = M_ROW * (Fraction(s_steps) + 1) * U * s_id
-    return IdentityValue(residual=residual, s_id=s_id, bound=bound)
+    """READOUTS.md §4: the sum of the identity's terms, and its bound 16 (S + 1) u s_id, s_id = Σ |coef × value|.
+
+    The sums are formed in doubles (each product rounded once, fsum correctly rounded), which is within 4 u s_id of
+    the exact sums; only where |residual| lies within that of the bound is the decision taken in exact rationals."""
+    values = [(coefficient, at_t[readout] if when == "t" else at_0[readout]) for readout, coefficient, when in terms]
+    products = [c * v for c, v in values]
+    residual = math.fsum(products)
+    s_id = math.fsum(abs(x) for x in products)
+    bound = M_ROW * (float(s_steps) + 1.0) * 2.0**-53 * s_id
+    slack = 4.0 * 2.0**-53 * s_id
+    if abs(residual) <= bound - slack:
+        passes = True
+    elif abs(residual) > bound + slack:
+        passes = False
+    else:
+        exact_terms = [Fraction(c) * Fraction(v) for c, v in values]
+        exact_residual = sum(exact_terms, Fraction(0))
+        exact_s_id = sum((abs(x) for x in exact_terms), Fraction(0))
+        passes = abs(exact_residual) <= M_ROW * (Fraction(s_steps) + 1) * U * exact_s_id
+    return IdentityValue(residual=residual, s_id=s_id, bound=bound, passes=passes)
 
 
 @dataclass

@@ -388,8 +388,8 @@ class Judge:
         ref = self.ref_copy(spec.world, spec.copy)
         if state.missing:
             for name in self._entry_names(world, spec):
-                out.append(Result(family, spec.name, name, name.split(" ")[0] if name != "D" else "D", "unformed",
-                                  note="the run is missing"))
+                out.append(Result(family, spec.name, name, _cls(name), "unformed", note="the run is missing",
+                                  extra={"scored_for": scored_for}))
             return out
         for entry in state.entries:
             nothing = nothing_judged(state, entry)
@@ -481,11 +481,12 @@ class Judge:
             worst_ratio = 0.0
             miss = False
             worst_value = None
+            registered = _registered_times(entry, world)
             for i, t in enumerate(entry.t):
                 if spec.variant == RESTART_VARIANT and t == 0.0:
                     continue
                 at_t = {n: entry.series[n][i] for n in needed}
-                value = identity_at(terms, at_t, at0, steps(_registered_time(world, t), spec.step))
+                value = identity_at(terms, at_t, at0, steps(registered[i], spec.step))
                 if value.ratio >= worst_ratio:
                     worst_ratio = value.ratio
                     worst_value = value
@@ -585,9 +586,12 @@ class Judge:
         if readout == "t_events":
             if entry.times is None or entry.first_index is None or entry.channels is None or entry.counts is None:
                 return None, "a leaf of the events is missing"
-            trace = check_trace(world, entry.times, entry.channels, entry.counts, entry.first_index,
-                                entry.events_total, ref.K, ref.channels, ref.counts, world.initial_counts,
-                                completed(state, entry), True)
+            trace = entry.__dict__.get("_trace_view")
+            if trace is None:
+                trace = check_trace(world, entry.times, entry.channels, entry.counts, entry.first_index,
+                                    entry.events_total, ref.K, ref.channels, ref.counts, world.initial_counts,
+                                    completed(state, entry), True)
+                entry.__dict__["_trace_view"] = trace
             if trace.contradicts or trace.too_few or entry.first_index != 0 or len(entry.times) < ref.K:
                 return None, "the record contradicts itself or lists fewer than K_c events"
             return entry.times[:ref.K], ""
@@ -595,10 +599,11 @@ class Judge:
         if values is None or entry.t is None:
             return None, f"{readout} is missing"
         out = []
+        index = _sample_map(entry, world)
         for t in world.samples:
             if t <= 0:
                 continue
-            j = _index_of(entry.t, t)
+            j = index.get(t)
             if j is None:
                 return None, f"no sample at t = {t!r}"
             out.append(values[j])
@@ -677,6 +682,7 @@ class Judge:
             note = ""
         if compare_only and outcome != "fail":
             outcome = "unformed"
+            extra["owes_retry"] = False  # an entry that is not formed owes no retry (CRITERIA.md §7)
             note = (note + "; " if note else "") + "refused by provenance or a shared record hash: compared, no miss"
         return Result(**base, outcome=outcome, statistic=e_n, tolerance=tol, note=note, extra=extra)
 
@@ -766,7 +772,9 @@ class Judge:
         for h in fam.rungs:
             for c in range(world.copies):
                 state = self.run_at(family_id, h, c, False)
-                entry = state.single()
+                entry = state.single() if state is not None else None
+                if entry is None or entry.times is None:
+                    return {**row, "score": "unscorable", "note": "an honest run is missing or holds no times"}
                 ref = self.ref_copy(world.name, c)
                 planted = self.references[world.name].planted[plant.id][family_id][c]
                 tol = e_round(M_TIME, steps(world.end_s, h), world.end_s) + ref.accuracy_s
@@ -1103,6 +1111,26 @@ def _index_of(ts: list[float], t: float) -> int | None:
         if relative_equal(x, t, REL_TIME):
             return j
     return None
+
+
+def _sample_map(entry: Entry, world: World) -> dict[float, int]:
+    """The entry's index of each registered sample it holds (1e-12 relative), formed once per entry."""
+    cache = entry.__dict__.get("_sample_map")
+    if cache is None:
+        cache = {}
+        for j, x in enumerate(entry.t or []):
+            reg = _registered_time(world, x)
+            cache.setdefault(reg, j)
+        entry.__dict__["_sample_map"] = cache
+    return cache
+
+
+def _registered_times(entry: Entry, world: World) -> list[float]:
+    cache = entry.__dict__.get("_registered_times")
+    if cache is None:
+        cache = [_registered_time(world, x) for x in (entry.t or [])]
+        entry.__dict__["_registered_times"] = cache
+    return cache
 
 
 def _registered_time(world: World, t: float) -> float:

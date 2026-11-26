@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import copy
 from fractions import Fraction
 from typing import Any
 
@@ -94,6 +95,15 @@ def registered_echo(inputs: Inputs, spec: RunSpec) -> dict:
     block["step_s"] = spec.raw["step_s"]
     block["first"] = spec.first
     block["copy"] = spec.copy
+    change = spec.raw.get("change")
+    if isinstance(change, dict):  # a run's own declared change (the invented set's refused and stopped runs)
+        block = copy.deepcopy(block)
+        for dotted, value in change.items():
+            parts = dotted.split(".")
+            target = block
+            for part in parts[:-1]:
+                target = target[part]
+            target[parts[-1]] = value
     return block
 
 
