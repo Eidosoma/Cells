@@ -1,4 +1,4 @@
-"""R-dG: the per-law Delta-G test of site_occupancy@1's half-step and bookings (FR-3), an
+"""R-dG: the per-law Delta-G test of cells.operator.site_occupancy@1's half-step and bookings (FR-3), an
 independent reference.
 
 Written from docs/SITE_OCCUPANCY_DESIGN.md (§3.3, §3.4 item 2, §4.2, §4.3, Appendix A.3) and the

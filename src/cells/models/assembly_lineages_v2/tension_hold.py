@@ -1,4 +1,4 @@
-"""cells.tension_hold@1: a membrane tension held over a declared interval, an applied protocol
+"""cells.operator.tension_hold@1: a membrane tension held over a declared interval, an applied protocol
 (FR-31, Phase A; docs/VESICLE_PORES_LAWS.md §3, tagged pores-laws-sheet-registered-2026-11-22;
 the lead's rulings of 22 November 2026).
 

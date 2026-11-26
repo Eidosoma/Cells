@@ -1,6 +1,6 @@
 """The two electroneutral symports on the cycle kind against the 80-digit reference of their
-manufactured rate: na_k_2anion_symport_reversible_tanh@1 and, bound to potassium and one monovalent
-anion, electroneutral_symport_reversible_tanh@1.
+manufactured rate: cells.cycle.na_k_2anion_symport_reversible_tanh@1 and, bound to potassium and one monovalent
+anion, cells.cycle.electroneutral_symport_reversible_tanh@1.
 
 The reference (validation/transport/cotransport_reference.py) is scalar 80-digit decimals with no
 Cells import, and the protocol (cotransport_protocol.json) holds its tolerances and the named

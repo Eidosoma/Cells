@@ -1,4 +1,4 @@
-"""Small worlds of cells.assembly_lineages@2 for its unit tests (OL1).
+"""Small worlds of cells.model.assembly_lineages@2 for its unit tests (OL1).
 
 A lipid-like assembly: an amphiphile L that joins the membrane from the pool and from the lumen, a
 second membrane lipid P and their dimer D in the membrane, a solute S that permeates between the

@@ -1,4 +1,4 @@
-"""scheduled_compartment_wash@1 (FR-27, D246) in NumPy and a compiled kernel, no world compiled.
+"""cells.operator.scheduled_compartment_wash@1 (FR-27, D246) in NumPy and a compiled kernel, no world compiled.
 
 docs/COMPARTMENT_WASH_DESIGN.md. Rows, each a claim: every refusal fires with its reason; the event
 map on the review's well (60 fmol free, 30 on the specimen's sites and 10 on the wall's, half
@@ -74,13 +74,15 @@ def _route(raw):
 
 def _kind_route(raw):
     raw["model"]["passive_routes"] = [
-        dict(id="s_route", patch="specimen_face", law="passive_neutral_permeation@1", species=S,
+        dict(id="s_route", patch="specimen_face", law="cells.route.passive_neutral_permeation@1", species=S,
              permeability_m_per_s=1e-12)
     ]  # fmt: skip
 
 
 def _internalising(raw):
-    sites = next(o for o in raw["model"]["operators"] if o["law"] == "site_occupancy@1")
+    sites = next(
+        o for o in raw["model"]["operators"] if o["law"] == "cells.operator.site_occupancy@1"
+    )
     population = next(q for q in sites["populations"] if q["id"] == "specimen_sites")
     population["internalisation"] = dict(rate_per_s=0.01, destination="cell")
     raw["experiment"]["site_controls"].append(
@@ -119,7 +121,7 @@ def _gene_unit(*, outside=True, other_node=False):
 def _labelled(raw, species):
     """raw with the label owner labelling `species` (base and cohort, every node at the base)."""
     out = copy.deepcopy(raw)
-    out["model"]["operators"].append(dict(law="neutral_arrival_labels@1", species=[
+    out["model"]["operators"].append(dict(law="cells.operator.neutral_arrival_labels@1", species=[
         dict(id=s, labels=["base", "cohort"], initial=[]) for s in species
     ]))  # fmt: skip
     out["experiment"]["label_arrivals"] = []
@@ -145,7 +147,7 @@ def _second_well(raw):
 
 def _c1_world():
     """FR-49's C1 shape (validation/fr49/REGISTRATION.md §5; D327), which is also the inherited
-    three-way composition (cell_owned_compartments@1, neutral_arrival_labels@1, and the wash at an
+    three-way composition (cells.operator.cell_owned_compartments@1, cells.operator.neutral_arrival_labels@1, and the wash at an
     external node). It is World L, a compartment with labelled S (validation/fr49/worlds.py), plus
     a well joined to cell_0 by a copy of the bounding patch, which carries no S route. The well's S
     is labelled x 0.6 and base 0.4, and the well is washed by half at 900 s for a buffer with S at
@@ -217,24 +219,26 @@ REFUSALS = {
     # D263 finding 2 (a second review): the same crossing by a registered route was admitted.
     "a neutral species across the surface by an exchange route": (
         lambda: washed(_route(wfx.well(sites=False))),
-        "S may cross node well's surface by scheduled_species_exchange@1's route uptake",
+        "S may cross node well's surface by cells.operator.scheduled_species_exchange@1's route "
+        "uptake",
     ),
     "a neutral species across the surface by a kind's route": (
         lambda: washed(changed(wfx.well(sites=False), _kind_route)),
-        "by cells.passive_routes@1 \\(passive_neutral_permeation@1\\)",
+        "by cells.kind.passive_routes@1 \\(cells.route.passive_neutral_permeation@1\\)",
     ),
     "a ligand internalised across the surface": (
         lambda: washed(changed(wfx.well(), _internalising)),
-        "by site_occupancy@1's internalisation specimen_sites",
+        "by cells.operator.site_occupancy@1's internalisation specimen_sites",
     ),
     # D327, the fail-open fix: amendment T's export and outside degradation, each by name.
     "a gene unit's export into the node": (
         lambda: _washed_at(_gene_unit(outside=False), "space_0"),
-        "R may cross node space_0's surface by templated_polymerisation@1's export export_R",
+        "R may cross node space_0's surface by cells.operator.templated_polymerisation@1's export "
+        "export_R",
     ),
     "a gene unit's outside degradation at the node": (
         lambda: _washed_at(_gene_unit(), "space_0"),
-        "by templated_polymerisation@1's outside degradation deg_R_space_0",
+        "by cells.operator.templated_polymerisation@1's outside degradation deg_R_space_0",
     ),
     "a buffer below a site ligand's trace": (
         lambda: washed(events=[_event(buffer={S: 1e-13})]),
@@ -245,23 +249,25 @@ REFUSALS = {
         lambda: wfx.with_wash(
             cfx.loaded_compartment(), ["ecs_0"], [(0.01, "ecs_0", 0.5, {S: 1e-6})]
         ),
-        "scheduled_compartment_wash@1 is not on its admitted list",
+        "cells.operator.scheduled_compartment_wash@1 is not on its admitted list",
     ),
     # FR-44 (D327): the paths that FR-44's labels would follow unmeasured stay refused by name.
     "a labelled gene unit's export into the node": (
         lambda: _washed_at(_labelled(_gene_unit(outside=False), ["R", "R_s"]), "space_0"),
-        "R may cross node space_0's surface by templated_polymerisation@1's export export_R",
+        "R may cross node space_0's surface by cells.operator.templated_polymerisation@1's export "
+        "export_R",
     ),
     "a labelled exchange route through a patch facing the node": (
         lambda: washed(_labelled(_route(wfx.well(sites=False)), [S])),
-        "S may cross node well's surface by scheduled_species_exchange@1's route uptake",
+        "S may cross node well's surface by cells.operator.scheduled_species_exchange@1's route "
+        "uptake",
     ),
     # D327, FR-44 landing second (FR-49's parts H and L first): FR-49's C1 world, also the
     # inherited three-way composition, is refused by name until FR-49's wash narrowing and its C1
     # judgement.
     "FR-49's C1 world: labels beside a compartment and a wash at another node": (
         _c1_world,
-        "scheduled_compartment_wash@1 is not on its admitted list",
+        "cells.operator.scheduled_compartment_wash@1 is not on its admitted list",
     ),
 }
 
@@ -296,9 +302,15 @@ def test_every_path_across_a_washed_surface_is_classified(monkeypatch):
         [("make", "specimen", [(0.0, 1e-6)])],
     )
     parse_spec(washed(raw))
-    shown = {k: v for k, v in wash.SHOWN_LOCAL.items() if k != "scheduled_species_turnover@1"}
+    shown = {
+        k: v
+        for k, v in wash.SHOWN_LOCAL.items()
+        if k != "cells.operator.scheduled_species_turnover@1"
+    }
     monkeypatch.setattr(wash, "SHOWN_LOCAL", shown)
-    with pytest.raises(ConfigError, match="scheduled_species_turnover@1, which is not classified"):
+    with pytest.raises(
+        ConfigError, match="cells.operator.scheduled_species_turnover@1, which is not classified"
+    ):
         parse_spec(washed(raw))
 
 
@@ -324,7 +336,7 @@ def test_admitted_beside_the_label_owner_in_either_order(owner_first):
     first. The owner is shown local to the wash, and it admits the wash's exchanging event. Its
     record of what left is then sized [labelled species, label, outside node]."""
     raw = washed(wfx.well(sites=False))
-    block = dict(law="neutral_arrival_labels@1", species=[dict(
+    block = dict(law="cells.operator.neutral_arrival_labels@1", species=[dict(
         id=S, labels=["base", "cohort"], initial=[dict(node="well", shares={"cohort": 1.0})]
     )])  # fmt: skip
     operators = raw["model"]["operators"]
@@ -332,7 +344,9 @@ def test_admitted_beside_the_label_owner_in_either_order(owner_first):
     raw["experiment"]["label_arrivals"] = []
     spec = parse_spec(raw)
     laws = [op.LAW_ID for op, _, _ in cs.entries(spec)]
-    assert (laws.index("neutral_arrival_labels@1") < laws.index(ws.LAW_ID)) == owner_first
+    assert (
+        laws.index("cells.operator.neutral_arrival_labels@1") < laws.index(ws.LAW_ID)
+    ) == owner_first
     state, _ = get_model(spec.model).initial_values(spec)
     shape = (1, 2, spec.execution.extracellular_capacity)
     assert np.shape(state.label_outside_removed_fmol) == shape

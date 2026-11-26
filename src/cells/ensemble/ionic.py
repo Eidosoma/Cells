@@ -28,17 +28,17 @@ from cells.execution.windows import WindowPolicy
 from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.registry.models import get_model
 
-MODEL_ID = "ionic_worlds@1"
+MODEL_ID = "cells.model.ionic_worlds@1"
 SIMULATIONS = (  # The models an ionic world may run.
-    "resolved_tissue@1",
-    "resolved_tissue@2",
-    "resolved_tissue@8",
-    "resolved_pump_tissue@1",
-    "resolved_pump_tissue@2",
-    "resolved_pump_tissue@3",
-    "resolved_pump_water@1",
-    "resolved_pump_water@2",
-    "resolved_pump_replacement@1",
+    "cells.model.resolved_tissue@1",
+    "cells.model.resolved_tissue@2",
+    "cells.model.resolved_tissue@8",
+    "cells.model.resolved_pump_tissue@1",
+    "cells.model.resolved_pump_tissue@2",
+    "cells.model.resolved_pump_tissue@3",
+    "cells.model.resolved_pump_water@1",
+    "cells.model.resolved_pump_water@2",
+    "cells.model.resolved_pump_replacement@1",
 )
 WORLD_BATCHING = ("lax_map", "vmap")
 # Vectorized worlds keep their parameters and dense field temporaries resident
@@ -131,7 +131,7 @@ def parse_spec(data):
         or data.get("model") != MODEL_ID
         or "simulation" not in data
     ):
-        raise ValueError("Require an explicit ionic_worlds@1 simulation definition")
+        raise ValueError("Require an explicit cells.model.ionic_worlds@1 simulation definition")
     values = defaults | data
     validate_population(values["worlds"], values["world_id_start"], values["seed"])
     if type(values["world_batching"]) is not str or values["world_batching"] not in WORLD_BATCHING:

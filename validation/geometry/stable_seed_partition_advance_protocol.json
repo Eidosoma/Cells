@@ -259,7 +259,7 @@
     }
   },
   "status": "source_candidate_existing_Cells_stepping_initial_qualification_pending",
-  "stepping_laws": "existing Cells checked RK4 and resolved_tissue@1",
+  "stepping_laws": "existing Cells checked RK4 and cells.model.resolved_tissue@1",
   "supplied_parameters_or_geometry_inference": false,
   "tests": "tests/unit/test_stable_seed_partition_advance.py",
   "tests_collected": false,

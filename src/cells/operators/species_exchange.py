@@ -1,4 +1,4 @@
-"""Operator scheduled_species_exchange@1: secretion and uptake of neutral species across patches.
+"""Operator cells.operator.scheduled_species_exchange@1: secretion and uptake of neutral species across patches.
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §2.3 and §2.5 (D150, version 1). A secreted species is
 one more row of @3's species axis (valence 0, zero membrane permeability), which @3 owns. This
@@ -58,7 +58,7 @@ RK4 is guarded, not refused: exact half-steps around @3's RK4 step ("split").
 
 The patch area is a current read (D191; the lead's ruling of 20 November 2026, for FR-7's U2 world
 with a releasing compartment): SCOPED_READS declares membrane_area current at stage split, so where
-an operator of the composition changes it (membrane_entity_state@1 provides it), each half-step's
+an operator of the composition changes it (cells.operator.membrane_entity_state@1 provides it), each half-step's
 imports take the area of the view it receives, the route's patch found on device as the one
 declared patch that joins the route's cell to its outside node (route_areas). A second declared
 patch joining that pair is then refused at the definition (check_area_reads), since the lookup
@@ -115,7 +115,7 @@ from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
 from cells.operators.species_turnover import scatter_add, set_rows
 
-LAW_ID = "scheduled_species_exchange@1"
+LAW_ID = "cells.operator.scheduled_species_exchange@1"
 # FR-15 S1: exchange stays neutral. A charged scheduled flux is electrogenic transport, which needs
 # its electrical work and a place in the membrane current; no consumer asks for it.
 CHARGED_LIMIT = (

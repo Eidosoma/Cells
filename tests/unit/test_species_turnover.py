@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of scheduled_species_turnover@1 (secreted-species design §2.2).
+"""Tier-1 smoke test of cells.operator.scheduled_species_turnover@1 (secreted-species design §2.2).
 
 The operator's half-step on a bound quiescent world, in NumPy (no compile): the closed form
 n' = n e^{-kh} + (P/k)(1 - e^{-kh}) at O(1) fractions, the bookings, the booked work against the
@@ -169,7 +169,7 @@ class _Planted(Operator):
     """A planted rate-route source (B1′): a declared factor on the turnover's rates and its
     validity, or no route (factor None)."""
 
-    LAW_ID = "tests.planted_rate_route@1"
+    LAW_ID = "tests.operator.planted_rate_route@1"
     SPLIT = True
     RK4 = "split"
     RATE_ROUTES = ((LAW_ID_TURNOVER, "turnover_rate"),)

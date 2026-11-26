@@ -78,7 +78,7 @@ from pathlib import Path
 import numpy as np
 
 CLEAN, CONTROL, VALUE = 0, 1, 2
-CANDIDATE = "capacitive_reduction_gauged_damped_newton@3"  # runs' second declaration (--candidate)
+CANDIDATE = "cells.solver.capacitive_reduction_gauged_damped_newton@3"  # runs' second declaration (--candidate)
 
 
 def declared(raw, solver):

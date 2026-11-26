@@ -1,8 +1,8 @@
-"""passive_constant_field_permeation@1: passive constant-field permeation of a charged species.
+"""cells.route.passive_constant_field_permeation@1: passive constant-field permeation of a charged species.
 
 FR-15 F2, part P2 (the lead's rulings of 19 November 2026); the passive routes kind's charged
 route law beside its neutral one (laws/routes/passive_permeation.py). It is
-proton_constant_field_leak@1's flux (laws/transport/proton_leak.py) at any valence z != 0, read
+cells.route.proton_constant_field_leak@1's flux (laws/transport/proton_leak.py) at any valence z != 0, read
 from the row's amounts at both ends instead of through a closure:
 
     J = A P m [c_out B(x) - c_in B(-x)] / 1e-15   (fmol/s, positive inward),   x = z F V / (R T),
@@ -62,7 +62,7 @@ from cells.laws.electrochemistry import (
 )
 from cells.modules import Citation, RouteLaw
 
-LAW_ID = "passive_constant_field_permeation@1"
+LAW_ID = "cells.route.passive_constant_field_permeation@1"
 
 
 def flux_fmol_s(
@@ -157,7 +157,7 @@ LAW = RouteLaw(
     "its amounts at both ends (laws/routes/constant_field_permeation.py)",
     stage_term="conductance_S",  # Its max-side slope in the stage rule: CORE_SEAMS §18.
     material_term="material_slope_per_s",  # Its material slope per stage (FR-15's trace rows).
-    host="cells.passive_routes@1",
+    host="cells.kind.passive_routes@1",
     provenance="cited",
     source=Citation(
         "the Goldman-Hodgkin-Katz constant-field flux (D. E. Goldman, 1943; A. L. Hodgkin and "

@@ -7,7 +7,7 @@
       "simulation": {
         "schema_version": 1,
         "model": {
-          "id": "reaction_transport@1",
+          "id": "cells.model.reaction_transport@1",
           "units": {
             "amount": "fmol",
             "volume": "pL",
@@ -146,7 +146,7 @@
       "simulation": {
         "schema_version": 1,
         "model": {
-          "id": "reaction_transport@1",
+          "id": "cells.model.reaction_transport@1",
           "units": {
             "amount": "fmol",
             "volume": "pL",

@@ -3,7 +3,7 @@
 
 The pair (C2.1): the gene unit's polymerase-limited world (validation/gene_regulation/worlds
 .polymerase_limited: transcription spends the nucleotide N, recharging makes N from the finite M
-and ATP reserves) beside local_species_reactions@1 on N, its second writer:
+and ATP reserves) beside cells.operator.local_species_reactions@1 on N, its second writer:
 - "sink": the second-order route N + X -> W (driven mass action, k in 1/(mM s)), a second spender
   of N whose rate k V c_N c_X = k n_N n_X / V reads the cell's volume;
 - "source": X -> N (driven mass action, k in 1/s), a second producer of N spending a finite X.
@@ -133,7 +133,7 @@ def network_alone(kind="sink", *, copies=COPIES, k=None, dt=0.5, end=None, every
 
 # ------------------------------------------------------------------ at changing volume (2B)
 
-WATER = "ideal_osmosis_linear_compliance_water@1"
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"
 PF_M_S = 5e-4  # Osmotic permeability (m/s): the doubling probe's (design note §2.3).
 DILUTION = 0.4  # The held bath's osmolytes, as a fraction of the cell's: the cell swells.
 MAXIMUM_FRACTION = 3.0  # Water's maximum volume over the reference (a synthetic world).
@@ -144,7 +144,7 @@ MU_C = -1.0  # mu°/RT of C at c0 (A's and B's 0).
 
 def with_water_first(raw, *, pf_m_s=PF_M_S, dilution=DILUTION, maximum_fraction=MAXIMUM_FRACTION,
                      keep=()):  # fmt: skip
-    """A frozen composite world in a swelling cell: water (ideal_osmosis_linear_compliance_water@1,
+    """A frozen composite world in a swelling cell: water (cells.operator.ideal_osmosis_linear_compliance_water@1,
     no modulus or pressure offset) declared first, so the readers after it take its current
     volumes, and the held bath's species but `keep` diluted to `dilution` of their amounts."""
     from cells.definitions import pump_composite_spec as cs
@@ -211,8 +211,8 @@ def swelling_cell(*, network_multiplier=1.0, dt=0.01, end=40.0, every=0.5, **kwa
 
 # ------------------------------------------------------------------ beside the unit producer
 
-UNIT_PRODUCER = "population_unit_turnover@1"
-STATE = "membrane_entity_state@1"
+UNIT_PRODUCER = "cells.operator.population_unit_turnover@1"
+STATE = "cells.operator.membrane_entity_state@1"
 LEAK = "kleak_0"  # The producer's population: gate-free K units on the gene cell's patch.
 DENSITY = 1e13  # units/m^2: the population's reference density (validation/fr7's).
 MOLECULES_PER_UNIT = 4  # nu: P molecules per unit.
@@ -224,8 +224,8 @@ def unit_pair(*, n_R=10, dt=0.5, end=None, every=None, k_a=K_ASSEMBLY, k_r=K_REM
     """2A's second pair (FR-43 / D315): the gene unit's ribosome-limited world
     (validation/gene_regulation/worlds.ribosome_limited: translation makes the neutral protein P
     from the held mRNA, drawing A and ATP; P's degradation returns A) beside the unit producer
-    (population_unit_turnover@1), which consumes P as its precursor into the units of a gate-free K
-    population on the cell's patch (kleak_always_open@1 at zero permeability: its units carry no
+    (cells.operator.population_unit_turnover@1), which consumes P as its precursor into the units of a gate-free K
+    population on the cell's patch (cells.channel.kleak_always_open@1 at zero permeability: its units carry no
     current, so the membrane stays inert at the gene world's 0.5 s step whatever R5's largest
     units are), every unit removed at k_r. The gene unit adds P and the
     producer consumes it; P's registry potential is the shared row's one authority.
@@ -239,7 +239,7 @@ def unit_pair(*, n_R=10, dt=0.5, end=None, every=None, k_a=K_ASSEMBLY, k_r=K_REM
         dict(
             id=LEAK,
             membrane_id=gw.PATCH,
-            kinetic_law="kleak_always_open@1",
+            kinetic_law="cells.channel.kleak_always_open@1",
             max_permeability_m_per_s=0.0,  # Its units carry no current (below).
             abundance=1.0,
             initial_gate=[],

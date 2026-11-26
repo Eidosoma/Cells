@@ -31,15 +31,15 @@ from validation.tissue import field_solver_choice as choice
 
 EXEMPT = {
     "base/replacement_padded": (
-        "resolved_pump_replacement@1",
+        "cells.model.resolved_pump_replacement@1",
         "crossrev guard world run as declared (version 2); one free offset",
     ),
     "qualification/S825_closed_water": (
-        "resolved_pump_water@1",
+        "cells.model.resolved_pump_water@1",
         "crossrev guard world on the 825-node world run as declared (version 2); 172 free offsets",
     ),
     "qualification/S825_event_free": (
-        "resolved_pump_replacement@1",
+        "cells.model.resolved_pump_replacement@1",
         "crossrev guard world on the 825-node world run as declared (version 2); 172 free offsets",
     ),
 }

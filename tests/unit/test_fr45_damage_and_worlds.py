@@ -1,4 +1,4 @@
-"""FR-5's kernels (bounding_patch_damage@1, ph_conditioned_factor@1) and the first acceptance
+"""FR-5's kernels (cells.damage.bounding_patch_damage@1, cells.transfer_factor.ph_conditioned_factor@1) and the first acceptance
 worlds' fixtures (validation/compartment_ph), checked against the FR-4/FR-5 note's equations."""
 
 import math
@@ -14,7 +14,7 @@ from validation.compartment_ph_engine import definitions as defs
 from validation.compartment_ph_engine import dt_study
 from validation.compartment_ph_engine.parameters import ARM_R, ARM_T, DamageWorld, World
 
-# --- bounding_patch_damage@1 -------------------------------------------------------------------
+# --- cells.damage.bounding_patch_damage@1 -------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("d0,a,b,h", [(0.0, 1.0, 0.0, 10.0), (0.3, 1.0, 0.05, 0.7),
@@ -45,7 +45,7 @@ def test_no_schedule_leaves_damage_unchanged_and_the_domain_refuses_out_of_range
     assert dmg.leak_permeability_m_s(0.25, 1e-6) == pytest.approx(2.5e-7)
 
 
-# --- ph_conditioned_factor@1 -------------------------------------------------------------------
+# --- cells.transfer_factor.ph_conditioned_factor@1 -------------------------------------------------------------------
 
 
 def test_the_ph_factor_is_open_below_ph50_and_closed_above():
@@ -109,7 +109,7 @@ def test_the_fr5_world_adds_cargo_damage_and_three_routes_without_ionic_pores():
     assert len(d["model"]["species"]) == 10  # §12: FR-5 uses 10 rows
     routes = {r["id"]: r for r in d["model"]["passive_routes"]}
     assert set(routes) == {"proton_leak_0", "cargo_transfer_0", "cargo_pore_0", "proton_pore_0"}
-    assert routes["proton_pore_0"]["law"] == "proton_constant_field_leak@1"
+    assert routes["proton_pore_0"]["law"] == "cells.route.proton_constant_field_leak@1"
     assert not DamageWorld().ionic_pores
     assert "damage_controls" not in defs.today_only(d)["experiment"]
     # The note's §16.2 forms: the sources by ID, the condition at the lumen's node.
@@ -191,7 +191,7 @@ def test_the_revised_fr5_arms_their_start_horizon_and_budget():
 
 
 def test_the_fr4_pump_is_the_transporter_kinds_entry_with_the_registrys_drive():
-    """FR-4's pump in cells.transporter@1's form (held fuel, which the kind holds; no ΔG° of its
+    """FR-4's pump in cells.kind.transporter@1's form (held fuel, which the kind holds; no ΔG° of its
     own), and the fuel rows' registry potentials give the world's declared Δ_rG'°."""
     from validation.compartment_ph_engine.parameters import R
 

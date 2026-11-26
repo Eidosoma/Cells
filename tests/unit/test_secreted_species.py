@@ -200,7 +200,9 @@ def test_version_1_refuses_volume_providers_area_providers_and_mask_providers():
     with_writer = fx.with_exchange(
         cleft, [("sec", "furrow", "export", "first_order")], [("sec", cell, [(0.0, 0.1)])]
     )
-    with pytest.raises(ConfigError, match=r"scheduled_species_exchange@1 reads \w+_active as"):
+    with pytest.raises(
+        ConfigError, match=r"cells.operator.scheduled_species_exchange@1 reads \w+_active as"
+    ):
         parse_spec(with_writer)
 
 
@@ -209,7 +211,7 @@ def test_the_stationary_analysis_does_not_admit_the_composite():
     refuses it; per-species Newton tolerances are a recorded requirement, not code (§8)."""
     from cells.analysis import stationary
 
-    with pytest.raises(ConfigError, match="not resolved_pump_composite@1"):
+    with pytest.raises(ConfigError, match="not cells.model.resolved_pump_composite@1"):
         stationary.problem(parse_spec(turnover_world()))
 
 
@@ -526,7 +528,7 @@ def test_a_batch_refuses_worlds_with_different_route_structures():
     face = d["model"]["faces"][0]
     face["sender"], face["receiver"] = face["receiver"], face["sender"]
     batch(a, d)
-    sparse = "sparse_capacitive_reduction_gauged_damped_newton@1"
+    sparse = "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
     for world in (a, d):
         world["execution"]["field_solver"] = sparse
     with pytest.raises(ConfigError, match="requires one face topology"):

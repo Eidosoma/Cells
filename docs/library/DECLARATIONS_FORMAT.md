@@ -36,15 +36,15 @@ PYTHONPATH=src JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu python -m cells declarations -
 
 ## The ID rule
 
-- **`id` is namespaced:** `namespace.name@major`, such as `cells.kv1p5_mh@1`. It is the key a
+- **`id` is namespaced:** `namespace.name@major`, such as `cells.channel.kv1p5_mh@1`. It is the key a
   reader joins on.
 - **`declared_id` is the spelling the piece's own declaration uses,** and so the one
   definitions and `view.json` write. A bare ID is in the `cells` namespace (D185), so
-  `kv1p5_mh@1` and `cells.kv1p5_mh@1` name one piece.
+  `cells.channel.kv1p5_mh@1` and `cells.channel.kv1p5_mh@1` name one piece.
 - **`host` is namespaced, and `declared_host` is its declared spelling.** The declared spelling
   is the host's own: a model's ID as the model table keys it, a kind's `kind_id`, an operator's
-  `LAW_ID`. So `cells.resolved_pump_tissue@3` hosts Kv1.5, and definitions write
-  `resolved_pump_tissue@3`.
+  `LAW_ID`. So `cells.model.resolved_pump_tissue@3` hosts Kv1.5, and definitions write
+  `cells.model.resolved_pump_tissue@3`.
 - **The two spellings join byte for byte.** A definition's IDs, and a `view.json`'s, equal the
   manifest's `declared_id` of a piece or a model, its `declared_host`, or a model row's
   `declared_id`, with no rule applied. A reader that holds only the namespaced spelling applies
@@ -142,7 +142,7 @@ at each stage of the inner step: current, at the inner stage.
 
 | Key | What it holds |
 | --- | --- |
-| `name` | The field read, or for a law the read it takes (such as `rapid_proton_buffer@1`) |
+| `name` | The field read, or for a law the read it takes (such as `cells.kind.rapid_proton_buffer@1`) |
 | `mode` | `current`, `fixed` or `reference` |
 | `stage` | The point of the step whose value it reads: `event`, `split`, `inner`, `end` or `observe` |
 | `scoped` | Whether it covers only the slots the piece names, rather than every slot |

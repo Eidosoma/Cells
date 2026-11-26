@@ -23,7 +23,7 @@ half at 0.02 s, by 3/7 three times (D266's condition: inexact products accumulat
 - S is labelled base and cohort: 2/3 and 1/3 at the well, 1/4 and 3/4 in the specimen. The
   cohort's window is open from t = 0, so the base taking each buffer is the ruling, not a default.
 - Cl, an ion, is labelled 1/2 and 1/2 at the well.
-- Q is made at the well by a reaction (local_species_reactions@1, a reporter) at 100 fmol/s, into
+- Q is made at the well by a reaction (cells.operator.local_species_reactions@1, a reporter) at 100 fmol/s, into
   its cohort's open window, and is washed with S. It carries the triple of the labels, the wash
   and the reactions at the washed node, which FR-44 newly admits.
 Its resume across a wash is in tests/unit/test_wash_schedule_resume.py.
@@ -44,7 +44,7 @@ from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import species_reactions_fixtures as rfx
 from validation.tissue import wash_schedule_fixtures as wfx
 
-LAW = "neutral_arrival_labels@1"
+LAW = "cells.operator.neutral_arrival_labels@1"
 DT, END, EVENT = 1e-3, 4e-3, 2e-3
 SHARES = {"cell_0": {"base": 0.25, "old": 0.75}, "cell_1": {"old": 1.0}}
 

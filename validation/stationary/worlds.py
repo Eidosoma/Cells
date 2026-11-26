@@ -1,11 +1,11 @@
-"""Worlds for the stationary-analysis targets (stationary_continuation_analysis@1).
+"""Worlds for the stationary-analysis targets (cells.analysis.stationary_continuation_analysis@1).
 
 default_world_cell(): one well-mixed cell facing a held bath with the heredity
 pre-screen's BETSE v1.5.0 default-world coefficients (the "world" block of
 /mnt/workspaces/Cells/heredity-design-20261108-01/prescreen-03.json: volume,
 area, Dm/tm permeabilities, pump capacity 1e-7 mol/m^2/s x area, cm 0.05 F/m^2,
 bath Na 145, K 5, M 140, P 10 mM, impermeant intracellular anion P 135 mM, 310 K,
-fixed volume), declared as resolved_pump_tissue@1 (no channel population).
+fixed volume), declared as cells.model.resolved_pump_tissue@1 (no channel population).
 
 The pre-screen's slow model takes the cell's charge as F vol (Na + K - M - P)
 with nothing else fixed, so the cell here carries no further background charge
@@ -26,14 +26,14 @@ BATH_mM = dict(Na=145.0, K=5.0, M=140.0, P=10.0)
 FIXED_ANION_mM = 135.0
 TEMPERATURE_K = 310.0
 PUMP = dict(
-    law="nak_atp_mass_action_positive@1",
+    law="cells.cycle.nak_atp_mass_action_positive@1",
     roles=dict(sodium="Na", potassium="K"),
     stoichiometry=dict(Na=-3, K=2),
     km_na_mM=12.0,
     km_k_mM=0.2,
     km_atp_mM=0.5,
     metabolism=dict(
-        kind="maintained_chemical_reservoirs@1",
+        kind="cells.fuel_kind.maintained_chemical_reservoirs@1",
         atp_mM=1.5,
         adp_mM=0.1,
         pi_mM=0.1,
@@ -78,10 +78,10 @@ def default_world_cell(
     dt=1e-3,
     end_time=1.0,
     observation_times=None,
-    solver="imex_ars222_face_electromigration@1",
+    solver="cells.solver.imex_ars222_face_electromigration@1",
     world=None,
 ):
-    """resolved_pump_tissue@1 definition of the pre-screen's default-world cell.
+    """cells.model.resolved_pump_tissue@1 definition of the pre-screen's default-world cell.
 
     composition_mM: initial (Na, K, M) in mM, default the record's INIT end.
     """
@@ -104,7 +104,7 @@ def default_world_cell(
     return dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@1",
+            id="cells.model.resolved_pump_tissue@1",
             temperature_K=TEMPERATURE_K,
             species=[dict(id=s, valence=v) for s, v in SPECIES],
             cells=[
@@ -135,7 +135,7 @@ def default_world_cell(
                     area_m2=w["area_m2"],
                     capacitance_F=w["capacitance_F"],
                     permeability_m_per_s={s: permeability[s] for s in ids},
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=dict(
                         id="pump_0",
                         capacity_fmol_per_s=w["pump_capacity_fmol_s"],
@@ -146,7 +146,8 @@ def default_world_cell(
             junctions=[],
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
         ),
         experiment=dict(
@@ -167,7 +168,7 @@ def default_world_cell(
             jit=True,
             precision="float64",
             solver=solver,
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=int(math.ceil(end_time / dt)) + 8,
             max_trace_bytes=2**31,
             material_balance_atol_fmol={s: 1e-10 for s in ids},
@@ -175,7 +176,7 @@ def default_world_cell(
     )
 
 
-# ------------------------------------------------- resolved_pump_tissue@3 worlds
+# ------------------------------------------------- cells.model.resolved_pump_tissue@3 worlds
 
 
 def ionic_background(raw):
@@ -222,7 +223,7 @@ def e07_junction():
     From validation/tissue/resolved_scale_world.py: area = the cell's patch area
     (spacing / sqrt(3) x height), permeability = free diffusivity x gap-junction
     surface fraction / length per species (P blocked), and the voltage gate
-    junction_voltage_relaxation@1 with threshold 15 mV and minimum 0.1.
+    cells.junction.junction_voltage_relaxation@1 with threshold 15 mV and minimum 0.1.
     """
     from validation.tissue import resolved_scale_world as w225
 
@@ -329,7 +330,7 @@ def e07_sheet_definition(
                 permeability_m_per_s={
                     s: scale * factors[k] * v for s, v in j["permeability_m_per_s"].items()
                 },
-                law="constant_field@1",
+                law="cells.route.constant_field@1",
                 gate=gate,
             )
         )
@@ -357,7 +358,7 @@ def sheet_definition(
 
     states: (Vm, Na, K, M) per cell; edges: (i, j) cell pairs. The junctions are
     those of the MG0b driver (validation/morphogenesis/mg0b_domain_wall.py):
-    constant_field@1 for Na, K and M, P blocked, the voltage gate held open.
+    cells.route.constant_field@1 for Na, K and M, P blocked, the voltage gate held open.
     nav_availability holds every NaV1.2 population's availability; control, if
     given, adds the MG0b control population (Na leak, CONTROL_M_S) to every
     cell at that availability.
@@ -397,7 +398,7 @@ def sheet_definition(
             permeability_m_per_s={
                 s: (junction_m_s if s in wall.JUNCTION_SPECIES else 0.0) for s, _ in SPECIES
             },
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             gate=dict(wall.GATE_OPEN),
         )
         for k, (i, j) in enumerate(edges)

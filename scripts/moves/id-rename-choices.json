@@ -1,7 +1,7 @@
 {
  "kind": "cells.id_moves.choices@1",
  "move": "id-rename",
- "description": "The scripted ID rename's choices (D345, D346, D348, D371; docs/ID_HIERARCHY_DESIGN.md, sections 2, 5, 6 and 11), read by scripts/id_moves.py. Seeded from the design's open_points.json at main 76a498ae; edited by hand since. A seed names a live module's constant (or, with keys, a lookup table whose keys are the IDs). A word is a seed whose family word waits for the user: decided is false until then. A group's switch mints its rows or leaves them bare, on the kept list. The groups' choices, the files declared frozen, and the pinned files' and the artifacts' choices are the lead's proposals: they wait for the user's words too.",
+ "description": "The scripted ID rename's choices (D345, D346, D371, D380, D383; docs/ID_HIERARCHY_DESIGN.md, sections 2, 5, 6 and 11), read by scripts/id_moves.py and edited by hand. A seed names a module's constant (or, with keys, a lookup table whose keys are the IDs that no registry holds), and its family is one of registry/ids.py's words, which have no other home. Nothing waits for a word: the user's are D383's. An entry that the tree has overtaken is refused by `check` and by `table`.",
  "scope": {
   "dirs": [
    "src/",
@@ -21,36 +21,6 @@
    "tests/tier3_record.json"
   ]
  },
- "interfaces": {
-  "cells.channel_law@1": "channel",
-  "cells.cycle_law@1": "cycle",
-  "cells.route_law@1": "route",
-  "cells.junction_law@1": "junction",
-  "cells.binding_law@1": "binding",
-  "cells.channel_block_law@1": "channel_block",
-  "cells.exchange_law@1": "exchange",
-  "cells.reaction_law@1": "reaction",
-  "cells.rate_factor_law@1": "rate_factor",
-  "cells.rate_factor_law@2": "rate_factor",
-  "cells.free_energy_term@1": "free_energy",
-  "cells.population_structure@1": "population",
-  "cells.assembly_geometry@1": "assembly_geometry",
-  "cells.assembly_hazard@1": "assembly_hazard",
-  "cells.assembly_representation@1": "assembly_representation"
- },
- "pieces": {
-  "kind": "kind",
-  "operator": "operator",
-  "model": "model"
- },
- "families": [
-  "model",
-  "operator",
-  "kind",
-  "solver",
-  "heat",
-  "execution"
- ],
  "seeds": [
   {
    "module": "cells.numerics.surface_imex",
@@ -128,27 +98,6 @@
    "family": "heat"
   },
   {
-   "module": "cells.laws.channels.open_channel_block",
-   "name": "LAW_ID",
-   "family": "channel_block",
-   "note": "a registry row once H1a registers the block law (D371 Q2); the seed is then not used"
-  },
-  {
-   "module": "cells.definitions.specs",
-   "name": "MODEL_ID",
-   "family": "model"
-  },
-  {
-   "module": "cells.definitions.specs",
-   "name": "EMT_MODEL_ID",
-   "family": "model"
-  },
-  {
-   "module": "cells.definitions.specs",
-   "name": "PAIR_MODEL_ID",
-   "family": "model"
-  },
-  {
    "module": "cells.assembly",
    "name": "MODEL_ID",
    "family": "model"
@@ -159,286 +108,168 @@
    "family": "model"
   },
   {
-   "module": "cells.definitions.surface_tissue_spec",
-   "name": "MODEL_ID",
-   "family": "model",
-   "group": "three_models"
-  },
-  {
-   "module": "cells.definitions.surface_kinetic_spec",
-   "name": "MODEL_ID",
-   "family": "model",
-   "group": "three_models"
-  },
-  {
-   "module": "cells.definitions.surface_kinetic_spec",
-   "name": "CATALOG_MODEL_ID",
-   "family": "model",
-   "group": "three_models"
-  },
-  {
    "module": "cells.ensemble.ionic",
    "name": "MODEL_ID",
    "family": "model",
-   "group": "ensemble_model"
+   "ruling": "D380: minted"
   },
   {
-   "module": "cells.laws.channels.hcn_extra_catalog",
+   "module": "cells.laws.channels.shared_channel_catalog",
    "name": "LAW_CODES",
    "family": "channel",
    "keys": true,
-   "group": "catalogue",
-   "note": "the largest of the lookup tables surface_kinetic_spec chooses between: its keys that no registry holds are the 45 catalogue laws"
-  }
- ],
- "words": [
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the table that resolved_tissue@8 reads: its keys that no registry holds"
+  },
+  {
+   "module": "cells.laws.channels.calcium_catalog_extra",
+   "name": "LAW_CODES",
+   "family": "channel",
+   "keys": true,
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the law module's own table: no live model's table holds these laws"
+  },
+  {
+   "module": "cells.laws.channels.calcium_activated_potassium",
+   "name": "LAW_CODES",
+   "family": "channel",
+   "keys": true,
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the law module's own table: no live model's table holds these laws"
+  },
+  {
+   "module": "cells.laws.channels.morris_lecar_channels",
+   "name": "LAW_CODES",
+   "family": "channel",
+   "keys": true,
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the law module's own table: no live model's table holds these laws"
+  },
+  {
+   "module": "cells.laws.channels.hcn_extra_channels",
+   "name": "LAW_CODES",
+   "family": "channel",
+   "keys": true,
+   "ruling": "D383: the catalogue's laws are in the move",
+   "note": "the law module's own table: no live model's table holds these laws"
+  },
   {
    "module": "cells.laws.junctions.junction_formation",
    "name": "LAW_ID",
    "family": "junction_formation",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
+   "piece": "law (no Law record)",
    "named_in": "junction_formation.law of the replacement operator",
-   "piece": "law (no Law record)"
+   "ruling": "D383"
   },
   {
    "module": "cells.laws.reactions.ph_condition",
    "name": "LAW_ID",
    "family": "transfer_factor",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
+   "piece": "law (no Law record)",
    "named_in": "law of a pH condition, on a transfer's rate",
-   "piece": "law (no Law record)"
+   "ruling": "D383"
   },
   {
    "module": "cells.laws.routes.k_anion_symport",
    "name": "VOLUME_FACTOR_ID",
    "family": "transfer_factor",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
+   "piece": "law (no Law record)",
    "named_in": "volume_factor of the symport, on a route's rate",
-   "piece": "law (no Law record)"
+   "ruling": "D383"
   },
   {
    "module": "cells.laws.transport.patch_damage",
    "name": "LAW_ID",
    "family": "damage",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
+   "piece": "law (no Law record)",
    "named_in": "law of a patch damage",
-   "piece": "law (no Law record)"
+   "ruling": "D383"
   },
   {
    "module": "cells.operators.species_regulated_availability",
    "name": "STATE_LAW",
    "family": "regulation",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
+   "piece": "law (no Law record)",
    "named_in": "states[].law of regulated availability",
-   "piece": "law (no Law record)"
+   "ruling": "D383"
   },
   {
    "module": "cells.operators.site_occupancy",
    "name": "BINDING_LAW",
    "family": "site_binding",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
+   "piece": "law (no Law record)",
    "named_in": "the site operator's recorded laws",
-   "piece": "law (no Law record)"
+   "ruling": "D383"
   },
   {
    "module": "cells.operators.site_occupancy",
    "name": "INTERNALISATION_LAW",
    "family": "site_internalisation",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
+   "piece": "law (no Law record)",
    "named_in": "the site operator's recorded laws",
-   "piece": "law (no Law record)"
+   "ruling": "D383"
   },
   {
    "module": "cells.kinds.transporter",
    "name": "HELD",
    "family": "fuel_kind",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
+   "piece": "law (no Law record)",
    "named_in": "fuel.kind of a transporter",
-   "piece": "law (no Law record)"
+   "ruling": "D383"
   },
   {
    "module": "cells.kinds.transporter",
    "name": "FINITE",
    "family": "fuel_kind",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
+   "piece": "law (no Law record)",
    "named_in": "fuel.kind of a transporter",
-   "piece": "law (no Law record)"
+   "ruling": "D383"
   },
   {
    "module": "cells.numerics.surface_field",
    "name": "LAW_ID",
    "family": "field_closure",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
-   "named_in": "closure.law of every @3 world",
-   "piece": "law (no Law record)"
-  },
-  {
-   "module": "cells.numerics.exponential_gates",
-   "name": "LAW_ID",
-   "family": "solver",
-   "word": "existing",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint",
-    "bare"
-   ],
-   "named_in": "a module constant that nothing in src reads",
    "piece": "law (no Law record)",
-   "alternative": "leave out of the table (nothing reads it)"
+   "named_in": "closure.law of every @3 world",
+   "ruling": "D383"
   },
   {
    "module": "cells.operators.species_reactions",
    "name": "PASSIVE_LAW",
    "family": "species_reaction",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
-   "named_in": "reactions[].law of the species-reaction operator"
+   "named_in": "reactions[].law of the species-reaction operator",
+   "ruling": "D383"
   },
   {
    "module": "cells.definitions.kinetic_pump_spec",
    "name": "METABOLISM_ID",
    "family": "fuel_kind",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint"
-   ],
-   "named_in": "kind of a kinetic pump's pools"
+   "named_in": "kind of a kinetic pump's pools",
+   "ruling": "D383"
   },
   {
    "module": "cells.registry.species_registry",
    "name": "POTENTIAL_SETS",
    "family": "potential_set",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint",
-    "bare"
-   ],
-   "named_in": "potential_set of a world",
    "keys": true,
-   "alternative": "keep bare"
+   "named_in": "potential_set of a world",
+   "ruling": "D383"
   },
   {
    "module": "cells.assembly.graph",
    "name": "TOPOLOGY_ID",
    "family": "topology",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint",
-    "bare"
-   ],
    "named_in": "topology of capsid_graph@1 and finite_bond_assembly@1",
-   "alternative": "keep bare"
+   "ruling": "D383"
   },
   {
    "module": "cells.analysis.stationary",
    "name": "ANALYSIS_ID",
    "family": "analysis",
-   "word": "new",
-   "decided": false,
-   "choice": "mint",
-   "choices": [
-    "mint",
-    "bare"
-   ],
    "named_in": "analysis of an analysis config",
-   "alternative": "keep bare"
+   "ruling": "D383"
   }
  ],
- "groups": {
-  "three_models": {
-   "choice": "bare",
-   "choices": [
-    "mint",
-    "bare"
-   ],
-   "confirmed": false,
-   "status": "pending the lead",
-   "with_group": "catalogue",
-   "ruling": "proposed by the lead: bare until C-1; it waits for the user's words"
-  },
-  "catalogue": {
-   "choice": "bare",
-   "choices": [
-    "mint",
-    "bare"
-   ],
-   "confirmed": false,
-   "status": "pending the lead: catalogue law",
-   "with_group": "three_models",
-   "ruling": "proposed by the lead: bare until C-1; it waits for the user's words"
-  },
-  "ensemble_model": {
-   "choice": "mint",
-   "choices": [
-    "mint",
-    "bare"
-   ],
-   "confirmed": false,
-   "status": "pending the lead: ensemble model",
-   "ruling": "proposed by the lead: minted; it waits for the user's words"
-  }
- },
  "keep": {
   "ids": {
    "recorded label": [
@@ -507,6 +338,10 @@
      "reason": "written into records; no live code compares it with a literal"
     },
     {
+     "id": "positive_resolved_inventory_expanded_catalog_actual_controls@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
      "id": "positive_resolved_inventory_gates_atp_bounded_compliant_volumes@1",
      "reason": "written into records; no live code compares it with a literal"
     },
@@ -532,6 +367,10 @@
     },
     {
      "id": "read_only_accepted_grid_control_dependent_field@1",
+     "reason": "written into records; no live code compares it with a literal"
+    },
+    {
+     "id": "resolved_expanded_shared_catalog_accepted_grid@1",
      "reason": "written into records; no live code compares it with a literal"
     },
     {
@@ -609,8 +448,8 @@
      "reason": "the continuity record's format (execution/continuity.py:47, 251)"
     },
     {
-     "id": "declarations@2",
-     "reason": "the manifest's format (registry/declarations.py:58, 694)"
+     "id": "declarations@3",
+     "reason": "the manifest's format (registry/declarations.py FORMAT); its major covers the ID rule that the move amends (D371 Q6, D384)"
     },
     {
      "id": "finite_bond_ensemble@1",
@@ -622,7 +461,7 @@
     },
     {
      "id": "rate_equations_run@1",
-     "reason": "a run record's kind (assembly_lineages_v2/rate_equations.py:2375, 2441)"
+     "reason": "a run record's kind (models/assembly_lineages_v2/rate_equations.py:2375, 2441)"
     },
     {
      "id": "relations@1",
@@ -677,50 +516,30 @@
      "reason": "a checkpoint's format (models/assembly_lineages_v2/checkpoints.py FORMAT)"
     }
    ],
-   "constant, read by legacy or by nothing": [
+   "constant, read by nothing": [
     {
      "id": "bounding_patch_constant_field@1",
-     "reason": "laws/routes/patch_electrodiffusion.py:39 KIND_ID; surface_pump_v3.py:93, 2060 uses the module's bernoulli_slope only"
+     "reason": "laws/routes/patch_electrodiffusion.py KIND_ID: live code reads the module's slope and solver, not this ID"
     },
     {
      "id": "capacitive_regions_ghk_return_current@1",
-     "reason": "numerics/tissue_field.py:20-21; read by legacy/models/tissue.py:360, legacy/models/tissue_calcium.py:185 and legacy/core/tissue_spec.py:22"
+     "reason": "numerics/tissue_field.py LAW_ID: live code reads one function of the module"
     },
     {
      "id": "cell_charge_area_resolved_capacitors@1",
-     "reason": "numerics/surface_transport.py:18-19"
+     "reason": "numerics/surface_transport.py VOLTAGE_ID: nothing reads it"
     },
     {
-     "id": "er_calcium_pump_positive@1",
-     "reason": "laws/reactions/er_calcium.py:14-16; its IDs are read by legacy's calcium models only (live ca_atp_mass_action_positive.py and plasma_calcium.py use its functions)"
-    },
-    {
-     "id": "er_calcium_release@1",
-     "reason": "laws/reactions/er_calcium.py:14-16; its IDs are read by legacy's calcium models only (live ca_atp_mass_action_positive.py and plasma_calcium.py use its functions)"
+     "id": "exponential_mean_rate_linear_target_gates@1",
+     "reason": "numerics/exponential_gates.py LAW_ID: nothing in src reads it, so it is left out of the move (D383)"
     },
     {
      "id": "gauged_damped_newton@1",
-     "reason": "numerics/tissue_field.py:20-21; read by legacy/models/tissue.py:360, legacy/models/tissue_calcium.py:185 and legacy/core/tissue_spec.py:22"
-    },
-    {
-     "id": "gauged_dense_kirchhoff@1",
-     "reason": "the default of two execution types of legacy's models (definitions/specs.py:732, 738); compared in legacy/core/spatial_extracellular_spec.py:28"
-    },
-    {
-     "id": "maintained_mM_quotient@1",
-     "reason": "laws/reactions/er_calcium.py:14-16; its IDs are read by legacy's calcium models only (live ca_atp_mass_action_positive.py and plasma_calcium.py use its functions)"
-    },
-    {
-     "id": "ncx_3na_1ca_symmetric_barrier@1",
-     "reason": "laws/reactions/plasma_calcium.py:15-16; its IDs are read by legacy's calcium models only"
-    },
-    {
-     "id": "plasma_calcium_pump_positive@1",
-     "reason": "laws/reactions/plasma_calcium.py:15-16; its IDs are read by legacy's calcium models only"
+     "reason": "numerics/tissue_field.py SOLVER_ID: live code reads one function of the module"
     },
     {
      "id": "resolved_surface_transport_explicit_reservoirs@1",
-     "reason": "numerics/surface_transport.py:18-19"
+     "reason": "numerics/surface_transport.py LAW_ID: nothing reads it"
     }
    ]
   },
@@ -738,8 +557,7 @@
    "pinned_by": [
     "configs/reference/multispecies_trajectories_v1.json",
     "configs/reference/physical_ionic_graph_v1.json",
-    "configs/reference/voltage_gated_channel_v1.json",
-    "scripts/check_multispecies_contract.py"
+    "configs/reference/voltage_gated_channel_v1.json"
    ]
   },
   {
@@ -754,8 +572,7 @@
     "configs/reference/finite_extracellular_trajectories_v1.json",
     "configs/reference/finite_extracellular_trajectories_v2.json",
     "configs/reference/finite_extracellular_v1.json",
-    "configs/reference/physical_ionic_graph_trajectories_v1.json",
-    "scripts/check_physical_ionic_graph.py"
+    "configs/reference/physical_ionic_graph_trajectories_v1.json"
    ]
   },
   {
@@ -768,36 +585,8 @@
    ],
    "pinned_by": [
     "configs/reference/physical_ionic_graph_v1.json",
-    "configs/reference/voltage_gated_trajectories_v1.json",
-    "scripts/check_voltage_gated_channel.py"
+    "configs/reference/voltage_gated_trajectories_v1.json"
    ]
-  },
-  {
-   "path": "configs/resolved_hcn_extra_ionic.json",
-   "kind": "data",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "tests/tier3_record.json"
-   ],
-   "note": "live: its only quote is a logged assertion line of tests/tier3_record.json, and three protocols' pins of it are already stale (proposed by the lead, 25 November; it waits for the user's words)"
-  },
-  {
-   "path": "examples/tissue_geometry/irregular_native_radial.request.json",
-   "kind": "data",
-   "choice": "leave",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "tests/fixtures/tissue_geometry_cli/tissue_geometry_cli_contract.json",
-    "validation/geometry/geometry_profile_preparation_protocol.json"
-   ],
-   "note": "stays with the eight artifacts: left as it is, and its reader translates (proposed by the lead, 25 November; it waits for the user's words)"
   },
   {
    "path": "src/cells/assembly/__init__.py",
@@ -830,31 +619,6 @@
    ],
    "pinned_by": [
     "validation/topology/joint_water_profile_phase_handoff_protocol.json"
-   ]
-  },
-  {
-   "path": "src/cells/ensemble/worker.py",
-   "kind": "src",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell"
-   ],
-   "pinned_by": [
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json"
-   ]
-  },
-  {
-   "path": "tests/reference_finite_extracellular.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "configs/reference/finite_extracellular_trajectories_v1.json",
-    "configs/reference/finite_extracellular_trajectories_v2.json",
-    "validation/geometry/geometry_tissue_preparation_protocol.json"
    ]
   },
   {
@@ -954,19 +718,6 @@
    ]
   },
   {
-   "path": "validation/geometry/active_polygon_physiology_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/active_ecm_polygon_source_map.json",
-    "validation/geometry/active_polygon_physiology_source_map.json"
-   ]
-  },
-  {
    "path": "validation/geometry/conservative_polygon_geometry_protocol.json",
    "kind": "data",
    "choice": "leave",
@@ -976,28 +727,6 @@
    ],
    "pinned_by": [
     "validation/geometry/conservative_polygon_geometry_source_map.json"
-   ]
-  },
-  {
-   "path": "validation/geometry/conservative_polygon_geometry_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/active_ecm_polygon_source_map.json",
-    "validation/geometry/active_polygon_physiology_source_map.json",
-    "validation/geometry/conservative_polygon_geometry_source_map.json",
-    "validation/geometry/finite_ecm_polygon_source_map.json",
-    "validation/geometry/stable_seed_control_volume_environment_source_map.json",
-    "validation/geometry/stable_seed_control_volume_physical_bridge_source_map.json",
-    "validation/geometry/stable_seed_explicit_ecm_partition_source_map.json",
-    "validation/geometry/stable_seed_partition_advance_refinement_initial_source_map.json",
-    "validation/geometry/stable_seed_partition_advance_refinement_source_map.json",
-    "validation/geometry/stable_seed_partition_physiology_bridge_protocol.json",
-    "validation/geometry/stable_seed_partition_physiology_bridge_source_map.json"
    ]
   },
   {
@@ -1025,19 +754,6 @@
     "validation/geometry/stable_seed_partition_physiology_bridge_protocol.json",
     "validation/geometry/stable_seed_partition_trajectory_callers.json",
     "validation/geometry/stable_seed_partition_trajectory_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/active_excision_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
    ]
   },
   {
@@ -1074,133 +790,6 @@
    ]
   },
   {
-   "path": "validation/tissue/surface_energy_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/active_ecm_polygon_source_map.json",
-    "validation/geometry/active_polygon_physiology_source_map.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_excision_fixtures.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/membrane_profile_phase_handoff_protocol.json",
-    "validation/topology/surface_active_profile_interventions_protocol.json",
-    "validation/topology/surface_profile_interventions_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_excision_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_mobile_pump_fixtures.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_redistribution_fixtures.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_water_kinetic_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_water_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/tissue/joint_water_hcn_protocol.json",
-    "validation/topology/joint_water_profile_interventions_protocol.json",
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/test_morris_lecar_catalog_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/topology/surface_profile_interventions_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/topology/joint_water_profile_interventions_protocol.json",
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json",
-    "validation/topology/membrane_profile_phase_handoff_protocol.json",
-    "validation/topology/owned_calcium_profile_interventions_protocol.json",
-    "validation/topology/owned_calcium_profile_phase_handoff_protocol.json",
-    "validation/topology/surface_active_profile_interventions_protocol.json"
-   ]
-  },
-  {
    "path": "validation/topology/tissue_profile_preparation_protocol.json",
    "kind": "data",
    "choice": "leave",
@@ -1211,97 +800,6 @@
    "pinned_by": [
     "validation/geometry/geometry_tissue_preparation_protocol.json",
     "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  }
- ],
- "artifacts": [
-  {
-   "path": "examples/active_tissue_phase/continued.request.json",
-   "choice": "declare",
-   "choices": [
-    "regenerate",
-    "declare",
-    "keep_on_snapshot"
-   ],
-   "read_by": []
-  },
-  {
-   "path": "examples/extracellular_barriers/scheduled.json",
-   "choice": "declare",
-   "choices": [
-    "regenerate",
-    "declare",
-    "keep_on_snapshot"
-   ],
-   "read_by": []
-  },
-  {
-   "path": "examples/geometry_tissue_profiles/irregular_overlap.request.json",
-   "choice": "declare",
-   "choices": [
-    "regenerate",
-    "declare",
-    "keep_on_snapshot"
-   ],
-   "read_by": [
-    "tests/integration/test_geometry_profiles_cli.py"
-   ]
-  },
-  {
-   "path": "examples/scheduled_active_membrane_profiles/artifact.json",
-   "choice": "declare",
-   "choices": [
-    "regenerate",
-    "declare",
-    "keep_on_snapshot"
-   ],
-   "read_by": [
-    "tests/unit/test_surface_active_profile_interventions_dispatch.py"
-   ]
-  },
-  {
-   "path": "examples/scheduled_active_membrane_profiles/definition.json",
-   "choice": "declare",
-   "choices": [
-    "regenerate",
-    "declare",
-    "keep_on_snapshot"
-   ],
-   "read_by": [
-    "tests/unit/test_surface_active_profile_interventions_dispatch.py"
-   ]
-  },
-  {
-   "path": "examples/scheduled_membrane_profiles/artifact.json",
-   "choice": "declare",
-   "choices": [
-    "regenerate",
-    "declare",
-    "keep_on_snapshot"
-   ],
-   "read_by": []
-  },
-  {
-   "path": "examples/scheduled_membrane_profiles/definition.json",
-   "choice": "declare",
-   "choices": [
-    "regenerate",
-    "declare",
-    "keep_on_snapshot"
-   ],
-   "read_by": []
-  },
-  {
-   "path": "examples/tissue_phase/continued.request.json",
-   "choice": "declare",
-   "choices": [
-    "regenerate",
-    "declare",
-    "keep_on_snapshot"
-   ],
-   "read_by": [
-    "tests/integration/test_tissue_phase_cli.py",
-    "tests/unit/test_surface_profile_epoch_dispatch.py"
    ]
   }
  ],
@@ -1357,14 +855,239 @@
     "owner": "fr1"
    },
    {
+    "path": "validation/energy_step_doubling/RESULTS.md",
+    "reason": "a record: the results of FR-18's criterion X, in the IDs of their time",
+    "owner": "fr18"
+   },
+   {
+    "path": "validation/ensemble_reexpression/registered_strings.json",
+    "reason": "the re-expression's registered strings, Part 1, in the IDs they were registered in (the protocol, section 5: the strings notes are frozen for the move)",
+    "owner": "the lead"
+   },
+   {
+    "path": "validation/ensemble_reexpression/registered_strings_part2.json",
+    "reason": "the re-expression's registered strings, Part 2, in the IDs they were registered in (the protocol, section 5: the strings notes are frozen for the move)",
+    "owner": "the lead"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/README.md",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/checks.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/closure.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/estimate.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/exclusions.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/inputs_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/legacy_arrays.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/legacy_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/make_inputs.py",
+    "reason": "the rehearsal's maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify.py compares the captured definitions with what it writes; the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/make_profile.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/margins_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/parse_check.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/plant_driver.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/plants_manifest_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/pool_paths.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/profile_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/reference.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/reference_paths_rehearsal.json",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/registered_strings_rehearsal.json",
+    "reason": "the rehearsal's registered strings, in the IDs they were declared with (the protocol, section 5: the strings notes and the rehearsal's files are frozen for the move)",
+    "owner": "the lead"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/rules.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal/verify.py",
+    "reason": "Part 1's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/README.md",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/checks2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/estimate2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/exclusions2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/inputs_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/legacy_arrays2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/legacy_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/make_inputs2.py",
+    "reason": "Part 2's rehearsal maker: it writes legacy definitions for the frozen snapshot, in the IDs that the snapshot spells, and verify2.py compares the captured definitions with what it writes; the protocol freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/make_profile2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/margins_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/plant_driver2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/plants_manifest_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/pool_paths2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/profile_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/reference2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/reference_paths_rehearsal_part2.json",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/rules2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
+    "path": "validation/ensemble_reexpression/rehearsal_part2/verify2.py",
+    "reason": "Part 2's rehearsal: the protocol (section 5) freezes the rehearsal's files for the move",
+    "owner": "ensemble"
+   },
+   {
     "path": "validation/fr1/references/reference_inputs.json",
     "reason": "registered reference inputs, whose git blob FR-1's design pins and a test checks",
     "owner": "fr1"
    },
    {
+    "path": "validation/fr10/references/README.md",
+    "reason": "a record: the page of FR-10's registered references, in the IDs of their time",
+    "owner": "fr10"
+   },
+   {
+    "path": "validation/fr43_part1/PERFORMANCE.md",
+    "reason": "a record: FR-43 part 1's performance report (C1.4), beside its measured summary, performance.json",
+    "owner": "fr43"
+   },
+   {
     "path": "validation/fr43_part1/performance.json",
     "reason": "a record: the measured summary of FR-43 part 1's performance report (C1.4)",
     "owner": "fr43"
+   },
+   {
+    "path": "validation/fr6/references/README.md",
+    "reason": "a record: the page of FR-6's registered references, in the IDs of their time",
+    "owner": "fr6"
    },
    {
     "path": "validation/fr6/references/reference_inputs.json",
@@ -1375,6 +1098,76 @@
     "path": "validation/fr6/references/worlds.py",
     "reason": "the generator of FR-6's registered inputs, which a test compares with it",
     "owner": "fr6"
+   },
+   {
+    "path": "validation/gard/references/README.md",
+    "reason": "a record: the page of GARD's references (G2), in the IDs of their time",
+    "owner": "gard"
+   },
+   {
+    "path": "validation/legacy_port/README.md",
+    "reason": "the deletion's record: the page of its list and tools, as the deletion used them",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/capture.sh",
+    "reason": "the captures' runner: it runs the frozen legacy snapshot, whose IDs its worlds spell",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/capture_worlds.py",
+    "reason": "the captures' tool: it runs the frozen legacy snapshot, and its four old spellings are comments that name the captured worlds as the snapshot spells them (the plants' manifests quote an earlier version's hash, so no pin holds it)",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/carrier_plants.json",
+    "reason": "the deletion's record: the faults planted in the engine before the move, and the rows that failed on each",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/carrier_plants.py",
+    "reason": "the deletion's tool that planted faults in the engine before the move; its record is carrier_plants.json",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/edits-optional.json",
+    "reason": "the deletion's record: the optional batch's edits, as made at the deletion's head",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/edits.json",
+    "reason": "the deletion's record: its edits, with the texts and library pages they replaced, as made at the deletion's head",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/make_deletion.py",
+    "reason": "the deletion's tool, as it made the deletion",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/make_edits.py",
+    "reason": "the deletion's tool that wrote edits.json: the texts it replaced, and the pages it named, in the IDs of the tree before the move",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/reach.py",
+    "reason": "the deletion's tool that read the import graph before the move",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/long_duration/REGISTRATION_20261118.md",
+    "reason": "a record: FR-8 stage 0's registration, in the IDs of its time",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/RESULTS_20261118.md",
+    "reason": "a record: FR-8 stage 0's results, in the IDs of their time",
+    "owner": "fr8"
+   },
+   {
+    "path": "validation/long_duration/RUNG0_20261119.md",
+    "reason": "a record: FR-8 rung 0's registration and results, in the IDs of their time",
+    "owner": "fr8"
    },
    {
     "path": "validation/long_duration/registration_20261118.json",
@@ -1390,6 +1183,11 @@
     "path": "validation/long_duration/rung0_results_20261119.json",
     "reason": "the registered results of rung 0 (its registration field)",
     "owner": "fr8"
+   },
+   {
+    "path": "validation/membrane_trafficking/references/README.md",
+    "reason": "a record: the page of FR-2's registered references, in the IDs of their time",
+    "owner": "fr2"
    },
    {
     "path": "validation/morphogenesis/protocols/mg0a_gradient_v1.json",
@@ -1784,6 +1582,101 @@
    "ool-": "ool"
   }
  },
+ "plants": {
+  "apply": true,
+  "note": "D371 Q8: a plant takes the three-part shape, its family by its declaring type; those whose type the tool does not see are named here, read by hand",
+  "families": {
+   "cells.planted@1": "route",
+   "tests.second@1": "channel",
+   "tests.elsewhere@1": "cycle",
+   "seamtest.edge_pump@1": "cycle",
+   "seamtest.nowhere@1": "cycle",
+   "seamtest.synthase_cited@1": "cycle",
+   "seamtest.synthase_shifted@1": "cycle",
+   "seamtest.ref_law@1": "cycle",
+   "tests.kv_planted@1": "channel",
+   "tests.planted_view_channel@1": "channel",
+   "tests.limit_off_by_a_constant@1": "reaction",
+   "validation.ol6_plant_power_off_by_one@1": "reaction",
+   "tests.steep_fuel@1": "cycle",
+   "tests.unregistered@1": "cycle",
+   "seamtest.monomial_hydrolysis@1": "cycle",
+   "seamtest.monomial_off@1": "cycle",
+   "seamtest.monomial_total@1": "cycle",
+   "seamtest.monomial_mg@1": "cycle",
+   "seamtest.signed_basis@1": "cycle",
+   "seamtest.wrong_sign_basis@1": "cycle",
+   "tests.alpha@1": "kind",
+   "tests.beta@1": "kind",
+   "tests.b@1": "kind",
+   "tests.factor@1": "kind",
+   "tests.factor_b@1": "kind",
+   "tests.non_mover@1": "kind",
+   "tests.claimant@1": "operator",
+   "tests.event@1": "operator",
+   "tests.pools@1": "operator",
+   "tests.swap@1": "operator",
+   "tests.existing_operator@1": "operator",
+   "tests.new_operator@1": "operator",
+   "tests.newer_operator@1": "operator",
+   "tests.not_an_operator@1": "operator",
+   "tests.loose@1": "operator",
+   "tests.planted_reaction@1": "operator",
+   "tests.law_a@1": "binding",
+   "tests.law_b@1": "binding",
+   "tests.literal_last_molecule@1": "reaction",
+   "tests.one_sided@1": "reaction",
+   "tests.power_propensity@1": "reaction",
+   "tests.planted_ensemble@1": "model",
+   "tests.planted_exchange@1": "exchange",
+   "tests.planted_home_route@1": "route",
+   "tests.planted_inert_route@1": "route",
+   "tests.twice@1": "route",
+   "tests.x@1": "route",
+   "tests.y@1": "route",
+   "tests.planted_move@1": "planted",
+   "tests.pretender@1": "route",
+   "tests.undeclared@1": {
+    "tests/unit/test_model_table.py": "exchange",
+    "*": "kind"
+   },
+   "test_add0@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_add1@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_multiply0@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_multiply1@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_r0@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "test_r1@1": {
+    "tests/unit/test_door_s.py": "operator"
+   },
+   "elementless@1": {
+    "tests/unit/test_pump_composite_contract.py": "operator"
+   },
+   "planted_author@1": {
+    "tests/unit/test_population_unit_turnover.py": "operator"
+   }
+  },
+  "not_plants": {
+   "tests.planted_ensemble_kind@1": "a plan document's kind",
+   "tests.planted_law@1": "an outside interface's ID",
+   "acme.a_law@1": "an example of the grammar"
+  }
+ },
+ "ids_kept": [
+  {
+   "test": "tests/unit/test_j2_bright_line.py::test_the_scan_sees_each_form",
+   "reason": "its parameters hold the partition law's ID built from two literals (the module splits them so that it holds no source of its own); the guard looks for that text inside longer strings, so it finds the new ID too"
+  }
+ ],
  "reviewed": [
   {
    "cls": [
@@ -1880,24 +1773,6 @@
     "computed",
     "cut"
    ],
-   "path": "scripts/check_source_graph_reference.py",
-   "text": "@",
-   "reason": "a label of a case, a time, a step or a node: no ID"
-  },
-  {
-   "cls": [
-    "computed",
-    "cut"
-   ],
-   "path": "tests/reference_source_graph.py",
-   "text": "@",
-   "reason": "a label of a case, a time, a step or a node: no ID"
-  },
-  {
-   "cls": [
-    "computed",
-    "cut"
-   ],
    "path": "src/cells/analysis/stationary.py",
    "text": "@",
    "reason": "a label of a case, a time, a step or a node: no ID"
@@ -1969,30 +1844,6 @@
    "cls": [
     "computed"
    ],
-   "path": "tests/joint_water_hcn_fixtures.py",
-   "text": "resolved_",
-   "reason": "legacy's joint water models, which stay bare (D348)"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
-   "path": "tests/integration/test_joint_water_hcn_interfaces.py",
-   "text": "@2",
-   "reason": "legacy's joint water models, which stay bare (D348)"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
-   "path": "tests/unit/test_morris_lecar_energy_water.py",
-   "text": "@2",
-   "reason": "legacy's water models, which stay bare (D348)"
-  },
-  {
-   "cls": [
-    "computed"
-   ],
    "path": "tests/unit/test_modules_surface.py",
    "text": "a\\.name",
    "reason": "module names"
@@ -2043,14 +1894,6 @@
    "cls": [
     "regex"
    ],
-   "path": "scripts/legacy_inventory.py",
-   "text": "cells\\\\\\.model",
-   "reason": "H2: a model's ID, bare or full, read by its name and major"
-  },
-  {
-   "cls": [
-    "regex"
-   ],
    "path": "validation/protocol_models.py",
    "text": "\\\\b\\(",
    "reason": "H2: a model's ID read by its name and major, one key for a bare and a full ID"
@@ -2063,14 +1906,6 @@
    "path": "validation/protocol_models.py",
    "text": "model\\.split|resolved_pump_tissue",
    "reason": "H2: a model's name and major, from the one key"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
-   "path": "scripts/legacy_inventory.py",
-   "text": "rpartition|^v\\.split",
-   "reason": "H2: a module's last part, and a model's name from the one key"
   },
   {
    "cls": [
@@ -2151,22 +1986,6 @@
    "path": "scripts/source_moves.py",
    "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
    "reason": "module names"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
-   "path": "scripts/source_moves_plan.py",
-   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
-   "reason": "module names"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
-   "path": "tests/betse_physiology/unit/*.py",
-   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
-   "reason": "array keys"
   },
   {
    "cls": [
@@ -2300,14 +2119,6 @@
    "cls": [
     "cut"
    ],
-   "path": "tests/reference_multispecies.py",
-   "text": "betse_kv1p5_mh@1",
-   "reason": "a saved reference's own name for the law, replaced whole; H3 reads the pinned file through the table"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
    "path": "src/cells/registry/declarations.py",
    "text": "split",
    "reason": "the page's path and the identity: after the namespace, and at the major (H1b reads the parts)"
@@ -2388,41 +2199,9 @@
    "cls": [
     "partial"
    ],
-   "path": "tests/integration/test_surface_open_calcium_bath_public.py",
-   "text": "MODEL_ID",
-   "reason": "legacy's model IDs, which stay bare (D348)"
-  },
-  {
-   "cls": [
-    "partial"
-   ],
-   "path": "validation/tissue/physiology_*_reference.py",
-   "text": "model_id",
-   "reason": "legacy's model IDs, which stay bare (D348)"
-  },
-  {
-   "cls": [
-    "partial"
-   ],
    "path": "validation/betse/native_multi_cell_caller_comparison_runtime.py",
    "text": "\\.so",
    "reason": "a file name"
-  },
-  {
-   "cls": [
-    "partial"
-   ],
-   "path": "scripts/legacy_inventory.py",
-   "text": "startswith\\(\\\"cells",
-   "reason": "module names"
-  },
-  {
-   "cls": [
-    "partial"
-   ],
-   "path": "scripts/source_moves_plan.py",
-   "text": "startswith\\(\\\"cells",
-   "reason": "module names"
   },
   {
    "cls": [
@@ -2468,14 +2247,6 @@
    "cls": [
     "cut"
    ],
-   "path": "tests/unit/test_cotransport.py",
-   "text": "law\\.split\\(\"_\"\\)",
-   "reason": "the name of an optional evidence file, which nothing reads"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
    "path": "tests/unit/test_kind_lifecycle_roles.py",
    "text": "planted_law\\[",
    "reason": "an array of codes"
@@ -2504,14 +2275,6 @@
    "path": "validation/tissue/field_solver_choice.py",
    "text": "model_id\\.index\\(\"@\"\\)",
    "reason": "the start of a whole ID, which the move re-spells, tested against whole IDs"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
-   "path": "tests/reference_multispecies.py",
-   "text": "text\\.replace\\(first",
-   "reason": "the pinned panels' first spelling, kept by its marker, put in today's"
   },
   {
    "cls": [
@@ -2551,103 +2314,71 @@
    ],
    "path": "tests/unit/test_law_registry.py",
    "text": "value\\.split\\(\"\\.\", 2\\)",
-   "reason": "H1b: the last part of a planted ID of three parts"
-  }
- ],
- "plants": {
-  "apply": true,
-  "note": "D371 Q8: a plant takes the three-part shape, its family by its declaring type; those whose type the tool does not see are named here, read by hand",
-  "families": {
-   "cells.planted@1": "route",
-   "tests.second@1": "channel",
-   "tests.elsewhere@1": "cycle",
-   "seamtest.edge_pump@1": "cycle",
-   "seamtest.nowhere@1": "cycle",
-   "seamtest.synthase_cited@1": "cycle",
-   "seamtest.synthase_shifted@1": "cycle",
-   "seamtest.ref_law@1": "cycle",
-   "tests.kv_planted@1": "channel",
-   "tests.planted_view_channel@1": "channel",
-   "tests.limit_off_by_a_constant@1": "reaction",
-   "validation.ol6_plant_power_off_by_one@1": "reaction",
-   "tests.steep_fuel@1": "cycle",
-   "tests.unregistered@1": "cycle",
-   "seamtest.monomial_hydrolysis@1": "cycle",
-   "seamtest.monomial_off@1": "cycle",
-   "seamtest.monomial_total@1": "cycle",
-   "seamtest.monomial_mg@1": "cycle",
-   "seamtest.signed_basis@1": "cycle",
-   "seamtest.wrong_sign_basis@1": "cycle",
-   "tests.alpha@1": "kind",
-   "tests.beta@1": "kind",
-   "tests.b@1": "kind",
-   "tests.factor@1": "kind",
-   "tests.factor_b@1": "kind",
-   "tests.non_mover@1": "kind",
-   "tests.claimant@1": "operator",
-   "tests.event@1": "operator",
-   "tests.pools@1": "operator",
-   "tests.swap@1": "operator",
-   "tests.existing_operator@1": "operator",
-   "tests.new_operator@1": "operator",
-   "tests.newer_operator@1": "operator",
-   "tests.not_an_operator@1": "operator",
-   "tests.loose@1": "operator",
-   "tests.planted_reaction@1": "operator",
-   "tests.law_a@1": "binding",
-   "tests.law_b@1": "binding",
-   "tests.literal_last_molecule@1": "reaction",
-   "tests.one_sided@1": "reaction",
-   "tests.power_propensity@1": "reaction",
-   "tests.planted_ensemble@1": "model",
-   "tests.planted_exchange@1": "exchange",
-   "tests.planted_home_route@1": "route",
-   "tests.planted_inert_route@1": "route",
-   "tests.twice@1": "route",
-   "tests.x@1": "route",
-   "tests.y@1": "route",
-   "tests.planted_move@1": "planted",
-   "tests.pretender@1": "route",
-   "tests.undeclared@1": {
-    "tests/unit/test_model_table.py": "exchange",
-    "*": "kind"
-   },
-   "test_add0@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_add1@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_multiply0@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_multiply1@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_r0@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_r1@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "elementless@1": {
-    "tests/unit/test_pump_composite_contract.py": "operator"
-   },
-   "planted_author@1": {
-    "tests/unit/test_population_unit_turnover.py": "operator"
-   }
+   "reason": "H1b: the last part of a planted ID of three parts (the strict grammar's line, so a scan before its merge lists this review as stale)"
   },
-  "not_plants": {
-   "tests.planted_ensemble_kind@1": "a plan document's kind",
-   "tests.planted_law@1": "an outside interface's ID",
-   "acme.a_law@1": "an example of the grammar"
-  }
- },
- "artifacts_note": "D380, a proposal that waits for the user's words: the outcomes are declared and the tests leave with legacy, unless regenerating them proves easy; the script re-spells the files (regenerate, declare) or leaves them (keep_on_snapshot)",
- "ids_kept": [
   {
-   "test": "tests/unit/test_j2_bright_line.py::test_the_scan_sees_each_form",
-   "reason": "its parameters hold the partition law's ID built from two literals (the module splits them so that it holds no source of its own); the guard looks for that text inside longer strings, so it finds the new ID too"
+   "cls": [
+    "message"
+   ],
+   "path": "tests/unit/test_fr5_source_kinds.py",
+   "text": "no set for its axis species_condition",
+   "reason": "the run view's axis (kinds/species_condition.py AXIS), a name of its own that the move keeps, not the start of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_species_condition_kind.py",
+   "text": "f\\.startswith\\(\"species_condition",
+   "reason": "the start of the kind's field names, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/calcium_store/references/second_route.py",
+   "text": "\"fuel\" in (mover|mv)\\b",
+   "reason": "a mover's own key, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/ensemble_reexpression/table.py",
+   "text": "\"assembly\" in e\\[\"inputs\"\\]",
+   "reason": "a key of an entry's inputs, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "validation/ensemble_reexpression/worlds.py",
+   "text": "\"kind\" in fuel\\b",
+   "reason": "a fuel's own key, not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_batch_windows.py",
+   "text": "n\\.startswith\\(kind\\)",
+   "reason": "the field names of a parameters tuple (cycle_, passive_, species_condition, reaction_), not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_ensemble_reexpression_part2.py",
+   "text": "\"cells\" in at\\b",
+   "reason": "a site's own key (cells or outside), not a part of an ID"
+  },
+  {
+   "cls": [
+    "partial"
+   ],
+   "path": "tests/unit/test_ensemble_reexpression_part2.py",
+   "text": "\"assembly_observable\" in entry\\[\"strings\"\\]",
+   "reason": "a label of the strings note, a key of an entry's strings, not a part of an ID"
   }
  ]
 }

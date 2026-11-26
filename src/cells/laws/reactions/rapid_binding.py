@@ -1,7 +1,7 @@
-"""rapid_binding@1: the rapid-equilibrium binding closure for several ligands on multi-form binders
+"""cells.binding.rapid_binding@1: the rapid-equilibrium binding closure for several ligands on multi-form binders
 (seam C; docs/CORE_SEAMS_DESIGN.md §5 and §19 as amended on 18 November 2026).
 
-The generalisation of rapid_proton_buffer@1 (B4, laws/reactions/rapid_proton_buffer.py): at a node,
+The generalisation of cells.kind.rapid_proton_buffer@1 (B4, laws/reactions/rapid_proton_buffer.py): at a node,
 ligand rows L (H, Mg, Ca, ...) and binder rows B whose forms the species registry declares
 (registry/species_registry.py, ``forms``). Each binder row holds its total T_B; each ligand row holds
 its total equivalents T_L, the free ligand plus every bound one counted from each binder's base form
@@ -77,7 +77,7 @@ from cells.laws.electrochemistry import R
 from cells.laws.reactions import rapid_proton_buffer as b4
 from cells.modules import BindingLaw, Citation
 
-READ_ID = "rapid_binding@1"
+READ_ID = "cells.binding.rapid_binding@1"
 RESIDUAL_RTOL = 1e-13  # |g_L| / A_L at the returned root; above it the read fails.
 NEWTON_STEPS = 48  # Fixed: 2.5 x the worst first convergence (19) over 2471 swept states.
 LINE_STEPS = 10  # Armijo halvings evaluated at every iteration.
@@ -677,7 +677,7 @@ LAW = BindingLaw(
     free_energy=free_energy_pJ,
     envelope=lag_first_order,
     free_amounts=free_amounts,
-    host="cells.rapid_proton_buffer@1",
+    host="cells.kind.rapid_proton_buffer@1",
     provenance="cited",
     source=Citation(
         "the rapid-equilibrium binding closure: B4's rapid-buffer closure generalised to several "

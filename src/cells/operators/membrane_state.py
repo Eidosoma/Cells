@@ -1,4 +1,4 @@
-"""Operator membrane_entity_state@1: membrane area, capacitance and population abundance as state.
+"""Operator cells.operator.membrane_entity_state@1: membrane area, capacitance and population abundance as state.
 
 docs/PUMP_COMPOSITE_V2_DESIGN.md §3 (decision 5) and docs/CELL_DIVISION_DESIGN.md §2. A state
 owner with no dynamics of its own. It holds, as anchored increments from the declared values:
@@ -7,7 +7,7 @@ owner with no dynamics of its own. It holds, as anchored increments from the dec
 * per population, abundance N in units, from the declared abundance a0 as
   N0 = a0 A0 rho_ref, with rho_ref the population's declared reference density (units/m^2).
 Its writers are later operators, each booking its contributions in its own accumulators:
-scheduled_membrane_insertion@1 now; partition, mechanics and trafficking later.
+cells.operator.scheduled_membrane_insertion@1 now; partition, mechanics and trafficking later.
 
 View (R2): @3's membrane_area = A0 + dA, membrane_capacitance = C0 + dC and
 channel_abundance = a0 A0 / A + dN / (A rho_ref), and exactly 0 for an empty population (N = 0;
@@ -39,7 +39,7 @@ from cells.models import surface_pump as first
 from cells.operators.contract import Operator
 from cells.registry.species_registry import parse_catalogue  # Moved there (D176); kept here.
 
-LAW_ID = "membrane_entity_state@1"
+LAW_ID = "cells.operator.membrane_entity_state@1"
 
 STATE_AXES = {
     "membrane_area_increment_m2": ["membrane_slot"],

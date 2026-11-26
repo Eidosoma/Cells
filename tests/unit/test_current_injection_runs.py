@@ -1,4 +1,4 @@
-"""Compiled runs of electrode_current_injection@1 (docs/PUMP_COMPOSITE_V2_DESIGN.md §4).
+"""Compiled runs of cells.operator.electrode_current_injection@1 (docs/PUMP_COMPOSITE_V2_DESIGN.md §4).
 
 An @3 heredity cell with one electrode, through the runner and its host checks: both
 polarities booked at f I h / (z F) with the ledgers closing, idle injection bitwise equal to
@@ -20,7 +20,7 @@ from validation.tissue import pump_water_fixtures as fx
 
 jax.config.update("jax_enable_x64", True)
 
-LAW = "electrode_current_injection@1"
+LAW = "cells.operator.electrode_current_injection@1"
 DT = 1e-3
 
 

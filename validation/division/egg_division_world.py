@@ -3,11 +3,11 @@
 A development run, not judged: it shows that every ledger, domain and dissipation check closes
 across egg-scale partitions, and that the retirement record is state wherever state goes.
 
-Engine models: resolved_pump_composite@1 over resolved_pump_tissue@3, with:
-* membrane_entity_state@1;
-* scheduled_membrane_insertion@2 and restricted_cleft_lumen@2;
-* isopotential_partition@1 and cytoplasmic_bridge_closure@1;
-* electrode_current_injection@1.
+Engine models: cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, with:
+* cells.operator.membrane_entity_state@1;
+* cells.operator.scheduled_membrane_insertion@2 and cells.operator.restricted_cleft_lumen@2;
+* cells.operator.isopotential_partition@1 and cells.operator.cytoplasmic_bridge_closure@1;
+* cells.operator.electrode_current_injection@1.
 
 The egg is the S0 smoke test's declared egg, as the risk-1 probe builds it
 (validation/tissue/egg_scale_smoke): dL74's water volume and cytosol activities, Steinberg's
@@ -112,7 +112,7 @@ def add_furrow(raw, *, patch_id, cell, node_id, face_id):
             area_m2=ACCESS_AREA_M2,
             length_m=ACCESS_LENGTH_M,
             diffusivity_m2_per_s=dict(FREE_D),
-            law="logmean_electrodiffusion@1",
+            law="cells.route.logmean_electrodiffusion@1",
         )
     )
     e["membrane_controls"].append(
@@ -171,9 +171,9 @@ def definition(*, scale=1.0, dt=DT, injection=True):
             schedules[f"furrow_{d}_{g}"] = (None, [(0.0, 0.0), (second, 0.25 * r)])
             schedules[f"furrow2_{d}_{g}"] = (None, [(0.0, 0.0), (second, 0.5 * r)])
     m["operators"] = [
-        dict(law="membrane_entity_state@1", populations=[]),
+        dict(law="cells.operator.membrane_entity_state@1", populations=[]),
         dict(
-            law="scheduled_membrane_insertion@2",
+            law="cells.operator.scheduled_membrane_insertion@2",
             patches=[
                 dict(
                     membrane_id=k,
@@ -184,15 +184,15 @@ def definition(*, scale=1.0, dt=DT, injection=True):
             ],
         ),
         dict(
-            law="restricted_cleft_lumen@2",
+            law="cells.operator.restricted_cleft_lumen@2",
             lumens=[
                 dict(node_id=k, source_id="steinberg", gap_width_m=GAP_M)
                 for k in ("cleft", "cleft2_e1", "cleft2_e2")
             ],
         ),
-        dict(law="isopotential_partition@1", divisions=blocks),
+        dict(law="cells.operator.isopotential_partition@1", divisions=blocks),
         dict(
-            law="cytoplasmic_bridge_closure@1",
+            law="cells.operator.cytoplasmic_bridge_closure@1",
             bridges=[dict(bridge, closure="linear", closure_time_s=at(CLOSURE_S))],
         ),
     ]
@@ -213,7 +213,7 @@ def definition(*, scale=1.0, dt=DT, injection=True):
     if injection:
         m["operators"].append(
             dict(
-                law="electrode_current_injection@1",
+                law="cells.operator.electrode_current_injection@1",
                 electrodes=[dict(cell_id="e1", carriers=dict(CARRIERS))],
             )
         )

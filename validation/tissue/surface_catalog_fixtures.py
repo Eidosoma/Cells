@@ -1,4 +1,4 @@
-"""Manufactured shared Na/K/Ca/Cl catalog on multiple tissue membrane owners (resolved_tissue@8).
+"""Manufactured shared Na/K/Ca/Cl catalog on multiple tissue membrane owners (cells.model.resolved_tissue@8).
 
 The closed kinetic tissue (validation/tissue/surface_kinetic_fixtures.py) with calcium as a mobile
 ion and the catalogue's 35 laws on 39 populations, spread over its four patches. Every population
@@ -14,14 +14,14 @@ HCN = (("Na", 0.2), ("K", 1.0), ("Ca", 0.05))
 POPULATIONS = (
     *(
         (f"channel_{i}", i, law, K, 3e-10, 0.5 + 0.1 * i, [0.2 + 0.05 * i, 0.7])
-        for i, law in enumerate(("kv1p5_mh@1", "kir2p1_mh2@1") * 2)
+        for i, law in enumerate(("cells.channel.kv1p5_mh@1", "cells.channel.kir2p1_mh2@1") * 2)
     ),
-    ("channel_4", 0, "kir2p1_mh2@1", K, 3e-10, 0.5, [0.65, 0.35]),
+    ("channel_4", 0, "cells.channel.kir2p1_mh2@1", K, 3e-10, 0.5, [0.65, 0.35]),
     *(
         (
             f"sodium_{i}",
             patch,
-            "nav1p2_m3h_regularized@1",
+            "cells.channel.nav1p2_m3h_regularized@1",
             NA,
             3e-10,
             0.2 + 0.1 * i,
@@ -30,8 +30,14 @@ POPULATIONS = (
         for i, patch in enumerate((0, 2))
     ),
     *(
-        (f"hcn_{n}", i, f"hcn{n}_m@1", HCN, 3e-10, 0.12 + 0.08 * i, [0.35 + 0.1 * i, 0.7])
-        for i, n in enumerate((1, 2, 4))
+        (f"hcn_{n}", i, law, HCN, 3e-10, 0.12 + 0.08 * i, [0.35 + 0.1 * i, 0.7])
+        for i, (n, law) in enumerate(
+            (
+                (1, "cells.channel.hcn1_m@1"),
+                (2, "cells.channel.hcn2_m@1"),
+                (4, "cells.channel.hcn4_m@1"),
+            )
+        )
     ),
     *(
         (
@@ -44,7 +50,13 @@ POPULATIONS = (
             [0.25 + 0.1 * i, 0.65 - 0.05 * i],
         )
         for i, law in enumerate(
-            ("kv1p1_mh2@1", "kv1p2_mh@1", "kv1p3_mh@1", "kv1p4_mh@1", "kv1p6_mh@1")
+            (
+                "cells.channel.kv1p1_mh2@1",
+                "cells.channel.kv1p2_mh@1",
+                "cells.channel.kv1p3_mh@1",
+                "cells.channel.kv1p4_mh@1",
+                "cells.channel.kv1p6_mh@1",
+            )
         )
     ),
     *(
@@ -59,13 +71,13 @@ POPULATIONS = (
         )
         for i, law in enumerate(
             (
-                "cav1p2_m2h@1",
-                "cav1p3_m2h@1",
-                "cav2p1_m@1",
-                "cav2p2_m2h_regularized@1",
-                "cav2p3_mh@1",
-                "cav3p1_mh_piecewise_tau_m@1",
-                "cav3p3_mh@1",
+                "cells.channel.cav1p2_m2h@1",
+                "cells.channel.cav1p3_m2h@1",
+                "cells.channel.cav2p1_m@1",
+                "cells.channel.cav2p2_m2h_regularized@1",
+                "cells.channel.cav2p3_mh@1",
+                "cells.channel.cav3p1_mh_piecewise_tau_m@1",
+                "cells.channel.cav3p3_mh@1",
             )
         )
     ),
@@ -81,23 +93,23 @@ POPULATIONS = (
         )
         for i, (law, ions) in enumerate(
             (
-                ("nav1p3_m3h_regularized@1", NA),
-                ("navrat2_m3h_regularized@1", NA),
-                ("navrat1_m3h_regularized@1", NA),
-                ("navrat3_m3h_regularized@1", NA),
-                ("naleak_always_open@1", NA),
-                ("nav1p6_persistent_m@1", NA),
-                ("kv2p1_mh@1", K),
-                ("kv2p2_mh@1", K),
-                ("kv3p1_m@1", K),
-                ("kv3p2_m2@1", K),
-                ("kv3p3_m2h_long_tau@1", K),
-                ("kv3p4_mh@1", K),
-                ("k_fast_mh@1", K),
-                ("kleak_always_open@1", K),
-                ("clleak_always_open@1", CL),
-                ("catleak_na_k@1", (("Na", 1.0), ("K", 1.0), ("Ca", 0.0))),
-                ("catleak2_na_k_ca@1", (("Na", 1.0), ("K", 1.0), ("Ca", 1.0))),
+                ("cells.channel.nav1p3_m3h_regularized@1", NA),
+                ("cells.channel.navrat2_m3h_regularized@1", NA),
+                ("cells.channel.navrat1_m3h_regularized@1", NA),
+                ("cells.channel.navrat3_m3h_regularized@1", NA),
+                ("cells.channel.naleak_always_open@1", NA),
+                ("cells.channel.nav1p6_persistent_m@1", NA),
+                ("cells.channel.kv2p1_mh@1", K),
+                ("cells.channel.kv2p2_mh@1", K),
+                ("cells.channel.kv3p1_m@1", K),
+                ("cells.channel.kv3p2_m2@1", K),
+                ("cells.channel.kv3p3_m2h_long_tau@1", K),
+                ("cells.channel.kv3p4_mh@1", K),
+                ("cells.channel.k_fast_mh@1", K),
+                ("cells.channel.kleak_always_open@1", K),
+                ("cells.channel.clleak_always_open@1", CL),
+                ("cells.channel.catleak_na_k@1", (("Na", 1.0), ("K", 1.0), ("Ca", 0.0))),
+                ("cells.channel.catleak2_na_k_ca@1", (("Na", 1.0), ("K", 1.0), ("Ca", 1.0))),
             )
         )
     ),
@@ -127,7 +139,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
         raise ValueError(arm)
     raw = with_calcium(base.definition("closed", backend=backend, padded=padded))
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
-    m["id"] = "resolved_tissue@8"
+    m["id"] = "cells.model.resolved_tissue@8"
     m["channels"] = [
         dict(
             id=name,

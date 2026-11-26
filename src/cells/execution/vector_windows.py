@@ -80,7 +80,7 @@ from cells.execution.windows import (
 )
 from cells.registry.models import get_model
 
-MAPPING_ID = "vmap_device_checks@1"
+MAPPING_ID = "cells.execution.vmap_device_checks@1"
 DEVICE_HOOKS = (
     "checked_step",
     "device_checks",
@@ -210,7 +210,7 @@ def cohort_limits(spec):
 def refuse_unqualified_gpu(simulation):
     """Refuse a GPU backend for a model whose device checks failed their GPU qualification.
 
-    D330 measured resolved_pump_composite@1's device checks on a GPU and they failed (D336): in the
+    D330 measured cells.model.resolved_pump_composite@1's device checks on a GPU and they failed (D336): in the
     first window the device's reading of the global material ledger departed from the host's beyond
     the declared bound, and without XLA's deterministic ops the composite's scatter-adds accumulate
     in an order that varies between runs. Vector windows decide on the device's word alone, so the

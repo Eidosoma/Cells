@@ -1,4 +1,4 @@
-"""The resolved_pump_tissue@3 entity adapter of the composite (docs/CELL_DIVISION_DESIGN.md §3.3).
+"""The cells.model.resolved_pump_tissue@3 entity adapter of the composite (docs/CELL_DIVISION_DESIGN.md §3.3).
 
 The composite (models/pump_composite.py) runs @3's own step at a view of its
 layout. This adapter is the only place that knows @3's names:
@@ -22,7 +22,7 @@ layout. This adapter is the only place that knows @3's names:
   of v2 design §3). It covers held-bath topologies (every capacitor component holds
   a reservoir, so the floating basis is empty); a definition with floating
   components and a field-input provider is refused (topology epochs are later work,
-  §3.8). membrane_entity_state@1 and scheduled_membrane_insertion@1 (S2) are the
+  §3.8). cells.operator.membrane_entity_state@1 and cells.operator.scheduled_membrane_insertion@1 (S2) are the
   first field-input providers;
 * @3's free energy and its capacitor field at a view: chemical_free_energy_pJ and
   capacitor_free_energy_pJ (balances' own terms), view_capacitor_terms (the energy
@@ -879,8 +879,8 @@ def capacitor_free_energy_pJ(dv, p, *, xp):
 
 # @3's chemical term per node and per species row (docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §2.4),
 # for both node kinds. New beside chemical_free_energy_pJ, which stays as it is; no existing program
-# calls these. The secreted-species operators (scheduled_species_turnover@1 and
-# scheduled_species_exchange@1) book their work with them, one species row at a time, so a
+# calls these. The secreted-species operators (cells.operator.scheduled_species_turnover@1 and
+# cells.operator.scheduled_species_exchange@1) book their work with them, one species row at a time, so a
 # protein-scale change is never computed as a difference of ion-scale sums.
 
 

@@ -1,4 +1,4 @@
-# A few integer units on shared pools (`cells.integer_unit_population@1`)
+# A few integer units on shared pools (`cells.operator.integer_unit_population@1`)
 
 **In one sentence:** A few membrane machines switch on and off one at a time, each working machine moves a dissolved substance across the membrane, and switching depends on how much is there.
 
@@ -35,8 +35,8 @@ gene unit, and changing volumes.
 | | |
 | --- | --- |
 | Piece | Operator, interface `cells.operator@1` ([its fields](../../DECLARATIONS_FORMAT.md#operators)) |
-| ID | `cells.integer_unit_population@1`; definitions write `integer_unit_population@1` |
-| Runs in | `cells.resolved_pump_composite@1`, its host, which definitions write `resolved_pump_composite@1`. Definitions of `cells.resolved_pump_composite@1` can declare it |
+| ID | `cells.operator.integer_unit_population@1`; definitions write `cells.operator.integer_unit_population@1` |
+| Runs in | `cells.model.resolved_pump_composite@1`, its host. Definitions of `cells.model.resolved_pump_composite@1` can declare it |
 | Where it acts in the step | A split part, by `located_events_exact_transfer_half_steps@1` |
 | Needs | No law or kind |
 | Provenance | Not yet extracted: the composite's operator contract has no provenance field yet |
@@ -139,7 +139,7 @@ $$J = \Big(\sum_k g_k n_k\Big)\left(\frac{n_\text{c}}{V_\text{c}} - \frac{n_\tex
     paired with the daughters' membrane-area shares from the same divisions, and none exists yet.
   - **Source:** the Lean lane's claim `lean/claims/fr43-integer-segregation.md` (at aae46bde),
     which takes every figure above from that paper.
-- **Refused beside a wash.** `scheduled_compartment_wash@1` reads no path of this operator's
+- **Refused beside a wash.** `cells.operator.scheduled_compartment_wash@1` reads no path of this operator's
   transfers across a washed surface, so the wash refuses it (fail-closed, version 1). Lifting that
   is its own qualified extension.
 - **Refused, never repaired:**
@@ -213,8 +213,8 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/operators/integer_unit_population.py`](../../../../src/cells/operators/integer_unit_population.py), class `IntegerUnitPopulationOperator` (`cells.operators.integer_unit_population`).
-- Runs in `cells.resolved_pump_composite@1`.
-- Manifest entry: (operator, `cells.integer_unit_population@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.integer_unit_population@1`.
+- Runs in `cells.model.resolved_pump_composite@1`.
+- Manifest entry: (operator, `cells.operator.integer_unit_population@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.operator.integer_unit_population@1`.
 
 <!-- /generated -->

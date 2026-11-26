@@ -74,7 +74,7 @@ def test_the_composites_dissipation_and_flow_fields_are_todays():
 class EventHeat(ScheduledMembraneInsertionV2):
     """Insertion@2 with its heat declared non-monotone (a planted declaration)."""
 
-    LAW_ID = "tests.event_heat_insertion@1"
+    LAW_ID = "tests.operator.event_heat_insertion@1"
     ENERGY_ROLES = {HEAT: EnergyRole("heat", False)}
 
 
@@ -96,7 +96,7 @@ def test_a_non_monotone_heat_is_booked_but_not_held_monotone():
 class Stored(ScheduledMembraneInsertionV2):
     """Insertion@2 with one more owned field, declared stored (a planted level)."""
 
-    LAW_ID = "tests.stored_insertion@1"
+    LAW_ID = "tests.operator.stored_insertion@1"
     STATE_AXES = {**ScheduledMembraneInsertionV2.STATE_AXES, "insertion_stored_pJ": ["cell_slot"]}
     ENERGY_ROLES = {"insertion_stored_pJ": EnergyRole("stored", False)}
 
@@ -111,7 +111,7 @@ def test_a_stored_field_is_a_level_in_neither_tuple():
 
 
 def planted(name, **attributes):
-    law_id = "tests.planted_operator@1".replace("planted_operator", name)
+    law_id = "tests.operator.planted_operator@1".replace("planted_operator", name)
     return type(name, (ScheduledMembraneInsertionV2,), {"LAW_ID": law_id, **attributes})
 
 

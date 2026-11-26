@@ -561,7 +561,7 @@ def summary(record):
     """The run-level quantities the run's end decides and reports."""
     counted = int(record.counted_q.size)
     return dict(
-        check="step_doubled_energy@1",
+        check="cells.execution.step_doubled_energy@1",
         counted_steps=counted,
         median_step_ratio=float(np.median(record.counted_q)) if counted else None,
         held_out_of_band=record.held_out_of_band,

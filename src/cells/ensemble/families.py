@@ -18,9 +18,9 @@ from typing import NamedTuple
 from cells.registry import model_table
 
 TODAY = {
-    "assembly_ensemble@1": "capsid_graph@1",
-    "finite_bond_ensemble@1": "finite_bond_assembly@1",
-    "ionic_ensemble@1": "ionic_worlds@1",
+    "assembly_ensemble@1": "cells.model.capsid_graph@1",
+    "finite_bond_ensemble@1": "cells.model.finite_bond_assembly@1",
+    "ionic_ensemble@1": "cells.model.ionic_worlds@1",
 }
 PARKED = {  # The command line's two commands, and the two ensemble kinds.
     "assembly-cell": "the assembly-regulated cell's command",
@@ -116,7 +116,7 @@ def parked(name):
     what = PARKED.get(name) if isinstance(name, str) else None
     return what and (
         f"{name} is parked: {what}. Assembly-regulated cells and clusters are to be re-expressed "
-        "on resolved_pump_composite@1, for cells run, windowed and batch"
+        "on cells.model.resolved_pump_composite@1, for cells run, windowed and batch"
     )
 
 
@@ -175,9 +175,9 @@ def parse_definition(data):
     adapter = adapter_of(data.get("model"))
     if adapter is not None:
         return adapter.parse_definition(data)
-    if data.get("model") == "ionic_worlds@1":
+    if data.get("model") == "cells.model.ionic_worlds@1":
         from cells.ensemble.ionic import parse_spec
-    elif data.get("model") == "finite_bond_assembly@1":
+    elif data.get("model") == "cells.model.finite_bond_assembly@1":
         from cells.assembly_pool.spec import parse_spec
     else:
         from cells.assembly.spec import parse_spec
@@ -188,9 +188,9 @@ def runtime_for(spec):
     adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.runtime(spec)
-    if model_id(spec) == "ionic_worlds@1":
+    if model_id(spec) == "cells.model.ionic_worlds@1":
         from cells.ensemble.ionic import load_checkpoint, run, write_checkpoint
-    elif model_id(spec) == "finite_bond_assembly@1":
+    elif model_id(spec) == "cells.model.finite_bond_assembly@1":
         from cells.assembly_pool.engine import run
         from cells.assembly_pool.io import load_checkpoint, write_checkpoint
     else:
@@ -203,9 +203,9 @@ def first_completion(spec, state):
     adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.first_completion(spec, state)
-    if model_id(spec) == "ionic_worlds@1":
+    if model_id(spec) == "cells.model.ionic_worlds@1":
         return None
-    if model_id(spec) == "finite_bond_assembly@1":
+    if model_id(spec) == "cells.model.finite_bond_assembly@1":
         return state.full_first_s
     return state.first_passage_s[:, 20]
 
@@ -214,7 +214,7 @@ def progress(spec, state):
     adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.progress(spec, state)
-    if model_id(spec) == "ionic_worlds@1":
+    if model_id(spec) == "cells.model.ionic_worlds@1":
         return {
             "world_steps": sum(cp.step_index for cp in state.values()),
             "through_time_s": min(cp.time for cp in state.values()),
@@ -229,7 +229,7 @@ def failure_state(spec, state):
     adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.failure_state(spec, state)
-    if model_id(spec) == "ionic_worlds@1":
+    if model_id(spec) == "cells.model.ionic_worlds@1":
         return {
             f"world_{identity}_{field}": value
             for identity, cp in state.items()

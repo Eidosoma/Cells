@@ -5,7 +5,7 @@ test_heat_bookings_probe.py, the booked heat's form in test_heat_bookings_formul
 - the key's parse, round trip and default (omitted, so no fingerprint or structure moves), and its
   refusals: junctions, the tableau listed, a class that admits nothing, RK4, and a caller that
   checks @3 without its structure;
-- the faces' exact booking (exact_free_energy_heat@1, D280) refuses a face that carries a charged
+- the faces' exact booking (cells.heat.exact_free_energy_heat@1, D280) refuses a face that carries a charged
   row, touches a held bath, or carries a row another mover moves in the step (version 1's scope);
 - the dissipation check and the run view read declared energy roles, with today's suffix rule as
   the default.
@@ -28,7 +28,7 @@ from validation.tissue import surface_pump_v3_fixtures as fx
 
 TRAPEZOID = spec3.TRAPEZOID_JUNCTION_HEAT
 EXACT = spec3.EXACT_FREE_ENERGY_HEAT
-SOLVER = "imex_ars222_face_electromigration@1"
+SOLVER = "cells.solver.imex_ars222_face_electromigration@1"
 DISSIPATION_REFUSAL = "dissipation cannot be negative or decrease"
 
 # The booking probe's world (STEP0 §5.1): P_Na puts the GHK rest 20 mV above E_K.
@@ -103,7 +103,7 @@ FACE_RATE = 1.0  # 1/s: each node's exchange rate through the face, D A / (L V) 
 def face_world(low_mM=sfx.TRACE_mM, bookings=None, *, steps=5):
     """The faces' booking world (D280): two 1 pL outside nodes joined by one face that diffuses
     the neutral inventory row S at FACE_RATE, S at 1 mM in n1 and at low_mM elsewhere (its trace
-    by default), as resolved_pump_tissue@3 itself: the fixture's composite has no operators."""
+    by default), as cells.model.resolved_pump_tissue@3 itself: the fixture's composite has no operators."""
     area, length = 1e-10, 1e-5
     rest = {} if low_mM == sfx.TRACE_mM else dict(n2=low_mM, cell_0=low_mM, bath=low_mM)
     raw = sfx.world(
@@ -153,12 +153,15 @@ def test_the_default_is_omitted_and_the_key_round_trips():
         ({"junctions": TRAPEZOID}, "junction_heat_booking, not heat_bookings"),
         ({"channels": "explicit_tableau"}, "the tableau .* is the default"),
         (
-            {"channels": "exact_free_energy_heat@1"},
-            "admit trapezoid_nonnegative@1 beyond the tableau",
+            {"channels": "cells.heat.exact_free_energy_heat@1"},
+            "admit cells.heat.trapezoid_nonnegative@1 beyond the tableau",
         ),
         ({"walls": TRAPEZOID}, "neither one of @3's own mover classes"),
         ({"channels": 1}, "maps mover classes to booking IDs"),
-        ({"faces": TRAPEZOID}, "faces admit exact_free_energy_heat@1 beyond the tableau"),
+        (
+            {"faces": TRAPEZOID},
+            "faces admit cells.heat.exact_free_energy_heat@1 beyond the tableau",
+        ),
     ],
 )
 def test_heat_bookings_refusals(bookings, message):
@@ -184,7 +187,10 @@ def _face_to_the_bath(raw):
 @pytest.mark.parametrize(
     "edit,message",
     [
-        (_charged_face_row, "carries the charged row Na; exact_free_energy_heat@1 books neutral"),
+        (
+            _charged_face_row,
+            "carries the charged row Na; cells.heat.exact_free_energy_heat@1 books neutral",
+        ),
         (_membrane_also_moves, "which membrane contact_2 also moves in the step"),
         (_face_to_the_bath, "carries S to the held bath bath; .* between finite nodes"),
     ],

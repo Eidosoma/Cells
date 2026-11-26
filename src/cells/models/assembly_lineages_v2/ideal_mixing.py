@@ -1,4 +1,4 @@
-"""cells.ideal_mixing@1: the ideal part of F, exact in the counts (OL1; §2.2, §0.2a).
+"""cells.free_energy.ideal_mixing@1: the ideal part of F, exact in the counts (OL1; §2.2, §0.2a).
 
 In k_BT, with X_φ = N_A V_φ c0 for a dilute phase φ, N the membrane's count and c the condensed
 measure's offset (`condensed_measure`: 0 for the multinomial, 1 for @1's measure):
@@ -129,7 +129,7 @@ FORMULAS = {
 
 TERM = law_registry.BUILTIN.register(
     FreeEnergyTerm(
-        "cells.ideal_mixing@1",
+        "cells.free_energy.ideal_mixing@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

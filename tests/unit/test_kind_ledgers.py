@@ -3,7 +3,7 @@ each declared kind's own ledgers, declared by its ledgers(declaration) hook and 
 InnerStructure.kind_ledgers, follow @1's ten ledgers on every check path. Each is valued by the
 kind's ledger_terms under its own name and bounded by its ledger_bounds at check time.
 
-- A planted producer kind (tests.producer@1) runs one reaction in a cell, ATP -> ADP + Pi at a
+- A planted producer kind (tests.kind.producer@1) runs one reaction in a cell, ATP -> ADP + Pi at a
   declared rate, books its chemistry's heat, and declares the adenine moiety's ledger: the
   adenine weights (ATP 1, ADP 1) times its net production, held to zero within the rows' material
   tolerances. Its world runs with every ledger closing, the adenine one among them. The plant, its
@@ -42,7 +42,7 @@ from tests.unit.test_transporter_kind import held_world, scoped
 from tests.window_row_check_fixtures import windows
 from validation.tissue import bath_schedule_fixtures as bfx
 
-PRODUCER_ID = "tests.producer@1"
+PRODUCER_ID = "tests.kind.producer@1"
 PRODUCER_KEY = "test_producer"
 ADENINE = ("adenine", "adenine_moiety_error_fmol")
 
@@ -243,7 +243,7 @@ def test_a_composite_takes_the_kind_ledger_from_its_inner_model():
     raw = cs.frozen_definition(world())
     electrode = dict(cell_id="cell_0", carriers={"K": 1.0})
     raw["model"].setdefault("operators", []).append(
-        dict(law="electrode_current_injection@1", electrodes=[electrode])
+        dict(law="cells.operator.electrode_current_injection@1", electrodes=[electrode])
     )
     raw["experiment"]["injection_controls"] = [
         dict(cell_id="cell_0", schedule=[dict(time=0.0, current_A=1e-13)])
@@ -279,7 +279,7 @@ def test_a_ledger_or_diagnostic_named_for_one_of_todays_ten_is_refused():
 def test_a_malformed_ledgers_result_is_refused_naming_the_kind():
     planted = dataclasses.replace(PRODUCER, ledgers=lambda declaration: ["adenine"])
     with scoped(planted):
-        with pytest.raises(ConfigError, match=r"Kind tests.producer@1's ledgers are refused"):
+        with pytest.raises(ConfigError, match=r"Kind tests.kind.producer@1's ledgers are refused"):
             parse_spec(world())
 
 
@@ -295,7 +295,7 @@ def test_the_structure_refuses_entries_that_are_not_declared_sorted_distinct_nam
         (((PRODUCER_ID, (ADENINE,)), (PRODUCER_ID, (("b", "b_error"),))), "sorted, one entry"),
         (((PRODUCER_ID, (("heat_pJ", "heat_error"),)),), "ledger_terms' roles"),
         (
-            ((PRODUCER_ID, (ADENINE,)), ("tests.undeclared@1", (("b", "b_error"),))),
+            ((PRODUCER_ID, (ADENINE,)), ("tests.kind.undeclared@1", (("b", "b_error"),))),
             "not a declared",
         ),
         (((PRODUCER_ID, (ADENINE, ADENINE)),), "named twice"),

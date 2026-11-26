@@ -339,7 +339,7 @@ def main(out):
         "A_fast/A_slow at -100 mV (no +100 counterpart)": 1,
     }
     count = {
-        "law": "junction_series_gates@1, two boltzmann_eyring gates (kinds.json): (rate, slope, midpoint, split, residual) per gate",
+        "law": "cells.junction.junction_series_gates@1, two boltzmann_eyring gates (kinds.json): (rate, slope, midpoint, split, residual) per gate",
         "free_parameters": modes,
         "selected_mode": report["selected"]["mode"],
         "training_residuals": report["objective"]["observations"],

@@ -1,6 +1,6 @@
 """A planted kind for schema A's acceptance (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).
 
-`tests.exchange@1`: a neutral species moved at a constant declared rate from one cell to one
+`tests.kind.exchange@1`: a neutral species moved at a constant declared rate from one cell to one
 outside node. It lives outside src/cells, registers under the non-cells namespace `tests.`, and
 implements every hook with trivial physics, so each seam is exercised before any real kind
 lands:
@@ -32,7 +32,7 @@ from cells.registry.kind_registry import (
     series_to_dict,
 )
 
-KIND_ID = "tests.exchange@1"
+KIND_ID = "tests.kind.exchange@1"
 MODEL_KEY = "test_exchange"
 CALLS = Counter()
 
@@ -188,7 +188,7 @@ EXCHANGE = Kind(
 
 
 # ------------------------------------------------------------------ the scheduled planted kind
-# docs/INNER_MODEL_V4_DESIGN.md §7.4 (l): `tests.exchange@1` with its availability on a schedule,
+# docs/INNER_MODEL_V4_DESIGN.md §7.4 (l): `tests.kind.exchange@1` with its availability on a schedule,
 # under the experiment key `test_exchange_controls`: [{"time": t, "availability": a}, ...], one
 # series. An omitted key is the default, availability 1 throughout (version 1's constant), which
 # schedule_to_dict omits. The values are parsed without parse_series' [0, 1] check, so the core's
@@ -258,7 +258,7 @@ def declare(raw, *, species="B", rate=1e-3):
 
 
 # ------------------------------------------------------------------ the charged planted kind
-# `tests.carrier@1`: a declared species, charged or not, carried outward across one membrane
+# `tests.kind.carrier@1`: a declared species, charged or not, carried outward across one membrane
 # patch at a constant declared rate: B5's charged role in miniature (a proton pump moving H+
 # from its patch's inside to its outside). Its moves land in the shared inventory, so the field
 # solve sees their charge (rule (c)). Its work is the carried species' electrochemical
@@ -266,7 +266,7 @@ def declare(raw, *, species="B", rate=1e-3):
 # capacitor's energy (rule (a)). carrier(electrical=False) books the chemical part only: a
 # planted error that the energy ledger must catch.
 
-CARRIER_ID = "tests.carrier@1"
+CARRIER_ID = "tests.kind.carrier@1"
 CARRIER_KEY = "test_carrier"
 
 
@@ -396,7 +396,7 @@ def declare_carrier(raw, *, species="K", rate=1e-3, membrane=None):
 
 
 # ------------------------------------------------------------------ the scheduled relaxation
-# docs/INNER_MODEL_V4_DESIGN.md §7.4 (l) 5: `tests.relaxation@1`, FR-5's damage law in miniature
+# docs/INNER_MODEL_V4_DESIGN.md §7.4 (l) 5: `tests.kind.relaxation@1`, FR-5's damage law in miniature
 # (laws/transport/patch_damage.py, the FR-4/FR-5 note §9): per cell, d relaxes as
 #     dd/dt = k_inj u_inj(t) (1 - d) - k_res u_res(t) d,
 # with u_inj and u_res piecewise-constant schedules in [0, 1] under the experiment key
@@ -406,7 +406,7 @@ def declare_carrier(raw, *, species="K", rate=1e-3, membrane=None):
 # so d is exact wherever the schedules are constant over each step, which their breakpoints on the
 # step grid assure. It moves nothing and books no heat or work.
 
-RELAXATION_ID = "tests.relaxation@1"
+RELAXATION_ID = "tests.kind.relaxation@1"
 RELAXATION_KEY = "test_relaxation"
 RELAXATION_SCHEDULE_KEY = "test_relaxation_controls"
 RELAXATION_SERIES = ("injury", "resealing")
@@ -543,7 +543,7 @@ def declare_relaxation(raw, *, injury, resealing, initial=0.0, schedule=None):
 
 
 # ------------------------------------------------------------------ the stored-energy planted kind
-# docs/INNER_MODEL_V4_DESIGN.md §7.4 (m), gap 2: `tests.conversion@1` converts a neutral substrate
+# docs/INNER_MODEL_V4_DESIGN.md §7.4 (m), gap 2: `tests.kind.conversion@1` converts a neutral substrate
 # S into a neutral product P at one cell at a declared constant rate: finite fuel's bookkeeping in
 # miniature. Each has a declared standard potential mu°/RT, which @3's RT ln c terms leave out, and
 # no stage read carries it; so the kind stores the standard part, (mu°_P - mu°_S) x moved, as
@@ -551,7 +551,7 @@ def declare_relaxation(raw, *, injury, resealing, initial=0.0, schedule=None):
 # -r (mu_P - mu_S) with mu = mu° + RT ln c. conversion(stored_rate=False) leaves the rate out: the
 # cumulative energy ledger still closes, but the stage energy-rate observation does not.
 
-CONVERSION_ID = "tests.conversion@1"
+CONVERSION_ID = "tests.kind.conversion@1"
 CONVERSION_KEY = "test_conversion"
 CONVERSION_FIELDS = (
     "substrate",
@@ -690,16 +690,16 @@ def declare_conversion(raw, *, rate, substrate_mu_RT, product_mu_RT, substrate="
 
 
 # ------------------------------------------------------------ the routing door's planted kinds
-# docs/INNER_MODEL_V4_DESIGN.md §7.4 (n). `tests.factor@1` is a factor source: constant factors
+# docs/INNER_MODEL_V4_DESIGN.md §7.4 (n). `tests.kind.factor@1` is a factor source: constant factors
 # per declared source ID (model key `test_factors`: [{"id", "value"}, ...]), from its layout, so a
-# test can set a stage's factor through the layout. `tests.sink@1` is a sink: its control
+# test can set a stage's factor through the layout. `tests.kind.sink@1` is a sink: its control
 # `sink_gain` [2] is held at declared values, and the declared slots are routed through named
 # sources; its readout column reports the control it receives at the observed row, and its book
 # records the control it receives (SEEN).
 
-FACTOR_ID = "tests.factor@1"
+FACTOR_ID = "tests.kind.factor@1"
 FACTOR_KEY = "test_factors"
-SINK_ID = "tests.sink@1"
+SINK_ID = "tests.kind.sink@1"
 SINK_KEY = "test_sink"
 SEEN = []
 

@@ -1,4 +1,4 @@
-"""mechanical_equilibrium_analysis@1 on periodic honeycombs (apical_vertex_mechanics@1).
+"""mechanical_equilibrium_analysis@1 on periodic honeycombs (cells.model.apical_vertex_mechanics@1).
 
 FIRE plus Newton reaches the case-I ground state; box relaxation recovers a*; the
 relaxed moduli equal Staddon et al. (2023) G = r (p - p0) p / (4a) and

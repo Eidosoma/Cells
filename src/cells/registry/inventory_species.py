@@ -1,7 +1,7 @@
 """A definition helper: one more inventory species on @3's species axis (secreted species, D150).
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §1.1 and §1.3. A secreted species is one more row of
-resolved_pump_tissue@3's species axis: valence 0, zero membrane and junction permeability and its
+cells.model.resolved_pump_tissue@3's species axis: valence 0, zero membrane and junction permeability and its
 own diffusivity on every face. @3 owns its amounts as it owns the ions'. Its face diffusivity is the
 effective kind (a FRAP-measured D: free diffusion reduced by tortuosity and hindrance), never a free
 (FCS) diffusivity on its own (§6, the lead's ruling).
@@ -11,16 +11,19 @@ somewhere is declared at a trace background c_bg > 0 in every cell, node, bath a
 template (§1.3). Its material ledgers are checked at its own scale with a species-scale floor
 (`material_balance_atol_fmol`), far below the ions' 1e-10 fmol.
 
-add_inventory_species works on a raw (dictionary) definition of resolved_pump_tissue@3, or of
-resolved_pump_composite@1 over it, and returns a new one: no physics, no new law. Composite
-replacement templates (scheduled_cell_replacement@1 or @2) gain the trace in their amounts, scaled
+add_inventory_species works on a raw (dictionary) definition of cells.model.resolved_pump_tissue@3, or of
+cells.model.resolved_pump_composite@1 over it, and returns a new one: no physics, no new law. Composite
+replacement templates (cells.operator.scheduled_cell_replacement@1 or @2) gain the trace in their amounts, scaled
 by the template volume, unless an amount is given. Route-only templates are left as they are.
 """
 
 import copy
 import math
 
-REPLACEMENT_LAWS = ("scheduled_cell_replacement@1", "scheduled_cell_replacement@2")
+REPLACEMENT_LAWS = (
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+)
 
 
 def _positive(value, name):

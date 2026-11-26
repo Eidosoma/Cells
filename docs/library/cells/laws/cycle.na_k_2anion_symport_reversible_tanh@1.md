@@ -1,4 +1,4 @@
-# Symport of one sodium, one potassium and two anions, with a manufactured rate (`cells.na_k_2anion_symport_reversible_tanh@1`)
+# Symport of one sodium, one potassium and two anions, with a manufactured rate (`cells.cycle.na_k_2anion_symport_reversible_tanh@1`)
 
 **In one sentence:** One sodium ion, one potassium ion and two single-charged anions cross a membrane together, carrying no net charge, at a rate whose form is manufactured.
 
@@ -33,8 +33,8 @@ salt. It is no model of any transporter protein.
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.cycle_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#cycle-laws)) |
-| ID | `cells.na_k_2anion_symport_reversible_tanh@1`; definitions write `cells.na_k_2anion_symport_reversible_tanh@1` |
-| Runs in | `cells.transporter@1`, its host, in `cells.resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
+| ID | `cells.cycle.na_k_2anion_symport_reversible_tanh@1`; definitions write `cells.cycle.na_k_2anion_symport_reversible_tanh@1` |
+| Runs in | `cells.kind.transporter@1`, its host, in `cells.model.resolved_pump_tissue@3`. Definitions of `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3` can declare it |
 | Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
@@ -45,7 +45,7 @@ salt. It is no model of any transporter protein.
 
 | Role | What | Unit | Which way is positive |
 | --- | --- | --- | --- |
-| Reads | `rapid_binding@1`, current at each inner stage | | |
+| Reads | `cells.binding.rapid_binding@1`, current at each inner stage | | |
 | Changes | `Na@N`: 1 per cycle | | inward-positive, per forward cycle |
 | Changes | `Na@P`: -1 per cycle | | inward-positive, per forward cycle |
 | Changes | `K@N`: 1 per cycle | | inward-positive, per forward cycle |
@@ -95,7 +95,7 @@ $$x = \ln\frac{[\text{Na}]_N}{[\text{Na}]_P} + \ln\frac{[\text{K}]_N}{[\text{K}]
   that term alone, which holds no charged row at a closed compartment's node, so its moves there are
   refused ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for every
   kind.
-- **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a
+- **At a binding closure:** it declares the read `cells.binding.rapid_binding@1` and base forms, so where a
   closure holds one of its ions it reads the free amount and moves the total, and the material rate
   runs through the closure's derivative.
 - **Left out:** binding by each ion and any other saturation, regulation by volume, chloride or
@@ -164,8 +164,8 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/laws/cycles/na_k_2anion_symport_reversible_tanh.py`](../../../../src/cells/laws/cycles/na_k_2anion_symport_reversible_tanh.py) (`cells.laws.cycles.na_k_2anion_symport_reversible_tanh`).
-- Runs in `cells.transporter@1`.
-- Manifest entry: (law, `cells.na_k_2anion_symport_reversible_tanh@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.na_k_2anion_symport_reversible_tanh@1`.
+- Runs in `cells.kind.transporter@1`.
+- Manifest entry: (law, `cells.cycle.na_k_2anion_symport_reversible_tanh@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.cycle.na_k_2anion_symport_reversible_tanh@1`.
 
 <!-- /generated -->

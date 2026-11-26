@@ -1,4 +1,4 @@
-"""nak_atp_mass_action_positive@1: the Na/K-ATPase on maintained pools, the law and its
+"""cells.cycle.nak_atp_mass_action_positive@1: the Na/K-ATPase on maintained pools, the law and its
 declaration on @3.
 
 Positive-domain 3 Na out / 2 K in ATPase with maintained metabolic pools: SPEC-010 / D111's
@@ -7,7 +7,7 @@ energy (affinity), so a cycle never runs against its drive. Species roles, geome
 masks and ledgers belong to the composing model. Supply neutral inactive padding BEFORE this law
 and reject invalid trials using domain_valid. There is no concentration floor, clipping or state
 repair. See docs/KINETIC_PUMP_PROCESS.md for units, evidence and remaining integration. A pump law
-of resolved_pump_tissue@3 (cells.cycle_law@1), registered by the law registry's loader
+of cells.model.resolved_pump_tissue@3 (cells.cycle_law@1), registered by the law registry's loader
 (docs/CORE_SEAMS_DESIGN.md §8.2). Moved from laws/pumps/kinetic_pump.py, which re-imports these
 names.
 """
@@ -19,7 +19,7 @@ import jax.numpy as jnp
 from cells.laws.electrochemistry import R
 from cells.modules import CycleLaw
 
-LAW_ID = "nak_atp_mass_action_positive@1"
+LAW_ID = "cells.cycle.nak_atp_mass_action_positive@1"
 SODIUM_PER_CYCLE = -3
 POTASSIUM_PER_CYCLE = 2
 TEMPERATURE_DOMAIN_K = (200.0, 400.0)
@@ -149,12 +149,12 @@ def domain_valid(
 
 
 # Today's pumps run on maintained pools (definitions/kinetic_pump_spec.METABOLISM_ID).
-MAINTAINED_FUEL_ID = "maintained_chemical_reservoirs@1"
+MAINTAINED_FUEL_ID = "cells.fuel_kind.maintained_chemical_reservoirs@1"
 LAW = CycleLaw(
     LAW_ID,
     (("sodium", SODIUM_PER_CYCLE), ("potassium", POTASSIUM_PER_CYCLE)),
     (MAINTAINED_FUEL_ID,),
     kinetics,
     domain_valid,
-    host="cells.resolved_pump_tissue@3",
+    host="cells.model.resolved_pump_tissue@3",
 )

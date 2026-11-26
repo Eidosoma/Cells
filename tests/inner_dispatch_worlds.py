@@ -21,7 +21,7 @@ from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
-ARS = "imex_ars222_face_electromigration@1"
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
 STEPS = 12
 
 

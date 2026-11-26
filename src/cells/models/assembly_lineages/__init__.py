@@ -1,4 +1,4 @@
-"""Assembly lineages (cells.assembly_lineages@1): a stochastic assembly family.
+"""Assembly lineages (cells.model.assembly_lineages@1): a stochastic assembly family.
 
 An assembly holds integer counts of declared molecule types. It exchanges single molecules with a
 held phase (a reservoir whose activities the world fixes), grows to a declared size, splits at
@@ -29,16 +29,16 @@ reconstructs it) is one declared law set of this kind, in gard.py, used only for
 Nothing here runs at import: this module holds identifiers only.
 """
 
-MODEL_ID = "cells.assembly_lineages@1"
-EXCHANGE_LAW = "cells.reservoir_exchange@1"
-FISSION = "cells.size_threshold_fission@1"
-CONTINUATION = "cells.daughter_continuation@1"
+MODEL_ID = "cells.model.assembly_lineages@1"
+EXCHANGE_LAW = "cells.exchange.reservoir_exchange@1"
+FISSION = "cells.operator.size_threshold_fission@1"
+CONTINUATION = "cells.operator.daughter_continuation@1"
 
 # GARD's law set, for comparison only (gard.py).
-GARD_SINGLE_EVENT = "cells.gard_catalysis_single_event@1"
-GARD_PAIR_CONSISTENT = "cells.gard_catalysis_pair_consistent@1"
+GARD_SINGLE_EVENT = "cells.rate_factor.gard_catalysis_single_event@1"
+GARD_PAIR_CONSISTENT = "cells.rate_factor.gard_catalysis_pair_consistent@1"
 # The pair-consistent form with its cache of beta n held exactly (D244, D246); @1 keeps its bits.
-GARD_PAIR_CONSISTENT_V2 = "cells.gard_catalysis_pair_consistent@2"
+GARD_PAIR_CONSISTENT_V2 = "cells.rate_factor.gard_catalysis_pair_consistent@2"
 
 # The family's interfaces, declared in its row of the static model table
 # (registry/model_table.py). The `cells` namespace is Cells' own (MODULE_SYSTEM_DESIGN §2.3), and

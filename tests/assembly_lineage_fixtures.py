@@ -1,4 +1,4 @@
-"""Small assembly-lineage worlds for the family's unit tests (cells.assembly_lineages@1)."""
+"""Small assembly-lineage worlds for the family's unit tests (cells.model.assembly_lineages@1)."""
 
 import copy
 

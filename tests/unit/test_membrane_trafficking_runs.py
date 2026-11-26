@@ -1,4 +1,4 @@
-"""Compiled guards of scheduled_membrane_trafficking@1 (FR-2 version 1): T2 and T5 of
+"""Compiled guards of cells.operator.scheduled_membrane_trafficking@1 (FR-2 version 1): T2 and T5 of
 docs/MEMBRANE_RETRIEVAL_DESIGN.md §8, through the runner and its host checks (a ledger, domain
 or dissipation failure raises). Each check sits beside a planted error it catches. T7's restart,
 T7's batch and T8 have files of their own (_restart, _batch and _sheet), split by cost.

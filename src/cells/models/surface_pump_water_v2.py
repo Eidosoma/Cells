@@ -1,18 +1,18 @@
-"""resolved_pump_water@2: resolved_pump_water@1 plus KCC-type K+/anion symport routes.
+"""cells.model.resolved_pump_water@2: cells.model.resolved_pump_water@1 plus KCC-type K+/anion symport routes.
 
 Each route (definitions/surface_pump_water_v2_spec.py) is the law
 processes/k_anion_symport.LAW_ID on its membrane patch: outward cycles
 J = k a f(V) (K_i A_i - K_o A_o), one potassium and one anion per cycle, so it
 carries no current, with heat 1e-3 J A >= 0 and the cell's current volume in
-f(V). It is passed to resolved_pump_tissue@3's opt-in membrane-process hook
+f(V). It is passed to cells.model.resolved_pump_tissue@3's opt-in membrane-process hook
 (models/surface_pump_v3.py), so it is one more explicit membrane term at every
 @3 stage, in readouts and in rhs; @3 returns the tableau-applied transfer and
 the trapezoid heat of each step, which this model books in its own ledgers
 (symport_cycles_fmol, symport_dissipated_energy_pJ). Everything else, water
-included, is resolved_pump_water@1 (models/surface_pump_water.py): the same
+included, is cells.model.resolved_pump_water@1 (models/surface_pump_water.py): the same
 Strang splitting, with @3's step behind the same optimization barrier.
 
-With no route declared the identity is resolved_pump_water@1: the step is that
+With no route declared the identity is cells.model.resolved_pump_water@1: the step is that
 model's step (a static branch on the route layout's shape). Fixed points stay
 exact: the symport moves amounts inside @3's step, and water acts only on
 volumes at frozen amounts, so a zero of the full right-hand side is a fixed
@@ -22,8 +22,8 @@ Ledgers: the material ledgers include the symport transfers (K and anion);
 the energy ledger adds the symport heat; dissipation includes it.
 
 Implementation (D143, docs/PUMP_COMPOSITE.md). This identity is a thin
-composition: resolved_pump_composite@1 with the operators
-ideal_osmosis_linear_compliance_water@1 and k_anion_symport_mass_action@1
+composition: cells.model.resolved_pump_composite@1 with the operators
+cells.operator.ideal_osmosis_linear_compliance_water@1 and cells.operator.k_anion_symport_mass_action@1
 (models/operators/, which hold the water and route laws, moved there unchanged).
 Before this module became thin, the composition was bitwise equal to its own
 implementation on the model's test and qualification worlds (evidence:
@@ -136,7 +136,7 @@ def initial_values(spec):
 
 
 def imex_step(state, dt, control, p, *, xp=jnp):
-    """resolved_pump_water@1's split step with the routes in @3's step (static skip)."""
+    """cells.model.resolved_pump_water@1's split step with the routes in @3's step (static skip)."""
     return _model.split_step(state, dt, control, p, xp=xp)
 
 
@@ -154,7 +154,7 @@ def check_definition(spec):
 
 
 def check_steps(spec, steps, controls):
-    """resolved_pump_water@1's step checks on this definition's full event grid, and the
+    """cells.model.resolved_pump_water@1's step checks on this definition's full event grid, and the
     route bound (the routes are electroneutral, so they add no membrane conductance)."""
     _model.check_steps(composite(spec), steps, controls)
 
@@ -187,7 +187,7 @@ ledger_limits = _model.ledger_limits
 
 
 def check_values(state, spec, steps=None):
-    """resolved_pump_water@1's host checks with the symport ledgers (same order)."""
+    """cells.model.resolved_pump_water@1's host checks with the symport ledgers (same order)."""
     return _model.check_values(state, composite(spec), steps=steps)
 
 
@@ -202,7 +202,7 @@ Observations = _model.Observations
 
 
 def observe_history(times, history, layout, requested, spec):
-    """resolved_pump_water@1's observations (its fields at the routes' amounts), then the routes."""
+    """cells.model.resolved_pump_water@1's observations (its fields at the routes' amounts), then the routes."""
     return _model.observe_history(times, history, layout, requested, composite(spec))
 
 

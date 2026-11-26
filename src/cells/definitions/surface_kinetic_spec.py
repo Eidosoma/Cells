@@ -20,8 +20,8 @@ from cells.definitions.specs import (
 )
 from cells.laws.channels import shared_channel_catalog, voltage_gates
 
-MODEL_ID = "resolved_tissue@2"
-CATALOG_MODEL_ID = "resolved_tissue@8"
+MODEL_ID = "cells.model.resolved_tissue@2"
+CATALOG_MODEL_ID = "cells.model.resolved_tissue@8"
 
 
 @dataclass(frozen=True)
@@ -39,7 +39,7 @@ class Junction(base.Junction):
 
 @dataclass(frozen=True)
 class SeriesGate:
-    """One gate of a junction_series_gates@1 junction (FR-30): its kind, its parameters in that
+    """One gate of a cells.junction.junction_series_gates@1 junction (FR-30): its kind, its parameters in that
     kind's Parameters order (laws/junctions/junction_series_gates.py), and its initial
     conductance factor c in [r, 1]."""
 
@@ -50,7 +50,7 @@ class SeriesGate:
 
 @dataclass(frozen=True)
 class SeriesJunction(Junction):
-    """A junction whose gate is junction_series_gates@1 (FR-30; parsed by @3 alone, D262). Its
+    """A junction whose gate is cells.junction.junction_series_gates@1 (FR-30; parsed by @3 alone, D262). Its
     Junction fields hold the conductance the gates give: minimum_open_fraction the product of
     the gates' residuals, initial_gate the product of their initial factors, the law the series
     law's ID; threshold_voltage_V is 0.0 and read by nothing, since each gate carries its own

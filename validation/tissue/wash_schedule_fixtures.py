@@ -1,4 +1,4 @@
-"""Small worlds for scheduled_compartment_wash@1 (FR-27, docs/COMPARTMENT_WASH_DESIGN.md).
+"""Small worlds for cells.operator.scheduled_compartment_wash@1 (FR-27, docs/COMPARTMENT_WASH_DESIGN.md).
 
 All values are synthetic. The worlds are secreted_species_fixtures' quiescent worlds (passive cells,
 zero ion permeability, every node at the bath's ion composition with a zero charge anchor), with
@@ -19,7 +19,7 @@ import copy
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import site_occupancy_fixtures as sfx
 
-LAW = "scheduled_compartment_wash@1"
+LAW = "cells.operator.scheduled_compartment_wash@1"
 SAME = "same_as_compartment"
 TRACER = fx.SPECIES
 SITES_PER_FMOL = 602_214_076.0  # The site operator's exact constant.

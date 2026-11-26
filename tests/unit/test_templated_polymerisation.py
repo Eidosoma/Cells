@@ -1,4 +1,4 @@
-"""templated_polymerisation@1's kernel (gene regulation's option A, G4), on its own half-steps in
+"""cells.operator.templated_polymerisation@1's kernel (gene regulation's option A, G4), on its own half-steps in
 NumPy (validation/gene_regulation/kernel.py): no world is compiled. Each row advances a world of
 validation/gene_regulation/worlds.py for a few seconds of model time.
 
@@ -201,7 +201,7 @@ BESIDE_A_COMPARTMENT = {
 
 @pytest.mark.parametrize("name", sorted(BESIDE_A_COMPARTMENT))
 def test_beside_a_compartment(name):
-    """FR-49's expression entry: the compartments' list names templated_polymerisation@1, and the
+    """FR-49's expression entry: the compartments' list names cells.operator.templated_polymerisation@1, and the
     operator's own check refuses an export into a compartment's node and an outside degradation
     there, each with its reason. Host only: a parse, no compile."""
     build, words = BESIDE_A_COMPARTMENT[name]
@@ -251,7 +251,7 @@ def _control(raw, route):
 
 
 def _replaced(raw, templates=True):
-    """R1 beside scheduled_cell_replacement@1, which replaces its one cell at 120 s by a newcomer
+    """R1 beside cells.operator.scheduled_cell_replacement@1, which replaces its one cell at 120 s by a newcomer
     from template T (amendment S, §9.16), in place; with templates, T's values are the founder's
     time-0 values, as the occupant rule (item 6) requires."""
     from validation.tissue import secreted_species_fixtures as sfx
@@ -280,8 +280,12 @@ def _another_version(raw):
     from validation.tissue import shared_inventory_fixtures as inventories
 
     raw.update(inventories.with_water_first(_replaced(raw)))
-    (block,) = [o for o in raw["model"]["operators"] if o["law"] == "scheduled_cell_replacement@1"]
-    block.update(law="scheduled_cell_replacement@2", impermeant_species=[])
+    (block,) = [
+        o
+        for o in raw["model"]["operators"]
+        if o["law"] == "cells.operator.scheduled_cell_replacement@1"
+    ]
+    block.update(law="cells.operator.scheduled_cell_replacement@2", impermeant_species=[])
 
 
 # R1's refusals (§9.1-§9.6, and §9.16's beside a replacement): (edit of R1's raw definition at
@@ -316,7 +320,8 @@ RELEASE_REFUSALS = [
     (_unused_template, "template U's value for deg_R applies to no schedule"),
     (
         _another_version,
-        "composes with scheduled_cell_replacement@1 only, not scheduled_cell_replacement@2",
+        "composes with cells.operator.scheduled_cell_replacement@1 only, not "
+        "cells.operator.scheduled_cell_replacement@2",
     ),
     (
         lambda raw: _control(_replaced(raw), "deg_R")["schedule"].append(
@@ -350,7 +355,9 @@ def test_the_release_refuses(edit, words, monkeypatch):
     raw = worlds.r1(0.75)
     edit(raw)
     if edit is _another_version:  # Refused first as a second volume changer; that planted away:
-        with pytest.raises(ConfigError, match="scheduled_cell_replacement@2 changes the volumes"):
+        with pytest.raises(
+            ConfigError, match="cells.operator.scheduled_cell_replacement@2 changes the volumes"
+        ):
             parse_spec(raw)
         monkeypatch.setattr(polymerisation.species_reactions, "check_volume_changers", lambda *_: 0)
     with pytest.raises(ConfigError, match=words):

@@ -1,4 +1,4 @@
-# Symport of a cation and an anion in an electroneutral ratio, with a manufactured rate (`cells.electroneutral_symport_reversible_tanh@1`)
+# Symport of a cation and an anion in an electroneutral ratio, with a manufactured rate (`cells.cycle.electroneutral_symport_reversible_tanh@1`)
 
 **In one sentence:** One kind of cation and one kind of anion cross a membrane together, in a declared ratio that carries no net charge, at a rate whose form is manufactured.
 
@@ -32,8 +32,8 @@ regulation, and the water that follows salt. It models no transporter protein.
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.cycle_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#cycle-laws)) |
-| ID | `cells.electroneutral_symport_reversible_tanh@1`; definitions write `cells.electroneutral_symport_reversible_tanh@1` |
-| Runs in | `cells.transporter@1`, its host, in `cells.resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
+| ID | `cells.cycle.electroneutral_symport_reversible_tanh@1`; definitions write `cells.cycle.electroneutral_symport_reversible_tanh@1` |
+| Runs in | `cells.kind.transporter@1`, its host, in `cells.model.resolved_pump_tissue@3`. Definitions of `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3` can declare it |
 | Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
@@ -44,7 +44,7 @@ regulation, and the water that follows salt. It models no transporter protein.
 
 | Role | What | Unit | Which way is positive |
 | --- | --- | --- | --- |
-| Reads | `rapid_binding@1`, current at each inner stage | | |
+| Reads | `cells.binding.rapid_binding@1`, current at each inner stage | | |
 | Changes | `cation@N`: `n_cation` per cycle | | inward-positive, per forward cycle |
 | Changes | `cation@P`: `-n_cation` per cycle | | inward-positive, per forward cycle |
 | Changes | `anion@N`: `n_anion` per cycle | | inward-positive, per forward cycle |
@@ -94,10 +94,10 @@ $$x = n_C \ln\frac{[\text{C}]_N}{[\text{C}]_P} + n_A \ln\frac{[\text{A}]_N}{[\te
   that term alone, which holds no charged row at a closed compartment's node, so its moves there are
   refused ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for every
   kind.
-- **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a
+- **At a binding closure:** it declares the read `cells.binding.rapid_binding@1` and base forms, so where a
   closure holds one of its ions it reads the free amount and moves the total, and the material rate
   runs through the closure's derivative.
-- **Not a second potassium-chloride symport:** the canonical one is `k_anion_symport_mass_action@1`,
+- **Not a second potassium-chloride symport:** the canonical one is `cells.operator.k_anion_symport_mass_action@1`,
   an operator beside water, whose rate is mass action with a volume factor. The kind reads no
   volume.
 - **Left out:** salts of three or more ions (each a law of its own), binding by each ion and any
@@ -170,8 +170,8 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/laws/cycles/electroneutral_symport_reversible_tanh.py`](../../../../src/cells/laws/cycles/electroneutral_symport_reversible_tanh.py) (`cells.laws.cycles.electroneutral_symport_reversible_tanh`).
-- Runs in `cells.transporter@1`.
-- Manifest entry: (law, `cells.electroneutral_symport_reversible_tanh@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.electroneutral_symport_reversible_tanh@1`.
+- Runs in `cells.kind.transporter@1`.
+- Manifest entry: (law, `cells.cycle.electroneutral_symport_reversible_tanh@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.cycle.electroneutral_symport_reversible_tanh@1`.
 
 <!-- /generated -->

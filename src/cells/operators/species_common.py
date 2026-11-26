@@ -1,7 +1,7 @@
 """Shared definition logic of the secreted-species operators (D150, version 1).
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §1.5, §2.6, §5.2 and §11.5; used by
-scheduled_species_turnover@1 (species_turnover.py) and scheduled_species_exchange@1
+cells.operator.scheduled_species_turnover@1 (species_turnover.py) and cells.operator.scheduled_species_exchange@1
 (species_exchange.py). Nothing here runs on the device: these are the declarations' parsers,
 the definition refusals and the host-side tables from which the operators' per-world controls
 are built.
@@ -12,10 +12,10 @@ are built.
   identity reaches the summary and the definition, never the arrays. Two operators that declare
   one species must declare the same identity.
 * **Charged rows** (FR-15 S1, the lead's rulings of 19 November 2026): the operators act on
-  neutral species, except local_species_reactions@1, whose reactions conserve charge. Every listed
+  neutral species, except cells.operator.local_species_reactions@1, whose reactions conserve charge. Every listed
   species is impermeant on @3's own routes (check_impermeant), except a declared counter-ion that
   @3's explicit-rate bound covers on each of its routes (check_counter_ion); a charged trace row's
-  permeation is the passive-routes kind's constant-field law, or for local_species_reactions@1 a
+  permeation is the passive-routes kind's constant-field law, or for cells.operator.local_species_reactions@1 a
   channel whose law declares its material term (check_impermeant's bounded_channels).
 * **At most 1,024 species per world** (§2.6; FR-43 / D315 raised it from 16 on FR-43's probe,
   docs/FR43_SHARED_INVENTORIES_DESIGN.md §1; FR-9 / D165 from 7 on the W4 probe, §13), refused in
@@ -51,8 +51,11 @@ from cells.definitions.specs import ConfigError, _fields
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.registry import species_registry as registry
 
-REPLACEMENT_LAW = "scheduled_cell_replacement@1"
-SPECIES_LAWS = ("scheduled_species_turnover@1", "scheduled_species_exchange@1")
+REPLACEMENT_LAW = "cells.operator.scheduled_cell_replacement@1"
+SPECIES_LAWS = (
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.scheduled_species_exchange@1",
+)
 MAX_SPECIES = 1024  # FR-43 / D315 (from 16; FR-9 / D165 from 7): FR-43's probe; above it, another.
 EVIDENCE_KINDS = registry.EVIDENCE_KINDS
 # Version 1 is transport on a static tissue (§5.5): both operators read the declared volumes and
@@ -102,7 +105,7 @@ class Occupant:
 
 def parse_species(raw, base, law, *, charged=False, counter_ions=frozenset(), limit=""):
     """The species list of an operator's declaration: neutral species of the inner model, or
-    (charged=True: FR-15 S1, local_species_reactions@1) charged ones too.
+    (charged=True: FR-15 S1, cells.operator.local_species_reactions@1) charged ones too.
 
     Every listed species is impermeant on @3's own routes (check_impermeant; where charged rows are
     admitted, a channel whose law declares its material term is no route), except a declared
@@ -149,7 +152,7 @@ class ReadSpecies:
 def parse_read_species(raw, base, law):
     """The read-only species list: any species of the world, ions included, with D150's identity
     form; read, never written (docs/INVENTORY_COUPLING_DESIGN.md §1.3, ruling 1: one mechanism,
-    which D152's 1.1 door reuses). Moved here from species_regulated_availability@1."""
+    which D152's 1.1 door reuses). Moved here from cells.operator.species_regulated_availability@1."""
     if type(raw) is not list:
         raise ConfigError(f"{law} lists the species it reads in an explicit list")
     declared = set(base.model.species_ids)
@@ -175,7 +178,7 @@ def check_impermeant(model, name, law, *, bounded_channels=False):
     or channel would have no material-rate bound. Templates cannot add such a route either, since a
     template replaces only routes the slot already has (core/cell_replacement_spec).
 
-    bounded_channels (local_species_reactions@1 alone, through parse_species: it admits charged rows
+    bounded_channels (cells.operator.local_species_reactions@1 alone, through parse_species: it admits charged rows
     and refuses RK4): a channel whose law declares its material term does not count, since the IMEX
     step's material rule bounds its ions' amounts at every explicit stage
     (surface_pump_v3.material_rate; docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §5.4)."""

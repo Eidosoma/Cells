@@ -1,6 +1,6 @@
 {
   "kind": "cells.finite_ecm_polygon_source_and_unsupported_matrix@1",
-  "public_family": "resolved_tissue@1",
+  "public_family": "cells.model.resolved_tissue@1",
   "source_manifest_sha256": "dc4e5e03109e034e56c1fb380a0df79412757cef2ac35b51ed0a32fc09f2aa47",
   "admission_source_sha256": {
     "src/cells/__init__.py": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
@@ -525,7 +525,7 @@
     },
     {
       "domain": "Family scope",
-      "rule": "Complete actual resolved_tissue@1 only; active/Ca/fuel/water/transport/intervention/event/epoch families require their separate future bridge"
+      "rule": "Complete actual cells.model.resolved_tissue@1 only; active/Ca/fuel/water/transport/intervention/event/epoch families require their separate future bridge"
     },
     {
       "domain": "Scientific claims",

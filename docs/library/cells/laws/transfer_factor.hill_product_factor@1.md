@@ -1,4 +1,4 @@
-# Product of saturating factors of concentrations (`cells.hill_product_factor@1`)
+# Product of saturating factors of concentrations (`cells.transfer_factor.hill_product_factor@1`)
 
 **In one sentence:** A number between zero and one that rises or falls smoothly with each of the concentrations it reads, by which a transfer's rate is multiplied.
 
@@ -29,8 +29,8 @@ strongly another is read.
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.transfer_factor_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#family-interfaces)) |
-| ID | `cells.hill_product_factor@1`; definitions write `hill_product_factor@1` |
-| Runs in | `cells.species_condition@1`, its host, in `cells.resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
+| ID | `cells.transfer_factor.hill_product_factor@1`; definitions write `cells.transfer_factor.hill_product_factor@1` |
+| Runs in | `cells.kind.species_condition@1`, its host, in `cells.model.resolved_pump_tissue@3`. Definitions of `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3` can declare it |
 | Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
@@ -76,7 +76,7 @@ $$\frac{\partial \ln f}{\partial \ln x_j} = +\,n_j\,(1 - h_j) \ \text{(activatio
   directly rather than by subtraction, so it keeps its accuracy where the gate is nearly open.
 - **Left out:** no reading changes another's half-saturation (the readings are separable); a reading
   binds nothing; and the gate has no state, latency or inactivation.
-- **The pH factor:** `ph_conditioned_factor@1` is this law with one activation reading of the free
+- **The pH factor:** `cells.transfer_factor.ph_conditioned_factor@1` is this law with one activation reading of the free
   proton, $K = 10^{3 - \text{pH}_{50}}$ mM and $n$ its slope. On 20,000 random points the two differ by
   at most 2.3e-15 (absolute). That law retires in a landing of its own.
 
@@ -138,8 +138,8 @@ Not stated: no record states a level for this piece.
 
 - Declared in [`src/cells/laws/reactions/hill_product_factor.py`](../../../../src/cells/laws/reactions/hill_product_factor.py) (`cells.laws.reactions.hill_product_factor`).
 - Kernels: `log_factor`, `cells.laws.reactions.hill_product_factor.log_factor`; `factor`, `cells.laws.reactions.hill_product_factor.factor`; `log_slopes`, `cells.laws.reactions.hill_product_factor.log_slopes`.
-- Runs in `cells.species_condition@1`.
-- Manifest entry: (law, `cells.hill_product_factor@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.hill_product_factor@1`.
+- Runs in `cells.kind.species_condition@1`.
+- Manifest entry: (law, `cells.transfer_factor.hill_product_factor@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.transfer_factor.hill_product_factor@1`.
 
 <!-- /generated -->

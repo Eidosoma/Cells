@@ -1,4 +1,4 @@
-"""Contract tests for atp_driven_transporter_mass_action_positive@1 (the transporter kind's kernel),
+"""Contract tests for cells.cycle.atp_driven_transporter_mass_action_positive@1 (the transporter kind's kernel),
 on R-fuel's calibrated first case (validation/compartment_ph/REFERENCES_USAGE.md)."""
 
 import math

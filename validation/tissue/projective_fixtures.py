@@ -1,6 +1,6 @@
 """Worlds and projective blocks for the coarse projective mode (execution/projective.py).
 
-pump_cells(): independent resolved_pump_tissue@1 cells, each facing its own held
+pump_cells(): independent cells.model.resolved_pump_tissue@1 cells, each facing its own held
 bath, with the heredity pre-screen's passive and pump parameters
 (validation/tissue/surface_pump_v3_fixtures.py: BETSE v1.5.0 default-world
 coefficients from the saved plain-BETSE extraction, Na leak x0.2, 310 K, fixed
@@ -27,7 +27,7 @@ PERMEABILITY = dict(
 BATH_mM = dict(Na=145.0, K=5.0, M=140.0, P=10.0)
 FIXED_ANION_mM = 135.0
 SPECIES = (("Na", 1), ("K", 1), ("M", -1), ("P", -1))
-ARS = "imex_ars222_face_electromigration@1"
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
 # (Vm V, Na, K, M mM): the heredity H composition and a depolarized, Na-loaded cell.
 H = (-0.07955626004246525, 5.934560723484736, 136.17199964403224, 7.124496086230464)
 LOADED = (-0.05, 12.0, 130.0, 10.0)
@@ -76,10 +76,10 @@ def pump_cells(cells, *, dt=1e-3, end_time=1.0, observation_times=None, solver=A
                 area_m2=AREA_M2,
                 capacitance_F=CAPACITANCE_F,
                 permeability_m_per_s=dict(PERMEABILITY),
-                law="constant_field@1",
+                law="cells.route.constant_field@1",
                 pump=dict(
                     id=f"pump_{i}",
-                    law="nak_atp_mass_action_positive@1",
+                    law="cells.cycle.nak_atp_mass_action_positive@1",
                     roles=dict(sodium="Na", potassium="K"),
                     stoichiometry=dict(Na=-3, K=2),
                     capacity_fmol_per_s=1e-7 * AREA_M2 * 1e15,
@@ -87,7 +87,7 @@ def pump_cells(cells, *, dt=1e-3, end_time=1.0, observation_times=None, solver=A
                     km_k_mM=0.2,
                     km_atp_mM=0.5,
                     metabolism=dict(
-                        kind="maintained_chemical_reservoirs@1",
+                        kind="cells.fuel_kind.maintained_chemical_reservoirs@1",
                         atp_mM=1.5,
                         adp_mM=0.1,
                         pi_mM=0.1,
@@ -110,7 +110,7 @@ def pump_cells(cells, *, dt=1e-3, end_time=1.0, observation_times=None, solver=A
     return dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@1",
+            id="cells.model.resolved_pump_tissue@1",
             temperature_K=TEMPERATURE_K,
             species=[dict(id=s, valence=v) for s, v in SPECIES],
             cells=model_cells,
@@ -119,7 +119,8 @@ def pump_cells(cells, *, dt=1e-3, end_time=1.0, observation_times=None, solver=A
             junctions=[],
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
         ),
         experiment=dict(
@@ -142,7 +143,7 @@ def pump_cells(cells, *, dt=1e-3, end_time=1.0, observation_times=None, solver=A
             jit=True,
             precision="float64",
             solver=solver,
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=int(math.ceil(end_time / dt)) + 8,
             max_trace_bytes=2**33,
             material_balance_atol_fmol={s: 1e-10 for s in ids},
@@ -188,7 +189,7 @@ def projective_block(windows, *, burst_steps=2000, slope_steps=250, rule="error_
             safety_factor=safety_factor,
         )
     return dict(
-        method="projective_forward_euler@1",
+        method="cells.execution.projective_forward_euler@1",
         windows=[dict(start_time=a, end_time=b) for a, b in windows],
         burst_steps=burst_steps,
         slope_steps=slope_steps,

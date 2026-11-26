@@ -21,10 +21,10 @@ Parts and their programs:
   composition, with closed water and with event-free replacement (scalar, device checks);
 * w1: W1's six judged trajectories at 1 ms (windowed, core/windows.run_windowed, as the
   judge runs them: every window's observations and the final state);
-* pump: resolved_pump_tissue@1 and @2 worlds, RK4 and IMEX (scalar, device checks);
+* pump: cells.model.resolved_pump_tissue@1 and @2 worlds, RK4 and IMEX (scalar, device checks);
 * cohorts: Q6's cohorts, 2 W7 worlds and 8 C9 worlds (vmapped vector windows,
   core/vector_windows; and the lax_map batch, core/batch);
-* reactions, reactions-windowed: local_species_reactions@1's crossrev worlds
+* reactions, reactions-windowed: cells.operator.local_species_reactions@1's crossrev worlds
   (validation/tissue/species_reactions_crossrev.reaction_worlds, the padded two-factor world among
   them) and GJ-N1's EMT switch worlds with Hill factors on six slots (the uncoupled pair, the line
   and the 25 x 25 field at D = 0 and at the bracket's upper end, a few steps each; validation/
@@ -136,7 +136,7 @@ def _pump():
     from validation.tissue import surface_pump_fixtures as v1
     from validation.tissue import surface_pump_v2_fixtures as v2
 
-    imex = "imex_ars222_face_electromigration@1"
+    imex = "cells.solver.imex_ars222_face_electromigration@1"
     return {
         f"{tag}_{arm}_{name}": (
             lambda f=f, arm=arm, solver=solver: f.definition(arm, solver=solver)
@@ -373,9 +373,9 @@ def _cohort(name, raws, out):
 
 
 FAMILY_FIELD_SOLVERS = (
-    "capacitive_reduction_gauged_damped_newton@2",
-    "capacitive_reduction_gauged_damped_newton@3",
-    "sparse_capacitive_reduction_gauged_damped_newton@1",  # The GJ field's (neither.py).
+    "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "cells.solver.capacitive_reduction_gauged_damped_newton@3",
+    "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1",  # The GJ field's (neither.py).
 )
 
 

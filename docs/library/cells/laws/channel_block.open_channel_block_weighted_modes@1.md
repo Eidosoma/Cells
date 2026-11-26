@@ -1,4 +1,4 @@
-# Voltage-dependent block of open channels (`cells.open_channel_block_weighted_modes@1`)
+# Voltage-dependent block of open channels (`cells.channel_block.open_channel_block_weighted_modes@1`)
 
 **In one sentence:** A charged blocker held on one side of the membrane plugs open channels to an extent set by the voltage, lowering the current they carry.
 
@@ -33,8 +33,8 @@ concentration is held at a declared value, and none is taken from the solution w
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.channel_block_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#family-interfaces)) |
-| ID | `cells.open_channel_block_weighted_modes@1`; definitions write `open_channel_block_weighted_modes@1` |
-| Runs in | `cells.resolved_pump_tissue@3`, its host, which definitions write `resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
+| ID | `cells.channel_block.open_channel_block_weighted_modes@1`; definitions write `cells.channel_block.open_channel_block_weighted_modes@1` |
+| Runs in | `cells.model.resolved_pump_tissue@3`, its host. Definitions of `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3` can declare it |
 | Provenance | `cited`: taken from a cited source |
 
 <!-- /generated -->
@@ -94,7 +94,7 @@ $$\left|\frac{du}{dV_\text{ref}}\right| \le \frac{\sum_k w_k\,|a_k|\,\theta_k\,(
 - **Left out (version 1's limits):** the blocker is held at a declared constant concentration, not a
   [species row](../../GLOSSARY.md#species-row); the block has no kinetics; and binding is trace, with
   no count.
-- **Scope (D355, D356):** `kir2p1_mh2@1`'s own gates read absolute voltage, so they do not shift
+- **Scope (D355, D356):** `cells.channel.kir2p1_mh2@1`'s own gates read absolute voltage, so they do not shift
   with external potassium. A world in which external potassium changes declares this block with a
   reversal reference, on an always-open potassium population; that composition is development-only
   until its registration passes (D353).
@@ -168,8 +168,8 @@ Not stated: no record states a level for this piece.
 
 - Declared in [`src/cells/laws/channels/open_channel_block.py`](../../../../src/cells/laws/channels/open_channel_block.py) (`cells.laws.channels.open_channel_block`).
 - Kernels: `dissociation`, `cells.laws.channels.open_channel_block.dissociation`; `fractions`, `cells.laws.channels.open_channel_block.fractions`; `unblocked_fraction`, `cells.laws.channels.open_channel_block.unblocked_fraction`; `slope`, `cells.laws.channels.open_channel_block.slope`; `domain_valid`, `cells.laws.channels.open_channel_block.domain_valid`.
-- Runs in `cells.resolved_pump_tissue@3`.
-- Manifest entry: (law, `cells.open_channel_block_weighted_modes@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.open_channel_block_weighted_modes@1`.
+- Runs in `cells.model.resolved_pump_tissue@3`.
+- Manifest entry: (law, `cells.channel_block.open_channel_block_weighted_modes@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.channel_block.open_channel_block_weighted_modes@1`.
 
 <!-- /generated -->

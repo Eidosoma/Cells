@@ -1,6 +1,6 @@
-"""Cost of resolved_pump_replacement@1 against resolved_pump_tissue@3 (development, not judged).
+"""Cost of cells.model.resolved_pump_replacement@1 against cells.model.resolved_pump_tissue@3 (development, not judged).
 
-Engine models: resolved_pump_tissue@3 and resolved_pump_replacement@1 (inner @3),
+Engine models: cells.model.resolved_pump_tissue@3 and cells.model.resolved_pump_replacement@1 (inner @3),
 IMEX ARS(2,2,2) at dt 1 ms, compiled checked steps in lax.scan with held controls
 (execute time only; compile reported separately). Parts (one JSON each in --output):
 
@@ -101,7 +101,10 @@ def part_overhead(args):
     base = parse_spec(raw)
     wrapped = parse_spec(fx.with_replacement(raw))
     out = dict(nodes=len(base.model.cells) + len(base.model.extracellular), steps=args.steps)
-    for label, spec in (("resolved_pump_tissue@3", base), ("resolved_pump_replacement@1", wrapped)):
+    for label, spec in (
+        ("cells.model.resolved_pump_tissue@3", base),
+        ("cells.model.resolved_pump_replacement@1", wrapped),
+    ):
         model = get_model(spec.model)
         out[label] = dict(
             single=[rollout(model, spec, args.steps) for _ in range(args.repeats)],
@@ -174,8 +177,8 @@ def part_sheet(args):
     events = [(t, f"cell_{ring[(7 * k) % len(ring)]}", "h", f"n{k}") for k, t in enumerate(times)]
     out = dict(cells=len(raw["model"]["cells"]), steps=args.steps, events=len(events))
     for label, definition in (
-        ("resolved_pump_tissue@3", raw),
-        ("resolved_pump_replacement@1", fx.with_replacement(raw, [template], events)),
+        ("cells.model.resolved_pump_tissue@3", raw),
+        ("cells.model.resolved_pump_replacement@1", fx.with_replacement(raw, [template], events)),
     ):
         spec = parse_spec(definition)
         started = time.perf_counter()
@@ -209,7 +212,7 @@ def part_parse(args):
             if unique or k == 0:
                 template = fx.template_from_cell(raw, "cell_0", name)
                 template["route_values"]["channel_permeability_m_per_s"] = {
-                    "nav1p2_m3h_regularized@1": 2.5e-7 * (1 + 1e-3 * (k % 7))
+                    "cells.channel.nav1p2_m3h_regularized@1": 2.5e-7 * (1 + 1e-3 * (k % 7))
                 }
                 templates.append(template)
             events.append((t, f"cell_{(37 * k) % cells}", name, f"n{k}"))
@@ -355,7 +358,10 @@ def part_inheritance(args):
         threshold_mV=1e3 * threshold,
         arms=[],
     )
-    bookings = ("explicit_tableau", "trapezoid_nonnegative@1")  # @3's junction heat options.
+    bookings = (
+        "explicit_tableau",
+        "cells.heat.trapezoid_nonnegative@1",
+    )  # @3's junction heat options.
     for booking in bookings:
         for rule, formation in rules.items():
             for kind, event in newcomers.items():

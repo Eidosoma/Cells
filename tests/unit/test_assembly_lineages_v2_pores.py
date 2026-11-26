@@ -1,5 +1,5 @@
-"""FR-31's Phase A in cells.assembly_lineages@2: cells.pore_nucleation@1, a vesicle hazard per
-membrane area, and cells.tension_hold@1, a held tension (docs/VESICLE_PORES_LAWS.md, tagged
+"""FR-31's Phase A in cells.model.assembly_lineages@2: cells.assembly_hazard.pore_nucleation@1, a vesicle hazard per
+membrane area, and cells.operator.tension_hold@1, a held tension (docs/VESICLE_PORES_LAWS.md, tagged
 pores-laws-sheet-registered-2026-11-22; D287; the lead's rulings of 22 November 2026).
 
 New file for a new feature. Each claim with a planted error it must catch (D187):
@@ -290,7 +290,7 @@ def _set_hazard(name, value):
 
 
 REFUSALS = {
-    "no geometry": (_no_geometry, "declares cells.bilayer_geometry@1"),
+    "no geometry": (_no_geometry, "declares cells.assembly_geometry.bilayer_geometry@1"),
     "a prescribed shell": (_shell, "a prescribed shell has no tension"),
     "a membrane join": (_membrane_join, "step join changes L@membrane's count"),
     "an isomerisation keeping the total": (_isomerisation, "step iso changes"),

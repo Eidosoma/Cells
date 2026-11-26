@@ -1,4 +1,4 @@
-"""cells.pool_replacement@1: a population's exterior replaced at declared times, a pulse or a
+"""cells.operator.pool_replacement@1: a population's exterior replaced at declared times, a pulse or a
 washout (FR-20; D237, D240; docs/ASSEMBLY_WASHOUT_DESIGN.md).
 
 The experiment declares `{index, kind: replacement, times_s, pool}`: pool gives one count per finite
@@ -36,7 +36,7 @@ from cells.models.assembly_lineages_v2.interfaces import AssemblyOperator
 from cells.modules import Citation
 from cells.registry import operators as operator_registry
 
-POOL_REPLACEMENT = "cells.pool_replacement@1"
+POOL_REPLACEMENT = "cells.operator.pool_replacement@1"
 KEYS = {"index", "kind", "times_s", "pool"}
 
 
@@ -51,7 +51,7 @@ def parse(entry, world):
         raise ConfigError(
             "experiment: a replacement exchanges the whole pool and takes no fraction; a partial "
             "exchange is a withdrawal, {index, kind: withdrawal, times_s, fraction, buffer} "
-            "(cells.pool_withdrawal@1), its buffer the counts in the withdrawn volume"
+            "(cells.operator.pool_withdrawal@1), its buffer the counts in the withdrawn volume"
         )
     if set(entry) != KEYS:
         raise ConfigError(f"experiment: a replacement's keys are {sorted(KEYS)}")

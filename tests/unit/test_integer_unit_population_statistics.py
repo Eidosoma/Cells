@@ -1,4 +1,4 @@
-"""integer_unit_population@1's statistical and coupled checks (FR-43 part 3; D315), registered in
+"""cells.operator.integer_unit_population@1's statistical and coupled checks (FR-43 part 3; D315), registered in
 validation/fr43_part3/REGISTRATION.md §3 and §4 before any reference value was seen:
 
 * C3.3: feedback off, constant rates, 16,384 independent sites: the fraction with no active unit

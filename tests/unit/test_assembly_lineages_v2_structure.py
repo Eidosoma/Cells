@@ -1,4 +1,4 @@
-"""The structure of cells.assembly_lineages@2's kernel and records (OL1), with no value computed.
+"""The structure of cells.model.assembly_lineages@2's kernel and records (OL1), with no value computed.
 
 Structural only (no rate, free energy or event of OL1's laws is computed; programs are traced
 abstractly). Each claim with a planted error it must catch (D187):

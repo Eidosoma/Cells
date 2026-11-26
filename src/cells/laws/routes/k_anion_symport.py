@@ -46,8 +46,8 @@ import jax.numpy as jnp
 
 from cells.laws.electrochemistry import R
 
-LAW_ID = "k_anion_symport_mass_action@1"
-VOLUME_FACTOR_ID = "exponential_volume_activation@1"
+LAW_ID = "cells.operator.k_anion_symport_mass_action@1"
+VOLUME_FACTOR_ID = "cells.transfer_factor.exponential_volume_activation@1"
 MAX_ABS_VOLUME_EXPONENT = 80.0  # exp(80) ~ 5e34: beyond this the factor is not physical.
 SPLIT_MARGIN = 1e-9  # log_product_ratio: in the exponent, as a power of 2.
 

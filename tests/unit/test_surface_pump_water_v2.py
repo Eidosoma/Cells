@@ -1,7 +1,7 @@
-"""resolved_pump_water@2: resolved_pump_water@1 plus KCC-type K+/anion symport routes.
+"""cells.model.resolved_pump_water@2: cells.model.resolved_pump_water@1 plus KCC-type K+/anion symport routes.
 
 Definitions: round trip, dispatch and declaration errors. Reductions: with no
-route the model is resolved_pump_water@1 bitwise (a static branch); with every
+route the model is cells.model.resolved_pump_water@1 bitwise (a static branch); with every
 route blocked it is too (compiled, and uncompiled). With routes: every ledger
 closes, the cycles and heat are booked (heat nondecreasing), the route lowers
 the swelling of a D cell, readouts carry the route in the K and anion
@@ -138,7 +138,7 @@ def test_readouts_carry_the_route_in_the_k_and_anion_derivatives(route_on):
 
 def test_routes_compose_with_the_junction_heat_booking():
     raw = fixtures.with_water(fixtures.gated_sheet(end_time=0.02), pf_m_s=AQUAPORIN_PF)
-    raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+    raw["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
     spec = parse_spec(fixtures.with_symport(raw, flux_mmol_L_h=15.0, steepness=0.12))
     result = run(spec)
     assert result.diagnostics["max_energy_balance_relative"] < 1e-6

@@ -1,4 +1,4 @@
-"""Small @3 worlds for membrane_entity_state@1 and scheduled_membrane_insertion@1 (v2 design §3).
+"""Small @3 worlds for cells.operator.membrane_entity_state@1 and cells.operator.scheduled_membrane_insertion@1 (v2 design §3).
 
 All values are synthetic, around one heredity cell (validation/tissue/surface_pump_v3_fixtures):
 * one_patch: the heredity cell facing its held bath (one patch, one clamp);
@@ -18,8 +18,8 @@ from cells.definitions import pump_composite_spec as cs
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 
-STATE = "membrane_entity_state@1"
-INSERTION = "scheduled_membrane_insertion@1"
+STATE = "cells.operator.membrane_entity_state@1"
+INSERTION = "cells.operator.scheduled_membrane_insertion@1"
 DT = 1e-3
 DENSITY = 1e13  # Reference density of every population (units/m^2).
 SPECIFIC_CAPACITANCE = 0.05  # F/m^2, the heredity patch's.
@@ -84,7 +84,7 @@ def cleft_cell(*, end=0.006, observation_times=None, access_area_m2=1e-14, cleft
             area_m2=access_area_m2,
             length_m=1e-2,
             diffusivity_m2_per_s={s: 1e-9 for s in ids},
-            law="logmean_electrodiffusion@1",
+            law="cells.route.logmean_electrodiffusion@1",
         )
     )
     base["experiment"]["membrane_controls"].append(
@@ -95,7 +95,7 @@ def cleft_cell(*, end=0.006, observation_times=None, access_area_m2=1e-14, cleft
 
 
 def membrane_state(raw, catalogue=None):
-    """The membrane_entity_state@1 block declaring every population of raw."""
+    """The cells.operator.membrane_entity_state@1 block declaring every population of raw."""
     return dict(
         law=STATE,
         populations=[

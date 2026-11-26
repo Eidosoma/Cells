@@ -57,8 +57,8 @@ ROWS = dict(store_world=4, store_world_without_buffers=2)  # How many of TIMES a
 CONTROLS = ["release_sign", "pump_without_voltage"] + [
     f"constants_one_percent: {name}" for name in WORLD["controls"]["list"][2]["constants"]
 ]
-PASSIVE, CYCLES = "cells.passive_routes@1", "cells.transporter@1"
-CONDITIONS = "cells.species_condition@1"
+PASSIVE, CYCLES = "cells.kind.passive_routes@1", "cells.kind.transporter@1"
+CONDITIONS = "cells.kind.species_condition@1"
 # The references' names: {observable: their key}, {mover: theirs}, and a mover's one label.
 SERIES = dict(
     V_m="V_m_change_V", V_b="V_b_change_V", m="m", h="h", capacitor="capacitor_energy_change_pJ"

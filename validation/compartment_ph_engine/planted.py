@@ -10,7 +10,7 @@ cytosol (its held fuel, unchanged) and moves n H+ from the lumen to the cytosol:
 the lumen's H_eq -n and the cytosol's +n per cycle, heat -J dG_cyc and the maintenance's work
 -J d_rG'_ATP. Every ledger closes, so only J4 against the independent reference catches it.
 
-It is cells.transporter@1 with its rates, stage term, ledger terms and readouts replaced: the
+It is cells.kind.transporter@1 with its rates, stage term, ledger terms and readouts replaced: the
 proton kernel (laws/pumps/proton_pump.py, unedited) evaluated with the inside and outside free
 protons exchanged and the patch voltage negated, its moves and ledger terms reversed. The fuel
 band stays the cytosol's (the kernel checks it at its inside proton, here the lumen's, so it is

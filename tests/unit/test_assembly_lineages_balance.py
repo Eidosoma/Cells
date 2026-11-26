@@ -86,7 +86,9 @@ def test_the_check_admits_pair_consistent_as_passive_and_refuses_single_event_as
     # Planted: the single-event form declared passive, registered in a scope under its own ID.
     law_registry.active()
     planted = dataclasses.replace(
-        gard.SINGLE_EVENT, law_id="tests.single_event_as_passive@1", energy_role="passive"
+        gard.SINGLE_EVENT,
+        law_id="tests.rate_factor.single_event_as_passive@1",
+        energy_role="passive",
     )
     try:
         with law_registry.scope(law_registry.BUILTIN.extended(planted)):

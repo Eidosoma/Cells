@@ -1,12 +1,12 @@
 """Scale smoke test: one Xenopus-egg-sized cell at rest (cell-division plan stage 2; development).
 
-Engine model: resolved_pump_tissue@3, unmodified, with no pump, no channel populations and
+Engine model: cells.model.resolved_pump_tissue@3, unmodified, with no pump, no channel populations and
 no junctions: one cell facing a held bath, IMEX ARS(2,2,2) at the qualified 1 ms step.
 Every run goes through core/runner.run (host row checks on every accepted row); the model's
 device row checks (surface_pump_v3.device_checks) then run on every accepted row, and each
 ledger's residual is divided by its checked bound (surface_pump.ledger_limits with
 surface_pump_v3.channel_magnitudes, the bounds both checks use). The optional water arm is
-resolved_pump_water@1 on the same cell (its own host checks through run()).
+cells.model.resolved_pump_water@1 on the same cell (its own host checks through run()).
 
 The egg (rows of /mnt/workspaces/Cells/cell-division-20261111-01/verification/
 xenopus_parameters.csv, each with its source there):
@@ -37,7 +37,7 @@ Parts (each writes <part>.json in --output; refusals are kept as results):
           fixed background anchor/F - sum z n): parsed, accepted or refused at the definition
   run     the definition with the anchor taken from the rounded background (F (background
           + sum z n), exact sum) for --end s: run(), device checks, per-ledger ratios
-  water   the same consistent cell as resolved_pump_water@1 (water on: Pf from the egg's
+  water   the same consistent cell as cells.model.resolved_pump_water@1 (water on: Pf from the egg's
           water permeability, no cortex modulus or pressure offset) for --end s
 
 Usage: python -m validation.tissue.egg_scale_smoke PART[,PART...] --output DIR [--end S]
@@ -148,7 +148,7 @@ def rest_and_permeability():
 
 
 def egg_definition(*, end_time=60.0, dt=1e-3, anchor="consistent", observe_every=1.0):
-    """The egg on resolved_pump_tissue@3 (raw definition).
+    """The egg on cells.model.resolved_pump_tissue@3 (raw definition).
 
     anchor "fixture": charge anchor C Vm and background anchor/F - sum z n, as the heredity
     fixtures build theirs; "consistent": the same background, with the anchor recomputed as
@@ -175,7 +175,7 @@ def egg_definition(*, end_time=60.0, dt=1e-3, anchor="consistent", observe_every
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=TEMPERATURE_K,
             species=[dict(id=s, valence=v) for s, v in SPECIES],
             cells=[
@@ -206,7 +206,7 @@ def egg_definition(*, end_time=60.0, dt=1e-3, anchor="consistent", observe_every
                     area_m2=FOLDED_AREA_M2,
                     capacitance_F=CAPACITANCE_F,
                     permeability_m_per_s=permeability,
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=None,
                     calcium_pump=None,
                 )
@@ -214,7 +214,8 @@ def egg_definition(*, end_time=60.0, dt=1e-3, anchor="consistent", observe_every
             junctions=[],
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=[],
         ),
@@ -238,8 +239,8 @@ def egg_definition(*, end_time=60.0, dt=1e-3, anchor="consistent", observe_every
             backend="cpu",
             jit=True,
             precision="float64",
-            solver="imex_ars222_face_electromigration@1",
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            solver="cells.solver.imex_ars222_face_electromigration@1",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=int(math.ceil(end_time / dt)) + 8,
             max_trace_bytes=2**31,
             material_balance_atol_fmol={s: 1e-10 for s in ids},
@@ -274,9 +275,9 @@ def model_checks(model_id):
     from cells.models import surface_pump_v3 as v3
     from cells.models import surface_pump_water as water
 
-    if model_id == "resolved_pump_tissue@3":
+    if model_id == "cells.model.resolved_pump_tissue@3":
         return v3, first.LEDGERS, first.ledger_limits, v3.channel_magnitudes
-    if model_id == "resolved_pump_water@1":
+    if model_id == "cells.model.resolved_pump_water@1":
         return water, water.LEDGERS, water.ledger_limits, water.magnitudes
     raise ValueError(model_id)
 

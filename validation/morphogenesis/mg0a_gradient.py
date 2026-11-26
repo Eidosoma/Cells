@@ -1,10 +1,10 @@
-"""MG0a: a decaying morphogen from a source on fixed tissue (reaction_transport@1).
+"""MG0a: a decaying morphogen from a source on fixed tissue (cells.model.reaction_transport@1).
 
-Engine model run: reaction_transport@1 (src/cells/models/reaction_transport.py),
+Engine model run: cells.model.reaction_transport@1 (src/cells/models/reaction_transport.py),
 unmodified. Species A is the morphogen: it moves on cell contacts and decays
 irreversibly to an immobile product B (forward rate k, reverse rate 0, B
 permeability 0). The source is one large-volume reservoir cell holding A, with
-no decay, coupled to the tissue by ordinary contacts. reaction_transport@1 has
+no decay, coupled to the tissue by ordinary contacts. cells.model.reaction_transport@1 has
 no source term, so the reservoir drains slowly; its drain rate mu is part of
 the exact discrete solution below rather than an error.
 
@@ -36,7 +36,7 @@ C1c in morphogenesis-plan-20261109-01/research-verified.json): lambda =
 are D and k; sqrt(D/k) = 19.92 um. The measured 20.2 um is context, not a
 criterion.
 
-Cut and restore: reaction_transport@1 has no excision or replacement event
+Cut and restore: cells.model.reaction_transport@1 has no excision or replacement event
 contract. A cut is therefore modelled as closing every contact across a cut
 line (prescribed_contact_open_fractions), and restore as reopening them. This is
 isolation, not removal; the linear steady state is unique, so the arm checks
@@ -63,7 +63,7 @@ from scipy import linalg, optimize, sparse
 from scipy.sparse import linalg as sparse_linalg
 from scipy.spatial import Voronoi
 
-MODEL_ID = "reaction_transport@1"
+MODEL_ID = "cells.model.reaction_transport@1"
 KICHEVA_2007 = dict(
     citation="Kicheva et al. 2007, Science 315:521-525, doi:10.1126/science.1135774",
     lambda_um=20.2,
@@ -78,7 +78,7 @@ UM3_PER_PL = 1.0e3
 SOURCE_VOLUME_PL = 1.0e6
 SOURCE_CONCENTRATION = 1.0  # fmol/pL (1 mM); the system is linear.
 RELAXATION_RATES = 40.0  # Horizon in units of 1/k: other modes decay by e^-40.
-STABILITY_FRACTION = 0.5  # reaction_transport@1 admits h * alpha <= 0.5.
+STABILITY_FRACTION = 0.5  # cells.model.reaction_transport@1 admits h * alpha <= 0.5.
 SEGMENT_STEPS = 8192  # Accepted-trace window per runner call (memory bound).
 
 
@@ -186,7 +186,7 @@ def stable_dt(graph, *, fraction=0.4):
 
 
 def definition(graph, *, end_time, dt, observation_times, schedule=None):
-    """A complete reaction_transport@1 definition (JSON-ready dict).
+    """A complete cells.model.reaction_transport@1 definition (JSON-ready dict).
 
     schedule: [(time, open_fractions)] with the first entry at time 0; default
     all contacts open throughout.
@@ -560,7 +560,7 @@ def strip_case(graph, *, label):
 STRIP_CELLS = 64  # 8.4 continuum lengths at the Kicheva values.
 SCALING_FACTORS = (0.25, 1.0, 4.0)  # D/k relative to Kicheva (lambda x0.5, x1, x2).
 # Cell width 2a, a, a/2 on one physical strip (32, 64, 128 cells). A finer a/4
-# level needs 3.2e5 RK4 steps over 40/k, where reaction_transport@1's
+# level needs 3.2e5 RK4 steps over 40/k, where cells.model.reaction_transport@1's
 # step-count-independent balance guard (512 eps x total) refused the run on
 # accumulated reservoir rounding (dev-01, morphogenesis-mg0-20261109-01).
 REFINEMENT_LEVELS = (0.5, 1, 2)

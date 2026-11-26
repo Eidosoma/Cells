@@ -1,4 +1,4 @@
-"""resolved_pump_tissue@3's own run-view declarations (docs/RUN_VIEW_DESIGN.md §3; D154).
+"""cells.model.resolved_pump_tissue@3's own run-view declarations (docs/RUN_VIEW_DESIGN.md §3; D154).
 
 The module declares UNITS, OBSERVATION_AXES, RECORD_KINDS, ORIENTATION, RECORD_LAYERS and
 VIEW_LAYERS (with RECORD_NOTES), which replace the run-view writer's interim table:
@@ -153,9 +153,9 @@ def test_a_kind_worlds_declarations_cover_its_kinds_fields():
     spec = parse_spec(raw)
     impl = get_model(spec.model)
     assert [k for k, _ in impl.structure.kinds] == [
-        "cells.passive_routes@1",
-        "cells.rapid_proton_buffer@1",
-        "cells.transporter@1",
+        "cells.kind.passive_routes@1",
+        "cells.kind.rapid_proton_buffer@1",
+        "cells.kind.transporter@1",
     ]
     cycles = impl.ORIENTATION["transporter_cycles"]  # Outward-positive: the role leaves the cell.
     assert (cycles["from"], cycles["to"]) == ("inside", "outside")

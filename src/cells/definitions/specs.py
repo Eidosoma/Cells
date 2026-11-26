@@ -9,13 +9,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from cells.registry import ids
 from cells.registry.model_table import MODELS
 
 if TYPE_CHECKING:
     from cells.definitions.surface_tissue_spec import SurfaceExperiment, SurfaceTissueModel
 
 UNITS = {"amount": "fmol", "volume": "pL", "time": "s"}
-REACTION_TRANSPORT_ID = "reaction_transport@1"
+REACTION_TRANSPORT_ID = "cells.model.reaction_transport@1"
 
 
 class ConfigError(ValueError):
@@ -390,10 +391,21 @@ class SimulationSpec:
         return digest(parse_spec(self.to_dict()).to_dict())
 
 
+def _refuse_old_ids(data):
+    """A renamed model's old ID, and any old spelling in a live model's definition, is refused by
+    naming its new ID (D345). The older families' models keep their IDs and check their own."""
+    model = data["model"].get("id") if isinstance(data["model"], dict) else None
+    if isinstance(model, str) and model in ids.RENAMED:
+        raise ConfigError(f"model.id: {ids.reason(model)}")
+    if ids.piece(model, family="model"):
+        ids.refuse_old(data, ConfigError)
+
+
 def parse_spec(data: dict) -> SimulationSpec:
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
+    _refuse_old_ids(data)
     if isinstance(data["execution"], dict) and "fine_windows" in data["execution"]:
         from cells.definitions.fine_window_spec import parse_definition as fine_window_definition
 
@@ -406,55 +418,94 @@ def parse_spec(data: dict) -> SimulationSpec:
         from cells.definitions.projective_spec import parse_definition
 
         return parse_definition(data, parse_spec)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "apical_vertex_mechanics@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.apical_vertex_mechanics@1"
+    ):
         from cells.definitions.apical_vertex_spec import parse as parse_apical_vertex
 
         return parse_apical_vertex(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_tissue@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_tissue@1"
+    ):
         from cells.definitions.surface_pump_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_tissue@2":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_tissue@2"
+    ):
         from cells.definitions.surface_pump_v2_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_tissue@3":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_tissue@3"
+    ):
         from cells.definitions.surface_pump_v3_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_tissue@1"
+    ):
         from cells.definitions.surface_tissue_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@2":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_tissue@2"
+    ):
         from cells.definitions.surface_kinetic_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@8":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_tissue@8"
+    ):
         from cells.definitions.surface_kinetic_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_water@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_water@1"
+    ):
         from cells.definitions.surface_pump_water_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_water@2":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_water@2"
+    ):
         from cells.definitions.surface_pump_water_v2_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_replacement@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_replacement@1"
+    ):
         from cells.definitions.cell_replacement_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_pump_composite@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_composite@1"
+    ):
         from cells.definitions.pump_composite_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.assembly_lineages@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.assembly_lineages@1"
+    ):
         from cells.models.assembly_lineages.spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.assembly_lineages@2":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.assembly_lineages@2"
+    ):
         from cells.models.assembly_lineages_v2.spec import parse
 
         return parse(data)

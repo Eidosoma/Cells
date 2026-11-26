@@ -111,7 +111,9 @@ def test_a_row_for_column_update_is_caught():
         return x + sign * data.matrix[i, :]
 
     law_registry.active()
-    law = dataclasses.replace(gard.SINGLE_EVENT, law_id="tests.row_update@1", update=planted)
+    law = dataclasses.replace(
+        gard.SINGLE_EVENT, law_id="tests.rate_factor.row_update@1", update=planted
+    )
     with law_registry.scope(law_registry.BUILTIN.extended(law)):
         options, _ = CASES["single-event"]
         the_world = world(**options)
@@ -160,7 +162,7 @@ def test_the_exact_cache_keeps_the_reverse_factor():
 
     planted = dataclasses.replace(
         gard.PAIR_CONSISTENT_EXACT,
-        law_id="tests.low_word_dropped@1",
+        law_id="tests.rate_factor.low_word_dropped@1",
         state=lambda n, d, xp, unroll=folds.UNROLL: dropped(gard.state_exact(n, d, xp, unroll), xp),
         update=lambda c, d, i, sign, xp: dropped(gard.update_exact(c, d, i, sign, xp), xp),
     )

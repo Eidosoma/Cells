@@ -2,7 +2,7 @@
 stock and the other consuming it (a user's review, 23 November 2026).
 
 validation/tissue/shared_inventory_fixtures.unit_pair: the gene unit's ribosome-limited world
-(translation makes the neutral protein P) beside population_unit_turnover@1, which consumes P as its
+(translation makes the neutral protein P) beside cells.operator.population_unit_turnover@1, which consumes P as its
 precursor into a population's units. The two-writer rule of 19 November 2026, extended: P's
 registry potential is the shared row's one authority, each writer keeps its own books, and labelled
 and exported rows keep one writer.

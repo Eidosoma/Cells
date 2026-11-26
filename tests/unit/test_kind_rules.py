@@ -32,7 +32,7 @@ from validation.tissue import pump_water_fixtures as water_fixtures
 def planted(name, key, **hooks):
     """A planted kind with one state field, one layout field and one control, plus hooks."""
     return kind_registry.Kind(
-        kind_id="tests.planted_kind@1".replace("planted_kind", name),
+        kind_id="tests.kind.planted_kind@1".replace("planted_kind", name),
         model_key=key,
         state_axes=((f"{name}_value", ("cell_slot",)),),
         layout_fields=(f"{name}_rate",),
@@ -85,7 +85,9 @@ def test_stage_reads_on_a_shared_row_are_refused_at_binding():
     shared = (("K", "cell_0"),)
     kinds = registry(reader("alpha", "alpha_block", shared), reader("beta", "beta_block", shared))
     with kind_registry.scope(kinds):
-        with pytest.raises(ConfigError, match=r"tests.alpha@1 and tests.beta@1 both read row"):
+        with pytest.raises(
+            ConfigError, match=r"tests.kind.alpha@1 and tests.kind.beta@1 both read row"
+        ):
             parse_spec(declaring("alpha_block", "beta_block"))
     apart = registry(
         reader("alpha", "alpha_block", (("K", "cell_0"),)),
@@ -248,7 +250,7 @@ def test_declared_kinds_are_refused_under_rk4():
         return planted("alpha", "alpha_block", bound_rate=lambda spec, declaration: rate)
 
     with kind_registry.scope(registry(bounded(2e5))):
-        refusal = re.escape("(tests.alpha@1) require an IMEX solver")
+        refusal = re.escape("(tests.kind.alpha@1) require an IMEX solver")
         with pytest.raises(ConfigError, match=refusal):
             parse_spec(rk4(declaring("alpha_block")))
         imex = parse_spec(declaring("alpha_block"))  # Admitted under IMEX ...
@@ -295,7 +297,7 @@ def face_free(*, kind=True, contact_F=None, channel=None):
 
     raw = fx.face_free(end=0.004)
     m = raw["model"]
-    m["id"] = "resolved_pump_tissue@3"
+    m["id"] = "cells.model.resolved_pump_tissue@3"
     m.pop("inner_model")
     m.pop("operators")
     if kind:
@@ -444,7 +446,7 @@ def test_a_kind_that_charges_a_cell_with_no_held_patch_is_refused_by_name():
             faces=(),
         )
         m, e = raw["model"], raw["experiment"]
-        m["id"] = "resolved_pump_tissue@3"
+        m["id"] = "cells.model.resolved_pump_tissue@3"
         m.pop("inner_model")
         m.pop("operators")
         m["alpha_block"] = {"rate": 1.0}
@@ -469,7 +471,7 @@ def test_a_kind_that_charges_a_cell_with_no_held_patch_is_refused_by_name():
 
     with kind_registry.scope(registry(charging(0.0))):
         with pytest.raises(
-            ConfigError, match="Cell cell_1 has no held patch.*kind tests.alpha@1, not through"
+            ConfigError, match="Cell cell_1 has no held patch.*kind tests.kind.alpha@1, not through"
         ):
             parse_spec(world(held=False))
         calls.clear()
@@ -503,7 +505,7 @@ def test_a_held_row_has_one_writer():
     with kind_registry.scope(registry(holding("B"))):
         parse_spec(raw)  # Nothing moves B: admitted.
     with kind_registry.scope(kind_fixtures.registry(holding("B"))):
-        with pytest.raises(ConfigError, match="which tests.exchange@1 moves"):
+        with pytest.raises(ConfigError, match="which tests.kind.exchange@1 moves"):
             parse_spec(kind_fixtures.declare(raw))
 
 

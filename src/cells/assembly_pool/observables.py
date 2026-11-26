@@ -1,4 +1,4 @@
-"""What can be read from an assembly of finite_bond_assembly@1: its observables, as registered laws.
+"""What can be read from an assembly of cells.model.finite_bond_assembly@1: its observables, as registered laws.
 
 An observable (interface cells.assembly_observable@1) reads one assembly's occupied sites and its
 bonds, as the pool's state holds them, and gives one of a few named values. It has no state, no
@@ -10,7 +10,7 @@ major. What a value does is data, declared beside the observable in the composed
 scales, and the base schedule it multiplies. The ID says nothing of them. That an assembly's
 topology sets a channel's availability at all is a hypothesis of the file that declares it.
 
-**root_component_has_cycle@1** says whether the assembly has a closed ring of bonds. The pool keeps
+**cells.assembly_observable.root_component_has_cycle@1** says whether the assembly has a closed ring of bonds. The pool keeps
 its assembly connected to its root (engine.validate_state holds that at every accepted state), so
 the assembly is one connected graph of V occupied sites and E bonds, and E - V + 1 of its cycles are
 independent. It has a cycle exactly where E >= V, which is
@@ -32,7 +32,7 @@ from cells.modules import Citation, ConfigError, Law, hosted_laws, qualified
 
 OBSERVABLE_INTERFACE = "cells.assembly_observable@1"  # Declared in @3's row of the model table.
 HOST = MODEL_ID  # The pool's model, whose arrays an observable reads.
-LAW_ID = "root_component_has_cycle@1"
+LAW_ID = "cells.assembly_observable.root_component_has_cycle@1"
 
 
 @dataclass(frozen=True)
@@ -94,7 +94,7 @@ LAW = AssemblyObservable(
     provenance="parity",  # The rule of an older family of assembly-regulated cells, under its ID.
     source=Citation(
         "The cycle rank of a connected graph, E - V + 1 (elementary graph theory), read from an "
-        "assembly of finite_bond_assembly@1: a topology readout, no number",
+        "assembly of cells.model.finite_bond_assembly@1: a topology readout, no number",
         "docs/CAPSID_ASSEMBLY.md, 'Driving ionic channels from pools', which states the rule; its "
         "use as a channel's control is a hypothesis with no literature source",
         "no numbers taken: the levels of its values are a composed file's data",

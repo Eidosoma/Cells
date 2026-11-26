@@ -1,4 +1,4 @@
-"""Operator templated_polymerisation@1: templated polymerisation, its products' degradation and its
+"""Operator cells.operator.templated_polymerisation@1: templated polymerisation, its products' degradation and its
 monomers' recharging, on the shared species inventory (gene regulation's option A, D235; FR-25).
 
 The declared equations are docs/TEMPLATED_POLYMERISATION_LAWS.md (tag gr1-sheet-2026-11-20b; its
@@ -172,12 +172,12 @@ without a label owner every call is today's):
   below).
 - **Marked at release** (FR-38's cohort, the requester's answer to (e)): labels on the fate rows
   give §9.8's route 1 on shares (erratum C) with no blank.
-- **A limit:** a labelled species carries at most neutral_arrival_labels@1's MAX_LABELS labels, so
+- **A limit:** a labelled species carries at most cells.operator.neutral_arrival_labels@1's MAX_LABELS labels, so
   producer identity crossed with the window labels must fit within it.
 
 Replacement (the sheet's §9.16, amendment S; FR-38's step 4)
 --------------------------------------------------------------
-Beside scheduled_cell_replacement@1, an event part acts at the start of the step leaving each event
+Beside cells.operator.scheduled_cell_replacement@1, an event part acts at the start of the step leaving each event
 time on every replaced slot (a cell that an event replaces and where this operator has a pool,
 chain, degradation or transfer), reading only its own state and its control, the replacements due
 per replaced slot (replacement@1's own count), so its place among the events does not matter:
@@ -250,7 +250,7 @@ Refused at the definition
 - a transfer that is not a reaction (a sign missing), and a degradation whose polymer a chain makes
   at another length;
 - another writer of a listed row: an author or an in-step mover. FR-43 / D315 admits a D152 network
-  writing or declaring one and the unit producer (population_unit_turnover@1) consuming one, the
+  writing or declaring one and the unit producer (cells.operator.population_unit_turnover@1) consuming one, the
   two-writer rule of 19 November 2026 extended (check_writers): the row's potential from the species
   registry, each writer's own books, and a labelled or exported row keeping this operator alone;
 - a volume changer other than water (the lumens, replacement@2 by its water): the volumes are
@@ -275,7 +275,7 @@ Refused at the definition
   - an ID that another pool, route or release holds;
   - another in-step mover, at its node, of an exported row or of an outside degradation's
     monomer (check_writers; the monomers' is beyond §9.17.6's wording, and fails closed);
-  - beside cell_owned_compartments@1 (FR-49, D327; check_compartments), an outside degradation
+  - beside cells.operator.cell_owned_compartments@1 (FR-49, D327; check_compartments), an outside degradation
     at a declared compartment's node, then an export into one: a compartment lies behind its
     owner's membrane, and secretion into it is a later step with its own books at the
     compartment's node. Routes in the owner's cytosol never touch the compartment;
@@ -309,7 +309,7 @@ from cells.operators import species_reactions
 from cells.operators.contract import Operator, Read
 from cells.registry import kind_registry, species_registry
 
-LAW_ID = "templated_polymerisation@1"
+LAW_ID = "cells.operator.templated_polymerisation@1"
 STEP_ID = "ssprk33_stage_condition_exact_bookings@1"
 EXPERIMENT_KEY = "polymerisation_controls"
 AVOGADRO = 6.02214076e23  # 1/mol, exact (SI 2019).
@@ -339,7 +339,9 @@ OUTSIDE_NODE_AXIS, EXPORT_PART_AXIS = "poly_outside_node", "poly_export_part"
 REPLACED_EXPORT_AXIS = "poly_replaced_export"
 EXPORT_PARTS = ("forward", "backward")  # c to o with c's shares, o to c with o's (erratum H).
 CHAIN_COUNTERS = ("poly_initiated_fmol", "poly_stage_exits_fmol", "poly_released_fmol")
-REPLACEMENT_LAW = common.REPLACEMENT_LAW  # scheduled_cell_replacement@1, the one admitted.
+REPLACEMENT_LAW = (
+    common.REPLACEMENT_LAW
+)  # cells.operator.scheduled_cell_replacement@1, the one admitted.
 REPLACEMENT_FAMILY = REPLACEMENT_LAW.partition("@")[0]  # Its other versions are refused.
 MACHINE_OPTIONS = ("returned", "held")
 LABEL_TRANSITIONS = ("completion", "release")
@@ -763,7 +765,7 @@ def _release(raw, chain, listed):
         raise ConfigError(
             f"{LAW_ID}: {what} has one {{durable, short_lived}} pair: FR-38's class rows are "
             "replaced by FR-42's shares (D288, D296); label the fate rows with "
-            "neutral_arrival_labels@1"
+            "cells.operator.neutral_arrival_labels@1"
         )
     pairs = []
     for entry in raw["fates"]:
@@ -1351,8 +1353,10 @@ def value_at(changes, time):
 # ------------------------------------------------------------------ definition checks
 
 
-UNIT_PRODUCER = "population_unit_turnover@1"  # FR-43: the unit producer, a precursor's consumer.
-WATER = "ideal_osmosis_linear_compliance_water@1"
+UNIT_PRODUCER = (
+    "cells.operator.population_unit_turnover@1"  # FR-43: the unit producer, a precursor's consumer.
+)
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"
 
 
 def largest_volumes(spec):
@@ -1424,11 +1428,11 @@ def single_writer_rows(spec, declaration):
     return out
 
 
-COMPARTMENTS_LAW = "cell_owned_compartments@1"
+COMPARTMENTS_LAW = "cells.operator.cell_owned_compartments@1"
 
 
 def check_compartments(spec, declaration):
-    """FR-49 (D327; validation/fr49/REGISTRATION.md, Part H): beside cell_owned_compartments@1,
+    """FR-49 (D327; validation/fr49/REGISTRATION.md, Part H): beside cells.operator.cell_owned_compartments@1,
     refuse an outside degradation at a declared compartment's node, then an export into one, each
     with its reason. Degradations are checked first, so that each refusal has a world that reaches
     it (a degradation needs an export carrying its polymer into its node). A world declaring no
@@ -1460,7 +1464,7 @@ def check_compartments(spec, declaration):
 def check_writers(spec, declaration):
     """Refuse another writer of a listed row (one writer: the sheet's §4.5 and the design's §7.5):
     another author's declaration of it and an in-step mover. A D152 network may write or declare a
-    listed row, and the unit producer (population_unit_turnover@1) may consume one as its
+    listed row, and the unit producer (cells.operator.population_unit_turnover@1) may consume one as its
     precursor (FR-43 / D315: the two-writer rule of 19 November 2026, extended): each writer is a
     split part whose half-steps (SSP of order three here and in D152, exact in the producer) run in
     declared order and book their own moved amounts and the exact dG of their own moves from the

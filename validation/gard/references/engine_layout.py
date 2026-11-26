@@ -1,4 +1,4 @@
-"""Reading the engine's role set (FORMAT.md, cells.assembly_lineages@1, 17 November 2026).
+"""Reading the engine's role set (FORMAT.md, cells.model.assembly_lineages@1, 17 November 2026).
 
 The engine writes run bundles for the lineage roles, group JSONs for the multi-bundle
 roles, and probe.json/probe.npz pairs for the probes. Each probe echoes its registered

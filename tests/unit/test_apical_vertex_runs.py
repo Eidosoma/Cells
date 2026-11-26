@@ -1,4 +1,4 @@
-"""apical_vertex_mechanics@1 runs: relaxation to the ground state and refusals.
+"""cells.model.apical_vertex_mechanics@1 runs: relaxation to the ground state and refusals.
 
 Relaxation reaches the case-I ground state with both solvers, with every ledger
 inside its bound; an oversized step is refused before the run and an edge that

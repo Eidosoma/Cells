@@ -1,8 +1,8 @@
-"""cells.shared_pool@1, the first cells.population_structure@1: K vesicle slots on one shared pool,
+"""cells.population.shared_pool@1, the first cells.population_structure@1: K vesicle slots on one shared pool,
 one world-level SSA (OL2 milestone 3; docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1.8; the design note's
 §0.2c rules 13–15 and §0.2d items 5, 6 and 10).
 
-**The world** declares `population = {structure: cells.shared_pool@1, slots: K, founders: [{place:
+**The world** declares `population = {structure: cells.population.shared_pool@1, slots: K, founders: [{place:
 count} of every finite membrane and lumen place, ...]}`, with a geometry (so a vesicle never
 empties: §0.2c rule 5's floor). Its `founder` holds the pool, with every vesicle place 0. Founder i
 takes slot i and key i:0 (cells.relations' §1.3); the other slots start empty.
@@ -125,7 +125,7 @@ TEST = "tests/unit/test_assembly_lineages_v2_population.py::test_one_slot_has_th
 
 LAW = law_registry.BUILTIN.register(
     PopulationStructure(
-        "cells.shared_pool@1",
+        "cells.population.shared_pool@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(
@@ -1277,7 +1277,7 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         "fissions": fissions,
         "schedule_draws": schedule_draws,
         "transfers": ctx.transfers,
-        "reads": "one world-level SSA (cells.shared_pool@1); each lysis frees its slot, and the "
+        "reads": "one world-level SSA (cells.population.shared_pool@1); each lysis frees its slot, and the "
         "world goes on; every daughter lives",
     }
     if any(s.kind == "replacement" for s in spec.experiment.schedules):  # FR-20, when declared

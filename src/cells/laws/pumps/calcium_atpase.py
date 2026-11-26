@@ -8,7 +8,7 @@ cytosolic Ca and ATP; the thermodynamic factor is (1 - exp(affinity)) with
 
     affinity RT = drive - mu_Ca,   mu_Ca = RT ln(ci/co) + 2 F V   (V inside - outside).
 
-The standard hydrolysis energy is declared, like nak_atp_mass_action_positive@1,
+The standard hydrolysis energy is declared, like cells.cycle.nak_atp_mass_action_positive@1,
 against a 1 M standard state; the kernel's numeric-mM quotient receives it as
 delta_g0 - RT ln(1000), so both ATPases of one model use the same convention.
 Species roles, geometry, inventories and ledgers belong to the composing model.

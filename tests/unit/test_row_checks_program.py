@@ -183,19 +183,19 @@ def test_device_mode_is_refused_on_a_gpu_backend():
     plan_windows(spec, WindowPolicy(3, "checkpoints"))  # Host mode admits it.
 
 
-SPARSE = "sparse_capacitive_reduction_gauged_damped_newton@1"
+SPARSE = "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
 
 
 def test_vector_windows_refuse_the_composite_on_a_gpu():
     """D336: D330 measured the composite's device checks on a GPU and they failed, so the vector
-    path, which decides on the device's word alone, refuses resolved_pump_composite@1 on a GPU under
+    path, which decides on the device's word alone, refuses cells.model.resolved_pump_composite@1 on a GPU under
     every field solver, before any device is touched; on the CPU it is planned as before. The
     composite is GJ-N1's line (not blind), planned only."""
     from validation.gap_junction_tissue import neither
 
     dt = neither.step(1e-13, 2)
     raw = neither.coupled_world(1e-13, neither.STAGE1_END_UNITS, end=4 * dt, shape="line")
-    for solver in ("capacitive_reduction_gauged_damped_newton@2", SPARSE):
+    for solver in ("cells.solver.capacitive_reduction_gauged_damped_newton@2", SPARSE):
         for backend in ("gpu", "cpu"):
             raw["execution"].update(field_solver=solver, backend=backend)
             batch = BatchSpec((WorldSpec(1, parse_spec(raw)),), 1, 2**53 - 1, 2**53 - 1)

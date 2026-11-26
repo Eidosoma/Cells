@@ -1,15 +1,15 @@
-"""junction_series_gates@1: a junction's conductance through two voltage gates in series, each a
+"""cells.junction.junction_series_gates@1: a junction's conductance through two voltage gates in series, each a
 two-state gate with a residual conductance (FR-30; docs/JUNCTION_TWO_RELAXATION_DESIGN.md, option
 (A), as the lead ruled on 20 November 2026).
 
 **One gate.** Its state is its conductance factor c in [r, 1], where r is its residual and x its
 open fraction: c = r + (1 − r)·x. Then dc/dt = α(1 − c) − β(c − r), which is
-junction_voltage_relaxation@1's right-hand side with r in place of its minimum. So that law is the
+cells.junction.junction_voltage_relaxation@1's right-hand side with r in place of its minimum. So that law is the
 one-gate case, and every gate keeps its `Rates` (alpha, beta, the steady c as target, and α + β as
 relaxation) and its exact constant-voltage step.
 
 **Two kinds of gate,** fixed per gate (`kinds`, static):
-- `threshold_relaxation`: junction_voltage_relaxation@1's own rates and parameters (a threshold
+- `threshold_relaxation`: cells.junction.junction_voltage_relaxation@1's own rates and parameters (a threshold
   and a minimum), reused as they are; BETSE v1.5.0's rates are cited in that module;
 - `boltzmann_eyring`: a two-state gate in |V|, for cited constants.
   - With u = A·(|V| − V0), α = λ·exp(−δ·u) opens and β = λ·exp((1 − δ)·u) closes.
@@ -25,7 +25,7 @@ g = c_fast · c_slow.
 - **Consistency.** The gates are independent, so the pair is a product of two two-state chains. It
   keeps detailed balance, and its four-state cycle passes Kolmogorov's test exactly.
 - **The exact step.** At a fixed voltage each c_i relaxes exactly. So the pair's exact step is two
-  of junction_voltage_relaxation@1's `advance_clamped`, and its decay holds three exponentials:
+  of cells.junction.junction_voltage_relaxation@1's `advance_clamped`, and its decay holds three exponentials:
   k_fast, k_slow and their sum.
 
 **Routes** keep tracer transfer apart from electrical coupling. `open_fractions` gives each gate's
@@ -47,7 +47,7 @@ import jax.numpy as jnp
 from cells.laws.junctions import junction_voltage_relaxation as relaxation
 from cells.modules import Citation, CitedWork, JunctionLaw
 
-LAW_ID = "junction_series_gates@1"
+LAW_ID = "cells.junction.junction_series_gates@1"
 GATES = ("fast", "slow")
 GATE_COUNT = len(GATES)
 KINDS = ("threshold_relaxation", "boltzmann_eyring")
@@ -84,7 +84,7 @@ def boltzmann_eyring_kinetics(voltage, parameters, *, xp=jnp):
 
 
 def gate_kinetics(kind, voltage, parameters, *, xp=jnp):
-    """One gate's Rates: junction_voltage_relaxation@1's kinetics, or boltzmann_eyring's."""
+    """One gate's Rates: cells.junction.junction_voltage_relaxation@1's kinetics, or boltzmann_eyring's."""
     if kind == "threshold_relaxation":
         return relaxation.kinetics(voltage, parameters, xp=xp)
     if kind == "boltzmann_eyring":
@@ -120,7 +120,7 @@ def rhs(gates, voltage, parameters, *, kinds, xp=jnp):
 
 def advance_clamped(gates, voltage, parameters, dt_s, *, kinds, xp=jnp):
     """The exact step over an interval of constant voltage: each gate's own exact step, the
-    formula of junction_voltage_relaxation@1's advance_clamped (that function itself for a
+    formula of cells.junction.junction_voltage_relaxation@1's advance_clamped (that function itself for a
     threshold_relaxation gate). Like it, this is not a solver for a freely varying voltage."""
     kinds = _check_kinds(kinds)
     out = []
@@ -172,7 +172,7 @@ def route_factor(gates, parameters, route_residuals, *, kinds, xp=jnp):
 def domain_valid(gates, voltage, parameters, availability, dt_s=0.0, *, kinds, xp=jnp):
     """The junction's domain, per gate: threshold_relaxation's own, and for boltzmann_eyring λ > 0,
     A ≥ 0 with every exponent within MAX_EXPONENT on the voltage domain, δ and r in [0, 1], and c
-    in [r, 1]; the voltage, availability and interval as junction_voltage_relaxation@1's."""
+    in [r, 1]; the voltage, availability and interval as cells.junction.junction_voltage_relaxation@1's."""
     kinds = _check_kinds(kinds)
     ok = (
         xp.isfinite(voltage)
@@ -225,7 +225,7 @@ LAW = JunctionLaw(
     rhs,
     domain_valid,
     MAX_ABS_VOLTAGE_V,
-    host="cells.resolved_pump_tissue@3",
+    host="cells.model.resolved_pump_tissue@3",
     gate_count=GATE_COUNT,
     conductance=conductance,
     provenance="cited",
@@ -238,7 +238,8 @@ LAW = JunctionLaw(
         "no numbers taken: the law is a form, and its gates' parameters are a definition's values; "
         "the article is CC BY",
         (
-            "threshold_relaxation's rates are junction_voltage_relaxation@1's own, cited there",
+            "threshold_relaxation's rates are cells.junction.junction_voltage_relaxation@1's own, "
+            "cited there",
             "the boltzmann_eyring gate is one Boltzmann in |V|, symmetric in polarity, where the "
             "paper fits each polarity",
             "A is a fitted slope, with no gating charge derived from it",

@@ -1,5 +1,5 @@
-"""inward_rectifier_linear_driving_force@1 (laws/routes/inward_rectifier_linear_driving_force.py;
-D228 item 2) on cells.passive_routes@1: an instantaneous inward rectifier at valence +1.
+"""cells.route.inward_rectifier_linear_driving_force@1 (laws/routes/inward_rectifier_linear_driving_force.py;
+D228 item 2) on cells.kind.passive_routes@1: an instantaneous inward rectifier at valence +1.
 
 Each claim with its plant (D187), on the closed pair (cell_0 and its finite node ecs_0 joined only
 by contact_0, the cell at K 140 and Na 10 mM) with one rectifier route on contact_0 carrying K:
@@ -72,7 +72,7 @@ def closed_pair(*routes, end=0.02, dt=1e-3):
     unchanged), with the routes on contact_0."""
     raw = fx.face_free(end=end, dt=dt)
     m = raw["model"]
-    m["id"] = "resolved_pump_tissue@3"
+    m["id"] = "cells.model.resolved_pump_tissue@3"
     m.pop("inner_model")
     m.pop("operators")
     cell = m["cells"][0]

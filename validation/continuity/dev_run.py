@@ -1,7 +1,7 @@
 """The first consumer of checkpoint continuity: a CPU development run on vector windows.
 
 docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 10 item 7. A development run, not a registered
-one. Engine models run: resolved_pump_replacement@1 (cell replacement on the resolved pump
+one. Engine models run: cells.model.resolved_pump_replacement@1 (cell replacement on the resolved pump
 tissue; the probe-5 cohort of the design's evidence) through execution/vector_windows.py.
 
 No engine writer records a vector-window run (batch_window_io.write_windowed_batch drives the

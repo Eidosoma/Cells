@@ -1,4 +1,4 @@
-"""Inner kinds of resolved_pump_tissue@3, one module each (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)).
+"""Inner kinds of cells.model.resolved_pump_tissue@3, one module each (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)).
 
 Each kind module declares a `cells.registry.kind_registry.Kind` and registers it on the registry
 (BUILTIN for built-ins), exactly as an external package would; the core imports no kind module.

@@ -20,7 +20,7 @@ from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 STEPS = 8
-NAV = "nav1p2_m3h_regularized@1"
+NAV = "cells.channel.nav1p2_m3h_regularized@1"
 
 
 def scaled(raw, factor):

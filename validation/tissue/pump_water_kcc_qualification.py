@@ -1,8 +1,8 @@
-"""Stationary qualification of resolved_pump_water@2 against the frozen W2 predictions.
+"""Stationary qualification of cells.model.resolved_pump_water@2 against the frozen W2 predictions.
 
 For every arm of validation/tissue/pump_water_kcc_predictions.json (capacity x
-steepness), the engine's stationary_continuation_analysis@1 on the arm's
-resolved_pump_water@2 definition (pump_water_fixtures.with_symport on the
+steepness), the engine's cells.analysis.stationary_continuation_analysis@1 on the arm's
+cells.model.resolved_pump_water@2 definition (pump_water_fixtures.with_symport on the
 predictions' W1 heredity cell) is solved by Newton from each predicted state,
 checked for step-map consistency, and classified by its dense spectrum. A
 state is judged against its prediction with the bounds pinned in --protocol

@@ -1,4 +1,4 @@
-"""cells.regular_mixing@1: the regular-solution excess term of the membrane (OL1; §2.2, §2.5, E2).
+"""cells.free_energy.regular_mixing@1: the regular-solution excess term of the membrane (OL1; §2.2, §2.5, E2).
 
 In k_BT, over the membrane's species, with N its count:
 
@@ -8,7 +8,7 @@ In k_BT, over the membrane's species, with N its count:
   must satisfy to keep detailed balance (the design note's probe E2), holds because the term is one
   function of the counts.
 - χ has a zero diagonal and finite entries (k_BT), declared as unordered pairs of distinct membrane
-  species, each at most once: `{"law": "cells.regular_mixing@1", "chi_kT": [{"pair": ["A", "B"],
+  species, each at most once: `{"law": "cells.free_energy.regular_mixing@1", "chi_kT": [{"pair": ["A", "B"],
   "chi": 1.5}, ...]}`. An unlisted pair is 0.
 
 The term is an excess term: it enters the reverse rate as exp(F_reg(n) − F_reg(n − ν)), so it moves
@@ -162,7 +162,7 @@ FORMULAS = {
 
 TERM = law_registry.BUILTIN.register(
     FreeEnergyTerm(
-        "cells.regular_mixing@1",
+        "cells.free_energy.regular_mixing@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

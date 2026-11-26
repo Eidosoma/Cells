@@ -103,9 +103,9 @@ class Start:
         self.outside = [o["id"] for o in m["extracellular"]]
         self.patches = {p["id"]: p for p in m["membranes"]}
         declared = dict(self.spec.model.kinds)  # Each kind's entities, in its own order.
-        self.routes = [r.id for r in declared["cells.passive_routes@1"]]
-        self.populations = [t.id for t in declared["cells.transporter@1"]]
-        self.conditions = [c.id for c in declared["cells.species_condition@1"]]
+        self.routes = [r.id for r in declared["cells.kind.passive_routes@1"]]
+        self.populations = [t.id for t in declared["cells.kind.transporter@1"]]
+        self.conditions = [c.id for c in declared["cells.kind.species_condition@1"]]
         self.channels = [c["id"] for c in m["channels"]]
         self.rt = R * m["temperature_K"]
         self.volumes = {n["id"]: n["volume_pL"] for n in (*m["cells"], *m["extracellular"])}

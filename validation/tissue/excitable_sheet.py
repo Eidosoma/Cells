@@ -1,8 +1,8 @@
 """Track E M1's development runs on the 127-cell sheet (D170), and their report.
 
 The held-bath hexagon (validation/stationary/worlds.hexagon(6): 127 cells, 342 junctions) of the
-generic cell (candidate A, or B as given) on resolved_pump_tissue@3, built by excitable_probe's
-definition: gates pinned open, trapezoid_nonnegative@1, D147's declared field solver. It is a
+generic cell (candidate A, or B as given) on cells.model.resolved_pump_tissue@3, built by excitable_probe's
+definition: gates pinned open, cells.heat.trapezoid_nonnegative@1, D147's declared field solver. It is a
 black-box driver: the engine's own readouts at every accepted step (Vm, Vj, each membrane's net
 ionic current and dVm/dt), its host checks, and any refusal with the probe's attribution. The
 criteria are in the M1 evidence folder's PLAN.md, written before the runs.
@@ -85,7 +85,7 @@ DEFAULT_LADDER = ("1e-3:2e-7", "1e-3:4e-7", "1e-3:8e-7")
 
 SHEET_PLAN = dict(
     status="M1 development runs (D170): criteria fixed in PLAN.md before any run; not judged",
-    world="127-cell held-bath hexagon, gates pinned open, trapezoid_nonnegative@1",
+    world="127-cell held-bath hexagon, gates pinned open, cells.heat.trapezoid_nonnegative@1",
     floor="s * r_gj >= 20 at every perturbed junction (provisional, D170 ruling 3)",
     activation="recorded as continuous values: each cell's max dVm/dt and its source fraction "
     "(inward ionic charge over its rise / C (V_peak - V_rest)); the earlier twin rule (peak > 0 mV "
@@ -1201,7 +1201,7 @@ def main(argv=None):
     a.add_argument("--sodium-only", type=float, nargs="*", default=[])
     a.add_argument("--sodium-free", type=float, nargs="*", default=[])
     a.add_argument("--stim-from", default=None, help="use a main record's launching rung")
-    a.add_argument("--booking", default="trapezoid_nonnegative@1")
+    a.add_argument("--booking", default="cells.heat.trapezoid_nonnegative@1")
     a.add_argument("--sheet", default=None, help="select: a main sheet record")
     a.add_argument("--chain", default=None, help="select: a main chain segment.json")
     args = a.parse_args(argv)

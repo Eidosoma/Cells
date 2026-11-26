@@ -1,4 +1,4 @@
-"""Generation inheritance on cells.assembly_lineages@2's saved bundles: each parent against the
+"""Generation inheritance on cells.model.assembly_lineages@2's saved bundles: each parent against the
 next parent on the same path (analysis; D245's second reading, never called F12).
 
 F12 compares a split's parent with its followed daughter just after it, so it sees only the split's

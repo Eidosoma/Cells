@@ -1,4 +1,4 @@
-"""Tier-1 tests of scheduled_membrane_trafficking@1 (FR-2 version 1): T1, T2 and T3 of
+"""Tier-1 tests of cells.operator.scheduled_membrane_trafficking@1 (FR-2 version 1): T1, T2 and T3 of
 docs/MEMBRANE_RETRIEVAL_DESIGN.md §8, in NumPy on bound worlds (no compile), each check beside a
 planted error it catches.
 
@@ -84,7 +84,7 @@ def test_the_compartments_admit_trafficking_and_read_the_areas_as_references():
         assert compartments.CellOwnedCompartments.SCOPED_READS[name].mode == "reference", name
     root = Path(__file__).resolve().parents[2]
     assert not (root / "tests" / "membrane_trafficking_development_shim.py").exists()
-    assert {"membrane_entity_state@1", LAW} <= set(compartments.ADMITTED)
+    assert {"cells.operator.membrane_entity_state@1", LAW} <= set(compartments.ADMITTED)
     assert not {"membrane_area", "membrane_capacitance"} & set(
         compartments.CellOwnedCompartments.CONFLICTS_VIEW
     )
@@ -161,17 +161,19 @@ def schedule_edit(change):
 
 
 INJECTION = dict(
-    law="electrode_current_injection@1",
+    law="cells.operator.electrode_current_injection@1",
     electrodes=[dict(cell_id="cell_0", carriers={"K": 0.4912, "M": 0.5088})],
 )
 INJECTION_CONTROLS = [dict(cell_id="cell_0", schedule=[dict(time=0.0, current_A=0.0)])]
 BATH = dict(
-    law="scheduled_bath_composition@1", baths=["bath_0"], formula_units={"KM": {"K": 1, "M": 1}}
+    law="cells.operator.scheduled_bath_composition@1",
+    baths=["bath_0"],
+    formula_units={"KM": {"K": 1, "M": 1}},
 )
 
 
 def sites_beside():
-    """site_occupancy@1 beside the route: its ligand declared and one population on the furrow,
+    """cells.operator.site_occupancy@1 beside the route: its ligand declared and one population on the furrow,
     which faces the finite cleft (a population facing a held bath is site occupancy's own
     refusal)."""
     raw = fx.pooled_cells(1, cleft=True)
@@ -188,18 +190,18 @@ def sites_beside():
 def refusal_cases():
     yield (
         "membrane state is required",
-        edited(without("membrane_entity_state@1")),
-        (f"{LAW} requires membrane_entity_state@1 before it"),
+        edited(without("cells.operator.membrane_entity_state@1")),
+        (f"{LAW} requires cells.operator.membrane_entity_state@1 before it"),
     )
     yield (
         "the compartments are required",
-        edited(without("cell_owned_compartments@1")),
-        (f"{LAW} requires cell_owned_compartments@1 before it"),
+        edited(without("cells.operator.cell_owned_compartments@1")),
+        (f"{LAW} requires cells.operator.cell_owned_compartments@1 before it"),
     )
     yield (
         "an undeclared compartment",
         one_route(compartment_id="endosome_9"),
-        ("compartment 'endosome_9' is not declared by cell_owned_compartments@1"),
+        ("compartment 'endosome_9' is not declared by cells.operator.cell_owned_compartments@1"),
     )
     yield (
         "an undeclared plasma patch",
@@ -328,18 +330,20 @@ def refusal_cases():
     yield (
         "injection beside it",
         edited(with_operator(INJECTION, "injection_controls", INJECTION_CONTROLS)),
-        "electrode_current_injection@1 is refused: it is not qualified beside membrane trafficking",
+        "cells.operator.electrode_current_injection@1 is refused: it is not qualified beside "
+        "membrane trafficking",
     )
     yield (  # The compartments' admitted list, which runs first, refuses it before this one does.
         "site occupancy beside it",
         sites_beside(),
-        f"{fx.COMPARTMENTS} composes only with .*; site_occupancy@1 is not on its admitted list",
+        f"{fx.COMPARTMENTS} composes only with .*; cells.operator.site_occupancy@1 is not on its "
+        f"admitted list",
     )
     yield (
         "the bath schedule beside it",
         edited(with_operator(BATH, "bath_composition_events", [])),
         f"{LAW} reads extracellular_amount_reference as declared, but "
-        "scheduled_bath_composition@1 provides it",
+        "cells.operator.scheduled_bath_composition@1 provides it",
     )
 
 
@@ -384,7 +388,7 @@ def test_insertion_and_declared_kinds_are_refused_beside_it():
     its masks first); a declared kind is refused by FIXED_INNER_FIELDS, the operator's own
     declaration, beside any kind."""
     insertion = dict(
-        law="scheduled_membrane_insertion@1",
+        law="cells.operator.scheduled_membrane_insertion@1",
         patches=[
             dict(
                 membrane_id="membrane_0",
@@ -398,16 +402,23 @@ def test_insertion_and_declared_kinds_are_refused_beside_it():
             membrane_id="membrane_0", onset_time=None, schedule=[dict(time=0.0, rate_m2_per_s=0.0)]
         )
     ]
-    with pytest.raises(ConfigError, match="scheduled_membrane_insertion@1"):
+    with pytest.raises(ConfigError, match="cells.operator.scheduled_membrane_insertion@1"):
         parse_spec(edited(with_operator(insertion, "insertion_controls", controls)))
-    assert trafficking.REFUSED["scheduled_membrane_insertion@1"] == trafficking.INSERTION_REASON
+    assert (
+        trafficking.REFUSED["cells.operator.scheduled_membrane_insertion@1"]
+        == trafficking.INSERTION_REASON
+    )
     # The declared inner structure, from the world with membrane state alone (the compartments
     # admit membrane state only with trafficking, and trafficking is refused beside the kind).
     plain = fx.pooled_cells(1)
     plain["model"]["operators"] = plain["model"]["operators"][:1]
     with kind_registry.scope(kf.registry(kf.carrier())):
         declared = get_model(parse_spec(kf.declare_carrier(plain)).model).inner
-        laws = ("membrane_entity_state@1", "cell_owned_compartments@1", LAW)
+        laws = (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.cell_owned_compartments@1",
+            LAW,
+        )
         errors = pump_composite.structure_errors(declared, tuple(OPERATORS[k] for k in laws))
     assert errors == [
         f"{LAW} builds the inner model's state, layout or control with today's fixed fields, so "

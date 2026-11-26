@@ -1,4 +1,4 @@
-"""OL2 milestone 2: the osmotic lumen and lysis in cells.assembly_lineages@2
+"""OL2 milestone 2: the osmotic lumen and lysis in cells.model.assembly_lineages@2
 (docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1.4–§1.6, §5; the design note's §0.2b–§0.2e).
 
 Each claim with a planted error it must catch (D187):
@@ -350,7 +350,7 @@ def _dimerising(w):
     w["phases"]["lumen"]["species"].append("D")
     w["founder"].update({"D@pool": 0, "D@lumen": 0})
     w["steps"].append({"id": "pair", "phase": "lumen", "reactants": {"S": 2},
-                       "products": {"D": 1}, "law": "cells.stochastic_mass_action@1",
+                       "products": {"D": 1}, "law": "cells.reaction.stochastic_mass_action@1",
                        "forward_rate_per_s": 1.0})  # fmt: skip
 
 
@@ -361,7 +361,7 @@ REFUSALS = {
     "a volume_L under osmotic": (
         lambda w: w["phases"]["lumen"].update(volume_L=1e-22), "declares no volume_L"),
     "osmotic without its term": (
-        lambda w: w["free_energy"].pop(1), "declares cells.osmotic_lumen@1"),
+        lambda w: w["free_energy"].pop(1), "declares cells.free_energy.osmotic_lumen@1"),
     "the term without osmotic": (
         lambda w: w["conventions"].update(lumen_volume="declared")
         or w["phases"]["lumen"].update(volume_L=1e-22)

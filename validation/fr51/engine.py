@@ -17,8 +17,8 @@ engine(case_id, voltages_V) returns {name: array over the voltages}:
   availability 1;
 - T = 310 K;
 - the block, where the case names one, as the engine declares it. cases.json's blocks carry neither
-  the law ID (open_channel_block_weighted_modes@1) nor a blocker ID ("blocker"), so both are added;
-- C2's units: the composite resolved_pump_composite@1, with membrane_entity_state@1 declaring the
+  the law ID (cells.channel_block.open_channel_block_weighted_modes@1) nor a blocker ID ("blocker"), so both are added;
+- C2's units: the composite cells.model.resolved_pump_composite@1, with cells.operator.membrane_entity_state@1 declaring the
   population at its reference density. Its declared abundance a0 = N0/(A rho_ref) is 1, the 1000
   units. 2000 units are those plus a unit increment of 1000 in the state, read through the
   abundance view a0 A0/A + dN/(A rho_ref).
@@ -153,7 +153,7 @@ def raw_world(case_id, *, blocked=True):
     composite = cs.frozen_definition(raw)
     composite["model"]["operators"] = [
         dict(
-            law="membrane_entity_state@1",
+            law="cells.operator.membrane_entity_state@1",
             populations=[
                 dict(
                     channel_id="population",
@@ -240,7 +240,7 @@ def engine(case_id, voltages_V):
     return _values(case_id, tuple(float(v) for v in np.asarray(voltages_V, dtype=float)))
 
 
-RUN_SOLVER = "imex_ars222_face_electromigration@1"
+RUN_SOLVER = "cells.solver.imex_ars222_face_electromigration@1"
 
 
 def run_world(*, start_V=0.055, dt=1e-4, steps=300, na_m_per_s=3e-11, blocked=True):
@@ -262,7 +262,7 @@ def run_world(*, start_V=0.055, dt=1e-4, steps=300, na_m_per_s=3e-11, blocked=Tr
         dict(
             id="na_leak",
             membrane_id=m["membranes"][0]["id"],
-            kinetic_law="naleak_always_open@1",
+            kinetic_law="cells.channel.naleak_always_open@1",
             max_permeability_m_per_s=na_m_per_s,
             abundance=1.0,
             initial_gate=[],

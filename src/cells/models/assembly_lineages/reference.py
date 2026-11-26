@@ -7,7 +7,7 @@ events can be compared with common random variates (the capsid pattern, cells/as
 
 Its own choices, apart from the kernel's:
 - the rate factor's state is recomputed from the counts at every event (beta n, a serial fold
-  over the types; for cells.gard_catalysis_pair_consistent@2, in rationals, rounded once, which
+  over the types; for cells.rate_factor.gard_catalysis_pair_consistent@2, in rationals, rounded once, which
   is what the kernel's exact cache gives), never updated incrementally;
 - only the declared types are evaluated (no capacity padding);
 - the channel is found by a scalar running total, and the split by a stable argsort.

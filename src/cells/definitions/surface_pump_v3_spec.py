@@ -1,13 +1,13 @@
-"""resolved_pump_tissue@3: resolved_pump_tissue@2 plus voltage-gated channel populations.
+"""cells.model.resolved_pump_tissue@3: cells.model.resolved_pump_tissue@2 plus voltage-gated channel populations.
 
-Every field of resolved_pump_tissue@2 keeps its meaning and is parsed by that
+Every field of cells.model.resolved_pump_tissue@2 keeps its meaning and is parsed by that
 identity's parser. The model adds ``channels``: populations on named membrane
 patches, each with one law of CHANNEL_LAWS, a maximal permeability (m/s), an
 abundance, its law's gate state and its law's permeant ion (the shared-gate
-population format of resolved_tissue@8). The experiment adds
+population format of cells.model.resolved_tissue@8). The experiment adds
 ``channel_controls`` (one availability schedule per population) and the
 execution ``channel_capacity``. With no channels the identity reproduces
-resolved_pump_tissue@2.
+cells.model.resolved_pump_tissue@2.
 
 A channel population's entry may declare ``factors``, a list of factor-source IDs
 in declared order (docs/CORE_SEAMS_DESIGN.md §4.3, B1's routing door into @3): at
@@ -21,7 +21,7 @@ gains no field (other families build their models from its fields by name).
 An optional model key ``junction_heat_booking`` selects how IMEX steps book
 junction heat. The default, ``explicit_tableau`` (omitted from definitions, so
 default fingerprints are unchanged), books it with the tableau's explicit
-weights like every other route. ``trapezoid_nonnegative@1`` books
+weights like every other route. ``cells.heat.trapezoid_nonnegative@1`` books
 dt (q_start + q_end) / 2 from the junction powers at the step's start and end
 states, which cannot be negative; trajectories and every other booking are the
 default's (models/surface_pump_v3.imex_step).
@@ -31,8 +31,8 @@ booking ID}, picks the heat booking of @3's other mover classes (``channels``, `
 ``pumps``, ``calcium_pumps``) and of each declared kind's routes (by the kind's namespaced ID),
 beyond the tableau, which books every class by default and is never listed. Each class admits what
 models/inner_laws.OWN_HEAT_BOOKINGS (or the kind's heat_bookings) lists:
-``trapezoid_nonnegative@1``, booked once in the core for every class
-(models/surface_pump_v3.trapezoid_fields), and, for ``faces`` alone, ``exact_free_energy_heat@1``
+``cells.heat.trapezoid_nonnegative@1``, booked once in the core for every class
+(models/surface_pump_v3.trapezoid_fields), and, for ``faces`` alone, ``cells.heat.exact_free_energy_heat@1``
 (D280): each face books the exact free-energy release of the neutral rows it moves, and a face that
 carries a charged row, touches a held bath, or carries a row another mover moves in the step, is
 refused under it (models/surface_pump_v3.exact_face_heat). Junctions keep ``junction_heat_booking``
@@ -75,17 +75,17 @@ from cells.numerics.surface_field import SPARSE_SOLVER_ID
 from cells.registry import kind_registry
 from cells.registry import species_registry as registry
 
-MODEL_ID = "resolved_pump_tissue@3"
-KV1P5_LAW_ID = "kv1p5_mh@1"
-KIR2P1_LAW_ID = "kir2p1_mh2@1"
-NAV1P2_LAW_ID = "nav1p2_m3h_regularized@1"
-KLEAK_LAW_ID = "kleak_always_open@1"
-NALEAK_LAW_ID = "naleak_always_open@1"
+MODEL_ID = "cells.model.resolved_pump_tissue@3"
+KV1P5_LAW_ID = "cells.channel.kv1p5_mh@1"
+KIR2P1_LAW_ID = "cells.channel.kir2p1_mh2@1"
+NAV1P2_LAW_ID = "cells.channel.nav1p2_m3h_regularized@1"
+KLEAK_LAW_ID = "cells.channel.kleak_always_open@1"
+NALEAK_LAW_ID = "cells.channel.naleak_always_open@1"
 DEFAULT_JUNCTION_HEAT = "explicit_tableau"
-TRAPEZOID_JUNCTION_HEAT = "trapezoid_nonnegative@1"
+TRAPEZOID_JUNCTION_HEAT = "cells.heat.trapezoid_nonnegative@1"
 JUNCTION_HEAT_BOOKINGS = (DEFAULT_JUNCTION_HEAT, TRAPEZOID_JUNCTION_HEAT)
 # Seam D's exact booking for @3's faces (D280; INNER_MODEL_V4_DESIGN §7.5's name and version 1).
-EXACT_FREE_ENERGY_HEAT = "exact_free_energy_heat@1"
+EXACT_FREE_ENERGY_HEAT = "cells.heat.exact_free_energy_heat@1"
 # Today's five channel laws, the full catalogue's (structure None), by name: codes 0-2 are those of
 # laws/channels/sodium_channels.LAW_CODES, whose dispatch that path reuses; 3 and 4 are gate-free
 # leaks. Padding slots are inactive, not a code. The full-catalogue dispatch, its domain and the
@@ -223,7 +223,7 @@ class SurfacePumpChannelModel:
     # class, the tableau never listed; () for every definition of today's, and then to_dict
     # writes nothing. Held by the structure (InnerStructure.heat_bookings), never by the layout.
     heat_bookings: tuple = ()
-    # The faces of logmean_electrodiffusion_forms@1 (FormsFace), in declared order: their own
+    # The faces of cells.route.logmean_electrodiffusion_forms@1 (FormsFace), in declared order: their own
     # entity set, never in `faces` or its arrays; () for every definition of today's, and then
     # to_dict writes nothing, so fingerprints are unchanged.
     forms_faces: tuple = ()
@@ -231,7 +231,7 @@ class SurfacePumpChannelModel:
 
 @dataclass(frozen=True)
 class FormsFace(ExtracellularFaceSpec):
-    """A face of logmean_electrodiffusion_forms@1 (laws/routes/logmean_electrodiffusion_forms):
+    """A face of cells.route.logmean_electrodiffusion_forms@1 (laws/routes/logmean_electrodiffusion_forms):
     today's face fields, one diffusivity per species. The base families parse and check it as its
     degenerate plain face (surface_tissue_spec.admitting_faces); @3 holds it in forms_faces."""
 
@@ -295,7 +295,7 @@ class Experiment(second.Experiment):
 
 
 def projection(spec):
-    """The resolved_pump_tissue@2 part of a definition (no channel populations)."""
+    """The cells.model.resolved_pump_tissue@2 part of a definition (no channel populations)."""
     m, e = spec.model, spec.experiment
     model = second.SurfacePumpModel(
         **{
@@ -324,7 +324,9 @@ def parse_channel(raw, ids, z, membranes):
     _fields(raw, CHANNEL_FIELDS, "channel")
     law_id, laws = raw["kinetic_law"], channel_laws()  # The registry's (§8.3).
     if type(law_id) is not str or law_id not in laws or type(raw["permeant_ions"]) is not list:
-        raise ConfigError("Channel requires a resolved_pump_tissue@3 law and permeant ions")
+        raise ConfigError(
+            "Channel requires a cells.model.resolved_pump_tissue@3 law and permeant ions"
+        )
     law = laws[law_id]
     valence = {species: own for species, own, _ in law.permeant}
     ions = []
@@ -384,7 +386,7 @@ class BlockMode:
 
 @dataclass(frozen=True)
 class ChannelBlock:
-    """A population's open-channel blocker (FR-51, D327; open_channel_block_weighted_modes@1).
+    """A population's open-channel blocker (FR-51, D327; cells.channel_block.open_channel_block_weighted_modes@1).
 
     The blocker has valence z_B and is held at concentration_mM (mM, constant in version 1) on its
     side. It is referenced to the patch voltage (reversal_of None) or to V - E of the named
@@ -729,7 +731,7 @@ def _kind_schedules(registry, declared, given, base):
     return tuple(out)
 
 
-# --- FR-30 (D262): junctions whose gate is junction_series_gates@1, development only ----------
+# --- FR-30 (D262): junctions whose gate is cells.junction.junction_series_gates@1, development only ----------
 
 SERIES_GATE_LAW_ID = series_gates.LAW_ID
 SERIES_DEVELOPMENT = (
@@ -749,7 +751,7 @@ def series_gate_parameters(gate):
 
 
 def parse_series_gate(block):
-    """A junction_series_gates@1 gate block: {law, development: true, gates: [fast, slow]}, each
+    """A cells.junction.junction_series_gates@1 gate block: {law, development: true, gates: [fast, slow]}, each
     gate {kind, its kind's parameters by name, initial}. Returns @1's admission tuple: the
     junction's minimum and initial conductance (the products of the gates' residuals and initial
     factors), its class and its extra fields. Every gate lies on the law's own domain at 0 V."""
@@ -836,7 +838,7 @@ def parse(data):
         or not isinstance(x, dict)
         or m.get("id") != MODEL_ID
     ):
-        raise ConfigError("Require resolved_pump_tissue@3")
+        raise ConfigError("Require cells.model.resolved_pump_tissue@3")
     if "channels" not in m or "channel_controls" not in e or "channel_capacity" not in x:
         raise ConfigError("Declare channels, channel_controls and channel_capacity")
     channels, controls = m.pop("channels"), e.pop("channel_controls")
@@ -880,7 +882,7 @@ def parse(data):
     solver = x.get("solver")
     if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
         x["solver"] = imex.ARS222_ID
-    # The forms law (logmean_electrodiffusion_forms@1): @3 alone admits it on faces. The base
+    # The forms law (cells.route.logmean_electrodiffusion_forms@1): @3 alone admits it on faces. The base
     # families parse and check each forms face as its degenerate plain face, so the declared
     # face_capacity, which counts today's faces, is widened for their parse alone; the forms faces
     # then leave `faces` for their own entity set (forms_faces).
@@ -897,7 +899,7 @@ def parse(data):
         solver not in SPARSE_FIELD_SOLVERS or forms_count
     ):
         raise ConfigError(SPARSE_FIELD_REFUSAL)
-    # FR-30 (D262): @3 alone admits junction_series_gates@1; @1's and @2's parses refuse it.
+    # FR-30 (D262): @3 alone admits cells.junction.junction_series_gates@1; @1's and @2's parses refuse it.
     with first.admitting({SERIES_GATE_LAW_ID: parse_series_gate}):
         with tissue.admitting_faces({forms_law.LAW_ID: FormsFace}):
             with first.admitting_field_solvers((SPARSE_SOLVER_ID,)):
@@ -907,7 +909,9 @@ def parse(data):
     if forms_faces:
         plain = tuple(f for f in base.model.faces if type(f) is not FormsFace)
         if declared_faces < len(plain):
-            raise ConfigError("face_capacity must hold every face of logmean_electrodiffusion@1")
+            raise ConfigError(
+                "face_capacity must hold every face of cells.route.logmean_electrodiffusion@1"
+            )
         if solver not in FORMS_FACE_SOLVERS:
             raise ConfigError(FORMS_FACE_SOLVER_REFUSAL)
         base = replace(
@@ -1020,7 +1024,7 @@ def parse(data):
 
 
 def control_values(spec, times):
-    """resolved_pump_tissue@2 controls with the channel availabilities filled in."""
+    """cells.model.resolved_pump_tissue@2 controls with the channel availabilities filled in."""
     base = second.control_values(projection(spec), times)
     changes = spec.experiment.changes
     clock = [c.time for c in changes]

@@ -851,8 +851,8 @@ CHECKS = (
     ("schedule route", "names no declared route"),
     ("unknown key", "unknown"),
     ("duplicate population", "lists a population twice"),
-    ("view conflict", "Invalid operator composition: site_occupancy@1 reads"),
-    ("stationary analysis", "not resolved_pump_composite@1"),
+    ("view conflict", "Invalid operator composition: cells.operator.site_occupancy@1 reads"),
+    ("stationary analysis", "not cells.model.resolved_pump_composite@1"),
     ("batch signature", "matching model array axes"),
 )
 
@@ -880,7 +880,9 @@ def _engine_edit(raw, edit):
 
 
 def _site_block(raw):
-    return next(op for op in raw["model"]["operators"] if op["law"] == "site_occupancy@1")
+    return next(
+        op for op in raw["model"]["operators"] if op["law"] == "cells.operator.site_occupancy@1"
+    )
 
 
 def _first_pop(raw):
@@ -984,13 +986,20 @@ def refusal_classes():
         "ligand_permeant": ("definition", lambda: _engine_edit(W, _permeant), same),
         "identity": ("definition", lambda: _identity(False), lambda: _identity(True)),
         "trace_node_below": ("definition", ligand(trace_mM=2e-4), same),
-        "trace_above_limit": ("definition", lambda: af.build(_w(
-            lambda w: w.update(trace_mM=1.01e-9) or w["nodes"]["cell_0"].update(L_mM=1.01e-9))),
-            lambda: af.build(_w(_threshold))),
+        "trace_above_limit": (
+            "definition",
+            lambda: af.build(
+                _w(
+                    lambda w: (
+                        w.update(trace_mM=1.01e-9) or w["nodes"]["cell_0"].update(L_mM=1.01e-9)
+                    )
+                )
+            ),
+            lambda: af.build(_w(_threshold)),
+        ),
         "unknown_patch": ("definition", pop(owner=dict(patch="nope", face="outside")), same),
         "unknown_contact": ("definition", pop(owner=dict(contact="j9", side="first")), same),
-        "held_bath": ("definition", pop(owner=dict(patch="wall_cell_0", face="outside")),
-                      inward),
+        "held_bath": ("definition", pop(owner=dict(patch="wall_cell_0", face="outside")), inward),
         "copies": ("definition", pop(copies=0.0), same),
         "sites_per_copy": ("definition", pop(sites_per_copy=1.5), same),
         "accessible_fraction": ("definition", pop(accessible_fraction=0.0), same),
@@ -998,34 +1007,77 @@ def refusal_classes():
         "initial_occupancy": ("definition", pop(initial_occupancy=1.1), same),
         "k_on": ("definition", pop(association_rate_per_mM_per_s=0.0), same),
         "k_off": ("definition", pop(dissociation_rate_per_s=0.0), same),
-        "k_int": ("definition", pop(internalisation=dict(rate_per_s=-1.0, destination="cell")),
-                  same),
-        "internalisation_inward": ("definition", lambda: _engine_edit(inward(), lambda raw: next(
-            p for p in _site_block(raw)["populations"] if p["id"] == "r_in").update(
-                internalisation=dict(rate_per_s=0.1, destination="cell"))), inward),
+        "k_int": (
+            "definition",
+            pop(internalisation=dict(rate_per_s=-1.0, destination="cell")),
+            same,
+        ),
+        "internalisation_inward": (
+            "definition",
+            lambda: _engine_edit(
+                inward(),
+                lambda raw: next(
+                    p for p in _site_block(raw)["populations"] if p["id"] == "r_in"
+                ).update(internalisation=dict(rate_per_s=0.1, destination="cell")),
+            ),
+            inward,
+        ),
         "internalisation_compartment": ("definition", _compartment, same),
-        "destination": ("definition", pop(internalisation=dict(rate_per_s=10.0,
-                                                               destination="lysosome")), same),
+        "destination": (
+            "definition",
+            pop(internalisation=dict(rate_per_s=10.0, destination="lysosome")),
+            same,
+        ),
         "replaced_slot": ("definition", lambda: _replaced(True), lambda: _replaced(False)),
         "rk4": ("definition", lambda: af.build(_w(), dt=1e-4, solver="rk4"), same),
         "schedule_missing": ("definition", sched(lambda c: c.pop()), same),
-        "schedule_start": ("definition", sched(lambda c: c[0]["schedule"][0].update(time=0.002)),
-                           same),
-        "schedule_grid": ("definition", sched(lambda c: c[0]["schedule"].append(
-            dict(time=0.0015, multiplier=1.0))), same),
-        "schedule_horizon": ("definition", sched(lambda c: c[0]["schedule"].append(
-            dict(time=1.0, multiplier=1.0))), same),
-        "schedule_negative": ("definition", sched(
-            lambda c: c[0]["schedule"][0].update(multiplier=-1.0)), same),
-        "schedule_static_parameter": ("definition", sched(lambda c: c.append(dict(
-            population="r0", route="accessibility", schedule=[dict(time=0.0, multiplier=1.0)]))),
-            same),
+        "schedule_start": (
+            "definition",
+            sched(lambda c: c[0]["schedule"][0].update(time=0.002)),
+            same,
+        ),
+        "schedule_grid": (
+            "definition",
+            sched(lambda c: c[0]["schedule"].append(dict(time=0.0015, multiplier=1.0))),
+            same,
+        ),
+        "schedule_horizon": (
+            "definition",
+            sched(lambda c: c[0]["schedule"].append(dict(time=1.0, multiplier=1.0))),
+            same,
+        ),
+        "schedule_negative": (
+            "definition",
+            sched(lambda c: c[0]["schedule"][0].update(multiplier=-1.0)),
+            same,
+        ),
+        "schedule_static_parameter": (
+            "definition",
+            sched(
+                lambda c: c.append(
+                    dict(
+                        population="r0",
+                        route="accessibility",
+                        schedule=[dict(time=0.0, multiplier=1.0)],
+                    )
+                )
+            ),
+            same,
+        ),
         "unknown_key": ("definition", pop(colour="red"), same),
-        "duplicate_population": ("definition", lambda: _engine_edit(W, lambda raw: _site_block(
-            raw)["populations"].append(copy.deepcopy(_first_pop(raw)))), same),
-        "view_conflict_water": ("structure", ("ideal_osmosis_linear_compliance_water@1",
-                                              so.LAW_ID),
-                                ("scheduled_species_exchange@1", so.LAW_ID)),
+        "duplicate_population": (
+            "definition",
+            lambda: _engine_edit(
+                W,
+                lambda raw: _site_block(raw)["populations"].append(copy.deepcopy(_first_pop(raw))),
+            ),
+            same,
+        ),
+        "view_conflict_water": (
+            "structure",
+            ("cells.operator.ideal_osmosis_linear_compliance_water@1", so.LAW_ID),
+            ("cells.operator.scheduled_species_exchange@1", so.LAW_ID),
+        ),
         "stationary_analysis": ("analysis", same, same),
         "stage_condition": ("runtime", pop(association_rate_per_mM_per_s=2e7), same),
     }

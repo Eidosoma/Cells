@@ -35,7 +35,7 @@ def test_the_zero_blocker_end_on_the_compiled_program():
         of the case's world with a second, unblocked Na population on the same patch."""
         raw = fr51.raw_world(case_id, blocked=blocked)
         raw["model"]["channels"].append(
-            dict(raw["model"]["channels"][0], id="second", kinetic_law="naleak_always_open@1",
+            dict(raw["model"]["channels"][0], id="second", kinetic_law="cells.channel.naleak_always_open@1",
                  permeant_ions=[dict(species_id="Na", relative_permeability=1.0)])
         )  # fmt: skip
         raw["model"]["channels"][1].pop("block", None)

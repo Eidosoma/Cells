@@ -1,4 +1,4 @@
-"""The neutral Hill helper (processes/hill_factors) against local_species_reactions@1's own rates.
+"""The neutral Hill helper (processes/hill_factors) against cells.operator.local_species_reactions@1's own rates.
 
 The lead's ruling 7 (docs/INVENTORY_COUPLING_DESIGN.md §6.3): D152's factor expression is inline in
 species_reactions.route_rates, so the helper is tested against that operator's code, which stays
@@ -8,7 +8,7 @@ factored sources must equal the plain rate times exp of the helper's log factor,
 grid of half-saturations, coefficients and concentrations. Jitted, the helper's log factor agrees
 with its host value within 4 eps (XLA's log and logaddexp are not NumPy's).
 
-hill_product_factor@1 (G-5), the law of cells.species_condition@1, and its planted errors (D187):
+cells.transfer_factor.hill_product_factor@1 (G-5), the law of cells.kind.species_condition@1, and its planted errors (D187):
 - it is the left fold of the helper's log factors in one exponential, bit for bit, and the closed
   form's product at random reads (planted: a wrong exponent, the two forms exchanged, a missing
   factor, K in M for mM, K and n exchanged, a reading scaled by a valence);
@@ -17,8 +17,8 @@ hill_product_factor@1 (G-5), the law of cells.species_condition@1, and its plant
 - its slopes are the finite differences of ln f, exact in both limits (planted: an inhibition's sign
   dropped, the slope in x for the one in ln x, 1 - h by subtraction);
 - its record keeps its interface's contract, and each planted record is refused;
-- it is ph_conditioned_factor@1 within 3e-15 (planted: K's exponent of the other sign), and
-  species_regulated_availability@1's factor at basal 0 bit for bit (planted: ln(N/V) for
+- it is cells.transfer_factor.ph_conditioned_factor@1 within 3e-15 (planted: K's exponent of the other sign), and
+  cells.operator.species_regulated_availability@1's factor at basal 0 bit for bit (planted: ln(N/V) for
   ln N - ln V).
 """
 
@@ -123,7 +123,7 @@ def test_forms_and_padding():
     assert hill_factors.factor(np.log(5.0), 1.0, 2.0, 0, xp=np) == 1.0  # Padding: exactly 1.
 
 
-# ------------------------------------------------------------------ hill_product_factor@1 (G-5)
+# ------------------------------------------------------------------ cells.transfer_factor.hill_product_factor@1 (G-5)
 
 
 def product_reads(count=400, reads=4):
@@ -256,14 +256,16 @@ def test_the_hill_product_s_record_keeps_its_interface_s_contract():
         "a cited record with no source": dict(provenance="cited", source=None),
     }
     for name, change in plants.items():
-        planted = dataclasses.replace(law, law_id="tests.planted_factor@1", **change)
+        planted = dataclasses.replace(
+            law, law_id="tests.transfer_factor.planted_factor@1", **change
+        )
         assert planted.errors(), name
-        with pytest.raises(ValueError, match="tests.planted_factor@1"):
+        with pytest.raises(ValueError, match="tests.transfer_factor.planted_factor@1"):
             law_registry.LawRegistry().register(planted)
 
 
 def test_the_ph_law_is_the_hill_activation_of_the_free_proton():
-    """ph_conditioned_factor@1 and one hill_activation read of h, K = 10^(3 - pH50) mM and n the
+    """cells.transfer_factor.ph_conditioned_factor@1 and one hill_activation read of h, K = 10^(3 - pH50) mM and n the
     slope: one function, within rounding (the first one's tanh form loses accuracy at small f)."""
     rng = np.random.default_rng(0)
     ph, ph50 = rng.uniform(4.0, 9.0, 20000), rng.uniform(4.5, 7.5, 20000)
@@ -281,7 +283,7 @@ def test_the_ph_law_is_the_hill_activation_of_the_free_proton():
 
 
 def test_a_condition_of_one_read_is_the_coupling_s_factor_bit_for_bit():
-    """The instantaneous Hill factor of species_regulated_availability@1 at basal 0, on its own
+    """The instantaneous Hill factor of cells.operator.species_regulated_availability@1 at basal 0, on its own
     kernel, and the condition's, for one neutral species in each of N cells, both forms."""
     rng = np.random.default_rng(1)
     count = 2000

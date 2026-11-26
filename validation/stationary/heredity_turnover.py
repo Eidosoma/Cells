@@ -8,14 +8,14 @@ Its prediction is that under turnover the rim stays H and the disc erodes. This
 tests that prediction with turnover and screens whether another newcomer rule
 renews the rim.
 
-Engine model analysed: resolved_pump_tissue@3, unmodified, through
-stationary_continuation_analysis@1 (cells.analysis.stationary): stationary
+Engine model analysed: cells.model.resolved_pump_tissue@3, unmodified, through
+cells.analysis.stationary_continuation_analysis@1 (cells.analysis.stationary): stationary
 discs by continuation (heredity_conversion.disc_state) and forward runs with
 the model's own checked IMEX step through the analysis step map (dt 5 ms, every
 step's validity enforced, a refusal ends the run; host ledger checks not run,
 no ledgers carried). Worlds are pre-screens 7 and 8's: homogeneous hexagonal
 sheets of heredity cells with held baths, E07-v1's voltage-gated junctions
-(junction_voltage_relaxation@1, threshold 15 mV, minimum 0.1), coupling scale
+(cells.junction.junction_voltage_relaxation@1, threshold 15 mV, minimum 0.1), coupling scale
 s (theta = 1.657 s), the written disc of radius r around the centre cell.
 
 Newcomer (one carrier replaced in a slot): the slot's intracellular amounts and
@@ -28,7 +28,7 @@ incident junction gates, which follow one of three rules:
 - inherit (b): the incident gates are left at their current values, i.e. those
   of the junctions between the replaced carrier and its neighbours.
 - steady (c): after the amount and channel-gate reset, each incident gate is
-  set to the gate's steady state, junction_voltage_relaxation@1's target, at
+  set to the gate's steady state, cells.junction.junction_voltage_relaxation@1's target, at
   that junction's voltage Vj read from the model's field at the reset state.
   Vj does not depend on the gate values (checked in each run's checks block:
   the field is evaluated with every gate at 0.967 and at 0.1), so no fixed
@@ -43,7 +43,7 @@ the slow U voltage at the moment of replacement (before the reset).
 Rules (b), (c), (i) and (ii) depart from design.json's replacement
 specification; they are screened, not proposed.
 
-Not varied: the junction gate rate. junction_voltage_relaxation@1's rates
+Not varied: the junction gate rate. cells.junction.junction_voltage_relaxation@1's rates
 (alpha 1.3/s, beta up to 20/s) are constants of the law; a junction gate
 accepts only law, threshold, minimum and initial gate, and no analysis
 parameter scales them. The design lists the rate control as open gap G6.
@@ -785,7 +785,7 @@ FROZEN_SCALES = (0.3, 0.6)  # states reported here: voltages, gates, junction co
 class FrozenDisc(hp.Case):
     """Pre-screen 7's gated sheet in fast mode with the disc's frozen composition chosen.
 
-    stationary_continuation_analysis@1's fast mode freezes every amount at the base
+    cells.analysis.stationary_continuation_analysis@1's fast mode freezes every amount at the base
     state's (the definition's initial amounts); node charges and gates are the unknowns.
     Disc cells are declared at the D voltage with composition 'H' (the isolated-H template:
     Na, K, M of HEREDITY_STATES H) or 'D' (the loaded slow D state of HEREDITY_STATES D, as
@@ -835,7 +835,7 @@ class FrozenDisc(hp.Case):
 
 
 def junction_conductance(case, u, scale, edge):
-    """One junction at u: Vj, gate and slope conductance dI/dVj of constant_field@1.
+    """One junction at u: Vj, gate and slope conductance dI/dVj of cells.route.constant_field@1.
 
     The engine's constant-field law (cells.laws.electrochemistry.ghk_leak) with the
     junction's area and permeabilities x scale, the two cells' frozen concentrations and
@@ -911,7 +911,7 @@ def frozen(output):
     out = dict(
         kind="cells.heredity_design_prescreen@9_frozen",
         scope="Design input only (development analysis, not judged).",
-        mode="fast (stationary_continuation_analysis@1): amounts frozen at the definition's "
+        mode="fast (cells.analysis.stationary_continuation_analysis@1): amounts frozen at the definition's "
         "initial values; node charges and gates solved",
         units=u,
         bisections=hp.BISECTIONS,

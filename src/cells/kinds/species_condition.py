@@ -1,7 +1,7 @@
-"""cells.species_condition@1: a node's species condition, a source of the routing door (G-5).
+"""cells.kind.species_condition@1: a node's species condition, a source of the routing door (G-5).
 
 docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md, Part I (the user's choice of 25 November 2026:
-a general source that any route or channel can name); the law is `hill_product_factor@1`
+a general source that any route or channel can name); the law is `cells.transfer_factor.hill_product_factor@1`
 (laws/reactions/hill_product_factor.py). A condition is one factor in [0, 1]: the product of Hill
 factors of declared species rows at one node,
 
@@ -14,7 +14,7 @@ nothing; it reaches a route or a channel only as a factor through the routing do
 The declaration (model key `species_conditions`), each condition at a node by its ID (a cell or an
 outside node, so a compartment's node reads its lumen):
 
-    [{"id": "release_calcium_0", "node": "cell_0", "law": "hill_product_factor@1",
+    [{"id": "release_calcium_0", "node": "cell_0", "law": "cells.transfer_factor.hill_product_factor@1",
       "reads": [{"species": "Ca", "form": "hill_activation", "half_saturation_mM": 0.001,
                  "hill_coefficient": 2.0},
                 {"species": "Ca", "form": "hill_inhibition", "half_saturation_mM": 0.02,
@@ -27,7 +27,7 @@ condition, and a route that names two multiplies its held value by them in its o
 - **The read is the stage's:** the amounts of the state each rate of the stage reads (the free form
   where a closure owns the row) over the node's current volume, at every explicit stage and at each
   observed row. It is a concentration: the row's valence does not enter. ln x is formed as
-  ln N - ln V, as local_species_reactions@1 and species_regulated_availability@1 form it, so one
+  ln N - ln V, as cells.operator.local_species_reactions@1 and cells.operator.species_regulated_availability@1 form it, so one
   Hill read is that operator's factor (basal 0) bit for bit.
 - **Positive amounts:** @3 keeps every row above zero at every node, so no run reads a zero. A
   negative or NaN amount gives NaN, and the door refuses the step or the row.
@@ -46,9 +46,9 @@ condition, and a route that names two multiplies its held value by them in its o
   give the core the slopes it needs to bound a loop that a gated route closes on its own gate (it
   moves a row its condition reads). The bound itself is the core's, in material_rate. Its limits
   hold here: a loop through two routes is not bounded, nor is one through a source that reads an
-  amount and has no hooks (ph_condition@1); and where a closure owns the row, the slope is in the
+  amount and has no hooks (cells.kind.ph_condition@1); and where a closure owns the row, the slope is in the
   free amount, without the closure's own.
-- **The pH condition** (`ph_condition@1`) is this law with one hill_activation read of the proton
+- **The pH condition** (`cells.kind.ph_condition@1`) is this law with one hill_activation read of the proton
   row, K = 10^(3 - pH50) mM and n the slope: on 20,000 random points the two differ by at most
   2.3e-15. It retires in a landing of its own.
 """
@@ -70,7 +70,7 @@ from cells.modules import (
 )
 from cells.registry.kind_registry import BUILTIN
 
-KIND_ID = "cells.species_condition@1"
+KIND_ID = "cells.kind.species_condition@1"
 MODEL_KEY = "species_conditions"
 LAW_ID = qualified(law.LAW_ID)
 FORMS = MappingProxyType(dict(law.FORMS))  # {form: code}

@@ -1,4 +1,4 @@
-"""species_regulated_availability@1: the A4 and A5 worlds match their references at the start.
+"""cells.operator.species_regulated_availability@1: the A4 and A5 worlds match their references at the start.
 
 docs/INVENTORY_COUPLING_DESIGN.md §9 (A4, A5). The engine's definitions that
 validation/tissue/regulated_availability_references builds from a reference World start where the

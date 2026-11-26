@@ -1,4 +1,4 @@
-"""cells.transporter@1's population axis: seam A's general layout (the kinds owner's design
+"""cells.kind.transporter@1's population axis: seam A's general layout (the kinds owner's design
 statement 1, confirmed 18 November 2026, and its amendments).
 
 Each claim with its plant (D187); every world is this file's own (no seam-A reference state):
@@ -134,7 +134,7 @@ def add_species(raw, sid, valence, mu_RT, mM):
 
 
 SLIP = law_registry.CycleLaw(
-    "seamtest.slip_exchanger@1",
+    "seamtest.cycle.slip_exchanger@1",
     (),
     (),
     None,
@@ -145,7 +145,7 @@ SLIP = law_registry.CycleLaw(
     source="a test-only diagram (tests/unit/test_cycle_forms.py), never shipped",
 )
 OFFSET = law_registry.CycleLaw(
-    "seamtest.shifted_exchange@1",
+    "seamtest.cycle.shifted_exchange@1",
     (),
     (),
     None,
@@ -163,11 +163,11 @@ OFFSET = law_registry.CycleLaw(
 )
 HONEST = dataclasses.replace(
     OFFSET,
-    law_id="seamtest.net_exchange@1",
+    law_id="seamtest.cycle.net_exchange@1",
     cycle=OFFSET.cycle._replace(flux_terms=((FluxTerm(1.0, (-1, 1, 1, -1), 0.0),),)),
 )
 AT_P = law_registry.CycleLaw(
-    "seamtest.chemistry_at_p@1",
+    "seamtest.cycle.chemistry_at_p@1",
     (),
     (),
     None,
@@ -217,8 +217,8 @@ def basis_law(law_id, sign, k=(0.02, 0.01, 0.4)):
     )
 
 
-SIGNED = basis_law("seamtest.signed_basis@1", -1)
-WRONG_SIGN = basis_law("seamtest.wrong_sign_basis@1", +1)
+SIGNED = basis_law("seamtest.cycle.signed_basis@1", -1)
+WRONG_SIGN = basis_law("seamtest.cycle.wrong_sign_basis@1", +1)
 TEST_LAWS = (SLIP, OFFSET, HONEST, AT_P, SIGNED, WRONG_SIGN)
 
 
@@ -252,7 +252,7 @@ def exchange_world(*populations, x=(12.0, 140.0), w=(0.8, 0.2)):
     return raw
 
 
-def exchanger(law="seamtest.slip_exchanger@1", capacity=0.05, **over):
+def exchanger(law="seamtest.cycle.slip_exchanger@1", capacity=0.05, **over):
     entry = dict(
         id="exchanger_0",
         host="membrane_0",
@@ -333,7 +333,7 @@ def test_the_general_form_and_both_diversions_take_the_population_axis_and_write
         (dict(parameters=dict(stoichiometry=1.5, km_role_mM=1.0, km_atp_mM=0.1)), "is an integer"),
         (dict(held_rows=[["ATP", "P"]]), "held_rows lists distinct rows"),
         (dict(held_rows=[["ATP", "N"]]), "held together or moved together"),
-        (dict(law="cells.proton_atp_mass_action_positive@1"), "roles binds each of proton"),
+        (dict(law="cells.cycle.proton_atp_mass_action_positive@1"), "roles binds each of proton"),
         (dict(proton_readout="Y"), "proton_readout names the model's free-proton species row"),
         (dict(proton_readout="nowhere"), "proton_readout names the model's free-proton"),
     ],
@@ -396,12 +396,12 @@ def test_the_general_parse_refuses_a_charged_held_row_chemistry_at_p_and_moved_p
             parse_spec(world)
     raw = tk.held_world()
     raw = tk.held_world(
-        dict(id="p_0", host="membrane_0", law="seamtest.chemistry_at_p@1", orientation={"N": "a"},
+        dict(id="p_0", host="membrane_0", law="seamtest.cycle.chemistry_at_p@1", orientation={"N": "a"},
              capacity_fmol_s=0.1, roles={"Z": "Y", "W": "ATP"}, parameters={}, held_rows=[])
     )  # fmt: skip
     with scoped():  # Chemistry at P (Q3's refusal until K3) is admitted; its rows are neutral,
         ((_, entry),) = surface_pump_v3.structure(parse_spec(raw).model).kinds  # so no K3b field.
-    assert entry == transporter.CycleAxis(("seamtest.chemistry_at_p@1",))
+    assert entry == transporter.CycleAxis(("seamtest.cycle.chemistry_at_p@1",))
     with scoped(), pytest.raises(ConfigError, match="must be unique"):
         parse_spec(tk.held_world(general(tk.population()), general(tk.population())))
 
@@ -542,12 +542,12 @@ def test_the_population_axis_step_terms_are_version_1s_for_the_proton_law():
     steep_factors = (form.saturation[0][0], Saturation(("ATP", "N"), "km_atp_mM", 4))
     steep = dataclasses.replace(
         transporter.PROTON,
-        law_id="tests.steep_fuel@1",
+        law_id="tests.cycle.steep_fuel@1",
         cycle=form._replace(saturation=(steep_factors,)),
     )
     raw = tk.charged_world()
     entry = general(raw["model"]["transporters"][0])
-    entry["law"], entry["parameters"]["km_atp_mM"] = "tests.steep_fuel@1", 1e100
+    entry["law"], entry["parameters"]["km_atp_mM"] = "tests.cycle.steep_fuel@1", 1e100
     raw["model"]["transporters"] = [entry]
     with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(law_registry.BUILTIN.extended(steep)):
         spec = parse_spec(raw)
@@ -561,7 +561,7 @@ def test_the_population_axis_step_terms_are_version_1s_for_the_proton_law():
 FINITE_POP = dict(
     id="fuel_pump_0",
     host="membrane_0",
-    law="cells.atp_driven_transporter_mass_action_positive@1",
+    law="cells.cycle.atp_driven_transporter_mass_action_positive@1",
     orientation={"N": "a"},
     capacity_fmol_s=0.1,
     roles={"role": "Y", "ATP": "ATP", "ADP": "ADP", "Pi": "Pi"},
@@ -680,8 +680,8 @@ def test_the_guard_holds_exactly_for_diagram_and_factored_populations():
 
 
 def test_an_honest_net_flow_law_stays_within_the_allowance_and_an_offset_one_is_refused():
-    honest = exchange_world(exchanger(law="seamtest.net_exchange@1", capacity=1.0))
-    offset = exchange_world(exchanger(law="seamtest.shifted_exchange@1", capacity=1.0))
+    honest = exchange_world(exchanger(law="seamtest.cycle.net_exchange@1", capacity=1.0))
+    offset = exchange_world(exchanger(law="seamtest.cycle.shifted_exchange@1", capacity=1.0))
     with scoped():
         spec = parse_spec(honest)
         _, state, p, control = start(spec)
@@ -768,12 +768,12 @@ def test_an_inconsistent_diagram_is_refused_at_the_definition():
     edges = form.diagram.edges
     off = (edges[0]._replace(forward=edges[0].forward._replace(k0_per_s=edges[0].forward.k0_per_s * (1 + 1e-9))), *edges[1:])
     bad = dataclasses.replace(
-        SLIP, law_id="seamtest.slip_off@1", cycle=form._replace(diagram=form.diagram._replace(edges=off))
+        SLIP, law_id="seamtest.cycle.slip_off@1", cycle=form._replace(diagram=form.diagram._replace(edges=off))
     )
     with tk.scoped(), law_registry.scope(law_registry.BUILTIN.extended(*TEST_LAWS, bad)):
         parse_spec(exchange_world(exchanger()))  # The consistent one is admitted.
         with pytest.raises(ConfigError, match="fails Wegscheider's condition"):
-            parse_spec(exchange_world(exchanger(law="seamtest.slip_off@1")))
+            parse_spec(exchange_world(exchanger(law="seamtest.cycle.slip_off@1")))
 
 
 # ------------------------------------------------------- availability schedules (D228 item 5)
@@ -882,7 +882,7 @@ def _neutral(**over):
 
 
 def _net_flow(**over):
-    return exchange_world(exchanger(law="seamtest.net_exchange@1", **over))
+    return exchange_world(exchanger(law="seamtest.cycle.net_exchange@1", **over))
 
 
 FORMS = {  # Each kinetic form's world, its population and the kinds it needs.
@@ -944,7 +944,7 @@ def test_a_held_availability_is_the_capacity_times_it_in_every_kinetic_form(form
 # A closure-free monomial exchanger: X+ from N to P against Y from P to N, its S a monomial in X at
 # N and Y at P with a voltage term, one saturating factor on X at N, and a share of 2.
 MONO = law_registry.CycleLaw(
-    "seamtest.monomial_exchange@1",
+    "seamtest.cycle.monomial_exchange@1",
     (),
     (),
     None,
@@ -1058,7 +1058,7 @@ def test_the_monomial_domain_is_one_sided_and_its_bare_terms_fail_closed():
         assert np.isinf(transporter.stage_term(state, None, control, p, xp=np)).any()
         assert np.all(np.isfinite(transporter.stage_term(state, deep, control, p, xp=np)))
     with scoped():
-        spec2 = parse_spec(exchange_world(exchanger(law="seamtest.net_exchange@1")))
+        spec2 = parse_spec(exchange_world(exchanger(law="seamtest.cycle.net_exchange@1")))
         _, state2, p2, control2 = start(spec2)
         e2 = transporter._evaluate(state2, potentials_for(p2, 2.4), control2, p2, xp=np)
         assert float(e2.x[0, 0]) < -80 and not bool(e2.valid[0])  # |x| <= 80 there.
@@ -1073,8 +1073,8 @@ def test_a_monomial_reference_resolves_only_under_the_binding_owners_conditions(
     no declared forms has none to read (the binding owner's conditions 1 and 2)."""
     rate = MONO.cycle.monomial.rates[0]
     reason = "read only where a closure holds the row"
-    for form_name, law_id in (("total", "seamtest.monomial_total@1"),
-                              ("Mg", "seamtest.monomial_mg@1")):
+    for form_name, law_id in (("total", "seamtest.cycle.monomial_total@1"),
+                              ("Mg", "seamtest.cycle.monomial_mg@1")):
         total = rate._replace(orders=((forms.Reference("X", "N", form_name), 1.0),))
         law = dataclasses.replace(
             MONO, law_id=law_id,
@@ -1085,7 +1085,7 @@ def test_a_monomial_reference_resolves_only_under_the_binding_owners_conditions(
 
 
 
-def hydrolysis(dg_kj_mol, law_id="seamtest.monomial_hydrolysis@1"):
+def hydrolysis(dg_kj_mol, law_id="seamtest.cycle.monomial_hydrolysis@1"):
     """A converting monomial law at N, ATP -> ADP + Pi, its k from a cited dG° (K6)."""
     return law_registry.CycleLaw(
         law_id,
@@ -1131,7 +1131,7 @@ def test_a_cited_dg_is_the_laws_seam_e_entry_and_builds_its_k_from_one_value():
 
     cited = tk.DRIVE0_J_MOL / 1000.0
     with mono_scoped(hydrolysis(cited)):
-        spec = parse_spec(hydrolysis_world("seamtest.monomial_hydrolysis@1"))
+        spec = parse_spec(hydrolysis_world("seamtest.cycle.monomial_hydrolysis@1"))
         (entry,) = transporter.standard_free_energies(dict(spec.model.kinds)[transporter.KIND_ID])
         _, _, p, _ = start(spec)
     assert entry.dG_kJ_mol == cited and entry.dG_basis == TEMPERATURE_INDEPENDENT
@@ -1140,9 +1140,9 @@ def test_a_cited_dg_is_the_laws_seam_e_entry_and_builds_its_k_from_one_value():
     rt = Decimal(R) * Decimal(spec.model.temperature_K)
     converted = float(Decimal(cited) * 1000 / rt + Decimal(0.0))  # The registry's own arithmetic.
     assert float(p.cycle_mono_log_k[0, 0]) == 0.25 - 0.5 * converted  # One value, bit for bit.
-    with mono_scoped(hydrolysis(-35.0, "seamtest.monomial_off@1")):
+    with mono_scoped(hydrolysis(-35.0, "seamtest.cycle.monomial_off@1")):
         with pytest.raises(ConfigError, match="monomial_off"):
-            parse_spec(hydrolysis_world("seamtest.monomial_off@1"))
+            parse_spec(hydrolysis_world("seamtest.cycle.monomial_off@1"))
 
 
 # ------------------------------------------------------- the trapezoid heat booking (K2)
@@ -1156,7 +1156,7 @@ def trapezoid_booked(raw):
 
 @pytest.mark.parametrize("layout", ("version 1", "population axis"))
 def test_the_trapezoid_books_the_kinds_heat_and_leaves_every_other_field(layout):
-    """Seam D's trapezoid_nonnegative@1, picked for the kind: four steps under the tableau and
+    """Seam D's cells.heat.trapezoid_nonnegative@1, picked for the kind: four steps under the tableau and
     under the trapezoid give every field but the heat bitwise equal, the heat non-decreasing, and
     every ledger closed (the energy ledger with the trapezoid's heat)."""
     raw = tk.held_world() if layout == "version 1" else tk.held_world(general(tk.population()))
@@ -1191,7 +1191,7 @@ def test_the_trapezoid_pick_is_refused_for_a_net_flow_population_and_an_unadmitt
     """A net-flow population's heat is non-negative only within its guard's allowance, so the
     pick is refused where one is declared; planted: the kind without the declaration refuses it."""
     with scoped(), pytest.raises(ConfigError, match="only within its guard's allowance"):
-        parse_spec(trapezoid_booked(exchange_world(exchanger(law="seamtest.net_exchange@1"))))
+        parse_spec(trapezoid_booked(exchange_world(exchanger(law="seamtest.cycle.net_exchange@1"))))
     plain = dataclasses.replace(transporter.TRANSPORTER, heat_bookings=())
     with tk.scoped(plain), pytest.raises(ConfigError, match="admits no heat booking"):
         parse_spec(trapezoid_booked(tk.held_world()))
@@ -1200,7 +1200,7 @@ def test_the_trapezoid_pick_is_refused_for_a_net_flow_population_and_an_unadmitt
 # ----------------------------------------------------------------- the proton readouts (K4)
 
 UNIPORT = law_registry.CycleLaw(
-    "seamtest.proton_uniport@1",
+    "seamtest.cycle.proton_uniport@1",
     (),
     (),
     None,
@@ -1384,12 +1384,12 @@ def test_an_asking_population_reads_out_its_share_of_the_current_and_clamped_rat
 # ------------------------------------------------------- moved fuel at a closure node (K1)
 
 CLOSURE_HYDROLYSIS = law_registry.CycleLaw(
-    "seamtest.closure_hydrolysis@1",
+    "seamtest.cycle.closure_hydrolysis@1",
     (),
     (transporter.FINITE,),
     None,
     None,
-    reads=("rapid_binding@1",),
+    reads=("cells.binding.rapid_binding@1",),
     forms="base",
     cycle=CycleForm(
         kinetics="net_flow",
@@ -1410,12 +1410,12 @@ MU_H_SHIFT = 5.0  # H's mu°/RT off 0, so its standard part is not invisible to 
 
 
 INHIBITED_HYDROLYSIS = law_registry.CycleLaw(
-    "seamtest.inhibited_hydrolysis@1",
+    "seamtest.cycle.inhibited_hydrolysis@1",
     (),
     (transporter.FINITE,),
     None,
     None,
-    reads=("rapid_binding@1",),
+    reads=("cells.binding.rapid_binding@1",),
     forms="base",
     cycle=CycleForm(
         kinetics="monomial",
@@ -1453,8 +1453,8 @@ def closure_fuel_world(closure="general", n_end="a", lumped=False, binder=False)
     H's potential is moved off 0 (and HB's with it, so B's binding constant is kept), so that a
     proton's standard part counted twice would show in the energy ledger. The fuel rows have no
     forms: the species registry refuses every mover of a row with forms (check_two_form_rows), a
-    closure's binder included. closure: "general", rapid_binding@1 holding H at the cell;
-    "version 1", rapid_proton_buffer@1 there; or "no proton row", the general closure declaring
+    closure's binder included. closure: "general", cells.binding.rapid_binding@1 holding H at the cell;
+    "version 1", cells.kind.rapid_proton_buffer@1 there; or "no proton row", the general closure declaring
     none. n_end "b" puts the population's N, and so its fuel and H, at the bath. lumped adds the
     built-in neutral law on finite fuel at the cell (transformed potentials: no base forms), its
     role Y and its lumped fuel nATP, nADP and nPi neutral rows that no closure holds. binder makes
@@ -1632,15 +1632,15 @@ Q_CYCLE = (-1, 1, -2, 2, -2, 4)  # QH2 + 2 Cox+ (P) + 2 H+ (N) -> Q + 2 Cred (P)
 
 def p_redox(forms="base"):
     """A test-only cytochrome c reducer at P, complex III's net Q cycle on charged cytochrome c
-    forms (Cox+ to Cred), saturating in Cox, its moves in base forms read through rapid_binding@1
+    forms (Cox+ to Cred), saturating in Cox, its moves in base forms read through cells.binding.rapid_binding@1
     (never shipped)."""
     return law_registry.CycleLaw(
-        "seamtest.p_side_redox@1",
+        "seamtest.cycle.p_side_redox@1",
         (),
         (),
         None,
         None,
-        reads=("rapid_binding@1",),
+        reads=("cells.binding.rapid_binding@1",),
         forms=forms,
         cycle=CycleForm(
             kinetics="factored",
@@ -1690,7 +1690,7 @@ def p_redox_world():
         dict(
             id="redox_0",
             host=m["membranes"][0]["id"],
-            law="seamtest.p_side_redox@1",
+            law="seamtest.cycle.p_side_redox@1",
             orientation={"N": "b"},
             capacity_fmol_s=0.05,
             roles={"QH2": "QH2", "Q": "Q", "Cox": "Cox", "Cred": "Cred", "H": "H"},
@@ -1773,12 +1773,12 @@ def test_a_mode_converting_cytochrome_c_at_p_moves_bounds_and_books_it_there():
 # ------------------------------------------------------ P at a finite outside node (K3b)
 
 P_ACID = law_registry.CycleLaw(
-    "seamtest.p_side_acid@1",
+    "seamtest.cycle.p_side_acid@1",
     (),
     (),
     None,
     None,
-    reads=("rapid_binding@1",),
+    reads=("cells.binding.rapid_binding@1",),
     forms="base",
     cycle=CycleForm(
         kinetics="factored",
@@ -2366,24 +2366,34 @@ def na_ca_planted(law_id, *, counts=NA_CA_NU, standard_mM=1.0, power=-3, off=1.0
 # the counts' and the kind's, whatever the synthetic form is: a plant of the form alone keeps the
 # reversal, the detailed balance and the heat's sign, and only a plant of the counts misses them.
 NA_CA_PLANTS = {
-    "split reversed": (na_ca_planted("seamtest.na_ca_split_reversed@1", zeta=0.5), OF_THE_FORM),
-    "no split": (na_ca_planted("seamtest.na_ca_no_split@1", zeta=0.0), OF_THE_FORM),
-    "K_Na once": (na_ca_planted("seamtest.na_ca_linear_k_na@1", power=-1), OF_THE_FORM),
-    "against 1 M": (na_ca_planted("seamtest.na_ca_molar@1", standard_mM=1e3), OF_THE_FORM),
-    "off by 1e-9": (na_ca_planted("seamtest.na_ca_off@1", off=1 + 1e-9), OF_THE_FORM),
+    "split reversed": (
+        na_ca_planted("seamtest.cycle.na_ca_split_reversed@1", zeta=0.5),
+        OF_THE_FORM,
+    ),
+    "no split": (na_ca_planted("seamtest.cycle.na_ca_no_split@1", zeta=0.0), OF_THE_FORM),
+    "K_Na once": (na_ca_planted("seamtest.cycle.na_ca_linear_k_na@1", power=-1), OF_THE_FORM),
+    "against 1 M": (na_ca_planted("seamtest.cycle.na_ca_molar@1", standard_mM=1e3), OF_THE_FORM),
+    "off by 1e-9": (na_ca_planted("seamtest.cycle.na_ca_off@1", off=1 + 1e-9), OF_THE_FORM),
     "orders exchanged": (
-        na_ca_planted("seamtest.na_ca_orders@1", orders=((na_ca.NA_P, 1.0), (na_ca.CA_N, 3.0))),
+        na_ca_planted(
+            "seamtest.cycle.na_ca_orders@1", orders=((na_ca.NA_P, 1.0), (na_ca.CA_N, 3.0))
+        ),
         OF_THE_FORM,
     ),
     "reverse term": (
         na_ca_planted(
-            "seamtest.na_ca_reverse@1", orders=((na_ca.NA_N, 3.0), (na_ca.CA_P, 1.0)), zeta=0.5
+            "seamtest.cycle.na_ca_reverse@1",
+            orders=((na_ca.NA_N, 3.0), (na_ca.CA_P, 1.0)),
+            zeta=0.5,
         ),
         OF_THE_FORM,
     ),
-    "one end in D": (na_ca_planted("seamtest.na_ca_one_end@1", ends=1), OF_THE_FORM),
-    "four Na": (na_ca_planted("seamtest.na_ca_four@1", counts=(4, -4, -1, 1)), OF_THE_COUNTS),
-    "backward": (na_ca_planted("seamtest.na_ca_backward@1", counts=(-3, 3, 1, -1)), OF_THE_COUNTS),
+    "one end in D": (na_ca_planted("seamtest.cycle.na_ca_one_end@1", ends=1), OF_THE_FORM),
+    "four Na": (na_ca_planted("seamtest.cycle.na_ca_four@1", counts=(4, -4, -1, 1)), OF_THE_COUNTS),
+    "backward": (
+        na_ca_planted("seamtest.cycle.na_ca_backward@1", counts=(-3, 3, 1, -1)),
+        OF_THE_COUNTS,
+    ),
 }
 NA_CA_RUN_MISSES = {  # The registered law besides: under jit, and under plants of the evaluation.
     "compiled": set(),
@@ -2449,7 +2459,7 @@ def test_the_exchange_is_registered_as_a_moved_form_with_a_synthetic_rate():
         "10.1038/nature02271",
     ]
     assert law.cycle.parameter_names == ("km_na_mM", "km_ca_mM")
-    assert law.reads == ("rapid_binding@1",) and law.forms == "base"
+    assert law.reads == ("cells.binding.rapid_binding@1",) and law.forms == "base"
     assert step_terms(law) == ["stage_term", "material_term"]
 
 
@@ -2493,7 +2503,9 @@ def test_the_exchanges_charge_slope_holds_the_step_at_both_its_ends():
         assert bool(impl.imex_step(state, 1.01 / rate, control, p, xp=np)[1])
 
 
-UNEVEN = na_ca_planted("seamtest.na_ca_uneven@1", counts=(3, -2, -1, 1))  # It creates a charge.
+UNEVEN = na_ca_planted(
+    "seamtest.cycle.na_ca_uneven@1", counts=(3, -2, -1, 1)
+)  # It creates a charge.
 NA_CA_REFUSALS = {  # name: (the entry's changes, the world's, the reason, None where admitted)
     "the twin of the rows below": ({}, {}, None),
     "a stoichiometry": (
@@ -2609,28 +2621,28 @@ def one_anion(rate):
 CORE_PLANTS = {  # {law: {plant: (the planted law, the criteria it must miss, and no other)}}
     "pump": {
         "no ATP in S": (
-            pump_planted("seamtest.pump_no_atp@1", saturation=((ROLE_K,),)), OF_THE_FORM
+            pump_planted("seamtest.cycle.pump_no_atp@1", saturation=((ROLE_K,),)), OF_THE_FORM
         ),
         "S at P": (
             pump_planted(
-                "seamtest.pump_s_at_p@1", saturation=((ROLE_K._replace(row=("role", "P")), ATP_K),)
+                "seamtest.cycle.pump_s_at_p@1", saturation=((ROLE_K._replace(row=("role", "P")), ATP_K),)
             ),
             OF_THE_FORM,
         ),
         "n left out of S": (
-            pump_planted("seamtest.pump_hill_1@1", saturation=((ROLE_K._replace(hill=1), ATP_K),)),
+            pump_planted("seamtest.cycle.pump_hill_1@1", saturation=((ROLE_K._replace(hill=1), ATP_K),)),
             OF_THE_FORM,
         ),
         "no Pi made": (
             pump_planted(
-                "seamtest.pump_no_pi@1",
+                "seamtest.cycle.pump_no_pi@1",
                 modes=(("cycle", ("-stoichiometry", "stoichiometry", -1, 1, 0)),),
             ),
             OF_THE_COUNTS,
         ),
         "backward": (
             pump_planted(
-                "seamtest.pump_backward@1",
+                "seamtest.cycle.pump_backward@1",
                 modes=(("cycle", ("stoichiometry", "-stoichiometry", -1, 1, 1)),),
             ),
             OF_THE_COUNTS,
@@ -2639,7 +2651,7 @@ CORE_PLANTS = {  # {law: {plant: (the planted law, the criteria it must miss, an
     "NKCC": {
         "1:1:1": (
             nkcc_planted(
-                "seamtest.nkcc_1_1_1@1",
+                "seamtest.cycle.nkcc_1_1_1@1",
                 counts=(1, -1, 1, -1, 1, -1),
                 rate=one_anion(NKCC_RATE),
                 electroneutral=False,
@@ -2647,23 +2659,23 @@ CORE_PLANTS = {  # {law: {plant: (the planted law, the criteria it must miss, an
             OF_THE_COUNTS,
         ),
         "no factor": (
-            nkcc_planted("seamtest.nkcc_bare@1", rate=NKCC_RATE._replace(factors=())), OF_THE_FORM
+            nkcc_planted("seamtest.cycle.nkcc_bare@1", rate=NKCC_RATE._replace(factors=())), OF_THE_FORM
         ),
         "one anion in S": (
-            nkcc_planted("seamtest.nkcc_one_anion@1", rate=one_anion(NKCC_RATE)), OF_THE_FORM
+            nkcc_planted("seamtest.cycle.nkcc_one_anion@1", rate=one_anion(NKCC_RATE)), OF_THE_FORM
         ),
         "backward": (
-            nkcc_planted("seamtest.nkcc_backward@1", counts=(-1, 1, -1, 1, -2, 2)), OF_THE_COUNTS
+            nkcc_planted("seamtest.cycle.nkcc_backward@1", counts=(-1, 1, -1, 1, -2, 2)), OF_THE_COUNTS
         ),
     },
     "salt": {
         "no factor": (
-            salt_planted("seamtest.salt_bare@1", rate=SALT_RATE._replace(factors=())), OF_THE_FORM
+            salt_planted("seamtest.cycle.salt_bare@1", rate=SALT_RATE._replace(factors=())), OF_THE_FORM
         ),
         "one anion in S": (
-            salt_planted("seamtest.salt_one_anion@1", rate=one_anion(SALT_RATE)), OF_THE_FORM
+            salt_planted("seamtest.cycle.salt_one_anion@1", rate=one_anion(SALT_RATE)), OF_THE_FORM
         ),
-        "backward": (salt_planted("seamtest.salt_backward@1", sign="-"), OF_THE_COUNTS),
+        "backward": (salt_planted("seamtest.cycle.salt_backward@1", sign="-"), OF_THE_COUNTS),
     },
 }  # fmt: skip
 CORE_LAWS = dict(pump=atp_pump.LAW, NKCC=nkcc.LAW, salt=salt.LAW)
@@ -2765,7 +2777,7 @@ def test_the_pump_and_the_symports_are_registered_with_their_provenance(law):
     assert declared.fuel_kinds == ((transporter.HELD,) if held else ())
     manufactured = "manufactured: the rate form has no outside source"
     assert declared.source.source.startswith(manufactured) == declared.electroneutral == (not held)
-    assert declared.reads == ("rapid_binding@1",) and declared.forms == "base"
+    assert declared.reads == ("cells.binding.rapid_binding@1",) and declared.forms == "base"
     assert step_terms(declared) == ["stage_term", "material_term"][not held :]
 
 
@@ -2956,7 +2968,7 @@ def test_the_four_laws_read_a_closures_free_rows():
             m["species"][-1]["forms"] = [bound]
         m[proton_buffer.MODEL_KEY] = [
             dict(
-                read_id="rapid_binding@1",
+                read_id="cells.binding.rapid_binding@1",
                 ligand_rows=list(binders),
                 binders={"cell_0": [b for b, *_ in binders.values()]},
                 k_on_per_mM_s={b: {s: 1e6} for s, (b, *_) in binders.items()},
@@ -2965,16 +2977,16 @@ def test_the_four_laws_read_a_closures_free_rows():
         return raw
 
     unread = [
-        dataclasses.replace(na_ca.LAW, law_id="seamtest.na_ca_unread@1", reads=()),
-        dataclasses.replace(atp_pump.LAW, law_id="seamtest.pump_unread@1", reads=()),
-        dataclasses.replace(nkcc.LAW, law_id="seamtest.nkcc_unread@1", reads=()),
-        dataclasses.replace(salt.LAW, law_id="seamtest.salt_unread@1", reads=()),
+        dataclasses.replace(na_ca.LAW, law_id="seamtest.cycle.na_ca_unread@1", reads=()),
+        dataclasses.replace(atp_pump.LAW, law_id="seamtest.cycle.pump_unread@1", reads=()),
+        dataclasses.replace(nkcc.LAW, law_id="seamtest.cycle.nkcc_unread@1", reads=()),
+        dataclasses.replace(salt.LAW, law_id="seamtest.cycle.salt_unread@1", reads=()),
     ]
     formless = [
-        dataclasses.replace(na_ca.LAW, law_id="seamtest.na_ca_formless@1", forms=None),
-        dataclasses.replace(atp_pump.LAW, law_id="seamtest.pump_formless@1", forms=None),
-        dataclasses.replace(nkcc.LAW, law_id="seamtest.nkcc_formless@1", forms=None),
-        dataclasses.replace(salt.LAW, law_id="seamtest.salt_formless@1", forms=None),
+        dataclasses.replace(na_ca.LAW, law_id="seamtest.cycle.na_ca_formless@1", forms=None),
+        dataclasses.replace(atp_pump.LAW, law_id="seamtest.cycle.pump_formless@1", forms=None),
+        dataclasses.replace(nkcc.LAW, law_id="seamtest.cycle.nkcc_formless@1", forms=None),
+        dataclasses.replace(salt.LAW, law_id="seamtest.cycle.salt_formless@1", forms=None),
     ]
     raw = world(*(c.entry for c in cases.values()))
     laws = law_registry.BUILTIN.extended(*unread, *formless)
@@ -2986,7 +2998,7 @@ def test_the_four_laws_read_a_closures_free_rows():
         history = impl.STATE_TYPE(*(np.stack(v) for v in zip(state, after, strict=True)))
         impl.check_values(history, spec, steps=np.arange(2))  # Every ledger closes.
         for planted, reason in (
-            (unread, "lack rapid_binding@1"),
+            (unread, "lack cells.binding.rapid_binding@1"),
             (formless, "declares no base forms"),
         ):
             for law, case in zip(planted, cases.values(), strict=True):
@@ -3060,8 +3072,8 @@ def changed(case, **over):
 
 
 THE_PUMP, NEUTRAL = pump_case("Ca", 1, (0.5, 1e-3, 0.1)), pump_case("Y", 4, (0.5, 1.0, 0.1))
-UNSTATED = salt_planted("seamtest.salt_unstated@1", electroneutral=False)
-NKCC_1_1_1 = nkcc_planted("seamtest.nkcc_stated@1", counts=(1, -1, 1, -1, 1, -1))
+UNSTATED = salt_planted("seamtest.cycle.salt_unstated@1", electroneutral=False)
+NKCC_1_1_1 = nkcc_planted("seamtest.cycle.nkcc_stated@1", counts=(1, -1, 1, -1, 1, -1))
 VERSION_1 = tk.population(stoichiometry=4, role="Y")
 FINITE_1 = tk.population(role="Y", fuel=tk.fuel(kind=transporter.FINITE))
 PROTON_1 = tk.population(  # Any monovalent cation is a role there: Na stands in for the proton.
@@ -3099,7 +3111,8 @@ CORE_REFUSALS = {  # name: (the entries, the world's change, the reason, None wh
     "@3's own pump of the same ion": (
         [THE_PUMP.entry],
         functools.partial(own_calcium_pump, species="Ca"),
-        r"moves Ca on membrane_0 beside 'calcium_pump_0' \(cells.ca_atp_mass_action_positive@1\): "
+        r"moves Ca on membrane_0 beside 'calcium_pump_0' "
+        r"\(cells.cycle.ca_atp_mass_action_positive@1\): "
         "one law moves a species by ATP",
     ),
     "@3's own pump of another ion": (
@@ -3313,7 +3326,7 @@ def test_a_population_without_the_term_keeps_its_rows_and_a_world_without_it_its
     the entry and the fields are those of before, and the copy's charged rows have no slope."""
     neutral = general(tk.population())
     bare = dataclasses.replace(
-        na_ca.LAW, law_id="seamtest.na_ca_bare@1", stage_term=None, material_term=None
+        na_ca.LAW, law_id="seamtest.cycle.na_ca_bare@1", stage_term=None, material_term=None
     )
     entries = dict(alone=(), beside=(na_ca_case((0.5, 20.0, 1e-3)).entry,))
     entries["beside the copy"] = (na_ca_case((0.5, 20.0, 1e-3), law=bare.law_id).entry,)
@@ -3344,12 +3357,14 @@ def test_a_row_that_version_1s_proton_buffer_holds_is_refused_to_a_law_with_the_
     same uniport without the term is admitted there, and with it where no buffer holds the row. (The
     general closure's derivative is in the row of the closure's free rows.)"""
     buffered = dataclasses.replace(
-        UNIPORT, law_id="seamtest.buffered_uniport@1", reads=("rapid_proton_buffer@1",)
+        UNIPORT,
+        law_id="seamtest.cycle.buffered_uniport@1",
+        reads=("cells.kind.rapid_proton_buffer@1",),
     )
     termed = dataclasses.replace(
         UNIPORT,
-        law_id="seamtest.termed_uniport@1",
-        reads=("rapid_proton_buffer@1",),
+        law_id="seamtest.cycle.termed_uniport@1",
+        reads=("cells.kind.rapid_proton_buffer@1",),
         material_term="material_term",
     )
 

@@ -3,7 +3,7 @@
 docs/INVENTORY_COUPLING_DESIGN.md §4.4 (A5, Track R) and validation/tissue/
 regulated_availability_references.py. One cell on a held bath with a K-leak population and a
 neutral regulator X (D150's turnover), read at once on the population by
-species_regulated_availability@1, as resolved_pump_composite@1 over resolved_pump_tissue@3. The
+cells.operator.species_regulated_availability@1, as cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3. The
 four arms hold the population's availability at 1 and differ only in the regulator's production
 pulse over [0.2, 0.5) s (pulse_factor 10 or 1) and the coupling switch (1 or 0):
 

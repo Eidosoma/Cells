@@ -11,7 +11,7 @@ Each path refuses two plants, naming the kind and the fields:
 - a field outside the kind, the base model's;
 - a field that another declaration of the same kind resolves.
 
-A legal kind passes all three. The probe is cells.passive_routes@1 on FR-1's closed pair, with
+A legal kind passes all three. The probe is cells.kind.passive_routes@1 on FR-1's closed pair, with
 one state field and one control field of its own per declaration, named by its route count (its
 structure entry here). So declarations of one route and of two routes resolve different fields.
 """

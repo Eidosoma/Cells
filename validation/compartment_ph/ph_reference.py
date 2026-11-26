@@ -98,7 +98,7 @@ class Node:
 
 @dataclass(frozen=True)
 class Pump:
-    """proton_atp_mass_action_positive@1 (§6) with held (maintained) fuel at the cytosol.
+    """cells.cycle.proton_atp_mass_action_positive@1 (§6) with held (maintained) fuel at the cytosol.
     ``reversed_sides``: K2(b), the declared law with its two sides exchanged (protons taken from
     the lumen, saturating on h_L, given to the cytosol); the fuel stays at the cytosol."""
 

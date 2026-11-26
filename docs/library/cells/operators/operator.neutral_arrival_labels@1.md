@@ -1,4 +1,4 @@
-# Arrival-time labels on a substance (`cells.neutral_arrival_labels@1`)
+# Arrival-time labels on a substance (`cells.operator.neutral_arrival_labels@1`)
 
 **In one sentence:** It follows when material of one substance arrived, by keeping each pool's shares of older and newer material, without changing how the substance behaves.
 
@@ -30,8 +30,8 @@ such as charged faces, channels, pumps and site binding, and an exchange of a ce
 | | |
 | --- | --- |
 | Piece | Operator, interface `cells.operator@1` ([its fields](../../DECLARATIONS_FORMAT.md#operators)) |
-| ID | `cells.neutral_arrival_labels@1`; definitions write `neutral_arrival_labels@1` |
-| Runs in | `cells.resolved_pump_composite@1`, its host, which definitions write `resolved_pump_composite@1`. Definitions of `cells.resolved_pump_composite@1` can declare it |
+| ID | `cells.operator.neutral_arrival_labels@1`; definitions write `cells.operator.neutral_arrival_labels@1` |
+| Runs in | `cells.model.resolved_pump_composite@1`, its host. Definitions of `cells.model.resolved_pump_composite@1` can declare it |
 | Where it acts in the step | No part of its own; scheduled by `label_arrivals` |
 | Needs | No law or kind |
 | Provenance | Not yet extracted: the composite's operator contract has no provenance field yet |
@@ -148,8 +148,8 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/operators/species_labels.py`](../../../../src/cells/operators/species_labels.py), class `NeutralArrivalLabels` (`cells.operators.species_labels`).
-- Runs in `cells.resolved_pump_composite@1`.
-- Manifest entry: (operator, `cells.neutral_arrival_labels@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.neutral_arrival_labels@1`.
+- Runs in `cells.model.resolved_pump_composite@1`.
+- Manifest entry: (operator, `cells.operator.neutral_arrival_labels@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.operator.neutral_arrival_labels@1`.
 
 <!-- /generated -->

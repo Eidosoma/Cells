@@ -1,4 +1,4 @@
-"""ph_conditioned_factor@1: the pH factor FR-5's routing door applies to a transfer's rate.
+"""cells.transfer_factor.ph_conditioned_factor@1: the pH factor FR-5's routing door applies to a transfer's rate.
 
 docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §8–§9. A transfer across a compartment's bounding patch is
 open when the compartment is acidic:
@@ -6,9 +6,9 @@ open when the compartment is acidic:
     f(pH) = 1 / (1 + 10^(m (pH - pH50))),     m > 0 (the Hill slope in pH units),
 
 so f = 1/2 at pH50, f -> 1 below it and f -> 0 above it. The pH is the compartment's free proton
-read through its closure (rapid_proton_buffer@1). The routing door combines factors by `multiply`
+read through its closure (cells.kind.rapid_proton_buffer@1). The routing door combines factors by `multiply`
 in declared order (d x f where both are declared); a factor outside [0, 1] refuses the step. The
-factor books nothing; the route it scales (passive_neutral_permeation@1 for a neutral cargo) books
+factor books nothing; the route it scales (cells.route.passive_neutral_permeation@1 for a neutral cargo) books
 material and heat.
 
 Pure functions in the xp style of processes/.
@@ -16,7 +16,7 @@ Pure functions in the xp style of processes/.
 
 import jax.numpy as jnp
 
-LAW_ID = "ph_conditioned_factor@1"
+LAW_ID = "cells.transfer_factor.ph_conditioned_factor@1"
 LN10 = 2.302585092994046
 
 

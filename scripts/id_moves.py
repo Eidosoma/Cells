@@ -1,25 +1,34 @@
-"""The scripted ID rename (D345, D346, D348, D371; docs/ID_HIERARCHY_DESIGN.md §5): the table, the
+"""The scripted ID rename (D345, D346, D371, D383; docs/ID_HIERARCHY_DESIGN.md §5): the table, the
 hazard scan, the token rewriter, the verifier and the collected-ID map. Shaped as D188's
 scripts/source_moves.py is, and built on its git helpers.
 
 Every live piece's ID becomes `cells.<family>.<name>@major`. Names and majors are kept, interface
-and schema IDs keep their names, legacy's own IDs stay bare, and an old ID is refused at parse.
+and schema IDs keep their names, and an old ID is refused at parse. Everything under src/cells is
+live.
 
 **The data** (scripts/moves/):
-- `id-rename-choices.json`, edited by hand: each law interface's family word, the seeds (the IDs
-  that no registry holds, each a live module's constant or the keys of a lookup table), the words
-  that wait for the user, the groups' switches, the IDs kept bare with their reasons, the
-  hash-pinned files and the digest artifacts with their choices, the frozen rules' exceptions, the
-  plants' families, the test IDs the ids rule keeps and the reviewed hazards;
+- `id-rename-choices.json`, edited by hand: the seeds (the IDs that no registry holds, each a live
+  module's constant or the keys of a lookup table, with its family), the IDs kept with their
+  reasons, the hash-pinned files with their choices, the frozen rules' exceptions, the plants'
+  families, the test IDs the ids rule keeps and the reviewed hazards. The family words are not in
+  it: registry/ids.py is their only home;
 - the map, written by `table`: its rows, the kept list and what the rewriter leaves alone;
 - the frozen list, written by `frozen` at a given base.
 
-**The table** has four sources (§5): the registries, loaded in a process of their own as the
-manifest loads them; the seeds; legacy's frozen set; and the reconciliation of every `name@major`
-in scope. It is refused while a live ID is unplaced: one that live src holds (as a literal or, by a
-census of the loaded modules, as a computed value), or that a live model's JSON definition spells,
-and that neither the table nor the kept list holds. It is refused while a word is pending, unless
---rehearsal, which marks the map as not final.
+**The table** has three sources (§5): the registries, loaded in a process of their own as the
+manifest loads them; the seeds; and the reconciliation of every `name@major` in scope. It is
+refused while a live ID is unplaced: one that live src holds (as a literal or, by a census of the
+loaded modules, as a computed value), or that a live model's JSON definition spells, and that
+neither the table nor the kept list holds. It is refused while registry/ids.py lacks a row's word,
+and while a plant's family is not seen, unless --rehearsal, which marks the map as not final.
+
+**A choice that the tree has overtaken is refused, by `check` and by `table`:** a part of the
+choices that the tool does not read; a seed whose constant or table is gone, whose IDs a registry
+row or another seed holds, or whose family is no word; a kept ID that nothing live spells, or that
+a row, an interface or another entry holds; a plant that no file spells, or that a row holds; a
+pin that its file no longer quotes; a path that no tracked file has, as an entry's own, as a pattern
+or cited in a reason; and a family word that registry/ids.py gives two places, as a merge can. A
+registry's row never overrides a choice in silence.
 
 **The plants** (D371 Q8) are the pieces a test or a driver declares for itself. Each gets the
 three-part ID of its own family, in its own files only: the family comes from the type or the
@@ -36,13 +45,13 @@ helper that declares it, or from the choices. The engine's table does not hold t
 No formatting and no hand edit: `rewrap` wraps the lines the move makes too long, for a commit of
 its own. It cuts a plain string that fills a line, where its value stays the same, and then lets
 ruff format the lines around it; `rewrapped` requires the same AST and the same comments.
-`apply --paths` is the same token rule on a lane's own files, outside the scope; --suffix .md adds
-its pages.
+`apply --paths` is the same token rule on a lane's own files, outside the scope, less the files the
+move leaves; --suffix .md adds its pages.
 
-**Its scope** is the tracked Python, JSON, shell and TOML files under src/ (legacy included),
-tests/, validation/, scripts/, examples/ and configs/. Left alone: the frozen files, the pinned
-files and the artifacts whose choice is to leave them, the files listed under keep, scripts/moves/,
-this file, renamed_ids.py and everything outside those folders.
+**Its scope** is the tracked Python, JSON, shell and TOML files under src/, tests/, validation/,
+scripts/, examples/ and configs/. Left alone: the frozen files, the pinned files whose choice is to
+leave them, the files listed under keep, scripts/moves/, this file, renamed_ids.py and everything
+outside those folders.
 
 **The scan** names every place that reads or makes an ID other than as a whole token: computed, cut,
 split over literals, tested or matched in part (by a literal, or through a name, a loop, another
@@ -119,7 +128,7 @@ RENAMED = "src/cells/registry/renamed_ids.py"
 SELF = ("scripts/id_moves.py", "scripts/moves/")
 KEEP_MARK = "id-moves: keep"
 NAMESPACE = "cells"
-LIVE = ("src/cells/", "src/cells/legacy/")  # Live src: under the first, not under the second.
+LIVE = "src/cells/"
 
 WORD = r"[A-Za-z][A-Za-z0-9_]*"
 _ID = rf"(?:{WORD}\.)*{WORD}@[1-9][0-9]*"
@@ -177,12 +186,8 @@ def in_scope(path, choices_scope):
     return path.startswith(dirs) and path.endswith(suffixes)
 
 
-def is_live_src(path):
-    return path.startswith(LIVE[0]) and not path.startswith(LIVE[1])
-
-
 def scope_of(path):
-    return "legacy" if path.startswith(LIVE[1]) else path.split("/")[0]
+    return path.split("/")[0]
 
 
 def text_of(data):
@@ -230,31 +235,25 @@ def load_json(path, kind):
     return doc
 
 
+# The parts of a choices file: those every one holds, and those it may hold.
+CHOICE_PARTS = ("kind", "move", "scope", "seeds", "keep", "pinned", "frozen", "plants", "reviewed")
+MORE_PARTS = ("description", "ids_kept")
+SEED_KEYS = {"module", "name", "family", "keys", "piece", "named_in", "ruling", "note"}
+
+
 def check_choices(doc):
-    """Why a choices file cannot be used (empty: it can)."""
-    out = []
-    words = {*doc["pieces"].values(), *doc["interfaces"].values(), *doc["families"]}
+    """Why a choices file cannot be used (empty: it can), read alone."""
+    out = [f"no part {k!r}" for k in CHOICE_PARTS if k not in doc]
+    out += [f"the tool reads no part {k!r}" for k in doc if k not in (*CHOICE_PARTS, *MORE_PARTS)]
+    if out:
+        return out
     for row in doc["seeds"]:
-        if row["family"] not in words:
-            out.append(f"seed {row['module']}.{row['name']}: no family word {row['family']!r}")
-    for row in doc["words"]:
-        if row["choice"] not in row["choices"]:
-            out.append(f"word {row['module']}.{row['name']}: {row['choice']!r} is not a choice")
-    for name, group in doc["groups"].items():
-        if group["choice"] not in group["choices"]:
-            out.append(f"group {name}: {group['choice']!r} is not one of {group['choices']}")
-        other = group.get("with_group")
-        if other and doc["groups"][other]["choice"] != group["choice"]:
-            out.append(f"group {name} is {group['choice']}, and {other}, ruled with it, is not")
-    for row in doc["seeds"]:
-        if row.get("group") and row["group"] not in doc["groups"]:
-            out.append(f"seed {row['module']}.{row['name']}: no group {row['group']!r}")
-    for row in (*doc["pinned"], *doc["artifacts"]):
+        where = f"seed {row.get('module')}.{row.get('name')}"
+        out += [f"{where}: no {k}" for k in ("module", "name", "family") if k not in row]
+        out += [f"{where}: the tool reads no {k!r}" for k in sorted(set(row) - SEED_KEYS)]
+    for row in doc["pinned"]:
         if row["choice"] not in row["choices"]:
             out.append(f"{row['path']}: {row['choice']!r} is not one of {row['choices']}")
-    for word in (*words, *(w["family"] for w in doc["words"])):
-        if not re.fullmatch(r"[a-z][a-z0-9_]*", word):
-            out.append(f"the family word {word!r} is not a lower-case name")
     return out
 
 
@@ -307,7 +306,7 @@ class Map:
         self.scope = doc["scope"]
         self.test_ids = set(self.scope["test_ids"])
         self.frozen = dict(frozen or {})
-        self.left = dict(doc["left"])  # {path: why}: the pinned, artifact and keep choices.
+        self.left = dict(doc["left"])  # {path: why}: the pinned and keep choices.
 
     def table(self, path):
         """{old: new} of one file: the rows, and the plants that the file declares or names."""
@@ -630,17 +629,17 @@ def verify(mp, base, head, cwd=ROOT):
 # ------------------------------------------------------------------ the engine, in its own process
 
 
-def engine_dump(tree, keys=(), fingerprints=()):
+def engine_dump(tree, keys=()):
     """What the tree's engine holds, read in a process of its own with the tree's src first on its
-    path: the registries as the manifest loads them, the interfaces, legacy's dispatch, the family
-    words of registry/ids.py where the tree has it, the keys of each named lookup table, the law
-    types by name, and the census: every `name@major` reachable from a live module's namespace, so
-    a computed ID is seen too. `fingerprints` names JSON definitions to parse and fingerprint."""
+    path: the registries as the manifest loads them, the interfaces, the family words and the
+    grammar of registry/ids.py, the keys of each named lookup table (None where it is gone), the
+    law types by name, and the census: every `name@major` reachable from a module's namespace, so a
+    computed ID is seen too."""
     env = dict(os.environ, PYTHONPATH=f"{tree}/src:{tree}", PYTHONDONTWRITEBYTECODE="1")
     env.setdefault("JAX_PLATFORMS", "cpu")
     proc = subprocess.run(
         [sys.executable, "-B", str(Path(__file__).resolve()), "_engine", "--tree", str(tree)],
-        input=json.dumps(dict(keys=[list(k) for k in keys], fingerprints=list(fingerprints))),
+        input=json.dumps(dict(keys=[list(k) for k in keys])),
         capture_output=True,
         text=True,
         cwd=str(tree),
@@ -662,7 +661,7 @@ def cmd_engine(args):
     asked = json.loads(sys.stdin.read())
     real, sys.stdout = sys.stdout, sys.stderr  # Nothing but the answer on stdout.
     import cells
-    from cells.registry import declarations, kind_registry, model_table
+    from cells.registry import declarations, ids, kind_registry, model_table
     from cells.registry import laws as law_registry
     from cells.registry import operators as operator_registry
 
@@ -705,23 +704,19 @@ def cmd_engine(args):
                 operator_registry.COMPOSITE_INTERFACE,
             }
         ),
-        legacy=sorted(e["id"] for e in declarations.legacy_entries()),
         composite_interface=operator_registry.COMPOSITE_INTERFACE,
         kind_interface=declarations.KIND_INTERFACE,
-    )
-    try:
-        from cells.registry import ids
-    except ImportError:
-        out["ids"] = None
-    else:
-        out["ids"] = dict(
+        ids=dict(
             law_families=dict(ids.LAW_FAMILIES),
             families=sorted(ids.FAMILIES),
             piece=ids._PIECE.pattern,
-        )
+        ),
+    )
+    places = (*ids.FIXED_FAMILIES, *set(ids.LAW_FAMILIES.values()), *ids.SUBLAW_FAMILIES)
+    out["ids"]["twice"] = sorted(w for w, n in Counter(places).items() if n > 1)
     failed = {}
     for info in pkgutil.walk_packages(cells.__path__, "cells."):
-        if not info.name.startswith("cells.legacy") and not info.name.endswith("__main__"):
+        if not info.name.endswith("__main__"):
             try:
                 importlib.import_module(info.name)
             except Exception as error:  # Reported, never skipped in silence.
@@ -746,9 +741,7 @@ def cmd_engine(args):
             for i, v in enumerate(value):
                 walk(v, f"{where}[{i}]", depth - 1, seen)
         elif isinstance(value, type):
-            if value.__module__.startswith("cells.") and not value.__module__.startswith(
-                "cells.legacy"
-            ):
+            if value.__module__.startswith("cells."):
                 seen.add(id(value))
                 for k, v in list(vars(value).items()):
                     if not k.startswith("__"):
@@ -759,7 +752,7 @@ def cmd_engine(args):
                 walk(getattr(value, f.name, None), f"{where}.{f.name}", depth - 1, seen)
 
     for name, module in sorted(sys.modules.items()):
-        if name.startswith("cells.") and not name.startswith("cells.legacy") and module:
+        if name.startswith("cells.") and module:
             for k, v in list(vars(module).items()):
                 if not k.startswith("__") and not isinstance(v, types.ModuleType):
                     walk(v, f"{name}.{k}", 6, set())
@@ -780,20 +773,10 @@ def cmd_engine(args):
     )
     out["keys"] = {}
     for module, name in asked["keys"]:
-        table = getattr(importlib.import_module(module), name, None)
-        if table is None:
-            raise SystemExit(f"{module} has no {name}")
-        out["keys"][f"{module}.{name}"] = list(table)
-    out["fingerprints"] = {}
-    if asked["fingerprints"]:
-        from cells.definitions.specs import parse_spec
-
-        for path in asked["fingerprints"]:
-            try:
-                data = json.loads((Path(args.tree) / path).read_text())
-                out["fingerprints"][path] = parse_spec(data).fingerprint
-            except Exception as error:
-                out["fingerprints"][path] = f"{type(error).__name__}: {str(error)[:300]}"
+        table = None
+        with contextlib.suppress(ImportError):
+            table = getattr(importlib.import_module(module), name, None)
+        out["keys"][f"{module}.{name}"] = None if table is None else list(table)
     real.write(json.dumps(out) + "\n")
     return 0
 
@@ -932,22 +915,13 @@ class Source:
         """{ID: [site]} of live src's literals."""
         return self.quoted["src"]
 
-    def legacy_model_constants(self):
-        """The models that a module under cells.legacy names as its own."""
-        return {
-            value
-            for (module, name), (value, _) in self.constants.items()
-            if module.startswith("cells.legacy.")
-            and (name == "MODEL_ID" or name.endswith("_MODEL_ID"))
-        }
-
 
 # ------------------------------------------------------------------ the table
 
 
 def _row(declared, piece, family, source, **more):
     return dict(
-        dict(interface=None, host=None, module=None, status="settled", group=None, choice="mint"),
+        dict(interface=None, host=None, module=None),
         old=spellings(declared),
         new=new_id(declared, family),
         family=family,
@@ -957,27 +931,33 @@ def _row(declared, piece, family, source, **more):
     )
 
 
-def law_words(choices, engine):
-    """{interface: word}: the tree's own where registry/ids.py has them (their only home), else the
-    choices'. Refused where the two differ."""
-    ours, ids = choices["interfaces"], engine.get("ids")
-    if ids is None:
-        return ours
-    theirs = ids["law_families"]
-    differ = sorted(i for i in set(ours) & set(theirs) if ours[i] != theirs[i])
-    if differ:
-        raise Refused(f"registry/ids.py and the choices give other words for {differ}")
-    return {**ours, **theirs}
+def seed_values(seed, engine, source, spelled):
+    """(a seed's IDs, why it gives none): a constant's value, or the keys of a lookup table that no
+    row in `spelled` ({spelling: its row's source}) holds."""
+    where = f"the seed {seed['module']}.{seed['name']}"
+    if seed["family"] not in engine["ids"]["families"]:
+        return [], f"{where}: registry/ids.py has no family word {seed['family']!r}"
+    if seed.get("keys"):
+        keys = engine["keys"].get(f"{seed['module']}.{seed['name']}")
+        if not keys:
+            return [], f"{where}: its table is gone or empty"
+        own = [k for k in keys if not set(spellings(k)) & set(spelled)]
+        return own, None if own else f"{where}: other rows hold all {len(keys)} of its keys"
+    found = source.constants.get((seed["module"], seed["name"]))
+    if found is None:
+        return [], f"{where}: the constant is gone"
+    held = next((spelled[s] for s in spellings(found[0]) if s in spelled), None)
+    return [found[0]], f"{where}: {found[0]} is held by the {held}" if held else None
 
 
 def build_rows(choices, engine, source):
-    """(rows, problems): every candidate row, and why one could not be made."""
-    rows, problems, spelled = [], [], set()
-    words, pieces = law_words(choices, engine), choices["pieces"]
+    """(rows, problems): every candidate row, and why one could not be made or is made twice."""
+    rows, problems, spelled = [], [], {}
+    words = engine["ids"]["law_families"]
 
     def add(row):
         rows.append(row)
-        spelled.update(row["old"])
+        spelled.update(dict.fromkeys(row["old"], row["source"]))
 
     for law in engine["laws"]:
         word = words.get(law["interface"])
@@ -1000,7 +980,7 @@ def build_rows(choices, engine, source):
             _row(
                 kind["declared"],
                 "kind",
-                pieces["kind"],
+                "kind",
                 f"kind registry: {kind['model_key']}",
                 interface=engine["kind_interface"],
             )
@@ -1012,7 +992,7 @@ def build_rows(choices, engine, source):
                 _row(
                     op["declared"],
                     "operator",
-                    pieces["operator"],
+                    "operator",
                     f"operator registry: {op['module']}",
                     interface=op.get("interface", interface),
                     host=op.get("host"),
@@ -1024,61 +1004,40 @@ def build_rows(choices, engine, source):
             _row(
                 model["declared"],
                 "model",
-                pieces["model"],
+                "model",
                 f"model table: {model['module']}",
                 module=model["module"],
             )
         )
-    for seed in (*choices["seeds"], *choices["words"]):
-        where = f"{seed['module']}.{seed['name']}"
-        if seed.get("keys"):
-            values = engine["keys"].get(where)
-            if not values:
-                problems.append(f"the seed {where}: no such table, or it is empty")
-                continue
-            values = [v for v in values if not set(spellings(v)) & spelled]
-        else:
-            found = source.constants.get((seed["module"], seed["name"]))
-            if found is None:
-                problems.append(f"the seed {where}: the constant is gone")
-                continue
-            values = [found[0]]
+    for seed in choices["seeds"]:
+        values, why = seed_values(seed, engine, source, spelled)
+        if why:
+            problems.append(why)
+            continue
         for value in values:
-            if set(spellings(value)) & spelled:
-                continue  # A registry holds it now (the block law, once H1a registers it).
-            group, status = seed.get("group"), "settled"
-            choice = seed.get("choice", "mint")
-            if group:
-                status = choices["groups"][group]["status"]
-                choice = choices["groups"][group]["choice"]
-            elif "word" in seed and not seed["decided"]:
-                status = f"word {seed['word']}: {seed['family']}"
             add(
                 _row(
                     value,
                     seed.get("piece", seed["family"]),
                     seed["family"],
-                    f"seed {where}",
+                    f"seed {seed['module']}.{seed['name']}",
                     module=seed["module"],
-                    status=status,
-                    group=group,
-                    choice=choice,
                 )
             )
     rows.sort(key=lambda r: (r["family"], r["new"]))
     return rows, problems
 
 
-def collisions(rows, choices, engine, source, legacy):
-    """The collision report: {check: [findings]}. The first five must be empty; the last lists the
-    old spellings that a schema-named key also carries, for reading."""
+def collisions(rows, engine, source):
+    """The collision report: {check: [findings]}. Every check but the last must be empty; the last
+    lists the old spellings that a schema-named key also carries, for reading."""
     by_new, by_old = defaultdict(set), defaultdict(set)
     for row in rows:
         by_new[row["new"]].add(row["old"][0])
         for old in row["old"]:
             by_old[old].add((row["piece"], row["new"]))
     interfaces = {s for i in engine["interfaces"] for s in spellings(i)}
-    words = {r["family"] for r in rows} | set(choices["families"])
+    words = {r["family"] for r in rows} | set(engine["ids"]["families"])
     dotted = {  # A test spells examples of the grammar: it holds no schema's name of its own.
         i: scope
         for held in (source.quoted, source.json_ids)
@@ -1091,9 +1050,7 @@ def collisions(rows, choices, engine, source, legacy):
         "one spelling naming two pieces": sorted(
             f"{o}: {sorted(p)}" for o, p in by_old.items() if len(p) > 1
         ),
-        "an old spelling equal to an interface or a legacy ID": sorted(
-            o for o in by_old if o in interfaces or o in legacy
-        ),
+        "an old spelling equal to an interface": sorted(o for o in by_old if o in interfaces),
         "an old spelling equal to a new ID": sorted(set(by_old) & set(by_new)),
         "a new ID that the tree already spells": sorted(set(dotted) & set(by_new)),
         "a name of three or more parts whose second part is a family word": sorted(
@@ -1113,47 +1070,40 @@ def collisions(rows, choices, engine, source, legacy):
     }
 
 
+def live_ids(rows, engine, source):
+    """({ID: [site]} that live src holds, as a literal or at run time; {ID: [site]} that a live
+    model's definition spells)."""
+    models = {old for row in rows if row["piece"] == "model" for old in row["old"]}
+    live, spelled = defaultdict(list), defaultdict(list)
+    for i, sites in source.live().items():
+        live[i] += sites
+    for i, where in engine["census"].items():
+        live[i] += [f"{w} (at run time)" for w in where]
+    for path, data in source.json.items():
+        for model, value in definitions(data, models):
+            for key, s in keyed_strings(value):
+                if ID.fullmatch(s):
+                    spelled[s].append(f"{path} (key {key}, model {model})")
+    return live, spelled
+
+
 def reconcile(rows, choices, engine, source):
     """Every ID in scope placed: (kept, unplaced, classes). `kept` is {class: [bare IDs]}; an
     unplaced ID is one that live src holds, or a live model's definition spells, and nothing
     places: [(ID, why, [sites])]."""
     table = {old for row in rows for old in row["old"]}
-    minted = {old for row in rows if row["choice"] == "mint" for old in row["old"]}
     interfaces = {s for i in engine["interfaces"] for s in spellings(i)}
-    models = {old for row in rows if row["piece"] == "model" for old in row["old"]}
     hand = {}
     for cls, entries in choices["keep"]["ids"].items():
         for entry in entries:
             for s in spellings(entry["id"]):
                 hand[s] = cls
-    legacy_models = {
-        s
-        for i in {*engine["legacy"], *source.legacy_model_constants()}
-        for s in spellings(i)
-        if s not in table
-    }
-    live = defaultdict(list)
-    for i, sites in source.live().items():
-        live[i] += sites
-    for i, where in engine["census"].items():
-        live[i] += [f"{w} (at run time)" for w in where]
-    live_definitions = defaultdict(list)
-    for path, data in source.json.items():
-        for model, value in definitions(data, models):
-            for key, s in keyed_strings(value):
-                if ID.fullmatch(s):
-                    live_definitions[s].append(f"{path} (key {key}, model {model})")
-    legacy_only = {
-        i
-        for i in source.quoted["legacy"]
-        if not any(s in live or s in live_definitions or s in table for s in spellings(i))
-        and not any(s in interfaces or s in hand or s in legacy_models for s in spellings(i))
-    }
+    live, live_definitions = live_ids(rows, engine, source)
     unplaced = []
     for held, why in ((live, "live src holds it"),
                       (live_definitions, "a live model's definition spells it")):  # fmt: skip
         for i, sites in sorted(held.items()):
-            if i in table or i in interfaces or i in hand or i in legacy_models:
+            if i in table or i in interfaces or i in hand:
                 continue
             if held is live_definitions and (
                 any(k in SCHEMA_KEYS for k in source.carried.get(i, ())) and i not in live
@@ -1162,15 +1112,8 @@ def reconcile(rows, choices, engine, source):
             unplaced.append((i, why, sites[:4]))
     kept = {
         "interface": sorted({bare(i) for i in engine["interfaces"]}),
-        "legacy model": sorted({bare(i) for i in legacy_models}),
-        "legacy only": sorted({bare(i) for i in legacy_only}),
         **{cls: sorted(bare(e["id"]) for e in es) for cls, es in choices["keep"]["ids"].items()},
     }
-    for row in rows:
-        if row["choice"] == "bare":
-            kept.setdefault(f"left bare: {row['group'] or row['status']}", []).append(
-                bare(row["old"][0])
-            )
     classes = Counter()
     seen = {
         bare(i)
@@ -1180,18 +1123,12 @@ def reconcile(rows, choices, engine, source):
     } | {bare(i) for i in engine["census"]}
     for i in seen:
         all_spellings = spellings(i)
-        if any(s in minted for s in all_spellings):
+        if any(s in table for s in all_spellings):
             classes["the table"] += 1
-        elif any(s in table for s in all_spellings):
-            classes["left bare by a group's switch"] += 1
         elif any(s in interfaces for s in all_spellings):
             classes["interface"] += 1
-        elif any(s in legacy_models for s in all_spellings):
-            classes["legacy's model"] += 1
         elif any(s in hand for s in all_spellings):
             classes["kept: " + next(hand[s] for s in all_spellings if s in hand)] += 1
-        elif any(s in legacy_only for s in all_spellings):
-            classes["legacy only"] += 1
         elif any(s in live or s in live_definitions for s in all_spellings):
             classes["unplaced"] += 1
         else:
@@ -1199,14 +1136,85 @@ def reconcile(rows, choices, engine, source):
     return kept, unplaced, dict(classes)
 
 
+# A path in prose, with a folder: from the checkout's root, or from src/cells.
+CITED = re.compile(r"(?<![\w./-])((?:[\w.-]+/)+[\w.-]+\.(?:py|json|sh|md|toml|tsv))(?![\w/])")
+
+
+def choices_problems(choices, rows, engine, source, files):
+    """What the choices name that the tree has overtaken, beside the seeds (build_rows): a kept ID
+    or a plant that is gone or that another holds, and a path that is gone."""
+    out = [f"registry/ids.py gives the word {w!r} two places" for w in engine["ids"]["twice"]]
+    table = {s: row["source"] for row in rows for s in row["old"]}
+    interfaces = {s for i in engine["interfaces"] for s in spellings(i)}
+    live, spelled = live_ids(rows, engine, source)
+    seen = {}
+    for cls, entries in choices["keep"]["ids"].items():
+        for entry in entries:
+            names = spellings(entry["id"])
+            held = next((table[s] for s in names if s in table), None)
+            if held is None and set(names) & interfaces:
+                held = "interfaces"
+            twice = next((seen[s] for s in names if s in seen), None)
+            if held or twice:
+                out.append(f"kept {entry['id']} ({cls}): held by the {held or twice}")
+            elif not any(s in live or s in spelled for s in names):
+                out.append(f"kept {entry['id']} ({cls}): nothing live spells it")
+            seen.update(dict.fromkeys(names, f"kept list ({cls})"))
+    plants, tokens = choices["plants"], set()
+    for path, (_, data) in files.items():
+        if path.startswith(("tests/", "validation/", "scripts/")) and path.endswith(".py"):
+            if AN_ID.search(data) and not path.startswith(SELF):
+                tokens.update(m[1] for m in TOKEN.finditer(text_of(data) or ""))
+    for identifier, said in {**plants["families"], **plants.get("not_plants", {})}.items():
+        held = next((table[s] for s in spellings(identifier) if s in table), None)
+        if held:
+            out.append(f"plant {identifier}: held by the {held}")
+        elif identifier not in tokens:
+            out.append(f"plant {identifier}: no test and no driver spells it")
+        if isinstance(said, dict):
+            out += [f"plant {identifier}: {p} is gone" for p in said if p != "*" and p not in files]
+    frozen = choices["frozen"]
+    paths = [("scope", p) for p in choices["scope"]["test_ids"]]
+    for part, entries in (("pinned", choices["pinned"]), ("keep", choices["keep"]["files"]),
+                          ("frozen, live", frozen["live"]),
+                          ("frozen, declared", frozen["declared"])):  # fmt: skip
+        paths += [(part, r["path"]) for r in entries]
+    for r in choices["pinned"]:
+        paths += [(f"pinned {r['path']}, by", p) for p in r.get("pinned_by", ())]
+        own = digests_of(files[r["path"]][1]).values() if r["path"] in files else ()
+        for p in r.get("pinned_by", ()) if own else ():
+            held = HEX.findall(text_of(files[p][1]) or "") if p in files else None
+            if held is not None and not any(d.startswith(h) for h in held for d in own):
+                out.append(f"pinned {r['path']}: {p} quotes no hash of it")
+    paths += [("ids_kept", r["test"].split("::")[0]) for r in choices.get("ids_kept", ())]
+    out += [f"{part}: {p} is gone" for part, p in paths if p not in files]
+    out += [
+        f"reviewed: no file is {r['path']} ({r['reason']})"
+        for r in choices["reviewed"]
+        if not any(fnmatchcase(p, r["path"]) for p in files)
+    ]
+    for part in ("seeds", "keep", "pinned", "frozen", "plants", "reviewed", "ids_kept"):
+        for text in json_strings(prose_of(choices.get(part, ()))):
+            for m in CITED.finditer(text):
+                if m[1] not in files and LIVE + m[1] not in files:
+                    out.append(f"{part}: a reason cites {m[1]}, which is gone: {text[:80]}")
+    return out
+
+
+def prose_of(value):
+    """The reasons, notes and rulings in a part of the choices, with nothing else."""
+    if isinstance(value, dict):
+        return [
+            x if isinstance(x, str) else prose_of(x)
+            for k, x in value.items()
+            if not isinstance(x, str) or k in ("reason", "note", "ruling", "named_in")
+        ]
+    return [prose_of(x) for x in value] if isinstance(value, (list, tuple)) else []
+
+
 def left_alone(choices):
     """{path: why} of the files in scope that the choices leave as they are."""
     out = {r["path"]: "pinned by hash, left" for r in choices["pinned"] if r["choice"] == "leave"}
-    out.update(
-        (r["path"], "a digest artifact, left to the pre-rename snapshot")
-        for r in choices["artifacts"]
-        if r["choice"] == "keep_on_snapshot"
-    )
     out.update((r["path"], f"kept: {r['reason']}") for r in choices["keep"]["files"])
     return out
 
@@ -1215,35 +1223,27 @@ def make_map(choices, engine, source, revision, rehearsal):
     """(map, rows, report): refused only by the caller, which reads the report."""
     rows, problems = build_rows(choices, engine, source)
     kept, unplaced, classes = reconcile(rows, choices, engine, source)
-    legacy = {s for cls in ("legacy model", "legacy only") for i in kept[cls] for s in spellings(i)}
-    found = collisions(rows, choices, engine, source, legacy)
-    pending = sorted({r["status"] for r in rows if r["status"].startswith("word")})
-    waiting = sorted(n for n, g in choices["groups"].items() if not g["confirmed"])
     doc = dict(
         kind=MAP_KIND,
         move=choices["move"],
         final=not rehearsal,
         revision=revision,
-        pending=dict(words=pending, groups=waiting),
         scope=choices["scope"],
-        rows=[{k: v for k, v in r.items() if k not in ("choice", "group")} for r in rows
-              if r["choice"] == "mint"],
-        bare=[{k: v for k, v in r.items() if k != "choice"} for r in rows
-              if r["choice"] == "bare"],
+        rows=rows,
         left=left_alone(choices),
         kept=kept,
         plants=[],
-    )  # fmt: skip
+    )
     return doc, rows, dict(
-        problems=problems, unplaced=unplaced, collisions=found, pending=pending, waiting=waiting,
-        classes=classes, not_imported=engine["not_imported"], ids=engine.get("ids"),
+        problems=problems, unplaced=unplaced, collisions=collisions(rows, engine, source),
+        classes=classes, not_imported=engine["not_imported"],
     )  # fmt: skip
 
 
-def engine_types(choices, engine):
+def engine_types(engine):
     """What places a plant by its declaring type: the law types and the modules that declare a law,
     each with its family, and the kinds' and operators' types."""
-    words = law_words(choices, engine)
+    words = engine["ids"]["law_families"]
     return dict(
         laws={t: words[i] for t, i in sorted(engine["law_types"].items()) if i in words},
         kinds=["Kind"],
@@ -1254,7 +1254,7 @@ def engine_types(choices, engine):
     )
 
 
-TSV = ("old", "new", "family", "piece", "interface", "source", "status")
+TSV = ("old", "new", "family", "piece", "interface", "source")
 
 
 def tsv_lines(rows):
@@ -1262,14 +1262,14 @@ def tsv_lines(rows):
     for row in rows:
         for old in row["old"]:
             values = [old, row["new"], row["family"], row["piece"], row["interface"],
-                      row["source"], row.get("status", "settled")]  # fmt: skip
+                      row["source"]]  # fmt: skip
             out.append("\t".join(str(v) for v in values))
     return ["\t".join(TSV), *sorted(out)]
 
 
 def compare_tables(ours, theirs):
-    """The differences of two table.tsv files, row by row: old spelling, new ID, family, status
-    (the piece and the interface are listed apart)."""
+    """The differences of two table.tsv files, row by row: old spelling, new ID, family (the piece
+    and the interface are listed apart)."""
 
     def read(lines):
         head, *rest = lines
@@ -1280,7 +1280,7 @@ def compare_tables(ours, theirs):
     out = dict(only_ours=sorted(set(a) - set(b)), only_theirs=sorted(set(b) - set(a)), differ=[],
                piece_or_interface=[])  # fmt: skip
     for old in sorted(set(a) & set(b)):
-        for key in ("new", "family", "status"):
+        for key in ("new", "family"):
             if a[old][key] != b[old][key]:
                 out["differ"].append([old, key, a[old][key], b[old][key]])
         for key in ("piece", "interface"):
@@ -2372,7 +2372,7 @@ class Scanner:
         elif strange and not kept_lines(text, True):  # A decoded ID that no text rule rewrote.
             for n in strange:
                 self.add("decoded", path, n.lineno, source(n), "an old spelling in a decoded value")
-        if is_live_src(path):
+        if path.startswith(LIVE):
             for i, line in enumerate(lines, 1):
                 if ORDER.search(line) and "qualified(" not in line:
                     self.add("order", path, i, line.strip(), "a sort over declared spellings")
@@ -2705,7 +2705,7 @@ def run_scan(files, mp, choices):
     scanner.leave(report["left"])
     hazards = scanner.scan()
     pins, words = hash_pins(files, mp, changed)  # Only the files the move changes.
-    listed = {r["path"]: r for r in (*choices["pinned"], *choices["artifacts"])}
+    listed = {r["path"]: r for r in choices["pinned"]}
     for path, kind, by in pins:
         row = listed.get(path)
         what = f"its {kind} is quoted by {', '.join(by)}"
@@ -2810,35 +2810,25 @@ def stale_map(mp, tree, rev):
 
 
 def key_seeds(choices):
-    return [
-        (s["module"], s["name"]) for s in (*choices["seeds"], *choices["words"]) if s.get("keys")
-    ]
+    return [(s["module"], s["name"]) for s in choices["seeds"] if s.get("keys")]
 
 
 def cmd_check(args):
     choices_path, _, frozen_path = data_paths(args)
     choices = load_choices(choices_path)
     files = worktree_files(args.tree)
-    source = Source(files, choices["scope"], "src/")
-    problems = [
-        f"{s['module']}.{s['name']}: the constant is gone"
-        for s in (*choices["seeds"], *choices["words"])
-        if not s.get("keys") and (s["module"], s["name"]) not in source.constants
-    ]
-    problems += [
-        f"{r['path']}: not a tracked file"
-        for r in (*choices["pinned"], *choices["artifacts"], *choices["keep"]["files"],
-                  *choices["frozen"]["live"], *choices["frozen"]["declared"])
-        if r["path"] not in files
-    ]  # fmt: skip
+    source = Source(files, choices["scope"])
+    engine = engine_dump(args.tree, key_seeds(choices))
+    rows, problems = build_rows(choices, engine, source)
+    problems += choices_problems(choices, rows, engine, source, files)
     print(
         json.dumps(
             dict(
+                rows=len(rows),
                 seeds=len(choices["seeds"]),
-                words=len(choices["words"]),
-                groups={n: g["choice"] for n, g in choices["groups"].items()},
+                kept={k: len(v) for k, v in choices["keep"]["ids"].items()},
                 pinned=dict(Counter(r["choice"] for r in choices["pinned"])),
-                artifacts=dict(Counter(r["choice"] for r in choices["artifacts"])),
+                reviewed=len(choices["reviewed"]),
                 frozen=len(read_frozen(frozen_path)),
                 problems=problems,
             ),
@@ -2851,16 +2841,12 @@ def cmd_check(args):
 def cmd_table(args):
     choices_path, _, _ = data_paths(args)
     choices = load_choices(choices_path)
-    for name in args.mint or ():
-        if name not in choices["groups"]:
-            raise Refused(f"no group {name}")
-        choices["groups"][name]["choice"] = "mint"
     files = worktree_files(args.tree)
     source = Source(files, choices["scope"])
     engine = engine_dump(args.tree, key_seeds(choices))
     revision = revision_of(args.tree)
     doc, rows, report = make_map(choices, engine, source, revision, args.rehearsal)
-    doc["types"] = engine_types(choices, engine)
+    doc["types"] = engine_types(engine)
     planted, by_hand = Plants(
         files,
         Map(doc, frozen_list(args.tree, data_paths(args)[2], choices)),
@@ -2871,6 +2857,7 @@ def cmd_table(args):
         doc["plants"] = planted
     found = report["collisions"]
     stops = [f"a piece or a seed: {p}" for p in report["problems"]]
+    stops += [f"a choice: {p}" for p in choices_problems(choices, rows, engine, source, files)]
     stops += [f"a module did not import: {m}: {e}" for m, e in report["not_imported"].items()]
     stops += [f"unplaced: {i} ({why}): {'; '.join(sites)}" for i, why, sites in report["unplaced"]]
     stops += [
@@ -2879,19 +2866,14 @@ def cmd_table(args):
         if not check.startswith("listed")
         for item in items
     ]
-    ids = report["ids"]
-    if ids is not None:  # The tree has the grammar module: the new IDs must keep it.
-        piece = re.compile(ids["piece"])
-        absent = sorted({r["family"] for r in doc["rows"]} - set(ids["families"]))
-        bad = [r["new"] for r in doc["rows"] if not piece.fullmatch(r["new"])]
-        report["words_that_ids_py_lacks"] = absent
-        stops += [f"registry/ids.py's pattern refuses {n}" for n in bad]
-        if absent and not args.rehearsal:
-            stops.append(f"registry/ids.py has no family word {', '.join(absent)}")
+    ids = engine["ids"]  # The grammar module: the new IDs keep it.
+    piece = re.compile(ids["piece"])
+    stops += [f"registry/ids.py's pattern refuses {r['new']}" for r in doc["rows"]
+              if not piece.fullmatch(r["new"])]  # fmt: skip
+    absent = sorted({r["family"] for r in doc["rows"]} - set(ids["families"]))
+    stops += [f"registry/ids.py has no family word {w}" for w in absent]
     if not args.rehearsal:
         stops += [f"a plant's family is not seen: {i} ({why}): {s[0]}" for i, why, s in by_hand]
-        stops += [f"a word is pending: {w}" for w in report["pending"]]
-        stops += [f"the group {g} waits for its confirmation" for g in report["waiting"]]
     print(
         json.dumps(
             dict(
@@ -2899,16 +2881,11 @@ def cmd_table(args):
                 final=doc["final"],
                 rows=len(doc["rows"]),
                 old_spellings=sum(len(r["old"]) for r in doc["rows"]),
-                left_bare=len(doc["bare"]),
-                candidate_rows=len(rows),
                 by_family=dict(Counter(r["family"] for r in doc["rows"])),
-                by_status=dict(Counter(r["status"] for r in rows)),
                 kept={k: len(v) for k, v in doc["kept"].items()},
                 classes=report["classes"],
-                pending=doc["pending"],
                 plants=dict(Counter(r["family"] for r in planted)),
                 plants_by_hand=[f"{i} ({why}): {s[0]}" for i, why, s in by_hand],
-                words_that_ids_py_lacks=report.get("words_that_ids_py_lacks"),
                 collisions=found,
             ),
             indent=1,
@@ -3093,7 +3070,9 @@ def apply_paths(tree, files, mp, args):
     for path, (_, data) in files.items():
         if not any(path == w or path.startswith(w + "/") for w in wanted):
             continue
-        text = text_of(data) if path.endswith(suffixes) and path not in mp.frozen else None
+        if path in mp.frozen or path in mp.left or path == RENAMED or path.startswith(SELF):
+            continue  # What the move leaves, a folder's name does not reach either.
+        text = text_of(data) if path.endswith(suffixes) else None
         if text is not None and mp.text(path, text) != text:
             found[path] = mp.text(path, text)
     for path, text in found.items():
@@ -3462,15 +3441,9 @@ def _plant_choices(**more):
             suffixes=[".py", ".json", ".sh", ".toml"],
             test_ids=["tests/record.json"],
         ),
-        interfaces={"cells.wave_law@1": "wave", "cells.pump_law@1": "pump"},
-        pieces=dict(kind="kind", operator="operator", model="model"),
-        families=["kind", "operator", "model", "solver"],
         seeds=[dict(module="cells.steps", name="METHOD_ID", family="solver")],
-        words=[],
-        groups={},
         keep=dict(ids={}, files=[]),
         pinned=[],
-        artifacts=[],
         frozen=dict(live=[], declared=[], owners={}),
         plants=dict(apply=True, families={}),
         reviewed=[],
@@ -3492,10 +3465,14 @@ def _plant_engine(**more):
         family_operators=[],
         models=[dict(declared="host@3", type="inner", module="m")],
         interfaces=["cells.wave_law@1", "cells.pump_law@1", "cells.kind@1", "cells.operator@1"],
-        legacy=["old_tissue@4"],
         composite_interface="cells.operator@1",
         kind_interface="cells.kind@1",
-        ids=None,
+        ids=dict(
+            law_families={"cells.wave_law@1": "wave", "cells.pump_law@1": "pump"},
+            families=["kind", "model", "operator", "pump", "solver", "wave"],
+            piece=NEW.pattern,
+            twice=[],
+        ),
         census={"wave_mh@1": ["cells.laws.wave.LAW_ID"], "imex_two@1": ["cells.steps.METHOD_ID"]},
         keys={},
         not_imported={},
@@ -3511,9 +3488,6 @@ _PLANTED = {
         'LAW_ID = "wave_mh@1"\nINTERFACE = "cells.wave_law@1"\nFORMAT = "cells.declarations@2"\n'
     ),
     "src/cells/steps.py": 'METHOD_ID = "imex_two@1"\n',
-    "src/cells/legacy/__init__.py": (
-        'MODEL_ID = "old_tissue@4"\nLAW = "wave_mh@1"\nOWN = "er_x@1"\n'
-    ),
     "tests/test_wave.py": (
         "from cells.laws import wave\n\n"
         "ROWS = {'cells.wave_mh@1': 1, \"wave_mh@10\": 2, 'xwave_mh@1': 3, 'wave_mh@1b': 4}\n"
@@ -3604,64 +3578,27 @@ def _selftest_table(checks):
     checks["table: an ID in a live model's definition that nothing places is refused"] = [
         i for i, *_ in _planted_map(defined, placed)[2]["unplaced"]
     ] == ["odd_law@1"]
-    both = dict(files, **{"src/cells/y.py": ("100644", b'PASSIVE = "er_x@1"\n')})
-    checks["table: an ID that legacy and a live module both hold is not legacy's"] = [
-        i for i, *_ in _planted_map(both, placed)[2]["unplaced"]
-    ] == ["er_x@1"] and "er_x@1" in _planted_map(files, placed)[0].doc["kept"]["legacy only"]
-    checks["table: legacy's models and interfaces are kept"] = (
-        "old_tissue@4" in mp.doc["kept"]["legacy model"]
-        and "wave_law@1" in mp.doc["kept"]["interface"]
-        and "old_tissue@4" not in mp.new
+    checks["table: an interface is kept, and an ID that nothing live holds is in no row"] = (
+        "wave_law@1" in mp.doc["kept"]["interface"] and "old_tissue@4" not in mp.new
     )
-    gone = _plant_choices(seeds=[dict(module="cells.steps", name="GONE", family="solver")])
-    checks["table: a seed whose constant is gone is a problem"] = any(
-        "the constant is gone" in x for x in _planted_map(files, gone)[2]["problems"]
-    )
-    worded = _plant_choices(interfaces={"cells.wave_law@1": "wave"})
+    ids = dict(_plant_engine()["ids"], law_families={"cells.wave_law@1": "wave"})
     checks["table: an interface without a word is a problem"] = any(
         "no family word for cells.pump_law@1" in x
-        for x in _planted_map(files, worded)[2]["problems"]
+        for x in _planted_map(files, placed, _plant_engine(ids=ids))[2]["problems"]
     )
-    held = _plant_engine()
-    held["laws"].append(
-        dict(declared="imex_two@1", interface="cells.wave_law@1", host="h", module="m")
-    )
-    checks["table: a seed that a registry holds is the registry's row"] = [
-        r["piece"] for r in _planted_map(files, placed, held)[1] if "imex_two@1" in r["old"]
-    ] == ["law"]
     twin = _plant_engine(operators=[dict(declared="wave_mh@1", module="m")])
-    _, _, rep = _planted_map(files, placed, twin) if False else (None, None, None)
     rows2, _ = build_rows(placed, twin, Source(files, placed["scope"]))
-    found = collisions(rows2, placed, twin, Source(files, placed["scope"]), set())
+    found = collisions(rows2, twin, Source(files, placed["scope"]))
     checks["table: one spelling naming two pieces is a collision"] = bool(
         found["one spelling naming two pieces"]
     )
+    clash = _plant_engine(interfaces=["cells.wave_law@1", "cells.wash@1"])
+    checks["table: an old spelling equal to an interface is a collision"] = collisions(
+        rows, clash, Source(files, placed["scope"])
+    )["an old spelling equal to an interface"] == ["cells.wash@1", "wash@1"]
     checks["map: one old spelling with two new IDs is refused"] = _refused(
         lambda: Map(dict(kind=MAP_KIND, final=True, left={}, scope=placed["scope"], rows=rows2)),
         "renamed to both",
-    )
-    group = dict(
-        g=dict(choice="bare", choices=["mint", "bare"], confirmed=False, status="pending the lead")
-    )
-    seeds = [dict(module="cells.steps", name="METHOD_ID", family="solver", group="g")]
-    switched = _plant_choices(keep=keep, groups=group, seeds=seeds)
-    bare_map, bare_rows, bare_report = _planted_map(files, switched)
-    checks["table: a group left bare is on the kept list and is not renamed"] = (
-        "imex_two@1" not in bare_map.new
-        and bare_map.doc["kept"]["left bare: g"] == ["imex_two@1"]
-        and bare_report["unplaced"] == []
-        and bare_report["waiting"] == ["g"]
-        and len(bare_rows) == 6
-    )
-    word = dict(module="cells.steps", name="METHOD_ID", family="solver", word="new", decided=False,
-                choice="mint", choices=["mint"])  # fmt: skip
-    pending = _plant_choices(keep=keep, seeds=[], words=[word])
-    checks["table: a pending word is reported"] = _planted_map(files, pending)[2]["pending"] == [
-        "word new: solver"
-    ]
-    ids = dict(law_families={"cells.wave_law@1": "ripple"}, families=[], piece="x")
-    checks["table: the tree's grammar module and the choices must agree"] = _refused(
-        lambda: _planted_map(files, placed, _plant_engine(ids=ids)), "give other words"
     )
     ours = tsv_lines(rows)
     theirs = [x.replace("cells.wave.wave_mh@1", "cells.ripple.wave_mh@1") for x in ours]
@@ -3684,7 +3621,7 @@ def _selftest_rewriter(checks):
         "ROWS = {'cells.wave.wave_mh@1': 1, \"wave_mh@10\": 2, 'xwave_mh@1': 3, 'wave_mh@1b': 4}"
         in wave
     )
-    checks["IDs inside a longer string; a legacy ID is left alone"] = (
+    checks["IDs inside a longer string; an ID that no row holds is left alone"] = (
         'PROSE = "cells.wave.wave_mh@1, cells.model.host@3 and cells.pump.ion_pump@1; '
         'old_tissue@4 stays"' in wave
     )
@@ -3705,11 +3642,9 @@ def _selftest_rewriter(checks):
         and report["pages"]
         == [("docs/library/cells/laws/wave_mh@1.md", "docs/library/cells/laws/wave.wave_mh@1.md")]
     )
-    checks["interface, schema and legacy IDs keep their names"] = (
+    checks["interface and schema IDs keep their names"] = (
         'INTERFACE = "cells.wave_law@1"\nFORMAT = "cells.declarations@2"'
         in text["src/cells/laws/wave.py"]
-        and text["src/cells/legacy/__init__.py"]
-        == 'MODEL_ID = "old_tissue@4"\nLAW = "cells.wave.wave_mh@1"\nOWN = "er_x@1"\n'
     )
     checks["docstrings are rewritten as any text is"] = (
         '"""The wave law, cells.wave.wave_mh@1 (cells.wave_law@1)."""'
@@ -4257,7 +4192,8 @@ def _selftest_end_to_end(checks):
         choices = _plant_choices(frozen=dict(
             live=[dict(path="validation/live.py", reason="a live tool")],
             declared=[dict(path="validation/frozen/judge.py", reason="declared")],
-            owners={}))  # fmt: skip
+            owners={}), pinned=[
+            dict(path="configs/world.json", choice="leave", choices=["leave"])])  # fmt: skip
         mp, _, _ = _planted_map(files, choices, rehearsal=True)
         paths = {n: Path(data) / f"{n}.json" for n in ("choices", "map")}
         paths["choices"].write_text(json.dumps(choices))
@@ -4334,6 +4270,14 @@ def _selftest_end_to_end(checks):
             and (tree / "docs/NOTE.md").read_text() == "cells.wave.wave_mh@1 stays here\n"
         )
         run("commit", "-q", "-am", "docs")
+        world = (tree / "configs/world.json").read_bytes()
+        code, _ = call("apply", "--rehearsal", "--paths", "configs", "validation")
+        checks["apply --paths: a folder's name does not reach what the move leaves"] = (
+            code == 0
+            and world == files["configs/world.json"][1]
+            and (tree / "configs/world.json").read_bytes() == world
+            and (tree / "validation/frozen/judge.py").read_text() == 'LAW = "wave_mh@1"\n'
+        )
         code, _ = call("apply", "--rehearsal", "--paths", "lean")
         checks["apply --paths: a lane's own files, outside the scope, by the token rule alone"] = (
             code == 0 and (tree / "lean/claim.py").read_text() == 'LAW = "cells.wave.wave_mh@1"\n'
@@ -4341,38 +4285,208 @@ def _selftest_end_to_end(checks):
 
 
 def _selftest_choices(checks):
-    checks["choices: a choice outside its list, and two groups ruled apart, are refused"] = (
-        check_choices(_plant_choices()) == []
-        and any("is not one of" in x for x in check_choices(
-            _plant_choices(pinned=[dict(path="p", choice="x", choices=["leave"])])))
-        and any("ruled with it" in x for x in check_choices(_plant_choices(groups=dict(
-            a=dict(choice="mint", choices=["mint", "bare"], confirmed=True, status="s",
-                   with_group="b"),
-            b=dict(choice="bare", choices=["mint", "bare"], confirmed=True, status="s")))))
-    )  # fmt: skip
+    checks["choices: a choice outside its list is refused"] = check_choices(
+        _plant_choices()
+    ) == [] and any(
+        "is not one of" in x
+        for x in check_choices(
+            _plant_choices(pinned=[dict(path="p", choice="x", choices=["leave"])])
+        )
+    )
+    group = dict(g=dict(choice="bare"))
+    checks["choices: a part that the tool does not read, as a group, is refused; so is a lack"] = (
+        check_choices(_plant_choices(groups=group)) == ["the tool reads no part 'groups'"]
+        and check_choices({k: v for k, v in _plant_choices().items() if k != "seeds"})
+        == ["no part 'seeds'"]
+    )
+    grouped = dict(module="cells.steps", name="METHOD_ID", family="solver", group="g")
+    checks["choices: a seed's key that the tool does not read, as its group, is refused"] = (
+        check_choices(_plant_choices(seeds=[grouped]))
+        == ["seed cells.steps.METHOD_ID: the tool reads no 'group'"]
+        and check_choices(_plant_choices(seeds=[dict(module="m", name="N")]))
+        == ["seed m.N: no family"]
+    )
     choices = _plant_choices(
         pinned=[dict(path="validation/live.py", kind="data", choice="leave", choices=["leave"])],
-        artifacts=[
-            dict(path="configs/world.json", choice="keep_on_snapshot", choices=["keep_on_snapshot"])
-        ],
         keep=dict(ids={}, files=[dict(path="scripts/run.sh", reason="a planted keep")]),
     )
     files = _planted_files()
     mp, _, _ = _planted_map(files, choices)
     out, report = transform(files, mp)
-    kept = ("validation/live.py", "configs/world.json", "scripts/run.sh")
-    checks["choices: a pinned, an artifact and a kept file are left, and counted"] = all(
+    kept = ("validation/live.py", "scripts/run.sh")
+    checks["choices: a pinned and a kept file are left, and counted"] = all(
         out[p] == files[p] for p in kept
     ) and {p: why for p, (why, _) in report["left"].items()} == {
         "validation/live.py": "pinned by hash, left",
-        "configs/world.json": "a digest artifact, left to the pre-rename snapshot",
         "scripts/run.sh": "kept: a planted keep",
     }
+
+
+def _selftest_overtaken(checks):
+    """A planted case for each choice that the tree has overtaken: gone, or held by another."""
+    files = _planted_files()
+    files["tests/test_plant.py"] = ("100644", b'LAW = "tests.own@1"\n')
+    pin = hashlib.sha256(files["validation/live.py"][1]).hexdigest()
+    files["configs/pins.json"] = ("100644", json.dumps({"validation/live.py": pin}).encode())
+    kept_format = dict(id="cells.declarations@2", reason="a format (laws/wave.py FORMAT)")
+
+    def problems(engine=None, files=files, **more):
+        choices = _plant_choices(**more)
+        engine = engine or _plant_engine()
+        source = Source(files, choices["scope"])
+        rows, found = build_rows(choices, engine, source)
+        return found + choices_problems(choices, rows, engine, source, files)
+
+    def keep(*ids, where="format", **more):
+        return dict(keep=dict(ids={where: list(ids)}, files=[]), **more)
+
+    def seed(**more):
+        return dict(dict(module="cells.steps", name="METHOD_ID", family="solver"), **more)
+
+    entry = dict(choice="leave", choices=["leave"])
+    whole = dict(
+        **keep(kept_format),
+        seeds=[seed(note="scripts/run.sh runs it")],
+        pinned=[dict(entry, path="validation/live.py", pinned_by=["configs/pins.json"])],
+        frozen=dict(
+            live=[dict(path="validation/live.py", reason="r")],
+            declared=[dict(path="validation/frozen/judge.py", reason="r")],
+            owners={},
+        ),
+        plants=dict(apply=True, families={"tests.own@1": {"tests/test_plant.py": "wave"}}),
+        reviewed=[dict(cls=["cut"], path="validation/*.py", text="x", reason="r")],
+        ids_kept=[dict(test="tests/test_wave.py::test_a", reason="r")],
+    )
+    checks["overtaken: choices that the tree bears out have no problem"] = problems(**whole) == []
+    planted = {
+        "a seed whose constant is gone": (
+            dict(seeds=[seed(name="GONE")]),
+            "the seed cells.steps.GONE: the constant is gone",
+        ),
+        "a seed whose table is gone": (
+            dict(seeds=[seed(name="TABLE", keys=True)]),
+            "the seed cells.steps.TABLE: its table is gone or empty",
+        ),
+        "a seed that another seed holds": (
+            dict(seeds=[seed(), seed()]),
+            "the seed cells.steps.METHOD_ID: imex_two@1 is held by the seed cells.steps.METHOD_ID",
+        ),
+        "a seed whose family is no word": (
+            dict(seeds=[seed(family="ripple")]),
+            "the seed cells.steps.METHOD_ID: registry/ids.py has no family word 'ripple'",
+        ),
+        "a kept ID that nothing live spells": (
+            keep(kept_format, dict(id="cells.declarations@1", reason="r")),
+            "kept cells.declarations@1 (format): nothing live spells it",
+        ),
+        "a kept ID that a registry holds": (
+            keep(dict(id="wave_mh@1", reason="r")),
+            "kept wave_mh@1 (format): held by the law registry: m",
+        ),
+        "a kept ID that a seed holds": (
+            keep(dict(id="cells.imex_two@1", reason="r")),
+            "kept cells.imex_two@1 (format): held by the seed cells.steps.METHOD_ID",
+        ),
+        "a kept ID that is an interface": (
+            keep(dict(id="wave_law@1", reason="r")),
+            "kept wave_law@1 (format): held by the interfaces",
+        ),
+        "a kept ID given twice": (
+            keep(kept_format, kept_format),
+            "kept cells.declarations@2 (format): held by the kept list (format)",
+        ),
+        "a plant that no file spells": (
+            dict(plants=dict(apply=True, families={"tests.gone@1": "wave"})),
+            "plant tests.gone@1: no test and no driver spells it",
+        ),
+        "a plant that a row holds": (
+            dict(plants=dict(apply=True, families={"host@3": "wave"})),
+            "plant host@3: held by the model table: m",
+        ),
+        "a plant's own file that is gone": (
+            dict(plants=dict(apply=True, families={"tests.own@1": {"tests/gone.py": "wave"}})),
+            "plant tests.own@1: tests/gone.py is gone",
+        ),
+        "a pinned path that is gone": (
+            dict(pinned=[dict(entry, path="validation/gone.py")]),
+            "pinned: validation/gone.py is gone",
+        ),
+        "a pin that its file no longer quotes": (
+            dict(
+                pinned=[
+                    dict(entry, path="validation/frozen/judge.py", pinned_by=["configs/pins.json"])
+                ]
+            ),
+            "pinned validation/frozen/judge.py: configs/pins.json quotes no hash of it",
+        ),
+        "a pin's own file that is gone": (
+            dict(pinned=[dict(entry, path="validation/live.py", pinned_by=["configs/no.json"])]),
+            "pinned validation/live.py, by: configs/no.json is gone",
+        ),
+        "a kept file that is gone": (
+            dict(keep=dict(ids={}, files=[dict(path="scripts/gone.sh", reason="r")])),
+            "keep: scripts/gone.sh is gone",
+        ),
+        "a live exception that is gone": (
+            dict(frozen=dict(live=[dict(path="validation/x.py", reason="r")], declared=[])),
+            "frozen, live: validation/x.py is gone",
+        ),
+        "a declared file that is gone": (
+            dict(frozen=dict(live=[], declared=[dict(path="validation/x.py", reason="r")])),
+            "frozen, declared: validation/x.py is gone",
+        ),
+        "a review of no file": (
+            dict(reviewed=[dict(cls=["cut"], path="validation/no_*.py", text="x", reason="why")]),
+            "reviewed: no file is validation/no_*.py (why)",
+        ),
+        "a record of test IDs that is gone": (
+            dict(scope=dict(_plant_choices()["scope"], test_ids=["tests/gone.json"])),
+            "scope: tests/gone.json is gone",
+        ),
+        "a kept test whose file is gone": (
+            dict(ids_kept=[dict(test="tests/test_gone.py::test_a", reason="r")]),
+            "ids_kept: tests/test_gone.py is gone",
+        ),
+        "a path that a reason cites and that is gone": (
+            keep(dict(kept_format, reason="read by old/model.py:3 and by laws/wave.py")),
+            "keep: a reason cites old/model.py, which is gone: "
+            "read by old/model.py:3 and by laws/wave.py",
+        ),
+    }
+    for what, (more, said) in planted.items():
+        checks[f"overtaken: {what}"] = said in problems(**more)
+    ids = dict(_plant_engine()["ids"], twice=["wave"])
+    checks["overtaken: a family word that registry/ids.py gives two places"] = problems(
+        _plant_engine(ids=ids), **whole
+    ) == ["registry/ids.py gives the word 'wave' two places"]
+    for registry in (
+        dict(laws=[dict(declared="imex_two@1", interface="cells.wave_law@1", host="h",
+                        module="m")]),
+        dict(models=[dict(declared="cells.imex_two@1", type="family", module="m")]),
+    ):  # fmt: skip
+        found = problems(_plant_engine(**registry), **keep(kept_format))
+        checks[f"overtaken: a seed that a registry holds ({', '.join(registry)})"] = (
+            len(found) == 1
+            and found[0].startswith("the seed cells.steps.METHOD_ID: imex_two@1 is held by the ")
+            and "imex_two@1" in {o for r in _planted_map(
+                files, _plant_choices(), _plant_engine(**registry))[1] for o in r["old"]}
+        )  # fmt: skip
+    table = dict(keys={"cells.steps.TABLE": ["wave_mh@1", "imex_two@1"]})
+    part = problems(_plant_engine(**table), seeds=[seed(name="TABLE", keys=True)],
+                    **keep(kept_format))  # fmt: skip
+    whole_table = dict(keys={"cells.steps.TABLE": ["wave_mh@1", "cells.wash@1"]})
+    checks["overtaken: a table that other rows hold in part is no problem, and in whole one"] = (
+        part == []
+        and "the seed cells.steps.TABLE: other rows hold all 2 of its keys"
+        in problems(_plant_engine(**whole_table), seeds=[seed(name="TABLE", keys=True)],
+                    **keep(kept_format))
+    )  # fmt: skip
 
 
 def cmd_selftest(args):
     checks = {}
     _selftest_choices(checks)
+    _selftest_overtaken(checks)
     _selftest_table(checks)
     files, mp, out = _selftest_rewriter(checks)
     _selftest_verify(checks, files, mp, out)
@@ -4414,11 +4528,11 @@ def main(argv=None):
         p.add_argument("--frozen", help=f"the frozen list (default: {FROZEN})")
         return p
 
-    command("check", "the choices against the tree")
+    command("check", "the choices against the tree: what is gone, or held by another")
     command("_engine")
-    p = command("table", "build the table, refused while an ID is unplaced or a word pending")
-    p.add_argument("--rehearsal", action="store_true", help="pending words allowed; not final")
-    p.add_argument("--mint", action="append", help="a what-if: mint this group's rows")
+    p = command("table", "build the table, refused while an ID is unplaced or a choice overtaken")
+    p.add_argument("--rehearsal", action="store_true",
+                   help="a plant's family may be unseen; not final")  # fmt: skip
     p.add_argument("--out", help="write the map here")
     p.add_argument("--tsv", help="write every candidate row here, one line for each old spelling")
     p.add_argument("--compare", help="another table.tsv, compared row by row")

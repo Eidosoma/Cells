@@ -2,7 +2,7 @@
   "kind": "cells.active_ecm_polygon_source_and_ownership_gap_matrix@1",
   "family_topology_matrix": [
     {
-      "actual_model_id": "resolved_tissue@2",
+      "actual_model_id": "cells.model.resolved_tissue@2",
       "public_parser": "cells.core.surface_kinetic_spec.parse",
       "actual_model_module": "cells.models.surface_kinetic",
       "actual_model_type": "cells.core.surface_kinetic_spec.SurfaceKineticModel",
@@ -58,7 +58,7 @@
       "public_parser": "cells.core.surface_calcium_spec.parse",
       "actual_model_module": "cells.models.surface_calcium",
       "actual_model_type": "cells.core.surface_calcium_spec.SurfaceCalciumModel",
-      "nested_ionic_identity": "resolved_tissue@2",
+      "nested_ionic_identity": "cells.model.resolved_tissue@2",
       "calcium": true,
       "finite_fuel": false,
       "finite_bath_face_topology": "Actual inherited resolved face topology retained by public admission",
@@ -162,7 +162,7 @@
       "public_parser": "cells.core.surface_calcium_energy_spec.parse",
       "actual_model_module": "cells.models.surface_calcium_energy",
       "actual_model_type": "cells.core.surface_calcium_energy_spec.SurfaceCalciumEnergyModel",
-      "nested_ionic_identity": "resolved_tissue@8",
+      "nested_ionic_identity": "cells.model.resolved_tissue@8",
       "calcium": true,
       "finite_fuel": true,
       "finite_bath_face_topology": "Actual inherited resolved face topology retained by public admission",
@@ -761,7 +761,7 @@
   "reference_inventory_scope": {
     "method": "Conservative AST imports including imports nested in function bodies; explicit five-module dynamic family dispatch seeds and package initializers; no code executed.",
     "dynamic_family_map": {
-      "resolved_tissue@2": "surface_kinetic_reference",
+      "cells.model.resolved_tissue@2": "surface_kinetic_reference",
       "resolved_tissue@12": "surface_kinetic_reference",
       "resolved_energy@1": "surface_energy_reference",
       "resolved_energy@2": "surface_energy_reference",
@@ -888,7 +888,7 @@
         "independent_limit_pJ_s": 1e-10,
         "scope_note": "HCN catalog compare checks full derivative and actual residual, not an independent total residual. Its prospective independent gate must be described as reuse of the field identity limit."
       },
-      "resolved_tissue@2": {
+      "cells.model.resolved_tissue@2": {
         "actual_evidence": [
           "tests/unit/test_surface_kinetic.py:92",
           "tests/unit/test_surface_kinetic.py:334"

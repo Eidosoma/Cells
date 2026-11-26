@@ -1,4 +1,4 @@
-"""The passive permeation law's closed-pair reference (passive_neutral_permeation@1), an
+"""The passive permeation law's closed-pair reference (cells.route.passive_neutral_permeation@1), an
 independent reference.
 
 Written from docs/ARCHITECTURE.md ("Transport laws by physical contract") and

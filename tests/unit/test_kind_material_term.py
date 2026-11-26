@@ -46,7 +46,7 @@ def face_free():
 
     raw = fx.face_free(end=0.004)
     m = raw["model"]
-    m["id"] = "resolved_pump_tissue@3"
+    m["id"] = "cells.model.resolved_pump_tissue@3"
     m.pop("inner_model")
     m.pop("operators")
     m["alpha_block"] = {"rate": 1.0}

@@ -1,4 +1,4 @@
-"""local_species_reactions@1 composed with transport and with other writers (D152 v1, milestone 3;
+"""cells.operator.local_species_reactions@1 composed with transport and with other writers (D152 v1, milestone 3;
 design §3.4 guard 2, §4.5 claim 3, §5).
 
 * **§3.4 guard 2, the reaction-transport check.** Linear networks on MG0c's closed chain

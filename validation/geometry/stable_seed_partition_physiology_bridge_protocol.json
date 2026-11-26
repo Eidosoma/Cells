@@ -545,13 +545,13 @@
   },
   "qualification_owner": "Chief/Root",
   "reuse": {
-    "face_law": "logmean_electrodiffusion@1",
-    "family": "resolved_tissue@1",
-    "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+    "face_law": "cells.route.logmean_electrodiffusion@1",
+    "family": "cells.model.resolved_tissue@1",
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@1",
     "finite_ECM_preparer": "cells.core.finite_ecm_polygon_preparation.prepare",
     "implicit_physical_defaults": false,
     "integration_called": false,
-    "membrane_law": "constant_field@1",
+    "membrane_law": "cells.route.constant_field@1",
     "old_state_or_operator_adoption": false,
     "parser_metadata_solver": "rk4"
   },

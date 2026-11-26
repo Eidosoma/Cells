@@ -1,9 +1,9 @@
-"""The definition of an assembly-lineage run (cells.assembly_lineages@1).
+"""The definition of an assembly-lineage run (cells.model.assembly_lineages@1).
 
 A definition is one run of one world:
 
     {"schema_version": 1,
-     "model": {"id": "cells.assembly_lineages@1",
+     "model": {"id": "cells.model.assembly_lineages@1",
                "world": {...},                      the world record's content (below)
                "rate_factor": {"law": ID}},         optional: absent, exchange runs alone
      "experiment": {"fissions", "growth_event_limit", "trace", "uniforms", "life_budget"},
@@ -14,7 +14,7 @@ The world (GARD_DESIGN §5.4: written once, with an id its runs name) holds ever
 of one world share, so that a pair of law forms differs in its law alone:
 - `types`: the type family and its transfer constants (family.py);
 - `supply`: each type's held activity rho_i > 0, one number or one per type;
-- `exchange`: {"law": cells.reservoir_exchange@1, "leave_rate": kb_i > 0};
+- `exchange`: {"law": cells.exchange.reservoir_exchange@1, "leave_rate": kb_i > 0};
 - `law_data` (optional): the per-world data a rate-factor law reads, by field, such as GARD's
   catalysis_matrix (gard.py);
 - `founder`: the founder's count of each type, declared data (one founder for every run of the

@@ -29,7 +29,7 @@ floor = a5pp.floor(world, inputs["constants"])
 - **The world** `a5pp_prior` holds:
   - `species` (valences), `bath_mM` and `bath_potential_V`;
   - two `cells`, each with `volume_pL`, `mM`, `initial_V`, a `patch` (`area_m2`, `capacitance_F`,
-    `leak_permeability_m_per_s`), a `population` (`kleak_always_open@1`, `permeability_m_per_s`,
+    `leak_permeability_m_per_s`), a `population` (`cells.channel.kleak_always_open@1`, `permeability_m_per_s`,
     `relative`, `abundance`, `opening`, `schedule`), `regulator_X` (`initial_mM`, turnover
     `segments`) and `state_s1_initial` (s₀);
   - `state_s1` (`cells`, the Hill `input`, `k_on_per_s`, `k_off_per_s`), the `couplings`

@@ -6,13 +6,13 @@ erratum 1 (validation/fr50/JUDGE_ERRATUM_1.md).
 alone, each value read from its decimal string:
 - K1 and K2: a cell and a finite node (the declared volumes) joined by one contact patch of the
   declared area, nothing else crossing (secreted_species_fixtures.world: quiescent ions, zero ion
-  permeability, no face). One neutral passive route (passive_neutral_permeation@1, `one_way: true`)
+  permeability, no face). One neutral passive route (cells.route.passive_neutral_permeation@1, `one_way: true`)
   carries S at the declared permeability and opening, S at the declared concentrations;
 - K3: the same two nodes and patch, with a charged row Q of the declared valence at the declared
   concentrations (impermeant otherwise, its charge compensated in each node's fixed charge), on
-  one constant-field route (passive_constant_field_permeation@1, `one_way: true`);
+  one constant-field route (cells.route.passive_constant_field_permeation@1, `one_way: true`);
 - K4 and K4h: a cell on the held bath through its wall patch, with the neutral ATP-driven
-  transporter (atp_driven_transporter_mass_action_positive@1, version 1's form, `one_way: true`)
+  transporter (cells.cycle.atp_driven_transporter_mass_action_positive@1, version 1's form, `one_way: true`)
   on the patch: role Y at the declared inside and outside concentrations, held fuel ATP, ADP and Pi
   at the cell with the declared standard potentials mu°/RT and standard concentration c0.
 Every world is at the declared temperature and runs @3 alone (its inner definition).
@@ -33,7 +33,7 @@ Every world is at the declared temperature and runs @3 alone (its inner definiti
     of this module, NET_FLOW_FIXTURE, never shipped) that asks for one_way; the control is the
     same population without the key;
   - rk4: K1's world under RK4; its control is the same world under its registered IMEX solver;
-  - slot_operator: K4's world as a composite beside isopotential_partition@1, judged by the
+  - slot_operator: K4's world as a composite beside cells.operator.isopotential_partition@1, judged by the
     composite's slot-changer and lifecycle checks, as tests/unit/test_kind_lifecycle_roles.py
     judges a kind's admission beside a closer; the control is the population without the key.
 - A request with a plant runs under validation/fr50/plants.py's planted kind registry.
@@ -65,13 +65,13 @@ CELL, NODE, BATH = "cell_0", "ecs_0", "bath"
 CONTACT, WALL = "contact_0", f"wall_{CELL}"
 ROUTE = "route_0"  # The case's route, the only one.
 POPULATION = "transporter_0"
-SLOT_OPERATOR = "isopotential_partition@1"
+SLOT_OPERATOR = "cells.operator.isopotential_partition@1"
 RETIRES = "opens, closes or retires slots"  # The composite's words for a slot changer's refusals.
 TRACE_mM = 1e-9
 # A test-only net-flow exchanger (never shipped): K's row from N to P against Y's from P to N, one
 # mode; K5's net-flow row declares it only to be refused, and its control parses it.
 NET_FLOW_FIXTURE = law_registry.CycleLaw(
-    "fr50test.net_flow_exchange@1",
+    "fr50test.cycle.net_flow_exchange@1",
     (),
     (),
     None,

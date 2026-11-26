@@ -1,6 +1,6 @@
-"""Field solver version 3 on resolved_pump_tissue@3, the W1 hold's model: runs (guard 6).
+"""Field solver version 3 on cells.model.resolved_pump_tissue@3, the W1 hold's model: runs (guard 6).
 
-tests/unit/test_field_floor.py covers version 3 (capacitive_reduction_gauged_damped_newton@3)
+tests/unit/test_field_floor.py covers version 3 (cells.solver.capacitive_reduction_gauged_damped_newton@3)
 on the @1 and @2 fixtures; this file and test_field_floor_held.py cover @3
 (docs/FIELD_FLOOR_ACCEPTANCE_DESIGN.md). On the @3 fixtures (three cells, five outside nodes,
 one or two free field offsets) version 3 runs bitwise as version 2 wherever version 2

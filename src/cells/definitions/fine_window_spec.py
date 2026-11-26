@@ -8,7 +8,7 @@ run are unchanged. Present, the definition's clock (cells.execution.grid.EventGr
 step inside each declared window and the coarse step execution.dt outside, in one run. Every field
 is required:
 
-  method   "fixed_fine_windows@1"
+  method   "cells.execution.fixed_fine_windows@1"
   dt       the fine step h (s); execution.dt / h is a whole number m >= 2
   windows  [{"start_time", "end_time"}, ...]: non-empty, increasing and non-overlapping intervals
            (they may touch) inside the horizon, each end a point of the coarse grid, i x
@@ -47,39 +47,39 @@ from dataclasses import dataclass, replace
 
 from cells.definitions.specs import ConfigError, _fields, _number
 
-METHOD_ID = "fixed_fine_windows@1"
+METHOD_ID = "cells.execution.fixed_fine_windows@1"
 FIELDS = ("method", "dt", "windows")
-COMPOSITE_ID = "resolved_pump_composite@1"
-ADMITTED_MODELS = ("resolved_pump_tissue@3", COMPOSITE_ID)
+COMPOSITE_ID = "cells.model.resolved_pump_composite@1"
+ADMITTED_MODELS = ("cells.model.resolved_pump_tissue@3", COMPOSITE_ID)
 ADMITTED_OPERATORS = (
-    "cell_owned_compartments@1",
-    "cytoplasmic_bridge_closure@1",
-    "electrode_current_injection@1",
-    "ideal_osmosis_linear_compliance_water@1",
-    "isopotential_partition@1",
-    "k_anion_symport_mass_action@1",
-    "local_species_reactions@1",
-    "membrane_entity_state@1",
-    "population_unit_turnover@1",
-    "restricted_cleft_lumen@1",
-    "restricted_cleft_lumen@2",
-    "scheduled_bath_composition@1",
-    "scheduled_cell_replacement@1",
-    "scheduled_cell_replacement@2",
-    "scheduled_membrane_insertion@1",
-    "scheduled_membrane_insertion@2",
-    "scheduled_membrane_trafficking@1",
-    "scheduled_species_exchange@1",
-    "scheduled_species_turnover@1",
-    "site_occupancy@1",
+    "cells.operator.cell_owned_compartments@1",
+    "cells.operator.cytoplasmic_bridge_closure@1",
+    "cells.operator.electrode_current_injection@1",
+    "cells.operator.ideal_osmosis_linear_compliance_water@1",
+    "cells.operator.isopotential_partition@1",
+    "cells.operator.k_anion_symport_mass_action@1",
+    "cells.operator.local_species_reactions@1",
+    "cells.operator.membrane_entity_state@1",
+    "cells.operator.population_unit_turnover@1",
+    "cells.operator.restricted_cleft_lumen@1",
+    "cells.operator.restricted_cleft_lumen@2",
+    "cells.operator.scheduled_bath_composition@1",
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+    "cells.operator.scheduled_membrane_insertion@1",
+    "cells.operator.scheduled_membrane_insertion@2",
+    "cells.operator.scheduled_membrane_trafficking@1",
+    "cells.operator.scheduled_species_exchange@1",
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.site_occupancy@1",
 )
 _COUNTS_STEPS = (
     "its crossing record counts steps and reads time as count x dt "
     "(docs/LONG_DURATION_MODE_DESIGN.md §4.1, counting records)"
 )
 REFUSED_OPERATORS = {
-    "species_regulated_availability@1": _COUNTS_STEPS,
-    "species_regulated_availability@2": _COUNTS_STEPS,
+    "cells.operator.species_regulated_availability@1": _COUNTS_STEPS,
+    "cells.operator.species_regulated_availability@2": _COUNTS_STEPS,
 }
 
 

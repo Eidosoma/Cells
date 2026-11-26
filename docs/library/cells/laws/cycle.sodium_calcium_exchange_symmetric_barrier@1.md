@@ -1,4 +1,4 @@
-# Exchange of three sodium ions for one calcium ion, with a synthetic rate (`cells.sodium_calcium_exchange_symmetric_barrier@1`)
+# Exchange of three sodium ions for one calcium ion, with a synthetic rate (`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`)
 
 **In one sentence:** Three sodium ions cross a membrane one way for each calcium ion that crosses the other way, each exchange carrying one charge, at a rate whose form is synthetic.
 
@@ -34,8 +34,8 @@ not a model of any exchanger protein.
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.cycle_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#cycle-laws)) |
-| ID | `cells.sodium_calcium_exchange_symmetric_barrier@1`; definitions write `cells.sodium_calcium_exchange_symmetric_barrier@1` |
-| Runs in | `cells.transporter@1`, its host, in `cells.resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
+| ID | `cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`; definitions write `cells.cycle.sodium_calcium_exchange_symmetric_barrier@1` |
+| Runs in | `cells.kind.transporter@1`, its host, in `cells.model.resolved_pump_tissue@3`. Definitions of `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3` can declare it |
 | Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
@@ -46,7 +46,7 @@ not a model of any exchanger protein.
 
 | Role | What | Unit | Which way is positive |
 | --- | --- | --- | --- |
-| Reads | `rapid_binding@1`, current at each inner stage | | |
+| Reads | `cells.binding.rapid_binding@1`, current at each inner stage | | |
 | Changes | `Na@N`: 3 per cycle | | inward-positive, per forward cycle |
 | Changes | `Na@P`: -3 per cycle | | inward-positive, per forward cycle |
 | Changes | `Ca@N`: -1 per cycle | | inward-positive, per forward cycle |
@@ -105,7 +105,7 @@ with $S = b^3 c\, e^{-\psi/2} / [(1 + a^3 + b^3)(1 + c + d)]$.
   bath's rows are left out. The law declares both terms, so its moves at a closed compartment's node
   are admitted ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). RK4 runs are refused, as for
   every kind.
-- **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a
+- **At a binding closure:** it declares the read `cells.binding.rapid_binding@1` and base forms, so where a
   closure holds calcium or sodium it reads the free amount and moves the total, and the material
   rate runs through the closure's derivative.
 - **Left out:** inactivation, regulation by either ion, other coupling ratios and transport modes,
@@ -192,8 +192,8 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/laws/cycles/sodium_calcium_exchange_symmetric_barrier.py`](../../../../src/cells/laws/cycles/sodium_calcium_exchange_symmetric_barrier.py) (`cells.laws.cycles.sodium_calcium_exchange_symmetric_barrier`).
-- Runs in `cells.transporter@1`.
-- Manifest entry: (law, `cells.sodium_calcium_exchange_symmetric_barrier@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.sodium_calcium_exchange_symmetric_barrier@1`.
+- Runs in `cells.kind.transporter@1`.
+- Manifest entry: (law, `cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`.
 
 <!-- /generated -->

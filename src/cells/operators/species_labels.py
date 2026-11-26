@@ -1,4 +1,4 @@
-"""Operator neutral_arrival_labels@1: neutral arrival-time labels as shares of a physical row.
+"""Operator cells.operator.neutral_arrival_labels@1: neutral arrival-time labels as shares of a physical row.
 
 FR-42 (docs/FEATURE_REQUESTS.md), option A of docs/NEUTRAL_LABELS_DESIGN.md (D289), stage 1: pools.
 A neutral label records when otherwise identical units entered a pool, so the cohort that arrived
@@ -86,7 +86,7 @@ Refused (fail closed), each refusal naming the FR-42 stage that lifts it:
 - what a declared kind says it cannot carry (its label_refusals), and, while any row is
   labelled, every kind with a rates hook and no label_refusals (kind_registry.label_refusal_errors);
 - a labelled species a closure holds at some node (a kind's stage read: B4's proton row and
-  buffers, rapid_binding@1's closure rows), whatever moves it (closure_errors);
+  buffers, cells.binding.rapid_binding@1's closure rows), whatever moves it (closure_errors);
 - an operator whose split part writes species amounts without reporting (turnover, exchange,
   reactions and templated polymerisation report; FR-42's stage 3 added exchange and the reactions'
   passive routes);
@@ -127,15 +127,15 @@ from cells.operators.contract import (
 )
 from cells.registry import kind_registry, species_registry
 
-LAW_ID = "neutral_arrival_labels@1"
+LAW_ID = "cells.operator.neutral_arrival_labels@1"
 SCHEDULE_KEY = "label_arrivals"
 MAX_LABELS = 64  # Producer x window labels (D296) need more than one window's few.
 SUM_ULPS = 8  # A declared node's shares sum to 1 within this many ulps.
 AMOUNT_FIELDS = ("amount_increment", "extracellular_amount_increment")
 AMOUNT_VIEWS = ("amount_reference", "extracellular_amount_reference")
 # FR-42's stage 2: the inner step's movers whose one-way transfers it reports (@3's side), by mover
-# kind: the uncharged face (logmean_electrodiffusion@1, Fick's for an uncharged row) and the
-# membrane and junction routes (constant_field@1, GHK at the shared voltage), each linear in each
+# kind: the uncharged face (cells.route.logmean_electrodiffusion@1, Fick's for an uncharged row) and the
+# membrane and junction routes (cells.route.constant_field@1, GHK at the shared voltage), each linear in each
 # end.
 REPORTED_MOVERS = {
     "face": inner_laws.FACE_ROUTE_LAW_ID,
@@ -618,7 +618,7 @@ def in_step_errors(spec, declaration, reports):
 def closure_errors(kinds, declaration):
     """D303 item 6, centrally: a labelled species that a closure holds at some node (a declared
     kind's stage read, its stage_rows: B4's proton row and buffers at their buffered nodes,
-    rapid_binding@1's closure rows) is refused, whatever moves it. Its stored row is the closure's
+    cells.binding.rapid_binding@1's closure rows) is refused, whatever moves it. Its stored row is the closure's
     total, which the read splits between forms for the rates, so no mover's one-way terms are the
     stored row's. kinds: kind_registry.declared_kinds of the inner model."""
     held = {}

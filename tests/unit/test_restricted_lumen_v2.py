@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of restricted_cleft_lumen@2 (docs/CELL_DIVISION_S5_DESIGN.md §5.2, A.5).
+"""Tier-1 smoke test of cells.operator.restricted_cleft_lumen@2 (docs/CELL_DIVISION_S5_DESIGN.md §5.2, A.5).
 
 In NumPy (no compile), on the furrow division world (tests/partition_fixtures.cleft_divided):
 * two facing patches and continuity across a birth: the target over the live facing patches is

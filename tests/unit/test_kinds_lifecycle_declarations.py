@@ -2,12 +2,12 @@
 and §18's B1 lift; seam E's kind hook; the lead's rulings of 18 and 19 November 2026).
 
 Each claim with its plant (D187):
-- every field of cells.patch_damage@1 declares its partition role and its axes, its own axis (the
+- every field of cells.kind.patch_damage@1 declares its partition role and its axes, its own axis (the
   damage entities) names its host and index, and F's declaration check holds; beside a closer the
   kind passes the lift's roles and axes and stops at its presence step, since it declares no
   presence for its entity axes, its patches' slots and its own source axis (fail-closed) (planted:
   one role removed, and one field's axes removed, each named at its own step);
-- the same for cells.transporter@1 in both layouts, bound to each world's entry (version 1's, the
+- the same for cells.kind.transporter@1 in both layouts, bound to each world's entry (version 1's, the
   general form's, §10's composed world with a diagram and a finite-fuel pump, a net-flow law and a
   diagram pump): every field's role and axes, every declared axis count equal to the field's own
   dimensions in the world's layout, state and controls, the population axis's host on its patch;
@@ -91,7 +91,7 @@ def test_patch_damage_declares_every_fields_role_and_axes_and_its_entities_host(
 # ------------------------------------------------------------------ the transporter's two layouts
 
 PUMP = law_registry.CycleLaw(
-    "seamtest.diagram_pump@1",
+    "seamtest.cycle.diagram_pump@1",
     (),
     (),
     None,
@@ -307,7 +307,9 @@ def test_each_population_binds_its_laws_roles_ends_and_counts_for_the_admission(
     pump = EntityBinding(transporter.NEUTRAL_LAW, {"role": "Y", **fuel}, ends, {"stoichiometry": 1})
     assert read["version_1"] == (pump,) and read["general"] == (pump,)  # The one-to-one map.
     exchanger, fuel_pump = read["composed"]
-    assert exchanger == EntityBinding("seamtest.slip_exchanger@1", {"X": "X", "Y": "W"}, ends, {})
+    assert exchanger == EntityBinding(
+        "seamtest.cycle.slip_exchanger@1", {"X": "X", "Y": "W"}, ends, {}
+    )
     assert fuel_pump == pump
     # An N = b population's ends turn with it: N at the outside node.
     turned = ck.general(tk.population(id="t_b"), n_end="b")

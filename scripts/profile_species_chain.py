@@ -8,9 +8,9 @@ patched (the species cap, the fold's gate and the trace budget are the tree's), 
 docs/FR43_SHARED_INVENTORIES_DESIGN.md §1.2): by default dt 5 ms over 2 s (400 steps), observed
 every 0.25 s, through the runner (jit) with every host check on every row.
 
-Engine models it runs: resolved_pump_composite@1 over resolved_pump_tissue@3, with
-local_species_reactions@1 (its links ideal_detailed_balance_mass_action@1), the solver
-imex_ars222_face_electromigration@1 and the field solver capacitive_reduction_gauged_damped_newton@2
+Engine models it runs: cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, with
+cells.operator.local_species_reactions@1 (its links cells.species_reaction.ideal_detailed_balance_mass_action@1), the solver
+cells.solver.imex_ars222_face_electromigration@1 and the field solver cells.solver.capacitive_reduction_gauged_damped_newton@2
 (each record lists them as its definition names them).
 
   run --rows N --out FILE [--dt S] [--end S] [--every S]

@@ -506,7 +506,7 @@ UNREADABLE = {  # What the engine refuses too, so that the declaration as submit
         _extra_route(patch="m_a", species="B")
     ),
     "a route of another law": lambda m: _entity(m["passive_routes"], "leak_Ca_m_a").update(
-        law="passive_neutral_permeation@1"
+        law="cells.route.passive_neutral_permeation@1"
     ),
     "a second pump of a store": lambda m: m["transporters"].append(
         m["transporters"][0] | {"id": "another"}
@@ -1341,15 +1341,16 @@ def test_part_2s_literal_blocks_are_read_as_its_text_prints_them(tmp_path):
     "message, kind",
     [
         ("passive_routes r: permeability_m_per_s is finite and >= 0", "domain"),
-        ("local_species_reactions@1: x's forward_rate_per_s must be > 0", "domain"),
-        ("local_species_reactions@1: a multiplier of x must be >= 0", "domain"),
+        ("cells.operator.local_species_reactions@1: x's forward_rate_per_s must be > 0", "domain"),
+        ("cells.operator.local_species_reactions@1: a multiplier of x must be >= 0", "domain"),
         ("species B's trace_mM must be a finite positive number", "domain"),
         ("transporter 'p': parameter km_role_mM is positive", "domain"),
         ("condition 'c', read 0: K is a normal float, at least 2.2e-308", "domain"),
         ("transporter 'p': law is one of a, b", "definition"),
         ("passive_routes: route IDs must be unique", "definition"),
         (
-            "cell_owned_compartments@1: the patch 'x' of compartment 'y' is not declared",
+            "cells.operator.cell_owned_compartments@1: the patch 'x' of compartment 'y' is not "
+            "declared",
             "definition",
         ),
     ],

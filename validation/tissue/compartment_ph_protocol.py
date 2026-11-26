@@ -464,7 +464,8 @@ ASKED = {  # The questions as asked (15 November 2026), now ruled:
         "J3 at 0.5 ms. Correct the block's text?",
         "2. outcome_rules says 'PASS when J1-J10 hold', but J11 exists and is judged here. "
         "Include it?",
-        "3. J2 lists the damage d, whose step is exact (bounding_patch_damage@1 on piecewise-"
+        "3. J2 lists the damage d, whose step is exact (cells.damage.bounding_patch_damage@1 on "
+        "piecewise-"
         "constant schedules whose breakpoints lie on every rung's grid), so its rung differences "
         "are rounding: its order is None and J2 fails for d by construction. Proposed: d's item "
         "becomes 'exact at rounding on every rung' (max |d(dt) - d(dt/2)| <= N eps), or d "
@@ -657,8 +658,10 @@ HARNESS_RULE = (
 
 # The text brought level with the runs before registration (the lead's ruling, 17 November 2026:
 # text only, no criterion changed), set by `draft` as PROSE's leaves are.
-SCOPE_LINE = ("The verdict covers cell_owned_compartments@1 as built at the judged snapshot "
-              "(refusal 4 version 1.2, refusal 5 version 1.1)")
+SCOPE_LINE = (
+    "The verdict covers cells.operator.cell_owned_compartments@1 as built at the judged snapshot "
+    "(refusal 4 version 1.2, refusal 5 version 1.1)"
+)
 LEVEL_NOTE = ("its text brought level with the runs before registration on 17 November 2026, no "
               "criterion changed")
 LAUNCH = ("each judged unit through scripts/run_detached.sh as judge.resources has it: one unit "
@@ -667,21 +670,25 @@ LAUNCH = ("each judged unit through scripts/run_detached.sh as judge.resources h
 OPTION_A = ("The judged run follows once, from a fresh clean snapshot of main taken after the "
             "registration commit, past seam F (the lead's ruling of 17 November 2026: option (a))")
 MODELS_COMMON = [
-    "resolved_pump_composite@1, the declared world: the composite with resolved_pump_tissue@3 as "
+    "cells.model.resolved_pump_composite@1, the declared world: the composite with "
+    "cells.model.resolved_pump_tissue@3 as "
     "its inner model and FR-1's compartment operator "
     "(validation/compartment_ph_engine/definitions.declared_world)",
-    "resolved_pump_tissue@3, the inner model, with its stage-read, transporter, held-row and "
+    "cells.model.resolved_pump_tissue@3, the inner model, with its stage-read, transporter, "
+    "held-row and "
     "face-free-term insertion points",
 ]
 FR4_KINDS = [
-    "cells.rapid_proton_buffer@1, the kind of the stage read rapid_proton_buffer@1 (a declared "
+    "cells.kind.rapid_proton_buffer@1, the kind of the stage read cells.kind.rapid_proton_buffer@1 "
+    "(a declared "
     "reduced representation, D175)",
-    "cells.transporter@1, the kind of the pump on the bounding patch: the law "
-    "cells.proton_atp_mass_action_positive@1 on the fuel kind maintained_held_rows@1 (the held "
+    "cells.kind.transporter@1, the kind of the pump on the bounding patch: the law "
+    "cells.cycle.proton_atp_mass_action_positive@1 on the fuel kind "
+    "cells.fuel_kind.maintained_held_rows@1 (the held "
     "ATP, ADP and Pi rows at the cytosol)",
-    "cells.passive_routes@1, the kind of the proton leak on the bounding patch: the law "
-    "proton_constant_field_leak@1",
-    "constant_field@1, the bounding patch's own law: the K+ counterion route",
+    "cells.kind.passive_routes@1, the kind of the proton leak on the bounding patch: the law "
+    "cells.route.proton_constant_field_leak@1",
+    "cells.route.constant_field@1, the bounding patch's own law: the K+ counterion route",
 ]
 LEVEL = {
     "fr4": {
@@ -712,7 +719,8 @@ LEVEL = {
                      reading="21 of 21 judged criteria pass (verdict/verdict.json); every part's "
                      "records bitwise the dt study's, run times apart (compare/)")]),
         ("engine_models",): [*MODELS_COMMON, *FR4_KINDS,
-                             "cell_owned_compartments@1, FR-1's operator: the compartment's "
+                             "cells.operator.cell_owned_compartments@1, FR-1's operator: the "
+                             "compartment's "
                              "identity (refusal 4 version 1.2, refusal 5 version 1.1)"],
         ("scope",): "Maintained fuel only (no depletion or recovery: that is the finite-fuel "
         "case's acceptance, D176 item 2). The K+ counterion only, at 5e-10 m/s (Cl- at lysosomal "
@@ -765,14 +773,18 @@ LEVEL = {
         ("engine_models",): [
             *MODELS_COMMON,
             "FR-4's kinds and laws, unchanged: " + "; ".join(FR4_KINDS),
-            "cells.passive_routes@1 also carries FR-5's routes: passive_neutral_permeation@1 (the "
-            "conditioned transfer and the cargo pore) and proton_constant_field_leak@1 (the "
+            "cells.kind.passive_routes@1 also carries FR-5's routes: "
+            "cells.route.passive_neutral_permeation@1 (the "
+            "conditioned transfer and the cargo pore) and cells.route.proton_constant_field_leak@1 "
+            "(the "
             "proton pore)",
-            "cells.patch_damage@1, the kind of the damage control state: the law "
-            "bounding_patch_damage@1, exact per step",
-            "cells.ph_condition@1, the kind of the condition: the law ph_conditioned_factor@1",
+            "cells.kind.patch_damage@1, the kind of the damage control state: the law "
+            "cells.damage.bounding_patch_damage@1, exact per step",
+            "cells.kind.ph_condition@1, the kind of the condition: the law "
+            "cells.transfer_factor.ph_conditioned_factor@1",
             "the routing door, which multiplies the routes' openings by their factors",
-            "cell_owned_compartments@1, FR-1's operator: refusal 4 version 1.2 (its FACTOR_KINDS "
+            "cells.operator.cell_owned_compartments@1, FR-1's operator: refusal 4 version 1.2 (its "
+            "FACTOR_KINDS "
             "admit the two source kinds) and refusal 5 version 1.1 (it admits the charged 1800 s "
             "start)"],
         ("scope",): "FR-4's scope (maintained fuel, the K+ counterion, a lumped population of 1000 "
@@ -838,7 +850,8 @@ DECLARED_WORLD_FR4 = (
     "pre-run correction, 16 November 2026, the lead's ruling on the judged world: every engine "
     "part runs the declared world, fr4_world with FR-1's compartment operator, which is what the "
     "world's builder describes (validation/compartment_ph_engine/definitions.declared_world: the "
-    "composite resolved_pump_composite@1, @3 inner, cell_owned_compartments@1 with refusal 4's "
+    "composite cells.model.resolved_pump_composite@1, @3 inner, "
+    "cells.operator.cell_owned_compartments@1 with refusal 4's "
     "version 1.1), in place of the development world without the operator, which development runs "
     "keep. Measured before any judged run (fr45-compartment-op e73e4afd, CPU 1, the vector path; "
     "/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline/dev-e73e4afd-declared/): the "
@@ -914,7 +927,8 @@ TEXT_LEVELLED = (
     "only: no criterion, derivation or threshold changed, checked byte for byte when redrafted): "
     "the status prose, the registration plan ('not yet wired', its path and its launch), the "
     "development runs (now listed), engine_models (the landed IDs), the scope line (the verdict "
-    "covers cell_owned_compartments@1 as built at the judged snapshot: refusal 4 version 1.2, "
+    "covers cells.operator.cell_owned_compartments@1 as built at the judged snapshot: refusal 4 "
+    "version 1.2, "
     "refusal 5 version 1.1), and judge.units and judge.resources (the cost basis is the lead's "
     "sizing of 1.5 ms per step plus 90 s, with the rehearsal's measured walls and peaks beside "
     "each unit, and each runtime limit D150's rule on the larger of the sizing and the "

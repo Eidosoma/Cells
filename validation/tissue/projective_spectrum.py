@@ -1,4 +1,4 @@
-"""Linear-mode analysis of projective_forward_euler@1 around a fine-engine state.
+"""Linear-mode analysis of cells.execution.projective_forward_euler@1 around a fine-engine state.
 
 The Jacobian of one fine checked step (the model's own checked_step, by
 jax.jacfwd) at a state gives each mode's per-step amplification rho and rate

@@ -122,7 +122,7 @@ def test_a_blocked_run_restarts_bitwise_and_its_composite_clamps_as_at_3(blocked
     """RUN's restart and its composite (about 15 s of the file's time):
     - a checkpoint at 15 ms, written, loaded and resumed, is the uninterrupted run bit for bit,
       each history field from the checkpoint's row on;
-    - the composite's clamped entry point (the same world as resolved_pump_composite@1) gives @3's
+    - the composite's clamped entry point (the same world as cells.model.resolved_pump_composite@1) gives @3's
       flux and current bit for bit at the first row, with the block's terms too."""
     spec, model, p, control, result = blocked_run
     checkpoint = result.checkpoint_at(float(np.asarray(result.times)[MID]))

@@ -1,4 +1,4 @@
-"""The passive permeation law's insertion point, with §7.5's exact booking (cells.passive_routes@1).
+"""The passive permeation law's insertion point, with §7.5's exact booking (cells.kind.passive_routes@1).
 
 docs/INNER_MODEL_V4_DESIGN.md §7.4 (i), §7.5 version 1, §11. The closed pair is FR-1's face-free
 world W as a plain @3 definition: cell_0 (1 pL) and its finite node ecs_0 (1 pL), joined only by
@@ -58,7 +58,7 @@ def closed_pair(*, node_mM=5e-4, pool_mM=1e-3, end=0.02, dt=1e-3, routes=None, w
     """W (fx.face_free) as a plain @3 definition, with passive routes on the contact patch."""
     raw = fx.face_free(pool_mM=pool_mM, node_mM=node_mM, end=end, dt=dt)
     m = raw["model"]
-    m["id"] = "resolved_pump_tissue@3"
+    m["id"] = "cells.model.resolved_pump_tissue@3"
     m.pop("inner_model")
     m.pop("operators")
     if wall_s:
@@ -298,7 +298,7 @@ def test_binding_refuses_charged_species_a_carrying_host_and_a_fast_route():
 
 
 def charged(rid, permeability, *, species="X", host=("patch", "contact_0")):
-    """A route of passive_constant_field_permeation@1 (FR-15 P2) in FR-4's form."""
+    """A route of cells.route.passive_constant_field_permeation@1 (FR-15 P2) in FR-4's form."""
     return dict(route(rid, permeability, host=host, species=species), law=CHARGED)
 
 
@@ -388,7 +388,8 @@ def test_the_charged_law_refuses_a_row_a_closure_holds():
     routes.append(dict(id="charged_h", patch=fr.BOUNDING, law=CHARGED, species="H",
                        permeability_m_per_s=1e-9))  # fmt: skip
     with pytest.raises(
-        ConfigError, match=r"species H at .* is held by .*rapid_proton_buffer@1.*reads amounts"
+        ConfigError,
+        match=r"species H at .* is held by .*cells.kind.rapid_proton_buffer@1.*reads amounts",
     ):
         parse_spec(raw)
 

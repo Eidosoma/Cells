@@ -1,4 +1,4 @@
-"""B1 and B6 of FR-3's milestone 1: site_occupancy@1 runs in the face-free world at rounding.
+"""B1 and B6 of FR-3's milestone 1: cells.operator.site_occupancy@1 runs in the face-free world at rounding.
 
 Criteria fixed before any code (/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/HANDOFF.md).
 The world is D150's face-free topology with the ligand S at 1e-3 mM in the cell and its node, under

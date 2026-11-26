@@ -8,7 +8,7 @@ origin-of-life engine derives its laws from physical chemistry instead (D197).
 
 The two forms. For a state n with N = sum_i n_i and (beta n)_i = sum_j beta_ij n_j:
 
-- cells.gard_catalysis_single_event@1 (form "single-event"): the preprint's single-event kernel,
+- cells.rate_factor.gard_catalysis_single_event@1 (form "single-event"): the preprint's single-event kernel,
   the event split of the original rate law (the preprint's Appendix F; Eq. 4 of Segre et al.
   2000). Both rates of type i carry b_i(n) = 1 + (beta n)_i / N, at the current state, so a
   join from n carries b_i(n) and its reverse leave from n + e_i carries b_i(n + e_i): the
@@ -24,7 +24,7 @@ The two forms. For a state n with N = sum_i n_i and (beta n)_i = sum_j beta_ij n
   no event rates. The preprint's vector-Poisson contracts were not tested, and its driven runs
   (a held reservoir, growth and fission) are not affected, since detailed balance is not
   expected there. Its unsourced cycle affinity is reported, never booked as passive heat.
-- cells.gard_catalysis_pair_consistent@1 (form "pair-consistent", passive; the default of this
+- cells.rate_factor.gard_catalysis_pair_consistent@1 (form "pair-consistent", passive; the default of this
   set): a transfer of type i between n and n + e_i sees the same catalysts, those of n, the
   assembly without the moving molecule: g_i = 1 + (beta n)_i / N. A join from n carries g_i(n);
   a leave from m carries g_i(m - e_i) = 1 + ((beta m)_i - beta_ii) / (N_m - 1), and 1 when the
@@ -254,7 +254,7 @@ PAIR_CONSISTENT = RateFactorLaw(
 LAWS = tuple(law_registry.BUILTIN.register(law) for law in (SINGLE_EVENT, PAIR_CONSISTENT))
 
 
-# cells.gard_catalysis_pair_consistent@2 (D244, D246): the pair-consistent form above, with its
+# cells.rate_factor.gard_catalysis_pair_consistent@2 (D244, D246): the pair-consistent form above, with its
 # cache of beta n held exactly. @1 keeps its cached subtraction and its bits (D148): with
 # beta_ii = 2^54 and one other catalyst, its leave factor 1 + ((beta n)_i - beta_ii) / (N - 1) loses
 # the catalyst (the Lean proofs project's finding of 19 November 2026).

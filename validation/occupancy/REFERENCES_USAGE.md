@@ -1,6 +1,6 @@
 # Using the site-occupancy references: R-ode, R-closed, R-qss, R-eq and R-dG (interface only)
 
-How to run the independent references for `site_occupancy@1` (FR-3) and read their outputs without
+How to run the independent references for `cells.operator.site_occupancy@1` (FR-3) and read their outputs without
 reading their source. They were written from
 [SITE_OCCUPANCY_DESIGN.md](../../docs/SITE_OCCUPANCY_DESIGN.md) and the rulings of D169, without
 reading the operator, its fixtures or its tests:

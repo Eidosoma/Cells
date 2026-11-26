@@ -1,4 +1,4 @@
-"""apical_vertex_mechanics@1: overdamped 2-D apical vertex mechanics, periodic tissue.
+"""cells.model.apical_vertex_mechanics@1: overdamped 2-D apical vertex mechanics, periodic tissue.
 
 Dynamics. Each vertex moves by eta_v dx_v/dt = F_v = -dE/dx_v (forces from
 jax.grad of processes/vertex_mechanics.energy), with E the Farhadifar 2007

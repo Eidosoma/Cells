@@ -1,4 +1,4 @@
-"""cav1p2_m2h@1: CaV1.2-type calcium channel gating, the law and its declaration on @3.
+"""cells.channel.cav1p2_m2h@1: CaV1.2-type calcium channel gating, the law and its declaration on @3.
 
 Two gates, activation m and inactivation h, relax toward sigmoid targets of the membrane voltage V
 (inside less outside, volts), with sigmoid time constants (seconds). Both read the voltage less
@@ -26,7 +26,7 @@ slope at every explicit stage, at calcium's rows at both ends
 (surface_pump_v3.channel_material_rates), since the charge rule alone does not hold a scarce ion's
 amounts.
 
-Channel code 11 of resolved_pump_tissue@3 (cells.channel_law@1), registered by the law registry's
+Channel code 11 of cells.model.resolved_pump_tissue@3 (cells.channel_law@1), registered by the law registry's
 loader from @3's row of the model table (docs/CORE_SEAMS_DESIGN.md §8.2).
 """
 
@@ -35,7 +35,7 @@ import jax.numpy as jnp
 from cells.laws.channels.kv1p5_mh import VOLTAGE_DOMAIN_V  # @3's channel domain, -120..60 mV.
 from cells.modules import ChannelLaw, Citation, CitedWork
 
-LAW_ID = "cav1p2_m2h@1"
+LAW_ID = "cells.channel.cav1p2_m2h@1"
 SHIFT_V = 0.010  # The gates read the voltage less this.
 
 
@@ -76,7 +76,7 @@ LAW = ChannelLaw(
     kinetics,
     opening,
     material_term="material_slope_per_s",
-    host="cells.resolved_pump_tissue@3",
+    host="cells.model.resolved_pump_tissue@3",
     provenance="parity",
     source=Citation(
         "BETSE v1.5.0's Cav1p2 channel class, read as text",

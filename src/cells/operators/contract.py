@@ -1231,8 +1231,8 @@ def _check_records(operator):
 
 
 def _check_kinds(operator):
-    """REQUIRES_KINDS (schema A): a tuple of distinct kind IDs (a bare ID is in the cells
-    namespace, registry/kind_registry.py); FIXED_INNER_FIELDS a bool, and never with REQUIRES_KINDS."""  # noqa: E501
+    """REQUIRES_KINDS (schema A): a tuple of distinct kind IDs (registry/kind_registry.py);
+    FIXED_INNER_FIELDS a bool, and never with REQUIRES_KINDS."""
     name, kinds = operator.LAW_ID, operator.REQUIRES_KINDS
     if not isinstance(operator.FIXED_INNER_FIELDS, bool):
         raise ValueError(f"{name}: FIXED_INNER_FIELDS is a bool")

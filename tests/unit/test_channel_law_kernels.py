@@ -295,7 +295,11 @@ def test_hcn_clamps_shared_gate_power_and_sign(channels, codes):
     "law,name",
     list(
         zip(
-            ("hcn_leak_open@1", "hcn2_camp_m@1", "hcn4_camp_m@1"),
+            (
+                "cells.channel.hcn_leak_open@1",
+                "cells.channel.hcn2_camp_m@1",
+                "cells.channel.hcn4_camp_m@1",
+            ),
             hcn_extra_reference.CLASSES,
             strict=True,
         )

@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
  "model": {
-  "id": "resolved_pump_tissue@3",
+  "id": "cells.model.resolved_pump_tissue@3",
   "temperature_K": 310.0,
   "species": [
    {
@@ -132,10 +132,10 @@
      "Cl": 8e-10,
      "Ca": 1e-10
     },
-    "law": "constant_field@1",
+    "law": "cells.route.constant_field@1",
     "pump": {
      "id": "pump_0",
-     "law": "nak_atp_mass_action_positive@1",
+     "law": "cells.cycle.nak_atp_mass_action_positive@1",
      "roles": {
       "sodium": "Na",
       "potassium": "K"
@@ -149,7 +149,7 @@
      "km_k_mM": 0.2,
      "km_atp_mM": 0.5,
      "metabolism": {
-      "kind": "maintained_chemical_reservoirs@1",
+      "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
       "atp_mM": 1.5,
       "adp_mM": 0.1,
       "pi_mM": 0.1,
@@ -158,7 +158,7 @@
     },
     "calcium_pump": {
      "id": "calcium_pump_0",
-     "law": "ca_atp_mass_action_positive@1",
+     "law": "cells.cycle.ca_atp_mass_action_positive@1",
      "roles": {
       "calcium": "Ca"
      },
@@ -169,7 +169,7 @@
      "km_ca_mM": 0.001,
      "km_atp_mM": 0.5,
      "metabolism": {
-      "kind": "maintained_chemical_reservoirs@1",
+      "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
       "atp_mM": 1.5,
       "adp_mM": 0.1,
       "pi_mM": 0.1,
@@ -189,10 +189,10 @@
      "Cl": 8e-10,
      "Ca": 1.25e-10
     },
-    "law": "constant_field@1",
+    "law": "cells.route.constant_field@1",
     "pump": {
      "id": "pump_1",
-     "law": "nak_atp_mass_action_positive@1",
+     "law": "cells.cycle.nak_atp_mass_action_positive@1",
      "roles": {
       "sodium": "Na",
       "potassium": "K"
@@ -206,7 +206,7 @@
      "km_k_mM": 0.2,
      "km_atp_mM": 0.5,
      "metabolism": {
-      "kind": "maintained_chemical_reservoirs@1",
+      "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
       "atp_mM": 1.5,
       "adp_mM": 0.1,
       "pi_mM": 0.1,
@@ -215,7 +215,7 @@
     },
     "calcium_pump": {
      "id": "calcium_pump_1",
-     "law": "ca_atp_mass_action_positive@1",
+     "law": "cells.cycle.ca_atp_mass_action_positive@1",
      "roles": {
       "calcium": "Ca"
      },
@@ -226,7 +226,7 @@
      "km_ca_mM": 0.001,
      "km_atp_mM": 0.5,
      "metabolism": {
-      "kind": "maintained_chemical_reservoirs@1",
+      "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
       "atp_mM": 1.5,
       "adp_mM": 0.1,
       "pi_mM": 0.1,
@@ -246,10 +246,10 @@
      "Cl": 8e-10,
      "Ca": 1.5e-10
     },
-    "law": "constant_field@1",
+    "law": "cells.route.constant_field@1",
     "pump": {
      "id": "pump_2",
-     "law": "nak_atp_mass_action_positive@1",
+     "law": "cells.cycle.nak_atp_mass_action_positive@1",
      "roles": {
       "sodium": "Na",
       "potassium": "K"
@@ -263,7 +263,7 @@
      "km_k_mM": 0.2,
      "km_atp_mM": 0.5,
      "metabolism": {
-      "kind": "maintained_chemical_reservoirs@1",
+      "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
       "atp_mM": 1.5,
       "adp_mM": 0.1,
       "pi_mM": 0.1,
@@ -272,7 +272,7 @@
     },
     "calcium_pump": {
      "id": "calcium_pump_2",
-     "law": "ca_atp_mass_action_positive@1",
+     "law": "cells.cycle.ca_atp_mass_action_positive@1",
      "roles": {
       "calcium": "Ca"
      },
@@ -283,7 +283,7 @@
      "km_ca_mM": 0.001,
      "km_atp_mM": 0.5,
      "metabolism": {
-      "kind": "maintained_chemical_reservoirs@1",
+      "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
       "atp_mM": 1.5,
       "adp_mM": 0.1,
       "pi_mM": 0.1,
@@ -303,10 +303,10 @@
      "Cl": 8e-10,
      "Ca": 1.7500000000000002e-10
     },
-    "law": "constant_field@1",
+    "law": "cells.route.constant_field@1",
     "pump": {
      "id": "pump_3",
-     "law": "nak_atp_mass_action_positive@1",
+     "law": "cells.cycle.nak_atp_mass_action_positive@1",
      "roles": {
       "sodium": "Na",
       "potassium": "K"
@@ -320,7 +320,7 @@
      "km_k_mM": 0.2,
      "km_atp_mM": 0.5,
      "metabolism": {
-      "kind": "maintained_chemical_reservoirs@1",
+      "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
       "atp_mM": 1.5,
       "adp_mM": 0.1,
       "pi_mM": 0.1,
@@ -329,7 +329,7 @@
     },
     "calcium_pump": {
      "id": "calcium_pump_3",
-     "law": "ca_atp_mass_action_positive@1",
+     "law": "cells.cycle.ca_atp_mass_action_positive@1",
      "roles": {
       "calcium": "Ca"
      },
@@ -340,7 +340,7 @@
      "km_ca_mM": 0.001,
      "km_atp_mM": 0.5,
      "metabolism": {
-      "kind": "maintained_chemical_reservoirs@1",
+      "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
       "atp_mM": 1.5,
       "adp_mM": 0.1,
       "pi_mM": 0.1,
@@ -361,9 +361,9 @@
      "Cl": 1e-09,
      "Ca": 2e-10
     },
-    "law": "constant_field@1",
+    "law": "cells.route.constant_field@1",
     "gate": {
-     "law": "junction_voltage_relaxation@1",
+     "law": "cells.junction.junction_voltage_relaxation@1",
      "threshold_voltage_V": 0.015,
      "minimum_open_fraction": 0.1,
      "initial_gate": 0.6
@@ -383,7 +383,7 @@
      "Cl": 1.5000000000000002e-14,
      "Ca": 5e-15
     },
-    "law": "logmean_electrodiffusion@1"
+    "law": "cells.route.logmean_electrodiffusion@1"
    },
    {
     "id": "face_1",
@@ -397,7 +397,7 @@
      "Cl": 1e-14,
      "Ca": 5e-15
     },
-    "law": "logmean_electrodiffusion@1"
+    "law": "cells.route.logmean_electrodiffusion@1"
    },
    {
     "id": "face_2",
@@ -411,7 +411,7 @@
      "Cl": 2e-14,
      "Ca": 5e-15
     },
-    "law": "logmean_electrodiffusion@1"
+    "law": "cells.route.logmean_electrodiffusion@1"
    },
    {
     "id": "face_3",
@@ -425,7 +425,7 @@
      "Cl": 1e-14,
      "Ca": 5e-15
     },
-    "law": "logmean_electrodiffusion@1"
+    "law": "cells.route.logmean_electrodiffusion@1"
    },
    {
     "id": "face_4",
@@ -439,18 +439,18 @@
      "Cl": 2e-14,
      "Ca": 5e-15
     },
-    "law": "logmean_electrodiffusion@1"
+    "law": "cells.route.logmean_electrodiffusion@1"
    }
   ],
   "closure": {
-   "law": "resolved_capacitor_components_current_continuity@1",
+   "law": "cells.field_closure.resolved_capacitor_components_current_continuity@1",
    "gauge_reference": null
   },
   "channels": [
    {
     "id": "channel_0",
     "membrane_id": "membrane_0",
-    "kinetic_law": "kv1p5_mh@1",
+    "kinetic_law": "cells.channel.kv1p5_mh@1",
     "max_permeability_m_per_s": 3e-10,
     "abundance": 0.5,
     "initial_gate": [
@@ -467,7 +467,7 @@
    {
     "id": "channel_1",
     "membrane_id": "membrane_1",
-    "kinetic_law": "kir2p1_mh2@1",
+    "kinetic_law": "cells.channel.kir2p1_mh2@1",
     "max_permeability_m_per_s": 3e-10,
     "abundance": 0.6,
     "initial_gate": [
@@ -484,7 +484,7 @@
    {
     "id": "channel_2",
     "membrane_id": "membrane_2",
-    "kinetic_law": "nav1p2_m3h_regularized@1",
+    "kinetic_law": "cells.channel.nav1p2_m3h_regularized@1",
     "max_permeability_m_per_s": 2e-10,
     "abundance": 0.3,
     "initial_gate": [
@@ -501,7 +501,7 @@
    {
     "id": "channel_3",
     "membrane_id": "membrane_3",
-    "kinetic_law": "kv1p5_mh@1",
+    "kinetic_law": "cells.channel.kv1p5_mh@1",
     "max_permeability_m_per_s": 3e-10,
     "abundance": 0.8,
     "initial_gate": [
@@ -518,7 +518,7 @@
    {
     "id": "channel_4",
     "membrane_id": "membrane_0",
-    "kinetic_law": "kir2p1_mh2@1",
+    "kinetic_law": "cells.channel.kir2p1_mh2@1",
     "max_permeability_m_per_s": 3e-10,
     "abundance": 0.5,
     "initial_gate": [
@@ -535,7 +535,7 @@
    {
     "id": "channel_5",
     "membrane_id": "membrane_0",
-    "kinetic_law": "nav1p2_m3h_regularized@1",
+    "kinetic_law": "cells.channel.nav1p2_m3h_regularized@1",
     "max_permeability_m_per_s": 2e-10,
     "abundance": 0.4,
     "initial_gate": [
@@ -552,7 +552,7 @@
    {
     "id": "channel_6",
     "membrane_id": "membrane_1",
-    "kinetic_law": "kleak_always_open@1",
+    "kinetic_law": "cells.channel.kleak_always_open@1",
     "max_permeability_m_per_s": 1e-10,
     "abundance": 1.0,
     "initial_gate": [],
@@ -566,7 +566,7 @@
    {
     "id": "channel_7",
     "membrane_id": "membrane_3",
-    "kinetic_law": "naleak_always_open@1",
+    "kinetic_law": "cells.channel.naleak_always_open@1",
     "max_permeability_m_per_s": 5e-11,
     "abundance": 1.0,
     "initial_gate": [],
@@ -796,8 +796,8 @@
   "backend": "cpu",
   "jit": true,
   "precision": "float64",
-  "solver": "imex_ars222_face_electromigration@1",
-  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "solver": "cells.solver.imex_ars222_face_electromigration@1",
+  "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
   "max_steps": 256,
   "max_trace_bytes": 536870912,
   "material_balance_atol_fmol": {

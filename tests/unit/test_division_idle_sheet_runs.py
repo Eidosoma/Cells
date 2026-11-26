@@ -3,7 +3,7 @@
 The 19-cell heredity sheet (validation/tissue/cell_replacement_fixtures.heredity_sheet(2), every
 cell on its own held bath) is padded to the 64-node cap of field-input providers: 32 cell slots
 and 32 outside slots, 38 of them declared. It runs with idle division operators,
-isopotential_partition@1 with no divisions and cytoplasmic_bridge_closure@1 with no bridges, and
+cells.operator.isopotential_partition@1 with no divisions and cells.operator.cytoplasmic_bridge_closure@1 with no bridges, and
 without them, at the same padding. The two must be bitwise equal: every inner state field on
 every accepted row, and every observation column they share.
 

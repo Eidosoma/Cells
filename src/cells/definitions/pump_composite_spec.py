@@ -1,8 +1,8 @@
-"""resolved_pump_composite@1: an inner pump-tissue model plus an ordered list of operators.
+"""cells.model.resolved_pump_composite@1: an inner pump-tissue model plus an ordered list of operators.
 
 Definition (D143; docs/CELL_DIVISION_DESIGN.md §3.2). The model holds the inner
 model's own fields, parsed by that identity's own parser (here only
-resolved_pump_tissue@3), plus
+cells.model.resolved_pump_tissue@3), plus
 
 * ``inner_model``: the inner identity;
 * ``operators``: an ordered list of operator declarations, each naming its law
@@ -21,8 +21,8 @@ combinations are definitions, not model families. A combination is not qualified
 by its parts: an unqualified combination runs as a labelled development run, and
 judged status comes only from a registered protocol (D143).
 
-frozen_definition(raw) rewrites a resolved_pump_tissue@3, resolved_pump_water@1,
-resolved_pump_water@2 or resolved_pump_replacement@1 definition as the equivalent
+frozen_definition(raw) rewrites a cells.model.resolved_pump_tissue@3, cells.model.resolved_pump_water@1,
+cells.model.resolved_pump_water@2 or cells.model.resolved_pump_replacement@1 definition as the equivalent
 composition (their frozen experiment keys are the operators' keys).
 """
 
@@ -38,7 +38,7 @@ from cells.definitions import surface_pump_v3_spec as ionic
 from cells.definitions.specs import ConfigError
 from cells.registry import kind_registry
 
-MODEL_ID = "resolved_pump_composite@1"
+MODEL_ID = "cells.model.resolved_pump_composite@1"
 INNER_MODEL_IDS = (ionic.MODEL_ID,)
 DEVELOPMENT_STATUS = (
     "development composition: integration grants no acceptance; judged status only "
@@ -112,7 +112,7 @@ class Experiment(ionic.Experiment):
 
 
 def projection(spec):
-    """The inner (resolved_pump_tissue@3) definition: no composite declarations."""
+    """The inner (cells.model.resolved_pump_tissue@3) definition: no composite declarations."""
     m, e = spec.model, spec.experiment
     model = ionic.SurfacePumpChannelModel(
         **{k: getattr(m, k) for k in ionic.SurfacePumpChannelModel.__dataclass_fields__}
@@ -274,7 +274,7 @@ def control_values(spec, times):
 
 
 def frozen_definition(data):
-    """A resolved_pump_tissue@3, water@1, water@2 or replacement@1 definition as a composition.
+    """A cells.model.resolved_pump_tissue@3, water@1, water@2 or replacement@1 definition as a composition.
 
     The operators carry the frozen blocks unchanged (each names its law), and the
     experiment keeps the frozen schedule keys, which are the operators' keys.
@@ -285,11 +285,11 @@ def frozen_definition(data):
     operators, inner = [], ionic.MODEL_ID
     if kind == ionic.MODEL_ID:
         pass
-    elif kind in ("resolved_pump_water@1", "resolved_pump_water@2"):
+    elif kind in ("cells.model.resolved_pump_water@1", "cells.model.resolved_pump_water@2"):
         operators.append(m.pop("water"))
-        if kind == "resolved_pump_water@2":
+        if kind == "cells.model.resolved_pump_water@2":
             operators.append(m.pop("symport"))
-    elif kind == "resolved_pump_replacement@1":
+    elif kind == "cells.model.resolved_pump_replacement@1":
         block = m.pop("replacement")
         inner = block.pop("inner_model")
         operators.append(block)

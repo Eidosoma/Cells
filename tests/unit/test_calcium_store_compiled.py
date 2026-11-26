@@ -118,7 +118,9 @@ def test_a_pool_on_its_calcium_channel_drives_the_world_and_restarts(one):
     end = ionic["experiment"]["end_time"]
     ionic["experiment"]["observation_times"] = [0.0, end]
     ionic["execution"]["max_steps"] = 200  # Ten steps and the switches.
-    pool = DRIVING | dict(model="finite_bond_assembly@1", seed=2027, worlds=1, end_time_s=end)
+    pool = DRIVING | dict(
+        model="cells.model.finite_bond_assembly@1", seed=2027, worlds=1, end_time_s=end
+    )
     entry = dict(channels=["channel_0"], observable=OBSERVABLE, levels=dict(LEVELS), pool=pool)
     composed = resolve.parse_composed(dict(schema_version=1, ionic=ionic, pools=[entry]))
     times = [k * 9.7e-6 for k in range(13)]

@@ -52,7 +52,7 @@ import harness as H  # noqa: E402  The registered harness's world builders, unch
 
 CAP = 3e-2
 CAP_CONTROL = 2e-3
-CHECK = "step_doubled_energy@1"
+CHECK = "cells.execution.step_doubled_energy@1"
 SOLVER_ENV = "X2_QUALIFY_SOLVER"  # Unset: each world's own solver, as registered.
 WINDOW = 4096  # Whole-horizon runs; a first-STEPS run takes one window of STEPS.
 REPORTED = (

@@ -5,7 +5,7 @@ reference. The routes' world compiled twice, labelled and as its unlabelled twin
 
 - **Routes:** Q labelled a and b as shares, beside Q_a and Q_b as plain rows. It moves between
   two cells by a junction and from each cell to their outside node by a membrane route
-  (constant_field@1, linear in each end for an uncharged row), and the shares follow the exact
+  (cells.route.constant_field@1, linear in each end for an uncharged row), and the shares follow the exact
   rows within 2e-6 at every node, at the share update's and @3's trapezoid's second order, and the
   labelled run's records are its unlabelled twin's bit for bit. (The label's total over the nodes
   holds to that second order in general; here it held at rounding, 3.7e-16, with no loss.)
@@ -21,7 +21,7 @@ from validation.regions import readouts
 from validation.tissue import secreted_species_fixtures as fx
 
 EPS = np.finfo(float).eps
-LAW = "neutral_arrival_labels@1"
+LAW = "cells.operator.neutral_arrival_labels@1"
 ROUTE_PERMEABILITY = 1e-4  # m/s: about 1/s through each 1e-11 m^2 patch or junction, 1 pL a node.
 CELLS, NODE = ("cell_0", "cell_1"), "ecs_0"
 

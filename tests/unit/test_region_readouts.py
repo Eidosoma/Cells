@@ -266,7 +266,7 @@ def test_every_law_the_tools_do_not_read_is_refused():
     raw = wash.with_wash(wash.well(sites=False, end=2.0), ["well"],
                          [(1.0, "well", 0.5, {wash.TRACER: 60.0 / wash.V_WELL})])  # fmt: skip
     spec = parse_spec(raw)
-    message = "scheduled_compartment_wash@1 collects and refills every free species at its nodes"
+    message = "cells.operator.scheduled_compartment_wash@1 collects and refills every free species at its nodes"
     with pytest.raises(ValueError, match=message):
         readouts.trace(spec, [0.0], [None], wash.TRACER, {"label": {"well": 1.0}})
     with pytest.raises(ValueError, match=message):

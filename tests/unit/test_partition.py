@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of isopotential_partition@1 and the closers (docs/CELL_DIVISION_S5_DESIGN.md).
+"""Tier-1 smoke test of cells.operator.isopotential_partition@1 and the closers (docs/CELL_DIVISION_S5_DESIGN.md).
 
 In NumPy on bound compact worlds (no compile), all built from neither J1 input:
 * closers (§2): pending daughters are @3 padding at the view, with closed masks, zero reference
@@ -412,7 +412,7 @@ def test_definition_refusals(change, message):
 
 
 def test_injection_into_a_daughter_closes_every_ledger():
-    """electrode_current_injection@1 beside the partition (Q10's variant): a current into d1
+    """cells.operator.electrode_current_injection@1 beside the partition (Q10's variant): a current into d1
     from its birth on. Every ledger closes at row 0, across the event and after injection
     half-steps at the view; a current into d1 before its birth is refused."""
     spec, model, state, p = bind(fx.divided(injection=1e-12))
@@ -449,7 +449,7 @@ def test_a_provider_beside_a_closer_is_refused():
     raw = fx.divided()
     raw["model"]["operators"].append(
         dict(
-            law="scheduled_membrane_insertion@1",
+            law="cells.operator.scheduled_membrane_insertion@1",
             patches=[
                 dict(
                     membrane_id="membrane_0",
@@ -470,7 +470,10 @@ def test_a_provider_beside_a_closer_is_refused():
 
 @pytest.mark.parametrize(
     "closer, mask",
-    ((partition.LAW_ID, "active"), ("scheduled_membrane_insertion@2", "membrane_active")),
+    (
+        (partition.LAW_ID, "active"),
+        ("cells.operator.scheduled_membrane_insertion@2", "membrane_active"),
+    ),
 )
 def test_replacement_over_water_is_refused_beside_a_closer(closer, mask):
     """§5.5, against replacement@2 as landed: it reads the masks on the declared layout

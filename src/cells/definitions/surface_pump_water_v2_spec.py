@@ -1,6 +1,6 @@
-"""resolved_pump_water@2: resolved_pump_water@1 plus KCC-type K+/anion symport routes.
+"""cells.model.resolved_pump_water@2: cells.model.resolved_pump_water@1 plus KCC-type K+/anion symport routes.
 
-Every field of resolved_pump_water@1 keeps its meaning and is parsed by that
+Every field of cells.model.resolved_pump_water@1 keeps its meaning and is parsed by that
 identity's own parser. The model adds ``symport``:
 
 * ``law``: processes/k_anion_symport.LAW_ID (mass action, electroneutral 1:1);
@@ -11,7 +11,7 @@ identity's own parser. The model adds ``symport``:
 
 The experiment adds ``symport_controls``: one availability schedule per route
 (a block such as VU0463271 is availability 0). With no route the identity is
-resolved_pump_water@1 (models/surface_pump_water_v2.py).
+cells.model.resolved_pump_water@1 (models/surface_pump_water_v2.py).
 """
 
 import copy
@@ -27,7 +27,7 @@ from cells.definitions.spec_values import identifier, positive
 from cells.definitions.specs import ChannelChange, ConfigError, _fields, _number
 from cells.laws.routes.k_anion_symport import LAW_ID, VOLUME_FACTOR_ID
 
-MODEL_ID = "resolved_pump_water@2"
+MODEL_ID = "cells.model.resolved_pump_water@2"
 ROUTE_FIELDS = ("membrane_id", "capacity_fmol_s_mM2", "set_volume_pL", "steepness")
 
 
@@ -86,7 +86,7 @@ class Change(water.Change):
 
 @dataclass(frozen=True)
 class Experiment(water.Experiment):
-    """resolved_pump_water@1's experiment plus one symport schedule per route."""
+    """cells.model.resolved_pump_water@1's experiment plus one symport schedule per route."""
 
     symport: tuple[tuple[ChannelChange, ...], ...]
 
@@ -117,7 +117,7 @@ class Experiment(water.Experiment):
 
 
 def projection(spec):
-    """The resolved_pump_water@1 part of a definition (no symport routes)."""
+    """The cells.model.resolved_pump_water@1 part of a definition (no symport routes)."""
     m, e = spec.model, spec.experiment
     model = water.SurfacePumpWaterModel(
         **{k: getattr(m, k) for k in water.SurfacePumpWaterModel.__dataclass_fields__}
@@ -190,7 +190,7 @@ def parse(data):
     raw = copy.deepcopy(data)
     m, e = raw.get("model"), raw.get("experiment")
     if not isinstance(m, dict) or not isinstance(e, dict) or m.get("id") != MODEL_ID:
-        raise ConfigError("Require resolved_pump_water@2")
+        raise ConfigError("Require cells.model.resolved_pump_water@2")
     if "symport" not in m or "symport_controls" not in e:
         raise ConfigError("Declare symport and symport_controls")
     symport, controls = m.pop("symport"), e.pop("symport_controls")
@@ -218,7 +218,7 @@ def parse(data):
 
 
 def control_values(spec, times):
-    """resolved_pump_water@1 controls plus the symport availabilities (padded to membranes)."""
+    """cells.model.resolved_pump_water@1 controls plus the symport availabilities (padded to membranes)."""
     base = water.control_values(projection(spec), times)
     changes = spec.experiment.changes
     indices = np.searchsorted([c.time for c in changes], times, side="right") - 1

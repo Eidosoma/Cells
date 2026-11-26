@@ -1,9 +1,9 @@
-"""Independent reduced reference for resolved_pump_water@1 (numpy/scipy; no Cells code).
+"""Independent reduced reference for cells.model.resolved_pump_water@1 (numpy/scipy; no Cells code).
 
-It reads a plain resolved_pump_water@1 definition (the JSON dict) and writes the
+It reads a plain cells.model.resolved_pump_water@1 definition (the JSON dict) and writes the
 declared laws as one smooth ODE system, integrated with scipy's Radau or DOP853 at
 tight tolerances. Nothing in src/cells is imported. The channel, junction-gate and
-constant-field laws are transcribed from the laws resolved_pump_tissue@3 declares
+constant-field laws are transcribed from the laws cells.model.resolved_pump_tissue@3 declares
 (laws/channels/sodium_channels.py, potassium_channels.py, junction_gate.py,
 laws/junctions/selective.py). The pump is mg0b_theory's transcription of
 kinetic_pump.LAW_ID, already judged against the engine. The water law is written
@@ -34,8 +34,8 @@ from validation.morphogenesis import mg0b_theory as theory
 
 F, R = theory.F, theory.R
 MOL_PER_FMOL = 1e-15
-GATED = {"nav1p2_m3h_regularized@1": "nav", "kir2p1_mh2@1": "kir"}
-LEAKS = {"kleak_always_open@1", "naleak_always_open@1"}
+GATED = {"cells.channel.nav1p2_m3h_regularized@1": "nav", "cells.channel.kir2p1_mh2@1": "kir"}
+LEAKS = {"cells.channel.kleak_always_open@1", "cells.channel.naleak_always_open@1"}
 
 
 def bernoulli(x):
@@ -72,7 +72,7 @@ def kir_kinetics(v):
 
 
 def junction_rates(vj, threshold, minimum):
-    """alpha, beta (1/s) of junction_voltage_relaxation@1 (laws/junctions/junction_gate.py)."""
+    """alpha, beta (1/s) of cells.junction.junction_voltage_relaxation@1 (laws/junctions/junction_gate.py)."""
     shift = np.abs(vj) - threshold
     alpha = 1.3 * np.exp(-77.0 * shift)
     beta = 20.0 / (1.0 + np.exp(-(math.log(0.065) + 140.0 * shift)))
@@ -116,8 +116,8 @@ class World:
 
 def load(raw):
     m, e = raw["model"], raw["experiment"]
-    if m["id"] != "resolved_pump_water@1":
-        raise ValueError("The reference reads resolved_pump_water@1 definitions")
+    if m["id"] != "cells.model.resolved_pump_water@1":
+        raise ValueError("The reference reads cells.model.resolved_pump_water@1 definitions")
     species = [s["id"] for s in m["species"]]
     gauge = m["closure"]["gauge_reference"]
     outside = m["extracellular"]
@@ -168,7 +168,7 @@ class Reference:
     def __init__(self, raw, kcc=None):
         """kcc: optional KCC-type route on every membrane, a dict with
         capacity_fmol_s_mM2, set_volume_pL, steepness and availability (W2;
-        k_anion_symport_mass_action@1 transcribed from its docstring)."""
+        cells.operator.k_anion_symport_mass_action@1 transcribed from its docstring)."""
         self.kcc = kcc
         w = self.w = load(raw)
         self.s = len(w.species)

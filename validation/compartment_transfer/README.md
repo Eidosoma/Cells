@@ -10,13 +10,13 @@ The code is in `example.py`; the test `tests/unit/test_compartment_transfer_exam
 
 ## The world
 
-One cell owns two compartments (`cell_owned_compartments@1`). Each is a finite node bounded by one
+One cell owns two compartments (`cells.operator.cell_owned_compartments@1`). Each is a finite node bounded by one
 patch that no ion crosses, and each holds the same amount of its own labelled neutral species.
 
 | Arm | Species and node | What empties it | Rate |
 | --- | --- | --- | --- |
-| T, transfer | `ST` in `ecs_0` | `scheduled_species_exchange@1`'s first-order import releases it into the cell | kappa = k_u A 1e15 / V_o |
-| D, local destruction | `SD` in `ecs_1` | `scheduled_species_turnover@1` clears it at its node | the same kappa, formed by the same operations |
+| T, transfer | `ST` in `ecs_0` | `cells.operator.scheduled_species_exchange@1`'s first-order import releases it into the cell | kappa = k_u A 1e15 / V_o |
+| D, local destruction | `SD` in `ecs_1` | `cells.operator.scheduled_species_turnover@1` clears it at its node | the same kappa, formed by the same operations |
 
 ## What it exports per row, per arm
 

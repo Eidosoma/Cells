@@ -43,7 +43,7 @@ def experiment(*, backend="cpu", worlds=2, width=1, end=0.0004):
         if name.endswith("_controls"):
             for control in controls:
                 control["schedule"] = control["schedule"][:1]
-    raw = {"model": "ionic_worlds@1", "simulation": simulation, "window_steps": 2}
+    raw = {"model": "cells.model.ionic_worlds@1", "simulation": simulation, "window_steps": 2}
     return {
         "kind": "ionic_ensemble@1",
         "seed": 123,
@@ -99,7 +99,7 @@ def test_reject_owned_counts_and_over_budget():
 def test_ionic_aggregation_does_not_invent_assembly_statistics():
     row = {
         "arm": "a",
-        "model": "ionic_worlds@1",
+        "model": "cells.model.ionic_worlds@1",
         "physical_model": "finite_extracellular@3",
         "worlds": 2,
         "wall_start": 0.0,

@@ -1,7 +1,7 @@
 """Free-offset composites and the solver-change refusal for D147's composite tests (D156).
 
 tests/unit/test_field_solver_composite.py (no stepping) and test_field_solver_composite_runs.py
-(the runs). Two resolved_pump_composite@1 definitions with one free field offset each, built with
+(the runs). Two cells.model.resolved_pump_composite@1 definitions with one free field offset each, built with
 field solver version 2:
 - minimal: D150's quiescent one-cell world (validation/tissue/secreted_species_fixtures.world)
   with the cell's wall patch on its finite node, so the capacitor component {cell_0, ecs_0}
@@ -12,7 +12,7 @@ field solver version 2:
   (pump_composite_spec.frozen_definition), the world composite_crossrev's replacement_padded
   starts from (two cells, five outside nodes, NaV1.2 channels, IMEX only);
 - replacement: composite_crossrev's replacement_padded made a composite, the operator-bearing
-  case: that world under scheduled_cell_replacement@1 with two own-template events. Stepped under
+  case: that world under cells.operator.scheduled_cell_replacement@1 with two own-template events. Stepped under
   versions 2 and 3 through both events it ran bitwise alike with equal diagnostics, about 80 s a
   program on a shared CPU, too long for a test (the advisor's check of 14 November:
   /mnt/workspaces/Cells/architecture-block-20261114-01/check-round.json).
@@ -30,7 +30,7 @@ from cells.records.io import load_snapshot, write_snapshot
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 
-IMEX = "imex_ars222_face_electromigration@1"
+IMEX = "cells.solver.imex_ars222_face_electromigration@1"
 FLIP = {
     FACTORED_SOLVER_ID: FLOOR_SOLVER_ID,
     FLOOR_SOLVER_ID: FACTORED_SOLVER_ID,

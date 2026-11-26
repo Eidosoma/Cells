@@ -4,16 +4,16 @@ The references (validation/fr7/references/, registered code-blind on 19 November
 fr7-references-registered-2026-11-19) declare six synthetic worlds in
 interface/inputs.json. This module reads that file only, never the references' implementation,
 and declares each world for the engine:
-* the composite resolved_pump_composite@1 over resolved_pump_tissue@3;
+* the composite cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3;
 * R-cell's pump-free cell: one cell with one constant-field patch facing a bath held at 0 V;
-* the gate-free, K-only population (kleak_always_open@1), declared in membrane_entity_state@1 at
+* the gate-free, K-only population (cells.channel.kleak_always_open@1), declared in cells.operator.membrane_entity_state@1 at
   the registered reference density, at abundance N0 / (A rho_ref);
 * the template T and the precursor P, two neutral inventory species (D150's identity form) under
-  scheduled_species_turnover@1: T's production schedule and clearance, and P's supply and
+  cells.operator.scheduled_species_turnover@1: T's production schedule and clearance, and P's supply and
   clearance where declared;
-* species_regulated_availability@2: the template's Hill activation (K, n, b) routed onto the unit
+* cells.operator.species_regulated_availability@2: the template's Hill activation (K, n, b) routed onto the unit
   producer's assembly rate (B1', target_half_steps), at the registered operating range;
-* population_unit_turnover@1: one route on the population, with the registered nu, stages m
+* cells.operator.population_unit_turnover@1: one route on the population, with the registered nu, stages m
   (maturation_time_s = m / kappa), initial units in each stage (M0), k_a and k_r on all of N.
 
 The start is the registered one: the cell's amounts, its background charge, and the charge
@@ -58,9 +58,9 @@ COUPLING = "c_template"
 TRACE_mM = 1e-15
 FLOOR_FMOL = 1e-20  # The species ledger's floor, as the coupling protocol declares it.
 DIFFUSIVITY = fx.DIFFUSIVITY  # Inert: the cell has no face.
-IMEX = "imex_ars222_face_electromigration@1"
-FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
-CLOSURE = "resolved_capacitor_components_current_continuity@1"
+IMEX = "cells.solver.imex_ars222_face_electromigration@1"
+FIELD_SOLVER = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
+CLOSURE = "cells.field_closure.resolved_capacitor_components_current_continuity@1"
 CHARGE_PER_FMOL = F * 1e-15
 
 
@@ -113,11 +113,13 @@ def definition(inp, name, *, dt=None, end=None, rows=None):
     area = cell["patch_area_m2"]
     units = w["units"]
     if list(pop["relative_permeability"]) != [0.0, 1.0, 0.0]:
-        raise ValueError("The engine's gate-free population here is kleak_always_open@1 (K only)")
+        raise ValueError(
+            "The engine's gate-free population here is cells.channel.kleak_always_open@1 (K only)"
+        )
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=inp["constants"]["temperature_K"],
             species=[dict(id=s, valence=z) for s, z in zip(species, valence, strict=True)],
             cells=[_node(CELL, cell["volume_pL"], amounts, background, charge)],
@@ -132,7 +134,7 @@ def definition(inp, name, *, dt=None, end=None, rows=None):
                     permeability_m_per_s=dict(
                         zip(species, cell["leak_permeability_m_s"], strict=True)
                     ),
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=None,
                     calcium_pump=None,
                 )
@@ -144,7 +146,7 @@ def definition(inp, name, *, dt=None, end=None, rows=None):
                 dict(
                     id=POPULATION,
                     membrane_id=PATCH,
-                    kinetic_law="kleak_always_open@1",
+                    kinetic_law="cells.channel.kleak_always_open@1",
                     max_permeability_m_per_s=pop["permeability_m_s"],
                     abundance=units["N0"] / (area * pop["reference_density_per_m2"]),
                     initial_gate=[],
@@ -253,7 +255,7 @@ def _with_operators(raw, inp, w):
         templates=[],
     )
     coupling = dict(
-        law="species_regulated_availability@2",
+        law="cells.operator.species_regulated_availability@2",
         species=_identity(TEMPLATE),
         states=[],
         couplings=[

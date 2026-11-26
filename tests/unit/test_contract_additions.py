@@ -31,38 +31,41 @@ from validation.tissue import secreted_species_fixtures as fx
 # Registered before the run-view declarations: each owner removes its operator when it declares.
 PENDING_LAYERS = frozenset(
     {
-        "cell_owned_compartments@1",
-        "cytoplasmic_bridge_closure@1",
-        "ideal_osmosis_linear_compliance_water@1",
-        "isopotential_partition@1",
-        "k_anion_symport_mass_action@1",
-        "local_species_reactions@1",
-        "membrane_entity_state@1",
-        "restricted_cleft_lumen@1",
-        "restricted_cleft_lumen@2",
-        "scheduled_bath_composition@1",
-        "scheduled_cell_replacement@1",
-        "scheduled_cell_replacement@2",
-        "scheduled_membrane_insertion@1",
-        "scheduled_membrane_insertion@2",
-        "site_occupancy@1",
-        "species_regulated_availability@1",
+        "cells.operator.cell_owned_compartments@1",
+        "cells.operator.cytoplasmic_bridge_closure@1",
+        "cells.operator.ideal_osmosis_linear_compliance_water@1",
+        "cells.operator.isopotential_partition@1",
+        "cells.operator.k_anion_symport_mass_action@1",
+        "cells.operator.local_species_reactions@1",
+        "cells.operator.membrane_entity_state@1",
+        "cells.operator.restricted_cleft_lumen@1",
+        "cells.operator.restricted_cleft_lumen@2",
+        "cells.operator.scheduled_bath_composition@1",
+        "cells.operator.scheduled_cell_replacement@1",
+        "cells.operator.scheduled_cell_replacement@2",
+        "cells.operator.scheduled_membrane_insertion@1",
+        "cells.operator.scheduled_membrane_insertion@2",
+        "cells.operator.site_occupancy@1",
+        "cells.operator.species_regulated_availability@1",
     }
 )
 # Those with an event map or a schedule: the default view_events until each declares its own
 # (D150's two schedules declare their layers already, on the run view's branch).
 PENDING_EVENTS = (
-    PENDING_LAYERS | {"scheduled_species_exchange@1", "scheduled_species_turnover@1"}
+    PENDING_LAYERS
+    | {"cells.operator.scheduled_species_exchange@1", "cells.operator.scheduled_species_turnover@1"}
 ) - {
-    "cell_owned_compartments@1",
-    "membrane_entity_state@1",
-    "restricted_cleft_lumen@1",
-    "restricted_cleft_lumen@2",
+    "cells.operator.cell_owned_compartments@1",
+    "cells.operator.membrane_entity_state@1",
+    "cells.operator.restricted_cleft_lumen@1",
+    "cells.operator.restricted_cleft_lumen@2",
 }
 
 
 def operator(**attributes):
-    return type("Test", (Operator,), dict(LAW_ID="test_op@1", EVENT=True) | attributes)
+    return type(
+        "Test", (Operator,), dict(LAW_ID="cells.operator.test_op@1", EVENT=True) | attributes
+    )
 
 
 def test_an_in_step_process_declares_the_rows_it_moves():
@@ -201,7 +204,7 @@ def test_record_layers_may_name_the_view_fields_it_changes():
 
 
 def test_a_declaration_declares_no_records():
-    base = dict(LAW_ID="test_declaration@1", DECLARATION_ONLY=True)
+    base = dict(LAW_ID="cells.operator.test_declaration@1", DECLARATION_ONLY=True)
     with pytest.raises(ValueError, match="declares UNITS"):
         check_declarations(type("D", (Operator,), base | dict(UNITS={"x": "1"})))
     with pytest.raises(ValueError, match="overrides view_sets"):
@@ -222,7 +225,7 @@ def test_the_pending_run_view_declarations_only_shrink():
 
 
 def test_the_injection_declares_its_run_view():
-    """electrode_current_injection@1's run view (declared by the run view's owner: ruling 3 of
+    """cells.operator.electrode_current_injection@1's run view (declared by the run view's owner: ruling 3 of
     docs/LOOPING_REPLAY_DESIGN.md §9): one prescribed layer, every accumulator a total since the
     start, and an event for each scheduled current at its electrode's cell, in time order."""
     from cells.definitions import pump_composite_spec as cs
@@ -243,7 +246,7 @@ def test_the_injection_declares_its_run_view():
 
 
 def test_declarations_may_declare_their_run_view():
-    base = dict(LAW_ID="test_declaration@1", DECLARATION_ONLY=True)
+    base = dict(LAW_ID="cells.operator.test_declaration@1", DECLARATION_ONLY=True)
     check_declarations(type("D", (Operator,), base | dict(VIEW_LAYERS=(LAYER,))))
     with pytest.raises(ValueError, match="declares IDENTITY_ROLE"):
         check_declarations(type("D", (Operator,), base | dict(IDENTITY_ROLE="user")))
@@ -258,13 +261,18 @@ def test_uses_inner_passes_the_inner_object_only_to_declaring_operators():
 
     parts = dict(EVENT=False, SPLIT=True, RK4="split", half_step=half_step)
     user = check_declarations(
-        type("U", (Operator,), dict(LAW_ID="test_user@1", USES_INNER=True) | parts)
+        type("U", (Operator,), dict(LAW_ID="cells.operator.test_user@1", USES_INNER=True) | parts)
     )()
-    plain = check_declarations(type("P", (Operator,), dict(LAW_ID="test_plain@1") | parts))()
+    plain = check_declarations(
+        type("P", (Operator,), dict(LAW_ID="cells.operator.test_plain@1") | parts)
+    )()
     composition = pump_composite.Composition(adapter, (user, plain))
     spec = parse_spec(fx.world())
     state, p = get_model(spec.model).initial_values(spec)
     for op in (user, plain):
         composition._half_step(op, state, 0.5e-3, None, p, xp=np)
-    assert seen == {"test_user@1": composition.inner, "test_plain@1": None}
+    assert seen == {
+        "cells.operator.test_user@1": composition.inner,
+        "cells.operator.test_plain@1": None,
+    }
     assert composition.inner is adapter

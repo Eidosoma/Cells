@@ -1,4 +1,4 @@
-"""Small worlds for species_regulated_availability@1 (coupling out of the inventory, D155 item 1).
+"""Small worlds for cells.operator.species_regulated_availability@1 (coupling out of the inventory, D155 item 1).
 
 All values are synthetic. The base world is the seven-cell heredity sheet
 (cell_replacement_fixtures.heredity_sheet, radius 1, its centre cell written D): pumps, Kir and
@@ -22,8 +22,8 @@ from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import secreted_species_fixtures as sfx
 
-LAW = "species_regulated_availability@1"
-STATE_LAW = "hill_regulated_two_state@1"
+LAW = "cells.operator.species_regulated_availability@1"
+STATE_LAW = "cells.regulation.hill_regulated_two_state@1"
 REGULATOR = "R"
 REGULATOR_mM = 1e-3
 FLOOR_FMOL = 1e-20

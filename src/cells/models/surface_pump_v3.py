@@ -1,15 +1,15 @@
-"""resolved_pump_tissue@3: resolved_pump_tissue@2 with voltage-gated channel populations.
+"""cells.model.resolved_pump_tissue@3: cells.model.resolved_pump_tissue@2 with voltage-gated channel populations.
 
 A channel population (definitions/surface_pump_v3_spec.py) is one more membrane process
 at its patch: the constant-field flux of its law's ion with permeability
 P * abundance * opening(gates) * availability, the shared-gate population
-equations of resolved_tissue@8 (surface_kinetic.readouts). It moves
+equations of cells.model.resolved_tissue@8 (surface_kinetic.readouts). It moves
 material from the cell to the patch's outside node, charging both capacitor
 components, and has its own per-species transfer and dissipation ledgers. The
 field law, factored solver, junction gate, both pumps and every @2 check are
 those of models/surface_pump_v2.py; each rate below is @2's sequence of
 operations with the channel terms appended, so with no channels this identity
-reproduces resolved_pump_tissue@2. Accepted rows are checked on the host
+reproduces cells.model.resolved_pump_tissue@2. Accepted rows are checked on the host
 (check_values) or, in vectorized worlds and projective bursts, on the device
 (device_checks): the same tests with the same bounds.
 
@@ -117,7 +117,7 @@ STATE_AXES = second.STATE_AXES | {
     "channel_dissipated_energy_pJ": ["species", "channel_slot"],
 }
 STATE_TYPE = NamedTuple("SurfacePumpChannelState", [(k, object) for k in STATE_AXES])
-# junction_heat_trapezoid: one element with the trapezoid_nonnegative@1 junction-heat
+# junction_heat_trapezoid: one element with the cells.heat.trapezoid_nonnegative@1 junction-heat
 # booking, none by default, so the step's branch is static (shape, not value). Every
 # @3 layout carries it (empty by default); the state layout (STATE_TYPE) is unchanged,
 # and @3 checkpoints from source before this field do not load (snapshots already
@@ -160,7 +160,7 @@ SPARSE_LAYOUT_TYPE = NamedTuple(  # Declared field solver surface_field.SPARSE_S
         )
     ],
 )
-# The forms faces (logmean_electrodiffusion_forms@1; MITOCHONDRIA_DESIGN's face note, its build
+# The forms faces (cells.route.logmean_electrodiffusion_forms@1; MITOCHONDRIA_DESIGN's face note, its build
 # plan's item 1): their own entity set, with their own state and layout fields, present only in a
 # structure that declares forms faces (InnerStructure.forms_faces, _kind_types), so no other
 # world's types, layouts or programs carry anything of them (D148 case 2). A mover is a row moving
@@ -210,7 +210,8 @@ UNBLOCKED_FRACTION = "channel_unblocked_fraction"  # FR-51's readout column, onl
 UNBLOCKED_FRACTION_NOTE = (
     "the unblocked fraction u of each channel population at the row's read state: (sum_k w_k "
     "K_k/(c_B + K_k)) / (sum_k w_k) at the row's patch voltage V (or V - E of the reversal ion), "
-    "which multiplies its flux (FR-51, open_channel_block_weighted_modes@1); 1 for a population "
+    "which multiplies its flux (FR-51, cells.channel_block.open_channel_block_weighted_modes@1); 1 "
+    "for a population "
     "without a block. Recorded only where a population declares a block. It is separate from "
     "channel_availability and channel_effective_availability, which carry the controls and the "
     "routing door's factors"
@@ -690,7 +691,7 @@ def channel_rates(
 
 
 class ChannelBlockValues(NamedTuple):
-    """FR-51: each population's block at a stage (open_channel_block_weighted_modes@1)."""
+    """FR-51: each population's block at a stage (cells.channel_block.open_channel_block_weighted_modes@1)."""
 
     u: object  # [channel] the unblocked fraction; 1.0 on an inactive slot
     theta: object  # [mode, channel] the blocked fraction of each mode
@@ -1052,7 +1053,7 @@ def junction_gate_rhs(gate, junction_voltage, p, *, xp=jnp, structure=None):
 
 
 def series_kinetics(voltage, p, structure, *, xp=jnp):
-    """FR-30: each junction_series_gates@1 gate's Rates at the junction voltages [edge], in GATES
+    """FR-30: each cells.junction.junction_series_gates@1 gate's Rates at the junction voltages [edge], in GATES
     order (the law's own kinetics, with the layout's parameters); a padded edge's relaxation is 1,
     so no update divides by its zero rates (its gates are held)."""
     kinds = structure.junction_series_kinds
@@ -1254,7 +1255,7 @@ def routes_into_channels(structure):
     return structure is not None and any(sink == OWN_SINK for sink, *_ in structure.routes)
 
 
-# FR-30 (D262): junction_series_gates@1's state and layout fields, present only where the
+# FR-30 (D262): cells.junction.junction_series_gates@1's state and layout fields, present only where the
 # structure's junctions take that law (series_junctions); junction_gate then holds the
 # junction's conductance, the product of its gates' factors (S2).
 SERIES_GATES = "junction_series_gates"  # [series_gate, edge_slot]: each gate's factor c in [r, 1].
@@ -1266,12 +1267,12 @@ SERIES_PARAMETER_SLOTS = max(
 
 
 def series_junctions(structure):
-    """Whether the structure's junctions take junction_series_gates@1 (static)."""
+    """Whether the structure's junctions take cells.junction.junction_series_gates@1 (static)."""
     return structure is not None and bool(structure.junction_series_kinds)
 
 
 def declares_series_junctions(model):
-    """Whether a parsed model's junctions take junction_series_gates@1 (from the definition)."""
+    """Whether a parsed model's junctions take cells.junction.junction_series_gates@1 (from the definition)."""
     return any(j.law == SERIES_GATE_LAW_ID for j in model.junctions)
 
 
@@ -2729,7 +2730,7 @@ def predicted_series_gates(state, junction_voltage, theta, p, structure, *, xp=j
 
 def stage_series_gates(stage, state, start, potential, availability, fraction, dt, p, structure, *,
                        xp=jnp):  # fmt: skip
-    """N2's (a) for junction_series_gates@1 (FR-30): each gate's exponential update from the
+    """N2's (a) for cells.junction.junction_series_gates@1 (FR-30): each gate's exponential update from the
     step start to the stage at fraction * dt, as stage_junction_gates' for one gate, from each
     gate's Rates at the start's (`start`) and the stage's junction voltages; then junction_gate
     their product (S2); with the law's domain at the stage. (stage, valid)."""
@@ -3318,14 +3319,14 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         + 1e-3 * species_sum(mu * (dt * applied("reservoir_supplied")), xp=xp),
         electrode_work_pJ=state.electrode_work_pJ + 1e12 * p.boundary_V * electrode,
     )
-    if exact_faces(structure):  # exact_free_energy_heat@1 (D280, a static choice).
+    if exact_faces(structure):  # cells.heat.exact_free_energy_heat@1 (D280, a static choice).
         # Each face books its rows' exact free-energy release from the nodes' start and end
         # amounts, in place of the face heat above: no clamp, and no other form where a share
         # falls below its floor or a row's shares miss its exact change (the step is refused).
         release, booked = exact_face_heat(state, stage, p, xp=xp)
         valid &= booked
         stage = stage._replace(face_dissipated_energy_pJ=state.face_dissipated_energy_pJ + release)
-    if p.junction_heat_trapezoid.shape[0]:  # trapezoid_nonnegative@1 (a static choice).
+    if p.junction_heat_trapezoid.shape[0]:  # cells.heat.trapezoid_nonnegative@1 (a static choice).
         # The tableau's explicit weights (delta, 1 - delta), delta < 0, book a negative
         # junction heat increment where a junction's power falls by more than 59% in a
         # step (its voltage crossing zero). This booking instead averages the start
@@ -4629,7 +4630,7 @@ class StepChecks(first.StepChecks):
             ):  # N2's guard (RUNG1 §2, D235): no coarse step runs without X2.
                 raise ConfigError(
                     f"{spec.execution.solver} runs only with execution.energy_check "
-                    "step_doubled_energy@1 selected"
+                    "cells.execution.step_doubled_energy@1 selected"
                 )
             self.require_accepted_observations()
             if step * self.explicit_rate > EXPLICIT_STEP_BOUND:
@@ -4781,7 +4782,7 @@ OWN_HEAT_FIELDS = MappingProxyType(
 
 
 def trapezoid_fields(structure):
-    """The heat fields the step books by trapezoid_nonnegative@1 (seam D, §6.2), in the
+    """The heat fields the step books by cells.heat.trapezoid_nonnegative@1 (seam D, §6.2), in the
     structure's class order: each picked own class's (OWN_HEAT_FIELDS), and each picked kind's
     state fields whose energy role is heat (kind_registry.energy_role). () by default, so the
     step's branch is static and today's programs are unchanged. A kind that admits another
@@ -4805,14 +4806,14 @@ def trapezoid_fields(structure):
     return tuple(out)
 
 
-# exact_free_energy_heat@1 on @3's faces (D280; docs/CORE_SEAMS_DESIGN.md §6.5): the passive
+# cells.heat.exact_free_energy_heat@1 on @3's faces (D280; docs/CORE_SEAMS_DESIGN.md §6.5): the passive
 # routes' booking of INNER_MODEL_V4_DESIGN §7.5, version 1, for faces. Its sign rule's and raw-sum
 # bound's factor is the passive routes' (kinds/passive_routes.RAW_SUM_FACTOR).
 EXACT_FACE_RAW_SUM_FACTOR = 16.0
 
 
 def exact_faces(structure):
-    """Whether the structure picks exact_free_energy_heat@1 for @3's faces: a static switch,
+    """Whether the structure picks cells.heat.exact_free_energy_heat@1 for @3's faces: a static switch,
     False for every definition that does not list it, so today's programs are unchanged."""
     return structure is not None and (
         (inner_laws.FACES, EXACT_FREE_ENERGY_HEAT) in structure.heat_bookings
@@ -4854,7 +4855,7 @@ def _check_exact_faces(model):
 
 
 def exact_face_heat(start, end, p, *, xp=jnp):
-    """exact_free_energy_heat@1 over one step: (each face's heat [face] in pJ, booked), from the
+    """cells.heat.exact_free_energy_heat@1 over one step: (each face's heat [face] in pJ, booked), from the
     step's start and end states.
 
     Each face's share of a row it carries is the amount it moved, sender to receiver, times the
@@ -5158,7 +5159,7 @@ FIELD_ROLES = MappingProxyType(
 # ------------------------------------------------------------------ the run view's declarations
 # docs/RUN_VIEW_DESIGN.md §3 (D154), in the operator contract's forms: host-side metadata read
 # only by the run-view writer (cells/records/run_view.py), so none changes a program, a binding or a
-# checkpoint. They replace the writer's interim table for resolved_pump_tissue@3. Each state
+# checkpoint. They replace the writer's interim table for cells.model.resolved_pump_tissue@3. Each state
 # field and observation column has its unit, record kind and layer; each readout its axes (the
 # state's are STATE_AXES). Orientations name the roles of the record's entity set: a flow's
 # {from, to} (which way a positive value moves) or a difference's {plus, minus} (plus less
@@ -5187,7 +5188,7 @@ _MEMBRANE_FLUX = _flow(
     "inside",
     "outside",
     "a positive amount leaves the patch's cell for its outside node; a declared kind's conversion "
-    "at P (cells.transporter@1, chemistry at P) appears as its forms crossing in opposite "
+    "at P (cells.kind.transporter@1, chemistry at P) appears as its forms crossing in opposite "
     "directions, the electron's charge written in them, so the patch's current is the charge the "
     "field sees",
 )
@@ -5729,7 +5730,7 @@ def series_domain_valid(state, p, structure, *, xp=jnp):
 
 
 def _series_kinds(model):
-    """FR-30: the gate kinds of the junctions' junction_series_gates@1 (the parse holds every
+    """FR-30: the gate kinds of the junctions' cells.junction.junction_series_gates@1 (the parse holds every
     junction to one law and every series junction to one kind per gate), or ()."""
     series = [j for j in model.junctions if j.law == SERIES_GATE_LAW_ID]
     return tuple(g.kind for g in series[0].gates) if series else ()
@@ -5761,7 +5762,7 @@ def reads_free_amounts(row, laws):
     """Whether a stage row's third item names a law of `laws` (a law registry) that declares
     free_amounts (P1's selector, the binding owner's ruling (a) of 19 November 2026). A row with
     no third item, or one naming a law the registry does not hold (version 1's read,
-    rapid_proton_buffer@1) or a law without free_amounts, keeps today's predictor."""
+    cells.kind.rapid_proton_buffer@1) or a law without free_amounts, keeps today's predictor."""
     return (
         len(row) == 3
         and row[2] in laws
@@ -5908,7 +5909,7 @@ def _kind_types(fields, registry, series=False, forms=False, block=False, loops=
     by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
     kind bound to fields other than its static ones (a declaration-dependent variant) names its
     extra fields in the classes' deterministic names. series (FR-30, D262): the structure's
-    junctions take junction_series_gates@1, whose gates are a state field (SERIES_GATES, after the
+    junctions take cells.junction.junction_series_gates@1, whose gates are a state field (SERIES_GATES, after the
     kinds' state fields) and whose parameters a layout field (SERIES_PARAMETERS). forms: the
     structure declares forms faces, whose state fields (FORMS_STATE_AXES) follow those and whose
     layout fields (FORMS_LAYOUT_FIELDS) follow the others. block (FR-51): a population declares a
@@ -6029,7 +6030,7 @@ def _routed_kind_types(fields, registry, series=False, forms=False, block=False,
 
 
 class InnerImplementation:
-    """resolved_pump_tissue@3 for one declared structure (§7.4 (c)); see implementation().
+    """cells.model.resolved_pump_tissue@3 for one declared structure (§7.4 (c)); see implementation().
 
     It has every public name of this module, with the same signature: structure-free names
     (types, constants, parameters, physical_amounts, projection, rebind, ...) are the module's
@@ -6074,7 +6075,7 @@ class InnerImplementation:
             return getattr(_MODULE, name)
         except AttributeError:
             raise AttributeError(
-                f"resolved_pump_tissue@3 implementation has no attribute {name!r}"
+                f"cells.model.resolved_pump_tissue@3 implementation has no attribute {name!r}"
             ) from None
 
     def __dir__(self):

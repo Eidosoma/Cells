@@ -1,4 +1,4 @@
-"""OL6 Protocol G, the GARD limit (docs/OL6_PROTOCOL_G.md; D304): cells.assembly_lineages@2's exact
+"""OL6 Protocol G, the GARD limit (docs/OL6_PROTOCOL_G.md; D304): cells.model.assembly_lineages@2's exact
 events against @1's, below the fission size, as registered inputs and judged statistics.
 
 The protocol's text is the authority; this module is its registered arithmetic. It builds the
@@ -406,7 +406,7 @@ def header():
         "engine_models": {"v1": [V1, EXCHANGE_LAW, GARD_PAIR_CONSISTENT, FISSION, CONTINUATION],
                           "v1_reported_beside": [GARD_PAIR_CONSISTENT_V2],
                           "v2": [V2, MASS_ACTION, TRANSITION_STATE, IDEAL_MIXING],
-                          "v2_scope2_adds": ["cells.size_threshold_division@1"]},
+                          "v2_scope2_adds": ["cells.operator.size_threshold_division@1"]},
         "not_blind": "P1 (the previous owner's desk probe) compared @1's and @2's rates at 4,000 "
         "random states (3.1e-15, 13% bitwise, 0 of 256,000 selections differ) and sized tier 1's "
         "bounds; the author ran @1 alone for the plants' power (seeds 1-64 unplanted and x1.5; "

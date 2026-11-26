@@ -1,6 +1,6 @@
 {
-  "model": "capsid_graph@1",
-  "topology": "dodecahedron_g10_2@1",
+  "model": "cells.model.capsid_graph@1",
+  "topology": "cells.topology.dodecahedron_g10_2@1",
   "initial_nodes": [10, 0, 1, 2, 3],
   "root_node": 10,
   "free_trimer_M": 1.7e-8,

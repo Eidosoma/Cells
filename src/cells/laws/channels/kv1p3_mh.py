@@ -1,4 +1,4 @@
-"""kv1p3_mh@1: Kv1.3-type potassium channel gating, the law and its declaration on @3.
+"""cells.channel.kv1p3_mh@1: Kv1.3-type potassium channel gating, the law and its declaration on @3.
 
 Two gates, activation m and inactivation h, relax toward logistic targets of the membrane voltage V
 (inside less outside, volts), with both time constants affine in V (seconds); the population is
@@ -18,7 +18,7 @@ gathers the same floats, a recorded temporary second form that retires with the 
 within 32 ulps, because XLA on CPU rewrites x / constant as x * (1/constant) while the dispatcher
 divides by gathered arrays (tests/unit/test_kv1_channel_laws.py).
 
-Channel code 7 of resolved_pump_tissue@3 (cells.channel_law@1), registered from @3's row of the
+Channel code 7 of cells.model.resolved_pump_tissue@3 (cells.channel_law@1), registered from @3's row of the
 model table since @3's parser reads its channel table from the law registry (the Kv1 trigger).
 """
 
@@ -27,7 +27,7 @@ import jax.numpy as jnp
 from cells.laws.channels.kv1p5_mh import VOLTAGE_DOMAIN_V  # The catalogue's domain, -120..60 mV.
 from cells.modules import ChannelLaw, Citation, CitedWork
 
-LAW_ID = "kv1p3_mh@1"
+LAW_ID = "cells.channel.kv1p3_mh@1"
 ACTIVATION = (-0.0141, -0.0103)  # Its target's logistic: (midpoint V, slope V).
 INACTIVATION = (-0.033, 0.0037)
 ACTIVATION_TAU = (0.01916, 0.284)  # (intercept s, slope s/V): tau = a - b V
@@ -67,7 +67,7 @@ LAW = ChannelLaw(
     RK4_STEP_S,
     kinetics,
     opening,
-    host="cells.resolved_pump_tissue@3",
+    host="cells.model.resolved_pump_tissue@3",
     provenance="cited",
     source=Citation(
         "BETSE v1.5.0's Kv1p3 channel class, read as text",

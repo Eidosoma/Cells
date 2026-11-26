@@ -11,13 +11,13 @@ from cells.laws.channels import calcium_gates, kv1_channels
 from cells.laws.electrochemistry import bernoulli
 
 CAV_LAWS = {
-    "cav1p2_m2h@1": "Cav1p2",
-    "cav1p3_m2h@1": "Cav1p3",
-    "cav2p1_m@1": "Cav2p1",
-    "cav2p2_m2h_regularized@1": "Cav2p2",
-    "cav2p3_mh@1": "Cav2p3",
-    "cav3p1_mh_piecewise_tau_m@1": "Cav3p1",
-    "cav3p3_mh@1": "Cav3p3",
+    "cells.channel.cav1p2_m2h@1": "Cav1p2",
+    "cells.channel.cav1p3_m2h@1": "Cav1p3",
+    "cells.channel.cav2p1_m@1": "Cav2p1",
+    "cells.channel.cav2p2_m2h_regularized@1": "Cav2p2",
+    "cells.channel.cav2p3_mh@1": "Cav2p3",
+    "cells.channel.cav3p1_mh_piecewise_tau_m@1": "Cav3p1",
+    "cells.channel.cav3p3_mh@1": "Cav3p3",
 }
 LAW_CODES = {**kv1_channels.LAW_CODES, **{law: i for i, law in enumerate(CAV_LAWS, 11)}}
 LAW_PERMEABILITIES = kv1_channels.LAW_PERMEABILITIES | {law: (("Ca", 1.0),) for law in CAV_LAWS}

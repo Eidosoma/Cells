@@ -1,7 +1,7 @@
 {
   "kind": "cells.initial_static_geometry_tissue_contract@1",
   "bridge_id": "native_geometry_passive_tissue@1",
-  "target_model": "resolved_tissue@1",
+  "target_model": "cells.model.resolved_tissue@1",
   "purpose": "Make the physical volume/coefficient/owner choices explicit; prevent source DEC or native occupied-grid weights from becoming physical extracellular volumes, or geometry generation provenance from being lost",
   "geometry_receipt": {
     "path": "/mnt/workspaces/Cells/betse-geometry-handoff-20261029-01/result.json",

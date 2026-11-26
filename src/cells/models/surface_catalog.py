@@ -1,4 +1,4 @@
-"""resolved_tissue@8: the shared gate catalogue's channel populations in a resolved tissue.
+"""cells.model.resolved_tissue@8: the shared gate catalogue's channel populations in a resolved tissue.
 
 Its physics is surface_kinetic's. What its own identity changes is here: the layout, whose channels
 hold each permeant ion's relative permeability, and the channel ledgers, one per species.

@@ -1,4 +1,4 @@
-"""resolved_pump_tissue@1: shared kinetic rates, factored field, RK4 or IMEX steps.
+"""cells.model.resolved_pump_tissue@1: shared kinetic rates, factored field, RK4 or IMEX steps.
 
 State, ledgers, observations and stage rates are those of surface_kinetic with
 an empty channel set. The law's field (capacitor solve plus Kirchhoff offsets)
@@ -70,7 +70,7 @@ ENERGY_RTOL.update(dict.fromkeys(imex.IMPLICIT_CONDUCTANCE_IDS, 2e-3))  # N2: AR
 # allows LEDGER_STEP_ROUNDING eps x steps x moved charge (ledger_magnitudes).
 # Short runs stay near 1-3 eps, but on a 7-cell gated sheet with held baths at
 # 0.25 ms the residual wandered up to about 200 eps of the moved charge and
-# crossed the fixed 256 eps after 1.06e5 steps (resolved_pump_tissue@3 alone,
+# crossed the fixed 256 eps after 1.06e5 steps (cells.model.resolved_pump_tissue@3 alone,
 # water-volume-pump-20261110-01/w1-gcharge-diag-01). With n accepted steps a
 # conservation error of more than (256 + 2.5 n) eps of the moved charge (and the
 # 3e-25 C floor) fails: 6.1e-13 after 1 s, 3.3e-11 after 1 min, 2.0e-9 after 1 h
@@ -111,7 +111,7 @@ GLOBAL_CHARGE_ROUNDING = 256 * np.finfo(float).eps
 # booking error of relative size 2.5 eps n of the magnitudes is still caught:
 # 5.6e-13 after 1 s, 3.3e-11 after 1 min, 2.0e-9 after 1 h at dt = 1 ms.
 LEDGER_STEP_ROUNDING = 2.5
-GATE_STEP_BOUND = 0.125  # Same conservative junction-gate bound as resolved_tissue@2.
+GATE_STEP_BOUND = 0.125  # Same conservative junction-gate bound as cells.model.resolved_tissue@2.
 # dt * (Gershgorin rate bound) <= 1: half the Euler/RK2 real-axis limit of 2.
 EXPLICIT_STEP_BOUND = 1.0
 
@@ -493,7 +493,7 @@ def explicit_rate_bound(spec, *, floating=None):
       25 November 2026 no world has a conducting patch beside a face with no charged diffusivity,
       and three have one where the faces hold weakly (step times conductance at most 0.011 of the
       capacitance): their dt x rate is at most 0.028 with those nodes floating. A compartment is
-      named by no face (cell_owned_compartments@1's refusal 1), so it is never such a node.
+      named by no face (cells.operator.cell_owned_compartments@1's refusal 1), so it is never such a node.
     - The bound is the larger of the junction and the patch terms, not their sum, inside its
       margin of 2 (the explicit stages of ARS(2,2,2) are stable to 2, the rule holds 1).
     - Every declared patch counts here; surface_pump_v3.membrane_rate, which holds the same rows
@@ -739,7 +739,7 @@ def ledger_magnitudes(row, p, membrane, metabolic, *, xp=np):
 
 
 def pump_magnitudes(row, p, *, xp=np):
-    """ledger_magnitudes for the Na/K pump ledgers (resolved_pump_tissue@1)."""
+    """ledger_magnitudes for the Na/K pump ledgers (cells.model.resolved_pump_tissue@1)."""
     membrane = (
         xp.abs(row.membrane_transferred)
         + kinetic.channel_to_membrane(xp.abs(row.channel_transferred), p, xp=xp)

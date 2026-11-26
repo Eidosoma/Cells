@@ -43,8 +43,8 @@ def test_both_arms_and_their_controls_parse_in_the_declared_world():
         d = defs.fr5_world(arm, control=control)
         spec = parse_spec(defs.declared_world(short(d, d["execution"]["dt"])))
         kinds = {k for k, _ in spec.model.kinds}
-        assert {"cells.patch_damage@1", "cells.ph_condition@1"} <= kinds
-        routes = {r.id: r.factors for r in dict(spec.model.kinds)["cells.passive_routes@1"]}
+        assert {"cells.kind.patch_damage@1", "cells.kind.ph_condition@1"} <= kinds
+        routes = {r.id: r.factors for r in dict(spec.model.kinds)["cells.kind.passive_routes@1"]}
         assert routes["proton_pore_0"] == ("damage_0",)
         assert routes["cargo_transfer_0"] == (() if control == "f_equals_1" else ("acid_0",))
         assert ("cargo_pore_0" in routes) == (arm is ARM_R)
@@ -64,7 +64,7 @@ def test_arm_r_runs_with_the_pores_opening_and_x_conserved():
     bounding = [m.id for m in spec.model.membranes].index(defs.BOUNDING)
     damage = np.asarray(obs.patch_damage)[:, bounding]
     assert np.all(damage[: WINDOW[0] + 1] == 0.0) and damage[WINDOW[1]] > 0
-    routes = [r.id for r in dict(spec.model.kinds)["cells.passive_routes@1"]]
+    routes = [r.id for r in dict(spec.model.kinds)["cells.kind.passive_routes@1"]]
     moved = np.asarray(obs.passive_transferred)  # [record, species, route], inward (to the cell).
     pore_h = moved[:, h, routes.index("proton_pore_0")]
     pore_x = moved[:, x, routes.index("cargo_pore_0")]

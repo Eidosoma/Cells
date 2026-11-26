@@ -1,13 +1,13 @@
-"""resolved_pump_tissue@2: resolved_pump_tissue@1 plus a plasma-membrane Ca-ATPase.
+"""cells.model.resolved_pump_tissue@2: cells.model.resolved_pump_tissue@1 plus a plasma-membrane Ca-ATPase.
 
-Every field of resolved_pump_tissue@1 keeps its meaning and is parsed by that
+Every field of cells.model.resolved_pump_tissue@1 keeps its meaning and is parsed by that
 identity's parser. Each membrane additionally declares ``calcium_pump``: null,
-or one ca_atp_mass_action_positive@1 pump (laws/pumps/calcium_atpase.py) with
+or one cells.cycle.ca_atp_mass_action_positive@1 pump (laws/pumps/calcium_atpase.py) with
 its own maintained ATP/ADP/Pi pools (1 M standard state, as for the Na/K pump),
 a +2 role species and exactly -1 of it per cycle. Each declared calcium pump
 has its own availability schedule in ``calcium_pump_controls``. Species are
 free as in @1 (for example Na, K, Cl, Ca and fixed anions). With no calcium
-pump the identity reproduces resolved_pump_tissue@1.
+pump the identity reproduces cells.model.resolved_pump_tissue@1.
 """
 
 import copy
@@ -30,7 +30,7 @@ from cells.definitions.specs import (
 )
 from cells.laws.pumps import calcium_atpase
 
-MODEL_ID = "resolved_pump_tissue@2"
+MODEL_ID = "cells.model.resolved_pump_tissue@2"
 CALCIUM_PUMP_FIELDS = (
     "id",
     "law",
@@ -171,7 +171,7 @@ def calcium_pump_to_dict(p):
 
 
 def projection(spec):
-    """The resolved_pump_tissue@1 part of a definition (no calcium pumps)."""
+    """The cells.model.resolved_pump_tissue@1 part of a definition (no calcium pumps)."""
     m, e = spec.model, spec.experiment
     membranes = tuple(
         kinetic.Membrane(**{k: getattr(p, k) for k in kinetic.Membrane.__dataclass_fields__})
@@ -213,7 +213,7 @@ def parse(data):
     raw = copy.deepcopy(data)
     m, e = raw.get("model"), raw.get("experiment")
     if not isinstance(m, dict) or not isinstance(e, dict) or m.get("id") != MODEL_ID:
-        raise ConfigError("Require resolved_pump_tissue@2")
+        raise ConfigError("Require cells.model.resolved_pump_tissue@2")
     if type(m.get("membranes")) is not list or any(type(p) is not dict for p in m["membranes"]):
         raise ConfigError("membranes requires an explicit list")
     if any("calcium_pump" not in p for p in m["membranes"]) or "calcium_pump_controls" not in e:
@@ -269,7 +269,7 @@ def parse(data):
 
 
 def control_values(spec, times):
-    """resolved_pump_tissue@1 controls plus the calcium pump availabilities."""
+    """cells.model.resolved_pump_tissue@1 controls plus the calcium pump availabilities."""
     from cells.execution.schedule import control_values as first_values
 
     base = first_values(projection(spec), times)

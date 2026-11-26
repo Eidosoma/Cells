@@ -7,7 +7,7 @@ The appendix's conventions (§0, frame B), as the cycle kind runs them:
 - N is the matrix and P the intermembrane space. Every row is a base form, and every proton is
   counted.
 - x is the kind's, from the species registry's base-form potentials (§9; the named set
-  beard2005@1), never from a law's constant.
+  cells.potential_set.beard2005@1), never from a law's constant.
 - Activities are a = c/1 M, the monomial form's standard state of 1000 mM.
 - The kind's psi = F (phi_N - phi_P)/RT is -u, with u = F Delta psi/RT and
   Delta psi = phi_P - phi_N. So the appendix's e^(k u) is zeta (or eta) = -k.

@@ -63,8 +63,8 @@ A = INPUTS["seam_a"]
 REGISTRY = A["registry"]
 C0 = REGISTRY["standard_concentration_mM"]
 VERSION_1 = {  # Each factored law's role and its K's parameter name.
-    "cells.proton_atp_mass_action_positive@1": ("proton", "K_H_mM"),
-    "cells.atp_driven_transporter_mass_action_positive@1": ("role", "K_Y_mM"),
+    "cells.cycle.proton_atp_mass_action_positive@1": ("proton", "K_H_mM"),
+    "cells.cycle.atp_driven_transporter_mass_action_positive@1": ("role", "K_Y_mM"),
 }
 FUEL = ("ATP", "ADP", "Pi")
 SKIPPED = {"planted_negative_S_n1": "the lead's substitution (a planted evaluation)"}
@@ -74,7 +74,7 @@ OTHER_END = {"a": "b", "b": "a"}
 
 def engine_id(law):
     name = "ref_" + re.sub(r"[^a-z0-9_]", "_", law["id"].lower())
-    return "seamtest.ref_law@1".replace("ref_law", name)
+    return "seamtest.cycle.ref_law@1".replace("ref_law", name)
 
 
 def law_rows(law):

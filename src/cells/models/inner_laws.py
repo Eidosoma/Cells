@@ -1,4 +1,4 @@
-"""Declared laws of resolved_pump_tissue@3, and the value-free structure of a definition.
+"""Declared laws of cells.model.resolved_pump_tissue@3, and the value-free structure of a definition.
 
 Design: docs/INNER_MODEL_V4_DESIGN.md §7.1 (a law's declaration) and §7.4 (the interface for
 D176's round). One frozen declaration per law ID, with a fixed registry code:
@@ -57,7 +57,9 @@ from cells.registry.kind_registry import qualified
 from cells.registry.laws import ChannelLaw, JunctionLaw, PumpLaw, RouteLaw  # noqa: F401
 
 HOST = qualified(MODEL_ID)  # @3 runs its own populations' laws (registry/laws.py: `host`).
-MAINTAINED_FUEL_ID = METABOLISM_ID  # maintained_chemical_reservoirs@1, today's pumps' fuel kind.
+MAINTAINED_FUEL_ID = (
+    METABOLISM_ID  # cells.fuel_kind.maintained_chemical_reservoirs@1, today's pumps' fuel kind.
+)
 MEMBRANE_ROUTE_LAW_ID = constant_field.LAW_ID  # The passive membrane and junction route law.
 FACE_ROUTE_LAW_ID = logmean_electrodiffusion.LAW_ID
 # The forms law (the face note's §2-4, MITOCHONDRIA_DESIGN; its build plan's item 1): a face that
@@ -309,7 +311,7 @@ class InnerStructure:
     # both at check time. () for every definition of today's, so no structure or program moves.
     # Added by the @3 owner at the lead's word (a recorded exception in this file).
     kind_ledgers: tuple = ()
-    # FR-30 (D262): the kinds of junction_series_gates@1's gates, in its GATES order, where the
+    # FR-30 (D262): the kinds of cells.junction.junction_series_gates@1's gates, in its GATES order, where the
     # junctions declare that law (every junction or none in v1); () otherwise, so no structure or
     # program of today's moves. Added by the @3 owner (a recorded exception in this file).
     junction_series_kinds: tuple = ()
@@ -319,14 +321,14 @@ class InnerStructure:
     # quasi-static potentials. () for a world whose junctions all join held components, so no
     # structure or program of those moves. Added by the @3 owner (a recorded exception here).
     crossing_junctions: tuple = ()
-    # The forms faces (logmean_electrodiffusion_forms@1; MITOCHONDRIA_DESIGN's face note, its
+    # The forms faces (cells.route.logmean_electrodiffusion_forms@1; MITOCHONDRIA_DESIGN's face note, its
     # build plan's item 1): their IDs, sorted, where the definition declares any. They are their
     # own entity set, with their own layout and state fields (surface_pump_v3.FORMS_*), so () for
     # every other definition: no structure, layout or program of those moves (D148 case 2). Added
     # by the face builder under the @3 owner's leave (a recorded exception in this file).
     forms_faces: tuple = ()
     # FR-51 (D327, ruling 6): the channel populations that declare a block
-    # (open_channel_block_weighted_modes@1), their IDs sorted, and the static mode count M (the
+    # (cells.channel_block.open_channel_block_weighted_modes@1), their IDs sorted, and the static mode count M (the
     # largest any declares, at most 4). They are () and 0 for every other definition, so no
     # structure, layout or program of those moves. Added by the @3 owner at the lead's word (a
     # recorded exception in this file).
@@ -406,7 +408,8 @@ class InnerStructure:
             )
         ):
             raise ValueError(
-                "Series gate kinds name one kind per gate of junction_series_gates@1, the "
+                "Series gate kinds name one kind per gate of "
+                "cells.junction.junction_series_gates@1, the "
                 "structure's only junction law"
             )
         # Validated against the active law registry (§8.3): each declared law is one @3 runs.

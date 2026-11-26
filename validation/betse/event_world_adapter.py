@@ -24,9 +24,9 @@ refused. Backends:
   identical) and SIM for each case. ``--event-clock nominal`` evaluates pulse at k dt instead
   of BETSE's label, and ``--event-shift S`` applies update k's value at update k + S: the
   event-timing term and its sensitivity.
-* resolved (``run-resolved``): Cells' own resolved_pump_tissue@3, default_world_adapter's
+* resolved (``run-resolved``): Cells' own cells.model.resolved_pump_tissue@3, default_world_adapter's
   @2 definition plus, per change-mem event, one leak population per target patch
-  (naleak_always_open@1 / kleak_always_open@1, max_permeability mult Dm_default / tm,
+  (cells.channel.naleak_always_open@1 / cells.channel.kleak_always_open@1, max_permeability mult Dm_default / tm,
   abundance 1) whose channel availability is BETSE's applied pulse; pump and junction
   availabilities are 1 - BETSE's value. Every control changes only at BETSE update
   boundaries, at integer multiples of the Cells dt (BETSE's values, not its nominal clock:
@@ -42,7 +42,7 @@ refused. Backends:
         [--sim-start chained] [--constants codata] [--model-difference NAME]
         [--event-clock nominal] [--event-shift S]
     ... run-resolved --case CASE [--case ...] [--protocol P.json ...] --dt-init 1e-3
-        --dt-sim 1e-4 --field-solver capacitive_reduction_gauged_damped_newton@3 --out DIR
+        --dt-sim 1e-4 --field-solver cells.solver.capacitive_reduction_gauged_damped_newton@3 --out DIR
     ... difference-budget --case CASE --pair NAME BASE OTHER ... --out FILE.json
 
 An event's own effect (plain BETSE with the event against plain BETSE without it, the
@@ -82,8 +82,11 @@ TARGETS_FILE = "event_targets.json"
 TARGETS_KIND = "cells.betse_event_targets@1"
 GLOBAL_MAPPED = {"NaKATP_block": "pump_block", "gj_block": "junction_block"}
 MEMBRANE_EVENTS = {"Na_mem": "Na", "K_mem": "K", "Cl_mem": "Cl", "Ca_mem": "Ca"}
-RESOLVED_LEAKS = {"Na": "naleak_always_open@1", "K": "kleak_always_open@1"}
-RESOLVED_MODEL_ID = "resolved_pump_tissue@3"
+RESOLVED_LEAKS = {
+    "Na": "cells.channel.naleak_always_open@1",
+    "K": "cells.channel.kleak_always_open@1",
+}
+RESOLVED_MODEL_ID = "cells.model.resolved_pump_tissue@3"
 CLOCKS = ("betse", "nominal")
 
 
@@ -603,9 +606,11 @@ def control_times(world, phase, dt):
 
 
 def resolved_event_definition(world, phase, start, *, dt, **kwargs):
-    """default_world_adapter's @2 definition as resolved_pump_tissue@3 with the events."""
+    """default_world_adapter's @2 definition as cells.model.resolved_pump_tissue@3 with the events."""
     if world["calcium_pump"] is None:
-        raise EventError("resolved_pump_tissue@3 extends @2: the world needs its Ca-ATPase")
+        raise EventError(
+            "cells.model.resolved_pump_tissue@3 extends @2: the world needs its Ca-ATPase"
+        )
     definition = adapter.resolved_definition(world, phase, start, dt=dt, **kwargs)
     model, experiment = definition["model"], definition["experiment"]
     values = event_values(world, phase)
@@ -756,7 +761,7 @@ def run_resolved_events(
     window_steps=250,
     protocol_paths=None,
 ):
-    """Blind resolved_pump_tissue@3: INIT once (shared), SIM per case from its end.
+    """Blind cells.model.resolved_pump_tissue@3: INIT once (shared), SIM per case from its end.
 
     Reads BETSE inputs only (``event_world(blind=True)``). With ``protocol_paths`` (one per
     case, judged run) each protocol must match its case and the run.

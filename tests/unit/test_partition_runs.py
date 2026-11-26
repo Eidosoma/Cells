@@ -1,4 +1,4 @@
-"""Compiled guards of isopotential_partition@1 (docs/CELL_DIVISION_S5_DESIGN.md §8.3).
+"""Compiled guards of cells.operator.isopotential_partition@1 (docs/CELL_DIVISION_S5_DESIGN.md §8.3).
 
 Through the runner, whose host checks raise on any ledger, domain or dissipation failure (the
 retiring path: every check reads the record added back):

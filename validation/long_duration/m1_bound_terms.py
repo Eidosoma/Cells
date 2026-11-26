@@ -45,7 +45,7 @@ MESSAGES = dict(
 
 
 def inner_spec(spec):
-    """The resolved_pump_tissue@3 definition of a composite (its projection), or the spec."""
+    """The cells.model.resolved_pump_tissue@3 definition of a composite (its projection), or the spec."""
     from cells.definitions import pump_composite_spec as cs
 
     if spec.model.__class__.__name__ == "CompositeModel":
@@ -180,7 +180,7 @@ def operator_conditions(raw):
     (dt (k_on + k_off) <= 1, ruling 5). Turnover is exact at any step and has none."""
     out = {}
     for block in raw["model"].get("operators", []):
-        if block.get("law") == "species_regulated_availability@1":
+        if block.get("law") == "cells.operator.species_regulated_availability@1":
             for s in block["states"]:
                 out[f"coupling:{s['id']}"] = float(s["on_rate_per_s"] + s["off_rate_per_s"])
     return out

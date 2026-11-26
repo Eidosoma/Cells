@@ -1,4 +1,4 @@
-"""delayed_first_order_junction_formation@1: junction abundance after a cell replacement.
+"""cells.junction_formation.delayed_first_order_junction_formation@1: junction abundance after a cell replacement.
 
 A newcomer arrives without gap junction channels to its neighbours: the departing
 cell's plaques leave whole (annular junctions, Jordan et al. 2001 J Cell Sci
@@ -27,7 +27,7 @@ from typing import Any, NamedTuple
 
 import jax.numpy as jnp
 
-LAW_ID = "delayed_first_order_junction_formation@1"
+LAW_ID = "cells.junction_formation.delayed_first_order_junction_formation@1"
 
 
 class Parameters(NamedTuple):

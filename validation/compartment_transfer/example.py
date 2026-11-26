@@ -1,12 +1,12 @@
 """FR-33's maintained example: the donor, the receiver and the cumulative loss exported together,
 under transfer (T) and under local destruction (D), in one world (README.md beside this file).
 
-One cell owns two compartments (cell_owned_compartments@1), each a finite node bounded by one patch
+One cell owns two compartments (cells.operator.cell_owned_compartments@1), each a finite node bounded by one patch
 that no ion crosses. Each holds the same amount of its own labelled neutral species:
-- **T, transfer:** `ST` in `ecs_0` is released into the cell by scheduled_species_exchange@1's
+- **T, transfer:** `ST` in `ecs_0` is released into the cell by cells.operator.scheduled_species_exchange@1's
   first-order import, at rate constant kappa out of the node;
 - **D, local destruction:** `SD` in `ecs_1` is cleared at that node by
-  scheduled_species_turnover@1, at the same kappa.
+  cells.operator.scheduled_species_turnover@1, at the same kappa.
 
 Both donors fade the same way, n0 exp(-kappa t). Only T's receiver (the cell's `ST`) rises, by
 what the release moved. Only D's cumulative loss (turnover's cleared amount at `ecs_1`) rises, by
@@ -77,7 +77,7 @@ def world():
     ops = out["model"]["operators"]
     ops.append(
         dict(
-            law="cell_owned_compartments@1",
+            law="cells.operator.cell_owned_compartments@1",
             compartments=[
                 dict(
                     id="donor_T", node=NODE_T, patch=PATCH_T, owner=CELL, label="T", reference=None

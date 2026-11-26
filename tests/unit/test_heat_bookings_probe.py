@@ -3,7 +3,7 @@
 A heredity cell with a K+ and a Na+ leak starts 15 mV below E_K and relaxes through it. Under
 ARS(2,2,2) the tableau books a negative K+ heat increment on the step that crosses, which the
 dissipation check refuses, at dt G/C = 0.03. With `heat_bookings: {"channels":
-"trapezoid_nonnegative@1"}` the same run is admitted with every channel heat element
+"cells.heat.trapezoid_nonnegative@1"}` the same run is admitted with every channel heat element
 non-decreasing; the control arm is admitted under both. The planted error, the tableau's weights
 left in a class declared trapezoid, must again fail the dissipation check. Water@1, whose
 composition carries the structure, books the pick too.

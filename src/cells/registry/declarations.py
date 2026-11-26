@@ -16,7 +16,8 @@ before they are read (registry/model_table.py), whatever was imported first.
 
 **In short** (the page has the rest):
 - top level: `kind`, `revision`, `dirty`, `origin`, `pieces`, `models` and `not_extracted`;
-- each piece: its identity (`id`, namespaced; `declared_id`, as definitions write it); where it
+- each piece: its identity (`id`, `namespace.family.name@major`, and `declared_id`, as
+  definitions write it: one spelling, so the two are equal; `name` is its last part); where it
   runs (`host` and `declared_host`, `family`, `models`); where it is declared (`module`,
   `module_path`, `line`, `kernels`); its page (`doc`); what it rests on (`provenance`, with
   structured `works`, and `test`); what it touches by role (`reads`, each with its mode,
@@ -48,7 +49,7 @@ import cells
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions import surface_pump_v3_spec as inner_spec
 from cells.records import run_view
-from cells.registry import kind_registry, model_table
+from cells.registry import ids, kind_registry, model_table
 from cells.registry import laws as law_registry
 from cells.registry import operators as operator_registry
 from cells.registry.kind_registry import qualified
@@ -60,7 +61,7 @@ OPERATOR_INTERFACE = operator_registry.COMPOSITE_INTERFACE
 INNER = qualified(inner_spec.MODEL_ID)
 COMPOSITE = qualified(composite_spec.MODEL_ID)  # Runs the composite's operators.
 # The library of pages (docs/LAW_DOCUMENTATION_DESIGN.md §1.2): one page per piece and per model
-# with declared structure, at LIBRARY/<namespace>/<section>/<name>@<major>.md.
+# with declared structure, at LIBRARY/<namespace>/<section>/<family>.<name>@<major>.md.
 LIBRARY = "docs/library"
 SECTIONS = MappingProxyType(
     {"law": "laws", "kind": "kinds", "operator": "operators", "model": "models"}
@@ -244,7 +245,7 @@ def kernel(function):
 
 def page_path(piece, identifier):
     """A piece's or a model's page (docs/LAW_DOCUMENTATION_DESIGN.md §1.2):
-    `docs/library/<namespace>/<section>/<name>@<major>.md`, from its namespaced ID alone."""
+    `docs/library/<namespace>/<section>/<family>.<name>@<major>.md`, from its ID alone."""
     namespace, rest = qualified(identifier).split(".", 1)
     return f"{LIBRARY}/{namespace}/{SECTIONS[piece]}/{rest}.md"
 
@@ -291,19 +292,20 @@ class _Context:
         spellings.update(
             {qualified(d.operator_id): d.operator_id for d in operators.family_operators()}
         )
+        for law in laws._laws.values():  # A host that none of them names: as its laws spell it.
+            spellings.setdefault(qualified(law.host), law.host)
         self.spellings = spellings
 
     def identity(self, declared_id, piece, interface, host, module, line):
         key = qualified(declared_id)
-        namespace, rest = key.split(".", 1)
-        name, version = rest.rsplit("@", 1)
+        parts = ids.parts(key)
         family = INNER if host in self.kinds else host
         return dict(
             id=key,
             declared_id=declared_id,
-            namespace=namespace,
-            name=name,
-            version=int(version),
+            namespace=parts.namespace,
+            name=parts.name,
+            version=parts.major,
             piece=piece,
             interface=interface,
             host=host,
