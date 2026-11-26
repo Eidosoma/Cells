@@ -46,19 +46,32 @@
    "evidence": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/"
   }
  ],
- "frozen_utc": "2026-11-26T15:55:17+00:00",
+ "refrozen": [
+  {
+   "decision": "D390",
+   "files": [
+    "tests/unit/test_pump_composite_replacement.py",
+    "tests/unit/test_pump_composite_water.py"
+   ],
+   "note": "the frozen = composite guards slimmed at the definition (f4741843): the same test IDs and outcomes, their entries refrozen from their run at f4741843 (cap 1800 s, CPUs 8-9 with their siblings idle under lane B's lock), since their seconds fell",
+   "evidence": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after/"
+  }
+ ],
+ "frozen_utc": "2026-11-26T17:11:33+00:00",
  "cap_seconds": 1800.0,
  "runs": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc",
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-fixes-046d3b9c",
   "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run",
-  "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run"
+  "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run",
+  "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after"
  ],
  "collected": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/collected.json",
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-fixes-046d3b9c/collected.json",
   "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/collected.json",
-  "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/collected.json"
+  "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/collected.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after/collected.json"
  ],
  "time": "file wall seconds only: the -q logs carry no per-test times",
  "outcomes": [
@@ -692,7 +705,7 @@
    ["test_empty_composition_on_wider_worlds", "passed"],
    ["test_empty_composition_vmap_batch_and_restart", "passed"]
   ]},
-  "tests/unit/test_pump_composite_replacement.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_pump_composite_replacement.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 13}, "seconds": 679.92, "collected": 13, "reached": 13, "aligned": true, "tests": [
+  "tests/unit/test_pump_composite_replacement.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after", "log": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after/logs/tests__unit__test_pump_composite_replacement.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 13}, "seconds": 519.87, "collected": 13, "reached": 13, "aligned": true, "tests": [
    ["test_re_expressed_replacement_is_the_frozen_model[events_ars]", "passed"],
    ["test_re_expressed_replacement_is_the_frozen_model[events_euler]", "passed"],
    ["test_re_expressed_replacement_is_the_frozen_model[trapezoid]", "passed"],
@@ -707,7 +720,7 @@
    ["test_refusals_are_the_frozen_verdicts", "passed"],
    ["test_vmap_batch_is_the_frozen_batch", "passed"]
   ]},
-  "tests/unit/test_pump_composite_water.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_pump_composite_water.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 14}, "seconds": 558.35, "collected": 14, "reached": 14, "aligned": true, "tests": [
+  "tests/unit/test_pump_composite_water.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after", "log": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after/logs/tests__unit__test_pump_composite_water.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 14}, "seconds": 238.14, "collected": 14, "reached": 14, "aligned": true, "tests": [
    ["test_re_expressed_water_models_are_the_frozen_models[water_on]", "passed"],
    ["test_re_expressed_water_models_are_the_frozen_models[osmometer]", "passed"],
    ["test_re_expressed_water_models_are_the_frozen_models[euler_kicked]", "passed"],
