@@ -1,5 +1,10 @@
 # Physical gated pair: Cells 0.6.0
 
+> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools
+> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps
+> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without
+> this note.
+
 `bioelectric_pair@1` composes two well-mixed Na/K/Cl cells, each with one
 bath-facing membrane, and one species-selective junction with an evolving gate.
 It reuses the one-cell membrane laws, shared RK4 engine, conservative graph

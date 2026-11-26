@@ -10,7 +10,7 @@ from validation.tissue import surface_catalog_fixtures as fixtures
 
 
 def test_expanded_catalog_keeps_worlds_on_one_four_and_sixteen_gpu_plans():
-    raw = experiment("ionic", backend="gpu", worlds=8, width=1)
+    raw = experiment(backend="gpu", worlds=8, width=1)
     raw["arms"][0]["id"] = "open"
     raw["arms"][0]["definition"]["simulation"] = fixtures.definition(backend="gpu")
     second = deepcopy(raw["arms"][0])

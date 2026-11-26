@@ -1,5 +1,10 @@
 # One bioelectric cell: physical and engineering contract
 
+> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools
+> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps
+> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without
+> this note.
+
 SPEC-001, accepted design baseline 2026-09-08. Model identifier:
 `bioelectric_cell@1`, now implemented in Cells 0.5.0 as MODEL-003. NUM-002's
 reference source ZIP preserves the original 0.4.0 specification. Independent

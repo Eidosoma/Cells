@@ -1,5 +1,10 @@
 # E02 A2: amended reference acceptance and remaining controls
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 D036 / 2026-09-09. The user approved adoption of the amended reference policy,
 recording the disputed case's observers, and completing the three remaining
 controls. This is a new, explicit decision informed by the already observed

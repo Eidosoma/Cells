@@ -1,5 +1,10 @@
 # Physical ionic graph: ownership before scale
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 SPEC-007 / D052, 2026-09-10. A bounded **instantaneous reference contract** after
 [CORE-007](../reports/CORE007_ACCEPTANCE.md), not a new production model,
 trajectory qualification, GPU implementation or biological result. Cells remains

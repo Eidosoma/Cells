@@ -1,5 +1,10 @@
 # CORE-010 recorded production acceptance, v1
 
+> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools
+> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps
+> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without
+> this note.
+
 Prospective plan, 2026-09-11. This is an engineering gate for the passive
 `spatial_extracellular@1` family, not biological validation or a stable-release
 claim. The existing 0.15.0.dev0 equations, shared engine and artifact formats

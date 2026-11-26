@@ -1,5 +1,10 @@
 # E02 A1: one tighter BDF reference diagnostic
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 D035 / 2026-09-09. The user approved a separately registered tighter BDF check
 after the [retained miRNA-only disagreement](../reports/NUM005C1_CONTINUATION.md).
 This named amendment authorizes **one diagnostic trial**, not a parameter sweep,

@@ -1,5 +1,10 @@
 # Long fixed-graph reference paths
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 NUM-005c1 / D033. This is independent reference infrastructure, not production
 graph support, a selected RK4 step, or a validated biological switching assay.
 The [frozen numerical plan](E02_SWITCHING_NUMERICS.md) is unchanged.

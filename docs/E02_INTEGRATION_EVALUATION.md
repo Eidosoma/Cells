@@ -1,5 +1,10 @@
 # E02 integration-side evaluation prototype
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 D041 / NUM-005c2e. Short CPU float64 engineering only. The fixed-control
 reference equations, RK4 update, stage/domain/accounting and whole-cubic
 checks stay unchanged. No production, long-step, resource-cap or biological

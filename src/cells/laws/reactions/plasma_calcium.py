@@ -1,57 +1,18 @@
-"""Positive-domain calcium extrusion and reversible 3-Na/1-Ca exchange.
+"""The calcium pump's kernel at a plasma membrane, on positive concentrations.
 
-PMCA preserves BETSE 1.5's one-Ca, numeric-mM ATP quotient. NCX is a named
-synthetic symmetric-barrier law, not a fit or an external-reference transporter.
-Positive cycles move Ca out; NCX additionally moves three Na inward.
+laws/pumps/ca_atp_mass_action_positive.py evaluates it. The one-calcium form with its numeric-mM ATP
+quotient is BETSE v1.5.0's pumpCaATP (betse/science/sim_toolbox.py; docs/PLASMA_CALCIUM.md).
+Positive cycles move Ca out. The exchange that was here is a cycle law of its own
+(laws/cycles/sodium_calcium_exchange_symmetric_barrier.py).
 """
-
-from typing import NamedTuple
 
 import jax.numpy as jnp
 
-from cells.laws.electrochemistry import F, R
 from cells.laws.reactions import er_calcium
 
-PUMP_LAW = "plasma_calcium_pump_positive@1"
-EXCHANGER_LAW = "ncx_3na_1ca_symmetric_barrier@1"
-MAX_AFFINITY_RT = 80.0
 MAX_VOLTAGE = 0.15
-PumpParameters = er_calcium.PumpParameters
-chemical_drive = er_calcium.chemical_drive
-
-
-class ExchangerParameters(NamedTuple):
-    capacity_fmol_per_s: object
-    km_na_mM: object
-    km_ca_mM: object
 
 
 def pump_rates(ci, co, voltage, temperature, p, availability, *, xp=jnp):
     # ER voltage is destination minus source. Plasma Vm is inside minus outside.
     return er_calcium.pump_rates(ci, co, -voltage, temperature, p, availability, xp=xp)
-
-
-def exchange_rates(ni, no, ci, co, voltage, temperature, p, availability, *, xp=jnp):
-    """Common positive denominator enforces the prescribed reversal potential.
-
-    D = (1 + (Ni/Kn)^3 + (No/Kn)^3) (1 + Ci/Kc + Co/Kc).
-    Forward weight: (No/Kn)^3 (Ci/Kc) exp(-FV/2RT) / D.
-    Reverse weight: (Ni/Kn)^3 (Co/Kc) exp(+FV/2RT) / D.
-    No concentration floors, clipping or implicit ATP supply.
-    """
-    lni, lno = xp.log(ni) - xp.log(p.km_na_mM), xp.log(no) - xp.log(p.km_na_mM)
-    lci, lco = xp.log(ci) - xp.log(p.km_ca_mM), xp.log(co) - xp.log(p.km_ca_mM)
-    x = F * voltage / (R * temperature)
-    a = 3 * (xp.log(ni) - xp.log(no)) + xp.log(co) - xp.log(ci) + x
-    log_d = xp.logaddexp(0.0, xp.logaddexp(3 * lni, 3 * lno))
-    log_d += xp.logaddexp(0.0, xp.logaddexp(lci, lco))
-    log_forward = 3 * lno + lci - 0.5 * x - log_d
-    enabled = (p.capacity_fmol_per_s > 0) & (availability > 0)
-    magnitude = xp.exp(
-        xp.log(xp.where(enabled, p.capacity_fmol_per_s, 1.0))
-        + xp.log(xp.where(enabled, availability, 1.0))
-        + log_forward
-        + xp.maximum(a, 0.0)
-    )
-    departure = xp.where(a >= 0, xp.expm1(-a), -xp.expm1(a))
-    return xp.where(enabled, magnitude * departure, 0.0), R * temperature * a
