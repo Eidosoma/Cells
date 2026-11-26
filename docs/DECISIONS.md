@@ -13398,3 +13398,30 @@ It is a port check: it shows that the live engine computes legacy's written equa
 - **Process:** two of the builder's privacy scans ran just after their commits instead of before. All printed zeros.
 - **Next:** the registered comparison's second part, up to the format sample. The sample goes to the lead, then the judge reads it for structure only,
   then the judge's tag and the registration tag. FR-65 runs its D148 round on main with the small fixes stacked.
+
+## D396: the test slimming is landed; the weekly tier 3 is installed; FR's baselines have a permanent folder
+
+2026-11-26, written at 17:39 UTC.
+
+- **Landed** at 033bde25 (tag `test-slimming-landed-2026-11-26`), merged from 62e63e69. It changes no src file.
+  - The tier record is merged three ways with `scripts/test_tiers.py merge` (base c52d0998, the branch's, main's), so main's six rows from the
+    co-writers' fold stay.
+  - `tests/tier3_record.json` is the branch's; main's is unchanged since the base.
+  - The scoped gate, run on a trial merge onto 663edb44, covered the guard set and the six files the change reaches: 294 passed.
+- **What it moves:**
+  - The thirteen parked assays' tests and the three reference regenerations go to tier 3. Their fast integrity checks stay in tier 1.
+  - The frozen=composite rows now check all 16 worlds at the definition (`validation/tissue/one_computation.py`), comparing execution blocks and
+    parameters bit for bit. Each of the seven replacement worlds compiles once, and the lineage is read through both summaries.
+  - On the 13 changed rows the plants catch everything the old rows caught, plus one they missed (rc1).
+  - `test_site_occupancy_idle_empty.py` is merged into `test_site_occupancy_idle.py`.
+- **The savings:**
+  - per gate, about 97 s in tiers 1 and 2 (the assays), 302 s in tier 2 (the regenerations) and 15 s (the merge);
+  - per weekly tier-3 run, about 527 s (the frozen=composite rows).
+- **Slimming found little elsewhere.**
+  - Most split pairs share no compiled program, so merging them saves only import time.
+  - The restart and identity families cost one compile per run length.
+  - An engine-side idea goes to the backlog: bucketed scan lengths with masked steps, so that resumes and horizons reuse one compile.
+- **The weekly tier 3** runs on Sundays at 04:00 UTC (`cells-weekly-tier3.timer`, installed by the lead today; first run 29 November). Its verdict
+  goes to `/mnt/workspaces/Cells/weekly/DATE/verdict.json`.
+- **FR's baselines** (D392) are copied byte for byte to `/mnt/workspaces/Cells/fr-baselines/805c48a4-20261126`. The three gate scripts that read
+  them now point there, and the old folder is left as it was.
