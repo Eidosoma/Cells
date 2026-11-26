@@ -20,6 +20,12 @@ from validation.tissue import surface_pump_v3_fixtures as v3fx
 
 STATE = "cells.operator.membrane_entity_state@1"
 INSERTION = "cells.operator.scheduled_membrane_insertion@1"
+INSERTION_2 = "cells.operator.scheduled_membrane_insertion@2"
+LUMENS = {
+    1: "cells.operator.restricted_cleft_lumen@1",
+    2: "cells.operator.restricted_cleft_lumen@2",
+}
+CLEFT_WIDTH_M = 2e-6  # The cleft's 0.01 pL is w A_on / 2 over its 1e-11 m^2 furrow.
 DT = 1e-3
 DENSITY = 1e13  # Reference density of every population (units/m^2).
 SPECIFIC_CAPACITANCE = 0.05  # F/m^2, the heredity patch's.
@@ -143,3 +149,34 @@ def with_operators(base, insertion=None, *, catalogue=None):
 def furrow_insertion(rate=1e-11, onset=0.002):
     """The cleft cell's furrow: closed until onset, then inserted at a constant rate."""
     return {"furrow": ({}, onset, [(0.0, 0.0), (onset, rate)])}
+
+
+def cleft_turnover(version, *, lumen=False, routes=(), onset=0.002, rate=1e-11, end=0.006,
+                   diffusivity_m2_per_s=None):  # fmt: skip
+    """FR-65's insertion worlds (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3.3, §3.5): the cleft
+    cell's furrow under insertion@`version` (with_operators), with lumen@`version` filling the
+    cleft from bath_0 when `lumen`, the secreted-species fixtures' S at its trace (its face
+    diffusivity `diffusivity_m2_per_s`, their D_S by default), and turnover declared last with
+    `routes`: (id, node, kind, [(time, rate), ...]), a cell route keyed by its founder."""
+    from cells.registry.inventory_species import add_inventory_species
+    from validation.tissue import secreted_species_fixtures as sfx
+
+    raw = with_operators(cleft_cell(end=end), furrow_insertion(rate=rate, onset=onset))
+    raw["model"]["operators"][-1]["law"] = INSERTION if version == 1 else INSERTION_2
+    if lumen:
+        raw["model"]["operators"].append(
+            dict(
+                law=LUMENS[version],
+                lumens=[dict(node_id="cleft", source_id="bath_0", gap_width_m=CLEFT_WIDTH_M)],
+            )
+        )
+    raw = add_inventory_species(
+        raw, sfx.SPECIES, trace_mM=sfx.TRACE_mM, floor_fmol=sfx.FLOOR_FMOL,
+        diffusivity_m2_per_s=sfx.D_S if diffusivity_m2_per_s is None else diffusivity_m2_per_s,
+    )  # fmt: skip
+    cells = {c["id"] for c in raw["model"]["cells"]}
+    return sfx.with_turnover(
+        raw,
+        [(r, node, kind) for r, node, kind, _ in routes],
+        [(r, node if node in cells else None, changes) for r, node, _, changes in routes],
+    )

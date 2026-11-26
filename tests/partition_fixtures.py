@@ -14,6 +14,7 @@ the parent, so the partition maps a contact; and a bridge between the daughters
 from cells.definitions import partition_spec as ps
 from cells.definitions import pump_composite_spec as cs
 from cells.operators.contract import Operator
+from cells.registry.inventory_species import add_inventory_species
 from tests import membrane_insertion_fixtures as ifx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import surface_pump_v3_fixtures as v3f
@@ -158,6 +159,34 @@ def divided(
             raw, "d1", injection, at if injection_start is None else injection_start, stop=second
         )
     return raw
+
+
+def with_turnover(raw, *, make=1e-4, clear=0.5, keyed="carriers"):
+    """FR-65 (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3.4): raw (divided() or cleft_divided()) with
+    the secreted-species fixtures' S at its trace and cells.operator.scheduled_species_turnover@1
+    making S at `make` fmol/s and clearing it at `clear` /s in the parent and in each daughter, no
+    route at an outside node. Rates belong to the carrier (D150 §5.2): the founder cell_0 from time
+    0, and c1 (in d1) and c2 (in d2) from their birth at the first division. keyed="slots" keys the
+    daughters' schedules by their slots from time 0 instead, which the occupant rule refuses."""
+    from validation.tissue import secreted_species_fixtures as sfx
+
+    raw = add_inventory_species(
+        raw, sfx.SPECIES, trace_mM=sfx.TRACE_mM, diffusivity_m2_per_s=sfx.D_S,
+        floor_fmol=sfx.FLOOR_FMOL,
+    )  # fmt: skip
+    events = raw["experiment"]["partition_events"]
+    (birth,) = [e["time"] for e in events if e["division"] == "first"]
+    routes, controls = [], []
+    lives = (("cell_0", "cell_0", 0.0), ("d1", "c1", birth), ("d2", "c2", birth))
+    for slot, carrier, start in lives:
+        if keyed == "slots":
+            carrier, start = slot, 0.0
+        routes += [(f"make_{slot}", slot, "production"), (f"clear_{slot}", slot, "clearance")]
+        controls += [
+            (f"make_{slot}", carrier, [(start, make)]),
+            (f"clear_{slot}", carrier, [(start, clear)]),
+        ]
+    return sfx.with_turnover(raw, routes, controls)
 
 
 def inject(raw, cell, current_A, start, *, stop=None):

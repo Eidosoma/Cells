@@ -460,13 +460,11 @@ class ScheduledReplacementOverWater(replacement.ScheduledReplacement):
         replacement.check_definition(spec, declaration, schedule, model, apply=apply_events)
 
     def slot_occupants(self, spec, declaration, schedule):
-        """Not @1's (FR-65 §3.4): the occupant rule has not been extended to this operator's
-        newcomers, and every reader of carriers' rates is refused beside it (water's volumes, or
-        the shared volume rule), so a reader that meets it is refused by name (fails closed)."""
-        raise ConfigError(
-            f"The occupant rule covers {replacement.LAW_ID}'s and the partition's carriers, not "
-            f"{LAW_ID}'s newcomers: a reader of carriers' rates is refused beside it (FR-65)"
-        )
+        """None, not @1's (FR-65 §3.4): the occupant rule reads replacement@1's and the partition's
+        carriers. Every reader of carriers' rates is refused beside this operator by name (water's
+        volumes, or the shared volume rule, species_common.check_volume_changers), so its slots keep
+        their founders in the tables, as before the hook."""
+        return {}
 
     def inner_check_spec(self, check_spec, spec, declaration, schedule):
         """@1's route maxima applied to the incoming check spec (not discarded)."""

@@ -2955,8 +2955,8 @@ class TemplatedPolymerisation(Operator):
     # maximum, so a routed p stays in [0, 1]).
     ROUTABLE_CONTROLS = MappingProxyType({INITIATION: "rate", RELEASE_FRACTION: "rate"})
     EXPERIMENT_KEYS = (EXPERIMENT_KEY,)
-    # Its own tuple, not species_common's, which turnover and exchange share (FR-43 / D315): the
-    # volumes are current reads at the split, as the reactions' are, so where water changes them
+    # Its own tuple, not species_common's, which exchange shares (FR-43 / D315): the volumes are
+    # current reads at the split, as the reactions' and turnover's are, so where water changes them
     # its concentrations (c_T, its saturations and affinities) and bookings take the view's (C1's
     # fallback without a changer). Water is the one changer admitted at every finite node
     # (species_common.check_volume_changers); the masks' providers and closers stay refused.
