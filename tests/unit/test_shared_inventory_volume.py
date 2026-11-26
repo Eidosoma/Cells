@@ -319,12 +319,14 @@ def test_fr65_the_energy_identity_is_a_stepped_entry_and_the_v0_booking_fails_it
     max |r_h| <= 3 est + e_round, est = max(d1/3, d2/12), and where d1 and d2 exceed 10 e_round the
     order q = log2(d2/d1) lies in [1.5, 3.5].
     Planted (P1): turnover's half-step drops the view and books at V0. Its amounts and V are the
-    correct run's (the update reads no volume, and water reads no booking), so its residual is the
-    correct one plus RT sum dn ln(V/V0) over the steps, formed here from the h rung: that fails the
-    entry and is at least 100 times the correct residual (C2.7's rule, the plant world sized so).
-    The engine's own energy ledger refuses the planted run, reported here as the run's refusal
-    (§4.1: not relied on). Seconds and reason (D224): about 35 s more than the rungs, the planted
-    run's compile and its steps until the ledger refuses it; the miss shows in energy only."""
+    correct run's (the update reads no volume, and water reads no booking), and a booking at V0
+    over-books the work by RT dn ln(V/V0) (F(n, V0) - F(n, V) = RT n ln(V/V0)), so its residual
+    is the correct one less RT sum dn ln(V/V0) over the steps, formed here from the h rung: that
+    fails the entry and is at least 100 times the correct residual (C2.7's rule, the plant world
+    sized so). The engine's own energy ledger refuses the planted run, reported here as the run's
+    refusal (§4.1: not relied on). Seconds and reason (D224): about 35 s more than the rungs, the
+    planted run's compile and its steps until the ledger refuses it; the miss shows in energy
+    only."""
     from cells.operators import species_turnover as st
 
     worst, allowed, d1, d2, e_round = stepped(rungs)
@@ -337,7 +339,7 @@ def test_fr65_the_energy_identity_is_a_stepped_entry_and_the_v0_booking_fails_it
     v, s = rows["V"], rows["S"]
     middle = 0.5 * (v[1:] + v[:-1])  # The volume a step's bookings see, to second order.
     miss = np.cumsum(rt * np.diff(s) * np.log(middle / v[0]))
-    planted = float(np.max(np.abs(rows["residual"][1:] + miss)))
+    planted = float(np.max(np.abs(rows["residual"][1:] - miss)))
     assert planted > allowed and planted >= 100 * worst, (planted, allowed, worst)
     original = st.ScheduledSpeciesTurnover.half_step
 
@@ -452,9 +454,11 @@ def test_fr65_labels_beside_water_leave_the_physics_bitwise_and_follow_a_cohort(
 def test_fr65_a1_without_the_coupling_runs_in_a_swelling_cell():
     """FR-65 §3.6: A1 (the gene unit and turnover of X) in a swelling cell, without the coupling,
     whose current-volume reads are the second step (§3.8). Every host check on every row, and X,
-    turnover's alone, follows its closed form at the bookings' rounding while V moves. Seconds and
-    reason (D224): about 40 s, one compile of the gene unit beside water and turnover, newly
-    admitted together."""
+    turnover's alone, follows its closed form at the bookings' rounding while V moves. The sheet's
+    A1 starts X at its steady state P/k, so the closed form is that constant: the swelling, which
+    dilutes X's concentration, leaves its amount there. Planted: the closed form at k x 1.001 drifts
+    off it and misses. Seconds and reason (D224): about 40 s, one compile of the gene unit beside
+    water and turnover, newly admitted together."""
     from validation.gene_regulation import sheet_check as sheet
 
     raw = sif.swelling_a1(dt=A1_DT, end=A1_END, every=A1_END / 4)
@@ -473,6 +477,8 @@ def test_fr65_a1_without_the_coupling_runs_in_a_swelling_cell():
     closed = s_closed(np.asarray(result.times), x[0], make, clear)
     bound = 8 * EPS * 2 * (len(x) - 1) * np.max(np.abs(x))
     assert np.max(np.abs(x - closed)) <= bound, float(np.max(np.abs(x - closed)))
+    planted = s_closed(np.asarray(result.times), x[0], make, clear * 1.001)
+    assert np.max(np.abs(x - planted)) > bound
 
 
 @pytest.mark.parametrize("companion", ["symport", "bath schedule"])
@@ -483,7 +489,7 @@ def test_fr65_a_companion_beside_water_and_turnover(companion):
     osmolytes move), or cells.operator.scheduled_bath_composition@1 (an isosmotic step at 0.05 s,
     its event changing the held bath's anchors and water's exchange with it). Every host check on
     every row of 100 steps of 1 ms, and S's amount against its closed form at the bookings'
-    rounding.
+    rounding. Planted: S nudged by 1e-9 of itself at one row misses it.
     Seconds and reason (D224): about 25 s each, one compile and 100 steps."""
     from cells.definitions import pump_composite_spec as cs
     from cells.registry.inventory_species import add_inventory_species
@@ -521,3 +527,6 @@ def test_fr65_a_companion_beside_water_and_turnover(companion):
     bound = 8 * EPS * 2 * (len(s) - 1) * np.max(np.abs(s))
     assert np.max(np.abs(s - closed)) <= bound, float(np.max(np.abs(s - closed)))
     assert s[-1] > 2 * s[0]  # S moves.
+    nudged = s.copy()
+    nudged[len(s) // 2] *= 1 + 1e-9
+    assert np.max(np.abs(nudged - closed)) > bound

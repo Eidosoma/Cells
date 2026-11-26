@@ -17,7 +17,8 @@ retiring path: every check reads the record added back):
 * a bridge closing over 1 ms after an asymmetric division, with a restart at the event;
 * FR-65 (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §6.1): S5's furrow world with its lumen and
   cells.operator.scheduled_species_turnover@1 in its cells, keyed by carriers (turnover_run, through
-  the closure and restart tests): the pending daughters and the retired parent untouched bit for
+  the closure and restart tests, resumed once, across the division): the pending daughters and the
+  retired parent untouched bit for
   bit, S's closed forms from each carrier's birth, every ledger the lumen's included; and the
   declared-mask twin, today's code, which writes S into a pending slot and is refused.
 A few minutes on one core (each run compiles); the tier-1 smoke test is test_partition.py.
@@ -112,7 +113,9 @@ def test_one_to_two_to_four_closes_every_check():
 @pytest.mark.parametrize("which", ["division_run", "turnover_run"])
 def test_restart_across_and_after_a_partition_is_bitwise(which, request, tmp_path):
     spec, value = request.getfixturevalue(which)
-    for time in (0.001, fx.EVENT, 0.003):  # Before, at and after the event.
+    # Before, at and after the event; turnover's world resumes once, before the event (across it:
+    # each resume compiles its own rollout, about 75 s here; the lead's ruling of 26 November).
+    for time in (0.001, fx.EVENT, 0.003) if which == "division_run" else (0.001,):
         checkpoint = value.checkpoint_at(time)
         resumed = run(spec, checkpoint)
         for a, b in zip(resumed.history, value.history, strict=True):
