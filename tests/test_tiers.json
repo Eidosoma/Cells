@@ -3691,41 +3691,6 @@
     }
    },
    {
-    "file": "tests/unit/test_betse_ecm_caleak_reference.py",
-    "seconds": 0.57,
-    "exit_code": 1,
-    "counts": {
-     "failed": 1,
-     "passed": 39
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_ecm_naleak_reference.py",
-    "seconds": 0.67,
-    "exit_code": 1,
-    "counts": {
-     "failed": 1,
-     "passed": 71
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_ecm_reference_failure.py",
-    "seconds": 0.42,
-    "exit_code": 0,
-    "counts": {
-     "passed": 4
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_ecm_voltage_domain_reference.py",
-    "seconds": 0.87,
-    "exit_code": 1,
-    "counts": {
-     "failed": 1,
-     "passed": 49
-    }
-   },
-   {
     "file": "tests/unit/test_betse_emulator_laws.py",
     "seconds": 3.33,
     "exit_code": 0,
@@ -3755,22 +3720,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 11
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_normal_ecm_molecule_material_failure_evidence.py",
-    "seconds": 0.92,
-    "exit_code": 0,
-    "counts": {
-     "passed": 23
-    }
-   },
-   {
-    "file": "tests/unit/test_betse_normal_ecm_molecule_material_four_call_reference.py",
-    "seconds": 1.78,
-    "exit_code": 0,
-    "counts": {
-     "passed": 24
     }
    },
    {
