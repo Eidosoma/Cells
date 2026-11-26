@@ -887,3 +887,23 @@ Both run on host traces, with no compile.
 | --- | --- |
 | One recorded slot's counts altered between two saved rows, the rows' counts as they were (two compensating wrong jumps) | The per-event integrity row (§9.2). The row check passes it |
 | A wrong but balanced jump (D400's plant: assemble's change zeroed in the bound layout), in the trace the reference reads | Both integrity rows, since the reference rebuilds from the declaration. A reference seeded from `integer_trace_counts` would pass it |
+
+### 9.9 The lead's rulings on §9.4 and §9.5 (26 November 2026)
+
+- **§9.4: the `qualification` set,** as proposed. The world is one entry of
+  `composite_crossrev.qualification_worlds()` (`FR52_cohorts`), with no change to the runner or to
+  G1's sets. Both records' renewals are written beside the records for the lead's renewal at the
+  landing.
+- **§9.5: option (a).** At a division, the partition's finiteness check reads the cohort record.
+  The record is finite by construction, so the check refuses only after an engine fault. One host
+  row shows an honest world with a partition and a cohort on a site that never divides passing the
+  division, its record kept bit for bit (`test_a_division_reads_the_cohort_record_beside_it`). A
+  second row of the same test, a non-finite record, is refused. `partition.py` and its pinned test
+  are untouched. So §0's and §2.2's sentences quoted in §9.5 read, as built: no law, rate, draw or
+  ledger reads the record, and the one check that does is the partition's at a division.
+- **Files:** all cleared but `PROGRESS.md`, which is the lead's and is updated at the landing. The
+  composition table is this build's until it lands, and FR-65's coupling step waits on it.
+- **D400's pair-check scripts** come into the checkout as `validation/fr43_part3/pair_check.py`,
+  citing D400 as their origin, and the round runs from that copy.
+- **The landing** waits for the co-writers' registered comparison (D402), and the D148 round runs
+  when the lead assigns lanes.
