@@ -7,10 +7,11 @@ junction-heat booking, the coupled RK4 path, the KCC route cell and the route-an
 sheet. On every world the two formats are one computation at the definition
 (validation/tissue/one_computation.py: an equal composite spec, one implementation object,
 bit-identical initial state, layout, controls on the world's event grid and integration
-steps); one world per family (water@1's water-on cell, water@2's route cell) is also run
-compiled with default XLA flags in both formats, every state field, observation column and
-max_ diagnostic equal (np.array_equal, as the frozen equivalence tests compare). D390's
-slimming: the other worlds' two compiled runs were one computation run twice.
+steps, with the runner's parameters and execution block); one world per family (water@1's
+water-on cell, water@2's route cell) is also run compiled with default XLA flags in both
+formats, every state field, observation column and max_ diagnostic equal (np.array_equal, as
+the frozen equivalence tests compare). D390's slimming: the other worlds' two compiled runs
+were one computation run twice.
 Refusals (a volume bound, a bad water control, an over-fast water law, an over-fast route)
 give the frozen verdicts. Device checks give the frozen failure bits and diagnostics, faults
 included.

@@ -8,12 +8,13 @@ arrival gates with an inner schedule change between events, a newcomer's own rou
 values, @3's padded reference world and RK4. On every world the two formats are one
 computation at the definition (validation/tissue/one_computation.py: an equal composite
 spec, one implementation object, bit-identical initial state, layout, controls on the
-world's event grid and integration steps); the events world with ARS(2,2,2) is also run
-compiled in both formats, every state field, observation column and max_ diagnostic equal
-(np.array_equal) and the lineage summaries equal. D390's slimming: the other worlds' two
-compiled runs were one computation run twice. Refusals (a schedule disagreement, a
-floating-component slot, invalid events) give the frozen verdicts; device checks give the
-frozen bits on injected faults.
+world's event grid and integration steps, with the runner's parameters and execution block);
+the events world with ARS(2,2,2) is also run compiled in both formats, every state field,
+observation column and max_ diagnostic equal (np.array_equal). Every world is run compiled once,
+and its lineage is the same through the composite's summary and the frozen model's. D390's
+slimming: the other worlds' two compiled runs were one computation run twice. Refusals (a
+schedule disagreement, a floating-component slot, invalid events) give the frozen verdicts;
+device checks give the frozen bits on injected faults.
 (b) Without events the operator equals the empty composition.
 (d) Restart before, at and after an event is bitwise; a vmap batch with two
 schedules reproduces the frozen model's batch bitwise.
@@ -170,11 +171,13 @@ def test_re_expressed_replacement_is_the_frozen_model(world):
     raw = WORLDS[world]()
     frozen, composite = one_computation.assert_one_computation(raw)
     assert get_model(frozen.model).module is cell_replacement  # I2: per structure.
-    if world not in RUN:
-        return
-    a, b = run(frozen), run(composite)
-    report = guard.assert_same(a, b)
-    assert report["compared"]["history"] == len(cell_replacement.STATE_TYPE._fields)
+    a = run(frozen)
+    if world in RUN:
+        b = run(composite)
+        report = guard.assert_same(a, b)
+        assert report["compared"]["history"] == len(cell_replacement.STATE_TYPE._fields)
+    else:  # One computation: the frozen run is the composite's too, read through both summaries.
+        b = a
     summary = get_model(composite.model).summarize(b.history, b.diagnostics, composite)
     assert (
         summary["lineage"]
