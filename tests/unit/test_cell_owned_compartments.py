@@ -911,6 +911,7 @@ class PlantedLaw(law_registry.Law):
     material_bound: str | None = None
 
     interface: ClassVar[str] = "tests.planted_law@1"
+    FAMILY: ClassVar[str] = "planted"
 
 
 PLANTED_LAW = "tests.planted.planted_move@1"

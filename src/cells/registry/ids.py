@@ -10,26 +10,35 @@
 - **In another namespace** the words `kind`, `operator` and `model` hold, a law of a `cells`
   interface takes that interface's word, and an outside interface declares its own word beside
   itself.
+- **A refusal has one wording** (`reason`), which each site writes after its slot: an old spelling
+  is refused by naming its new ID, from the table of renamed IDs (registry/renamed_ids.py), and
+  anything else for its shape or its family. A slot that takes a plain word or an ID checks its
+  words first.
 
-Pure functions of strings: this module imports nothing from Cells, so the registries and the
-parsers may both import it. No parse site checks an ID against it yet: they do once every live ID
-has moved (D345).
+Pure functions of strings: this module imports that table and nothing else from Cells, so the
+registries and the parsers may both import it.
 """
 
 import re
 from types import MappingProxyType
 from typing import NamedTuple
 
+from cells.registry.renamed_ids import RENAMED
+
 __all__ = (
     "FAMILIES",
     "FIXED_FAMILIES",
     "LAW_FAMILIES",
     "NAMESPACE",
+    "RENAMED",
     "SUBLAW_FAMILIES",
     "Parts",
     "interface",
+    "own_word",
     "parts",
     "piece",
+    "reason",
+    "refuse_old",
 )
 
 NAMESPACE = "cells"  # Reserved: the built-in pieces' namespace.
@@ -115,3 +124,52 @@ def parts(value):
 def interface(value):
     """Whether `value` is an interface's ID."""
     return isinstance(value, str) and _INTERFACE.fullmatch(value) is not None
+
+
+def own_word(value):
+    """Whether `value` may be an outside interface's own family word: none of the cells words."""
+    return isinstance(value, str) and bool(re.fullmatch(_PART, value)) and value not in FAMILIES
+
+
+def reason(value, *, family=None, what="a piece"):
+    """Why `value` is not the ID of `what` (of `family`, where given), or None where it is: the one
+    wording of a refusal."""
+    if isinstance(value, str) and value in RENAMED:
+        return f"{value} was renamed {RENAMED[value]} (D345)"
+    match = _match(value)
+    if match is None:
+        shaped = _PIECE.fullmatch(value) if isinstance(value, str) else None
+        if shaped is not None:
+            return f"{value}: {shaped[2]} is not a family of the {NAMESPACE} namespace (D345)"
+        return f"{value} is not namespace.family.name@major (D345)"
+    if family not in (None, match[2]):
+        return f"{what}'s ID is {match[1]}.{family}.<name>@major"
+    return None
+
+
+def _first_old(value):
+    """(slot, spelling) of the first old spelling in JSON-like data, or None."""
+    if isinstance(value, str):
+        return ("", value) if value in RENAMED else None
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key in RENAMED:
+                return "", key
+            found = _first_old(item)
+            if found is not None:
+                return f".{key}{found[0]}", found[1]
+    elif isinstance(value, (list, tuple)):
+        for index, item in enumerate(value):
+            found = _first_old(item)
+            if found is not None:
+                return f"[{index}]{found[0]}", found[1]
+    return None
+
+
+def refuse_old(data, error=ValueError):
+    """Refuse JSON-like data that holds an old spelling, as a value or as a mapping's key, naming
+    the slot of the first."""
+    found = _first_old(data)
+    if found is not None:
+        slot, spelling = found
+        raise error(f"{slot.lstrip('.')}: {reason(spelling)}")

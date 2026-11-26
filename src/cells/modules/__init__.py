@@ -35,7 +35,10 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   holds, for a kind's definition-time charge bound (the charge rule's rows);
 - the parsing helpers: ConfigError, require_fields, finite_number and bounded_integer
   (definitions/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
-  (registry/kind_registry.py);
+  (registry/kind_registry.py). qualified(identifier) returns a piece's ID as it is, or refuses it:
+  an ID is `namespace.family.name@major`, where a kind, an operator and a model take those words,
+  a law of a cells interface takes that interface's word (`acme.channel.my_law@1`), and a law of
+  an outside interface the word its type declares (FAMILY);
 - the constants: R, F and CHARGE_PER_FMOL (laws/electrochemistry.py), and
   EXPLICIT_STEP_BOUND (models/surface_pump.py);
 - the array helpers kinds use: scatter (numerics/extracellular_field.py), species_sum and

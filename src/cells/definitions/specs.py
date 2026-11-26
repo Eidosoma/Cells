@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from cells.registry import ids
 from cells.registry.model_table import MODELS
 
 if TYPE_CHECKING:
@@ -390,10 +391,21 @@ class SimulationSpec:
         return digest(parse_spec(self.to_dict()).to_dict())
 
 
+def _refuse_old_ids(data):
+    """A renamed model's old ID, and any old spelling in a live model's definition, is refused by
+    naming its new ID (D345). The older families' models keep their IDs and check their own."""
+    model = data["model"].get("id") if isinstance(data["model"], dict) else None
+    if isinstance(model, str) and model in ids.RENAMED:
+        raise ConfigError(f"model.id: {ids.reason(model)}")
+    if ids.piece(model, family="model"):
+        ids.refuse_old(data, ConfigError)
+
+
 def parse_spec(data: dict) -> SimulationSpec:
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
+    _refuse_old_ids(data)
     if isinstance(data["execution"], dict) and "fine_windows" in data["execution"]:
         from cells.definitions.fine_window_spec import parse_definition as fine_window_definition
 

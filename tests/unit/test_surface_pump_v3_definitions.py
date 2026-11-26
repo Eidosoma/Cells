@@ -161,6 +161,40 @@ def test_explicit_stage_guard_refuses_open_sodium_channels():
         assert 1e-3 * float(surface_pump_v3.membrane_rate(state, control, p, xp=np)) < 0.05
 
 
+OLD_IDS = {  # An old spelling in each kind of slot (D345): the slot that names it, and its edit.
+    "old_law": (
+        r"model\.channels\[2\]\.kinetic_law",
+        lambda m, x: m["channels"][2].update(
+            kinetic_law="nav1p2_m3h_regularized@1"  # id-moves: keep
+        ),
+    ),
+    "old_operator": (
+        r"model\.operators\[0\]\.law",
+        lambda m, x: m.update(
+            operators=[dict(law="scheduled_species_turnover@1")]  # id-moves: keep
+        ),
+    ),
+    "old_kind": (
+        r"model\.channels\[2\]\.availability_factors\[0\]\.kind",
+        lambda m, x: m["channels"][2].update(
+            availability_factors=[dict(kind="cells.transporter@1")]  # id-moves: keep
+        ),
+    ),
+    "old_solver": (
+        r"execution\.solver",
+        lambda m, x: x.update(solver="imex_ars222_face_electromigration@1"),  # id-moves: keep
+    ),
+    "old_heat_choice": (
+        r"model\.junction_heat_booking",
+        lambda m, x: m.update(junction_heat_booking="trapezoid_nonnegative@1"),  # id-moves: keep
+    ),
+    "old_execution_choice": (
+        r"execution\.energy_check\.check",
+        lambda m, x: x.update(energy_check=dict(check="step_doubled_energy@1")),  # id-moves: keep
+    ),
+}
+
+
 @pytest.mark.parametrize(
     "fault",
     [
@@ -181,6 +215,7 @@ def test_explicit_stage_guard_refuses_open_sodium_channels():
         "sparse_field_n2",
         *ENERGY_CHECK_FAULTS,
         *VALUE_FAULTS,
+        *OLD_IDS,
     ],
 )
 def test_definition_errors_reject(fault):
@@ -216,11 +251,15 @@ def test_definition_errors_reject(fault):
         x["channel_capacity"] = len(m["channels"]) - 1
     elif fault == "missing_channels":
         del m["channels"]
+    elif fault in OLD_IDS:
+        OLD_IDS[fault][1](m, x)
     elif fault.startswith("sparse_field_"):  # FR-17 stage 1: the plain IMEX tableaux alone.
         x["field_solver"] = "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
         x["solver"] = "rk4" if fault.endswith("rk4") else imex.IMPLICIT_CONDUCTANCES_ID
     else:
         m["temperature_K"] = 400.5
     message = (ENERGY_CHECK_FAULTS | VALUE_FAULTS).get(fault, (None, None))[1]
+    if fault in OLD_IDS:
+        message = rf"^{OLD_IDS[fault][0]}: \S+@1 was renamed cells\.\w+\.\w+@1 \(D345\)$"
     with pytest.raises(ConfigError, match=message):
         parse_spec(raw)

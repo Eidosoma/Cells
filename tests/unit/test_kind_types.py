@@ -11,6 +11,7 @@
 """
 
 import copy
+import dataclasses
 
 import numpy as np
 import pytest
@@ -151,11 +152,19 @@ def test_kinds_append_in_canonical_order_whatever_the_declaration_order(tmp_path
 
 
 def test_namespaces_and_duplicates():
-    assert kind_registry.qualified("cells.kind.transporter@1") == "cells.kind.transporter@1"
-    assert kind_registry.qualified("tests.kind.alpha@1") == "tests.kind.alpha@1"
+    for kind_id in ("cells.kind.transporter@1", "tests.kind.alpha@1"):
+        assert kind_registry.qualified(kind_id) == kind_id
+    for short in ("one_part@1", "tests.two_parts@1"):  # Never given a namespace or a family.
+        with pytest.raises(ValueError, match=f"^{short} is not namespace.family.name@major"):
+            kind_registry.qualified(short)
+    with pytest.raises(ValueError, match="a kind's ID is tests.kind.<name>@major"):
+        kind_registry.KindRegistry().register(
+            dataclasses.replace(planted("alpha", "alpha_block"), kind_id="tests.channel.alpha@1")
+        )
     kinds = registry(planted("alpha", "alpha_block"))
     with pytest.raises(ValueError, match="already registered"):
         kinds.register(planted("alpha", "other_block"))
     with pytest.raises(ValueError, match="model key"):
         kinds.register(planted("gamma", "alpha_block"))
-    assert kind_registry.KindRegistry.canonical(["tests.kind.b@1", "a@1"]) == ("cells.a@1", "tests.kind.b@1")
+    two = ("cells.kind.a@1", "tests.kind.b@1")
+    assert kind_registry.KindRegistry.canonical(two[::-1]) == two
