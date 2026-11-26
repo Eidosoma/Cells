@@ -1,7 +1,7 @@
 """A reader of the references' registered worlds (format ool_references.world@1) into definitions.
 
 OL1's independent references (OL5) register their worlds in their own format. This module maps one
-such file to a cells.assembly_lineages@2 world, field by field, and nothing else. It never checks a
+such file to a cells.model.assembly_lineages@2 world, field by field, and nothing else. It never checks a
 world: every refusal is the engine's parser's (spec.py). So a key the mapping does not know is
 passed on unchanged, for the parser to refuse, and a defect in a registered refusal world reaches
 the parser as it is.
@@ -33,7 +33,7 @@ ool_references.world2@1), runs (ool_references.run2@1) and amendment 7's divisio
 - phases: the pool's `finite` species in order, then its `held_mM` ones in order (held at that
   concentration), with volume_L from pool_volume_L; the membrane's and the lumen's species in order
   (the osmotic lumen declares no volume);
-- steps: a join is cells.phase_exchange@1 and an entry cells.membrane_permeation@1, one molecule of
+- steps: a join is cells.reaction.phase_exchange@1 and an entry cells.reaction.membrane_permeation@1, one molecule of
   the species from the direction's first phase to its second (so a leave, an exit or a join from
   the lumen reaches the parser as declared), its rate under the key its `constant` names
   (k_ins_m_per_s, D_m2_per_s, P_m_per_s as insertion_velocity_m_per_s, diffusivity_m2_per_s,
@@ -49,12 +49,12 @@ ool_references.world2@1), runs (ool_references.run2@1) and amendment 7's divisio
 - free energy: ideal mixing, and the osmotic lumen with outside_osmolarity_M × 10³ as
   outside_osmolarity_mM {value, provenance};
 - the founder: {n, l, p} by position over the membrane, lumen and finite pool species; founder
-  vesicles in population mode as the population block (cells.shared_pool@1, the run's slots), the
+  vesicles in population mode as the population block (cells.population.shared_pool@1, the run's slots), the
   world's founder holding the pool and every vesicle place at 0;
 - the run: mode; slots; t_end_s as time_horizon_s; max_events as event_limit; its schedules as
   they are (an empty list declares none). Its `streams` text is not mapped: the engine records its
   own stream layout and identity;
-- the division inputs: {law: cells.shear_fission@1}, with the continuation and a non-null critical
+- the division inputs: {law: cells.operator.shear_fission@1}, with the continuation and a non-null critical
   stress (as {value, provenance}) when declared.
 
 **Provenance** (§0.2e rule 3, as ruled for OL5's probe roles, 22 November 2026): a value takes the

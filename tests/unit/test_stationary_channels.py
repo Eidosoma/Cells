@@ -1,4 +1,4 @@
-"""stationary_continuation_analysis@1 on a resolved_pump_tissue@3 cell with channels.
+"""cells.analysis.stationary_continuation_analysis@1 on a cells.model.resolved_pump_tissue@3 cell with channels.
 
 The MG0b cell (validation/morphogenesis/mg0b_domain_wall.py: the heredity cell
 with NaV1.2 availability 0.4 and a Na-leak control population) at frozen

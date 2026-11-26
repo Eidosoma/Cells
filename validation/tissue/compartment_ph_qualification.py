@@ -117,7 +117,7 @@ ENGINE_PARTS = {*FR4_RUNGS, *FR4_CONTROLS, "start", *FR5_RUNGS, *FR5_CONTROL_PAR
 
 # What remains a stand-in on this branch, and why, and the parts each one blocks. Empty: every
 # part is wired. The last, fr5_kinds (FR-5's rungs and controls), went on 16 November 2026 with the
-# core's raw-sum bound (cells.passive_routes@1, §7.5 amended, 0649f00e), after which arm R runs
+# core's raw-sum bound (cells.kind.passive_routes@1, §7.5 amended, 0649f00e), after which arm R runs
 # its release burst without refusal (fr5_quick_check, nothing relaxed).
 STAND_INS = {}
 STAND_IN_PARTS = {}

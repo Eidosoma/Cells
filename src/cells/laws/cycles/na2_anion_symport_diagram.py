@@ -1,4 +1,4 @@
-"""na2_anion_symport_diagram@1: the cotransporter of two Na+ and one monovalent anion as an
+"""cells.cycle.na2_anion_symport_diagram@1: the cotransporter of two Na+ and one monovalent anion as an
 eight-state mass-action diagram, with a kinetic voltage dependence (D228 item 1, version 2; seam A's
 diagram form, docs/CORE_SEAMS_DESIGN.md §3 and §16). Its rates are named, so each population
 declares its own (forms.resolved).
@@ -42,7 +42,7 @@ depends on the voltage through the declared zeta, which version 1's factored for
 from cells.laws.cycles.forms import CycleForm, Diagram, Edge, Parameter, Rate
 from cells.modules import Citation, CitedWork, CycleLaw, qualified
 
-LAW_ID = "na2_anion_symport_diagram@1"
+LAW_ID = "cells.cycle.na2_anion_symport_diagram@1"
 STATES = ("E_P", "Na_P", "Na2_P", "Na2B_P", "Na2B_N", "Na2_N", "Na_N", "E_N")
 EDGES = ("na1_P", "na2_P", "b_P", "loaded", "b_N", "na2_N", "na1_N", "empty")  # The cycle's order.
 CHARGED = ("na1_P", "na2_P", "loaded", "empty")  # The edges whose zeta the population declares.
@@ -95,7 +95,7 @@ DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name,
 LAW = CycleLaw(
     DECLARED_ID,
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="cited",
     source=Citation(
         "an ordered Na+-coupled cotransport cycle of the SLC5 family: the cations bind before "

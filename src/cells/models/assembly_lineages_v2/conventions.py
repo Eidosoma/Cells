@@ -10,7 +10,7 @@ readers of one world (the engine and an independent reference) cannot differ sil
 - `condensed_measure`: the membrane's mixing measure, with its offset c:
   `multinomial` (c = 0): -ln N! + sum ln n_i!;
   `multinomial_less_one` (c = 1): -ln (N - 1)! + sum ln n_i!, the multinomial plus ln N, which is
-  cells.assembly_lineages@1's measure exactly.
+  cells.model.assembly_lineages@1's measure exactly.
 - `membrane_kinetics`: `count_on_m`. The membrane has no volume until OL2: a membrane reactant's
   activity is drawn without replacement at the firing state, prod ff(n_i, a_i) / ff(N - c, r_mem),
   and the membrane's extent is E(m) = N(m) - c + 1 on the pair's common state m. An extension

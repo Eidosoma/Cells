@@ -23,7 +23,7 @@ from cells.laws.cycles.forms import (
 from cells.laws.cycles.mitochondria_source import citation
 from cells.modules import CycleLaw, qualified
 
-LAW_ID = "electrogenic_nucleotide_exchange@1"
+LAW_ID = "cells.cycle.electrogenic_nucleotide_exchange@1"
 DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 THETA_P = Affine("theta_P")  # e^(-theta_P u) = e^(theta_P psi)
 MINUS_THETA_N = Affine("theta_P", 1.0, -1.0)  # -theta_N = theta_P - 1: e^(theta_N u)
@@ -56,10 +56,13 @@ CYCLE = CycleForm(
 )
 LAW = CycleLaw(
     DECLARED_ID,
-    reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    reads=(
+        "cells.binding.rapid_binding@1",
+    ),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Frame B: every move in base forms (D236).
+    material_term="material_term",  # The kind's: its rate over all the rows it moves.
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="cited",
     source=citation(
         "the appendix's §3 (Eq. 14; Table 1's k_mADP)",

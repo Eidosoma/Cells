@@ -1,0 +1,157 @@
+[
+ {
+  "file": "src/cells/laws/reactions/plasma_calcium.py",
+  "names": [
+   "EXCHANGER_LAW",
+   "ExchangerParameters",
+   "exchange_rates",
+   "PUMP_LAW",
+   "MAX_AFFINITY_RT",
+   "PumpParameters",
+   "chemical_drive"
+  ],
+  "replace": [
+   [
+    "\"\"\"Positive-domain calcium extrusion and reversible 3-Na/1-Ca exchange.\n\nPMCA preserves BETSE 1.5's one-Ca, numeric-mM ATP quotient. NCX is a named\nsynthetic symmetric-barrier law, not a fit or an external-reference transporter.\nPositive cycles move Ca out; NCX additionally moves three Na inward.\n\"\"\"\n",
+    "\"\"\"The calcium pump's kernel at a plasma membrane, on positive concentrations.\n\nlaws/pumps/ca_atp_mass_action_positive.py evaluates it. The one-calcium form with its numeric-mM ATP\nquotient is BETSE v1.5.0's pumpCaATP (betse/science/sim_toolbox.py; docs/PLASMA_CALCIUM.md).\nPositive cycles move Ca out. The exchange that was here is a cycle law of its own\n(laws/cycles/sodium_calcium_exchange_symmetric_barrier.py).\n\"\"\"\n"
+   ]
+  ],
+  "why": "the superseded exchange kernel and four names that only legacy used (the lead, rulings 2 and 3); pump_rates and MAX_VOLTAGE stay"
+ },
+ {
+  "file": "src/cells/laws/reactions/er_calcium.py",
+  "names": [
+   "PUMP_LAW",
+   "RELEASE_LAW",
+   "METABOLISM",
+   "release_open"
+  ],
+  "replace": [
+   [
+    "\"\"\"Positive-domain BETSE 1.5 ER pump and instantaneous calcium release laws.\n\nThe source pump transports one Ca per formal turnover and uses a numeric mM\nmetabolic quotient. This identity deliberately does not imply a two-Ca SERCA\ncycle or proton exchange. Maintained ATP/ADP/Pi supply external chemical work.\n\"\"\"\n",
+    "\"\"\"The calcium pump's kernel from the cytosol into a store, on positive concentrations.\n\nOne calcium per formal turnover, with a numeric-mM metabolic quotient: BETSE v1.5.0's pumpCaER\n(betse/science/sim_toolbox.py; docs/ER_CALCIUM.md). It deliberately does not imply a two-calcium\nSERCA cycle or proton exchange. Maintained ATP, ADP and Pi supply external chemical work. The\nplasma membrane's pump evaluates it too (laws/reactions/plasma_calcium.py). The factor of a store's\nrelease is laws/reactions/hill_product_factor.py.\n\"\"\"\n"
+   ]
+  ],
+  "why": "by use (the lead): MAX_AFFINITY_RT, PumpParameters, chemical_drive and pump_rates stay, a live law runs them; release_open goes with its last user, tests/unit/test_er_calcium.py"
+ },
+ {
+  "file": "docs/CORE_LAWS_ROADMAP.md",
+  "names": [],
+  "replace": [
+   [
+    "the older kernels are `er_calcium`'s `release_open` and, for IP3, only at the tag",
+    "the older kernels are only at the tag"
+   ]
+  ],
+  "why": "true once release_open goes"
+ },
+ {
+  "file": "src/cells/laws/channels/calcium_gates.py",
+  "names": [
+   "TEMPERATURE_K",
+   "MIN_TAU_S"
+  ],
+  "replace": [
+   [
+    "\"\"\"The CaV1.2-type gate law's names, in volts and seconds, for their older importers.\n\nThe law's own module is laws/channels/cav1p2_m2h.py (docs/CORE_SEAMS_DESIGN.md §8.2), which\ndeclares it; this one re-imports its names for the calcium catalogue (laws/channels/\ncav_channels.py) and the older families. Continuous relaxation: the gates are integrated by their\nhost's solver. TEMPERATURE_K, the temperature those families declare, and MIN_TAU_S, tau_m's least\nvalue, which bounds their steps, are the older families' own.\n\"\"\"\n",
+    "\"\"\"The CaV1.2-type gate law's names, in volts and seconds, for the calcium catalogue.\n\nThe law's own module is laws/channels/cav1p2_m2h.py (docs/CORE_SEAMS_DESIGN.md §8.2), which\ndeclares it; this one re-imports its names for laws/channels/cav_channels.py. Continuous relaxation:\nthe gates are integrated by their host's solver.\n\"\"\"\n"
+   ]
+  ],
+  "why": "two names that only legacy used (the lead, ruling 3)"
+ },
+ {
+  "file": "src/cells/laws/pumps/ca_atp_mass_action_positive.py",
+  "names": [],
+  "replace": [
+   [
+    "Neutral identity for the equations of the existing Cells law\n``plasma_calcium.PUMP_LAW``, evaluated by that same kernel\n(``plasma_calcium.pump_rates``); its module cites the source law. Positive\ncycles move one divalent Ca from the cytosol to the outside and hydrolyse one\nATP from maintained ATP/ADP/Pi pools. Saturation is in cytosolic Ca and ATP;\nthe thermodynamic factor is (1 - exp(affinity)) with\n",
+    "Neutral identity for the equations of an older family's calcium pump, evaluated\nby that family's kernel (``plasma_calcium.pump_rates``); its module cites the\nsource law. Positive cycles move one divalent Ca from the cytosol to the outside\nand hydrolyse one ATP from maintained ATP/ADP/Pi pools. Saturation is in\ncytosolic Ca and ATP; the thermodynamic factor is (1 - exp(affinity)) with\n"
+   ]
+  ],
+  "why": "the docstring named plasma_calcium.PUMP_LAW"
+ },
+ {
+  "file": "src/cells/laws/pumps/calcium_atpase.py",
+  "names": [],
+  "replace": [
+   [
+    "Neutral identity for the equations of the existing Cells law\n``plasma_calcium.PUMP_LAW``, evaluated by that same kernel\n(``plasma_calcium.pump_rates``); its module cites the source law. Positive\ncycles move one divalent Ca from the cytosol to the outside and hydrolyse one\nATP from maintained ATP/ADP/Pi pools. Saturation is in cytosolic Ca and ATP;\nthe thermodynamic factor is (1 - exp(affinity)) with\n",
+    "Neutral identity for the equations of an older family's calcium pump, evaluated\nby that family's kernel (``plasma_calcium.pump_rates``); its module cites the\nsource law. Positive cycles move one divalent Ca from the cytosol to the outside\nand hydrolyse one ATP from maintained ATP/ADP/Pi pools. Saturation is in\ncytosolic Ca and ATP; the thermodynamic factor is (1 - exp(affinity)) with\n"
+   ]
+  ],
+  "why": "the docstring named plasma_calcium.PUMP_LAW"
+ },
+ {
+  "file": "docs/library/cells/laws/sodium_calcium_exchange_symmetric_barrier@1.md",
+  "names": [],
+  "replace": [
+   [
+    "**The same rate elsewhere:** an older model family runs it as `ncx_3na_1ca_symmetric_barrier@1`,\nthrough a kernel that no live model runs and no test checks any more: the rows that checked it now\ncheck this law. It retires in that family's deletion, and its file then keeps the calcium pump alone.\n",
+    "**The same rate elsewhere:** nowhere now. An older model family ran it as\n`ncx_3na_1ca_symmetric_barrier@1` and left with its kernel; the rows that checked that kernel check\nthis law.\n"
+   ]
+  ],
+  "why": "false once the deletion is in"
+ },
+ {
+  "file": "docs/library/cells/laws/atp_driven_transporter_mass_action_positive@2.md",
+  "names": [],
+  "replace": [
+   [
+    "| the older family's two calcium pump laws | that family | At its deletion; the two rate functions they are built on stay, since the inner model's own calcium pump calls them |",
+    "| the older family's two calcium pump laws | no one: the family is gone | Gone with it; the two rate functions they were built on stay, since the inner model's own calcium pump calls them |"
+   ]
+  ],
+  "why": "false once the deletion is in"
+ },
+ {
+  "file": "docs/library/cells/laws/cav1p2_m2h@1.md",
+  "names": [],
+  "replace": [
+   [
+    "Older rows run the source's unchanged class out of process and compare it with these kernels, which the\nolder families still call. No run was compared with a measurement.\n",
+    "Rows of the older calcium catalogue's test run the source's unchanged class out of process and compare\nit with these kernels, which that catalogue (`resolved_tissue@8`'s) still calls. No run was compared\nwith a measurement.\n"
+   ]
+  ],
+  "why": "false once the deletion is in"
+ },
+ {
+  "file": "docs/BIOELECTRIC_CELL_SPEC.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash in old records; no check that stays reads the pin"
+ },
+ {
+  "file": "docs/BIOELECTRIC_PAIR.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash in old records; no check that stays reads the pin"
+ },
+ {
+  "file": "docs/FINITE_EXTRACELLULAR.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash in old records; no check that stays reads the pin"
+ },
+ {
+  "file": "docs/MULTISPECIES_MEMBRANE.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash in old records; no check that stays reads the pin"
+ },
+ {
+  "file": "docs/MULTISPECIES_MEMBRANE_NEXT.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash in old records; no check that stays reads the pin"
+ },
+ {
+  "file": "docs/PHYSICAL_IONIC_GRAPH.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash in old records; no check that stays reads the pin"
+ },
+ {
+  "file": "docs/SPATIAL_EXTRACELLULAR.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash in old records; no check that stays reads the pin"
+ },
+ {
+  "file": "docs/SPATIAL_EXTRACELLULAR_ACCEPTANCE.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash in old records; no check that stays reads the pin"
+ }
+]

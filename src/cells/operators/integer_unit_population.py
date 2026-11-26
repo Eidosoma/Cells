@@ -1,4 +1,4 @@
-"""Operator integer_unit_population@1: a low-count population of integer units in membrane patches,
+"""Operator cells.operator.integer_unit_population@1: a low-count population of integer units in membrane patches,
 whose stochastic events read the composite's finite pools and whose activity moves material between
 them (FR-43 part 3, option B; D315).
 
@@ -31,7 +31,7 @@ next-reaction rule (Haseltine and Rawlings 2002; Alfonsi et al. 2005; from memor
 
 **The law**, per site s on patch m (cell c, outside node o, declared volumes V_c and V_o):
 - propensity a_j = k_j Π_k ff(n_k, r_jk) φ_j, with ff(n, r) = n!/(n - r)! (ordered tuples, the
-  convention of cells.stochastic_mass_action@1), and φ_j = c/(1 mM) of the declared read, else 1;
+  convention of cells.reaction.stochastic_mass_action@1), and φ_j = c/(1 mM) of the declared read, else 1;
   a0 = Σ_j a_j, a serial left fold in declared order;
 - the transfer of each route, J = G (n_c/V_c - n_o/V_o) fmol/s from cell to node, G = Σ_k g_k n_k:
   passive and linear. The units carry no free energy (a declared limit, as the gene unit's
@@ -123,7 +123,7 @@ from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
 from cells.registry import species_registry
 
-LAW_ID = "integer_unit_population@1"
+LAW_ID = "cells.operator.integer_unit_population@1"
 STEP_ID = "located_events_exact_transfer_half_steps@1"
 DIVISION_TOKENS = ("independent_segregation",)
 READ_AT = ("cell", "outside")
@@ -136,9 +136,12 @@ STANDARD_mM = 1.0  # A read's concentration unit: phi = c / (1 mM).
 Q_SERIES = 20  # Terms of q(x) below x = 1.
 PHI_SERIES = 40  # Terms of x - log1p(x) below |x| = 1/4.
 PHI_SWITCH = 0.25
-REPLACEMENT_LAWS = ("scheduled_cell_replacement@1", "scheduled_cell_replacement@2")
-GENE_UNIT_LAW = "templated_polymerisation@1"
-REACTIONS_LAW = "local_species_reactions@1"
+REPLACEMENT_LAWS = (
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+)
+GENE_UNIT_LAW = "cells.operator.templated_polymerisation@1"
+REACTIONS_LAW = "cells.operator.local_species_reactions@1"
 LEDGER_FLOOR_UNITS = 0.0  # The subunit ledger is exact, in integers.
 
 STATE_AXES = {
@@ -1202,7 +1205,7 @@ def check_hazard_bound(spec, declaration):
         material[s] = total
     horizon = spec.experiment.end_time if hasattr(spec.experiment, "end_time") else None
     for op, block, schedules in _entries(spec):
-        if op.LAW_ID != "scheduled_species_turnover@1" or horizon is None:
+        if op.LAW_ID != "cells.operator.scheduled_species_turnover@1" or horizon is None:
             continue
         kind = {r.id: r for r in block.routes}
         for s in schedules:

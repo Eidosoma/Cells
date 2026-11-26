@@ -1,4 +1,4 @@
-"""The definition of cells.assembly_lineages@2 (OL1): parse, round trip, and every refusal.
+"""The definition of cells.model.assembly_lineages@2 (OL1): parse, round trip, and every refusal.
 
 Structural only: nothing here computes a rate or a free energy (the lead's ruling of 17 November
 2026: no numerical output of OL1's laws until the references' design is committed).
@@ -126,7 +126,7 @@ def test_d152_rules_for_steps_are_kept():
     planted["steps"].append(copy.deepcopy(planted["steps"][0]))
     refused(planted, "step IDs are unique")
     planted = world()
-    planted["steps"][0]["law"] = "cells.reservoir_exchange@1"
+    planted["steps"][0]["law"] = "cells.exchange.reservoir_exchange@1"
     refused(planted, "law is one of")
 
 
@@ -135,7 +135,7 @@ def test_the_free_energy_terms_are_refused_out_of_form():
     planted["free_energy"].reverse()
     refused(planted, "first, exactly once")
     planted = world()
-    planted["free_energy"].append({"law": "cells.ideal_mixing@1"})
+    planted["free_energy"].append({"law": "cells.free_energy.ideal_mixing@1"})
     refused(planted, "first, exactly once")
     for pair, match in ((["L", "L"], "zero diagonal"), (["L", "S"], "not a membrane species")):
         planted = world()
@@ -164,7 +164,7 @@ def test_the_rate_factor_is_refused_out_of_its_scope():
     refused(planted, "ddG_kT is in")
     planted = world()
     planted["rate_factor"]["law"] = GARD_PAIR_CONSISTENT  # Hosted by @1: not this family's.
-    refused(planted, "is not a cells.rate_factor_law@2 of cells.assembly_lineages@2")
+    refused(planted, "is not a cells.rate_factor_law@2 of cells.model.assembly_lineages@2")
     # A factor on a step wholly in the pool or wholly in the lumen (the lead's ruling of 20
     # November); one on a step through the wall (pool to lumen) stays admitted.
     entry = {"catalyst": "P", "step": "make_L", "ddG_kT": 0.4}

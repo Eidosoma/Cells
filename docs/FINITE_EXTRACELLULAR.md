@@ -1,5 +1,10 @@
 # Finite extracellular CPU/JAX assembly
 
+> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools
+> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps
+> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without
+> this note.
+
 CORE-009 production contract for `finite_extracellular@1`, Cells 0.14.0.
 Acceptance results belong in a separate report; this is the implementation and
 prospective acceptance contract, not a claim that an organ or GPU is validated.

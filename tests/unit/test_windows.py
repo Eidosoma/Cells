@@ -15,7 +15,7 @@ from cells.execution.windows import WindowPolicy, iter_windows, plan_windows, ru
 from cells.records.io import _sha256, load_snapshot
 from cells.records.window_io import write_windowed_run
 from cells.registry.models import get_model
-from tests.batch_fixtures import MODELS, short_spec, synthetic_pair
+from tests.batch_fixtures import MODELS, ROUTES, WIDTHS, short_spec, synthetic_pair
 
 
 def assert_windows(parts, full):
@@ -38,10 +38,9 @@ def assert_windows(parts, full):
         np.testing.assert_array_equal(a, b)
 
 
-@pytest.mark.parametrize("name", MODELS)
-@pytest.mark.parametrize("width", [1, 7, 1000])
-def test_seven_models_exact_full_parity_and_read_only(name, width):
-    spec = short_spec(name, 0.123)
+@pytest.mark.parametrize("short_world,width", WIDTHS, indirect=["short_world"])
+def test_exact_full_parity_and_read_only(short_world, width):
+    spec = short_world(0.5)  # Ten steps: ten windows, two (the last padded), and one.
     full = run(spec)
     parts = list(iter_windows(spec, WindowPolicy(width)))
     assert_windows(parts, full)
@@ -55,15 +54,15 @@ def test_seven_models_exact_full_parity_and_read_only(name, width):
     assert aggregate == full.diagnostics
 
 
-@pytest.mark.parametrize("name", MODELS)
-def test_eager_windows_exact_parity(name):
-    spec = short_spec(name, 0.0073, jit=False)
+@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
+def test_eager_windows_exact_parity(short_world):
+    spec = short_world(0.0073, jit=False)
     assert_windows(list(iter_windows(spec, WindowPolicy(1))), run(spec))
 
 
-@pytest.mark.parametrize("name", MODELS)
-def test_complete_resume_can_change_window_and_recording_policy(name, tmp_path):
-    spec = short_spec(name, 0.073)
+@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
+def test_complete_resume_can_change_window_and_recording_policy(short_world, tmp_path):
+    spec = short_world(0.5)
     full = run(spec)
     boundary = float(full.times[len(full.times) // 2])
     root = tmp_path / "original"
@@ -88,7 +87,7 @@ def test_late_restart_preflight_checks_the_complete_clock_in_bounded_chunks(
 
     from cells.execution.schedule import control_values
 
-    spec = short_spec(name, 0.073)
+    spec = short_spec(name, 0.5)
     full = run(spec)
     point = full.checkpoint_at(float(full.times[-1 - remaining]))
     model = get_model(spec.model)
@@ -122,7 +121,7 @@ def test_completed_restart_still_refuses_an_invalid_historical_step(monkeypatch)
     from cells.execution.resources import trace_bytes
 
     raw = synthetic_pair().worlds[0].simulation.to_dict()
-    raw["experiment"]["source"]["schedule"].append({"time": 0.5, "rate": 0})
+    raw["experiment"]["contact"]["schedule"].append({"time": 0.5, "open_fractions": [0]})
     spec = parse_spec(raw)
     full = run(spec)
     model = get_model(spec.model)
@@ -159,7 +158,7 @@ def test_events_observations_boundaries_and_future_branch(width):
     assert_windows(list(iter_windows(spec, WindowPolicy(width))), full)
     checkpoint = full.checkpoint_at(0.5)
     changed = spec.to_dict()
-    changed["experiment"]["source"]["schedule"].append({"time": 0.5, "rate": 4})
+    changed["experiment"]["contact"]["schedule"].append({"time": 0.5, "open_fractions": [0.25]})
     changed["experiment"]["end_time"] = 1.37
     changed["experiment"]["observation_times"].append(1.37)
     changed = parse_spec(changed)
@@ -168,35 +167,40 @@ def test_events_observations_boundaries_and_future_branch(width):
         list(iter_windows(changed, WindowPolicy(width), branched)), run(changed, branched)
     )
     changed = changed.to_dict()
-    changed["experiment"]["source"]["schedule"][0]["rate"] = 99
+    changed["experiment"]["contact"]["schedule"][0]["open_fractions"] = [0.5]
     with pytest.raises(ConfigError, match="rewrite"):
         branch_checkpoint(spec, checkpoint, parse_spec(changed))
+
+
+def motionless(data):
+    """The shared world with every rate zero: no step is too long for it."""
+    parameters = data["model"]["parameters"]
+    parameters["reaction"].update(forward_rate=[0, 0], reverse_rate=[0, 0])
+    parameters["contacts"][0]["permeability"] = [0, 0]
 
 
 @pytest.mark.parametrize(
     "scale", [float.fromhex("0x0.0000000000001p-1022"), 2**-30, 0.03, 0.1, 2.0**400]
 )
 def test_lazy_grid_exact_float_products_events_and_near_collisions(scale, config_data):
-    config_data["model"]["parameters"]["decay_rate"] = 0
+    """The clock is the float products of the step, the end and the one event that splits a step;
+    an event a rounding below a point, and one a rounding above another, are those points (D283)."""
+    motionless(config_data)
     end = 13 * scale
     config_data["execution"]["dt"] = scale
     config_data["experiment"].update(end_time=end, observation_times=[0, end])
-    points = sorted(
-        {
-            0.0,
-            2 * scale,
-            3.13 * scale,
-            np.nextafter(4 * scale, 0),
-            np.nextafter(4 * scale, end),
-            end,
-        }
-    )
-    config_data["experiment"]["source"]["schedule"] = [
-        {"time": float(t), "rate": 0} for t in points
+    below, above = np.nextafter(4 * scale, 0), np.nextafter(6 * scale, end)
+    points = sorted({0.0, 2 * scale, 3.13 * scale, below, above, end})
+    config_data["experiment"]["contact"]["schedule"] = [
+        {"time": float(t), "open_fractions": [0]} for t in points
     ]
     spec = parse_spec(config_data)
     old, new = timeline(spec), EventGrid(spec)
     np.testing.assert_array_equal(np.asarray(new), old)
+    products = {i * scale for i in range(13)}
+    np.testing.assert_array_equal(old, sorted(products | {3.13 * scale, end}))
+    near = ((below, 4 * scale), (above, 6 * scale))
+    assert new.snapped == tuple(pair for pair in near if pair[0] not in products)
     for index, time in enumerate(old):
         assert new.exact_index(time) == index
     assert new[-1] == end
@@ -209,9 +213,9 @@ def test_lazy_grid_exact_float_products_events_and_near_collisions(scale, config
 def test_large_lazy_grid_has_only_event_sized_metadata(config_data):
     config_data["execution"].update(dt=1, max_steps=2**31 - 1)
     config_data["experiment"].update(end_time=2**31 - 3, observation_times=[0])
-    config_data["experiment"]["source"]["schedule"] = [
-        {"time": 0, "rate": 0},
-        {"time": 0.137, "rate": 1},
+    config_data["experiment"]["contact"]["schedule"] = [
+        {"time": 0, "open_fractions": [0]},
+        {"time": 0.137, "open_fractions": [1]},
     ]
     grid = EventGrid(parse_spec(config_data))
     assert len(grid) == 2**31 - 1
@@ -223,15 +227,14 @@ def test_large_lazy_grid_has_only_event_sized_metadata(config_data):
 def test_time_ratio_underflow_preserves_zero_and_end(config_data):
     config_data["execution"]["dt"] = 1e200
     config_data["experiment"].update(end_time=1e-200, observation_times=[0])
-    config_data["experiment"]["source"]["schedule"] = [{"time": 0, "rate": 0}]
+    config_data["experiment"]["contact"]["schedule"] = [{"time": 0, "open_fractions": [0]}]
     spec = parse_spec(config_data)
     np.testing.assert_array_equal(np.asarray(EventGrid(spec)), timeline(spec))
     assert len(EventGrid(spec)) == 2
 
 
-@pytest.mark.parametrize("name", ["source_pair_controls", "bioelectric_pair_baseline"])
-def test_observation_accounting_comparison_spans_windows(monkeypatch, name):
-    spec = short_spec(name, 0.004)
+def test_observation_accounting_comparison_spans_windows(monkeypatch):
+    spec = short_spec("reaction_transport_chain", 0.004)
     data = spec.to_dict()
     data["execution"]["dt"] = 0.001
     data["experiment"]["observation_times"] = [0.0003, 0.0013, 0.0023, 0.0033]
@@ -263,9 +266,7 @@ def test_unrecorded_invalid_numerical_state_is_refused(monkeypatch, recording, t
 
     def invalid(state, control, params, active):
         slope = original(state, control, params, active)
-        return type(slope)(
-            jnp.where(control > 0, jnp.nan, slope.amount), slope.supplied, slope.degraded
-        )
+        return slope._replace(amount=jnp.where(control[0] > 0, jnp.nan, slope.amount))
 
     monkeypatch.setattr(model, "rhs", invalid)
     root = tmp_path / recording
@@ -302,8 +303,9 @@ def test_peak_observation_count_matches_real_windows_and_continuations():
 
 
 def test_small_window_budget_runs_and_restores_when_full_trace_is_refused(monkeypatch, tmp_path):
-    data = short_spec("single_cell_pulse", 2).to_dict()
-    data["execution"].update(dt=0.001, max_trace_bytes=10000)
+    data = short_spec("reaction_transport_pair", 2).to_dict()
+    # Two windows of 11 steps fit (15,296 bytes), the 2,000-step trace does not.
+    data["execution"].update(dt=0.001, max_trace_bytes=16000)
     spec = parse_spec(data)
     with pytest.raises(ConfigError, match="trace working storage"):
         run(spec)
@@ -323,8 +325,9 @@ def test_small_window_budget_runs_and_restores_when_full_trace_is_refused(monkey
 
 @pytest.mark.parametrize("setting", ["window", "capacity", "observations", "steps"])
 def test_resource_refusal_precedes_model_capacity_allocation(monkeypatch, setting):
-    data = short_spec("single_cell_pulse", 1).to_dict()
-    data["execution"]["max_trace_bytes"] = 5000
+    data = short_spec("reaction_transport_pair", 1).to_dict()
+    data["execution"]["max_trace_bytes"] = 8000
+    plan_windows(parse_spec(data), WindowPolicy(2))  # The control: it fits but for the setting.
     width = 10000 if setting == "window" else 2
     if setting == "window":
         data["execution"]["dt"] = 0.0001
@@ -344,43 +347,45 @@ def test_resource_refusal_precedes_model_capacity_allocation(monkeypatch, settin
         plan_windows(spec, WindowPolicy(width))
 
 
-@pytest.mark.parametrize("name", ["source_pair_controls", "bioelectric_pair_baseline"])
 @pytest.mark.parametrize("recording", ["full", "observations", "checkpoints"])
-def test_all_cubic_intervals_checked_even_when_not_recorded(monkeypatch, name, recording, tmp_path):
-    spec = short_spec(name, 0.041)
+def test_observers_see_every_interval_even_when_not_recorded(monkeypatch, recording, tmp_path):
+    """Each window hands the model's observers its accepted rows, whatever is recorded, so a check
+    of the accepted intervals there (a model's own) misses none."""
+    spec = short_spec("reaction_transport_chain", 0.041)
     data = spec.to_dict()
     data["experiment"]["observation_times"] = [0.0]
     spec = parse_spec(data)
     model = get_model(spec.model)
-    original = model.check_interpolants
+    original = model.observe_history
     intervals = []
 
-    def checked(times, *args):
+    def checked(times, history, *args):
+        assert all(len(values) == len(times) for values in history)
         intervals.extend(zip(times[:-1], times[1:], strict=True))
-        return original(times, *args)
+        return original(times, history, *args)
 
-    monkeypatch.setattr(model, "check_interpolants", checked)
+    monkeypatch.setattr(model, "observe_history", checked)
     write_windowed_run(tmp_path / "run", spec, WindowPolicy(2, recording))
     grid = timeline(spec)
     np.testing.assert_array_equal(intervals, np.column_stack((grid[:-1], grid[1:])))
 
 
-def test_unrecorded_cubic_failure_and_sink_failure_never_publish_complete(monkeypatch, tmp_path):
-    spec = short_spec("source_pair_controls", 0.081)
+def test_unrecorded_observer_failure_and_sink_failure_never_publish_complete(monkeypatch, tmp_path):
+    spec = short_spec("reaction_transport_chain", 0.081)
     data = spec.to_dict()
     data["experiment"]["observation_times"] = [0.0]
     spec = parse_spec(data)
     model = get_model(spec.model)
-    original = model.check_interpolants
+    original = model.observe_history
 
     def checked(times, *args):
         if times[0] > 0:
-            raise NumericalError("injected hidden cubic failure")
+            raise NumericalError("injected hidden interval failure")
         return original(times, *args)
 
-    monkeypatch.setattr(model, "check_interpolants", checked)
+    monkeypatch.setattr(model, "observe_history", checked)
     root = tmp_path / "failure"
-    with pytest.raises(NumericalError, match="hidden cubic"):
+    with pytest.raises(NumericalError, match="hidden interval"):
         write_windowed_run(root, spec, WindowPolicy(2, "checkpoints"))
     assert (root / "checkpoint_initial/manifest.json").exists()
     assert not (root / "manifest.json").exists()
@@ -455,7 +460,7 @@ def test_invalid_checkpoint_request_leaves_no_output(time, tmp_path):
 
 
 def test_clock_validation_still_rejects_tampering_and_new_reducers_require_contract():
-    spec = short_spec("single_cell_pulse")
+    spec = short_spec("reaction_transport_pair")
     cp = run(spec).final
     for changed in [
         replace(cp, time=cp.time - 0.001),

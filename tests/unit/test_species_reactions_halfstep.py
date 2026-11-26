@@ -1,4 +1,4 @@
-"""Tier-1 tests of local_species_reactions@1's half-step (D152 version 1, milestone 2), host side.
+"""Tier-1 tests of cells.operator.local_species_reactions@1's half-step (D152 version 1, milestone 2), host side.
 
 The closed forms and identities the note states (docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §3.1,
 §3.3, §4.2, §4.4 and Appendix A), in NumPy:
@@ -16,11 +16,14 @@ The closed forms and identities the note states (docs/SHARED_INVENTORY_REACTIONS
   refusal; positivity from a 1e-15 mM trace under a fast sink, and the anchored stall; the
   divided-difference potential across its series boundary; the Hill factors; benign padding (every
   intermediate finite with NumPy raising on divide, invalid and overflow, and a planted zero
-  padding raising); the host refusal report; the observed rates and affinities.
+  padding raising); the host refusal report; the observed rates and affinities;
+* the passive law's kernel itself (laws/reactions/mass_action.py), near equilibrium and at random
+  states (planted: 1 - e^-x for -expm1(-x), the standard part's sign, and the flux's).
 The independent references of record (Appendix A's NumPy dG tests per law, the dissipation integral)
 are another agent's (§3.4); these tests check the closed forms the note states.
 """
 
+import functools
 import math
 from decimal import Decimal, getcontext
 from types import SimpleNamespace
@@ -29,6 +32,7 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import parse_spec
+from cells.laws.reactions.mass_action import reversible_flux
 from cells.operators import species_reactions as sr
 from cells.registry.models import get_model
 from validation.tissue import species_reactions_fixtures as rfx
@@ -111,6 +115,60 @@ def standard_potentials(spec, op_index=0):
 
 
 # ------------------------------------------------------------------ closed forms
+
+
+def passive_kernel_errors(kernel):
+    """Where a kernel leaves J = k (prod a^alpha - e^dmu prod a^beta) and A/RT, the logarithm of the
+    two terms' ratio (empty: it keeps both).
+
+    Near equilibrium: A <-> B at activities 1 and 1 + e, where J is 1 - a_B, to 2e-15 of itself and
+    of either sign. At random states of 2 A + B <-> C: to 1e-14 of the larger one-way rate, and A/RT
+    to 2e-14, in decimals.
+    """
+    out = []
+    e = np.array([1e-12, -1e-12, 3e-10, -3e-10, 1e-6, -1e-6, 1e-3, -1e-3])
+    one, none = np.ones_like(e), np.zeros_like(e)
+    near = np.stack((one, 1 + e))
+    flux, affinity = kernel(near, np.stack((one, none)), np.stack((none, one)), none, one)
+    exact = 1 - near[1]
+    signs = np.array_equal(np.sign(flux), -np.sign(e)) and np.array_equal(
+        np.sign(affinity), -np.sign(e)
+    )
+    if not signs or np.any(np.abs(flux - exact) > 2e-15 * np.abs(exact)):
+        out.append("near equilibrium")
+    rng = np.random.default_rng(7)
+    activity, dmu = 10 ** rng.uniform(-6, 3, (3, 24)), rng.uniform(-8, 8, 24)
+    k = 10 ** rng.uniform(-3, 2, 24)
+    order = np.array([[2.0], [1.0], [0.0]]), np.array([[0.0], [0.0], [1.0]])
+    flux, affinity = kernel(activity, *(np.tile(n, 24) for n in order), dmu, k)
+    for j, a in enumerate(activity.T):
+        a, b, c = (Decimal(float(x)) for x in a)
+        forward, reverse = a**2 * b, Decimal(float(dmu[j])).exp() * c
+        scale = Decimal(float(k[j])) * max(forward, reverse)
+        missed = Decimal(float(flux[j])) - Decimal(float(k[j])) * (forward - reverse)
+        if abs(missed) > Decimal("1e-14") * scale or abs(
+            Decimal(float(affinity[j])) - (forward / reverse).ln()
+        ) > Decimal("2e-14"):
+            out.append("states")
+            break
+    return out
+
+
+def test_the_passive_kernel_meets_its_closed_form_and_each_plant_misses_it():
+    kernel = functools.partial(reversible_flux, xp=np)
+    assert passive_kernel_errors(kernel) == []
+
+    def subtracted(activity, reactants, products, delta_mu, scale):
+        forward = np.sum(reactants * np.log(activity), axis=-2)
+        reverse = np.sum(products * np.log(activity), axis=-2) + delta_mu
+        x, largest = forward - reverse, np.exp(np.maximum(forward, reverse))
+        return scale * largest * (1 - np.exp(-np.abs(x))) * np.sign(x), x
+
+    # Planted: the small differences lost, the standard part's sign, and the net flux's.
+    assert passive_kernel_errors(subtracted) == ["near equilibrium"]
+    assert passive_kernel_errors(lambda a, r, p, d, k: kernel(a, r, p, -d, k)) == ["states"]
+    unsigned = lambda *args: tuple(np.abs(v) for v in kernel(*args))  # noqa: E731
+    assert passive_kernel_errors(unsigned) == ["near equilibrium", "states"]
 
 
 def test_open_linear_kinetics_follow_turnovers_closed_form_at_third_order():

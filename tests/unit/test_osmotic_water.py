@@ -12,7 +12,7 @@ import pytest
 from cells.assembly.engine import device_for
 from cells.numerics import osmotic_water as model
 from validation.tissue import water_volume_reference as reference
-from validation.tissue.test_water_volume_reference import case
+from validation.tissue.water_volume_reference import case
 
 BACKEND = os.environ.get("CELLS_COMPONENT_BACKEND", "cpu")
 EVIDENCE = os.environ.get("CELLS_COMPONENT_EVIDENCE")

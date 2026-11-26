@@ -1,4 +1,4 @@
-"""Declared laws of resolved_pump_tissue@3, and the value-free structure of a definition.
+"""Declared laws of cells.model.resolved_pump_tissue@3, and the value-free structure of a definition.
 
 Design: docs/INNER_MODEL_V4_DESIGN.md §7.1 (a law's declaration) and §7.4 (the interface for
 D176's round). One frozen declaration per law ID, with a fixed registry code:
@@ -16,9 +16,9 @@ host, never in a table here: InnerStructure validates against it (§8.3). The mo
 laws/channels/{kv1p5_mh, kir2p1_mh2, nav1p2_m3h_regularized, kleak_always_open,
 naleak_always_open}.py, laws/junctions/junction_voltage_relaxation.py,
 laws/pumps/{nak_atp_mass_action_positive, ca_atp_mass_action_positive}.py and
-laws/routes/{constant_field, logmean_electrodiffusion}.py. The older kernel modules
+laws/routes/{constant_field, logmean_electrodiffusion}.py. The shared kernel modules
 (voltage_gates, potassium_channels, sodium_channels, junction_gate, kinetic_pump and
-calcium_atpase) re-import the moved names for the older families. Each opening keeps today's
+calcium_atpase) re-import their names for the other families. Each opening keeps today's
 operation order, which per-law dispatch needs to stay bitwise (probe P2 of the note): Kv1.5 m h,
 Kir2.1 (m h) h, NaV1.2 m^3 h.
 
@@ -57,7 +57,9 @@ from cells.registry.kind_registry import qualified
 from cells.registry.laws import ChannelLaw, JunctionLaw, PumpLaw, RouteLaw  # noqa: F401
 
 HOST = qualified(MODEL_ID)  # @3 runs its own populations' laws (registry/laws.py: `host`).
-MAINTAINED_FUEL_ID = METABOLISM_ID  # maintained_chemical_reservoirs@1, today's pumps' fuel kind.
+MAINTAINED_FUEL_ID = (
+    METABOLISM_ID  # cells.fuel_kind.maintained_chemical_reservoirs@1, today's pumps' fuel kind.
+)
 MEMBRANE_ROUTE_LAW_ID = constant_field.LAW_ID  # The passive membrane and junction route law.
 FACE_ROUTE_LAW_ID = logmean_electrodiffusion.LAW_ID
 # The forms law (the face note's §2-4, MITOCHONDRIA_DESIGN; its build plan's item 1): a face that
@@ -65,9 +67,8 @@ FACE_ROUTE_LAW_ID = logmean_electrodiffusion.LAW_ID
 # .forms_faces); every other face keeps FACE_ROUTE_LAW_ID.
 FORMS_FACE_ROUTE_LAW_ID = logmean_electrodiffusion_forms.LAW_ID
 BASE_GATE_ROWS = 2  # Today's channel gate rows; a law with more gates adds rows where declared.
-# Reference RK4 step bounds of the resolved channel family (surface_kinetic.check_steps): 2.5 us
-# with NaV1.2, 25 us with Kv1.5 or Kir2.1, as their declarations hold them. surface_pump_v3's
-# RK4_*_STEP are these.
+# Reference RK4 step bounds: 2.5 us with NaV1.2, 25 us with Kv1.5 or Kir2.1, as their declarations
+# hold them. surface_pump_v3's RK4_*_STEP are these.
 RK4_SODIUM_STEP_S = nav1p2_m3h_regularized.RK4_STEP_S
 RK4_POTASSIUM_STEP_S = kv1p5_mh.RK4_STEP_S
 # Heat bookings (docs/CORE_SEAMS_DESIGN.md §6.1): the tableau books every mover class by default
@@ -243,6 +244,27 @@ def kind_ledger_errors(ledgers, kinds):
     return out
 
 
+def loop_errors(loops, routes):
+    """Why a structure's loops break their form (empty: they keep it): distinct and sorted ((route,
+    row), (kind ID, pair)) positions, each route one of `routes` and each kind a source of it."""
+
+    def position(value):
+        return type(value) is int and value >= 0
+
+    def formed(loop):
+        pairs = isinstance(loop, tuple) and len(loop) == 2
+        if not (pairs and all(isinstance(end, tuple) and len(end) == 2 for end in loop)):
+            return False
+        (route, row), (kind_id, pair) = loop
+        if not (position(route) and route < len(routes) and position(row) and position(pair)):
+            return False
+        return kind_id in {source for source, _ in routes[route][3]}
+
+    if not (isinstance(loops, tuple) and all(map(formed, loops))):
+        return ["they are ((route, row), (source kind ID, pair)) positions of the declared routes"]
+    return [] if list(loops) == sorted(set(loops)) else ["they are distinct and sorted"]
+
+
 @dataclass(frozen=True)
 class InnerStructure:
     """What one definition declares (§7.4 (a)): Python values only, never a parameter value.
@@ -289,7 +311,7 @@ class InnerStructure:
     # both at check time. () for every definition of today's, so no structure or program moves.
     # Added by the @3 owner at the lead's word (a recorded exception in this file).
     kind_ledgers: tuple = ()
-    # FR-30 (D262): the kinds of junction_series_gates@1's gates, in its GATES order, where the
+    # FR-30 (D262): the kinds of cells.junction.junction_series_gates@1's gates, in its GATES order, where the
     # junctions declare that law (every junction or none in v1); () otherwise, so no structure or
     # program of today's moves. Added by the @3 owner (a recorded exception in this file).
     junction_series_kinds: tuple = ()
@@ -299,19 +321,32 @@ class InnerStructure:
     # quasi-static potentials. () for a world whose junctions all join held components, so no
     # structure or program of those moves. Added by the @3 owner (a recorded exception here).
     crossing_junctions: tuple = ()
-    # The forms faces (logmean_electrodiffusion_forms@1; MITOCHONDRIA_DESIGN's face note, its
+    # The forms faces (cells.route.logmean_electrodiffusion_forms@1; MITOCHONDRIA_DESIGN's face note, its
     # build plan's item 1): their IDs, sorted, where the definition declares any. They are their
     # own entity set, with their own layout and state fields (surface_pump_v3.FORMS_*), so () for
     # every other definition: no structure, layout or program of those moves (D148 case 2). Added
     # by the face builder under the @3 owner's leave (a recorded exception in this file).
     forms_faces: tuple = ()
     # FR-51 (D327, ruling 6): the channel populations that declare a block
-    # (open_channel_block_weighted_modes@1), their IDs sorted, and the static mode count M (the
+    # (cells.channel_block.open_channel_block_weighted_modes@1), their IDs sorted, and the static mode count M (the
     # largest any declares, at most 4). They are () and 0 for every other definition, so no
     # structure, layout or program of those moves. Added by the @3 owner at the lead's word (a
     # recorded exception in this file).
     blocked_channels: tuple = ()
     block_modes: int = 0
+    # The charge rule beside a floating node (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §8.3):
+    # whether an outside node floats (surface_pump.floating_nodes, from the parsed topology).
+    # Where one does, membrane_rate takes charge_rows. False for every other definition, so no
+    # structure or program of those moves; no layout, state or control field depends on it.
+    floating_nodes: bool = False
+    # A factor's feedback (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.5): the loops that the
+    # door's slots close on their own gates, ((m, p), ...), sorted, where a source of a slot reads a
+    # row that the slot moves (surface_pump_v3._loops): m = (the slot's position in `routes`, the
+    # row's position among its moved rows), p = (the source's kind ID, the pair's position among
+    # that kind's pairs). Positions, value-free: the arrays' indices are layout fields
+    # (LOOP_LAYOUT_FIELDS), present only where this is not empty. () for every definition without
+    # such a loop, so no structure, layout or program of those moves.
+    loops: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -356,6 +391,11 @@ class InnerStructure:
                 "Blocked channels are a sorted tuple of distinct channel IDs, with a mode count "
                 "from 1 to 4 where any is declared and 0 where none is"
             )
+        if type(self.floating_nodes) is not bool:
+            raise ValueError("A structure's floating_nodes is a bool (whether a node floats)")
+        problems = loop_errors(self.loops, self.routes)
+        if problems:
+            raise ValueError("Loops of an inner structure: " + "; ".join(problems))
         series = self.junction_series_kinds
         if (
             (junction_series_gates.LAW_ID in self.junction_laws) != bool(series)
@@ -368,7 +408,8 @@ class InnerStructure:
             )
         ):
             raise ValueError(
-                "Series gate kinds name one kind per gate of junction_series_gates@1, the "
+                "Series gate kinds name one kind per gate of "
+                "cells.junction.junction_series_gates@1, the "
                 "structure's only junction law"
             )
         # Validated against the active law registry (§8.3): each declared law is one @3 runs.

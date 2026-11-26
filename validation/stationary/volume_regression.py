@@ -1,10 +1,10 @@
-"""stationary_continuation_analysis@1 before and after the volume extension, on @1-@3.
+"""cells.analysis.stationary_continuation_analysis@1 before and after the volume extension, on @1-@3.
 
 The analysis gained volume coordinates and closed-water laws for
-resolved_pump_water@1. This driver loads the module as committed before that
+cells.model.resolved_pump_water@1. This driver loads the module as committed before that
 change (a file extracted with git show REV:src/cells/analysis/stationary.py, so
 the driver also runs from a frozen snapshot without .git) next to the current
-one and checks, on resolved_pump_tissue@1 (default-world cell), @3 (heredity
+one and checks, on cells.model.resolved_pump_tissue@1 (default-world cell), @3 (heredity
 H and D cells) and @3 (seven-cell gated sheet), that every existing identity is
 unchanged: the same blocks and units, the same laws and law matrix, bitwise
 equal residuals and Jacobians at the base state for both formulations, and
@@ -33,7 +33,7 @@ from cells.definitions.specs import parse_spec  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
 from validation.tissue import pump_water_fixtures as fixtures  # noqa: E402
 
-ARS = "imex_ars222_face_electromigration@1"
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
 
 
 def committed(path):

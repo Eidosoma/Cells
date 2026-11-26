@@ -1,4 +1,4 @@
-"""Shared helpers for the apical_vertex_mechanics@1 tests (periodic honeycombs)."""
+"""Shared helpers for the cells.model.apical_vertex_mechanics@1 tests (periodic honeycombs)."""
 
 import jax
 import jax.numpy as jnp

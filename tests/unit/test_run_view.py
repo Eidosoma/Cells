@@ -13,7 +13,7 @@ the plan, its refusals and the reader's check. The windowed paths: test_run_view
 * A batch writes one view per world, beside its definition; a builder's geometry lands on its set
   (a division: test_run_view_division.py).
 * The reader's check opens one file at a time and finds a heat total that falls across files.
-* Every field of resolved_pump_tissue@3 is described; the operators' missing declarations (the
+* Every field of cells.model.resolved_pump_tissue@3 is described; the operators' missing declarations (the
   requested seams) only shrink.
 
 Declarations an operator does not carry yet are planted for a test's duration only.
@@ -100,8 +100,8 @@ def test_write_run_writes_a_valid_deterministic_view(written, tmp_path):
     assert str(root).encode() not in data and b"/mnt/" not in data
     model = get_model(spec.model)
     assert view["run"]["engine_models"] == [
-        "resolved_pump_composite@1",
-        "resolved_pump_tissue@3",
+        "cells.model.resolved_pump_composite@1",
+        "cells.model.resolved_pump_tissue@3",
         TURNOVER,
         EXCHANGE,
     ]
@@ -504,9 +504,9 @@ def test_the_inner_model_alone_carries_its_laws_and_gate_rows():
     plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
     view = plan.view({"observation": [("trajectory.npz", 2)]}, "write_run")
     run_view.validate(view)
-    assert view["run"]["engine_models"] == ["resolved_pump_tissue@3"]
+    assert view["run"]["engine_models"] == ["cells.model.resolved_pump_tissue@3"]
     assert view["run"]["composition"] is None
-    assert {r["owner"] for r in view["records"]} == {"resolved_pump_tissue@3"}
+    assert {r["owner"] for r in view["records"]} == {"cells.model.resolved_pump_tissue@3"}
     sets = {s["id"]: s for s in view["sets"]}
     laws = [law for law in sets["channel"]["laws"] if law is not None]
     assert laws and all(
@@ -545,7 +545,7 @@ def test_pumps_are_membrane_columns_with_their_rows_per_cycle():
 
 def test_the_inner_models_own_declarations_describe_every_field(written):
     """The writer keeps no table of the inner model's fields: every record of
-    resolved_pump_tissue@3's fields takes its unit, kind, layer and orientation (a flow's sign or
+    cells.model.resolved_pump_tissue@3's fields takes its unit, kind, layer and orientation (a flow's sign or
     a difference's ends, with who confirmed it) from @3's own declarations (models/surface_pump_v3),
     and @3's layers are its VIEW_LAYERS."""
     _, _, root = written
@@ -598,7 +598,7 @@ def test_a_kind_worlds_sets_and_records_come_from_its_kinds(monkeypatch):
 
 
 def test_the_injections_records_layer_and_events(monkeypatch):
-    """The writer reads electrode_current_injection@1's own declarations (host only, no run):
+    """The writer reads cells.operator.electrode_current_injection@1's own declarations (host only, no run):
     each field's unit (from its name), axes, kind and prescribed layer, and each scheduled current
     as an event at the electrode's cell."""
     from tests.run_view_fixtures import INJECTION, injection_world
@@ -636,44 +636,44 @@ def test_the_injections_records_layer_and_events(monkeypatch):
 # requested contract seams): only shrink, as each owner declares them.
 PENDING_UNITS = frozenset(
     {
-        ("ideal_osmosis_linear_compliance_water@1", "water_availability"),
-        ("isopotential_partition@1", "division_applied"),
-        ("isopotential_partition@1", "partition_slot_phase"),
-        ("isopotential_partition@1", "partition_units_moved"),
-        ("k_anion_symport_mass_action@1", "symport_availability"),
-        ("k_anion_symport_mass_action@1", "symport_volume_factor"),
-        ("membrane_entity_state@1", "population_abundance_increment"),
-        ("membrane_entity_state@1", "population_units"),
-        ("scheduled_cell_replacement@1", "generation"),
-        ("scheduled_cell_replacement@1", "junction_abundance"),
-        ("scheduled_cell_replacement@1", "junction_abundance_deficit"),
-        ("scheduled_cell_replacement@1", "occupant_template"),
-        ("scheduled_cell_replacement@2", "generation"),
-        ("scheduled_cell_replacement@2", "junction_abundance"),
-        ("scheduled_cell_replacement@2", "junction_abundance_deficit"),
-        ("scheduled_cell_replacement@2", "occupant_template"),
-        ("scheduled_membrane_insertion@1", "inserted_units"),
-        ("scheduled_membrane_insertion@1", "insertion_opened"),
-        ("scheduled_membrane_insertion@2", "inserted_units"),
-        ("scheduled_membrane_insertion@2", "insertion_opened"),
-        ("site_occupancy@1", "site_occupancy"),
-        ("species_regulated_availability@1", "coupling_enabled"),
-        ("species_regulated_availability@1", "coupling_factor"),
-        ("species_regulated_availability@1", "coupling_step_count"),
-        ("species_regulated_availability@1", "regulatory_crossing_step"),
-        ("species_regulated_availability@1", "regulatory_input_integral"),
-        ("species_regulated_availability@1", "regulatory_state"),
-        ("species_regulated_availability@1", "regulatory_writes_applied"),
+        ("cells.operator.ideal_osmosis_linear_compliance_water@1", "water_availability"),
+        ("cells.operator.isopotential_partition@1", "division_applied"),
+        ("cells.operator.isopotential_partition@1", "partition_slot_phase"),
+        ("cells.operator.isopotential_partition@1", "partition_units_moved"),
+        ("cells.operator.k_anion_symport_mass_action@1", "symport_availability"),
+        ("cells.operator.k_anion_symport_mass_action@1", "symport_volume_factor"),
+        ("cells.operator.membrane_entity_state@1", "population_abundance_increment"),
+        ("cells.operator.membrane_entity_state@1", "population_units"),
+        ("cells.operator.scheduled_cell_replacement@1", "generation"),
+        ("cells.operator.scheduled_cell_replacement@1", "junction_abundance"),
+        ("cells.operator.scheduled_cell_replacement@1", "junction_abundance_deficit"),
+        ("cells.operator.scheduled_cell_replacement@1", "occupant_template"),
+        ("cells.operator.scheduled_cell_replacement@2", "generation"),
+        ("cells.operator.scheduled_cell_replacement@2", "junction_abundance"),
+        ("cells.operator.scheduled_cell_replacement@2", "junction_abundance_deficit"),
+        ("cells.operator.scheduled_cell_replacement@2", "occupant_template"),
+        ("cells.operator.scheduled_membrane_insertion@1", "inserted_units"),
+        ("cells.operator.scheduled_membrane_insertion@1", "insertion_opened"),
+        ("cells.operator.scheduled_membrane_insertion@2", "inserted_units"),
+        ("cells.operator.scheduled_membrane_insertion@2", "insertion_opened"),
+        ("cells.operator.site_occupancy@1", "site_occupancy"),
+        ("cells.operator.species_regulated_availability@1", "coupling_enabled"),
+        ("cells.operator.species_regulated_availability@1", "coupling_factor"),
+        ("cells.operator.species_regulated_availability@1", "coupling_step_count"),
+        ("cells.operator.species_regulated_availability@1", "regulatory_crossing_step"),
+        ("cells.operator.species_regulated_availability@1", "regulatory_input_integral"),
+        ("cells.operator.species_regulated_availability@1", "regulatory_state"),
+        ("cells.operator.species_regulated_availability@1", "regulatory_writes_applied"),
     }
 )
 # Operators' own axes without a declared set (view_sets).
 PENDING_SETS = frozenset(
     {
-        ("isopotential_partition@1", "division_slot"),
-        ("site_occupancy@1", "site_population"),
-        ("species_regulated_availability@1", "coupling"),
-        ("species_regulated_availability@1", "one"),
-        ("species_regulated_availability@1", "regulatory_slot"),
+        ("cells.operator.isopotential_partition@1", "division_slot"),
+        ("cells.operator.site_occupancy@1", "site_population"),
+        ("cells.operator.species_regulated_availability@1", "coupling"),
+        ("cells.operator.species_regulated_availability@1", "one"),
+        ("cells.operator.species_regulated_availability@1", "regulatory_slot"),
     }
 )
 

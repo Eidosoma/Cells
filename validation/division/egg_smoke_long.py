@@ -1,6 +1,6 @@
 """Egg-scale smoke test to J1's 35-min horizon (cell-division design S0b step 4; development).
 
-Engine model: resolved_pump_tissue@3, unmodified: the stage-2 egg of
+Engine model: cells.model.resolved_pump_tissue@3, unmodified: the stage-2 egg of
 validation/tissue/egg_scale_smoke.py (its definition, anchor "consistent"), IMEX ARS(2,2,2) at
 the qualified 1 ms step, now for 2100 s (2.1e6 steps). At that length host checks on every
 row are impractical (stage 2: 2.5 ms per row), so the run goes through the vector-window

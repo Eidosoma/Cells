@@ -1,4 +1,4 @@
-"""atp_driven_transporter_mass_action_positive@1: an ATP-driven transporter's kernel (B5).
+"""cells.cycle.atp_driven_transporter_mass_action_positive@1: an ATP-driven transporter's kernel (B5).
 
 The transporter kind's law kernel (fr45/transporter/PLAN.md; the inner-model note §7.4 (g) 2).
 Per cycle it hydrolyses one ATP to ADP + Pi at its fuel node and moves n of its role from the
@@ -18,6 +18,11 @@ identical rational form,
 which equals the exponential form for every positive state and stays finite at trial states.
 Fuel is finite by default (ATP, ADP and Pi are rows the cycle moves) or held (read, never moved).
 Pure functions in the xp style of processes/.
+
+On held fuel it is superseded by cells.cycle.atp_driven_transporter_mass_action_positive@2
+(laws/pumps/atp_transporter_v2.py), whose role has any valence and which is this law at valence 0: a
+new definition on held fuel takes that one. This one stays until the worlds that run it move
+(docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3).
 """
 
 from typing import Any, NamedTuple
@@ -28,7 +33,7 @@ from cells.laws.cycles.forms import CycleForm, Parameter, Saturation
 from cells.laws.electrochemistry import R
 from cells.modules import Citation, CycleLaw, qualified
 
-LAW_ID = "atp_driven_transporter_mass_action_positive@1"
+LAW_ID = "cells.cycle.atp_driven_transporter_mass_action_positive@1"
 MAX_ABS_AFFINITY_OVER_RT = 80.0
 STOICHIOMETRY_RANGE = (1, 4)
 # Per cycle, inward-positive like today's pumps: the role leaves the inside (-n); the fuel node
@@ -165,11 +170,11 @@ DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name,
 LAW = CycleLaw(
     DECLARED_ID,
     (("role", "-stoichiometry"),),  # The role leaves the inside: -n per cycle, inward-positive.
-    ("maintained_held_rows@1", "finite_fuel_rows@1"),
+    ("cells.fuel_kind.maintained_held_rows@1", "cells.fuel_kind.finite_fuel_rows@1"),
     kinetics,
     domain_valid,
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="cited",
     source=Citation(
         "an ATP-driven transporter of a neutral role, in the Na/K law's mass-action form "

@@ -1,4 +1,4 @@
-# The declarations manifest's format (`cells.declarations@2`)
+# The declarations manifest's format (`cells.declarations@3`)
 
 The declarations manifest lists every piece the engine has registered, every law, kind and
 operator, and every active model, as one JSON file. It is the engine's own record of what it
@@ -26,26 +26,25 @@ PYTHONPATH=src JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu python -m cells declarations -
 
 | Key | What it holds |
 | --- | --- |
-| `kind` | `cells.declarations@2`. A reader checks it first and refuses another major |
+| `kind` | `cells.declarations@3`. A reader checks it first and refuses another major |
 | `revision` | The Git revision of the checkout or source snapshot the file was written from, or null where neither is found |
 | `dirty` | Whether that tree had changes beyond its revision, or null |
 | `origin` | Where the revision was read: a Git checkout or a source snapshot, or null |
 | `pieces` | Every registered law, kind and operator, one object each (below) |
 | `models` | Every active model of the static model table, in its order (below) |
 | `not_extracted` | The (interface, key) pairs whose contract has no field for the key yet (below) |
-| `legacy` | The older model families, by model ID only (below) |
 
 ## The ID rule
 
-- **`id` is namespaced:** `namespace.name@major`, such as `cells.kv1p5_mh@1`. It is the key a
+- **`id` is namespaced:** `namespace.name@major`, such as `cells.channel.kv1p5_mh@1`. It is the key a
   reader joins on.
 - **`declared_id` is the spelling the piece's own declaration uses,** and so the one
   definitions and `view.json` write. A bare ID is in the `cells` namespace (D185), so
-  `kv1p5_mh@1` and `cells.kv1p5_mh@1` name one piece.
+  `cells.channel.kv1p5_mh@1` and `cells.channel.kv1p5_mh@1` name one piece.
 - **`host` is namespaced, and `declared_host` is its declared spelling.** The declared spelling
   is the host's own: a model's ID as the model table keys it, a kind's `kind_id`, an operator's
-  `LAW_ID`. So `cells.resolved_pump_tissue@3` hosts Kv1.5, and definitions write
-  `resolved_pump_tissue@3`.
+  `LAW_ID`. So `cells.model.resolved_pump_tissue@3` hosts Kv1.5, and definitions write
+  `cells.model.resolved_pump_tissue@3`.
 - **The two spellings join byte for byte.** A definition's IDs, and a `view.json`'s, equal the
   manifest's `declared_id` of a piece or a model, its `declared_host`, or a model row's
   `declared_id`, with no rule applied. A reader that holds only the namespaced spelling applies
@@ -76,7 +75,7 @@ the five `cells` law interfaces; "operators" the composite's operators (`cells.o
 | `host` | The namespaced ID of what runs it: a kind or a model. Kinds run in the inner model, and operators in the composite | All |
 | `declared_host` | The host's declared spelling (the ID rule). Null where the host is no registered model, kind or operator: not stated | All |
 | `family` | The model whose registries hold it: the inner model for its own laws, its kinds and its kinds' laws; the composite for its operators; a family's model for that family's pieces | All |
-| `models` | The models whose definitions can declare it: its family, and, for the inner model's pieces, the composite | All |
+| `models` | The models whose definitions can declare it: its family, and, for the inner model's pieces, the composite. Empty where its family is no active model | All |
 | `module` | Its declaring module, dotted: for a law or a family operator, the module that registered it; for a kind, the module of its hooks; for an operator, its class's | All |
 | `module_path` | That module's file in this repository, `src/cells/...`. Null for a module outside the `cells` package, such as an outside package's or a test's | All |
 | `line` | The first line of its declaration in that file: the call that builds a law's, a kind's or a family operator's declaration, or an operator's class statement. Null with `module_path` | All |
@@ -143,7 +142,7 @@ at each stage of the inner step: current, at the inner stage.
 
 | Key | What it holds |
 | --- | --- |
-| `name` | The field read, or for a law the read it takes (such as `rapid_proton_buffer@1`) |
+| `name` | The field read, or for a law the read it takes (such as `cells.kind.rapid_proton_buffer@1`) |
 | `mode` | `current`, `fixed` or `reference` |
 | `stage` | The point of the step whose value it reads: `event`, `split`, `inner`, `end` or `observe` |
 | `scoped` | Whether it covers only the slots the piece names, rather than every slot |
@@ -204,10 +203,12 @@ repeat them.
 - `code`: its registry code in the inner model, which no other law takes;
 - `gates`: the names of its gates, whose open fractions the host keeps as state;
 - `permeant`: each permeant ion as (species, valence, relative permeability), also given as
-  `changes`;
+  `changes`. A model's species must have the valence that its law gives;
 - `voltage_domain_V`: the voltages (V) where it is valid; a step outside is refused;
-- `rk4_step_s`: the reference RK4 step bound (s), or null for a law with no gate;
-- `stage_term`: its term in the step's stage rule; `loop_term`, reserved;
+- `rk4_step_s`: the reference RK4 step bound (s), or null for a law with no gate and for a gated law
+  that runs on no RK4 grid;
+- `stage_term`: its term in the step's stage rule; `material_term`, its material slope per stage, the
+  name of the kernel that supplies it, or null;
 - its kernels: `kinetics` (voltage to each gate's target and time constant) and `opening` (the
   gates to the open fraction).
 
@@ -221,12 +222,14 @@ repeat them.
 - `stage_term`, its charge slope in the step's stage rule; `material_term`, its material slope
   per stage; `charge_bound` and `material_bound`, its definition-time bounds on a charged and on
   a neutral row. Each names the kernel that supplies it, or is null where the law has none;
-- `loop_term`: its loop term, where its host takes one;
 - `forms`: `"base"` where its moves are written in base forms with every ligand out, so a rapid
   binding closure's totals stay exact (CORE_SEAMS §5.2), or null;
 - `cycle`: its general form (seam A's cycle form), or null. Where it is set, the form carries the
   law: the form's own checks apply, `moves` may be empty and the kernels null, and `changes` holds
   the form's rows, one for each row a mode changes, with that `mode`;
+- `electroneutral`: true where a cycle moves no charge from one end to the other whatever species a
+  population binds, as for a law whose rate has no voltage term. Its host refuses by name a
+  population that moves charge. Only a law with a general form can declare it;
 - its kernels: `kinetics` and `domain_valid`. Its stage reads are its `reads`.
 
 ### Route laws
@@ -286,6 +289,10 @@ type built on the law template (`Law`), and an operator of one a type built on t
 template (`FamilyOperator`). The manifest does not interpret their fields: every field of its own
 is under `fields`, its functions under `kernels`, and the role keys are null.
 
+One is declared in the row of the model it serves, since its laws' host has no row:
+`cells.assembly_observable@1`, a readout of a pool's assembly, is in the inner model's row, whose
+channel controls its levels set. Its laws list no model, because no model's definitions name them.
+
 ## Models
 
 `models` lists every active model of the static model table, in its order. Its pieces are the
@@ -343,20 +350,6 @@ for yet. Each such key is null on every piece of that interface. Today:
 | `interface` | An interface the pieces use |
 | `key` | A piece key its contract has no field for yet |
 
-## The legacy list
-
-`legacy` lists the older model families by model ID only, read from the legacy registration's
-model dispatch (`src/cells/legacy/registration.py`) without importing it (D188, D196). They are
-legacy code, to be dropped, and get no page.
-
-### Legacy keys
-
-| Key | What it holds |
-| --- | --- |
-| `id` | The model ID, as definitions write it |
-| `legacy` | Always true |
-| `piece` | Always `model` |
-
 ## Pages: `doc`
 
 Every piece declared in the `cells` package, and every model with declared structure, gets one
@@ -369,6 +362,11 @@ that is not null always names a file.
 ## The version rule
 
 Any change to the keys, or to what a key means, takes a new major of `kind`. A reader checks
-`kind` and refuses a major it does not know. `cells.declarations@1` (seam F, 17 November 2026) had
-no `doc`, `module_path`, `line`, `declared_host`, `models` or `not_extracted`. It gave each read as
-a bare name, each kernel as a bare `module.qualname`, and citations without `works`.
+`kind` and refuses a major it does not know.
+- `cells.declarations@3` (25 November 2026) has every key of `@2` but `legacy`, a list of model IDs
+  that the static model table did not hold. It covers the ID move too (D345, D371): the move
+  amends how the ID rule spells an ID, and no key changes its meaning. So a reader compares whole
+  IDs, by the ID rule, and takes neither an ID's number of parts nor its spelling as fixed.
+- `cells.declarations@2` (17 November 2026) added `doc`, `module_path`, `line`, `declared_host`,
+  `models` and `not_extracted`. `cells.declarations@1` (seam F, the same day) gave each read as a
+  bare name, each kernel as a bare `module.qualname`, and citations without `works`.

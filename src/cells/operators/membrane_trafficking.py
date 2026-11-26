@@ -1,4 +1,4 @@
-"""Operator scheduled_membrane_trafficking@1: membrane retrieval and recycling (FR-2, version 1).
+"""Operator cells.operator.scheduled_membrane_trafficking@1: membrane retrieval and recycling (FR-2, version 1).
 
 docs/MEMBRANE_RETRIEVAL_DESIGN.md §2, §4.1 and §9, with the user's answers and the lead's rulings
 (§12; D217). Membrane moves between a cell's plasma patch and a receiving pool, the charges
@@ -15,7 +15,7 @@ following the patches. Version 1 is:
 
 A route is (compartment, owner, plasma patch). The plasma patch k of the owner i faces an outside
 node o, a held bath or a finite node. The compartment's node j is bounded by its patch b, whose
-inside is i (cell_owned_compartments@1).
+inside is i (cells.operator.cell_owned_compartments@1).
 
 Law, per stage of length tau at a route's constant rate r (m^2/s):
 * Retrieval (k -> b). dA = r tau moves from k to b with dC = (C_k/A_k) dA, so k keeps its
@@ -69,7 +69,7 @@ change and the record's change sum to zero (P0's conserved total); per cell, the
 capacitance moved between its patches each sum to zero.
 
 Refused at the definition, each with its reason:
-* the requirements: membrane_entity_state@1 and cell_owned_compartments@1 come before it;
+* the requirements: cells.operator.membrane_entity_state@1 and cells.operator.cell_owned_compartments@1 come before it;
 * a route's compartment that is undeclared;
 * a plasma patch that is undeclared, is not the owner's, or is a compartment's bounding patch;
 * two routes on one compartment or one plasma patch: version 1's routes are disjoint;
@@ -117,7 +117,7 @@ from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import compartments, membrane_state
 from cells.operators.contract import Operator
 
-LAW_ID = "scheduled_membrane_trafficking@1"
+LAW_ID = "cells.operator.scheduled_membrane_trafficking@1"
 STEP_ID = "charge_following_palindromic_half_steps@1"
 EXPERIMENT_KEY = "trafficking_controls"
 ROUTE_AXIS = "trafficking_route"
@@ -125,9 +125,9 @@ ROUTE_AXIS = "trafficking_route"
 ADMITTED = (
     membrane_state.LAW_ID,
     compartments.LAW_ID,
-    "scheduled_species_turnover@1",
-    "local_species_reactions@1",
-    "species_regulated_availability@1",
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.local_species_reactions@1",
+    "cells.operator.species_regulated_availability@1",
     LAW_ID,
 )
 INSERTION_REASON = (
@@ -138,24 +138,24 @@ FLUID_REASON = "no fluid moves in version 1 (F0; FR-1's door V)"
 OWNER_REASON = "an owner must not divide, close or be replaced (FR-1's doors D and R)"
 UNQUALIFIED_REASON = "it is not qualified beside membrane trafficking in version 1"
 REFUSED = {
-    "scheduled_membrane_insertion@1": INSERTION_REASON,
-    "scheduled_membrane_insertion@2": INSERTION_REASON,
-    "isopotential_partition@1": OWNER_REASON,
-    "cytoplasmic_bridge_closure@1": OWNER_REASON,
-    "scheduled_cell_replacement@1": OWNER_REASON,
-    "scheduled_cell_replacement@2": OWNER_REASON,
-    "ideal_osmosis_linear_compliance_water@1": FLUID_REASON,
-    "restricted_cleft_lumen@1": FLUID_REASON,
-    "restricted_cleft_lumen@2": FLUID_REASON,
-    "scheduled_species_exchange@1": (
+    "cells.operator.scheduled_membrane_insertion@1": INSERTION_REASON,
+    "cells.operator.scheduled_membrane_insertion@2": INSERTION_REASON,
+    "cells.operator.isopotential_partition@1": OWNER_REASON,
+    "cells.operator.cytoplasmic_bridge_closure@1": OWNER_REASON,
+    "cells.operator.scheduled_cell_replacement@1": OWNER_REASON,
+    "cells.operator.scheduled_cell_replacement@2": OWNER_REASON,
+    "cells.operator.ideal_osmosis_linear_compliance_water@1": FLUID_REASON,
+    "cells.operator.restricted_cleft_lumen@1": FLUID_REASON,
+    "cells.operator.restricted_cleft_lumen@2": FLUID_REASON,
+    "cells.operator.scheduled_species_exchange@1": (
         "exchange reads the declared patch areas, which membrane state provides (door S, or a "
         "current-area read)"
     ),
-    "site_occupancy@1": (
+    "cells.operator.site_occupancy@1": (
         "sites move with their membrane only from version 1.1 (FR-3's count as state)"
     ),
-    "scheduled_bath_composition@1": UNQUALIFIED_REASON,
-    "electrode_current_injection@1": UNQUALIFIED_REASON,
+    "cells.operator.scheduled_bath_composition@1": UNQUALIFIED_REASON,
+    "cells.operator.electrode_current_injection@1": UNQUALIFIED_REASON,
 }
 # Floors of the own ledgers (membrane state's): units, m^2, F.
 FLOORS = (1e-9, 1e-24, 1e-26)
@@ -206,7 +206,7 @@ ROUTE_FIELDS = {
 class Route:
     id: str
     plasma_patch: str
-    compartment: str  # The compartment's own ID (cell_owned_compartments@1).
+    compartment: str  # The compartment's own ID (cells.operator.cell_owned_compartments@1).
     carriers: tuple  # ((species id, transference number), ...)
     plasma_area_floor_m2: float
     pool_area_floor_m2: float

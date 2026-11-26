@@ -1,8 +1,7 @@
-"""bounding_patch_damage@1: injury, leak and reseal on a compartment's bounding patch (FR-5).
+"""cells.damage.bounding_patch_damage@1: injury, leak and reseal on a compartment's bounding patch (FR-5).
 
-docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §9. The equation is the older family's
-`prescribed_patch_injury_resealing@1` (processes/membrane_injury.py), re-expressed for a bounding
-patch as a control state with no ledger:
+docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §9. A prescribed injury and resealing of a bounding patch,
+as a control state with no ledger:
 
     dd/dt = a (1 - d) - b d,    a = k_inj u_inj(t),  b = k_res u_res(t),   d in [0, 1],
 
@@ -20,7 +19,7 @@ Pure functions in the xp style of processes/.
 
 import jax.numpy as jnp
 
-LAW_ID = "bounding_patch_damage@1"
+LAW_ID = "cells.damage.bounding_patch_damage@1"
 
 
 def rates(damage, injury_rate_per_s, resealing_rate_per_s, injury, resealing, *, xp=jnp):

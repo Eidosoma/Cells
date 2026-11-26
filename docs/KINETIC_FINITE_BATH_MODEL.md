@@ -1,5 +1,9 @@
 # Kinetic finite-bath integration design
 
+> **Legacy cleanup (25 November 2026, D386).** `finite_extracellular@1` to `@3` left the engine,
+> with their configurations. Closed `resolved_pump_tissue@3` worlds do the same physics. The tag
+> `pre-cleanup-2026-11-25` keeps the code.
+
 2026-09-16, D112 design; implemented as **0.16.0.dev0 / D113**, with full
 new-family acceptance **pending**. The D111 process gate has now been
 [reviewed and preserved](../reports/SPEC010_PROCESS_CLOSEOUT.md): 930 source

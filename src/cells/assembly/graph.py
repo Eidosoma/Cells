@@ -6,7 +6,7 @@ join i to i+10. Geometry is prescribed; occupied vertices induce contacts.
 
 NODES = 20
 FULL = (1 << NODES) - 1
-TOPOLOGY_ID = "dodecahedron_g10_2@1"
+TOPOLOGY_ID = "cells.topology.dodecahedron_g10_2@1"
 EDGES = tuple(
     sorted(
         {

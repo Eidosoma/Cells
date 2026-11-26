@@ -7,7 +7,7 @@ time; reference_inputs.json (the stress worlds); designs/membrane_trafficking_re
 file, their code, or their own tests. The engine builds every declared world from its own
 fixtures, the same calls its tests make, and each stress world from that declared world with the
 stress record's nodes and routes laid over it (reference_inputs.json -> stress_worlds). It drives
-scheduled_membrane_trafficking@1 on every registered drive and reads each row's quantity as
+cells.operator.scheduled_membrane_trafficking@1 on every registered drive and reads each row's quantity as
 comparison_bands.json's `checks` define it.
 
 A row passes when |engine - reference| <= band, the band being the file's own. The reference is a

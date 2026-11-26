@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of scheduled_membrane_insertion@2 (docs/CELL_DIVISION_S5_DESIGN.md §5.1).
+"""Tier-1 smoke test of cells.operator.scheduled_membrane_insertion@2 (docs/CELL_DIVISION_S5_DESIGN.md §5.1).
 
 In NumPy (no compile):
 * the onset with a pending facing patch: in the furrow division world the cleft and the furrow
@@ -133,7 +133,7 @@ def partition_first(raw):
         (parent_rate_after_retirement, "outside its cell's living interval"),
         (onset_on_a_pending_daughter, "its cell is live at its onset"),
         (onset_at_the_division, "at a division's time"),
-        (partition_first, "precedes isopotential_partition@1"),
+        (partition_first, "precedes cells.operator.isopotential_partition@1"),
     ],
 )
 def test_definition_refusals(change, message):

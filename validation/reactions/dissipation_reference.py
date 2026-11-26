@@ -1,5 +1,5 @@
 """The exact node kinetics, their dissipation and work integrals, passive equilibria and the
-closed forms of Appendix A: an independent reference for local_species_reactions@1 (D152).
+closed forms of Appendix A: an independent reference for cells.operator.local_species_reactions@1 (D152).
 
 Written from docs/SHARED_INVENTORY_REACTIONS_DESIGN.md Appendix A ("the dissipation integral for
 the references", "closed-form references") and §3.3; never from the engine's operator code.

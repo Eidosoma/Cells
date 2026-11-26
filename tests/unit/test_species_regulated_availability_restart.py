@@ -1,4 +1,4 @@
-"""species_regulated_availability@1, A8: restart, windows and snapshots preserve every result.
+"""cells.operator.species_regulated_availability@1, A8: restart, windows and snapshots preserve every result.
 
 docs/INVENTORY_COUPLING_DESIGN.md §4.4 A8 and §1.9. The moving world
 (regulated_availability_fixtures.dynamic_world: R cleared in cell_0 and dosed there from 12 ms, a

@@ -7,7 +7,7 @@ outputs with the independent numpy reference (mg1_reference.py) and, in later
 stages, with the engine.
 
 Stage-0 gate (`stage0`): tyssue's pure-Python periodic geometry must accept the
-periodic honeycomb tables of apical_vertex_mechanics@1, and its static energy and
+periodic honeycomb tables of cells.model.apical_vertex_mechanics@1, and its static energy and
 gradient (after two geometry updates) must match the independent reference on a
 perturbed lattice, before any dynamics comparison.
 

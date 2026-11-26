@@ -183,7 +183,8 @@ exactly 0.
 **The hold's tissue lives at the edge.** From t = 0, about half of its sampled states are
 above 0.3 of the target, and the worst is 0.995. Exposure needs free field offsets, which
 means finite extracellular space: the full-tissue worlds, E07-v1's among them. The turnover
-pre-screen's held-bath sheets have none (last section).
+pre-screen's held-bath sheets have none (last section). (25 November 2026: E07-v1's registered
+protocol is held-bath sheets with 0 free offsets, and it ran version 2.)
 
 ## Version 3 on the hold's edge states (CPU)
 
@@ -313,7 +314,8 @@ discs: 37 cells at s 1.0, 0.6 and 0.3, and 19 cells at s 0.6 and 0.3, on the hel
 127-cell sheet under `resolved_pump_replacement@1` over @3. Their residual is exactly 0 with
 no Newton iteration, in all three programs (`margins-turnover.json`). The pre-screen's "no
 refusal" therefore did not depend on the program, for this refusal class. E07-v1's
-registered world is the full tissue (172 free offsets), so D147 applies to it.
+registered world is the full tissue (172 free offsets), so D147 applies to it. (25 November
+2026: this is wrong for the registered protocol, as above: its sheets have 0 free offsets.)
 
 **A restart under version 3 needed a driver change; it is done.** The hold's definitions
 took their field solver from `validation/tissue/resolved_scale_world.py`, which declared
@@ -403,3 +405,25 @@ capacitor components now converge at second order under ARS(2,2,2) and N2. The s
 independent study measured 2.00 to 2.02 for the junction gate, transfer and heat, against 1.07 to 1.26
 at the base. The interim limit stated above no longer applies. replacement_padded's junction gate moved
 by 2.6e-11 relative, with G1's baseline renewed in the same landing.
+
+## Guard 1 with constants (25 November 2026)
+
+D148 (13 November) asked for guard 1 with constants before version 3 serves a run of record. No rerun
+was recorded, and the guard compared counts, which see no constant. `field_floor_guard.py jaxprs` now
+pairs the two programs: version 3's, with each acceptance test taken out and the `or` that joins it
+read as the solve's own convergence, must be version 2's, equation by equation and in order at every
+depth, each literal and closed-over array bit for bit. Beyond that, version 3 has the floor leaf and
+the tests, nothing else. Twelve planted changes, each of which the old checks pass, are refused and
+named. The retro-check found no difference. It covers the base and qualification sets at XC0's snapshot
+(b477f433) and at tag `pre-cleanup-2026-11-25`, and the definitions of the judged runs since 13 November
+found to declare version 3, each at its own snapshot: D172's L4 parity pass (3c10b833, 16 November), XC0
+(260d7c7f, 23 November) and XC0's erratum 2 (b477f433, 24 November), XC0's with the step-doubled step
+its runs take. (The search read the JSON files of the run folders that `PROGRESS.md` and `DECISIONS.md`
+name.) Version 2 refuses XC0's P1LB definitions at parse, so its program was traced from them unparsed;
+no version-2 run of them exists, and their start is accepted by version 3's test alone. Not compared:
+host code (the start check at parse, observations, `check_values`), the rollouts around the step, and
+batched programs. Inside a test, the equations that read the floor and their eps are checked; the rest
+(the incident sum) is written out in the record. A campaign that declares version 3 runs the guard
+again, on its own frozen snapshot with its own definitions: the commands, and what their records must
+show, are in the tool's docstring. Evidence: `/mnt/workspaces/Cells/floor-guard-constants-20261125/`
+(`inputs.json`, `summary.json`, `records/`, `plants/`, `unparsed/`, `order/`).

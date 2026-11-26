@@ -1,4 +1,4 @@
-"""FR-43 part 3's worlds for integer_unit_population@1, built from the references' spec.
+"""FR-43 part 3's worlds for cells.operator.integer_unit_population@1, built from the references' spec.
 
 Each world of references/spec/part3.json becomes a composite definition: one quiescent cell and
 its finite outside node joined by a contact patch (validation/tissue/secreted_species_fixtures:
@@ -9,7 +9,7 @@ spec's, read from the one file, so the engine's worlds and the references' are o
 * spec_world(world_id, dt=..., end=..., every=...): a spec world as a raw definition;
 * population(...), block(...): the operator's declaration pieces;
 * many_sites(...): one patch holding many independent sites (C3.3's and C3.5's statistics);
-* divided(...): the parent cell divided by isopotential_partition@1, the sites mapped (C3.5).
+* divided(...): the parent cell divided by cells.operator.isopotential_partition@1, the sites mapped (C3.5).
 """
 
 import copy
@@ -18,7 +18,7 @@ from pathlib import Path
 
 from validation.tissue import secreted_species_fixtures as ssf
 
-LAW = "integer_unit_population@1"
+LAW = "cells.operator.integer_unit_population@1"
 SPEC = Path(__file__).resolve().parent / "references" / "spec" / "part3.json"
 PATCH = "contact_0"
 CELL, NODE = "cell_0", "ecs_0"
@@ -145,8 +145,8 @@ def many_sites(world_id, count, *, dt, end, every, seed, trace=0, rates=None, co
     return raw
 
 
-PARTITION = "isopotential_partition@1"
-STATE = "membrane_entity_state@1"
+PARTITION = "cells.operator.isopotential_partition@1"
+STATE = "cells.operator.membrane_entity_state@1"
 DAUGHTERS = ("d1", "d2")
 
 
@@ -165,7 +165,7 @@ def divided(
     seed=11,
     trace=8,
 ):
-    """The spec world's cell divided once by isopotential_partition@1 at `at` (volume fraction f,
+    """The spec world's cell divided once by cells.operator.isopotential_partition@1 at `at` (volume fraction f,
     every patch at the partition's default area fraction, so the site's patch takes f too), with
     `sites` parent sites on the contact patch, each mapped onto one site at each daughter's contact
     patch (C3.5). counts: each parent's initial counts (default the spec world's); rates: {channel:

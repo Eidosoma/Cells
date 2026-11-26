@@ -1,10 +1,8 @@
 """The kinetic Na/K pump's declaration: its parse and its serialization, with maintained chemical
 reservoirs as its metabolism.
 
-Moved verbatim from finite_extracellular@2's schema (kinetic_finite_spec), which re-imports
-the two functions; the active pump families (resolved_pump_tissue@1-@3, through
-surface_kinetic_spec and the surface_pump schemas) and inner_laws import them from here
-(D188 R3).
+The pump families (cells.model.resolved_pump_tissue@1-@3), through surface_kinetic_spec and the surface_pump
+schemas, and inner_laws import the two functions from here.
 """
 
 from dataclasses import asdict
@@ -19,7 +17,7 @@ from cells.definitions.specs import (
 )
 from cells.laws.pumps.kinetic_pump import LAW_ID
 
-METABOLISM_ID = "maintained_chemical_reservoirs@1"
+METABOLISM_ID = "cells.fuel_kind.maintained_chemical_reservoirs@1"
 
 
 def parse_pump(raw, ids, z):

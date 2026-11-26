@@ -1,15 +1,15 @@
-"""The kind registry of resolved_pump_tissue@3 (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).
+"""The kind registry of cells.model.resolved_pump_tissue@3 (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).
 
 A kind is one module's contribution to the inner model: its fields (state, layout, control and
 observation columns) and optional hooks that the core calls at fixed seams. The core reaches
 kinds only through the registry active for the model build: BUILTIN, unless a caller builds
-inside `scope(registry)`. It imports no kind module. Built-in kinds (models/inner_kinds/)
+inside `scope(registry)`. It imports no kind module. Built-in kinds (the cells.kinds package)
 register on BUILTIN exactly as an external package would, with `registry.register(kind)`.
 
-IDs are namespaced ("cells.transporter@1"); a bare ID resolves in the `cells` namespace, so an
-outside package cannot collide with a built-in. The canonical kind order, the order in which a
-structure's kinds append their fields, is the sorted namespaced ID: total, and independent of
-registration, import and declaration order.
+IDs are `namespace.family.name@major` (registry/ids.py), one spelling, so an outside package cannot
+collide with a built-in. The canonical kind order, the order in which a structure's kinds append
+their fields, is the sorted ID: total, and independent of registration, import and declaration
+order.
 
 A kind's controls may follow a schedule (§7.4 (l)): the kind declares experiment keys, parses them
 into a `Schedule` (named piecewise-constant series), and the schedule's breakpoints join the
@@ -18,7 +18,6 @@ experiment's change times, so each is a step boundary and the change records car
 
 import importlib
 import math
-import re
 from collections.abc import Callable, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -33,6 +32,7 @@ import numpy as np
 # check_definition refuse with ConfigError and may use these public helpers, never the
 # underscored names of cells.definitions.specs.
 from cells.definitions.specs import ConfigError, bounded_integer, finite_number, require_fields
+from cells.registry import ids
 
 __all__ = (
     "BUILTIN",
@@ -73,8 +73,10 @@ __all__ = (
     "finite_number",
     "free_energy_entries",
     "axis_sizes",
+    "kind_factor_rows",
     "kind_ledgers",
     "kind_role_species",
+    "kind_routed_rows",
     "kind_standard_free_energies",
     "label_refusal_errors",
     "law_count_names",
@@ -95,12 +97,16 @@ __all__ = (
 NAMESPACE = "cells"
 
 
-def qualified(identifier):
-    """The namespaced form of a kind or law ID: a bare ID belongs to the cells namespace."""
+def qualified(identifier, slot=None):
+    """A piece's ID, checked: `identifier` itself, or a refusal (ConfigError) with `slot`, where it
+    is given, before the reason (registry/ids.py)."""
     if not isinstance(identifier, str) or not identifier:
-        raise ValueError(f"A kind or law ID must be a non-empty string, not {identifier!r}")
-    head = identifier.split("@", 1)[0]
-    return identifier if "." in head else f"{NAMESPACE}.{identifier}"
+        why = f"A kind or law ID must be a non-empty string, not {identifier!r}"
+    else:
+        why = ids.reason(identifier)
+    if why is not None:
+        raise ConfigError(why if slot is None else f"{slot}: {why}")
+    return identifier
 
 
 # ---------------------------------------------------------------------- schedules (§7.4 (l))
@@ -222,7 +228,7 @@ class Kind:
     right after today's state fields; its material moves land in the shared inventory; its
     controls are availabilities in [0, 1] unless control_domain says otherwise.
 
-    The hooks, as resolved_pump_tissue@3 calls them (`p` is the world's layout, in the
+    The hooks, as cells.model.resolved_pump_tissue@3 calls them (`p` is the world's layout, in the
     structure's layout type; `state` and `control` are in the structure's state and control
     types; `declaration` is what `parse` returned):
     - definition: `parse(entries, base)` -> declaration, from the kind's model-key block and the
@@ -256,6 +262,37 @@ class Kind:
       any kind's rates, stage_term or readouts, each routed slot becomes its held value x its
       sources' values, a left fold in declared order. A factor outside [0, 1] or not finite
       refuses the row or the step; `book` receives the held control.
+    - a factor's feedback (docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md §5.5 and
+      docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.5): a gated route that moves a row its own gate
+      reads closes a loop, whose rate needs the factor's slope and the route's flux. Each side gives
+      its part by two hooks, both or neither (registration refuses one alone, and both without the
+      door's own hooks of that side).
+      A source: `factor_rows(declaration)` -> one tuple per source, in
+      factor_sources' order, of ((species ID, node ID), ...): the rows whose amounts that source's
+      factor reads, each pair once, in order of first appearance, () where it reads none; on the
+      host, names only (kind_factor_rows reads and checks it). `factor_log_slopes(read, p, *, xp)`
+      -> [P] d ln f / d ln n, dimensionless and signed, its arguments `factors`' own: P is the
+      number of pairs, flattened (sources in order, then each source's pairs), and n (fmol) the
+      pair's amount on the stage's read, the free one where a closure owns the row. It is finite at
+      a zero amount.
+      A sink: `routed_rows(declaration)` -> one tuple per routed slot, in routed_controls' order, of
+      ((species ID, node ID a, node ID b), ...): each row that the slot moves and the two nodes it
+      moves it between, each once, () where it moves none; on the host, names only
+      (kind_routed_rows). `routed_flux(read, potentials, control, p, *, xp)` -> {control field:
+      [species, slot]} the flux (fmol/s, of either sign) of each row through each slot of each field
+      that routed_controls names, its arguments `rates`' own, at the ROUTED control (the door's
+      result). @3 is the sink of its own channel slots and has the two in the core.
+      The core pairs them by name at binding (InnerStructure.loops): a loop is closed where a source
+      of a slot reads a row that the slot moves, at an end that is not a held bath (a held amount
+      does not move). At every explicit stage the rate |J| |slope| / n of each moved row and each
+      pair of its slot joins the material rule at both ends of that row
+      (surface_pump_v3.loop_material_rates). Not bounded: a loop through two routes (one moves X and
+      gates on Y, the other moves Y and gates on X), and a loop through a source without the hooks,
+      which is admitted: where it reads an amount (ph_condition) its loop has no bound; where it
+      reads none (patch_damage) no loop closes through it. Refused by name, since the loop would
+      have no bound: a sink that routes a slot and has neither hook, where a source of that slot
+      that has its hooks reads a row the kind moves (its moved_rows; without routed_rows the core
+      cannot tell which of them the slot moves). Elsewhere such a sink is admitted.
     - stage: `stage_read(state, p, *, xp)` -> (the state whose amount fields hold the amounts
       every rate of the stage reads, valid), composed in hook order; a failed read refuses the
       step, and domain_valid evaluates the reads at every checked state (the step's end
@@ -278,17 +315,24 @@ class Kind:
       node potentials (a pump's electrogenic slope, reversed past its head included; potentials
       is None when membrane_rate is called without them); a patch's slope goes to both of its
       ends (surface_pump_v3.patch_node_conductance). membrane_rate's per-stage refusal, dt x rate
-      <= EXPLICIT_STEP_BOUND, then holds at every cell and every free outside node (a face-free
-      compartment's included); `bound_rate(spec,
+      <= EXPLICIT_STEP_BOUND, then holds at every cell and at every patch that faces a floating
+      outside node (surface_pump.floating_nodes: a face-free compartment's included). Beside such a
+      node the core reads the hook twice (surface_pump_v3.charge_rows): as it is, for those
+      patches' rows, at their outside nodes; and for the cells' rows on the held view (held_view),
+      where those patches are closed, inactive in the layout and their availability
+      (control.membrane) at 0, so that their slopes are 0: such a patch relaxes a voltage of its
+      own and not its cell's. A hook that ignores both closures is counted at the cell too, which
+      is the safe side; `bound_rate(spec,
       declaration)` -> 1/s, a definition-time bound term the host step checks hold to the same
       bound (the passive law's dt L <= 1); `material_term(read, potentials, control, p, *, xp)`
       -> [cells, then outside nodes] the kind's material slope (1/s) at the stage's read amounts
       and node potentials: per node, the largest |dJ/dn| of a row it moves there (a neutral
       transporter's k S n e^a / n near its static head grows as the node empties, which no
-      definition-time bound can follow). surface_pump_v3.material_rate sums the kinds' terms per
-      node, and the step refuses at every explicit stage where dt x its largest over cells and
-      non-held outside nodes exceeds the same bound (the material counterpart of stage_term; the
-      FR-4/FR-5 note's §17, D4). Without a kind that declares it, no program changes.
+      definition-time bound can follow). surface_pump_v3.material_rate sums the kinds' terms and
+      the core's own per node, and the step refuses at every explicit stage where dt x its largest
+      over cells and non-held outside nodes exceeds the same bound (the material counterpart of
+      stage_term; the FR-4/FR-5 note's §17, D4). Without a kind that declares it, no program
+      changes.
     - one writer: `held_rows(declaration)` -> ((species, node ID), ...), rows the kind reads and
       never moves (held fuel); binding refuses any inner route or other kind that moves one.
     - per-stage diagnostics (gap 7): `stage_values(read, cell, outside, p, *, xp)` -> {own state
@@ -456,7 +500,11 @@ class Kind:
     declared_fields: Callable | None = None
     factor_sources: Callable | None = None
     factors: Callable | None = None
+    factor_rows: Callable | None = None  # A factor's feedback: the rows it reads, by name.
+    factor_log_slopes: Callable | None = None  # (read, p, *, xp) -> [P] d ln f / d ln n.
     routed_controls: Callable | None = None
+    routed_rows: Callable | None = None  # A factor's feedback: the rows each slot moves, by name.
+    routed_flux: Callable | None = None  # (read, potentials, control, p, *, xp) -> {field: J}.
     # The run view (D154): its fields' declarations, and its own axes' sets.
     view: object = None  # A KindView.
     view_sets: Callable | None = None
@@ -591,7 +639,6 @@ PARTITION_ROLES = ("extensive", "intensive", "history", "structural")
 # ledger_terms' keys that fold into today's ten ledgers by role (rule (a)); a kind's own ledgers
 # take other names.
 LEDGER_TERM_ROLES = ("cell", "outside", "produced", "heat_pJ", "work_pJ", "stored_pJ")
-_BOOKING_ID = re.compile(r"(?:[a-z][a-z0-9_]*\.){0,2}[a-z][a-z0-9_]*@[1-9][0-9]*")  # name@major
 
 
 class EnergyRole(NamedTuple):
@@ -948,6 +995,58 @@ def kind_ledgers(kind, declaration):
     return pairs
 
 
+def kind_factor_rows(kind, declaration):
+    """A source kind's rows read (Kind.factor_rows), checked, as the core reads them at binding: a
+    tuple of one entry per source, in factor_sources' order, each a tuple of distinct (species ID,
+    node ID) pairs of names. None for a kind that declares none: a loop through one of its factors
+    is not bounded. The names are the model's; the core resolves them."""
+    if kind.factor_rows is None:
+        return None
+    rows, sources = kind.factor_rows(declaration), kind.factor_sources(declaration)
+    if not (isinstance(rows, tuple) and len(rows) == len(sources)):
+        raise ValueError(
+            f"Kind {kind.kind_id}'s factor_rows returns a tuple of one entry per source "
+            f"({len(sources)})"
+        )
+    for source, pairs in zip(sources, rows, strict=True):
+        if not isinstance(pairs, tuple) or not all(
+            isinstance(pair, tuple) and len(pair) == 2 and all(map(_named, pair)) for pair in pairs
+        ):
+            raise ValueError(
+                f"Kind {kind.kind_id}'s factor_rows, source {source!r}: a tuple of (species ID, "
+                "node ID) pairs"
+            )
+        if len(set(pairs)) != len(pairs):
+            raise ValueError(
+                f"Kind {kind.kind_id}'s factor_rows, source {source!r}: it names a pair twice"
+            )
+    return rows
+
+
+def kind_routed_rows(kind, declaration):
+    """A sink kind's moved rows (Kind.routed_rows), checked, as the core reads them at binding: a
+    tuple of one entry per routed slot, in routed_controls' order, each a tuple of distinct (species
+    ID, node ID a, node ID b) rows of names. None for a kind that declares none. The names are the
+    model's; the core resolves them."""
+    if kind.routed_rows is None:
+        return None
+    rows, slots = kind.routed_rows(declaration), kind.routed_controls(declaration)
+    if not (isinstance(rows, tuple) and len(rows) == len(slots)):
+        raise ValueError(
+            f"Kind {kind.kind_id}'s routed_rows returns a tuple of one entry per routed slot "
+            f"({len(slots)})"
+        )
+    for (name, slot, _), moved in zip(slots, rows, strict=True):
+        where = f"Kind {kind.kind_id}'s routed_rows, {name}[{slot}]"
+        if not isinstance(moved, tuple) or not all(
+            isinstance(row, tuple) and len(row) == 3 and all(map(_named, row)) for row in moved
+        ):
+            raise ValueError(f"{where}: a tuple of (species ID, node ID a, node ID b) rows")
+        if len(set(moved)) != len(moved):
+            raise ValueError(f"{where}: it names a row twice")
+    return rows
+
+
 def _finite_fill(value):
     if isinstance(value, bool):
         return True
@@ -956,9 +1055,10 @@ def _finite_fill(value):
 
 def declaration_errors(kind):
     """Why a kind's seam declarations (energy_roles, heat_bookings, partition_roles, ledgers and
-    ledger_bounds, and FR-42's label hooks) break the contract (empty: they keep it). The fields
-    they name are checked against the kind's own where its fields are static; a kind that declares
-    its fields per entry (declared_fields) may name the fields of every entry."""
+    ledger_bounds, FR-42's label hooks and a factor's feedback hooks) break the contract (empty:
+    they keep it). The fields they name are checked against the kind's own where its fields are
+    static; a kind that declares its fields per entry (declared_fields) may name the fields of every
+    entry."""
     out, static = [], kind.declared_fields is None
     roles = kind.energy_roles
     if not isinstance(roles, Mapping) or not all(isinstance(k, str) and k for k in roles):
@@ -986,11 +1086,11 @@ def declaration_errors(kind):
     bookings = kind.heat_bookings
     if not (
         isinstance(bookings, tuple)
-        and all(isinstance(b, str) and _BOOKING_ID.fullmatch(b) for b in bookings)
+        and all(ids.piece(b, family="heat") for b in bookings)
         and len(set(bookings)) == len(bookings)
     ):
         out.append(
-            "its heat_bookings are distinct versioned booking IDs (name@major), the tableau "
+            "its heat_bookings are distinct booking IDs (namespace.heat.name@major), the tableau "
             "never among them"
         )
     parts = kind.partition_roles
@@ -1034,6 +1134,26 @@ def declaration_errors(kind):
         one_way[1] is None
     ):
         out.append("it declares one_way_fluxes and one_way_nets together, each a callable")
+    feedback = (kind.factor_rows, kind.factor_log_slopes)  # A factor's feedback.
+    if any(h is not None and not callable(h) for h in feedback) or (feedback[0] is None) != (
+        feedback[1] is None
+    ):
+        out.append("it declares factor_rows and factor_log_slopes together, each a callable")
+    elif feedback[0] is not None and None in (kind.factor_sources, kind.factors):
+        out.append(
+            "it declares factor_rows and factor_log_slopes only beside factor_sources and factors, "
+            "whose rows and slopes they are"
+        )
+    sunk = (kind.routed_rows, kind.routed_flux)  # The sink's side of it.
+    if any(h is not None and not callable(h) for h in sunk) or (sunk[0] is None) != (
+        sunk[1] is None
+    ):
+        out.append("it declares routed_rows and routed_flux together, each a callable")
+    elif sunk[0] is not None and kind.routed_controls is None:
+        out.append(
+            "it declares routed_rows and routed_flux only beside routed_controls, whose slots' "
+            "rows and fluxes they are"
+        )
     return out + _axis_errors(kind, static) + _dispatch_mask_errors(kind, static)
 
 
@@ -1368,7 +1488,9 @@ class KindRegistry:
         self._kinds = {}
 
     def register(self, kind):
-        key = qualified(kind.kind_id)
+        key = kind.kind_id
+        if (why := ids.reason(key, family="kind", what="a kind")) is not None:
+            raise ValueError(f"Kind {key!r}: {why}")
         known = self._kinds.get(key)
         if known is not None and known is not kind:
             raise ValueError(f"Kind {key} is already registered")
@@ -1407,7 +1529,7 @@ class KindRegistry:
         return self._kinds[key]
 
     def __contains__(self, kind_id):
-        return qualified(kind_id) in self._kinds
+        return isinstance(kind_id, str) and kind_id in self._kinds
 
     def model_keys(self):
         """{model key: kind} of every registered kind."""
@@ -1419,7 +1541,7 @@ class KindRegistry:
 
     @staticmethod
     def canonical(kind_ids):
-        """kind_ids, namespaced, distinct and in canonical (sorted) order."""
+        """kind_ids, distinct and in canonical (sorted) order."""
         return tuple(sorted({qualified(k) for k in kind_ids}))
 
 

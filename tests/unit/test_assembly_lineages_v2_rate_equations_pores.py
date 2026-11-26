@@ -1,4 +1,4 @@
-"""cells.rate_equations@1's pore clock (OL6 slice S3; the OL6 design note's §3.5, §3.6, §4).
+"""cells.assembly_representation.rate_equations@1's pore clock (OL6 slice S3; the OL6 design note's §3.5, §3.6, §4).
 
 Closed forms and identities only, never a comparison with exact events (D304: Protocol D is
 registered before any such reading):

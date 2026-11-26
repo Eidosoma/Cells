@@ -1,24 +1,28 @@
-"""ca_atp_mass_action_positive@1: the plasma-membrane Ca-ATPase on maintained pools, the law
+"""cells.cycle.ca_atp_mass_action_positive@1: the plasma-membrane Ca-ATPase on maintained pools, the law
 and its declaration on @3.
 
-Neutral identity for the equations of the existing Cells law
-``plasma_calcium.PUMP_LAW``, evaluated by that same kernel
-(``plasma_calcium.pump_rates``); its module cites the source law. Positive
-cycles move one divalent Ca from the cytosol to the outside and hydrolyse one
-ATP from maintained ATP/ADP/Pi pools. Saturation is in cytosolic Ca and ATP;
-the thermodynamic factor is (1 - exp(affinity)) with
+Neutral identity for the equations of an older family's calcium pump, evaluated
+by that family's kernel (``plasma_calcium.pump_rates``); its module cites the
+source law. Positive cycles move one divalent Ca from the cytosol to the outside
+and hydrolyse one ATP from maintained ATP/ADP/Pi pools. Saturation is in
+cytosolic Ca and ATP; the thermodynamic factor is (1 - exp(affinity)) with
 
     affinity RT = drive - mu_Ca,   mu_Ca = RT ln(ci/co) + 2 F V   (V inside - outside).
 
-The standard hydrolysis energy is declared, like nak_atp_mass_action_positive@1,
+The standard hydrolysis energy is declared, like cells.cycle.nak_atp_mass_action_positive@1,
 against a 1 M standard state; the kernel's numeric-mM quotient receives it as
 delta_g0 - RT ln(1000), so both ATPases of one model use the same convention.
 Species roles, geometry, inventories and ledgers belong to the composing model.
 Supply neutral padding BEFORE this law and reject invalid trials with
 domain_valid; there is no concentration floor, clipping or state repair.
-A pump law of resolved_pump_tissue@3 (cells.cycle_law@1), registered by the law registry's
+A pump law of cells.model.resolved_pump_tissue@3 (cells.cycle_law@1), registered by the law registry's
 loader (docs/CORE_SEAMS_DESIGN.md §8.2). Moved from laws/pumps/calcium_atpase.py, which
 re-imports these names.
+
+It is superseded by cells.cycle.atp_driven_transporter_mass_action_positive@2
+(laws/pumps/atp_transporter_v2.py), the same equation for a species of any valence on the
+transporter kind: a new definition takes that one. This one stays until the model's own pumps move
+onto the kind (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.3).
 """
 
 from typing import Any, NamedTuple
@@ -34,7 +38,7 @@ from cells.laws.pumps.nak_atp_mass_action_positive import (
 from cells.laws.reactions import er_calcium, plasma_calcium
 from cells.modules import CycleLaw
 
-LAW_ID = "ca_atp_mass_action_positive@1"
+LAW_ID = "cells.cycle.ca_atp_mass_action_positive@1"
 CALCIUM_PER_CYCLE = -1  # Inward-positive stoichiometry of the transported Ca.
 VALENCE = 2
 MAX_ABS_AFFINITY_OVER_RT = er_calcium.MAX_AFFINITY_RT
@@ -153,5 +157,5 @@ LAW = CycleLaw(
     (MAINTAINED_FUEL_ID,),
     kinetics,
     domain_valid,
-    host="cells.resolved_pump_tissue@3",
+    host="cells.model.resolved_pump_tissue@3",
 )

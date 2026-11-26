@@ -1,4 +1,4 @@
-"""resolved_pump_water@1 with every water route closed is resolved_pump_tissue@3, bitwise.
+"""cells.model.resolved_pump_water@1 with every water route closed is cells.model.resolved_pump_tissue@3, bitwise.
 
 "Off" is water declared with every route closed (availability 0, or hydraulic
 permeability 0): the full split step runs, every water flow is an exact zero,

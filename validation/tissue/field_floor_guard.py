@@ -13,6 +13,24 @@ the floor in ulps (field_current_floor). The guards check that nothing else chan
   when it depends on the floor only through booleans. Guard: no output is value-tainted,
   the validity is control-tainted, and no equation of version 2 disappears; the equations
   version 3 adds are listed by primitive.
+  Counts see no constant, and not two exchanged ones, so from 25 November 2026 (D148) the
+  programs and their constants are compared too (compare_programs, Pairing). Version 3's program,
+  with each acceptance test taken out and the `or` that joins it read as the solve's own
+  convergence, must be version 2's:
+  - program: every equation an output is computed from, at every depth and in order, is version
+    2's under one renaming of variables, with each literal and closed-over array bit for bit. It
+    contains the backward slice of every output, the validity's too. Beyond it, version 3 has the
+    floor leaf and the acceptance tests (each printed once, under acceptance_tests), nothing else;
+  - constants: every literal at full precision and every closed-over array (composite_crossrev's
+    record) of version 3's program; beyond version 2's it has the tests' own and no others;
+  - device_check_constants: model.device_check_constants is equal.
+  A definition that selects the step-doubled energy check also gets doubled_step, the step its runs
+  take. A definition that version 2 refuses at parse is traced under version 2 unparsed
+  (version_specs; the record says so under version_2).
+  Where the pairing is not exact: a dead equation is compared by counts (XLA removes it); a custom
+  rule's derivative is compared by its name (the rules are JAX's own; its body is paired); a
+  nested jaxpr is paired whole, not sliced by output; a loop that carries the floor leaf is refused
+  as "not comparable", which is a limit of the tool and not a difference.
 * bindings (guard 1): every initial state, layout and control array of both declarations is
   identical, except the added layout leaf, which holds CURRENT_FLOOR_ULPS.
 * runs PART (guard 2): validation/tissue/composite_guard.py's parts (w1, w2, g2, g2-order,
@@ -26,6 +44,20 @@ FR-17 stage 1 (docs/FIELD_SOLVER_INTERFACE_DESIGN.md §8.5) reuses guard 2's run
 candidate: runs --candidate ID pairs version 2 with ID (here the sparse field solver) instead of
 version 3, every part alike.
 
+Before a campaign declares version 3 in a run of record, both guard 1 commands run on its frozen
+snapshot S, with its own definitions, one per world or structure it runs (parsed definitions, batch
+definitions or snapshot manifests; an ensemble's request is not read, its worlds' definitions are):
+  export PYTHONPATH=S/src:S JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu PYTHONDONTWRITEBYTECODE=1
+  python -P -m validation.tissue.field_floor_guard jaxprs jaxprs.json files DEFINITION.json ...
+  python -P -m validation.tissue.field_floor_guard bindings bindings.json files DEFINITION.json ...
+with the runs' own python (they trace and bind; no step runs). Each record must say verdict "pass"
+and hold every definition. In the jaxprs record, source's paths are S's, each definition's declared
+is version 3's ID, each function's program.result is "equal" and its constants.ok true,
+checked_step's acceptance_tests is at least 1, and version_2 is there only for a definition that
+version 2 refuses. An earlier run does not replace this one: the programs compared are the
+snapshot's. Not compared: host code (parse's start check, observations, check_values: NumPy), the
+rollouts around the step, and what vmap makes of it.
+
 Usage (PYTHONPATH at the revision under test):
   python -m validation.tissue.field_floor_guard jaxprs OUT.json [SET [DEFINITION.json ...]]
   python -m validation.tissue.field_floor_guard bindings OUT.json [SET [DEFINITION.json ...]]
@@ -35,14 +67,18 @@ Usage (PYTHONPATH at the revision under test):
 
 import collections
 import copy
+import dataclasses
+import hashlib
+import inspect
 import json
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
 
 CLEAN, CONTROL, VALUE = 0, 1, 2
-CANDIDATE = "capacitive_reduction_gauged_damped_newton@3"  # runs' second declaration (--candidate)
+CANDIDATE = "cells.solver.capacitive_reduction_gauged_damped_newton@3"  # runs' second declaration (--candidate)
 
 
 def declared(raw, solver):
@@ -62,8 +98,27 @@ def version_pair(raw):
     )
 
 
+def version_specs(raw):
+    """(version 2, version 3) specifications of one definition, and version 2's refusal (or None).
+
+    Version 2 refuses at parse a definition whose start its field solve cannot certify (XC0's P1LB,
+    declared version 3 for that reason). Its specification is then version 3's with the field
+    solver replaced and the parse check skipped, so version 2 binds its own layout and its program
+    can be traced. A traced program does not depend on whether a start is certified."""
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.numerics import surface_field as field
+
+    three = parse_spec(declared(raw, field.FLOOR_SOLVER_ID))
+    try:
+        return parse_spec(declared(raw, field.FACTORED_SOLVER_ID)), three, None
+    except ConfigError as error:
+        execution = dataclasses.replace(three.execution, field_solver=field.FACTORED_SOLVER_ID)
+        return dataclasses.replace(three, execution=execution), three, str(error)
+
+
 def guard_worlds(world_set, paths=()):
-    """base, qualification, or files: definitions (or snapshot manifests) at paths."""
+    """base, qualification, or files: definitions at paths, or snapshot manifests (a batch's, or a
+    batch's definition, holds one per world: PATH#WORLD_ID)."""
     from validation.tissue import composite_crossrev as crossrev
     from validation.tissue import surface_pump_v3_study as study
 
@@ -74,8 +129,12 @@ def guard_worlds(world_set, paths=()):
         for path in paths:
             raw = json.loads(Path(path).read_text())
             raw = raw.get("spec", raw)
+            if raw.get("kind") == "independent_worlds":
+                out.update({f"{path}#{w['world_id']}": w["simulation"] for w in raw["worlds"]})
+            else:
+                out[str(path)] = raw
+        for raw in out.values():
             raw["execution"]["backend"] = "cpu"
-            out[str(path)] = raw
         return out
     if world_set != "qualification":
         raise SystemExit(f"Unknown world set {world_set!r} (base, qualification or files)")
@@ -181,9 +240,17 @@ def _cond(eqn, ins, used):
     return [max(t, floor) for t in outs]
 
 
+def _scan_counts(params):
+    """(constants, carried values) of a scan (JAX 0.11 keeps them as the parts of ft_in)."""
+    if "num_consts" in params:
+        return params["num_consts"], params["num_carry"]
+    consts, carry, _ = params["ft_in"].unpack()
+    return len(consts), len(carry)
+
+
 def _scan(eqn, ins, used):
     p = eqn.params
-    nc, nk = p["num_consts"], p["num_carry"]
+    nc, nk = _scan_counts(p)
     consts, carry, xs = ins[:nc], list(ins[nc : nc + nk]), ins[nc + nk :]
     while True:
         result = taints(p["jaxpr"], consts + carry + xs, used)
@@ -203,18 +270,531 @@ def primitive_counts(jaxpr, counts=None):
     return counts
 
 
-FUNCTIONS = ("checked_step", "rhs", "device_checks")
+# The programs and their constants (D148): version 3's program, its acceptance tests taken out, is
+# version 2's, equation by equation.
+
+LEAF = "field_current_floor"  # The layout leaf only version 3 has.
+# An acceptance test's equations that read the floor, in order (surface_field.solve): the floor in
+# ulps x eps, x the incident sum, |residual| <= it, at every component.
+FLOOR_CHAIN = ("mul", "mul", "le", "reduce_and")
+EPS = float(np.finfo(float).eps)  # Their one literal.
+# jit's parameters with one entry per operand.
+PER_OPERAND = frozenset({"donated_invars", "in_shardings", "in_layouts"})
+SHOWN = 8  # Differences written out per function; every one is counted.
 
 
-def _traced(raw):
-    """(jaxprs by function, flat input paths, state): the checked step, the right-hand
-    side and the device row checks, as composite_crossrev traces them (dt traced)."""
+class NotComparable(Exception):
+    """A construct the pairing does not read: a limit of the tool, not a difference."""
+
+
+class _Misaligned(Exception):
+    """One level's equations cannot be paired further (the difference is recorded)."""
+
+
+def _literal(atom):
+    return hasattr(atom, "val")
+
+
+def _literal_value(atom):
+    """A literal as its program holds it, in its own dtype."""
+    return np.asarray(atom.val, dtype=atom.aval.dtype)
+
+
+def _digest(array):
+    array = np.ascontiguousarray(np.asarray(array))
+    return hashlib.sha256(array.tobytes()).hexdigest()
+
+
+def _literal_text(atom):
+    """A literal's dtype and its value at full precision (an array literal's digest)."""
+    value = _literal_value(atom)
+    if value.ndim:
+        return f"{value.dtype}{list(value.shape)} sha256:{_digest(value)}"
+    return f"{value.dtype} {value.item()!r}"
+
+
+def literal_counts(jaxpr, counts=None):
+    """Every literal of a jaxpr, nested jaxprs included (once per occurrence)."""
+    counts = collections.Counter() if counts is None else counts
+    jaxpr = _inner(jaxpr)
+    atoms = [v for eqn in jaxpr.eqns for v in eqn.invars] + list(jaxpr.outvars)
+    counts.update(_literal_text(v) for v in atoms if _literal(v))
+    for eqn in jaxpr.eqns:
+        for sub in _sub_jaxprs(eqn.params):
+            literal_counts(sub, counts)
+    return counts
+
+
+def _count(eqn, primitives, literals):
+    """Add one equation's primitives and literals, nested jaxprs included."""
+    primitives[eqn.primitive.name] += 1
+    literals.update(_literal_text(v) for v in eqn.invars if _literal(v))
+    for sub in _sub_jaxprs(eqn.params):
+        primitive_counts(sub, primitives)
+        literal_counts(sub, literals)
+
+
+def _type(atom):
+    aval = atom.aval
+    shape, weak = getattr(aval, "shape", ()), getattr(aval, "weak_type", False)
+    return str(getattr(aval, "dtype", aval)), tuple(shape), bool(weak)
+
+
+def _same_array(x, y):
+    x, y = np.asarray(x), np.asarray(y)
+    return x.dtype == y.dtype and x.shape == y.shape and x.tobytes() == y.tobytes()
+
+
+def _same(x, y):
+    """Two parameter values: containers item by item, arrays and floats bit for bit."""
+    if type(x) is not type(y):
+        return False
+    if isinstance(x, (tuple, list)):
+        return len(x) == len(y) and all(map(_same, x, y))
+    if isinstance(x, dict):
+        return x.keys() == y.keys() and all(_same(x[k], y[k]) for k in x)
+    if isinstance(x, float) or (hasattr(x, "tobytes") and hasattr(x, "shape")):
+        return _same_array(x, y)
+    return x is y or bool(x == y) or repr(x) == repr(y)
+
+
+def _function_name(value):
+    """A function parameter's name (a custom rule, for example); None for another parameter."""
+    if hasattr(value, "call_wrapped"):  # A traced custom rule.
+        return str(getattr(value.debug_info, "func_name", value))
+    return value.__qualname__ if inspect.isroutine(value) else None
+
+
+def _is_jaxpr(value):
+    return hasattr(value, "eqns") or hasattr(getattr(value, "jaxpr", None), "eqns")
+
+
+def _bodies(value):
+    """The jaxprs a parameter holds, itself or in a tuple (with its Nones); else nothing."""
+    items = value if isinstance(value, (tuple, list)) else (value,)
+    return list(items) if any(map(_is_jaxpr, items)) else []
+
+
+def _operands_at(eqn, variables):
+    return [i for i, v in enumerate(eqn.invars) if not _literal(v) and v in variables]
+
+
+def _hands_on(eqn):
+    """Whether each output is its own operand (a barrier)."""
+    return eqn.primitive.name in IDENTITIES and len(eqn.invars) == len(eqn.outvars)
+
+
+def _drop(items, at):
+    return type(items)(v for i, v in enumerate(items) if i not in at)
+
+
+def _entries(eqn, at):
+    """Where operands at positions `at` enter eqn's nested jaxprs: ({parameter: input positions},
+    {parameter that lists or counts operands: (version 2's, version 3's) as they must agree})."""
+    p, name = eqn.params, eqn.primitive.name
+    if name == "cond" and 0 not in at:
+        return {"branches": [i - 1 for i in at]}, {}
+    if name == "while":
+        nc, nb = p["cond_nconsts"], p["body_nconsts"]
+        if all(i < nc + nb for i in at):
+            cond = [i for i in at if i < nc]
+            body = [i - nc for i in at if i >= nc]
+            return {"cond_jaxpr": cond, "body_jaxpr": body}, {
+                "cond_nconsts": lambda x, y: (x, y - len(cond)),
+                "body_nconsts": lambda x, y: (x, y - len(body)),
+            }
+    elif name == "scan":
+        if all(i < _scan_counts(p)[0] for i in at):
+
+            def parts(x, y):
+                x, y = ([len(part) for part in v.unpack()] for v in (x, y))
+                return x, [y[0] - len(at), *y[1:]]
+
+            return {"jaxpr": at}, {"num_consts": lambda x, y: (x, y - len(at)), "ft_in": parts}
+    else:  # A call (jit, custom_jvp_call, checkpoint): one body, an input per operand.
+        holders = {k: b[0] for k, v in p.items() if len(b := _bodies(v)) == 1}
+        if len(holders) == 1:
+            ((key, body),) = holders.items()
+            if len(_inner(body).invars) == len(eqn.invars):
+                lists = dict.fromkeys(PER_OPERAND, lambda x, y: (x, _drop(y, at)))
+                counts = {"num_consts": lambda x, y: (x, y - sum(i < y for i in at))}
+                return {key: at}, {**lists, **counts}
+    raise NotComparable(f"{name} takes the floor leaf as operand {at} (a loop's carry, or a call)")
+
+
+def _feeding(jaxpr, variables, joins=()):
+    """(the equations that variables are computed from, the joins on the way): a backward slice.
+    A join is read as the operand joins gives it, and is not itself one of the equations."""
+    wanted, equations, passed = {v for v in variables if not _literal(v)}, set(), set()
+    for i in reversed(range(len(jaxpr.eqns))):
+        eqn = jaxpr.eqns[i]
+        if not eqn.effects and not any(v in wanted for v in eqn.outvars):
+            continue
+        if i in joins:
+            passed.add(i)
+            wanted.add(joins[i])
+        else:
+            equations.add(i)
+            wanted.update(v for v in eqn.invars if not _literal(v))
+    return equations, passed
+
+
+class Pairing:
+    """Version 3's program paired with version 2's, in order and at every depth.
+
+    The two are allowed to differ in two places only:
+    * the floor leaf: one more input, and so one more operand of each barrier, cond, jit or loop
+      it passes through (a loop's constant, not its carry);
+    * the acceptance tests: after a field solve's Newton loop, the equations computed from the
+      leaf (FLOOR_CHAIN), the equations that feed only those, and the join, the `or` of the test
+      with the solve's own convergence, `and(accepted, norm <= NEWTON_TARGET)`, which nothing
+      else reads. The pairing leaves a test out and reads its join as that convergence.
+    Every other equation an output is computed from is paired with version 2's: the same
+    primitive, parameters and operands under one renaming of variables, each literal and
+    closed-over array bit for bit, each result's type, the effects and the context, and nested
+    jaxprs alike. A dead equation (no output reads it, so XLA removes it) is compared by the counts
+    of its primitives and literals only: where a world has no face or no junction, part of each
+    test is dead.
+    """
+
+    def __init__(self, target):
+        self.target = target  # NEWTON_TARGET of the source under test.
+        self.paired = self.count = 0
+        self.differences, self.texts = [], []
+        self.named = collections.Counter()  # Function parameters, compared by name.
+        # Primitives and literals: the acceptance tests', and each version's dead equations'.
+        self.added = (collections.Counter(), collections.Counter())
+        self.dead = [(collections.Counter(), collections.Counter()) for _ in range(2)]
+        self.top, self.joins = {}, {}  # The outer level: version 3's equation -> version 2's.
+
+    def differ(self, where, what, two=None, three=None):
+        self.count += 1
+        if len(self.differences) < SHOWN:
+            shown = dict(version_2=two, version_3=three)
+            shown = {k: str(v)[:6000] for k, v in shown.items() if v is not None}
+            self.differences.append(dict(where=where, what=what, **shown))
+
+    def stop(self, *args):
+        self.differ(*args)
+        raise _Misaligned
+
+    def bind(self, two, three, rename, where, what):
+        """Version 3's variables are version 2's, in order."""
+        if len(two) != len(three):
+            self.stop(where, f"{len(two)} {what} in version 2, {len(three)} in version 3")
+        for i, (x, y) in enumerate(zip(two, three, strict=True)):
+            if _type(x) != _type(y):
+                self.differ(where, f"{what} {i}: {_type(x)} in version 2, {_type(y)} in version 3")
+            rename[y] = x
+
+    def operand(self, x, y, rename, where, what, two=None, three=None):
+        if _literal(x) and _literal(y):
+            if _type(x) != _type(y) or not _same_array(_literal_value(x), _literal_value(y)):
+                words = f"{what}: {_literal_text(x)} in version 2, {_literal_text(y)} in version 3"
+                self.differ(where, words, two, three)
+        elif _literal(x) or _literal(y) or rename.get(y) is not x:
+            self.differ(where, f"{what}: another value", two, three)
+
+    def level(self, two, three, leaf, where, top=False):
+        """Pair one level's equations. leaf: the positions of version 3's inputs that hold the
+        floor leaf."""
+        if two is three:  # One object: a cached nested jaxpr.
+            self.paired += sum(primitive_counts(two).values())
+            return
+        arrays = [list(getattr(j, "consts", None) or ()) for j in (two, three)]
+        two, three = _inner(two), _inner(three)
+        if len(arrays[0]) != len(arrays[1]):
+            words = "{} closed-over arrays in version 2, {} in version 3"
+            self.stop(where, words.format(*map(len, arrays)))
+        for i, (x, y) in enumerate(zip(*arrays, strict=True)):
+            if not _same_array(x, y):
+                x, y = (f"{v.dtype}{list(v.shape)} sha256:{_digest(v)}" for v in (x, y))
+                self.differ(where, f"closed-over array {i}", x, y)
+        leaves, rename = {three.invars[i] for i in leaf}, {}
+        inputs = [v for v in three.invars if v not in leaves]
+        ours = [*two.constvars, *two.invars]
+        self.bind(ours, [*three.constvars, *inputs], rename, where, "inputs")
+        live = [sorted(_feeding(j, j.outvars)[0]) for j in (two, three)]
+        for j, kept, dead in zip((two, three), live, self.dead, strict=True):
+            for i in sorted(set(range(len(j.eqns))) - set(kept)):
+                _count(j.eqns[i], *dead)
+        tests, joins = self.acceptance(three, live[1], leaves, where)
+        rest = iter(live[0])
+        for i in live[1]:
+            eqn, at = three.eqns[i], f"{where}/{i} {three.eqns[i].primitive.name}"
+            if i in tests:
+                continue
+            if i in joins:
+                rename[eqn.outvars[0]] = rename.get(joins[i])
+                continue
+            k = next(rest, None)
+            if k is None:
+                self.stop(at, "only version 3 has this equation", None, eqn)
+            if top:
+                self.top[i] = k
+            self.equation(two.eqns[k], eqn, leaves, rename, at)
+        k = next(rest, None)
+        if k is not None:
+            self.stop(f"{where}/{k} in version 2", "only version 2 has it", two.eqns[k], None)
+        if len(two.outvars) != len(three.outvars):
+            counts = [len(j.outvars) for j in (two, three)]
+            self.stop(where, "{} outputs in version 2, {} in version 3".format(*counts))
+        for i, (x, y) in enumerate(zip(two.outvars, three.outvars, strict=True)):
+            self.operand(x, y, rename, where, f"output {i}")
+        if top:
+            self.joins = joins
+
+    def equation(self, two, three, leaves, rename, where):
+        at = _operands_at(three, leaves)
+        handed = at if _hands_on(three) else []
+        if two.primitive.name != three.primitive.name:
+            self.stop(where, "another primitive", two, three)
+        operands = [v for i, v in enumerate(three.invars) if i not in at]
+        if len(two.invars) != len(operands):
+            self.stop(where, "another number of operands", two, three)
+        for i, (x, y) in enumerate(zip(two.invars, operands, strict=True)):
+            self.operand(x, y, rename, where, f"operand {i}", two, three)
+        self.parameters(two, three, at, where)
+        if not _same(two.effects, three.effects) or not _same(two.ctx, three.ctx):
+            self.differ(where, "another effect or context", two, three)
+        outputs = [v for i, v in enumerate(three.outvars) if i not in handed]
+        self.bind(two.outvars, outputs, rename, where, "results")
+        self.paired += 1
+
+    def parameters(self, two, three, at, where):
+        if two.params.keys() != three.params.keys():
+            return self.differ(where, "other parameters", two, three)
+        nested = any(map(_bodies, three.params.values()))
+        entries, without = _entries(three, at) if at and nested else ({}, {})
+        for key, x in two.params.items():
+            y = three.params[key]
+            if key in without:
+                x, y = without[key](x, y)
+            a, b = _bodies(x), _bodies(y)
+            names = _function_name(x), _function_name(y)
+            if a and list(map(_is_jaxpr, a)) == list(map(_is_jaxpr, b)):
+                for i, (p, q) in enumerate(zip(a, b, strict=True)):
+                    try:
+                        if _is_jaxpr(p):
+                            self.level(p, q, entries.get(key, ()), f"{where}/{key}{i}")
+                    except _Misaligned:  # Within it; the equation itself is paired.
+                        pass
+            elif None not in names:
+                self.named[f"{three.primitive.name} {key} {names[1]}"] += 1
+                if names[0] != names[1]:
+                    self.differ(where, f"{key}: {names[0]} in version 2, {names[1]} in version 3")
+            elif not _same(x, y):
+                self.differ(where, f"{key}: {x!r} in version 2, {y!r} in version 3", two, three)
+
+    def acceptance(self, jaxpr, live, leaves, where):
+        """A level's acceptance tests: (their equations, {join: the solve's own convergence}).
+        leaves grows by the variables that barriers hand the leaf on to."""
+        read, joins, made, users = set(), {}, {}, collections.defaultdict(list)
+        tainted = set()  # Computed from the leaf.
+        for i in live:
+            eqn = jaxpr.eqns[i]
+            operands = [v for v in eqn.invars if not _literal(v)]
+            for v in operands:
+                users[v].append(i)
+            made.update(dict.fromkeys(eqn.outvars, i))
+            on_leaf, on_test = (any(v in s for v in operands) for s in (leaves, tainted))
+            if not (on_leaf or on_test):
+                continue
+            if on_leaf and not on_test:
+                if _hands_on(eqn):
+                    leaves.update(eqn.outvars[k] for k in _operands_at(eqn, leaves))
+                    continue
+                if any(map(_bodies, eqn.params.values())):
+                    continue  # The leaf enters a nested jaxpr (parameters, level).
+            others = [v for v in operands if v not in tainted]
+            if eqn.primitive.name == "or" and len(others) == 1 and not on_leaf:
+                joins[i] = others[0]
+                continue
+            read.add(i)
+            tainted.update(eqn.outvars)
+        for i, v in enumerate(jaxpr.outvars):
+            if not _literal(v):
+                users[v].append(None)
+                if v in tainted or v in leaves:
+                    self.differ(where, f"output {i} reads the floor outside an acceptance test")
+        equations = set(read)  # With the equations that feed only them.
+        for i in reversed(live):
+            uses = [u for v in jaxpr.eqns[i].outvars for u in users[v]]
+            if i not in joins and uses and all(u in equations for u in uses):
+                equations.add(i)
+        covered = set()
+        for i, convergence in joins.items():
+            (test,) = (v for v in jaxpr.eqns[i].invars if v is not convergence)
+            # Not through an earlier test (a half step's, whose state the next one starts from).
+            own = sorted(_feeding(jaxpr, [test], joins)[0] & equations)
+            covered.update(own)
+            chain = [jaxpr.eqns[k] for k in own if k in read]
+            names = tuple(eqn.primitive.name for eqn in chain)
+            scale = [float(_literal_value(v)) for eqn in chain for v in eqn.invars if _literal(v)]
+            at = f"{where}/{i} or"
+            if names != FLOOR_CHAIN or scale != [EPS]:
+                self.differ(at, f"an acceptance test that reads the floor by {names}, {scale}")
+            if not self.converges(jaxpr, convergence, made) or users[convergence] != [i]:
+                self.differ(at, "joined to something other than the field solve's convergence")
+            self.texts.append(_program_text(jaxpr, [*own, i]))
+        for i in sorted(equations - covered):
+            self.differ(where, "reads the floor outside a test", None, jaxpr.eqns[i])
+        for i in sorted(equations | set(joins)):
+            _count(jaxpr.eqns[i], *self.added)
+        return equations, joins
+
+    def converges(self, jaxpr, variable, made):
+        """Whether variable is and(accepted, norm <= NEWTON_TARGET)."""
+        if variable not in made or jaxpr.eqns[made[variable]].primitive.name != "and":
+            return False
+        for v in jaxpr.eqns[made[variable]].invars:
+            source = jaxpr.eqns[made[v]] if not _literal(v) and v in made else None
+            if source is not None and source.primitive.name == "le":
+                bound = source.invars[1]
+                if _literal(bound) and float(_literal_value(bound)) == self.target:
+                    return True
+        return False
+
+
+def _program_text(jaxpr, indices):
+    """Some of a jaxpr's equations, printed as a program of the values they read from the rest."""
+    eqns = [jaxpr.eqns[i] for i in indices]
+    made = {v for e in eqns for v in e.outvars}
+    operands = (v for e in eqns for v in e.invars if not _literal(v))
+    inputs = list(dict.fromkeys(v for v in operands if v not in made))
+    outputs = list(eqns[-1].outvars)
+    return str(jaxpr.replace(constvars=[], invars=inputs, outvars=outputs, eqns=eqns))
+
+
+def compare_programs(two, three, leaf, target, gates=()):
+    """Version 3's traced program against version 2's (Pairing), and their constants.
+
+    two, three: closed jaxprs; leaf: the positions of three's inputs that hold the floor leaf;
+    target: NEWTON_TARGET; gates: the positions of the outputs that say whether a step is
+    accepted. Returns (program, constants, the acceptance tests' texts), the first two being the
+    record's fields:
+
+    program: result is "equal", "differs" (the first differences are written out) or "not
+    comparable" (a construct the pairing does not read). accounted says that the paired, test and
+    dead equations are all of both programs' equations. slice is the backward slice of every
+    output but the gates at the outer level (a nested jaxpr is one equation): its size, whether it
+    is the same in both versions, and the acceptance tests on the way, each read as the solve's
+    own convergence (the outputs pass through where(valid, new, old)).
+    constants: the literals of version 3's program with their counts, what version 2's multiset has
+    beyond them and the reverse (which must be the acceptance tests' own, dead ones included), and
+    the closed-over arrays as composite_crossrev.const_record writes them, equal in both."""
+    from validation.tissue import composite_crossrev as crossrev
+
+    pairing, result, limit = Pairing(target), "equal", None
+    try:
+        pairing.level(two, three, leaf, "top", top=True)
+    except _Misaligned:
+        pass
+    except NotComparable as error:
+        result, limit = "not comparable", str(error)
+    result = "differs" if pairing.count else result
+    c2, c3 = primitive_counts(two), primitive_counts(three)
+    dead_added, dead_removed = (
+        tuple(a - b for a, b in zip(pairing.dead[i], pairing.dead[1 - i], strict=True))
+        for i in (1, 0)
+    )
+    accounted = (
+        pairing.paired + sum(pairing.dead[0][0].values()) == sum(c2.values())
+        and not (c2 - c3)
+        and c3 - c2 == pairing.added[0] + dead_added[0]
+        and not dead_removed[0]
+    )
+    program = dict(
+        result=result,
+        accounted=accounted,
+        paired_equations=pairing.paired,
+        dead_equations=[sum(d[0].values()) for d in pairing.dead],
+        acceptance_tests=len(pairing.texts),
+        acceptance_primitives=dict(sorted(pairing.added[0].items())),
+        acceptance_dead=dict(sorted(dead_added[0].items())),
+        compared_by_name=dict(pairing.named),
+        differences=pairing.differences,
+        difference_count=pairing.count,
+    )
+    if limit is not None:
+        program["not_comparable"] = limit
+    if result == "equal":
+        a, b = _inner(two), _inner(three)
+        outputs = [k for k in range(len(a.outvars)) if k not in gates]
+        ours, _ = _feeding(a, [a.outvars[k] for k in outputs])
+        theirs, passed = _feeding(b, [b.outvars[k] for k in outputs], pairing.joins)
+        program["slice"] = dict(
+            outputs=len(outputs),
+            equations=len(ours),
+            equal={pairing.top.get(i) for i in theirs} == ours,
+            acceptance_tests=len(passed),
+        )
+    x, y = literal_counts(two), literal_counts(three)
+    own = pairing.added[1] + dead_added[1]
+    arrays = [json.loads(crossrev.const_record(j))["consts"] for j in (two, three)]
+    constants = dict(
+        ok=not (x - y) and y - x == own and not dead_removed[1] and arrays[0] == arrays[1],
+        literals=[sum(x.values()), sum(y.values())],
+        literals_removed=dict(sorted((x - y).items())),
+        literals_added=dict(sorted((y - x).items())),
+        acceptance_literals=dict(sorted(own.items())),
+        literal_values=dict(sorted(y.items())),
+        closed_arrays=[len(a) for a in arrays],
+        arrays=arrays[1] if arrays[0] == arrays[1] else arrays,
+    )
+    return program, constants, pairing.texts
+
+
+def compare_check_constants(two, three):
+    """model.device_check_constants of both versions' setups, name by name."""
+    from validation.tissue import composite_crossrev as crossrev
+
+    rows = []
+    for spec, model, _ in (two, three):
+        rows.append(
+            {
+                name: dict(dtype=str(v.dtype), shape=list(v.shape), sha256=_digest(v))
+                for name, v in crossrev.check_constants(model, spec)
+            }
+        )
+    differs = [k for k in sorted({*rows[0], *rows[1]}) if rows[0].get(k) != rows[1].get(k)]
+    out = dict(ok=not differs, constants=rows[1])
+    if differs:
+        out.update(differs=differs, version_2=rows[0])
+    return out
+
+
+def _setup(spec):
+    """composite_crossrev._setup of a specification: (spec, model, (state, control, layout))."""
     import jax
     import jax.numpy as jnp
 
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
+
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    controls = control_values(spec, [0.0])
+    control = type(controls)(*(np.asarray(v[0]) for v in controls))
+    return spec, model, jax.tree.map(jnp.asarray, (state, control, p))
+
+
+def _traced(raw):
+    """_trace of a definition as it is declared."""
     from validation.tissue import composite_crossrev as crossrev
 
-    spec, model, (s, c, p) = crossrev._setup(raw)
+    return _trace(*crossrev._setup(raw))
+
+
+def _trace(spec, model, arrays):
+    """(jaxprs by function, flat input paths, state): the checked step, the right-hand
+    side and the device row checks, as composite_crossrev traces them (dt traced); and, for a
+    definition that selects the step-doubled energy check, doubled_step, the step its runs take
+    (cells.execution.energy_check: the checked step whole and in halves, with the energy terms)."""
+    import jax
+    import jax.numpy as jnp
+
+    s, c, p = arrays
     dt = jnp.asarray(spec.execution.dt)
     constants = model.device_check_constants(spec)
 
@@ -240,6 +820,14 @@ def _traced(raw):
         "rhs": jax.make_jaxpr(rhs)(s, c, p),
         "device_checks": jax.make_jaxpr(checks)(s, p),
     }
+    if getattr(spec, "energy_check", None) is not None:
+        from cells.execution import energy_check
+
+        doubled = energy_check.doubled(model.checked_step, *energy_check.terms(model, spec, p))
+        paths["doubled_step"] = paths["checked_step"]
+        jaxprs["doubled_step"] = jax.make_jaxpr(lambda s, dt, c, q: doubled(s, dt, c, q, q.active))(
+            s, dt, c, p
+        )
     return jaxprs, paths, s
 
 
@@ -247,25 +835,41 @@ def jaxprs(out, world_set="base", paths=()):
     import jax
 
     jax.config.update("jax_enable_x64", True)
+    import cells
     from cells.definitions.specs import parse_spec
     from cells.execution.state import initialise
     from cells.numerics import surface_field as field
+    from validation.tissue import composite_crossrev as crossrev
 
-    record = dict(world_set=world_set, worlds={})
+    modules = dict(cells=cells.__file__, composite_crossrev=crossrev.__file__, tool=__file__)
+    record = dict(
+        world_set=world_set,
+        source={k: str(Path(v).resolve()) for k, v in modules.items()},
+        acceptance_tests={},
+        worlds={},
+    )
     same = True
     for name, raw in guard_worlds(world_set, paths).items():
-        entry = {}
+        entry, started = {}, time.perf_counter()
         try:
             p = initialise(parse_spec(raw)).layout
             free = [getattr(p, k) for k in p._fields if k.endswith("offset_free")]
             entry["free_offsets"] = int(np.sum(free[0])) if free else None
             entry["declared"] = raw["execution"].get("field_solver")
-            j2, _, _ = _traced(declared(raw, field.FACTORED_SOLVER_ID))
-            j3, paths, state = _traced(declared(raw, field.FLOOR_SOLVER_ID))
-            for function in FUNCTIONS:
-                floor = [i for i, k in enumerate(paths[function]) if "field_current_floor" in k]
+            *specs, refused = version_specs(raw)
+            if refused is not None:
+                entry["version_2"] = f"traced unparsed; its parse refuses the definition: {refused}"
+            two, three = map(_setup, specs)
+            entry["device_check_constants"] = compare_check_constants(two, three)
+            same &= entry["device_check_constants"]["ok"]
+            j2, paths2, _ = _trace(*two)
+            j3, paths, state = _trace(*three)
+            for function in j3:
+                floor = [i for i, k in enumerate(paths[function]) if LEAF in k]
                 if len(floor) != 1:
                     raise ValueError(f"{function}: {len(floor)} floor leaves")
+                if [k for k in paths[function] if LEAF not in k] != paths2[function]:
+                    raise ValueError(f"{function}: the inputs differ by more than the floor leaf")
                 inputs = [VALUE if i in floor else CLEAN for i in range(len(paths[function]))]
                 used = collections.Counter()
                 outs = taints(j3[function], inputs, used)
@@ -290,17 +894,38 @@ def jaxprs(out, world_set="base", paths=()):
                     and not removed
                     and (bool(used) or function == "device_checks")
                 )
-                if function == "checked_step":
-                    n = len(jax.tree_util.tree_leaves(state))
+                n = len(jax.tree_util.tree_leaves(state))
+                # The validities: the step's, and the half steps' of a step-doubled step, after its
+                # four energy values.
+                gates = dict(checked_step=(n,), doubled_step=(n, n + 5)).get(function, ())
+                if gates:
                     result["validity_taint"] = outs[n]
-                    ok = ok and outs[n] == CONTROL and len(outs) == n + 1
+                    ok = ok and all(outs[k] == CONTROL for k in gates)
+                    ok = ok and len(outs) == gates[-1] + 1
+                program, constants, texts = compare_programs(
+                    j2[function], j3[function], floor, field.NEWTON_TARGET, gates
+                )
+                for text in texts:
+                    key = _digest(np.frombuffer(text.encode(), np.uint8))[:16]
+                    record["acceptance_tests"].setdefault(key, text)
+                result.update(program=program, constants=constants)
+                ok = (
+                    ok
+                    and program["result"] == "equal"
+                    and program["accounted"]
+                    and program["slice"]["equal"]
+                    and bool(texts) == (function != "device_checks")
+                    and constants["ok"]
+                )
                 result["ok"] = bool(ok)
                 entry[function] = result
                 same &= bool(ok)
         except Exception as error:  # A world that cannot declare version 3 is evidence.
             entry["error"] = repr(error)
             same = False
+        entry["seconds"] = round(time.perf_counter() - started, 1)
         record["worlds"][name] = entry
+        Path(out).write_text(json.dumps(record, indent=1, default=str) + "\n")  # Kept if stopped.
         print(
             name,
             json.dumps({k: v.get("ok") if isinstance(v, dict) else v for k, v in entry.items()}),
@@ -325,7 +950,8 @@ def bindings(out, world_set="base", paths=()):
     for name, raw in guard_worlds(world_set, paths).items():
         arrays = []
         try:
-            for spec in version_pair(raw):
+            *specs, refused = version_specs(raw)
+            for spec in specs:
                 state, layout = get_model(spec.model).initial_values(spec)
                 times = sorted(
                     {0.0, *(c.time for c in spec.experiment.changes), spec.experiment.end_time}
@@ -357,6 +983,8 @@ def bindings(out, world_set="base", paths=()):
                 and float(floor) == field.CURRENT_FLOOR_ULPS
             )
             entry = dict(ok=bool(ok), arrays=len(a), extra=extra, differs=differs[:8])
+            if refused is not None:
+                entry["version_2"] = f"bound unparsed; its parse refuses the definition: {refused}"
         except Exception as error:
             entry = dict(ok=False, error=repr(error))
         same &= entry["ok"]

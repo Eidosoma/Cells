@@ -1,7 +1,7 @@
 """The coupling operator's qualification generator: A1, A4, A5 and their controls, as records.
 
 docs/INVENTORY_COUPLING_DESIGN.md §9 (milestone 3) and §10 (milestone 4, the protocol). The engine
-(resolved_pump_composite@1 over resolved_pump_tissue@3 with species_regulated_availability@1, and
+(cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3 with cells.operator.species_regulated_availability@1, and
 D150's turnover for A5's regulator) is run against the independent references of
 validation/coupling, used through REFERENCES_USAGE.md's API only. This module writes records; it
 computes no order and no verdict. The judge (validation/tissue/regulated_availability_judge.py)

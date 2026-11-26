@@ -3,7 +3,7 @@ uninterrupted, and run to the join, saved, and resumed from the checkpoint, in p
 the snapshot files (records/io.py). Development, not judged.
 
 The checkpoint is the composite's whole state (execution/state.Checkpoint), so it carries
-templated_polymerisation@1's own fields: free machines, complexes per stage, the cumulative
+cells.operator.templated_polymerisation@1's own fields: free machines, complexes per stage, the cumulative
 initiations, stage exits, releases, degradations and transfers, every heat, and with a release
 (FR-38) its hold, the releases into each fate row and their heats. A route's rate is
 piecewise constant from each change's time (the operator's value_at), so a change at the join

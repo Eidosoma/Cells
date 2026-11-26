@@ -1,4 +1,4 @@
-"""Compiled guard of cytoplasmic_bridge_closure@1: Q4's open-bridge limit (S5 design §7.3).
+"""Compiled guard of cells.operator.cytoplasmic_bridge_closure@1: Q4's open-bridge limit (S5 design §7.3).
 
 With the bridge open (a = a_0: an exponential closure of 1e4 s, nearly constant over the run)
 and R_b << Rm, a small current into d1 couples into d2 with the two-cell circuit's DC ratio,
@@ -48,7 +48,7 @@ def passive(raw):
     raw["experiment"]["channel_controls"] = []
     raw["execution"]["channel_capacity"] = 0
     for block in raw["model"]["operators"]:
-        if block["law"] == "membrane_entity_state@1":
+        if block["law"] == "cells.operator.membrane_entity_state@1":
             block["populations"] = []
         for division in block.get("divisions", []):
             division["populations"] = []

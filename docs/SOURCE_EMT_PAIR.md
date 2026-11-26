@@ -1,5 +1,9 @@
 # Source-compatible EMT pair: Cells 0.7.0
 
+> **Legacy cleanup (25 November 2026, D386).** `emt_mirna_pair@1` left the engine, with its
+> configurations, and no model replaces it as one piece. The tag `pre-cleanup-2026-11-25` keeps the
+> code.
+
 `emt_mirna_pair@1` couples source-scaled regulation, Na/K/Cl membrane exchange
 and selective contact transport through the shared JAX engine. It is the seventh
 production model, not a replacement for the physical bioelectric pair. The

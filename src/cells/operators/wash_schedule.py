@@ -1,7 +1,7 @@
-"""scheduled_compartment_wash@1: timed partial washes of finite compartments (FR-27; D245, D246).
+"""cells.operator.scheduled_compartment_wash@1: timed partial washes of finite compartments (FR-27; D245, D246).
 
 docs/COMPARTMENT_WASH_DESIGN.md. One mechanism, a liquid exchange of a compartment, is shared with
-the assembly family's cells.pool_replacement@1 (FR-20), its whole-exchange execution in exact
+the assembly family's cells.operator.pool_replacement@1 (FR-20), its whole-exchange execution in exact
 counts; this operator is its deterministic execution at any fraction (D175, D210; D246: D175's
 representation key stays reserved, and both declare it when it exists).
 
@@ -78,7 +78,7 @@ Refused at the definition (version 1):
     rows;
   - each operator's routes: species exchange's routes through a patch facing the node, a
     site population's internalisation from it, and the gene unit's exports into the node and
-    its outside degradations there (templated_polymerisation@1's amendment T; D327, the
+    its outside degradations there (cells.operator.templated_polymerisation@1's amendment T; D327, the
     fail-open fix: each refused by name, since both write the node's rows outside the wash's
     books);
   - every operator's in-step process that moves a neutral species at an outside node;
@@ -92,7 +92,7 @@ Refused at the definition (version 1):
 It reads its nodes' volumes, anchors and outside mask as declared: fixed reads at its event, scoped
 to its nodes (door S). So water, the lumens and insertion, which change them unscoped, are refused
 by the composite's structure check, and the bath schedule's dose at a held bath is admitted. Beside
-cell_owned_compartments@1 it is refused by that declaration's admitted list, which fails closed.
+cells.operator.cell_owned_compartments@1 it is refused by that declaration's admitted list, which fails closed.
 """
 
 import math
@@ -111,10 +111,10 @@ from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one pre
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators.contract import EXCHANGED, LiquidExchange, Operator, Read
 
-LAW_ID = "scheduled_compartment_wash@1"
+LAW_ID = "cells.operator.scheduled_compartment_wash@1"
 EVENTS_KEY = "compartment_wash_events"
-EXCHANGE, SITES = "scheduled_species_exchange@1", "site_occupancy@1"
-POLYMERISATION = "templated_polymerisation@1"
+EXCHANGE, SITES = "cells.operator.scheduled_species_exchange@1", "cells.operator.site_occupancy@1"
+POLYMERISATION = "cells.operator.templated_polymerisation@1"
 # The operator laws whose routes surface_crossings reads, route by route, rather than classing
 # the law whole (SHOWN_LOCAL, REFUSED).
 READ = (EXCHANGE, SITES, POLYMERISATION)
@@ -125,36 +125,36 @@ PATCH_MOVERS = ("membrane", "channel", "pump")
 # Operator laws shown to move no species across a node's surface (D263 finding 2), each with why;
 # READ's routes are read (surface_crossings), and every other law is refused.
 SHOWN_LOCAL = {
-    "scheduled_species_turnover@1": "makes and clears species at its own cells and nodes",
-    "local_species_reactions@1": "converts species at its own sites",
-    "scheduled_bath_composition@1": "sets held baths' compositions",
-    "membrane_entity_state@1": "provides channel abundances, membrane areas and capacitances",
-    "species_regulated_availability@1": "scales other laws' availabilities; its state is its own",
-    "species_regulated_availability@2": "scales other laws' availabilities and rates",
-    "cell_owned_compartments@1": "declares which cell owns each compartment",
-    "scheduled_cell_replacement@1": "swaps a replaced cell's own pools",
-    "scheduled_cell_replacement@2": "swaps a replaced cell's own pools",
-    "site_occupant_replacement@1": "resets site pools at replacement events",
-    "electrode_current_injection@1": "moves charged carriers between an electrode and a cell",
-    "isopotential_partition@1": "splits a dividing cell's contents between its daughters",
-    "cytoplasmic_bridge_closure@1": "sets a bridge junction's availability, between two cells",
-    "population_unit_turnover@1": "consumes precursors into units in cells",
-    "ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
-    "k_anion_symport_mass_action@1": "moves its charged potassium and anion in-step (read below)",
-    # templated_polymerisation@1 left this list for READ (D327, the fail-open fix): it was entered
+    "cells.operator.scheduled_species_turnover@1": "makes and clears species at its own cells and nodes",
+    "cells.operator.local_species_reactions@1": "converts species at its own sites",
+    "cells.operator.scheduled_bath_composition@1": "sets held baths' compositions",
+    "cells.operator.membrane_entity_state@1": "provides channel abundances, membrane areas and capacitances",
+    "cells.operator.species_regulated_availability@1": "scales other laws' availabilities; its state is its own",
+    "cells.operator.species_regulated_availability@2": "scales other laws' availabilities and rates",
+    "cells.operator.cell_owned_compartments@1": "declares which cell owns each compartment",
+    "cells.operator.scheduled_cell_replacement@1": "swaps a replaced cell's own pools",
+    "cells.operator.scheduled_cell_replacement@2": "swaps a replaced cell's own pools",
+    "cells.operator.site_occupant_replacement@1": "resets site pools at replacement events",
+    "cells.operator.electrode_current_injection@1": "moves charged carriers between an electrode and a cell",
+    "cells.operator.isopotential_partition@1": "splits a dividing cell's contents between its daughters",
+    "cells.operator.cytoplasmic_bridge_closure@1": "sets a bridge junction's availability, between two cells",
+    "cells.operator.population_unit_turnover@1": "consumes precursors into units in cells",
+    "cells.operator.ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
+    "cells.operator.k_anion_symport_mass_action@1": "moves its charged potassium and anion in-step (read below)",
+    # cells.operator.templated_polymerisation@1 left this list for READ (D327, the fail-open fix): it was entered
     # here as writing only amount_increment (gene regulation's option A, G4), and amendment T
     # then gave it exports into finite nodes and outside degradations there.
     # FR-44 (D327): the label owner moves no amount and follows each wash by its report.
-    "neutral_arrival_labels@1": "moves no amount; it follows each wash by the wash's report",
+    "cells.operator.neutral_arrival_labels@1": "moves no amount; it follows each wash by the wash's report",
     LAW_ID: "is this law",
 }
 REFUSED = {
-    "scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
-    "scheduled_membrane_insertion@1": "opens onset nodes with their declared contents",
-    "scheduled_membrane_insertion@2": "opens and retires nodes and patches",
-    "restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
-    "restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
-    "integer_unit_population@1": "moves species across its sites' patches, between cells and "
+    "cells.operator.scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
+    "cells.operator.scheduled_membrane_insertion@1": "opens onset nodes with their declared contents",
+    "cells.operator.scheduled_membrane_insertion@2": "opens and retires nodes and patches",
+    "cells.operator.restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
+    "cells.operator.restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
+    "cells.operator.integer_unit_population@1": "moves species across its sites' patches, between cells and "
     "outside nodes, by transfers a wash does not read",
 }
 IONS_SAME = "same_as_compartment"
@@ -232,7 +232,7 @@ def parse_declaration(raw, base):
         if outside[node].reservoir:
             raise ConfigError(
                 f"{LAW_ID} washes finite compartments only; {node!r} is a held bath, whose "
-                "composition is the bath schedule's (scheduled_bath_composition@1)"
+                "composition is the bath schedule's (cells.operator.scheduled_bath_composition@1)"
             )
         nodes.append(node)
     if len(set(nodes)) != len(nodes):
@@ -750,7 +750,8 @@ class ScheduledCompartmentWash(Operator):
             "compartment_wash_events": events_to_dict(schedule)[EVENTS_KEY],
             "compartment_wash_records": records,
             "compartment_wash_mechanism": (
-                "a liquid exchange of a compartment, shared with cells.pool_replacement@1 (FR-20), "
+                "a liquid exchange of a compartment, shared with cells.operator.pool_replacement@1 "
+                "(FR-20), "
                 "its whole-exchange execution in exact counts; this is its deterministic execution "
                 "(docs/COMPARTMENT_WASH_DESIGN.md; D175, D210, D246)"
             ),

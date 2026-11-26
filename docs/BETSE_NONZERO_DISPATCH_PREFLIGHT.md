@@ -1,5 +1,10 @@
 # REF-003e1: actual nonzero event-dispatch preflight
 
+> **Legacy cleanup (25 November 2026, D386).** The drivers that this record names under
+> `validation/betse/` are retired (D374), and their code left the tree; the tag
+> `pre-cleanup-2026-11-25` keeps it. The record, its protocols and its reports stay. Old records pin this
+> page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 2026-09-12, D080. This follows the checked [D079 held-input design](BETSE_HELD_INTERVENTION.md).
 Implement and execute native preparation and direct event dispatch only; do not
 enter a transport function, concentration update, time integrator or Cells run.

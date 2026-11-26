@@ -30,7 +30,7 @@ from cells.laws.cycles.forms import (
 from cells.laws.cycles.mitochondria_source import citation
 from cells.modules import CycleLaw, qualified
 
-LAW_ID = "cytochrome_c_oxygen_proton_cycle@1"
+LAW_ID = "cells.cycle.cytochrome_c_oxygen_proton_cycle@1"
 DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 CYCLE = CycleForm(
     kinetics="monomial",
@@ -71,10 +71,13 @@ CYCLE = CycleForm(
 )
 LAW = CycleLaw(
     DECLARED_ID,
-    reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    reads=(
+        "cells.binding.rapid_binding@1",
+    ),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Frame B: every move in base forms, every proton counted (D236).
+    material_term="material_term",  # The kind's: its rate over all the rows it moves.
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="cited",
     source=citation(
         "the appendix's §1.3 (Eqs. 8 and 9; Table 2's Delta G°_C4; Table 1's k_O2)",

@@ -1,5 +1,8 @@
 # Independent offline codec review
 
+> **Legacy cleanup (25 November 2026, D386).** This folder's drivers are retired (D374), and their
+> code left the tree; the tag `pre-cleanup-2026-11-25` keeps it. This page stays as a record.
+
 2026-09-17, D124 / REF-005d R0. Review the completed D123 conversion with a
 separately implemented decoder and a direct comparison against the originals.
 This is software/evidence independence, not a claim of a different research team.

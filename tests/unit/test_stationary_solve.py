@@ -1,7 +1,7 @@
-"""stationary_continuation_analysis@1 solves on the default-world cell (@1).
+"""cells.analysis.stationary_continuation_analysis@1 solves on the default-world cell (@1).
 
 The pre-screen's default-world cell (validation/stationary/worlds.py) on
-resolved_pump_tissue@1: ledgers never enter a rate; Newton on the law's own
+cells.model.resolved_pump_tissue@1: ledgers never enter a rate; Newton on the law's own
 derivative reaches its pump-leak state; the engine's IMEX step map has the same
 fixed point (to its rounding floor) and its multipliers give the same growth
 rates; refused steps can never pose as fixed points; and the fast mode holds

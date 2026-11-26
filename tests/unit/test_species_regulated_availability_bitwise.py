@@ -1,4 +1,4 @@
-"""species_regulated_availability@1: the factored path is the scheduled one, in one program.
+"""cells.operator.species_regulated_availability@1: the factored path is the scheduled one, in one program.
 
 docs/INVENTORY_COUPLING_DESIGN.md §4.4 (M1, A3) and probe P1 (§7.3). One coupled structure on the
 seven-cell heredity sheet (20 steps at 1 ms; regulated_availability_fixtures.shared_structure)

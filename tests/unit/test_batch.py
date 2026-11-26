@@ -8,20 +8,29 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.definitions.specs import ConfigError, InputChange, parse_spec
+from cells.definitions.specs import ConfigError, GraphContactChange, parse_spec
 from cells.execution import batch
 from cells.execution.batch import branch_batch_checkpoints, parse_batch, plan_batch, run_batch
 from cells.execution.errors import NumericalError
 from cells.execution.runner import run
-from cells.execution.state import CellState, initialise
+from cells.execution.state import ReactionTransportState, initialise
+from cells.models import reaction_transport
 from cells.records.batch_io import load_batch_snapshot, write_batch_run, write_batch_snapshot
 from cells.records.io import _write_json, load_snapshot
-from tests.batch_fixtures import MODELS, assert_parity, definition, short_spec, synthetic_pair
+from tests.apical_vertex_fixtures import honeycomb
+from tests.batch_fixtures import (
+    ROUTES,
+    assert_parity,
+    definition,
+    failing_second_world,
+    short_spec,
+    synthetic_pair,
+)
 
 
-@pytest.mark.parametrize("name", MODELS)
-def test_all_families_match_scalar_with_independent_clocks(name):
-    specs = [short_spec(name, end) for end in (0.3, 0.5)]
+@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
+def test_every_route_matches_scalar_with_independent_clocks(short_world):
+    specs = [short_world(end) for end in (0.3, 0.5)]
     result = run_batch(definition(specs))
     assert result.resources["padded_step_slots"] > result.resources["executed_world_steps"]
     for world in result.spec.worlds:
@@ -44,7 +53,7 @@ def test_parameters_controls_ids_and_order_do_not_cross_worlds():
             result.worlds[world.world_id], renamed.worlds[world.world_id + 50], exact=True
         )
     changed = spec.worlds[0].simulation.to_dict()
-    changed["model"]["initial_state"]["amount"] = 20
+    changed["model"]["initial_state"]["amount"][0][0] = 20
     altered = run_batch(
         replace(
             spec, worlds=(replace(spec.worlds[0], simulation=parse_spec(changed)), spec.worlds[1])
@@ -54,9 +63,9 @@ def test_parameters_controls_ids_and_order_do_not_cross_worlds():
     assert not np.array_equal(result.worlds[10].history.amount, altered.worlds[10].history.amount)
 
 
-@pytest.mark.parametrize("name", MODELS)
-def test_snapshot_ragged_replay_and_final_only(tmp_path, name):
-    spec = definition([short_spec(name, 0.3), short_spec(name, 0.5)])
+@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
+def test_snapshot_ragged_replay_and_final_only(tmp_path, short_world):
+    spec = definition([short_world(0.3), short_world(0.5)])
     result = run_batch(spec)
     # Different clock positions, one already finished. Neither resets history.
     checkpoints = result.checkpoint_at({10: float(result.worlds[10].times[2]), 11: 0.5})
@@ -90,7 +99,7 @@ def test_future_branch_reordering_and_per_world_ordinary_semantics(tmp_path):
     changed = replace(
         first,
         experiment=replace(
-            first.experiment, source=first.experiment.source + (InputChange(0.5, 0),)
+            first.experiment, contact=(*first.experiment.contact, GraphContactChange(0.5, (0,)))
         ),
     )
     branch = replace(spec, worlds=(spec.worlds[1], replace(spec.worlds[0], simulation=changed)))
@@ -106,14 +115,15 @@ def test_future_branch_reordering_and_per_world_ordinary_semantics(tmp_path):
         branch_batch_checkpoints(spec, checkpoints, replace(spec, max_worlds=63))
     with pytest.raises(ConfigError, match="world IDs"):
         branch_batch_checkpoints(spec, checkpoints, replace(spec, worlds=spec.worlds[:1]))
-    wrong = replace(first, model=replace(first.model, decay_rate=0.8))
+    wrong = replace(first, model=replace(first.model, forward_rate=(0.8, 0.1)))
     with pytest.raises(ConfigError, match="World 10.*model"):
         branch_batch_checkpoints(
             spec,
             checkpoints,
             replace(spec, worlds=(replace(spec.worlds[0], simulation=wrong), spec.worlds[1])),
         )
-    wrong = replace(first, experiment=replace(first.experiment, source=(InputChange(0, 3),)))
+    contact = (GraphContactChange(0, (0.5,)),)
+    wrong = replace(first, experiment=replace(first.experiment, contact=contact))
     with pytest.raises(ConfigError, match="World 10.*before"):
         branch_batch_checkpoints(
             spec,
@@ -122,17 +132,9 @@ def test_future_branch_reordering_and_per_world_ordinary_semantics(tmp_path):
         )
 
 
-@pytest.mark.parametrize(
-    "name",
-    [
-        "single_cell_pulse",
-        "reaction_transport_chain",
-        "source_pair_controls",
-        "bioelectric_pair_baseline",
-    ],
-)
-def test_eager_and_jit_and_cell_edge_padding(name):
-    s = short_spec(name, 0.003)
+@pytest.mark.parametrize("short_world", ROUTES, indirect=True)
+def test_eager_and_jit_and_cell_edge_padding(short_world):
+    s = short_world(0.003)
     a = run_batch(definition([s, s]))
     eager = replace(s, execution=replace(s.execution, jit=False))
     b = run_batch(definition([eager, eager]))
@@ -142,10 +144,7 @@ def test_eager_and_jit_and_cell_edge_padding(name):
         execution=replace(
             s.execution,
             capacity=s.execution.capacity + 2,
-            edge_capacity=s.execution.edge_capacity + 2 if s.execution.edge_capacity else 0,
-            membrane_capacity=s.execution.membrane_capacity + 2
-            if s.execution.membrane_capacity
-            else 0,
+            edge_capacity=s.execution.edge_capacity + 2,
         ),
     )
     result = run_batch(definition([padded, padded]))
@@ -168,12 +167,14 @@ def test_eager_and_jit_and_cell_edge_padding(name):
         (("worlds", 0, "world_id"), True),
         (("worlds", 0, "world_id"), -1),
         (("worlds", 0, "world_id"), 11),
-        (("worlds", 1, "simulation", "execution", "capacity"), 2),
+        (("worlds", 1, "simulation", "execution", "capacity"), 3),
+        (("worlds", 1, "simulation", "execution", "edge_capacity"), 2),
         (("worlds", 1, "simulation", "execution", "jit"), False),
     ],
 )
 def test_invalid_definition(path, value):
     data = synthetic_pair().to_dict()
+    assert parse_batch(data) == synthetic_pair()  # The control: one change away, it is admitted.
     target = data
     for key in path[:-1]:
         target = target[key]
@@ -183,7 +184,8 @@ def test_invalid_definition(path, value):
 
 
 def test_mixed_family_and_unknown_fields_refused():
-    data = definition([short_spec(MODELS[0]), short_spec(MODELS[1])]).to_dict()
+    other = parse_spec(honeycomb(2, 2))
+    data = definition([short_spec("reaction_transport_single"), other]).to_dict()
     with pytest.raises(ConfigError, match="family"):
         parse_batch(data)
     data = synthetic_pair().to_dict()
@@ -222,12 +224,12 @@ def test_guarded_map_never_evaluates_invalid_or_completed_world_rhs():
     # A log would raise under debug_nans if a rejected RK stage were evaluated.
     def rhs(state, control, parameters, active):
         slope = -parameters + jnp.log(state.amount)
-        return CellState(slope, jnp.zeros_like(slope), jnp.zeros_like(slope))
+        return ReactionTransportState(slope, jnp.zeros_like(slope), jnp.zeros_like(slope))
 
     def domain(state, parameters, active):
         return jnp.all(state.amount > 0)
 
-    states = CellState(jnp.ones((3, 1)), jnp.zeros((3, 1)), jnp.zeros((3, 1)))
+    states = ReactionTransportState(jnp.ones((3, 1)), jnp.zeros((3, 1)), jnp.zeros((3, 1)))
     inputs = (
         states,
         jnp.ones((3, 2)),
@@ -244,15 +246,7 @@ def test_guarded_map_never_evaluates_invalid_or_completed_world_rhs():
 
 
 def test_batch_failure_names_world_and_never_returns_partial_results(monkeypatch):
-    from cells.legacy.models import source_decay
-
-    original = source_decay.rhs
-
-    def bad_rhs(state, control, parameters, active):
-        result = original(state, control, parameters, active)
-        return result._replace(amount=jnp.where(parameters > 0.5, jnp.inf, result.amount))
-
-    monkeypatch.setattr(source_decay, "rhs", bad_rhs)
+    monkeypatch.setattr(reaction_transport, "rhs", failing_second_world(reaction_transport.rhs))
     with pytest.raises(NumericalError, match="World 11.*batch refused"):
         run_batch(synthetic_pair())
 

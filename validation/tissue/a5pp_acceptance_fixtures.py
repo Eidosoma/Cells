@@ -2,7 +2,7 @@
 
 FR-6 items 1 and 3 (D216; docs/INVENTORY_COUPLING_DESIGN.md §4.4's A5, with a state): two cells,
 a and b, each a 2 pL pump-free cell on one constant-field patch facing a bath held at 0 V, with a
-gate-free K-leak population (kleak_always_open@1); a neutral regulator X in each cell under D150's
+gate-free K-leak population (cells.channel.kleak_always_open@1); a neutral regulator X in each cell under D150's
 turnover, given the same dose in both; a regulatory state s1 in both cells read from X by a Hill
 activation, with the per-cell prior s0 = 0.1 in a and 0.8 in b; and a state_fraction coupling on
 each cell's population (F = b + (1 - b) s1, b = 0.1).
@@ -12,8 +12,8 @@ a5pp_prior, registered code-blind before any engine output (the lead's ruling). 
 engine-layout adapter: it declares the world as R-cell's documented `World`
 (validation/coupling/REFERENCES_USAGE.md's classes; their code is not read here) and translates it
 with the coupling protocol's adapter (validation/tissue/regulated_availability_references.
-engine_definition: resolved_pump_composite@1 over resolved_pump_tissue@3, with
-species_regulated_availability@1 and, for X, D150's scheduled_species_turnover@1). The start, each
+engine_definition: cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, with
+cells.operator.species_regulated_availability@1 and, for X, D150's cells.operator.scheduled_species_turnover@1). The start, each
 cell's potential and background charge, is the references' registered start
 (designs/fr6_a5pp_values.json's V0_V and background_fmol), the one both sides share, as the
 coupling protocol's A5 started both sides from the reference's.
@@ -93,8 +93,8 @@ def world_of(w):
             c, float(patch["area_m2"]), float(patch["capacitance_F"]),
             tuple(float(patch["leak_permeability_m_per_s"][s]) for s in species))
         q = cell["population"]
-        if q["law"] != "kleak_always_open@1":
-            raise ValueError("the population is kleak_always_open@1")
+        if q["law"] != "cells.channel.kleak_always_open@1":
+            raise ValueError("the population is cells.channel.kleak_always_open@1")
         populations[population_name(c)] = rc.Population(
             patch_name(c), float(q["permeability_m_per_s"]),
             tuple(float(q["relative"][s]) for s in species), abundance=float(q["abundance"]),

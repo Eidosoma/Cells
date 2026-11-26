@@ -1,4 +1,4 @@
-"""species_regulated_availability@1 composed with electrode_current_injection@1 (a development run).
+"""cells.operator.species_regulated_availability@1 composed with cells.operator.electrode_current_injection@1 (a development run).
 
 docs/INVENTORY_COUPLING_DESIGN.md §1.12: injection composes, and its charged carriers may be a
 state's inputs (the kinetic form only, ruling 1). Making no acceptance claim. One heredity cell
@@ -32,7 +32,7 @@ def go(current_A):
         cell = raw["model"]["cells"][0]["id"]
         raw["model"]["operators"] = [
             dict(
-                law="electrode_current_injection@1",
+                law="cells.operator.electrode_current_injection@1",
                 electrodes=[dict(cell_id=cell, carriers=CARRIERS)],
             )
         ]

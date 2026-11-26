@@ -55,7 +55,9 @@ def test_a_potential_unlike_the_registry_s_is_refused_at_its_rounding_bound(side
     if side < 1:
         parse_spec(raw)
     else:
-        with pytest.raises(ConfigError, match=r"local_species_reactions@1 declares species 'P'"):
+        with pytest.raises(
+            ConfigError, match=r"cells.operator.local_species_reactions@1 declares species 'P'"
+        ):
             parse_spec(raw)
 
 

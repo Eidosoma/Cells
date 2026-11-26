@@ -3,7 +3,7 @@ and the view of B1's door.
 
 Each claim with a planted error the check must catch (D187):
 - kinds are words: the writer refuses a set whose kind is a versioned ID (an operator's planted
-  set), and so does the reader's check; FR-5's world, with cells.ph_condition@1's set, gives its
+  set), and so does the reader's check; FR-5's world, with cells.kind.ph_condition@1's set, gives its
   kind as a word and its law under laws, and its view is admitted (the old form is refused);
 - a reference constant is written only where a written record names it: a recording subset that
   keeps amount_increment states amount_reference, one that drops it does not;

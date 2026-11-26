@@ -13,7 +13,7 @@ Run with the engine on the path (PYTHONPATH=src JAX_ENABLE_X64=1 JAX_PLATFORMS=c
 directory: the library is this checkout's docs/library/.
 
 **One source for each fact.** What the code declares is rendered from the declarations manifest
-(cells.declarations@2, registry/declarations.py, written fresh from the active registries) into
+(cells.declarations@3, registry/declarations.py, written fresh from the active registries) into
 blocks between `<!-- generated: NAME -->` and `<!-- /generated -->`. The words are written by
 hand on the page, never in a .py file: a docstring's wording fix would change a source hash and
 strand checkpoints (D203). Code and test paths appear only in generated blocks, so a file move
@@ -221,6 +221,8 @@ class Render:
         text = f"{host}, its host"
         if entry["declared_host"] and entry["declared_host"] != entry["host"]:
             text += f", which definitions write {_c(entry['declared_host'])}"
+        if not entry["models"]:  # Its host is no active model.
+            return f"{text}. No model's definitions can declare it"
         if entry["host"] not in entry["models"]:
             family = self.ref(page, entry["family"], "model")
             text += f", in {family}"
@@ -491,8 +493,8 @@ class Render:
             )
         if fields.get("stage_term"):
             rows.append(("Stage term", _c(fields["stage_term"]), ""))
-        if fields.get("loop_term"):
-            rows.append(("Loop term", _c(fields["loop_term"]), ""))
+        if fields.get("material_term"):
+            rows.append(("Material term", _c(fields["material_term"]), ""))
         if "fuel_kinds" in fields:
             rows.append(("Fuel kinds", _list([_c(f) for f in fields["fuel_kinds"]]), ""))
         kernels = entry["kernels"] or {}
@@ -958,7 +960,6 @@ def format_tables(module=None):
         "Citation keys": d.CITATION_KEYS,
         "Work keys": d.WORK_KEYS,
         "Not-extracted keys": d.NOT_EXTRACTED_KEYS,
-        "Legacy keys": d.LEGACY_KEYS,
     }
 
 

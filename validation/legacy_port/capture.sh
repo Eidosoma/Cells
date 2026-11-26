@@ -1,7 +1,8 @@
 #!/bin/bash
 # The captures of section 8 of the legacy port plan, in shards, from a frozen snapshot.
 #
-#   capture.sh SNAPSHOT ORIGIN OUT [--set science|check|windows] [--cap-bytes N] [--job-seconds S]
+#   capture.sh SNAPSHOT ORIGIN OUT [--set science|check|windows|extra] [--cap-bytes N]
+#     [--job-seconds S]
 #
 # ORIGIN is capture_worlds.py write's folder; OUT must not exist. One shard runs per CPU of this
 # process's own affinity (a unit's --cpus, or taskset's), each pinned to its CPU, and the shards
@@ -17,7 +18,8 @@
 # The `science` set is the plan's. The `check` set is the first steps of each captured world: run it
 # with the captures, and again at a later snapshot into another OUT, and compare the two
 # (capture_worlds.py compare). The `windows` set is the bitwise windows of the kept core, which
-# depend on the route: it is written here so that it can be run later from the same snapshot.
+# depend on the route: it is written here so that it can be run later from the same snapshot. The
+# `extra` set (capture_worlds.py write-extra) holds used worlds the science set left out.
 set -u
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd) || exit 2
 python=${CELLS_PYTHON:-/mnt/workspaces/Cells/venv-cpu/bin/python}
@@ -32,7 +34,7 @@ while [ $# -gt 0 ]; do
     *) echo "capture.sh: unknown option $1" >&2; exit 2 ;;
   esac
 done
-case "$set_name" in science | check | windows) ;; *) echo "capture.sh: bad set $set_name" >&2; exit 2 ;; esac
+case "$set_name" in science | check | windows | extra) ;; *) echo "capture.sh: bad set $set_name" >&2; exit 2 ;; esac
 snapshot=$(realpath "$snapshot") && origin=$(realpath "$origin") || exit 2
 [ -f "$snapshot/SNAPSHOT.json" ] && [ -f "$origin/jobs-$set_name.json" ] || {
   echo "capture.sh: no snapshot or no job list" >&2; exit 2; }

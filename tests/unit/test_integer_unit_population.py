@@ -1,4 +1,4 @@
-"""integer_unit_population@1 (FR-43 part 3, option B; D315): the law's pieces, its refusals and
+"""cells.operator.integer_unit_population@1 (FR-43 part 3, option B; D315): the law's pieces, its refusals and
 the division hook's declarations on the host, then one compiled world (W1 of the references' spec,
 validation/fr43_part3/references/spec/part3.json):
 
@@ -293,12 +293,12 @@ def test_each_division_refusal(name):
 
 
 NEIGHBOURS = {
-    "scheduled_cell_replacement@1": "replaces a slot's amounts",
-    "scheduled_cell_replacement@2": "replaces a slot's amounts",
-    "scheduled_membrane_insertion@1": "opens or closes slots without dividing them",
-    "scheduled_membrane_insertion@2": "opens or closes slots without dividing them",
-    "neutral_arrival_labels@1": "reports no one-way moves to a label owner",
-    "isopotential_partition@1": "does not divide owned state through its lifecycle",
+    "cells.operator.scheduled_cell_replacement@1": "replaces a slot's amounts",
+    "cells.operator.scheduled_cell_replacement@2": "replaces a slot's amounts",
+    "cells.operator.scheduled_membrane_insertion@1": "opens or closes slots without dividing them",
+    "cells.operator.scheduled_membrane_insertion@2": "opens or closes slots without dividing them",
+    "cells.operator.neutral_arrival_labels@1": "reports no one-way moves to a label owner",
+    "cells.operator.isopotential_partition@1": "does not divide owned state through its lifecycle",
 }
 
 
@@ -318,7 +318,7 @@ def test_each_refused_neighbour(law, monkeypatch):
 
 
 class _Divider(Operator):
-    LAW_ID = "test_owned_divider@1"
+    LAW_ID = "cells.operator.test_owned_divider@1"
     SPLIT = True
     RK4 = "split"
     STATE_AXES = MappingProxyType({"divider_units": ["integer_site"]})
@@ -329,7 +329,7 @@ class _Divider(Operator):
 
 
 class _NoMethod(Operator):
-    LAW_ID = "test_owned_divider_without_its_method@1"
+    LAW_ID = "cells.operator.test_owned_divider_without_its_method@1"
     SPLIT = True
     RK4 = "split"
     STATE_AXES = MappingProxyType({"divider_units": ["integer_site"]})
@@ -347,7 +347,7 @@ def test_the_hook_declarations():
     retiring = type(
         "Retiring",
         (Operator,),
-        dict(LAW_ID="test_retiring@1", EVENT=True, RETIRES=True, CLOSES=("active",)),
+        dict(LAW_ID="cells.operator.test_retiring@1", EVENT=True, RETIRES=True, CLOSES=("active",)),
     )
     errors = pump_composite.lifecycle_errors(adapter, (retiring(), _Divider()))
     assert any("their state would not divide" in e for e in errors)

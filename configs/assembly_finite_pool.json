@@ -1,5 +1,5 @@
 {
-  "model": "finite_bond_assembly@1",
+  "model": "cells.model.finite_bond_assembly@1",
   "initial_nodes": [10, 12, 14, 16, 18],
   "initial_free_trimers": 50,
   "pool_volume_L": 5e-15,

@@ -60,8 +60,8 @@ def engine_world(world_id: str, conventions: dict) -> dict:
                       "standard_mu_RT": {k: v["float"] for k, v in s["standard_mu_RT"].items()}} for s in reg["species"]],
          "steps": [{"id": s["id"], "reactants": s["reactants"], "products": s["products"], "locus": s["locus"],
                     "forward_rate_per_s": s["forward_rate_per_s"]["float"]} for s in reg["steps"]],
-         "free_energy": [{"law": "cells.ideal_mixing@1"},
-                         {"law": "cells.regular_mixing@1",
+         "free_energy": [{"law": "cells.free_energy.ideal_mixing@1"},
+                         {"law": "cells.free_energy.regular_mixing@1",
                           "chi_kT": [{"pair": e["pair"], "chi": float(Fraction(e["chi"]))} for e in reg["regular_mixing_chi"]]}],
          "rate_factor": {"catalysing_phase": "membrane",
                          "entries": [{"step": s["id"], "catalyst": c["catalyst"].split("@")[0], "ddG_kT": c["ddG_kT"]}

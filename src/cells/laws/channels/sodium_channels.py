@@ -4,7 +4,7 @@ NaV1.2 follows BETSE v1.5.0 Nav1p2 coefficients, including its voltage
 shifts and m**3*h opening. Removable rate singularities use their analytic
 limits. This is a continuous-time law, not the native discrete update clock. The law's own
 module is laws/channels/nav1p2_m3h_regularized.py (docs/CORE_SEAMS_DESIGN.md §8.2); this one
-keeps the older families' dispatch and re-imports its names.
+dispatches over the catalogue's codes and re-imports its names.
 """
 
 import jax.numpy as jnp

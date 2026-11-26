@@ -1,4 +1,4 @@
-"""T8 of scheduled_membrane_trafficking@1 (FR-2 version 1): the seven-cell sheet (pumps, Kir, NaV,
+"""T8 of cells.operator.scheduled_membrane_trafficking@1 (FR-2 version 1): the seven-cell sheet (pumps, Kir, NaV,
 gated junctions, a held bath per cell), with one pool per cell (21 field nodes), a frozen
 regulatory state at s = 1/2 coupled to every Kir population, and retrieval of every plasma patch,
 through the runner and its host checks.

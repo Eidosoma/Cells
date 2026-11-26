@@ -1,4 +1,4 @@
-"""Compiled guards of restricted_cleft_lumen@1 (docs/CELL_DIVISION_S3_PLAN.md §1).
+"""Compiled guards of cells.operator.restricted_cleft_lumen@1 (docs/CELL_DIVISION_S3_PLAN.md §1).
 
 Through the runner and its host checks, on the S2 cleft cell (tests/membrane_insertion_fixtures):
 * growth: the lumen's volume follows w dA / 2, half a step behind the area at each step's end
@@ -72,7 +72,7 @@ def with_pulses(raw, *, after):
     raw["model"]["operators"].insert(
         after + 1,
         dict(
-            law="electrode_current_injection@1",
+            law="cells.operator.electrode_current_injection@1",
             electrodes=[dict(cell_id=cell, carriers={"K": 0.4912, "M": 0.5088})],
         ),
     )

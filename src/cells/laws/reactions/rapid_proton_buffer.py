@@ -1,4 +1,4 @@
-"""rapid_proton_buffer@1: the rapid-buffer closure for protons at a node (FR-4).
+"""cells.kind.rapid_proton_buffer@1: the rapid-buffer closure for protons at a node (FR-4).
 
 docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §4 (accepted direction, D176), built against the inner-model
 note's §7.4 (g) 1: a per-stage algebraic read. A declared reduced representation (D175) of the
@@ -40,7 +40,7 @@ import numpy as np
 
 from cells.laws.electrochemistry import R
 
-READ_ID = "rapid_proton_buffer@1"
+READ_ID = "cells.kind.rapid_proton_buffer@1"
 PH_REFERENCE_mM = 1000.0  # pH = -log10(h / 1 M), whatever the registry's c0
 RESIDUAL_RTOL = 1e-13  # |g(h)| / H at the returned root; above it the read fails.
 BISECTION_STEPS = 80  # Log-space bisection for several buffers: full double precision.

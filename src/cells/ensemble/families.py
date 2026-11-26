@@ -3,11 +3,11 @@
 **A family joins `cells ensemble` with no edit here** (docs/CORE_SEAMS_DESIGN.md §15's follow-up;
 the lead's ruling (a), 18 November 2026): its row of the static model table names its
 EnsembleAdapter (`ensemble`, "module:object"), loaded by name. MODELS holds the adapters' kinds,
-then today's five; each hook below dispatches to the adapter of the spec's or definition's model,
-falling back to today's chains for today's five families. A model ID is read in either form a
+then today's three; each hook below dispatches to the adapter of the spec's or definition's model,
+falling back to today's chains for today's three families. A model ID is read in either form a
 definition writes, a string or {"id": ..., ...} (model_of), once, in model_id and row_model, so the
 planner, the launcher and the controller's summary compare strings (the second external review's
-finding 5).
+finding 5). A name of PARKED is refused by its name (parked), a kind until an adapter takes it.
 """
 
 import copy
@@ -18,11 +18,15 @@ from typing import NamedTuple
 from cells.registry import model_table
 
 TODAY = {
-    "assembly_ensemble@1": "capsid_graph@1",
-    "finite_bond_ensemble@1": "finite_bond_assembly@1",
-    "assembly_cell_ensemble@1": "assembly_regulated_cell@1",
-    "assembly_cluster_ensemble@1": "assembly_regulated_cluster@1",
-    "ionic_ensemble@1": "ionic_worlds@1",
+    "assembly_ensemble@1": "cells.model.capsid_graph@1",
+    "finite_bond_ensemble@1": "cells.model.finite_bond_assembly@1",
+    "ionic_ensemble@1": "cells.model.ionic_worlds@1",
+}
+PARKED = {  # The command line's two commands, and the two ensemble kinds.
+    "assembly-cell": "the assembly-regulated cell's command",
+    "assembly-cluster": "the assembly-regulated cluster's command",
+    "assembly_cell_ensemble@1": "GPU ensembles of assembly-regulated cells",
+    "assembly_cluster_ensemble@1": "GPU ensembles of assembly-regulated clusters",
 }
 
 
@@ -54,7 +58,7 @@ class EnsembleAdapter(NamedTuple):
 
 def adapter_errors(models):
     """Where the model table's `ensemble` entries break the protocol (empty: none do): each names
-    an importable EnsembleAdapter, one per ensemble kind and per model, apart from today's five."""
+    an importable EnsembleAdapter, one per ensemble kind and per model, apart from today's three."""
     out, kinds = [], {}
     for model_id, row in models.items():
         if row.ensemble is None:
@@ -89,7 +93,7 @@ def adapters():
 
 
 class _Models(Mapping):
-    """{ensemble kind: model} of the adapters' rows, then today's five (module docstring)."""
+    """{ensemble kind: model} of the adapters' rows, then today's three (module docstring)."""
 
     def _models(self):
         return {**{kind: a.model for kind, a in adapters().items()}, **TODAY}
@@ -105,6 +109,15 @@ class _Models(Mapping):
 
 
 MODELS = _Models()
+
+
+def parked(name):
+    """The refusal of a parked name: what is parked, and where it is re-expressed; or None."""
+    what = PARKED.get(name) if isinstance(name, str) else None
+    return what and (
+        f"{name} is parked: {what}. Assembly-regulated cells and clusters are to be re-expressed "
+        "on cells.model.resolved_pump_composite@1, for cells run, windowed and batch"
+    )
 
 
 def model_of(model):
@@ -137,22 +150,9 @@ def bind_definition(data, *, worlds, world_id_start, seed, reject_owned=False):
             reject_owned=reject_owned,
         )
     result = copy.deepcopy(data)
-    if result.get("model") == "assembly_regulated_cluster@1":
-        for binding in result["pools"]:
-            target = binding["pool"]
-            stream = binding["stream_id"]
-            if type(stream) is not int or not 0 <= stream < 2**32:
-                raise ValueError("Cluster stream ID must be uint32")
-            if reject_owned and {"worlds", "world_id_start", "seed"} & set(target):
-                raise ValueError("Ensemble owns seed/world counts/IDs, not arm definitions")
-            target.update(
-                worlds=worlds, world_id_start=world_id_start, seed=(seed + stream) % 2**32
-            )
-        return result
-    target = result["pool"] if result.get("model") == "assembly_regulated_cell@1" else result
-    if reject_owned and {"worlds", "world_id_start", "seed"} & set(target):
+    if reject_owned and {"worlds", "world_id_start", "seed"} & set(result):
         raise ValueError("Ensemble owns seed/world counts/IDs, not arm definitions")
-    target.update(worlds=worlds, world_id_start=world_id_start, seed=seed)
+    result.update(worlds=worlds, world_id_start=world_id_start, seed=seed)
     return result
 
 
@@ -161,46 +161,23 @@ def model_id(spec):
     return model_of(spec.to_dict()["model"])
 
 
-def _older(model):
-    """An older assembly family's hooks (D188 R1), through the core's one legacy entry."""
-    from cells.registry.legacy_entry import legacy
-
-    return legacy().ensemble(model)
-
-
 def population(spec):
     adapter = adapter_of(model_id(spec))
-    if adapter is not None:
-        return adapter.population(spec)
-    return (
-        spec.pool
-        if model_id(spec) in ("assembly_regulated_cell@1", "assembly_regulated_cluster@1")
-        else spec
-    )
+    return spec if adapter is None else adapter.population(spec)
 
 
 def output_bound(spec):
     adapter = adapter_of(model_id(spec))
-    if adapter is not None:
-        return adapter.output_bound(spec)
-    if model_id(spec) == "assembly_regulated_cell@1":
-        working_size = _older("assembly_regulated_cell@1").working_size()
-
-        return spec.pool.output_bound + spec.pool.worlds * (32 * working_size(spec.ionic) + 4096)
-    return spec.output_bound
+    return spec.output_bound if adapter is None else adapter.output_bound(spec)
 
 
 def parse_definition(data):
     adapter = adapter_of(data.get("model"))
     if adapter is not None:
         return adapter.parse_definition(data)
-    if data.get("model") == "assembly_regulated_cluster@1":
-        parse_spec = _older("assembly_regulated_cluster@1").parse_spec()
-    elif data.get("model") == "assembly_regulated_cell@1":
-        parse_spec = _older("assembly_regulated_cell@1").parse_spec()
-    elif data.get("model") == "ionic_worlds@1":
+    if data.get("model") == "cells.model.ionic_worlds@1":
         from cells.ensemble.ionic import parse_spec
-    elif data.get("model") == "finite_bond_assembly@1":
+    elif data.get("model") == "cells.model.finite_bond_assembly@1":
         from cells.assembly_pool.spec import parse_spec
     else:
         from cells.assembly.spec import parse_spec
@@ -211,13 +188,9 @@ def runtime_for(spec):
     adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.runtime(spec)
-    if model_id(spec) == "assembly_regulated_cluster@1":
-        run, load_checkpoint, write_checkpoint = _older("assembly_regulated_cluster@1").runtime()
-    elif model_id(spec) == "assembly_regulated_cell@1":
-        run, load_checkpoint, write_checkpoint = _older("assembly_regulated_cell@1").runtime()
-    elif model_id(spec) == "ionic_worlds@1":
+    if model_id(spec) == "cells.model.ionic_worlds@1":
         from cells.ensemble.ionic import load_checkpoint, run, write_checkpoint
-    elif model_id(spec) == "finite_bond_assembly@1":
+    elif model_id(spec) == "cells.model.finite_bond_assembly@1":
         from cells.assembly_pool.engine import run
         from cells.assembly_pool.io import load_checkpoint, write_checkpoint
     else:
@@ -230,15 +203,9 @@ def first_completion(spec, state):
     adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.first_completion(spec, state)
-    if model_id(spec) == "assembly_regulated_cluster@1":
-        # Each cell has its own assembly outcome; do not turn two pools into
-        # twice as many independent worlds or an implicit cluster outcome.
+    if model_id(spec) == "cells.model.ionic_worlds@1":
         return None
-    if model_id(spec) == "assembly_regulated_cell@1":
-        return state.pool.full_first_s
-    if model_id(spec) == "ionic_worlds@1":
-        return None
-    if model_id(spec) == "finite_bond_assembly@1":
+    if model_id(spec) == "cells.model.finite_bond_assembly@1":
         return state.full_first_s
     return state.first_passage_s[:, 20]
 
@@ -247,19 +214,14 @@ def progress(spec, state):
     adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.progress(spec, state)
-    if model_id(spec) == "ionic_worlds@1":
+    if model_id(spec) == "cells.model.ionic_worlds@1":
         return {
             "world_steps": sum(cp.step_index for cp in state.values()),
             "through_time_s": min(cp.time for cp in state.values()),
         }
-    pool = (
-        state.pool
-        if model_id(spec) in ("assembly_regulated_cell@1", "assembly_regulated_cluster@1")
-        else state
-    )
     return {
-        "events": int(pool.event_count.astype("uint64").sum()),
-        "through_time_s": float(pool.time_s.min()),
+        "events": int(state.event_count.astype("uint64").sum()),
+        "through_time_s": float(state.time_s.min()),
     }
 
 
@@ -267,11 +229,7 @@ def failure_state(spec, state):
     adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.failure_state(spec, state)
-    if model_id(spec) in ("assembly_regulated_cell@1", "assembly_regulated_cluster@1"):
-        flatten = _older("assembly_regulated_cell@1").flatten()  # One flatten for both.
-
-        return flatten(state)
-    if model_id(spec) == "ionic_worlds@1":
+    if model_id(spec) == "cells.model.ionic_worlds@1":
         return {
             f"world_{identity}_{field}": value
             for identity, cp in state.items()

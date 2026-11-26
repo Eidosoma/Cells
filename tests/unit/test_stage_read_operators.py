@@ -71,7 +71,7 @@ def with_buffer_rows(raw, buffered_mM, *, extra_outside=None):
 
 def declare_buffer(raw, nodes):
     raw["model"]["stage_reads"] = [
-        dict(read_id="rapid_proton_buffer@1", proton_row="H", buffers={n: ["B"] for n in nodes},
+        dict(read_id="cells.kind.rapid_proton_buffer@1", proton_row="H", buffers={n: ["B"] for n in nodes},
              k_on_per_mM_s={"B": 1e7})
     ]  # fmt: skip
     return raw
@@ -103,7 +103,7 @@ def three_cells(*, buffered):
 
 
 def reactions_with_proton_counter_ion(*, buffered):
-    """FR-15 S1: the three-cell plant's world with local_species_reactions@1 making a trace anion X
+    """FR-15 S1: the three-cell plant's world with cells.operator.local_species_reactions@1 making a trace anion X
     with H as its counter-ion (0 -> X + H in cell_0), H flagged counter_ion: beside the buffer read,
     the network names the stored proton row, so check_stage_read_rows refuses it (no new code)."""
     kind = fixtures.HEREDITY_STATES["D"][:4]
@@ -132,7 +132,7 @@ def two_cells_with_water(*, buffered):
 
 
 def buffered_cleft(*, buffered):
-    """The membrane-insertion cleft cell with restricted_cleft_lumen@1 filling its cleft from the
+    """The membrane-insertion cleft cell with cells.operator.restricted_cleft_lumen@1 filling its cleft from the
     bath, the cleft (a finite outside node) holding 50 mM of B, declared under the buffer read when
     `buffered`."""
     base = with_buffer_rows(fx.cleft_cell(), {"cleft": 50.0})
@@ -148,13 +148,13 @@ def buffered_cleft(*, buffered):
 @pytest.mark.parametrize(
     "world, message",
     [
-        (three_cells, r"species H is held by the stage read of cells.rapid_proton_buffer@1 at "
-                      r"cell_0: species_regulated_availability@1 names or moves it"),
-        (two_cells_with_water, r"ideal_osmosis_linear_compliance_water@1 sums every stored row as "
+        (three_cells, r"species H is held by the stage read of cells.kind.rapid_proton_buffer@1 at "
+                      r"cell_0: cells.operator.species_regulated_availability@1 names or moves it"),
+        (two_cells_with_water, r"cells.operator.ideal_osmosis_linear_compliance_water@1 sums every stored row as "
                                "free particles"),
         (reactions_with_proton_counter_ion,
-         r"species H is held by the stage read of cells.rapid_proton_buffer@1 at cell_0: "
-         r"local_species_reactions@1 names or moves it"),  # FR-15 S1: B4's proton as counter-ion.
+         r"species H is held by the stage read of cells.kind.rapid_proton_buffer@1 at cell_0: "
+         r"cells.operator.local_species_reactions@1 names or moves it"),  # FR-15 S1: B4's proton as counter-ion.
     ],
     ids=["regulated_availability", "water", "proton_counter_ion"],
 )  # fmt: skip
@@ -195,7 +195,7 @@ def test_the_lumen_fill_beside_a_buffered_outside_node_is_refused(monkeypatch):
     parse_spec(buffered_cleft(buffered=False))
     with pytest.raises(
         ConfigError,
-        match=r"scheduled_membrane_insertion@1 .* beside declared kinds|restricted_cleft_lumen@1's",
+        match=r"cells.operator.scheduled_membrane_insertion@1 .* beside declared kinds|cells.operator.restricted_cleft_lumen@1's",
     ):
         parse_spec(buffered_cleft(buffered=True))
 
@@ -215,7 +215,8 @@ def test_the_lumen_fill_beside_a_buffered_outside_node_is_refused(monkeypatch):
     registry.check_stage_read_rows(spec)
     monkeypatch.setattr(registry, "_inner_model", lambda _: both)
     with pytest.raises(
-        ConfigError, match=rf"restricted_cleft_lumen@1's fill .* outside node {fr.LUMEN}"
+        ConfigError,
+        match=rf"cells.operator.restricted_cleft_lumen@1's fill .* outside node {fr.LUMEN}",
     ):
         registry.check_stage_read_rows(spec)
 
@@ -226,7 +227,7 @@ def injected_fr4(carrier):
     H+, the energy ledger refuses the run; carried by K+, it closes)."""
     raw = cs.frozen_definition(fr.development_world(fr.fr4_world()))
     raw["model"].setdefault("operators", []).append(
-        dict(law="electrode_current_injection@1",
+        dict(law="cells.operator.electrode_current_injection@1",
              electrodes=[dict(cell_id=fr.CELL, carriers={carrier: 1.0})])
     )  # fmt: skip
     raw["experiment"]["injection_controls"] = [
@@ -242,8 +243,8 @@ def test_an_injection_carried_by_a_held_species_is_refused_at_definition():
     parse_spec(injected_fr4("K"))
     with pytest.raises(
         ConfigError,
-        match=r"species H is held by the stage read of cells.rapid_proton_buffer@1 at cell_0: "
-        "electrode_current_injection@1 names or moves it",
+        match=r"species H is held by the stage read of cells.kind.rapid_proton_buffer@1 at cell_0: "
+        "cells.operator.electrode_current_injection@1 names or moves it",
     ):
         parse_spec(injected_fr4("H"))
 
@@ -291,6 +292,7 @@ def test_the_injections_named_carriers_change_no_identity_and_meet_the_two_form_
             for item in registry.operator_identities(op, d)
         )
     with pytest.raises(
-        ConfigError, match=r"species B_c has two forms .*: electrode_current_injection@1 names it"
+        ConfigError,
+        match=r"species B_c has two forms .*: cells.operator.electrode_current_injection@1 names it",
     ):
         parse_spec(injected_fr4("B_c"))

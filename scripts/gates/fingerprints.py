@@ -27,8 +27,12 @@ keys name the same files.
   identity TREE REV REPO
       every file of TREE's src/, configs/, examples/ and validation/ against `git ls-tree REV`
       (git blob ids, computed here): the same paths and the same bytes, or exit 1.
+  keys TREE
+      the keys of TREE's definitions (configs/, examples/ and validation/) as record writes them,
+      sorted, one on a line; no engine. What one tree's have beyond another's is a list of removals
+      or additions: comm -23 or -13 of the two, under LC_ALL=C.
   record TREE OUT --layout premove|moved --map MAP --defs PATH... --g1 MERGED
-         [--inputs TABLE] [--outputs TABLE]
+         [--inputs TABLE] [--outputs TABLE] [--removed FILE] [--added FILE]
       OUT/record.json and OUT/arrays.npz (every control array). MAP's folder's parent holds the
       move tool (scripts/source_moves.py of the same tree).
       Across the ID rename (D345) the IDs are read through a table of renamed IDs
@@ -39,13 +43,23 @@ keys name the same files.
       the fingerprint's value is the digest of the read to_dict (a tree's own digest is of its own
       spellings), and an exception's frame keeps no line number, which the rename's rewrap moves.
       Both sides of a comparison name the same --outputs, or neither does.
-  compare OLD NEW MAP OUT_JSON [--r1-record RECORD] [--declared FILE]
+      --removed, --added: the lists that compare takes; the record only names their digests
+      (removed_list, added_list).
+  compare OLD NEW MAP OUT_JSON [--r1-record RECORD] [--declared FILE] [--removed FILE]
+          [--added FILE]
       the same keys on both sides; per world the fingerprint value, the harness's rows (parse,
       to_dict, fingerprint, get_model, control values and shapes) equal, with the old side's
       module names and paths read through the map; every control array bitwise; and the keys
       against R1's own record (R1's 274; --r1-record, by default R1's frozen one). A world may
       differ only where FILE declares it, one key on a line: an exact list, so a declared world
       that does not differ refuses the comparison too.
+      --removed, --added: the keys that the new side removes and adds, one on a line, exact lists
+      too. A key on one side only passes where its list names it. A listed removal that the new
+      side still holds or the old side never held refuses the comparison, and so does a listed
+      addition that the new side lacks or the old side held, or a key of either list that is also
+      declared. What both sides hold is compared as without a list. same_keys still says that the
+      keys differ, "removed" and "added" say which, and the verdict how many. Both records name the
+      lists' digests too. An empty list is no list.
 """
 
 import hashlib
@@ -80,8 +94,6 @@ class Harness:
         "cells/__main__.py",
         "cells/ensemble/families.py",
         "cells/ensemble/cli.py",
-        "cells/legacy/registration.py",
-        "cells/core/legacy_entry.py",
     )
 
     def __init__(self, gives=None):
@@ -174,6 +186,14 @@ def reader(table):
     return lambda value: module.translate(value, renamed)
 
 
+def key_list(path):
+    """The keys that a list names, one on a line, and its file's digest; (empty, None) of an empty
+    list or none."""
+    data = Path(path).read_bytes() if path else b""
+    keys = {line for line in data.decode().splitlines() if line.strip()}
+    return keys, hashlib.sha256(data).hexdigest() if keys else None
+
+
 def fingerprint_value(spec, canonical_json, gives=None):
     """The tree's own fingerprint; read through --outputs, the digest of the read to_dict."""
     value = spec.fingerprint
@@ -210,8 +230,18 @@ def identity(tree, rev, repo):
     return 0 if not differ and want else 1
 
 
-def record(tree, out, layout, map_path, defs, g1, inputs=None, outputs=None):
+def keys(tree):
     tree = Path(tree).resolve()
+    found = Harness.definitions([tree / top.strip("/") for top in TOPS], None)
+    print(*sorted(key.replace(f"{tree}/", "<tree>/") for key in found), sep="\n")
+    return 0
+
+
+def record(tree, out, layout, map_path, defs, g1, inputs=None, outputs=None, removed=None,
+           added=None):
+    tree = Path(tree).resolve()
+    named = {f"{kind}_list": key_list(path)[1] for kind, path in (("removed", removed),
+                                                                 ("added", added))}
     sys.path.insert(0, str(tree / "src"))
     import jax
 
@@ -288,7 +318,8 @@ def record(tree, out, layout, map_path, defs, g1, inputs=None, outputs=None):
     out.mkdir(parents=True, exist_ok=True)
     result = dict(tree=str(tree), layout=layout, imports=list(names),
                   dispatch_files=list(h.DISPATCH_FILES), inputs_through=bool(inputs),
-                  outputs_through=bool(outputs), worlds=rows)
+                  outputs_through=bool(outputs), **{k: v for k, v in named.items() if v},
+                  worlds=rows)
     text = json.dumps(result, indent=1, default=str).replace(str(tree) + "/", "<tree>/")
     (out / "record.json").write_text(text + "\n")
     np.savez(out / "arrays.npz",
@@ -299,20 +330,28 @@ def record(tree, out, layout, map_path, defs, g1, inputs=None, outputs=None):
 
 
 def compare(old_dir, new_dir, map_path, out,
-            r1_record=R1_RECORD, declared=()):
+            r1_record=R1_RECORD, declared=(), removed=None, added=None):
     sm, mp = move_map(map_path)
     top = sm.map_top(mp)
     records = [json.loads((Path(d) / "record.json").read_text()) for d in (old_dir, new_dir)]
     if len({bool(r.get("outputs_through")) for r in records}) > 1:
         raise SystemExit("refused: one record's results are read through a table of renamed IDs, "
                          "and the other's are not")
+    lists = dict(removed=key_list(removed), added=key_list(added))
+    for kind, (_, digest) in lists.items():
+        if {r.get(f"{kind}_list") for r in records} != {digest}:
+            raise SystemExit("refused: the two records and the comparison must name one list of "
+                             f"{kind} keys, or none")
     old, new = (r["worlds"] for r in records)
+    going, coming = (keys for keys, _ in lists.values())
+    gone, came = set(old) - set(new), set(new) - set(old)
+    as_removed, as_added = gone & going, came & coming
 
     def through(v):  # Module names and dispatch paths of the tree before the move, moved.
         return json.loads(sm.rewrite_text(json.dumps(v), mp, top))
 
     differ, as_declared = {part: [] for part in PARTS}, set()
-    for name in sorted(set(old) | set(new)):
+    for name in sorted((set(old) | set(new)) - as_removed - as_added):
         a, b = old.get(name, {}), new.get(name, {})
         for part in PARTS:
             x, y = a.get(part), b.get(part)
@@ -341,14 +380,33 @@ def compare(old_dir, new_dir, map_path, out,
     bad = [k for k in keys if k not in oa.files or k not in na.files
            or oa[k].dtype != na[k].dtype or oa[k].shape != na[k].shape
            or oa[k].tobytes() != na[k].tobytes()]
+    moved = dict(removed=[k for k in bad if k.split("::")[0] in as_removed and k not in na.files],
+                 added=[k for k in bad if k.split("::")[0] in as_added and k not in oa.files])
+    bad = sorted(set(bad) - {k for part in moved.values() for k in part})
     as_declared |= {k.split("::")[0] for k in bad} & set(declared)
     bad = [k for k in bad if k.split("::")[0] not in declared]
     report["control_arrays"] = dict(arrays=len(keys), differ=len(bad), examples=bad[:5])
     report["declared"] = dict(worlds=sorted(as_declared), equal=sorted(set(declared) - as_declared))
-    ok = (report["same_keys"] and not any(differ.values()) and not bad
+    keys_as_said = report["same_keys"]
+    if any(digest for _, digest in lists.values()):
+        wrong = dict(
+            removed=dict(not_listed=gone - going, still_held=going & set(new),
+                         never_held=going - set(old)),
+            added=dict(not_listed=came - coming, missing=coming - set(new),
+                       held_before=coming & set(old)))
+        for kind, worlds in (("removed", as_removed), ("added", as_added)):
+            report[kind] = dict(
+                list_sha256=lists[kind][1], listed=len(lists[kind][0]), worlds=sorted(worlds),
+                control_arrays=len(moved[kind]), **{k: sorted(v) for k, v in wrong[kind].items()})
+        report["added"]["refused_at_parse"] = sorted(
+            k for k in as_added if new[k]["parse"][0] == "raise")
+        keys_as_said = not any(v for part in wrong.values() for v in part.values())
+    ok = (keys_as_said and not any(differ.values()) and not bad
           and not report["declared"]["equal"])
-    n = len(old) - len(as_declared)
+    n = len(old) - len(as_declared) - len(as_removed)
     said = f", but for {len(as_declared)} worlds as declared" if as_declared else ""
+    said += f"; {len(as_removed)} worlds removed, as listed" if as_removed else ""
+    said += f"; {len(as_added)} worlds added, as listed" if as_added else ""
     report["verdict"] = (f"all {n} fingerprints equal, and every other row of the harness (through "
                          f"the map) and every control array{said}" if ok else "DIFFERS")
     Path(out).write_text(json.dumps(report, indent=1) + "\n")
@@ -359,6 +417,8 @@ def compare(old_dir, new_dir, map_path, out,
 def main(argv):
     if len(argv) > 1 and argv[1] == "identity":
         return identity(*argv[2:5])
+    if len(argv) > 1 and argv[1] == "keys":
+        return keys(*argv[2:3])
     if len(argv) > 1 and argv[1] == "record":
         import argparse
 
@@ -371,18 +431,26 @@ def main(argv):
         p.add_argument("--g1")
         p.add_argument("--inputs")
         p.add_argument("--outputs")
+        p.add_argument("--removed")
+        p.add_argument("--added")
         a = p.parse_args(argv[2:])
-        return record(a.tree, a.out, a.layout, a.map, a.defs, a.g1, a.inputs, a.outputs)
+        return record(a.tree, a.out, a.layout, a.map, a.defs, a.g1, a.inputs, a.outputs, a.removed,
+                      a.added)
     if len(argv) > 1 and argv[1] == "compare":
         rest = argv[2:]
-        r1, declared = R1_RECORD, ()
+        r1, declared, lists = R1_RECORD, (), {}
         if "--r1-record" in rest:
             at = rest.index("--r1-record")
             r1, rest = rest[at + 1], rest[:at] + rest[at + 2:]
         if "--declared" in rest:
             at = rest.index("--declared")
             declared, rest = Path(rest[at + 1]).read_text().splitlines(), rest[:at] + rest[at + 2:]
-        return compare(*rest[:4], r1_record=r1, declared=[x for x in declared if x.strip()])
+        for kind in ("removed", "added"):
+            if f"--{kind}" in rest:
+                at = rest.index(f"--{kind}")
+                lists[kind], rest = rest[at + 1], rest[:at] + rest[at + 2:]
+        return compare(*rest[:4], r1_record=r1, declared=[x for x in declared if x.strip()],
+                       **lists)
     raise SystemExit(__doc__)
 
 

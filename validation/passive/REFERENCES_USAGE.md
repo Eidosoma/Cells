@@ -1,6 +1,6 @@
 # Using the passive permeation law's closed-pair reference (interface only)
 
-How to run the independent reference for `passive_neutral_permeation@1` and read its outputs
+How to run the independent reference for `cells.route.passive_neutral_permeation@1` and read its outputs
 without reading its source.
 - **Sources:** it was written from [ARCHITECTURE.md](../../docs/ARCHITECTURE.md) ("Transport laws
   by physical contract") and [INNER_MODEL_V4_DESIGN.md](../../docs/INNER_MODEL_V4_DESIGN.md) §11,

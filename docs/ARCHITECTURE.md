@@ -234,6 +234,57 @@ Where older sections of this document differ, this section applies.
 - **The reuse rule.** A law is reused only where its physical contract, its energy role included,
   matches.
 
+### What the calcium store adds
+
+Added on 25 November 2026. The [calcium note](CALCIUM_STORE_AND_CHANNELS_DESIGN.md) designs these
+pieces and says what was built, with its numbers. Each is general: none is written for one
+experiment. The status words are the ones above.
+
+- **A store. Holds today.** A closed space inside a cell, such as the endoplasmic reticulum, is a
+  cell-owned compartment of the inner model: a node with its own volume, amounts and voltage, behind
+  one patch that has its own capacitance. Calcium is a species row at every node, and its buffers
+  are mass-action reactions. A store may sit in a closed world, one with no held bath.
+- **Movers of calcium. Hold today,** as laws on kinds and channel populations that exist: a pump
+  that spends ATP on one species of any charge, an exchange of three sodium ions for one calcium
+  ion, two symports that carry no net charge, leaks, and a voltage-gated calcium channel. A
+  channel's law says which ions it carries and with what charge, so a new ion needs a law and no
+  change to the engine.
+- **A gate that reads concentrations. Holds today.** `species_condition@1` turns the concentrations
+  at a node into a factor between 0 and 1. Any route or channel may name it, as a store's release
+  does.
+- **Four rules hold the step. Hold today.** At every explicit stage the step is refused, never
+  clipped, where it is too long for the charge behind each patch beside a store, for the amounts of a
+  scarce ion through a channel, for the rows that a cycle moves where its law declares them bounded,
+  or for the feedback of a release on the concentration its gate reads. Their gaps are below.
+
+**What was compared.** None of it is judged.
+- **One cell and one store,** in the engine's own NumPy steps, against code-blind references, at
+  three step sizes. At the finest each of 56 observables is within 1.5 times the engine's own error
+  estimate (plus 1e-8 of its change). The error falls at second order, 2.00 to 2.06, wherever an
+  order can be judged. The laws' rates, slopes, heats and works meet the same references at 153
+  states.
+- **The same world compiled** repeats those steps to rounding, and a restart from a checkpoint
+  repeats its own run bit for bit. The two-cell closed world, with two stores, a junction and two
+  gated releases, closes every ledger, keeps each ion's whole-world amount and gives the potentials
+  that a separate capacitor solve gives.
+- **The references** were written by someone who had read the equations and the numbers and nothing
+  of the engine. Two independent routes of theirs agree, the store world to 1.2e-13 and the laws'
+  states to 6e-41 before rounding.
+
+**What is not claimed.**
+- **No judgement.** The criteria for re-expressing the ensemble's four calcium worlds (Part 2) are
+  not tagged, none of the four runs on these pieces yet, and the bitwise round that D148 asks of an
+  engine change is the cleanup's gate and is owed.
+- **No experiment.** Every number that those definitions give is synthetic. The exchange's rate form
+  is synthetic and only its 3:1 coupling has support, which is contested; the symports' rate forms
+  are manufactured; the channel's numbers are another simulator's.
+- **No length and no GPU.** The compiled rows run ten steps, nothing went to 20 ms, and nothing ran
+  on a GPU. The two-cell world was compared with no code-blind reference.
+- **Known gaps in the step rules.** The rule counts a face as holding its node even where it has no
+  charged diffusivity, so a conducting patch beside one can be admitted at a step it cannot take. A
+  loop through two routes is not bounded, nor one through the pH condition. A charged row that a
+  sodium-anion symporter moves has no bound of its own.
+
 ### State roles and time
 
 - **Each field declares its evolution role. Target.** The roles are continuous dynamical state,
@@ -401,7 +452,8 @@ note.
   `src/cells/legacy/` (move 1, 17 November) and the modular parts in their own folders (move 2,
   18 November, tag `d188-move2-landed-2026-11-18`): `laws/`, `kinds/`, `operators/`,
   `definitions/`, `execution/`, `registry/` and `records/`. The source paths named in this document
-  are post-move.
+  are post-move. The older families left in the legacy cleanup (25 November 2026, D386); the tag
+  `pre-cleanup-2026-11-25` keeps them.
 - **The accepted feature work continues in its order:** compartments, occupancy and delivery. Their
   real interactions exercise these contracts. The minimal-cell track supplies consumers and
   measured-data tests without displacing FR-4 and FR-5.
@@ -591,8 +643,8 @@ with a checkpoint or expand at a host-controlled boundary and recompile. It must
 never silently discard cells, contacts, or scientific events.
 
 M1c-a implements separate cell and edge axes, masks, stable IDs, safe neutral
-padding, and shape-aware checkpoint/resource checks; passive_pair@1 still accepts
-exactly two active cells and one contact. CORE-003 adds species-by-cell amounts,
+padding, and shape-aware checkpoint/resource checks; passive_pair@1, since removed,
+accepted exactly two active cells and one contact. CORE-003 adds species-by-cell amounts,
 species-by-edge transfer, and per-cell conversion. Its population and fixed
 topology are data, including zero contacts, disconnected cells, and parallel
 contacts with distinct IDs. Tiny reference cases extend through five cells;
@@ -665,8 +717,8 @@ compatible with later graph/field exchange and device-resident execution.
 D021's [physical-pair specification](SELECTIVE_CONTACT_SPEC.md) defines the
 bounded extension: two effective membrane capacitances to a common bath, one
 oriented selective flux/ledger, and one relaxing gate state. The gate continues
-evolving during prescribed transport block. This is implemented as
-[bioelectric_pair@1](BIOELECTRIC_PAIR.md) in D023. The
+evolving during prescribed transport block. It was implemented as
+[bioelectric_pair@1](BIOELECTRIC_PAIR.md) in D023, which left with the legacy cleanup. The
 [NUM-003 reference](SELECTIVE_CONTACT_NUMERICS.md) requires a new 1 ms/cubic
 candidate for its bounded panel, rather than inheriting the single-cell timestep.
 Boundary-aware implicit Jacobian probes keep the reference domain explicit.

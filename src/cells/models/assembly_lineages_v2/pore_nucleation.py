@@ -1,4 +1,4 @@
-"""cells.pore_nucleation@1: line-tension nucleation of a pore under tension (FR-31, Phase A).
+"""cells.assembly_hazard.pore_nucleation@1: line-tension nucleation of a pore under tension (FR-31, Phase A).
 
 The declared laws are docs/VESICLE_PORES_LAWS.md, tagged `pores-laws-sheet-registered-2026-11-22`
 (D287). This module holds the law's pure functions: the rate, its temperature slope and the
@@ -20,16 +20,16 @@ temperature T (K) opens a pore, and so ruptures, at
 with η₂₉₈ = 3 × 10⁻¹⁰ Pa·s·m. Only the event pair and the heat booked at opening read it.
 
 **The declaration** (a world's `hazard`, the first law of cells.assembly_hazard@1; D148: a world
-that declares none runs as before): {"law": "cells.pore_nucleation@1", "nu_A", "gamma_N",
+that declares none runs as before): {"law": "cells.assembly_hazard.pore_nucleation@1", "nu_A", "gamma_N",
 "E_A_J_per_mol", "eta_298_Pa_s_m"}, each {value, provenance} (§0.2e rule 3), for one lipid
 composition (D287). ν_A is in m⁻²·s⁻¹·(N/m)^(−1/2)·K^(3/2), Γ in N, E_A in J/mol, η₂₉₈ in Pa·s·m;
 T is the world's temperature. Refused with it (Phase A; the lead's rulings of 22 November 2026):
-- a world without cells.bilayer_geometry@1, so with no geometry or with FR-21's prescribed shell:
+- a world without cells.assembly_geometry.bilayer_geometry@1, so with no geometry or with FR-21's prescribed shell:
   the vesicle's area is the bilayer's, A = q·W/2;
 - under a hold, any step that changes a membrane place's count (its net change, not the
   membrane's total): the area then stays fixed, so each vesicle's rate is constant through the
   hold (`phase_a_refusals`, which spec.parse's exact branch calls under a hold, and
-  cells.rate_equations@1's T2). With no hold the tension comes from F and such steps are admitted
+  cells.assembly_representation.rate_equations@1's T2). With no hold the tension comes from F and such steps are admitted
   in both representations (OL6 S3 and S4; exact events carry the clock on the device,
   pore_device.py);
 - a membrane or lumen species without a pool place to return to at a rupture (as §0.2c rule 8
@@ -37,7 +37,7 @@ T is the world's temperature. Refused with it (Phase A; the lead's rulings of 22
 The experiment's hold and the cross-checks with it are tension_hold.py's (spec.parse).
 
 **The rate at real area and tension** (`rate_at`, OL6 S3): the same closed form, traceable, for
-cells.rate_equations@1, whose vesicles have real areas and, with an osmotic lumen, a tension from F
+cells.assembly_representation.rate_equations@1, whose vesicles have real areas and, with an osmotic lumen, a tension from F
 (the design note's §3.5). It is 0 where σ ≤ 0 (a floppy vesicle), with the logarithms guarded so
 that its gradient is finite on both sides.
 """
@@ -238,7 +238,7 @@ FORMULAS = {
 
 LAW = law_registry.BUILTIN.register(
     AssemblyHazard(
-        "cells.pore_nucleation@1",
+        "cells.assembly_hazard.pore_nucleation@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

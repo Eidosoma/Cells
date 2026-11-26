@@ -189,6 +189,10 @@ histories. Explicit membrane damage is the component described below; tissue
 cutting and growth remain later work. Ordinary checkpoint branches deliberately
 reject a changed model/topology.
 
+> **Legacy cleanup (25 November 2026, D386).** `resolved_repair@1` to `@4` left the engine; the tag
+> `pre-cleanup-2026-11-25` keeps them. Injury and resealing on the live line is `cells.patch_damage@1`.
+> Cutting cells out is lost until it is asked for.
+
 The first component, `resolved_repair@1`, gives each membrane patch an explicit
 damage fraction between zero and one. A timed injury hazard opens the intact
 fraction; a declared first-order closure law lets damage decay. Damage controls
@@ -234,6 +238,10 @@ Source inspection and implementation evidence are recorded separately in
 
 ## Membrane redistribution
 
+> **Legacy cleanup (25 November 2026, D386).** `resolved_redistribution@1` to `@3` and the mobile compositions
+> below left the engine; the tag `pre-cleanup-2026-11-25` keeps them. Nothing replaces lateral redistribution; the
+> nearest live pieces are `membrane_entity_state@1` and the trafficking operator.
+
 Use the [conservative surface-transport component](TISSUE_RETURN_CURRENT.md#lateral-membrane-redistribution)
 for explicitly owned membrane-bound populations. The first ordinary composition,
 `resolved_redistribution@1`, couples neutral always-open populations to patch
@@ -266,10 +274,19 @@ and qualification evidence belong in [Progress](../PROGRESS.md).
 
 ## BITSEY replication
 
+> **Legacy cleanup (25 November 2026, D386).** A reader of *How Patterns Return* finds this section's
+> starting components at the tag `pre-cleanup-2026-11-25`: the isolated regulation (`emt_mirna@1`),
+> the coupled two-cell model (`emt_mirna_pair@1`, whose going the user approved that day, which ends
+> D149's exception) and the independent graph references, which go with the cleanup's optional batch
+> (the user approved it the same day). After the cleanup none of the three is on `main`. The EMT switch
+> itself runs on the live engine, as `local_species_reactions@1` reactions, in the
+> [gap-junction replication](GAP_JUNCTION_CANCER_REPLICATION.md). What is not live is the pair written
+> the source's way and the full lineage replication.
+
 The first target is the *How Patterns Return* programme's corrected-clock BITSEY experiments,
 with [source versions and provenance](SCIENTIFIC_BASIS.md#betse-and-bitsey-as-complementary-references)
-kept explicit. Existing isolated regulation, the coupled two-cell model and
-independent graph references are starting components; full lineage reproduction
+kept explicit. The isolated regulation, the coupled two-cell model and the independent graph
+references of that tag are starting components; full lineage reproduction
 remains to be implemented and verified. This work can proceed alongside BETSE
 coverage without waiting for every bioelectric mechanism to be complete.
 

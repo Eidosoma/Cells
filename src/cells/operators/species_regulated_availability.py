@@ -1,4 +1,4 @@
-"""Operator species_regulated_availability@1: coupling out of the inventory (D155 item 1, D156).
+"""Operator cells.operator.species_regulated_availability@1: coupling out of the inventory (D155 item 1, D156).
 
 docs/INVENTORY_COUPLING_DESIGN.md (accepted 14 November 2026; rulings in §6.3, milestone-1 notes in
 §7). A species amount on @3's cell rows sets @3's availability of a declared target through the
@@ -10,7 +10,7 @@ bit for bit (ruling 12; its acceptance into scope is the lead's).
 
 Declaration (§1.6): `species`, the rows the operator reads (a read-only list: any species of the
 world, ions included, with D150's identity form, never written; ruling 1); `states`, each with its
-law hill_regulated_two_state@1, its cells, its inputs (Hill factors of species read in the same
+law cells.regulation.hill_regulated_two_state@1, its cells, its inputs (Hill factors of species read in the same
 cell, which multiply), on_rate_per_s, off_rate_per_s, initial (s0: one value for every cell of the
 state, or an object naming each of its cells once, a cell's prior condition) and crossing_level
 (null or a level in [0, 1]); `couplings`, each with a target ({operator: "inner", control, ids,
@@ -21,7 +21,7 @@ experiment's `regulatory_writes` set a (state, cell) at the start of the step le
 Laws (§1.3, §1.5):
 * instantaneous: hill_activation x^n/(K^n + x^n) or hill_inhibition K^n/(K^n + x^n) of the
   concentration c = n/V in the target's own cell, at the declared volume (processes/hill_factors,
-  the expression of local_species_reactions@1); its source must be a neutral species with no
+  the expression of cells.operator.local_species_reactions@1); its source must be a neutral species with no
   membrane, junction or channel route, a row @3's step does not move, so the factor held through
   @3's step is exact there (§1.4);
 * through a state: state_fraction s or state_complement 1 - s, with
@@ -60,7 +60,7 @@ time a non-finite or out-of-range state or factor refuses the step (domain_valid
 end state; also rate_checks, wherever the composite evaluates readouts), as does a stale write
 count (in the event map, as replacement's stale generation does).
 
-**species_regulated_availability@2** (B1′; docs/INVENTORY_COUPLING_DESIGN.md §2.1; the lead's
+**cells.operator.species_regulated_availability@2** (B1′; docs/INVENTORY_COUPLING_DESIGN.md §2.1; the lead's
 ruling C of 19 November 2026; development, not judged) is @1 plus operator targets, rate routes
 to another operator's routable control (contract ROUTABLE_CONTROLS). @1 is unchanged, its
 programs included. Every @2 target declares its evaluation:
@@ -91,7 +91,7 @@ absolute density rho = N/A in units per µm² (the lead's ruling: a density, nev
 hill_activation or hill_inhibition with half_saturation_per_um2 and hill_coefficient. At the read
 rho = a rho_ref: a is @3's current channel_abundance in the coupling's reader view at the control
 view (contract R2: a current read at stage inner), and rho_ref is the population's reference density
-declared in membrane_entity_state@1, bound host side. Its target is an inner channel target
+declared in cells.operator.membrane_entity_state@1, bound host side. Its target is an inner channel target
 ("step_view"), and its operating range [low, high] is in units per µm², checked where the factor is
 evaluated. Units and area change only in writers' half-steps and event maps, so the held factor is
 the exact one; an in-step process that writes either is refused. Refused at parsing: a self-source
@@ -100,14 +100,14 @@ factor would count its abundance twice; D218); a count or any half-saturation ot
 half_saturation_per_um2; a source population outside the target's cell; a junction target (side
 "both" needs a population per endpoint; later, with U1); an operator target (its half-steps receive
 no view); an unknown population; a law other than a Hill law. Refused at binding: a population
-source without membrane_entity_state@1. A source no declared writer of units or area changes is
+source without cells.operator.membrane_entity_state@1. A source no declared writer of units or area changes is
 reported, not refused: "constant source: the factor cannot vary in this run" (the summary). A
 population route's law code is its Hill kind plus POPULATION_OFFSET, so @1's kernels give it
 exactly f = 1 (padding); only version 2's population kernel evaluates it, and only from a view.
 
 **@2's site source** (FR-24; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §3; D244; development,
 not judged): a coupling's source may be {"site_population": id, "quantity": q}, a site population
-of site_occupancy@1 read through its owner's readable quantities (the contract's R3: the composite
+of cells.operator.site_occupancy@1 read through its owner's readable quantities (the contract's R3: the composite
 passes quantities=, a function of state, and it is called only with a site route). q is
 occupied_fraction, theta = B / (B + R), through site_fraction (f = theta), site_complement
 (f = 1 - theta) or a Hill law with a dimensionless half_saturation; or occupied_mM or capacity_mM,
@@ -115,7 +115,7 @@ B / V or S / V at the element's cell's declared volume (D244's Q2: a concentrati
 through a Hill law with half_saturation_mM. An empty site is an ordinary state: a Hill law of 0
 gives activation 0 and inhibition 1. Its targets are @3's channels ("step_view", read at the
 control view) and every operator target ("target_half_steps", read at the start of each of the
-target's half-steps, whose ranges are checked there), where site_occupancy@1 precedes the target
+target's half-steps, whose ranges are checked there), where cells.operator.site_occupancy@1 precedes the target
 (refused at the definition otherwise, so both halves read after the owner's first half). The
 population and the element share a cell. Its operating range is in the quantity's unit, theta's
 inside [0, 1]. A capacity source is a layout constant in version 1, reported in the summary. A
@@ -124,7 +124,7 @@ pool) is admitted, as D218 admits a species source's: its timing and range are d
 loop's verification against a reference is a consumer's item. Refused at parsing: an unknown
 quantity, a law or a half-saturation that does not match it, a junction target (side both needs a
 population per endpoint: later), and a range outside the quantity's; at binding: no
-site_occupancy@1, an unknown population, and a population outside the element's cell. Its law
+cells.operator.site_occupancy@1, an unknown population, and a population outside the element's cell. Its law
 codes are a Hill kind plus SITE_OFFSET and SITE_FRACTION or SITE_COMPLEMENT, so @1's kernels and
 the population kernel give it exactly f = 1 (padding); only the site kernel evaluates it.
 
@@ -151,9 +151,9 @@ from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
 from cells.registry import species_registry
 
-LAW_ID = "species_regulated_availability@1"
+LAW_ID = "cells.operator.species_regulated_availability@1"
 STEP_ID = "exact_two_state_half_steps@1"
-STATE_LAW = "hill_regulated_two_state@1"
+STATE_LAW = "cells.regulation.hill_regulated_two_state@1"
 # Admitted targets: @3's junction and channel-population availabilities (the channel after
 # milestone 1's probe P1). The leak (membrane) and pump availabilities are later targets.
 TARGET_CONTROLS = ("junction", "channel")
@@ -165,10 +165,10 @@ STATE_FACTOR_LAWS = {"state_fraction": STATE_FRACTION, "state_complement": STATE
 # offset, which @1's kernels treat as padding (f = 1).
 POPULATION_OFFSET = 4
 POPULATION_LAWS = {name: kind + POPULATION_OFFSET for name, kind in SPECIES_LAWS.items()}
-# Version 2's site source (FR-24): a site population of site_occupancy@1, read through its owner's
+# Version 2's site source (FR-24): a site population of cells.operator.site_occupancy@1, read through its owner's
 # readable quantities (R3). Its law codes, which @1's kernels and the population kernel treat as
 # padding (f = 1): a Hill kind plus SITE_OFFSET, and the fraction's own two laws.
-SITE_LAW = "site_occupancy@1"
+SITE_LAW = "cells.operator.site_occupancy@1"
 SITE_OFFSET = 6
 SITE_HILL_LAWS = {name: kind + SITE_OFFSET for name, kind in SPECIES_LAWS.items()}
 SITE_FRACTION, SITE_COMPLEMENT = 9, 10
@@ -223,22 +223,31 @@ TARGET_TABLES = {"junction": "coupling_junction_routes", "channel": "coupling_ch
 # Version 2 (the module docstring): the routable controls it routes to, each with its element
 # table ([elements, width] int64 route per element, -1 pads), and every route's operating range
 # ([route] low and high; -inf and inf on an inner target's route).
-LAW_ID_V2 = "species_regulated_availability@2"
+LAW_ID_V2 = "cells.operator.species_regulated_availability@2"
 EVALUATIONS = MappingProxyType({"inner": "step_view", "operator": "target_half_steps"})
 OPERATOR_TABLES = MappingProxyType(
     {
-        ("scheduled_species_turnover@1", "turnover_rate"): "coupling_turnover_rate_routes",
-        ("local_species_reactions@1", "reaction_multiplier"): "coupling_reaction_multiplier_routes",
+        (
+            "cells.operator.scheduled_species_turnover@1",
+            "turnover_rate",
+        ): "coupling_turnover_rate_routes",
+        (
+            "cells.operator.local_species_reactions@1",
+            "reaction_multiplier",
+        ): "coupling_reaction_multiplier_routes",
         # FR-7's unit producer (F3), a recorded exception naming the operators owner.
-        ("population_unit_turnover@1", "unit_assembly_rate"): "coupling_unit_assembly_rate_routes",
+        (
+            "cells.operator.population_unit_turnover@1",
+            "unit_assembly_rate",
+        ): "coupling_unit_assembly_rate_routes",
         # Gene regulation's option A (G4, D235): a chain's initiation rate constant, a recorded
         # exception naming the operators owner.
-        ("templated_polymerisation@1", "polymerisation_initiation_rate"): (
+        ("cells.operator.templated_polymerisation@1", "polymerisation_initiation_rate"): (
             "coupling_polymerisation_initiation_rate_routes"
         ),
         # FR-38's routed durable fraction p (the sheet's §9.4, source 3), the same recorded
         # exception, under the lead's leave (23 November 2026).
-        ("templated_polymerisation@1", "polymerisation_release_fraction"): (
+        ("cells.operator.templated_polymerisation@1", "polymerisation_release_fraction"): (
             "coupling_polymerisation_release_fraction_routes"
         ),
     }
@@ -748,9 +757,9 @@ def _parse_couplings(raw, base, listed, states, *, version=1):
             if valence[origin] != 0:
                 raise ConfigError(
                     f"{LAW_ID}: coupling {name} reads the charged species {origin!r} "
-                    "instantaneously; "
-                    "@3's step moves it, so a factor held through the step would lag (first order) "
-                    "and could close a loop @3's bound does not see: read it through a state (§1.4)"
+                    "instantaneously; an instantaneous source must be a neutral row (valence 0), "
+                    "whether or not the row has a route or is moved by the step: read it through "
+                    "a state (§1.4)"
                 )
             common.check_impermeant(m, origin, LAW_ID)
             k = _positive(entry["half_saturation_mM"], f"coupling {name}'s half_saturation_mM")
@@ -1009,7 +1018,7 @@ def _writes_at(entries, time):
 
 def reference_densities(spec):
     """Version 2: {population: its reference density (units/m^2)} from the definition's
-    membrane_entity_state@1 declaration (FR-7's Q5 (a)); refused without one."""
+    cells.operator.membrane_entity_state@1 declaration (FR-7's Q5 (a)); refused without one."""
     for op, block, _ in composite_spec.entries(spec):
         if op.LAW_ID == MEMBRANE_STATE:
             return {p.channel_id: p.reference_density_per_m2 for p in block.populations}
@@ -1024,7 +1033,7 @@ def _population_layout(spec, declaration, routes):
     so @1's kernels give it f = 1), and its arrays: the route map ([route], -1 elsewhere), and
     per population route its source's channel slot, reference density and half-saturation (per
     µm²). Refused here, where the binding first reads it: a population source without
-    membrane_entity_state@1."""
+    cells.operator.membrane_entity_state@1."""
     index = -np.ones(len(routes), dtype=np.int64)
     population = [
         i
@@ -1052,7 +1061,7 @@ def _population_layout(spec, declaration, routes):
 
 
 def site_entities(spec):
-    """Version 2: the site populations of the definition's site_occupancy@1, each (id, cell) in
+    """Version 2: the site populations of the definition's cells.operator.site_occupancy@1, each (id, cell) in
     its axis' order, from the owner's host-side declaration of its entities (R3); None without
     the owner."""
     for op, other, _ in composite_spec.entries(spec):
@@ -1079,7 +1088,7 @@ def _site_layout(spec, declaration, routes):
     own laws, so @1's kernels and the population kernel give it f = 1), and its arrays: the route
     map ([route], -1 elsewhere), and per site route its population's index on the owner's axis,
     its quantity's code and its half-saturation (1 for the fraction's own laws). Refused here,
-    where the binding first reads it: a site source without site_occupancy@1, an unknown
+    where the binding first reads it: a site source without cells.operator.site_occupancy@1, an unknown
     population, and a population outside the route's cell."""
     index = -np.ones(len(routes), dtype=np.int64)
     site = [
@@ -1658,7 +1667,7 @@ def check_replaced_operator_elements(spec, declaration):
     """Version 2: refuse an operator target's element on a slot replacement@1 replaces (its source
     is read in that cell, which a newcomer would take over), unless its source is a species of
     that cell or a site population (FR-26's part C′, D244): replacement@1 swaps the cell's species
-    and site_occupant_replacement@1 resets its populations, so the factor reads the newcomer's
+    and cells.operator.site_occupant_replacement@1 resets its populations, so the factor reads the newcomer's
     state. A state source there stays refused (part C, a newcomer's regulatory state, is not
     built)."""
     _, events = common.replacement_of(spec)
@@ -1684,7 +1693,7 @@ def check_replaced_operator_elements(spec, declaration):
 
 
 def check_population_sources(spec, declaration):
-    """Version 2: a population source needs membrane_entity_state@1 (reference_densities), and
+    """Version 2: a population source needs cells.operator.membrane_entity_state@1 (reference_densities), and
     no in-step process may write population units or membrane area: its factor is held through
     @3's step, which is exact only while both change in half-steps and event maps."""
     readers = [c for c in declaration.couplings if type(c) is PopulationCoupling]
@@ -1934,7 +1943,7 @@ def _named_v2():
 
 
 class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
-    """species_regulated_availability@2: @1 plus operator targets (the module docstring; B1′,
+    """cells.operator.species_regulated_availability@2: @1 plus operator targets (the module docstring; B1′,
     docs/INVENTORY_COUPLING_DESIGN.md §2.1) and the population source (FR-7's part (b)). It
     shares @1's laws, states, events and inner targets; its layout adds the operator targets'
     element tables, every route's operating range and the population routes' arrays. A
@@ -1953,7 +1962,7 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
     # R2 (step 0 of FR-7's part (b)): the populations' abundance read at the control view.
     VIEW_READS = ("channel_abundance",)
     SCOPED_READS = MappingProxyType({"channel_abundance": Read("current", "inner")})
-    # R3 (FR-24): a site source reads site_occupancy@1's readable quantities.
+    # R3 (FR-24): a site source reads cells.operator.site_occupancy@1's readable quantities.
     QUANTITY_READS = MappingProxyType({SITE_LAW: tuple(SITE_READS.values())})
     # Its run view (the contract; an operator registered after the run view declares it).
     VIEW_LAYERS = (

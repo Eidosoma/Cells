@@ -25,8 +25,8 @@ Laws (BETSE channel type -> kind, opening m^a h^b):
 * KLeak (vg_k.py), NaLeak (vg_na.py) -> kleak, naleak: always open (gates fixed at 1)
 
 The gated laws are the Cells process laws, whose targets, time constants and gate clock
-equal BETSE's (tests/unit/test_surface_channels.py and test_surface_sodium.py replay the
-unmodified BETSE classes to 5e-14). The Nav1p2 rates there take their analytic limits at
+equal BETSE's (tests/unit/test_channel_law_kernels.py replays the unmodified BETSE classes
+to 5e-14). The Nav1p2 rates there take their analytic limits at
 BETSE's removable singularities (-25, -40 and -65.000123 mV), where BETSE's own
 expressions are 0/0. Channels inactive in INIT are skipped there (``init active``).
 """

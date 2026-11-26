@@ -1,6 +1,6 @@
 # Using the coupling references: R-fac, R-state, R-cell and R-feedback (interface only)
 
-How to feed the independent references for `species_regulated_availability@1` and read their
+How to feed the independent references for `cells.operator.species_regulated_availability@1` and read their
 outputs without reading their source. They were written from Appendix A of
 [INVENTORY_COUPLING_DESIGN.md](../../docs/INVENTORY_COUPLING_DESIGN.md), with §4.3 and §4.4, from
 S5's Appendix A ([CELL_DIVISION_S5_DESIGN.md](../../docs/CELL_DIVISION_S5_DESIGN.md), A.1 to A.3)
@@ -138,7 +138,7 @@ run = rc.simulate(world, t_end, record=(...), rtol=1e-10, atol=None, method="Rad
 | `World` | `constants`, `species` (e.g. `("Na", "K", "Cl")`), `z`, `bath_mM` (held, 0 V), `cells`, `patches`, `populations`, `contacts`, `regulators`, `states`, `couplings` (dicts by name; `couplings` in declared order) |
 | `Cell(volume_pL, mM, initial_V=nan, background_fmol=nan)` | Initial concentrations of every species. The start: `initial_V` (V) sets the charge C V₀ and the background follows; or `background_fmol` sets X and V₀ follows; or, with neither, V₀ is the zero-current potential of the cell's routes to the bath at 0+ (its leaks, and its populations at their availability then; contacts excluded) |
 | `Patch(cell, area_m2, capacitance_F, permeability_m_s)` | A membrane patch facing the bath, with constant-field leaks P_s per unit area. Every cell needs one. The cell's capacitance is the sum over its patches |
-| `Population(patch, permeability_m_s, relative, abundance=1, opening=1, schedule=((0, 1),))` | A gate-free population, P r_s N o a(t) A_k per species. `relative` gives r_s for every species (`kleak_always_open@1`: 1 for K, 0 otherwise). `schedule` is a_sched, piecewise constant from 0 |
+| `Population(patch, permeability_m_s, relative, abundance=1, opening=1, schedule=((0, 1),))` | A gate-free population, P r_s N o a(t) A_k per species. `relative` gives r_s for every species (`cells.channel.kleak_always_open@1`: 1 for K, 0 otherwise). `schedule` is a_sched, piecewise constant from 0 |
 | `Contact(cells, area_m2, permeability_m_s, gate=1, schedule=((0, 1),))` | P_s A_e g a(t), with a fixed gate g. The current is reported from `cells[0]` to `cells[1]` |
 | `Regulator(amounts)` | `{cell: rs.Turnover}`, each at that cell's volume. A neutral, impermeant species: it enters no transport and no charge |
 | `State(cells, inputs, k_on_per_s, k_off_per_s, initial=0.0, crossing_level=nan)` | `inputs`: a tuple of `Input(law, species, K_mM, n)`, read in each of the state's cells (an ion or a regulator). `initial` is one s₀ or `{cell: s₀}` |

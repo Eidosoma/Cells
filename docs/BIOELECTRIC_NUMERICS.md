@@ -1,5 +1,10 @@
 # Bioelectric CPU reference and numerical contract
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 NUM-002, 2026-09-08. This supplies independent integrated trajectories and an
 execution candidate for [SPEC-001](BIOELECTRIC_CELL_SPEC.md). NUM-002 itself added
 no registered model to 0.4.0. The subsequent [MODEL-003 implementation](BIOELECTRIC_CELL.md)

@@ -5,9 +5,11 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.definitions.specs import ConfigError, InputChange, digest
+from cells.definitions.specs import ConfigError, GraphContactChange, digest
 from cells.execution.runner import branch_checkpoint, run, validate_checkpoint
 from cells.records.io import load_snapshot, write_run, write_snapshot
+
+MODEL_SOURCE = "models/reaction_transport.py"  # The shared world's model, in a manifest's hashes.
 
 
 @pytest.mark.parametrize("time", [0.0, 2.03, 5.07, 6.0, 12.0])
@@ -22,40 +24,54 @@ def test_snapshot_restart_is_exact(spec, tmp_path, time):
     for a, b in zip(uninterrupted.final.state, resumed.final.state, strict=True):
         np.testing.assert_array_equal(a, b)
     assert resumed.final.step_index == uninterrupted.final.step_index
-    assert resumed.supplied[-1, 0] == uninterrupted.supplied[-1, 0]
+    for a, b in zip(uninterrupted.history, resumed.history, strict=True):
+        np.testing.assert_array_equal(a[saved.step_index :], b)
     assert resumed.times[0] == time
 
 
 def test_branch_changes_only_the_future(spec):
+    """The branch closes the contact at 6: from there nothing moves in it, to the bit."""
     parent = run(spec)
     saved = parent.checkpoint_at(6.0)
     original_amount = np.asarray(saved.state.amount).copy()
-    changed = replace(
-        spec,
-        experiment=replace(spec.experiment, source=spec.experiment.source + (InputChange(6, 0.5),)),
-    )
+    contact = (*spec.experiment.contact, GraphContactChange(6, (0,)))
+    changed = replace(spec, experiment=replace(spec.experiment, contact=contact))
     altered = run(changed, branch_checkpoint(spec, saved, changed))
     unchanged = run(spec, saved)
-    assert altered.amount[-1, 0] > unchanged.amount[-1, 0]
     np.testing.assert_array_equal(saved.state.amount, original_amount)
     np.testing.assert_array_equal(parent.final.state.amount, unchanged.final.state.amount)
     np.testing.assert_array_equal(unchanged.amount[0], altered.amount[0])
-    assert altered.supplied[-1, 0] > unchanged.supplied[-1, 0]
+    moved = altered.history.transferred
+    np.testing.assert_array_equal(
+        moved, np.broadcast_to(np.asarray(saved.state.transferred), moved.shape)
+    )
+    assert not np.array_equal(altered.amount[-1], altered.amount[0])  # It still converts.
+    assert np.all(unchanged.history.transferred[-1] != moved[-1])
 
 
-@pytest.mark.parametrize("mode", ["model", "solver", "history", "lost_boundary", "short_horizon"])
-def test_branch_refuses_incompatible_changes(spec, mode):
+@pytest.mark.parametrize(
+    "mode,rule",
+    [
+        ("model", "may not change model"),
+        ("solver", "may not change model or execution"),
+        ("history", "cannot rewrite"),
+        ("lost_boundary", "retain the checkpoint as an integration boundary"),
+        ("short_horizon", "and a valid horizon"),
+    ],
+)
+def test_branch_refuses_incompatible_changes(spec, mode, rule):
     saved = run(spec).checkpoint_at(5.07)
     changed = spec
     if mode == "model":
-        changed = replace(spec, model=replace(spec.model, decay_rate=0.5))
+        changed = replace(spec, model=replace(spec.model, forward_rate=(0.5, 0.1)))
     elif mode == "solver":
         changed = replace(spec, execution=replace(spec.execution, dt=0.1))
     elif mode == "history":
-        changed = replace(spec, experiment=replace(spec.experiment, source=(InputChange(0, 1),)))
+        contact = (GraphContactChange(0, (0.5,)), *spec.experiment.contact[1:])
+        changed = replace(spec, experiment=replace(spec.experiment, contact=contact))
     elif mode == "lost_boundary":
         changed = replace(
-            spec, experiment=replace(spec.experiment, source=spec.experiment.source[:2])
+            spec, experiment=replace(spec.experiment, contact=spec.experiment.contact[:2])
         )
     else:
         changed = replace(
@@ -63,11 +79,11 @@ def test_branch_refuses_incompatible_changes(spec, mode):
             experiment=replace(
                 spec.experiment,
                 end_time=4,
-                source=spec.experiment.source[:2],
+                contact=spec.experiment.contact[:2],
                 observation_times=(0, 4),
             ),
         )
-    with pytest.raises(ConfigError):
+    with pytest.raises(ConfigError, match=rule):
         branch_checkpoint(spec, saved, changed)
 
 
@@ -82,8 +98,8 @@ def test_checkpoint_clock_and_layout_are_validated(spec):
         replace(saved, time=6.01),
         replace(saved, step_index=True),
         replace(saved, event_index=0),
-        replace(saved, layout=saved.layout._replace(ids=np.array([99], dtype=np.int64))),
-        replace(saved, state=saved.state._replace(amount=np.array([1.0], dtype=np.float32))),
+        replace(saved, layout=saved.layout._replace(ids=np.array([99, 202], dtype=np.int64))),
+        replace(saved, state=saved.state._replace(amount=np.float32(saved.state.amount))),
     ):
         with pytest.raises(ConfigError):
             validate_checkpoint(spec, invalid)
@@ -105,7 +121,8 @@ def test_incompatible_snapshot_is_refused(spec, tmp_path, mode):
         if mode == "schema":
             manifest["schema_version"] = 99
         elif mode == "source":
-            manifest["source_hashes"]["legacy/models/source_decay.py"] = "wrong"
+            assert MODEL_SOURCE in manifest["source_hashes"]
+            manifest["source_hashes"][MODEL_SOURCE] = "wrong"
         elif mode == "runtime":
             manifest["runtime"]["python"] = "0.0.0"
         elif mode == "clock":
@@ -167,4 +184,4 @@ def test_outputs_and_snapshots_never_overwrite(spec, tmp_path):
     with np.load(output / "trajectory.npz", allow_pickle=False) as data:
         np.testing.assert_array_equal(data["amount"], result.amount)
     assert manifest["runtime"]["packages"]["jax"]
-    assert manifest["source_hashes"]["legacy/models/source_decay.py"]
+    assert manifest["source_hashes"][MODEL_SOURCE]

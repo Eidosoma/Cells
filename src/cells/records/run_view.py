@@ -18,7 +18,7 @@ runs before any output exists, so a refusal writes nothing; the view is written 
 payload and before the manifest, whose checksums then cover it. A run already on disk gets its
 view from write_view(directory). Without ``view=`` every path writes exactly what it wrote before.
 
-Scope (version 1): resolved_pump_composite@1 over resolved_pump_tissue@3, and @3 alone. Other
+Scope (version 1): cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, and @3 alone. Other
 model families are refused.
 
 Declarations read
@@ -321,7 +321,7 @@ class ViewInvalid(ConfigError):
 
 # ------------------------------------------------------------------ the inner model's sets
 
-# The inner model's own declarations (resolved_pump_tissue@3's view declarations, folded per
+# The inner model's own declarations (cells.model.resolved_pump_tissue@3's view declarations, folded per
 # structure with its kinds'; models/surface_pump_v3.view_declarations) give every field's unit,
 # readout axes, kind, layer, orientation and notes; the writer keeps no table of them.
 # The inner layout's view fields that operators may provide (the composite adapter's
@@ -502,13 +502,15 @@ def _family(spec):
             )
         if getattr(spec.model, "forms_faces", ()):
             raise ViewRefused(  # The forms law, version 1: its movers' axis has no view set yet.
-                "No view declarations for logmean_electrodiffusion_forms@1's faces yet: their "
+                "No view declarations for cells.route.logmean_electrodiffusion_forms@1's faces "
+                "yet: their "
                 "movers' axis has no view set (version 1)"
             )
         return get_model(spec.model), tissue3.MODEL_ID, ()
     raise ViewRefused(
         f"No view declarations for {type(spec.model).__name__}: version 1 covers "
-        "resolved_pump_composite@1 over resolved_pump_tissue@3, and resolved_pump_tissue@3"
+        "cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, and "
+        "cells.model.resolved_pump_tissue@3"
     )
 
 

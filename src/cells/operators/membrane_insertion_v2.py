@@ -1,9 +1,9 @@
-"""Operator scheduled_membrane_insertion@2: insertion@1's law, its onset a closer (stage S5).
+"""Operator cells.operator.scheduled_membrane_insertion@2: insertion@1's law, its onset a closer (stage S5).
 
 docs/CELL_DIVISION_S5_DESIGN.md §5.1. The law is insertion@1's (membrane_insertion.py; division
 design §5.1), whose functions are reused unmodified. Per half-step h on each inserted patch k
 with rate r_k >= 0: dA = r h, dC = c_d r h and dN_j = rho_j r h, written to
-membrane_entity_state@1's increments at fixed free-node charges. The clamps supply the image
+cells.operator.membrane_entity_state@1's increments at fixed free-node charges. The clamps supply the image
 charge, booked with its work, and the capacitor free energy falls by the heat H >= 0.
 
 Changed from @1:
@@ -32,7 +32,7 @@ Changed from @1:
   idle (no population is on an onset patch) and the records are unchanged.
 * The energy rule at the view is the composite's (§5.3). This operator books its heat in the
   energy ledger and its image charge in the rounding bounds, not the view's capacitor terms.
-* It precedes every operator that retires slots (isopotential_partition@1), whose step-check
+* It precedes every operator that retires slots (cells.operator.isopotential_partition@1), whose step-check
   share (R5) reads the area inserted on the parent.
 * It reads slot lifetimes through the contract (living_intervals, schedule_times of retiring
   operators), never importing the operator that decides them. So S3's cleft egg on @2 (Q7)
@@ -43,7 +43,7 @@ Kept from @1:
 * an onset node is finite, with a zero charge anchor;
 * another operator that books image charge on the declared layout is refused;
 * an onset node's volume is its declared anchor, unless its provider anchors it until the
-  onset (ONSET_ANCHORED_VIEWS: restricted_cleft_lumen@2);
+  onset (ONSET_ANCHORED_VIEWS: cells.operator.restricted_cleft_lumen@2);
 * the step checks (R5): every inserted patch at its largest area, and the definition before
   any onset (as built: with every patch facing an onset node removed, pending daughters'
   among them).
@@ -65,7 +65,7 @@ from cells.operators import membrane_insertion as v1
 from cells.operators import membrane_state
 from cells.operators.contract import Operator
 
-LAW_ID = "scheduled_membrane_insertion@2"
+LAW_ID = "cells.operator.scheduled_membrane_insertion@2"
 STEP_ID = v1.STEP_ID
 
 

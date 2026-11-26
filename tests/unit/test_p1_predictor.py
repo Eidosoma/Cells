@@ -1,7 +1,7 @@
 """P1's positivity predictor (docs/CORE_SEAMS_DESIGN.md §17; §19 as amended: the general layout
 only), @3's part. The selector is the binding owner's ruling (a) of 19 November 2026: each stage
 row may name its read's law as a third item. Where every row of a read names a registered law that
-declares free_amounts (rapid_binding@1), the structure lists the read's kind
+declares free_amounts (cells.binding.rapid_binding@1), the structure lists the read's kind
 (InnerStructure.free_amount_reads), and the IMEX step's predictor reads the stage read at the
 predicted stored totals. Everywhere else it keeps today's form: the start read's amount plus the
 stored derivative.
@@ -9,8 +9,8 @@ stored derivative.
 - Stage rows are shared by their (species, node), whatever law a third item names. Two kinds'
   reads on one row under different laws are refused at binding, where a key on the whole row
   would admit them (the plant). A row of any other length is refused.
-- The switch: today's definitions list no read, and rows naming rapid_binding@1 list the buffer.
-  Rows naming version 1's read (rapid_proton_buffer@1, not a registered law) or a registered law
+- The switch: today's definitions list no read, and rows naming cells.binding.rapid_binding@1 list the buffer.
+  Rows naming version 1's read (cells.kind.rapid_proton_buffer@1, not a registered law) or a registered law
   without free_amounts list none. A composite's model block reaches the same switch.
 - The structure's check (F's review): it refuses an undeclared entry, a repeated entry, an
   unsorted pair of declared kinds, a list in place of a tuple, and a non-string entry.
@@ -48,22 +48,23 @@ from tests.unit.test_rapid_binding_world import (
 from validation.compartment_ph_engine import definitions as fr
 
 GENERAL = proton_buffer.GENERAL_READ_ID  # Registered, with free_amounts.
-VERSION_1 = "rapid_proton_buffer@1"  # Version 1's read ID: not a registered law.
+VERSION_1 = "cells.kind.rapid_proton_buffer@1"  # Version 1's read ID: not a registered law.
 
 
 def test_stage_rows_are_shared_by_species_and_node_whatever_law_each_names():
     shared = registry(
-        reader("alpha", "alpha_block", (("K", "cell_0", "tests.law_a@1"),)),
-        reader("beta", "beta_block", (("K", "cell_0", "tests.law_b@1"),)),
+        reader("alpha", "alpha_block", (("K", "cell_0", "tests.binding.law_a@1"),)),
+        reader("beta", "beta_block", (("K", "cell_0", "tests.binding.law_b@1"),)),
     )
     with kind_registry.scope(shared):
         with pytest.raises(
-            ConfigError, match=r"tests.alpha@1 and tests.beta@1 both read row \('K', 'cell_0'\)"
+            ConfigError,
+            match=r"tests.kind.alpha@1 and tests.kind.beta@1 both read row \('K', 'cell_0'\)",
         ):
             parse_spec(declaring("alpha_block", "beta_block"))
     apart = registry(
-        reader("alpha", "alpha_block", (("K", "cell_0", "tests.law_a@1"),)),
-        reader("beta", "beta_block", (("Na", "cell_0", "tests.law_a@1"),)),
+        reader("alpha", "alpha_block", (("K", "cell_0", "tests.binding.law_a@1"),)),
+        reader("beta", "beta_block", (("Na", "cell_0", "tests.binding.law_a@1"),)),
     )
     with kind_registry.scope(apart):
         parse_spec(declaring("alpha_block", "beta_block"))  # Disjoint rows: admitted.
@@ -78,7 +79,7 @@ def test_a_stage_row_is_two_or_three_items():
 def drawer():
     """The binding tests' reading carrier run inward: it takes its species from its patch's
     outside node into the patch's cell at its declared rate (its moves name READS_LAW, whose reads
-    name rapid_binding@1, so the general closure admits them)."""
+    name cells.binding.rapid_binding@1, so the general closure admits them)."""
     base = reading_carrier()
 
     def parse(entries, spec):
@@ -171,12 +172,12 @@ def test_the_predictor_reads_the_free_amount_at_the_predicted_totals_where_the_l
 
 def test_the_switch_reaches_a_composite():
     plain = surface_pump_v3.structure(parse_spec(lumen_general()).model)
-    # The general closure's own rows name rapid_binding@1 (the binding owner's third item).
+    # The general closure's own rows name cells.binding.rapid_binding@1 (the binding owner's third item).
     assert plain.free_amount_reads == (proton_buffer.KIND_ID,)
     raw = cs.frozen_definition(lumen_general())
     electrode = dict(cell_id=fr.CELL, carriers={"K": 1.0})
     raw["model"].setdefault("operators", []).append(
-        dict(law="electrode_current_injection@1", electrodes=[electrode])
+        dict(law="cells.operator.electrode_current_injection@1", electrodes=[electrode])
     )
     raw["experiment"]["injection_controls"] = [
         dict(cell_id=fr.CELL, schedule=[dict(time=0.0, current_A=2e-12)])
@@ -202,7 +203,9 @@ def test_a_read_mixing_the_two_forms_and_a_free_amount_read_beside_todays_are_re
         reader("beta", "beta_block", (("Na", "cell_0"),)),
     )
     with kind_registry.scope(beside):
-        with pytest.raises(ConfigError, match="reads tests.alpha@1's stage read at the predicted"):
+        with pytest.raises(
+            ConfigError, match="reads tests.kind.alpha@1's stage read at the predicted"
+        ):
             parse_spec(declaring("alpha_block", "beta_block"))
     both = registry(
         reader("alpha", "alpha_block", (("K", "cell_0", GENERAL),)),
@@ -211,7 +214,7 @@ def test_a_read_mixing_the_two_forms_and_a_free_amount_read_beside_todays_are_re
     with kind_registry.scope(both):  # The controls: two free-amount reads are admitted.
         spec = parse_spec(declaring("alpha_block", "beta_block"))
         listed = surface_pump_v3.structure(spec.model).free_amount_reads
-    assert listed == ("tests.alpha@1", "tests.beta@1")
+    assert listed == ("tests.kind.alpha@1", "tests.kind.beta@1")
 
 
 def test_the_structure_refuses_entries_that_are_not_a_sorted_tuple_of_declared_kinds():
@@ -223,10 +226,10 @@ def test_the_structure_refuses_entries_that_are_not_a_sorted_tuple_of_declared_k
     with kind_registry.scope(both):
         spec = parse_spec(declaring("alpha_block", "beta_block"))
         structure = surface_pump_v3.structure(spec.model)
-    alpha, beta = "tests.alpha@1", "tests.beta@1"
+    alpha, beta = "tests.kind.alpha@1", "tests.kind.beta@1"
     assert structure.free_amount_reads == (alpha, beta)
     order = "must be distinct declared kinds, in canonical \\(sorted ID\\) order"
-    for planted in ((alpha, "tests.undeclared@1"), (alpha, alpha), (beta, alpha)):
+    for planted in ((alpha, "tests.kind.undeclared@1"), (alpha, alpha), (beta, alpha)):
         with pytest.raises(ValueError, match=order):
             replace(structure, free_amount_reads=planted)
     for planted in ([alpha, beta], (alpha, 1), (alpha, "")):

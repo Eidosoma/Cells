@@ -164,14 +164,14 @@ class EngineSpec(NamedTuple):
     capacity_scale: float = 1.0  # A declared factor on it (the head's, e.g. 1/2 per O2).
     parameters: tuple = ()  # ((law parameter, inputs.json parameter or a number), ...)
     roles: tuple = ()  # ((role, the potential set's row), ...)
-    potential_set: str = "beard2005@1"
+    potential_set: str = "cells.potential_set.beard2005@1"
     # ((input, value), ...): inputs the law reads that the references' rows do not give, where its
     # value is independent of them (complex III's Eq. 7: k_Pi3 = k_Pi4, so phi_Pi = 1 at any Pi).
     fixed: tuple = ()
 
 
 # The planned laws (the coordinator, 20 November 2026): complexes I, III and IV as three laws; the
-# synthase, the exchange, the phosphate carrier, K+/H+; held_reductant_supply@1 and the kinase;
+# synthase, the exchange, the phosphate carrier, K+/H+; cells.cycle.held_reductant_supply@1 and the kinase;
 # the per-form face later. The kinds owner's first head fills the IDs, modes, capacities,
 # parameters and role bindings; until then each entry is not built.
 # Filled by the kinds owner's first head (a recorded exception in the lane's file, by the lead's
@@ -181,13 +181,13 @@ _C3_ROLES = (("QH2", "QH2"), ("Q", "Q"), ("c_ox", "cytc_ox"), ("c_red", "cytc_re
              ("Pi", "Pi"))  # fmt: skip
 ENGINE = {
     "complex_I": EngineSpec(
-        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.cycle.nadh_ubiquinone_proton_cycle@1",
         "oxidation",
         "X_C1",
         roles=(("NADH", "NADH"), ("Q", "Q"), ("NAD", "NAD"), ("QH2", "QH2"), ("H", "H")),
     ),
     "complex_III_eq7": EngineSpec(  # Eq. 7 is the law with k_Pi3 = k_Pi4 (the lead's ruling 2).
-        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1",
         "oxidation",
         "X_C3_without",
         parameters=(("k_Pi3", 1.0), ("k_Pi4", 1.0)),
@@ -195,48 +195,48 @@ ENGINE = {
         fixed=(("HPO4_N", 1e-3),),
     ),
     "complex_III_eq24": EngineSpec(
-        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1",
         "oxidation",
         "X_C3",
         parameters=(("k_Pi3", "k_Pi3_mM"), ("k_Pi4", "k_Pi4_mM")),
         roles=_C3_ROLES,
     ),
     "complex_IV": EngineSpec(
-        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.cycle.cytochrome_c_oxygen_proton_cycle@1",
         "reduction",
         "X_C4",
         parameters=(("k_O2", "k_O2"),),
         roles=(("O2", "O2"), ("c_red", "cytc_red"), ("c_ox", "cytc_ox"), ("H", "H")),
     ),
     "atp_synthase": EngineSpec(
-        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.cycle.proton_coupled_atp_synthesis_cycle@1",
         "synthesis",
         "X_F1",
         parameters=(("K_MgADP", "K_MgADP"), ("K_MgATP", "K_MgATP")),
         roles=(("ADP", "ADP"), ("Pi", "Pi"), ("ATP", "ATP"), ("H", "H")),
     ),
     "nucleotide_exchange": EngineSpec(
-        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.cycle.electrogenic_nucleotide_exchange@1",
         "exchange",
         "X_ANT",
         parameters=(("theta_P", "theta_P"), ("k_mADP", "k_mADP")),
         roles=(("ATP", "ATP"), ("ADP", "ADP")),
     ),
     "phosphate_carrier": EngineSpec(
-        "cells.phosphate_proton_symport@1",
+        "cells.cycle.phosphate_proton_symport@1",
         "import",
         "X_PiHt",
         parameters=(("k_PiHt", "k_PiHt_mM"),),
         roles=(("Pi", "Pi"), ("H", "H")),
     ),
     "k_h_exchange": EngineSpec(
-        "cells.potassium_proton_exchange@1",
+        "cells.cycle.potassium_proton_exchange@1",
         "exchange",
         "X_KH",
         roles=(("K", "K"), ("H", "H")),
     ),
     "nadh_supply": EngineSpec(
-        "cells.held_reductant_supply@1",
+        "cells.cycle.held_reductant_supply@1",
         "reduction",
         "X_DH",
         parameters=(("r", "r"), ("k_Pi1", "k_Pi1_mM"), ("k_Pi2", "k_Pi2_mM")),
@@ -250,12 +250,12 @@ ENGINE = {
         ),
     ),
     "adenylate_kinase": EngineSpec(
-        "cells.adenylate_kinase@1",
+        "cells.cycle.adenylate_kinase@1",
         "phosphotransfer",
         "X_AK",
         parameters=(("K_MgATP", "K_MgATP"),),
         roles=(("ADP", "ADP"), ("ATP", "ATP"), ("AMP", "AMP"), ("Mg", "Mg")),
-        potential_set="beard2005@2",
+        potential_set="cells.potential_set.beard2005@2",
     ),
 }
 

@@ -541,7 +541,7 @@ def smoke_definition(source, *, worlds_per_arm, batch_worlds, workers_per_gpu, m
             {
                 "id": name,
                 "definition": {
-                    "model": "ionic_worlds@1",
+                    "model": "cells.model.ionic_worlds@1",
                     "simulation": simulation,
                     "window_steps": 200,
                     "max_working_bytes": 2 * 1024**3,

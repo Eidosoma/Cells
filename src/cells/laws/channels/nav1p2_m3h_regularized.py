@@ -1,10 +1,10 @@
-"""nav1p2_m3h_regularized@1: NaV1.2-type sodium channel gating, the law and its declaration
+"""cells.channel.nav1p2_m3h_regularized@1: NaV1.2-type sodium channel gating, the law and its declaration
 on @3.
 
 Two gates, activation m and inactivation h, follow BETSE v1.5.0's Nav1p2 coefficients, with its
 voltage shifts and m³ h opening; removable rate singularities take their analytic limits (the
 Bernoulli function of laws/electrochemistry.py). This is a continuous-time law, not the native
-discrete update clock. Channel code 2 of resolved_pump_tissue@3 (cells.channel_law@1),
+discrete update clock. Channel code 2 of cells.model.resolved_pump_tissue@3 (cells.channel_law@1),
 registered by the law registry's loader (docs/CORE_SEAMS_DESIGN.md §8.2). Moved from
 laws/channels/sodium_channels.py, which re-imports these names.
 """
@@ -15,7 +15,7 @@ from cells.laws.channels.kv1p5_mh import VOLTAGE_DOMAIN_V  # @3's channel domain
 from cells.laws.electrochemistry import bernoulli
 from cells.modules import ChannelLaw
 
-LAW_ID = "nav1p2_m3h_regularized@1"
+LAW_ID = "cells.channel.nav1p2_m3h_regularized@1"
 RK4_STEP_S = 2.5e-6  # The resolved channel family's qualified RK4 bound with NaV1.2.
 
 
@@ -53,5 +53,5 @@ LAW = ChannelLaw(
     RK4_STEP_S,
     nav1p2_kinetics,
     opening,
-    host="cells.resolved_pump_tissue@3",
+    host="cells.model.resolved_pump_tissue@3",
 )

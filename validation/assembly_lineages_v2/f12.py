@@ -1,4 +1,4 @@
-"""F12 on cells.assembly_lineages@2's saved bundles: a lineage's inheritance marks from its fission
+"""F12 on cells.model.assembly_lineages@2's saved bundles: a lineage's inheritance marks from its fission
 table and its relations, and the break-and-renewal event (analysis, not engine physics).
 
 It reads a single-lineage division bundle (records.write_run's: records.npz, run.json and

@@ -1,4 +1,4 @@
-"""k_anion_symport_mass_action@1: KCC-type electroneutral K+/anion symport.
+"""cells.operator.k_anion_symport_mass_action@1: KCC-type electroneutral K+/anion symport.
 
 Thermodynamics: the heat 1e-3 J A is never negative, J vanishes exactly where
 the concentration products are equal and changes sign across that point, and

@@ -1,5 +1,8 @@
 # Excitable tissue: design (proposed)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Accepted narrowly, 14 November 2026 (the lead, D170; the advisor reviewed the ruling after it
 landed and confirmed it): for M1 and M2 on @3
 only.**

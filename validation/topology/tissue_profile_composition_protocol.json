@@ -2,7 +2,7 @@
   "kind": "cells.resolved_composed_profile_preparation_contract@1",
   "bridge_id": "resolved_composed_static_profiles@1",
   "supported_schema_map": {
-    "resolved_tissue@2": {
+    "cells.model.resolved_tissue@2": {
       "family": "ionic_channels",
       "path": [],
       "ionic_id": null
@@ -32,7 +32,7 @@
       "path": [],
       "ionic_id": null
     },
-    "resolved_tissue@8": {
+    "cells.model.resolved_tissue@8": {
       "family": "ionic_channels",
       "path": [],
       "ionic_id": null
@@ -57,7 +57,7 @@
       "path": [
         "ionic"
       ],
-      "ionic_id": "resolved_tissue@2"
+      "ionic_id": "cells.model.resolved_tissue@2"
     },
     "resolved_calcium@2": {
       "family": "calcium_er",
@@ -99,7 +99,7 @@
       "path": [
         "ionic"
       ],
-      "ionic_id": "resolved_tissue@8"
+      "ionic_id": "cells.model.resolved_tissue@8"
     },
     "resolved_calcium@8": {
       "family": "calcium_er",
@@ -134,7 +134,7 @@
       "path": [
         "ionic"
       ],
-      "ionic_id": "resolved_tissue@8"
+      "ionic_id": "cells.model.resolved_tissue@8"
     },
     "resolved_calcium_energy@2": {
       "family": "calcium_finite_fuel",
@@ -703,7 +703,7 @@
     "Explicit thickness and one reciprocal membrane pair per existing physical edge; no aggregation or inferred geometry",
     "No dynamic interventions, pressure/ECM transport, GPU or compiled/full trajectory qualification",
     "No shared dispatch/PROGRESS edits, detached-job polling or automatic follow-up",
-    "Intermediate resolved_tissue@2..@11 use the complete channel/pump/junction parent; passive geometry projection never replaces its physical field or flux."
+    "Intermediate cells.model.resolved_tissue@2..@11 use the complete channel/pump/junction parent; passive geometry projection never replaces its physical field or flux."
   ],
   "automatic_followup": false
 }

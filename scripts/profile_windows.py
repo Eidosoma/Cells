@@ -1,6 +1,6 @@
 """Separate-process bounded CPU window profiles; no throughput pass threshold.
 
-Twelve workers, two workloads, two horizons, full/32/256-step policies. Each
+Six workers, one workload, two horizons, full/32/256-step policies. Each
 worker executes cold, warm-up, three warm calls, and an untimed full-parity digest
 pass. RSS for the timed calls is captured before artifact/parity work. No other
 verification workload should run during the profile.
@@ -28,7 +28,7 @@ from cells.records.io import _sha256 as sha  # noqa: E402
 from cells.records.io import _write_json as write_json  # noqa: E402
 from cells.records.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
 from cells.records.window_io import write_windowed_run  # noqa: E402
-from scripts.profile_worlds import workload  # noqa: E402
+from scripts.profile_worlds import WORKLOADS, workload  # noqa: E402
 
 
 def definition(name, horizon):
@@ -136,7 +136,7 @@ def worker(args):
 def profile(output):
     output.mkdir(parents=True, exist_ok=False)
     records, comparison = {}, {}
-    for name, horizons in (("graph32", (1, 100)), ("source_pair", (1, 10))):
+    for name, horizons in (("graph32", (1, 100)),):
         for horizon in horizons:
             outcomes = {}
             for width in (0, 32, 256):
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--worker", action="store_true")
-    parser.add_argument("--workload", choices=("graph32", "source_pair"))
+    parser.add_argument("--workload", choices=WORKLOADS)
     parser.add_argument("--horizon", type=int)
     parser.add_argument("--width", type=int)
     args = parser.parse_args()

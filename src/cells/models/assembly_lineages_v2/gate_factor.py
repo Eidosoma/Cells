@@ -1,4 +1,4 @@
-"""cells.gate_factor@1: a gate's catalysis, a factor over the gate's own forms (FR-21; D244).
+"""cells.rate_factor.gate_factor@1: a gate's catalysis, a factor over the gate's own forms (FR-21; D244).
 
 The design is docs/ASSEMBLY_SHELL_DESIGN.md §4.3 (option G2), and the rulings are D244 and D246.
 
@@ -17,11 +17,11 @@ ill-conditioned case).
 - **Evaluated on m only,** so both directions of a pair carry the same factor and the equilibrium
   is unchanged (transition-state theory), as the transition-state factor's is.
 - **It is also the right open fraction for a pore on a bilayer:** no feature here is a shell's.
-- **Its large-count limit** (cells.rate_equations@1; FR-47, D323) is log_factor itself on the
+- **Its large-count limit** (cells.assembly_representation.rate_equations@1; FR-47, D323) is log_factor itself on the
   continuous view, where nothing is consumed, so m = n and the factor is g(n), as the
   transition-state factor's limit is.
 
-Data, per world (`rate_factor`): `{"law": "cells.gate_factor@1", "forms": ["G", "H"],
+Data, per world (`rate_factor`): `{"law": "cells.rate_factor.gate_factor@1", "forms": ["G", "H"],
 "entries": [{"form": "G", "step": "entry", "ddG_kT": 2.0}, ...]}`. The forms are distinct
 membrane species. Each entry names a form and a declared step that touches the membrane (the
 fuel note's L1: a step wholly in the pool or in the lumen is refused), each pair at most once,
@@ -151,7 +151,7 @@ LAW = law_registry.BUILTIN.register(
         provenance="cited",
         source=Citation(
             "docs/ASSEMBLY_SHELL_DESIGN.md §4.3, option G2 (FR-21; D244, D246); transition-state "
-            "theory as cells.transition_state_factor@1 cites it",
+            "theory as cells.rate_factor.transition_state_factor@1 cites it",
             "a gate's forms speed or slow a step by ddG; its open fraction is over its own forms",
             "no numbers taken",
             ("the fractions are over the gate's declared forms only, not every wall molecule",),

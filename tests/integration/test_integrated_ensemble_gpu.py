@@ -1,6 +1,7 @@
-"""Real GPU scheduling and exact resume for both integrated model families."""
+"""Real GPU scheduling and exact resume of ionic worlds."""
 
 import json
+import math
 import os
 import signal
 import subprocess
@@ -28,9 +29,8 @@ def invoke(arguments):
     return json.loads(result.stdout)
 
 
-@pytest.mark.parametrize("family", ["ionic", "assembly_cell"])
-def test_two_workers_complete_integrated_worlds(tmp_path, family):
-    definition = experiment(family, backend="gpu", worlds=4, width=2)
+def test_two_workers_complete_integrated_worlds(tmp_path):
+    definition = experiment(backend="gpu", worlds=4, width=2)
     definition["execution"]["workers_per_gpu"] = 2
     config = tmp_path / "definition.json"
     config.write_text(json.dumps(definition))
@@ -42,12 +42,8 @@ def test_two_workers_complete_integrated_worlds(tmp_path, family):
     assert result["throughput"]["world_steps_per_allocated_gpu_hour"] > 0
     arm = result["arms"]["active"]
     assert arm["ionic_accounting"]["max_global_balance_error_fmol"] <= 2e-11
-    if family == "ionic":
-        assert "completion_probability" not in arm
-        assert result["throughput"]["events_per_allocated_gpu_hour"] is None
-    else:
-        assert arm["material_residual_trimers"] == 0
-        assert arm["availability_exposure_total_s"] >= 0
+    assert "completion_probability" not in arm
+    assert result["throughput"]["events_per_allocated_gpu_hour"] is None
     balanced = tmp_path / "balanced.json"
     invoke(
         [
@@ -66,11 +62,13 @@ def test_two_workers_complete_integrated_worlds(tmp_path, family):
     assert json.loads(balanced.read_text())["arms"][0]["worlds"] == 4
 
 
-@pytest.mark.parametrize("family", ["ionic", "assembly_cell"])
-def test_signal_pause_and_exact_integrated_resume(tmp_path, family):
+def test_signal_pause_and_exact_integrated_resume(tmp_path):
     from cells.ensemble.families import failure_state, runtime_for
 
-    definition = experiment(family, backend="gpu", worlds=2, width=2, end=0.2)
+    definition = experiment(backend="gpu", worlds=2, width=2, end=0.2)
+    (arm,) = definition["arms"]
+    execution = arm["definition"]["simulation"]["execution"]
+    execution["max_steps"] = math.ceil(0.2 / execution["dt"])  # Long enough to be paused in.
     config = tmp_path / "definition.json"
     config.write_text(json.dumps(definition))
     first, second = tmp_path / "first", tmp_path / "second"

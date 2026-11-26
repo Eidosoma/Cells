@@ -1,4 +1,4 @@
-"""resolved_pump_composite@1: resolved_pump_tissue@3's own step plus declared operators.
+"""cells.model.resolved_pump_composite@1: cells.model.resolved_pump_tissue@3's own step plus declared operators.
 
 Design: docs/CELL_DIVISION_DESIGN.md §3 (D142, D143). Definition:
 definitions/pump_composite_spec.py. The inner model's names live only in the entity
@@ -31,9 +31,9 @@ RK4 inner steps (reference runs; a contract addition, §3.4 covers the split
 form): when an operator's split part is declared "coupled" (water) or an
 in-step process is present, RK4 integrates the coupled right-hand side (the inner
 readouts at the view, with the process, plus the operators' rates) unsplit, as
-resolved_pump_water@1 does; such compositions refuse event maps, split parts kept
+cells.model.resolved_pump_water@1 does; such compositions refuse event maps, split parts kept
 "split" and integer state. Otherwise the events and exact half-steps stay around
-the inner RK4 step, as resolved_pump_replacement@1 does.
+the inner RK4 step, as cells.model.resolved_pump_replacement@1 does.
 
 Checks: host and device use the inner model's own row checks
 (surface_pump.checked_rows, surface_pump_checks.row_checks, surface_pump.
@@ -206,7 +206,7 @@ def self_moved_targets(spec_model):
 
 # The laws whose events change which occupant a slot holds (D150's occupant tables switch at
 # their times): observe_history's event rows report the departing occupant.
-OCCUPANT_EVENTS = ("scheduled_cell_replacement@1",)
+OCCUPANT_EVENTS = ("cells.operator.scheduled_cell_replacement@1",)
 
 
 def occupant_event_times(spec):
@@ -224,17 +224,17 @@ def occupant_event_times(spec):
 # (channel_block_*). So a slot they rewrite would keep its old block, and a blocked population
 # beside one is refused by name until a world qualifies the pair.
 SLOT_WRITERS = (
-    "scheduled_cell_replacement@1",
-    "scheduled_cell_replacement@2",
-    "isopotential_partition@1",
-    "scheduled_membrane_insertion@1",
-    "scheduled_membrane_insertion@2",
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+    "cells.operator.isopotential_partition@1",
+    "cells.operator.scheduled_membrane_insertion@1",
+    "cells.operator.scheduled_membrane_insertion@2",
 )
 
 
 def block_slot_errors(pairs, spec):
     """FR-51: one message per slot-rewriting operator (SLOT_WRITERS) beside a blocked population
-    (open_channel_block_weighted_modes@1); [] without a block."""
+    (cells.channel_block.open_channel_block_weighted_modes@1); [] without a block."""
     blocked = [c.id for c in getattr(spec.model, "channels", ()) if getattr(c, "block", None)]
     if not blocked:
         return []
@@ -517,7 +517,7 @@ def slot_mask_errors(entries, spec, p):
 # "outside")), so it is taken to move its species at every node of that kind. The species
 # registry's moved_in_step is not read here: it joins the inner movers by node kind, and an inner
 # route at another node would be a false refusal.
-PASSIVE_ROUTES_ID = "cells.passive_routes@1"
+PASSIVE_ROUTES_ID = "cells.kind.passive_routes@1"
 
 
 def operator_writers(entries, spec):
@@ -596,7 +596,7 @@ def exact_row_errors(entries, spec, p):
 
 def exact_face_row_errors(entries, spec, structure):
     """D280, the operators' half for @3's faces: where the inner structure picks
-    exact_free_energy_heat@1 for faces (surface_pump_v3.exact_faces), no operator's in-step
+    cells.heat.exact_free_energy_heat@1 for faces (surface_pump_v3.exact_faces), no operator's in-step
     process writes a row a face carries (a species with a positive diffusivity, at either end
     node), as exact_row_errors holds for exact passive routes: the face's exact share would
     average over a change it did not make."""
@@ -855,7 +855,11 @@ def structure_errors(inner, operators):
     # presence. The core's presence gate, which makes an entity on a closed host absent, acts only
     # where the composition declares a closer (CLOSES: @3's padding_fill), so beside a slot changer
     # with no closer declared (an activity-mask provider alone) a kind with entities stays refused.
+    # A slot changer is refused beside a routed slot that closes a loop on its own gate, whatever
+    # its kinds declare: the loops' layout (surface_pump_v3.LOOP_LAYOUT_FIELDS) is the core's, on no
+    # kind, so the lifecycle acts on none of it and it would go stale.
     kinds = tuple(getattr(inner, "KINDS", ()))
+    loops = getattr(getattr(inner, "structure", None), "loops", ())
     declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
     masks = set(getattr(inner, "MASK_FIELDS", ()))
     blocked = _kinds_lifecycle(inner, kinds)
@@ -876,6 +880,12 @@ def structure_errors(inner, operators):
                 for kind_id, kind in bound.items()
                 if kind.one_way_records
             )
+            if loops:
+                errors.append(
+                    f"{op.LAW_ID} opens, closes or retires slots, and a routed slot closes a loop "
+                    "on its own gate: no lifecycle acts on the loops' layout, so it is refused "
+                    "beside one (fails closed)"
+                )
         required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
         for kind_id in sorted(required - declared):
             errors.append(
@@ -1978,7 +1988,7 @@ class Composition:
         outward-positive) at the patch voltages given [membrane] (V; a scalar applies to every
         patch), at the composite's clamp_inputs; @3 then applies its structure's stage read and
         routing door. Given the stored control and layout instead, @3's helper loses every
-        operator factor: a population held at 0.5 by species_regulated_availability@1 read
+        operator factor: a population held at 0.5 by cells.operator.species_regulated_availability@1 read
         11.10328 pA at -50 mV, where the composite runs at 5.55164 pA. Pure: it records nothing.
         block (FR-51): also the blocked populations' terms at the same inputs, as @3 gives them."""
         inner_state, inner_control, view = self.clamp_inputs(state, control, p, xp=xp)
@@ -1989,7 +1999,7 @@ class Composition:
 
     def clamped_kind(self, function, state, control, p, voltages_V, *, xp=np):
         """FR-34's kinds in a composite (D265 finding 1's check: the same gap): a kind's clamped
-        evaluation, cells.passive_routes@1's clamped_flux or cells.transporter@1's clamped_rates,
+        evaluation, cells.kind.passive_routes@1's clamped_flux or cells.kind.transporter@1's clamped_rates,
         at the composite's clamp_inputs after @3's stage read and routing door of its structure,
         the path @3's readouts takes to the kinds' rates. The kinds' own controls take no operator
         factor today (CONTROL_FACTORS name junction and channel only), but their read, the door

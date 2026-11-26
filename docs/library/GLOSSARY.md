@@ -51,7 +51,7 @@ availability schedule.
 
 <!-- generated: used-by availability -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.assembly_observable.root_component_has_cycle@1`](cells/laws/assembly_observable.root_component_has_cycle@1.md), [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md), [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md) and [`cells.operator.ideal_osmosis_linear_compliance_water@1`](cells/operators/operator.ideal_osmosis_linear_compliance_water@1.md).
 
 <!-- /generated -->
 
@@ -112,7 +112,7 @@ electrochemical gradient. Its gates decide when it is open.
 
 <!-- generated: used-by channel -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) and [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md), [`cells.assembly_observable.root_component_has_cycle@1`](cells/laws/assembly_observable.root_component_has_cycle@1.md), [`cells.channel.cav1p2_m2h@1`](cells/laws/channel.cav1p2_m2h@1.md), [`cells.channel.kv1p5_mh@1`](cells/laws/channel.kv1p5_mh@1.md), [`cells.channel_block.open_channel_block_weighted_modes@1`](cells/laws/channel_block.open_channel_block_weighted_modes@1.md) and [`cells.transfer_factor.hill_product_factor@1`](cells/laws/transfer_factor.hill_product_factor@1.md).
 
 <!-- /generated -->
 
@@ -142,13 +142,13 @@ operator uses a linear law, in which a stiffness sets the pressure each fraction
 
 <!-- generated: used-by compliance -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.operator.ideal_osmosis_linear_compliance_water@1`](cells/operators/operator.ideal_osmosis_linear_compliance_water@1.md).
 
 <!-- /generated -->
 
 ### Composite
 
-`resolved_pump_composite@1`: the inner model, plus an ordered list of operators that a definition
+`cells.model.resolved_pump_composite@1`: the inner model, plus an ordered list of operators that a definition
 chooses.
 
 - **In other fields:** a model built from modules (biology, chemistry); operator splitting around
@@ -164,7 +164,7 @@ chooses.
 ### Composition
 
 The composite with a fixed list of operators, kept under an older model ID such as
-`resolved_pump_water@1`. Its definitions are read as the composite's.
+`cells.model.resolved_pump_water@1`. Its definitions are read as the composite's.
 
 - **In other fields:** a named configuration (computing).
 - **Cells' word;** see [the composite's guide](../PUMP_COMPOSITE.md).
@@ -188,7 +188,7 @@ concentrations on both sides.
 
 <!-- generated: used-by constant-field-flux -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.channel.cav1p2_m2h@1`](cells/laws/channel.cav1p2_m2h@1.md) and [`cells.channel.kv1p5_mh@1`](cells/laws/channel.kv1p5_mh@1.md).
 
 <!-- /generated -->
 
@@ -205,7 +205,7 @@ is negative.
 
 <!-- generated: used-by cycle-free-energy -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.kind.transporter@1`](cells/kinds/kind.transporter@1.md), [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md) and [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -220,7 +220,7 @@ schedules) and its execution (solver and step). Definitions hold values; models 
 
 <!-- generated: used-by definition -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md) and [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md).
 
 <!-- /generated -->
 
@@ -280,7 +280,23 @@ or out. A held bath is not one.
 
 <!-- generated: used-by finite-node -->
 
-- **Used by:** [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md) and [`cells.scheduled_compartment_wash@1`](cells/operators/scheduled_compartment_wash@1.md).
+- **Used by:** [`cells.operator.neutral_arrival_labels@1`](cells/operators/operator.neutral_arrival_labels@1.md) and [`cells.operator.scheduled_compartment_wash@1`](cells/operators/operator.scheduled_compartment_wash@1.md).
+
+<!-- /generated -->
+
+### Floating node
+
+A finite space that is not a cell, such as a closed space inside one, whose potential nothing
+holds: it is no held bath, it is not the world's zero of potential, and no face names it. Its
+voltage follows the charge on its own patches, so a long step is refused at those patches.
+
+- **In other fields:** an organelle's inside, or any closed space (biology); a compartment with no
+  clamp (chemistry, physics); a free node of the capacitor network (computing).
+- **Cells' word;** see [the calcium note](../CALCIUM_STORE_AND_CHANNELS_DESIGN.md).
+
+<!-- generated: used-by floating-node -->
+
+- **Used by:** no page yet.
 
 <!-- /generated -->
 
@@ -307,7 +323,7 @@ population's channels in which that gate is open: a number from 0 to 1.
 
 <!-- generated: used-by gate -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.channel.cav1p2_m2h@1`](cells/laws/channel.cav1p2_m2h@1.md) and [`cells.channel.kv1p5_mh@1`](cells/laws/channel.kv1p5_mh@1.md).
 
 <!-- /generated -->
 
@@ -323,7 +339,7 @@ piece's heat, so that the energy ledger closes.
 
 <!-- generated: used-by heat -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.kind.transporter@1`](cells/kinds/kind.transporter@1.md), [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md) and [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -339,7 +355,7 @@ What flows into or out of it is booked as supply, with its work.
 
 <!-- generated: used-by held-bath -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md) and [`cells.scheduled_compartment_wash@1`](cells/operators/scheduled_compartment_wash@1.md).
+- **Used by:** [`cells.operator.ideal_osmosis_linear_compliance_water@1`](cells/operators/operator.ideal_osmosis_linear_compliance_water@1.md) and [`cells.operator.scheduled_compartment_wash@1`](cells/operators/operator.scheduled_compartment_wash@1.md).
 
 <!-- /generated -->
 
@@ -355,7 +371,7 @@ by interface, and keeps their state.
 
 <!-- generated: used-by host -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.transfer_factor.hill_product_factor@1`](cells/laws/transfer_factor.hill_product_factor@1.md).
 
 <!-- /generated -->
 
@@ -371,13 +387,13 @@ Aquaporins raise it.
 
 <!-- generated: used-by hydraulic-permeability -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.operator.ideal_osmosis_linear_compliance_water@1`](cells/operators/operator.ideal_osmosis_linear_compliance_water@1.md).
 
 <!-- /generated -->
 
 ### ID and version
 
-Every piece's name, written `namespace.name@major`, such as `cells.kv1p5_mh@1`. A bare ID is in
+Every piece's name, written `namespace.name@major`, such as `cells.channel.kv1p5_mh@1`. A bare ID is in
 the `cells` namespace. A piece whose behaviour changes takes a new ID.
 
 - **In other fields:** a model's name and version (all four).
@@ -391,7 +407,7 @@ the `cells` namespace. A piece whose behaviour changes takes a new ID.
 
 ### Inner model
 
-`resolved_pump_tissue@3`: Cells' one modular model of cells, their membranes, the junctions
+`cells.model.resolved_pump_tissue@3`: Cells' one modular model of cells, their membranes, the junctions
 between them and the spaces outside them. The composite wraps its step.
 
 - **In other fields:** a tissue model (biology); a reaction–transport network (chemistry); a
@@ -430,7 +446,7 @@ moves it in the inventory.
 
 <!-- generated: used-by inventory -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.kind.transporter@1`](cells/kinds/kind.transporter@1.md), [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md) and [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -497,7 +513,7 @@ ATP-driven transporters. A definition declares it under a key of its own.
 
 <!-- generated: used-by kind -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md) and [`cells.kind.transporter@1`](cells/kinds/kind.transporter@1.md).
 
 <!-- /generated -->
 
@@ -512,7 +528,7 @@ host keeps its state.
 
 <!-- generated: used-by law -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md) and [`cells.transfer_factor.hill_product_factor@1`](cells/laws/transfer_factor.hill_product_factor@1.md).
 
 <!-- /generated -->
 
@@ -527,7 +543,7 @@ from the bookings at every step and held to a rounding bound.
 
 <!-- generated: used-by ledger -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.kind.transporter@1`](cells/kinds/kind.transporter@1.md), [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md) and [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -543,7 +559,7 @@ millivolts.
 
 <!-- generated: used-by membrane-voltage -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md) and [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
+- **Used by:** [`cells.channel.cav1p2_m2h@1`](cells/laws/channel.cav1p2_m2h@1.md), [`cells.channel.kv1p5_mh@1`](cells/laws/channel.kv1p5_mh@1.md), [`cells.channel_block.open_channel_block_weighted_modes@1`](cells/laws/channel_block.open_channel_block_weighted_modes@1.md), [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md) and [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -593,7 +609,7 @@ A well-mixed compartment: a cell, or a space outside the cells.
 
 <!-- generated: used-by node -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md).
 
 <!-- /generated -->
 
@@ -608,7 +624,7 @@ taken in the law's order.
 
 <!-- generated: used-by open-fraction -->
 
-- **Used by:** [`cells.kv1p5_mh@1`](cells/laws/kv1p5_mh@1.md).
+- **Used by:** [`cells.channel.cav1p2_m2h@1`](cells/laws/channel.cav1p2_m2h@1.md) and [`cells.channel.kv1p5_mh@1`](cells/laws/channel.kv1p5_mh@1.md).
 
 <!-- /generated -->
 
@@ -623,7 +639,7 @@ as osmotic water flow. A definition lists the operators it uses, in order.
 
 <!-- generated: used-by operator -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md), [`cells.integer_unit_population@1`](cells/operators/integer_unit_population@1.md), [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md) and [`cells.scheduled_compartment_wash@1`](cells/operators/scheduled_compartment_wash@1.md).
+- **Used by:** [`cells.operator.ideal_osmosis_linear_compliance_water@1`](cells/operators/operator.ideal_osmosis_linear_compliance_water@1.md), [`cells.operator.integer_unit_population@1`](cells/operators/operator.integer_unit_population@1.md), [`cells.operator.neutral_arrival_labels@1`](cells/operators/operator.neutral_arrival_labels@1.md) and [`cells.operator.scheduled_compartment_wash@1`](cells/operators/operator.scheduled_compartment_wash@1.md).
 
 <!-- /generated -->
 
@@ -639,7 +655,7 @@ particles.
 
 <!-- generated: used-by osmotic-pressure -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.operator.ideal_osmosis_linear_compliance_water@1`](cells/operators/operator.ideal_osmosis_linear_compliance_water@1.md).
 
 <!-- /generated -->
 
@@ -677,7 +693,7 @@ sit.
 
 <!-- generated: used-by patch -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md) and [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -706,7 +722,7 @@ channel's main ion.
 
 <!-- generated: used-by permeant -->
 
-- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
+- **Used by:** [`cells.channel_block.open_channel_block_weighted_modes@1`](cells/laws/channel_block.open_channel_block_weighted_modes@1.md).
 
 <!-- /generated -->
 
@@ -768,7 +784,7 @@ makes comes with one (D187).
 
 <!-- generated: used-by planted-error -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md) and [`cells.transfer_factor.hill_product_factor@1`](cells/laws/transfer_factor.hill_product_factor@1.md).
 
 <!-- /generated -->
 
@@ -782,7 +798,7 @@ A group of identical channels or pumps on one patch, sharing a law, its gates an
 
 <!-- generated: used-by population -->
 
-- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md).
+- **Used by:** [`cells.assembly_observable.root_component_has_cycle@1`](cells/laws/assembly_observable.root_component_has_cycle@1.md), [`cells.channel_block.open_channel_block_weighted_modes@1`](cells/laws/channel_block.open_channel_block_weighted_modes@1.md), [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md) and [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -796,7 +812,7 @@ a fuel, usually ATP.
 
 <!-- generated: used-by pump -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.kind.transporter@1`](cells/kinds/kind.transporter@1.md).
 
 <!-- /generated -->
 
@@ -823,7 +839,7 @@ rather than clipping a value or repairing a state. A refused step returns its st
 
 <!-- generated: used-by refusal -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md).
 
 <!-- /generated -->
 
@@ -835,7 +851,7 @@ One species at one node: an entry of the inventory.
 
 <!-- generated: used-by species-row -->
 
-- **Used by:** [`cells.open_channel_block_weighted_modes@1`](cells/laws/open_channel_block_weighted_modes@1.md) and [`cells.neutral_arrival_labels@1`](cells/operators/neutral_arrival_labels@1.md).
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md), [`cells.channel_block.open_channel_block_weighted_modes@1`](cells/laws/channel_block.open_channel_block_weighted_modes@1.md), [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md), [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md) and [`cells.operator.neutral_arrival_labels@1`](cells/operators/operator.neutral_arrival_labels@1.md).
 
 <!-- /generated -->
 
@@ -850,7 +866,7 @@ order, as the water operator's half-steps do around the inner model's step.
 
 <!-- generated: used-by split-step -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.operator.ideal_osmosis_linear_compliance_water@1`](cells/operators/operator.ideal_osmosis_linear_compliance_water@1.md).
 
 <!-- /generated -->
 
@@ -863,7 +879,7 @@ One evaluation of the rates within a step. A step method combines several stages
 
 <!-- generated: used-by stage -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md), [`cells.channel.cav1p2_m2h@1`](cells/laws/channel.cav1p2_m2h@1.md) and [`cells.cycle.sodium_calcium_exchange_symmetric_barrier@1`](cells/laws/cycle.sodium_calcium_exchange_symmetric_barrier@1.md).
 
 <!-- /generated -->
 
@@ -904,7 +920,24 @@ two potassium ions in for each cycle of the sodium–potassium pump.
 
 <!-- generated: used-by stoichiometry -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.kind.transporter@1`](cells/kinds/kind.transporter@1.md).
+
+<!-- /generated -->
+
+### Store
+
+A closed space inside a cell where calcium is kept far more concentrated than in the cell's fluid
+and from which it can be released, such as the endoplasmic reticulum. In Cells it is a finite space
+that one cell owns, behind one patch.
+
+- **In other fields:** the endoplasmic or sarcoplasmic reticulum (biology); a compartment with its
+  own volume and concentrations (chemistry); a capacitor node (physics); a node with one patch
+  (computing).
+- **Cells' word;** see [the closed-compartment design](../CLOSED_COMPARTMENT_DESIGN.md).
+
+<!-- generated: used-by store -->
+
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md), [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md), [`cells.cycle.electroneutral_symport_reversible_tanh@1`](cells/laws/cycle.electroneutral_symport_reversible_tanh@1.md), [`cells.cycle.na_k_2anion_symport_reversible_tanh@1`](cells/laws/cycle.na_k_2anion_symport_reversible_tanh@1.md) and [`cells.transfer_factor.hill_product_factor@1`](cells/laws/transfer_factor.hill_product_factor@1.md).
 
 <!-- /generated -->
 
@@ -917,7 +950,7 @@ chloride.
 
 <!-- generated: used-by valence -->
 
-- **Used by:** no page yet.
+- **Used by:** [`cells.kind.species_condition@1`](cells/kinds/kind.species_condition@1.md), [`cells.channel.cav1p2_m2h@1`](cells/laws/channel.cav1p2_m2h@1.md) and [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md).
 
 <!-- /generated -->
 
@@ -932,7 +965,7 @@ from higher water potential to lower.
 
 <!-- generated: used-by water-potential -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.operator.ideal_osmosis_linear_compliance_water@1`](cells/operators/operator.ideal_osmosis_linear_compliance_water@1.md).
 
 <!-- /generated -->
 
@@ -947,7 +980,7 @@ provides. Cells books it apart from heat.
 
 <!-- generated: used-by work -->
 
-- **Used by:** [`cells.transporter@1`](cells/kinds/transporter@1.md).
+- **Used by:** [`cells.kind.transporter@1`](cells/kinds/kind.transporter@1.md) and [`cells.cycle.atp_driven_transporter_mass_action_positive@2`](cells/laws/cycle.atp_driven_transporter_mass_action_positive@2.md).
 
 <!-- /generated -->
 

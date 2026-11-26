@@ -21,12 +21,12 @@ from cells.numerics import surface_transport as surface
 from cells.numerics.extracellular_field import logmean
 from cells.numerics.tissue_field import _bernoulli_derivative
 
-LAW_ID = "resolved_capacitor_components_current_continuity@1"
-SOLVER_ID = "capacitive_reduction_gauged_damped_newton@1"
+LAW_ID = "cells.field_closure.resolved_capacitor_components_current_continuity@1"
+SOLVER_ID = "cells.solver.capacitive_reduction_gauged_damped_newton@1"
 # Same law and Newton; the constant capacitor reduction is Cholesky-factored
 # once at bind, so each stage needs two triangular solves instead of two dense
 # LU solves. This removes the dense O(N^3)-per-stage bound of version 1.
-FACTORED_SOLVER_ID = "capacitive_reduction_gauged_damped_newton@2"
+FACTORED_SOLVER_ID = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
 # Version 2 plus convergence at the attainable rounding floor of the offset
 # Newton. Its iterations are version 2's, so wherever version 2 converges the
 # result is bitwise the same; where version 2 stops above NEWTON_TARGET (line
@@ -40,7 +40,7 @@ FACTORED_SOLVER_ID = "capacitive_reduction_gauged_damped_newton@2"
 # states: 1.2 eps x the sum under XLA and numpy alike, while the norm against
 # CURRENT_ATOL_A differed 5x between them. 1e3 ulps is a potential error of
 # about 1e-14 V; a solve whose residual is above it is still refused.
-FLOOR_SOLVER_ID = "capacitive_reduction_gauged_damped_newton@3"
+FLOOR_SOLVER_ID = "cells.solver.capacitive_reduction_gauged_damped_newton@3"
 CURRENT_FLOOR_ULPS = 1e3
 CURRENT_ATOL_A = 1e-23
 CURRENT_RTOL = 2e-12
@@ -78,7 +78,7 @@ COMPONENT_STEP_ROUNDING = 2.5
 # components and x routes). Its bounds: SPARSE_MAX_NODES nodes, and SPARSE_MAX_ENTRIES entries in
 # its bound arrays together (plans, factors and the floating basis), so the factor's fill, not the
 # node count, sets the size it admits (§8.2).
-SPARSE_SOLVER_ID = "sparse_capacitive_reduction_gauged_damped_newton@1"
+SPARSE_SOLVER_ID = "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
 MAX_NODES = 256
 FACTORED_MAX_NODES = 2048
 SPARSE_MAX_NODES = 65536
@@ -217,11 +217,11 @@ class Values(NamedTuple):
     converged: object
 
 
-# The forms faces' return paths (logmean_electrodiffusion_forms@1; models/surface_pump_v3): each a
+# The forms faces' return paths (cells.route.logmean_electrodiffusion_forms@1; models/surface_pump_v3): each a
 # charged path between two outside nodes (index pairs) that the layout's faces do not hold, since
 # forms faces are their own entity set. bind's connectivity check counts them, so a floating
 # component whose only path to a clamp is a forms face is admitted. Empty outside return_paths,
-# which resolved_pump_tissue@3's initial_values enters and leaves around its one base binding, so
+# which cells.model.resolved_pump_tissue@3's initial_values enters and leaves around its one base binding, so
 # every other binding is today's. bind is its only reader.
 _RETURN_PATHS = contextvars.ContextVar("forms_face_return_paths", default=())
 
@@ -235,6 +235,19 @@ def return_paths(pairs):
         yield
     finally:
         _RETURN_PATHS.reset(token)
+
+
+def representative(members, first_outside, reservoirs, gauge):
+    """The node that bind fixes in one capacitor component (host): the gauge where the component
+    holds it, else its lowest outside node, the first in the definition's order; None where it
+    holds a held bath, whose imposed potential fixes the component. members: the component's node
+    indices, its cells' and its outside nodes' (from first_outside on); reservoirs and gauge: the
+    held baths' and the gauge's, as sets. cells.operator.cell_owned_compartments@1 applies it to the declared
+    topology (its refusal 6); representatives reads the fixed nodes from a bound layout."""
+    if reservoirs.intersection(members):
+        return None
+    zero = gauge.intersection(members)
+    return next(iter(zero)) if zero else min(i for i in members if i >= first_outside)
 
 
 def bind(layout, gauge_mask, *, solver=SOLVER_ID):
@@ -297,13 +310,12 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     fixed[list(reservoirs)] = True
     floating, free = [], []
     for members in groups.values():
-        if reservoirs.intersection(members):
+        chosen = representative(members, n, reservoirs, gauge_nodes)
+        if chosen is None:
             continue
-        choices = gauge_nodes.intersection(members)
-        representative = next(iter(choices)) if choices else min(i for i in members if i >= n)
-        fixed[representative] = True
+        fixed[chosen] = True
         floating.append(np.isin(np.arange(size), members).astype(float))
-        free.append(not bool(choices))
+        free.append(chosen not in gauge_nodes)
     basis = np.asarray(floating).reshape((-1, size)).T
     offset_free = np.asarray(free, dtype=bool)
     # Connectivity of the reduced offsets through guaranteed outside conductance.

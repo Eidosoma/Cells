@@ -1,6 +1,6 @@
 """mechanical_equilibrium_analysis@1: equilibria, spectra and linear moduli of a vertex tissue.
 
-An opt-in, read-only analysis of an apical_vertex_mechanics@1 definition (or of a
+An opt-in, read-only analysis of an cells.model.apical_vertex_mechanics@1 definition (or of a
 state of one). It evaluates the model's own energy (laws/mechanics/vertex_mechanics.py)
 and never writes a run, a checkpoint or a definition; ordinary runs do not import
 it. A problem takes the definition's topology, box, friction and the parameters of
@@ -72,7 +72,7 @@ from cells.definitions.specs import ConfigError
 from cells.laws.mechanics import vertex_mechanics as vm
 
 ANALYSIS_ID = "mechanical_equilibrium_analysis@1"
-MODEL_ID = "apical_vertex_mechanics@1"
+MODEL_ID = "cells.model.apical_vertex_mechanics@1"
 SHEAR = np.array([[0.0, 1.0], [0.0, 0.0]])
 DILATION = np.eye(2)
 BOX_STRAINS = (np.array([[1.0, 0.0], [0.0, 0.0]]), np.array([[0.0, 0.0], [0.0, 1.0]]), SHEAR)

@@ -3,7 +3,7 @@ window [t1, t2], how much is still present at a sampling time ts >= t2, as a pul
 it, from the engine's existing outputs alone. Development, not judged.
 
 **What it assumes.** One well-mixed pool whose loss does not depend on a molecule's age: every
-molecule present at time s is lost at the same per-molecule rate k(s). templated_polymerisation@1's
+molecule present at time s is lost at the same per-molecule rate k(s). cells.operator.templated_polymerisation@1's
 degradation is such a loss, J_D = k n (1 - e^y), so k(s) = k (1 - e^(y(s))). Under age- or
 region-selective loss no output identifies which molecules were lost, and this calculation does
 not apply (FR-33).
@@ -345,7 +345,7 @@ def turnover_control(points_per_hour=60):
     return completed, at_1h, at_2h
 
 
-POLYMERISATION = "templated_polymerisation@1"
+POLYMERISATION = "cells.operator.templated_polymerisation@1"
 CSV_CHAINS = {"tx": "R", "tl": "P"}  # The A1 export's chains and the product each makes.
 CSV_COLUMNS = {"P": ("protein_P_fmol", "released_tl_fmol", "degraded_P_fmol"),
                "R": ("mRNA_R_fmol", "released_tx_fmol", "degraded_R_fmol")}  # fmt: skip

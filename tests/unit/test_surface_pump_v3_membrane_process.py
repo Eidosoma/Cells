@@ -1,4 +1,4 @@
-"""resolved_pump_tissue@3's opt-in membrane-process hook (for composing models).
+"""cells.model.resolved_pump_tissue@3's opt-in membrane-process hook (for composing models).
 
 Default off: without a process the step, readouts and explicit rates are the
 unchanged code (the existing @3 tests). With a process that returns zero flux
@@ -44,7 +44,7 @@ def sheet(junction_heat=False):
     raw = worlds.e07_sheet_definition(states, edges, dt=1e-3, end_time=0.01)
     raw["execution"]["solver"] = imex.ARS222_ID
     if junction_heat:
-        raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+        raw["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
     return copy.deepcopy(raw)
 
 

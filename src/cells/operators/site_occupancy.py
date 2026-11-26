@@ -1,4 +1,4 @@
-"""site_occupancy@1: binding sites as owned state (FR-3, D169; docs/SITE_OCCUPANCY_DESIGN.md).
+"""cells.operator.site_occupancy@1: binding sites as owned state (FR-3, D169; docs/SITE_OCCUPANCY_DESIGN.md).
 
 A site population is a population of identical, independent, single-occupancy sites on one owner,
 facing one free pool and binding one neutral ligand (§1.1). Its owner is a membrane patch, facing
@@ -14,9 +14,9 @@ sites R and the bound amount B (fmol), anchored increments from R0 = S - B0 and 
 material ledger, §1.4); a population takes no species row.
 
 The laws (§2):
-- langmuir_site_binding@1, passive: J = m_b [k_on c R - k_off B] (fmol/s; c in mM), with detailed
+- cells.site_binding.langmuir_site_binding@1, passive: J = m_b [k_on c R - k_off B] (fmol/s; c in mM), with detailed
   balance dG°_b = RT ln(K_d / 1 mM), K_d = k_off / k_on;
-- site_conserving_internalisation@1, driven, on an outward-facing patch only: I = m_i k_int B moves
+- cells.site_internalisation.site_conserving_internalisation@1, driven, on an outward-facing patch only: I = m_i k_int B moves
   the cargo into the patch's cell and returns the site free (the site count is constant, §2.4).
 The multipliers m_b and m_i are scheduled per population and route (`site_controls`); a binding
 multiplier scales k_on and k_off together, so the equilibrium is unchanged. Parameters, alpha,
@@ -70,9 +70,9 @@ from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
 from cells.operators.membrane_state import parse_catalogue
 
-LAW_ID = "site_occupancy@1"
-BINDING_LAW = "langmuir_site_binding@1"
-INTERNALISATION_LAW = "site_conserving_internalisation@1"
+LAW_ID = "cells.operator.site_occupancy@1"
+BINDING_LAW = "cells.site_binding.langmuir_site_binding@1"
+INTERNALISATION_LAW = "cells.site_internalisation.site_conserving_internalisation@1"
 STEP_ID = "ssprk33_unidirectional_stage_condition_site_bookings@1"
 CONTROLS_KEY = "site_controls"
 ROUTES = ("binding", "internalisation")
@@ -82,9 +82,9 @@ TRACE_RTOL = 1e-12  # A node declared at its trace, to representation (amount / 
 DESTINATIONS = ("cell",)  # Version 1: the patch's own cell (§2.4).
 FACES, SIDES = ("outside", "inside"), ("first", "second")
 SURFACE = "surface"  # A node owner's fixed facing (FR-28): its own sites face only the node.
-COMPARTMENTS_LAW = "cell_owned_compartments@1"
-BATH_LAW = "scheduled_bath_composition@1"
-WASH_LAW = "scheduled_compartment_wash@1"
+COMPARTMENTS_LAW = "cells.operator.cell_owned_compartments@1"
+BATH_LAW = "cells.operator.scheduled_bath_composition@1"
+WASH_LAW = "cells.operator.scheduled_compartment_wash@1"
 CELL, OUTSIDE = 0, 1  # A facing node's kind.
 
 STATE_AXES = {
@@ -496,7 +496,7 @@ def parse_controls(raw, base, declaration):
 
 def route_tables(declaration, schedule, spec=None):
     """[route] multiplier tables: each population's binding, then its internalisation (or a
-    constant 0 for a population without the route). With W (site_occupant_replacement@1) in
+    constant 0 for a population without the route). With W (cells.operator.site_occupant_replacement@1) in
     `spec`, a covered population's tables follow its slot's occupants: the founder's schedule, which
     ends at its death, then each newcomer's template multipliers, held through its life (FR-26;
     a newcomer's own schedule is version 1.1). Without W the tables are as before, bit for bit."""
@@ -539,7 +539,7 @@ def check_identities(spec, declaration):
 
 def check_slots(spec, declaration):
     """No contact population incident to a replaced slot (§6.2; contacts stay refused), and no
-    patch population on a replaced slot unless site_occupant_replacement@1, W, declares its
+    patch population on a replaced slot unless cells.operator.site_occupant_replacement@1, W, declares its
     occupants (FR-26, D244)."""
     _, events = common.replacement_of(spec)
     slots = {v.slot for v in events}
@@ -1558,20 +1558,22 @@ class SiteOccupancy(Operator):
         return columns
 
 
-# ------------------------------------------------------------------ W: site_occupant_replacement@1
+# ------------------------------------------------------------------ W: cells.operator.site_occupant_replacement@1
 #
 # FR-26 (D244, option W; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §4): a replacement writer of
 # site populations. At replacement@1's event steps it resets the populations on each replaced slot's
-# patches to the newcomer's template occupancy through site_occupancy@1's accepted writes; the
+# patches to the newcomer's template occupancy through cells.operator.site_occupancy@1's accepted writes; the
 # occupant's bound material leaves with it, recorded as departed, and the template's arrives,
-# recorded as arrived. site_occupancy@1 and replacement@1 keep their structure and programs.
+# recorded as arrived. cells.operator.site_occupancy@1 and replacement@1 keep their structure and programs.
 
 REPLACEMENT_LAW = common.REPLACEMENT_LAW
 # A newcomer's bound and free sites each lie at least this many ulps of the capacity from empty:
 # the event writes anchor + (amount - anchor), within about 1.5 ulps of the amount (check_occupant).
 ARRIVAL_ULPS = 4
-SITES_LAW = LAW_ID  # site_occupancy@1, the owner W writes (named apart from W's own LAW_ID).
-OCCUPANT_LAW = "site_occupant_replacement@1"
+SITES_LAW = (
+    LAW_ID  # cells.operator.site_occupancy@1, the owner W writes (named apart from W's own LAW_ID).
+)
+OCCUPANT_LAW = "cells.operator.site_occupant_replacement@1"
 OCCUPANT_STATE_AXES = {
     "site_departed_fmol": ["site_population"],  # Bound material leaving with occupants.
     "site_arrived_fmol": ["site_population"],  # Bound material arriving with newcomers.
@@ -1633,7 +1635,8 @@ def parse_occupant(raw, base):
                     f"{OCCUPANT_LAW}: {tid}'s occupancy of {pid} lies in (0, 1) in version 1: as "
                     "everywhere in the engine, a pool goes to its trace and is never exactly empty "
                     "(FR-23's dose rule), so a template gives a fresh cell's occupancy at a trace "
-                    "level (site_occupancy@1's site free energy reads an exactly empty pool, "
+                    "level (cells.operator.site_occupancy@1's site free energy reads an exactly "
+                    "empty pool, "
                     "reached from a positive anchor, as 0 x log1p(-1))"
                 )
             binding = _number(values["binding_multiplier"], f"{tid}'s binding of {pid}", low=0.0)
@@ -1672,7 +1675,7 @@ def occupant_to_dict(declaration):
 
 
 def _sites_of(spec):
-    """site_occupancy@1's declaration in this composition, or None."""
+    """cells.operator.site_occupancy@1's declaration in this composition, or None."""
     for op, declaration, _ in composite_spec.entries(spec):
         if op.LAW_ID == LAW_ID:
             return declaration
@@ -1701,7 +1704,7 @@ def replaced_populations(spec, sites):
 
 
 def check_occupant(spec, declaration):
-    """W at the definition: replacement@1 and site_occupancy@1 are declared (REQUIRES orders them);
+    """W at the definition: replacement@1 and cells.operator.site_occupancy@1 are declared (REQUIRES orders them);
     each template is a replacement template; each newcomer from a template onto a slot with
     populations has that template's occupancy and multipliers for every population of the slot,
     and each population a template names sits on a slot its newcomers fill; a donor copy onto a
@@ -1874,8 +1877,8 @@ def occupant_valid(state, p, *, xp):
 
 
 class SiteOccupantReplacement(Operator):
-    """site_occupant_replacement@1, W (the section's comment above): an event map at replacement@1's
-    event steps that resets the covered site populations through site_occupancy@1's accepted
+    """cells.operator.site_occupant_replacement@1, W (the section's comment above): an event map at replacement@1's
+    event steps that resets the covered site populations through cells.operator.site_occupancy@1's accepted
     writes, with the departed and arrived records and the site free energy's jump, closed in the
     owner's ledgers (external terms) and @3's energy ledger. It reads no view and writes no @3 row.
     The reads of the site quantities stay exact (R3): it has only an event part, and events run
@@ -1894,7 +1897,9 @@ class SiteOccupantReplacement(Operator):
         "site_bound_increment_fmol": ("site_departed_fmol", "site_arrived_fmol"),
         "site_free_increment_fmol": ("site_departed_fmol", "site_arrived_fmol"),
     }
-    IDENTITY_ROLE = "user"  # It names site_occupancy@1's populations; it declares no species.
+    IDENTITY_ROLE = (
+        "user"  # It names cells.operator.site_occupancy@1's populations; it declares no species.
+    )
     VIEW_LAYERS = (
         {
             "id": "site_replacement",

@@ -1,5 +1,9 @@
 # Spatial cells with finite calcium chemistry
 
+> **Legacy cleanup (25 November 2026, D386).** `spatial_calcium@1` left the engine, with its
+> examples. It is being re-expressed as a composite world with one store per cell. The tag
+> `pre-cleanup-2026-11-25` keeps the code.
+
 `spatial_calcium@1` composes the existing spatial ionic cluster with one
 `er_calcium@1` store per cell. The [example](../configs/spatial_calcium_cluster.json)
 has two cells, three finite outside regions, free Na/K/Cl/Ca, charged two-site

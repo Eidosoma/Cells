@@ -1,8 +1,8 @@
-"""cells.patch_damage@1: a membrane patch's damage, a source of the routing door (FR-5).
+"""cells.kind.patch_damage@1: a membrane patch's damage, a source of the routing door (FR-5).
 
 docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §9 and §16 (the lead's rulings of 16 November 2026) and
-INNER_MODEL_V4_DESIGN.md §7.4 (l) and (n); the law is `bounding_patch_damage@1`
-(laws/transport/patch_damage.py), the older family's injury and resealing re-expressed as a kind:
+INNER_MODEL_V4_DESIGN.md §7.4 (l) and (n); the law is `cells.damage.bounding_patch_damage@1`
+(laws/transport/patch_damage.py), injury and resealing as a kind:
 
     dd/dt = a (1 - d) - b d,   a = k_inj u_inj(t),  b = k_res u_res(t),   d in [0, 1],
 
@@ -12,7 +12,7 @@ books nothing; it reaches routes only as a factor through the routing door (§7.
 
 The declaration (model key `patch_damage`), at most one damage entity per membrane patch:
 
-    [{"id": "damage_0", "patch": "bounding_0", "law": "bounding_patch_damage@1",
+    [{"id": "damage_0", "patch": "bounding_0", "law": "cells.damage.bounding_patch_damage@1",
       "initial_damage": 0.0, "injury_rate_per_s": 1.0, "resealing_rate_per_s": 0.05}]
 
 and its schedules (experiment key `damage_controls`, optional; the core's gap-6 schedules, §7.4
@@ -39,6 +39,9 @@ keeps its start, and the definition keeps its form.
 - **domain:** d in [0, 1], zeros off the declared patches.
 - **The routing door's source** (§7.4 (n)): `factor_sources(declaration)`, the damage IDs in
   declared order, and `factors(read, p, *, xp)`, d at each one's patch on the stage's state.
+- **No loop closes through it:** its factor is its own state d, which follows its schedules and
+  reads no amount, and no route moves it. So it has no feedback hooks (factor_rows and
+  factor_log_slopes; kind_registry.Kind) and needs none.
 - **The lifecycle's declarations** (CORE_SEAMS §4.2, and §18's B1 lift, the lead's rulings of 18
   November 2026): every field's partition role and axes, and the host of its own axis (the damage
   entities, each on its patch). d is a level of its patch, a uniform damage of every member (§9),
@@ -72,7 +75,7 @@ from cells.modules import (
 )
 from cells.registry.kind_registry import BUILTIN
 
-KIND_ID = "cells.patch_damage@1"
+KIND_ID = "cells.kind.patch_damage@1"
 MODEL_KEY = "patch_damage"
 SCHEDULE_KEY = "damage_controls"
 LAW_ID = qualified(law.LAW_ID)
@@ -145,7 +148,7 @@ def parse(entries, base):
             raise ConfigError(f"patch damage ID {name!r} must be unique among the model's IDs")
         ids.add(name)
         where = f"patch damage {name!r}"
-        if not isinstance(raw["law"], str) or not raw["law"] or qualified(raw["law"]) != LAW_ID:
+        if qualified(raw["law"], f"{where}: law") != LAW_ID:
             raise ConfigError(f"{where}: law is {LAW_ID}")
         patch = raw["patch"]
         if patch not in patches:

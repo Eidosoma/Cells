@@ -1,7 +1,7 @@
-"""Operator k_anion_symport_mass_action@1: KCC-type K+/anion symport routes.
+"""Operator cells.operator.k_anion_symport_mass_action@1: KCC-type K+/anion symport routes.
 
 The law's membrane process and its booking, moved here unchanged from
-resolved_pump_water@2 (models/surface_pump_water_v2.py, now a thin composition;
+cells.model.resolved_pump_water@2 (models/surface_pump_water_v2.py, now a thin composition;
 laws/routes/k_anion_symport.py, docs/PUMP_WATER_MODEL.md): outward cycles
 J = k a f(V) (K_i A_i - K_o A_o), one potassium and one anion per cycle, no
 current, heat 1e-3 J RT ln(K_i A_i / (K_o A_o)) >= 0, with the cell's current

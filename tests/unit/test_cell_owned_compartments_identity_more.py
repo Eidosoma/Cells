@@ -2,7 +2,7 @@
 
 The criterion and the comparison are test_cell_owned_compartments_identity.py's: identical jaxpr
 text and closed-over constants of the checked step, right-hand side and device row checks, and
-identical bindings, with and without cell_owned_compartments@1. The pairs here: the silence world W
+identical bindings, with and without cells.operator.cell_owned_compartments@1. The pairs here: the silence world W
 under RK4 at 0.1 ms, and W with turnover's clearance at the node beside exchange (the declaration
 beside two operators). Tracing only, with no XLA compile.
 """

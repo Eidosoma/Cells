@@ -9,6 +9,8 @@ failures stop both paths at the same step, and restart, the ensemble option and
 pause/resume keep their guarantees.
 """
 
+import json
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -94,7 +96,7 @@ def references():
 @pytest.mark.parametrize("name", ["@1", "@2"])
 def test_batch_reproduces_independent_worlds_within_rounding(name, references):
     spec, scalar, batch, windows = references[name]
-    assert batch.resources["mapping"] == "vmap_device_checks@1"
+    assert batch.resources["mapping"] == "cells.execution.vmap_device_checks@1"
     for world in spec.worlds:
         own, seen = scalar[world.world_id]
         vector = batch.worlds[world.world_id]
@@ -220,7 +222,10 @@ def test_restart_from_a_window_checkpoint_is_bitwise(tmp_path, references):
 
 def ionic_definition(**extra):
     simulation = definition(surface_pump_fixtures, "release").to_dict()
-    return dict(model="ionic_worlds@1", simulation=simulation, worlds=3, window_steps=5) | extra
+    return (
+        dict(model="cells.model.ionic_worlds@1", simulation=simulation, worlds=3, window_steps=5)
+        | extra
+    )
 
 
 def test_ionic_option_is_explicit_and_keeps_default_fingerprints():
@@ -238,10 +243,17 @@ def test_ionic_option_is_explicit_and_keeps_default_fingerprints():
     assert vector.fingerprint != default.fingerprint
     with pytest.raises(ValueError, match="world_batching"):
         ionic.parse_spec(ionic_definition(world_batching="pmap"))
-    tissue = surface_pump_fixtures.reduction("release")  # resolved_tissue@2: no device checks
+    tissue = surface_pump_fixtures.reduction(
+        "release"
+    )  # cells.model.resolved_tissue@2: no device checks
     with pytest.raises(ValueError, match="device checks"):
         ionic.parse_spec(
-            dict(model="ionic_worlds@1", simulation=tissue, worlds=2, world_batching="vmap")
+            dict(
+                model="cells.model.ionic_worlds@1",
+                simulation=tissue,
+                worlds=2,
+                world_batching="vmap",
+            )
         )
 
 
@@ -278,3 +290,10 @@ def test_ionic_vmap_pause_and_resume_is_bitwise(tmp_path):
         assert checkpoint.step_index == complete[identity].step_index
         for a, b in zip(checkpoint.state, complete[identity].state, strict=True):
             np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
+    # The same checkpoint, written on another kind of device, is refused.
+    manifest = tmp_path / "paused/manifest.json"
+    record = json.loads(manifest.read_text())
+    record["execution"]["device_kind"] = f"another than {kind}"
+    manifest.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="device kind changed"):
+        ionic.load_checkpoint(tmp_path / "paused", backend="cpu")

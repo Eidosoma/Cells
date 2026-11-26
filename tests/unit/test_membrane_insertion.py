@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of scheduled_membrane_insertion@1 (docs/PUMP_COMPOSITE_V2_DESIGN.md §3).
+"""Tier-1 smoke test of cells.operator.scheduled_membrane_insertion@1 (docs/PUMP_COMPOSITE_V2_DESIGN.md §3).
 
 In NumPy on bound worlds (no compile):
 * the composite's capacitor energy is the physical 1/2 sum C V^2 - 1/2 sum C0 V0^2 over a
@@ -400,7 +400,7 @@ def onset_on_main(raw):
         ),  # fmt: skip
         (
             furrow(lambda r: r["model"]["operators"].pop(0)),
-            "requires membrane_entity_state@1",
+            "requires cells.operator.membrane_entity_state@1",
         ),
     ],
 )
@@ -418,7 +418,7 @@ def test_image_charge_on_the_declared_layout_and_the_node_cap_are_refused():
     cell = raw["model"]["cells"][0]["id"]
     raw["model"]["operators"].append(
         dict(
-            law="electrode_current_injection@1",
+            law="cells.operator.electrode_current_injection@1",
             electrodes=[dict(cell_id=cell, carriers={"K": 0.4912, "M": 0.5088})],
         )
     )
@@ -428,7 +428,7 @@ def test_image_charge_on_the_declared_layout_and_the_node_cap_are_refused():
     spec = parse_spec(raw)  # Injection composes.
 
     class DeclaredBooker(Operator):
-        LAW_ID = "declared_booker@1"
+        LAW_ID = "cells.operator.declared_booker@1"
         EVENT = True
         STATE_AXES = {"booked_C": ["extracellular_slot"]}
         ENTITY_WRITES = {"electrode_charge_transferred_C": ("booked_C",)}

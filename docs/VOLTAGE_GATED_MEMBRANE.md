@@ -1,5 +1,13 @@
 # Stateful membrane channel in the shared engine
 
+> **Legacy cleanup (25 November 2026, D386).** `voltage_gated_membrane@1` left the engine, with its
+> configurations. Its law, `kv1p5_mh@1`, is registered on `resolved_pump_tissue@3`. The tag
+> `pre-cleanup-2026-11-25` keeps the code.
+
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay.
+
 CORE-007 / D051, Cells 0.12.0. `voltage_gated_membrane@1` composes the
 [multispecies membrane](MULTISPECIES_MEMBRANE.md) with the
 [SPEC-006 channel law](VOLTAGE_GATED_CHANNEL_SPEC.md). Its scientific numerical

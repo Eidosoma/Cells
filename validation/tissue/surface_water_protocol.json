@@ -1,6 +1,6 @@
 {
   "kind": "resolved_compliant_water_qualification@1",
-  "scope": "Conservative osmotic water exchange coupled to the passive resolved_tissue@1 ionic field model. Closed finite cells and exterior compartments, fixed membrane areas/capacitances/topology, explicit impermeant osmolyte particle counts and linear elastic pressures. Complete 16-field trajectories use one cell and one exterior owner for 2 ms at 310 K; separate multi-edge/multicell stages check shared owners. This is a Cells compliant-volume extension, not native BETSE volume-trajectory parity or a biological calibration.",
+  "scope": "Conservative osmotic water exchange coupled to the passive cells.model.resolved_tissue@1 ionic field model. Closed finite cells and exterior compartments, fixed membrane areas/capacitances/topology, explicit impermeant osmolyte particle counts and linear elastic pressures. Complete 16-field trajectories use one cell and one exterior owner for 2 ms at 310 K; separate multi-edge/multicell stages check shared owners. This is a Cells compliant-volume extension, not native BETSE volume-trajectory parity or a biological calibration.",
   "tests": [
     "tests/unit/test_osmotic_water.py",
     "tests/unit/test_surface_water.py",

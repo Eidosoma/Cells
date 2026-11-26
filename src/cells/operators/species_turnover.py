@@ -1,4 +1,4 @@
-"""Operator scheduled_species_turnover@1: production and first-order clearance of neutral species.
+"""Operator cells.operator.scheduled_species_turnover@1: production and first-order clearance of neutral species.
 
 docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md §2.2 (D150, version 1). A secreted species is one more
 row of @3's species axis (valence 0), which @3 owns and its face law carries (core/inventory_species
@@ -88,14 +88,14 @@ from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators.contract import Operator
 
-LAW_ID = "scheduled_species_turnover@1"
+LAW_ID = "cells.operator.scheduled_species_turnover@1"
 # FR-15 S1 (the lead's ruling of 19 November 2026): charged turnover routes are deferred. A charged
-# source with its counter-ion is a source reaction of local_species_reactions@1; exact first-order
+# source with its counter-ion is a source reaction of cells.operator.local_species_reactions@1; exact first-order
 # clearance of a charged row waits for a turnover@2 when a consumer needs it.
 CHARGED_LIMIT = (
     ": charged turnover routes wait for a scheduled_species_turnover@2 when a consumer needs exact "
     "first-order clearance of a charged row; a charged source with its counter-ion is a source "
-    "reaction of local_species_reactions@1 (FR-15)"
+    "reaction of cells.operator.local_species_reactions@1 (FR-15)"
 )
 STEP_ID = "exact_production_clearance_half_steps@1"
 KINDS = ("production", "clearance")

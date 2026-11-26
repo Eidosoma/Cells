@@ -6,7 +6,7 @@ secreted_species_protocol.py from this driver's development runs.
 
 **The world** (validation/tissue/secreted_species_radial). A sphere of radius R = 10 um is held at
 c0 = 1e-3 mM by a bath; the medium has D = 4e-10 m^2/s and first-order clearance k = 1/s (lambda =
-20 um) by scheduled_species_turnover@1 at every shell; shells of width dr run out to R + 6 lambda =
+20 um) by cells.operator.scheduled_species_turnover@1 at every shell; shells of width dr run out to R + 6 lambda =
 130 um, where an outer bath holds the trace 1e-15 mM. Every face carries the exact spherical-shell
 conductance between the points it joins. The ions are quiescent (the species-only world).
 

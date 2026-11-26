@@ -12,7 +12,7 @@ import numpy as np
 from cells.laws.electrochemistry import R
 from cells.numerics.extracellular_field import ordered_scatter
 
-LAW_ID = "ideal_osmosis_linear_compliance_water@1"
+LAW_ID = "cells.operator.ideal_osmosis_linear_compliance_water@1"
 
 
 class Parameters(NamedTuple):

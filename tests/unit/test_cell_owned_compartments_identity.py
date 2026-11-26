@@ -1,6 +1,6 @@
 """S5, the declaration is pure identity (FR-1; docs/CLOSED_COMPARTMENT_DESIGN.md §3.3), traced.
 
-S5's criterion, fixed before any run: the same world with and without cell_owned_compartments@1
+S5's criterion, fixed before any run: the same world with and without cells.operator.cell_owned_compartments@1
 traces to identical program text and constants, with identical bindings. Compared, through
 validation/tissue/composite_crossrev's own tracing (validation/tissue/compartment_fixtures.traced
 and bindings):

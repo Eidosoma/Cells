@@ -1,4 +1,4 @@
-"""cells.size_threshold_division@1 in exact events (OL6 S7; the OL6 design note's §6.8, G2).
+"""cells.operator.size_threshold_division@1 in exact events (OL6 S7; the OL6 design note's §6.8, G2).
 
 Protocol G §3's interface contract, re-derived here from the run's own trace and draws on a small
 unregistered world (three types joining a membrane from held pools, under the transition-state

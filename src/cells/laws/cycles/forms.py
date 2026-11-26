@@ -6,7 +6,7 @@ from Cells beyond laws/ (so the surface's guard admits it). The law template's `
 (registry/laws.py) holds a CycleForm; the template checks it with the form's own errors(), and the
 declarations manifest writes it under `fields`, with its changes() as the law's `changes`.
 
-**What a cycle form is.** The data a cycle law gives the cycle kind (cells.transporter@1's
+**What a cycle form is.** The data a cycle law gives the cycle kind (cells.kind.transporter@1's
 population axis), so the kind can run any declared cycle with one generic program:
 - its **roles**, each with the valence it requires of the species a population binds (or None);
 - its **rows**, (role, end) with the end N or P of the population's host, in the form's order;

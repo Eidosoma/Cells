@@ -1,4 +1,4 @@
-"""cells.serial_transfer@1: a population's serial transfer at declared times (OL2 milestone 3;
+"""cells.operator.serial_transfer@1: a population's serial transfer at declared times (OL2 milestone 3;
 docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §2.6; the design note's §0.2d item 6).
 
 The experiment declares `{index, kind: transfer, times_s, K_keep, fresh_pool}`: fresh_pool gives one
@@ -22,7 +22,7 @@ from cells.models.assembly_lineages_v2.interfaces import AssemblyOperator
 from cells.modules import Citation
 from cells.registry import operators as operator_registry
 
-SERIAL_TRANSFER = "cells.serial_transfer@1"
+SERIAL_TRANSFER = "cells.operator.serial_transfer@1"
 KEYS = {"index", "kind", "times_s", "K_keep", "fresh_pool"}
 
 
@@ -116,7 +116,7 @@ CONTRACT = {
 
 OPERATOR = operator_registry.BUILTIN.register(
     AssemblyOperator(
-        "cells.serial_transfer@1",
+        "cells.operator.serial_transfer@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

@@ -1,4 +1,4 @@
-"""cells.rate_equations@1's shared pool (OL6 slice S2; the OL6 design note's §3, §6.9).
+"""cells.assembly_representation.rate_equations@1's shared pool (OL6 slice S2; the OL6 design note's §3, §6.9).
 
 Closed forms and identities only, never a comparison with exact events (D304). A population of
 two vesicles on one pool transfers by the exact operator's domain-6 draws, divides into its free
@@ -141,9 +141,9 @@ def shell_definition(w, *, stops=(), times=(), horizon=1.0, representation=True,
         for key in ("molecule_capacity", "chunk_events"):
             d["execution"].pop(key)
         d["execution"]["representation"] = {
-            "id": "cells.rate_equations@1",
+            "id": "cells.assembly_representation.rate_equations@1",
             "envelope": {"min_count": 10.0, "provenance": "a test envelope"},
-            "integrator": {"id": "rosenbrock_rodas4_dense@1", "rtol": rtol, "atol_count": 1e-6,
+            "integrator": {"id": "cells.solver.rosenbrock_rodas4_dense@1", "rtol": rtol, "atol_count": 1e-6,
                            "step_limit": 100000}}  # fmt: skip
     return d
 

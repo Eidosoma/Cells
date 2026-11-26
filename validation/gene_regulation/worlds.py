@@ -13,7 +13,7 @@ The engine's layout choices, none of them physics:
   channels (the sheet's arms);
 - the expression rows are inventory species, at the declared trace in the bath, which the
   impermeant rows can neither enter nor leave;
-- the operators are templated_polymerisation@1 and, in A1, D150's turnover for the regulator X and
+- the operators are cells.operator.templated_polymerisation@1 and, in A1, D150's turnover for the regulator X and
   B1′'s coupling of X onto transcription's initiation rate.
 
 The worlds' names are those of the sheet's §5 as G2's interface writes them: "A1", "pol T=<T>",
@@ -29,16 +29,16 @@ from validation.gene_regulation import sheet_check as sheet
 
 CELL, BATH, PATCH = "cell_0", "bath_0", "patch_0"
 COUPLING = "c_regulator"
-IMEX = "imex_ars222_face_electromigration@1"
-FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
-CLOSURE = "resolved_capacitor_components_current_continuity@1"
+IMEX = "cells.solver.imex_ars222_face_electromigration@1"
+FIELD_SOLVER = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
+CLOSURE = "cells.field_closure.resolved_capacitor_components_current_continuity@1"
 BACKGROUND_mM = 140.0
 AREA_M2 = 1e-10
 CAPACITANCE_F_PER_M2 = 0.01
 TRACE_mM = 1e-15
 FLOOR_FMOL = 1e-20
 DIFFUSIVITY = 1e-10  # m^2/s: the cell has no face, so it moves nothing.
-POLYMERISATION = "templated_polymerisation@1"
+POLYMERISATION = "cells.operator.templated_polymerisation@1"
 C0_MM = 1000.0  # The sheet's c° = 1 M, so the potentials need no shift.
 BASIS = "temperature_independent"  # The sheet's kJ entries (§3.3).
 A1_ROWS = ("X", "N", "M", "A", "ATP", "ADP", "Pi", "R", "P")
@@ -89,7 +89,7 @@ def _skeleton(*, dt, end, every, start, volume):
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=float(sheet.T_K),
             species=[dict(id="K", valence=1), dict(id="Y", valence=-1)],
             cells=[
@@ -120,7 +120,7 @@ def _skeleton(*, dt, end, every, start, volume):
                     area_m2=AREA_M2,
                     capacitance_F=CAPACITANCE_F_PER_M2 * AREA_M2,
                     permeability_m_per_s={"K": 0.0, "Y": 0.0},
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=None,
                     calcium_pump=None,
                 )
@@ -341,7 +341,7 @@ def _a1(*, dt, end, every, symbols, release=None):
     t_off = _f(a, "t_off")
     production = [(0.0, _f(a, "P_on"))] + ([(t_off, 0.0)] if t_off < end else [])
     turnover = dict(
-        law="scheduled_species_turnover@1",
+        law="cells.operator.scheduled_species_turnover@1",
         species=[_identity("X")],
         routes=[
             dict(id="x_production", species="X", node=CELL, kind="production"),
@@ -350,7 +350,7 @@ def _a1(*, dt, end, every, symbols, release=None):
         templates=[],
     )
     coupling = dict(
-        law="species_regulated_availability@2",
+        law="cells.operator.species_regulated_availability@2",
         species=[_identity("X")],
         states=[],
         couplings=[
@@ -499,7 +499,7 @@ R1_ROWS = ("N", "M", "Pi", "R", "R_s")
 R1_DT = 2.0  # s: dt kappa_tx = 2/3 <= 1; the hold's and fates' rates times dt are below 1e-3.
 R1_EVERY = 60.0  # s: outputs every minute, the sheet's five among them (the cohort's grid).
 R1_WINDOW = (0.0, 3600.0)  # The release-window cohort's [t1, t2) (§9.9).
-SHARE_LABELS = "neutral_arrival_labels@1"  # FR-42's label owner (D289).
+SHARE_LABELS = "cells.operator.neutral_arrival_labels@1"  # FR-42's label owner (D289).
 R1_LABELLED = ("R", "R_s")  # Route 1's labelled rows: the two fates (erratum C).
 R1_LABELS = ("base", "cohort")  # Each fate row's labels: the base, then the window's.
 
@@ -529,7 +529,7 @@ def _source_row(raw, chain):
 def with_share_labels(
     raw, rows=R1_LABELLED, window=R1_WINDOW, labels=R1_LABELS, sources=(), chain=None
 ):
-    """raw with FR-42's label owner (neutral_arrival_labels@1, D289) on `rows`, each with
+    """raw with FR-42's label owner (cells.operator.neutral_arrival_labels@1, D289) on `rows`, each with
     `labels` (the base first, then the window's, then any others), every node starting at the
     base. The window [t1, t2) marks:
     - with chain None, the species' own arrivals: every arrival into the rows during it joins the
@@ -666,7 +666,7 @@ def with_export(raw, *, node=SPACE, cell=CELL, row="R", volume=1.0, k_E=EXPORT_R
         dict(id=patch, inside=cell, outside=node, area_m2=AREA_M2,
              capacitance_F=CAPACITANCE_F_PER_M2 * AREA_M2,
              permeability_m_per_s={"K": 0.0, "Y": 0.0, **dict.fromkeys(listed, 0.0)},
-             law="constant_field@1", pump=None, calcium_pump=None)
+             law="cells.route.constant_field@1", pump=None, calcium_pump=None)
     )  # fmt: skip
     x["membrane_capacity"] = len(m["membranes"])
     e["membrane_controls"].append(

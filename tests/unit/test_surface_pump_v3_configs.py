@@ -1,4 +1,4 @@
-"""resolved_pump_tissue@3: the shipped channel configs and the temperature dependence (a
+"""cells.model.resolved_pump_tissue@3: the shipped channel configs and the temperature dependence (a
 shard of the former test_surface_pump_v3.py).
 
 NEEDS A CHECKOUT: it reads configs/, which is outside an execution snapshot's scope

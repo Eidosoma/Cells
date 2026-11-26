@@ -9,8 +9,8 @@ field). Three trajectories from the same post-event state are compared, row by r
 on the electrode ledger residual r = electrode_transferred - cap_reservoir(q) at the
 worst held node, and its bound:
 
-  wrapper    resolved_pump_replacement@1's checked step (what failed)
-  inner      resolved_pump_tissue@3's own checked step on the projected @3 state and
+  wrapper    cells.model.resolved_pump_replacement@1's checked step (what failed)
+  inner      cells.model.resolved_pump_tissue@3's own checked step on the projected @3 state and
              the @3 layout: no wrapper code after the event
   reference  the same inner trajectory with cap_reservoir(q) evaluated in exact
              rational arithmetic, so r splits into the float64 evaluation error of the

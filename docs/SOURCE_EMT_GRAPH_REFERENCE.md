@@ -1,5 +1,10 @@
 # Independent source-coordinate fixed-graph reference
 
+> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names
+> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag
+> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records
+> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 NUM-005a / D031, 2026-09-08. **Implemented and checked outside production.**
 This completes the instantaneous graph-composition gate in the frozen
 [E02-SW1 numerical plan](E02_SWITCHING_NUMERICS.md), not its trajectory

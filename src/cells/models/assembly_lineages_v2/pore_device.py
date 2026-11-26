@@ -1,7 +1,7 @@
 """FR-31's pore clock on the device, for a tension that comes from F (OL6 S4, L1; the design note's
 §3.6 and §6.3, D304).
 
-A world that declares cells.pore_nucleation@1 with no hold takes its tension from F: the osmotic
+A world that declares cells.assembly_hazard.pore_nucleation@1 with no hold takes its tension from F: the osmotic
 lumen's σ(N_L, W) at the exact counts, as kernel.lysis_at reads it. Its vesicles' rates then change
 at events, so Phase A's host clock (pore_clock.Vesicle: t* = start_s + E/k_v at a held σ and a fixed
 area) does not apply, and the clock moves onto the device:

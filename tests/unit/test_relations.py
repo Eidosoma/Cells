@@ -35,13 +35,13 @@ from cells.records import relations as rel
 
 ROOT = Path(__file__).resolve().parents[2]
 WORLD = rel.qualifier("0" * 64)
-FISSION = "cells.size_threshold_fission@1"
-CONTINUATION = "cells.daughter_continuation@1"
-LINEAGES = "cells.assembly_lineages@1"
-EXCHANGE = "cells.reservoir_exchange@1"
-PARTITION = "isopotential_partition@1"
-REPLACEMENT = "scheduled_cell_replacement@1"
-TISSUE = "resolved_pump_tissue@3"
+FISSION = "cells.operator.size_threshold_fission@1"
+CONTINUATION = "cells.operator.daughter_continuation@1"
+LINEAGES = "cells.model.assembly_lineages@1"
+EXCHANGE = "cells.exchange.reservoir_exchange@1"
+PARTITION = "cells.operator.isopotential_partition@1"
+REPLACEMENT = "cells.operator.scheduled_cell_replacement@1"
+TISSUE = "cells.model.resolved_pump_tissue@3"
 
 
 def _replace(row, **changes):

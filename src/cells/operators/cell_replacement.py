@@ -1,7 +1,7 @@
-"""Operator scheduled_cell_replacement@1: scheduled carrier replacement with junction formation.
+"""Operator cells.operator.scheduled_cell_replacement@1: scheduled carrier replacement with junction formation.
 
-The operation, the junction formation law delayed_first_order_junction_formation@1
-and their ledgers, moved here unchanged from resolved_pump_replacement@1
+The operation, the junction formation law cells.junction_formation.delayed_first_order_junction_formation@1
+and their ledgers, moved here unchanged from cells.model.resolved_pump_replacement@1
 (models/cell_replacement.py, now a thin composition; docs/CELL_REPLACEMENT.md, D139).
 
 Event map, per replaced slot i, at the start of the step leaving an event time t_e:
@@ -191,11 +191,13 @@ def ionic_layout(p, state=None, *, xp=jnp):
     )
 
 
-def law_channels(spec):
+def law_channels(spec, operator=LAW_ID):
     """[capacity, law] channel index of each cell's population of a law (-1: none).
 
     Donor copies read a donor's gates by law; the parser admits only donors with
-    exactly one population of each gated law the slot has.
+    exactly one population of each gated law the slot has. The table's laws are
+    today's five (LAW_CODES): a population of any other, on any cell, is refused by
+    name. operator: the operation's ID, which the refusal names.
     """
     m, x = spec.model, spec.execution
     cells = {c.id: i for i, c in enumerate(m.cells)}
@@ -203,6 +205,11 @@ def law_channels(spec):
     laws = list(LAW_CODES)
     table = -np.ones((x.capacity, len(laws)), dtype=np.int64)
     for k, c in enumerate(m.channels):
+        if c.kinetic_law not in laws:
+            raise ConfigError(
+                f"Channel {c.id}: {c.kinetic_law} carries no donor gate table in {operator}; a "
+                f"replacement copies gates of {', '.join(laws)} only"
+            )
         i, law = owner[c.membrane_id], laws.index(c.kinetic_law)
         if table[i, law] < 0:
             table[i, law] = k
@@ -351,7 +358,7 @@ def event_map(state, due, control, p, *, xp=jnp):
 def apply_events(state, control, p, *, xp=jnp, event=None):
     """(state after the due replacements, schedule consistency) at a step start.
 
-    event: the event map (default this law's, event_map). scheduled_cell_replacement@2
+    event: the event map (default this law's, event_map). cells.operator.scheduled_cell_replacement@2
     passes its own, which calls event_map and adds the slot's volume
     (operators/cell_replacement_v2.py); the default's trace is unchanged.
     """
@@ -507,7 +514,7 @@ def bind(spec, declaration, events):
     values = template_tables(declaration.templates, m.species_ids, declaration.template_capacity)
     values |= dict(
         slot_event_count=counts,
-        cell_law_channel=law_channels(spec),
+        cell_law_channel=law_channels(spec, declaration.law),
         formation_initial_abundance=np.asarray(f.initial_abundance),
         formation_lag_s=np.asarray(f.lag_s),
         formation_time_constant_s=np.asarray(f.time_constant_s),
@@ -538,7 +545,7 @@ def check_definition(spec, declaration, events, model, *, apply=None):
     held node in its capacitor component. For each template, its first event is
     applied to the initial state (the event map on the host) and the occupant
     state must lie in the composition's domain with a valid field. apply: the
-    events' host function (default apply_events; scheduled_cell_replacement@2 passes
+    events' host function (default apply_events; cells.operator.scheduled_cell_replacement@2 passes
     its own, which also writes the newcomer's volume).
     """
     from cells.models.pump_composite import compact
@@ -585,7 +592,7 @@ def worst_case(spec, declaration, events, *, base=None):
     its founder and its templates (@3's explicit-rate and calcium bounds read them);
     channel stiffness is refused in-step by @3 at the actual openings. base: the
     definition the maxima are applied to (default the inner projection of spec);
-    scheduled_cell_replacement@2 passes water's minimum-volume definition.
+    cells.operator.scheduled_cell_replacement@2 passes water's minimum-volume definition.
     """
     base = composite_spec.projection(spec) if base is None else base
     m = base.model
@@ -618,7 +625,7 @@ def worst_case(spec, declaration, events, *, base=None):
 
 
 def frozen_spec(spec, declaration, events):
-    """The resolved_pump_replacement@1 definition (the spec-level helpers' format)."""
+    """The cells.model.resolved_pump_replacement@1 definition (the spec-level helpers' format)."""
     m, e = spec.model, spec.experiment
     model = replacement_spec.CellReplacementModel(
         **{k: getattr(m, k) for k in ionic_spec.SurfacePumpChannelModel.__dataclass_fields__},

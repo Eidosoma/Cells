@@ -1,5 +1,10 @@
 # REF-003e0 expanded SIM bridge
 
+> **Legacy cleanup (25 November 2026, D386).** The drivers that this record names under
+> `validation/betse/` are retired (D374), and their code left the tree; the tag
+> `pre-cleanup-2026-11-25` keeps it. The record, its protocols and its reports stay. Old records pin this
+> page's bytes by their hash: the pinned bytes are the tag's, without this note.
+
 2026-09-12, D077. Prospective capture contract after the user-reviewed D076
 closeout. This extends coverage, not physics, tolerances or production code.
 

@@ -1,4 +1,5 @@
-"""Run/resume a bounded finite-material assembly experiment on CPU or GPU."""
+"""Run/resume a bounded finite-material assembly experiment on CPU or GPU, or resolve the
+definitions whose channels such pools drive (assembly_pool/resolve.py)."""
 
 import argparse
 import json
@@ -18,7 +19,38 @@ from cells.assembly.spec import AssemblyError
 from cells.assembly_pool.engine import run
 from cells.assembly_pool.io import load_checkpoint, source_identity, write_checkpoint
 from cells.assembly_pool.spec import load_spec, parse_spec
+from cells.definitions.specs import ConfigError
 from cells.execution.output_paths import configure_caches
+
+
+def register(output, spec, *, backend, device_index, until, parent=None):
+    """A run's fresh folder and its registration, which execute runs."""
+    if shutil.disk_usage(output.parent).free < spec.max_output_bytes + 4 * 1024**3:
+        raise AssemblyError("Finite-pool budget would consume the disk reserve")
+    output.mkdir()
+    registration = {
+        "definition": spec.to_dict(),
+        "backend": backend,
+        "device_index": device_index,
+        "until_s": until,
+        "parent": parent,
+        "sources_sha256": source_identity(),
+        "runtime": runtime(),
+        "created_utc": utc(),
+        "qualification": "New kinetic hypothesis; no fit to measured mi3 kinetics",
+    }
+    write_json(output / "registration.json", registration)
+
+
+def copy_source(output):
+    """The Cells package a run's output is made from, copied into its folder."""
+    source = output / "source"
+    shutil.copytree(
+        Path(__file__).resolve().parents[1],
+        source / "cells",
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+    )
+    return source
 
 
 def execute(output):
@@ -143,6 +175,25 @@ def main(argv=None):
         command.add_argument("--device-index", type=int, default=0)
         command.add_argument("--until", type=float)
         command.add_argument("--detach", action="store_true")
+    command = commands.add_parser(
+        "resolve", help="write the ionic definitions whose channels a composed file's pools drive"
+    )
+    command.add_argument("input", type=Path, help="the composed file")
+    command.add_argument("--output", type=Path, required=True)
+    command.add_argument("--backend", choices=("cpu", "gpu"), default="cpu", help="the pools'")
+    command.add_argument("--device-index", type=int, default=0)
+    command.add_argument(
+        "--near-misses-to-grid",
+        action="store_true",
+        help="declare a switch that nearly misses a point of the clock at that point, and record "
+        "the shift, instead of refusing it",
+    )
+    command.add_argument(
+        "--batch",
+        type=int,
+        metavar="MAX_WORKING_BYTES",
+        help="also write the worlds as one independent_worlds batch, with this memory limit",
+    )
     args = parser.parse_args(argv)
     try:
         configure_caches()
@@ -164,6 +215,17 @@ def main(argv=None):
                 raise AssemblyError("No saved finite-pool status")
         elif args.command == "_worker":
             result = execute(args.output.resolve())
+        elif args.command == "resolve":
+            from cells.assembly_pool import resolve  # The ionic engine, which a pool needs none of.
+
+            result = resolve.resolve(
+                args.input,
+                args.output,
+                backend=args.backend,
+                device_index=args.device_index,
+                near_misses=resolve.TO_GRID if args.near_misses_to_grid else resolve.REFUSE,
+                max_working_bytes=args.batch,
+            )
         else:
             parent, state = None, None
             if args.command == "run":
@@ -178,27 +240,15 @@ def main(argv=None):
                     "Require an advancing horizon <= 86400 s and nonnegative device index"
                 )
             output = output_path(args.output)
-            if shutil.disk_usage(output.parent).free < spec.max_output_bytes + 4 * 1024**3:
-                raise AssemblyError("Finite-pool budget would consume the disk reserve")
-            output.mkdir()
-            registration = {
-                "definition": spec.to_dict(),
-                "backend": args.backend,
-                "device_index": args.device_index,
-                "until_s": until,
-                "parent": parent,
-                "sources_sha256": source_identity(),
-                "runtime": runtime(),
-                "created_utc": utc(),
-                "qualification": "New kinetic hypothesis; no fit to measured mi3 kinetics",
-            }
-            write_json(output / "registration.json", registration)
-            source = output / "source"
-            shutil.copytree(
-                Path(__file__).resolve().parents[1],
-                source / "cells",
-                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            register(
+                output,
+                spec,
+                backend=args.backend,
+                device_index=args.device_index,
+                until=until,
+                parent=parent,
             )
+            source = copy_source(output)
             if args.detach:
                 environment = os.environ.copy()
                 environment.update(
@@ -230,6 +280,6 @@ def main(argv=None):
                 result = execute(output)
         print(json.dumps(result, indent=2, allow_nan=False))
         return 0
-    except (AssemblyError, OSError, KeyError, json.JSONDecodeError) as exc:
+    except (AssemblyError, ConfigError, OSError, KeyError, json.JSONDecodeError) as exc:
         print(f"Finite-pool assembly error: {exc}", file=sys.stderr)
         return 2

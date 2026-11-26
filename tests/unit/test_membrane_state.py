@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of membrane_entity_state@1 (docs/PUMP_COMPOSITE_V2_DESIGN.md §3).
+"""Tier-1 smoke test of cells.operator.membrane_entity_state@1 (docs/PUMP_COMPOSITE_V2_DESIGN.md §3).
 
 On the bound heredity cell, in NumPy (no compile): zero increments give @3's declared layout
 bit for bit (R8, with the field arrays selected as bound); increments reach the view as area,
@@ -143,7 +143,10 @@ def test_operators_that_read_the_declared_area_refuse_the_membrane_state():
     pumps by them: both hold membrane_area as declared (CONFLICTS_VIEW)."""
     from cells.models import pump_composite
 
-    for law in ("ideal_osmosis_linear_compliance_water@1", "scheduled_cell_replacement@1"):
+    for law in (
+        "cells.operator.ideal_osmosis_linear_compliance_water@1",
+        "cells.operator.scheduled_cell_replacement@1",
+    ):
         errors = pump_composite.structure_errors(adapter, (OPERATORS[law], OPERATORS[fx.STATE]))
         assert any(f"{law} reads membrane_area as declared" in e for e in errors), law
 

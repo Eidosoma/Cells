@@ -106,7 +106,7 @@ def worker(root, slot, gpu, affinity, work, stopping, parents):
             t0 = time.monotonic()
             passage = first_completion(spec, state)
             observations = {}
-            if model_id(spec) in ("finite_bond_assembly@1", "assembly_regulated_cell@1"):
+            if model_id(spec) == "cells.model.finite_bond_assembly@1":
                 result["completed_shells"] = int((passage >= 0).sum())
                 result["completion_event"] = "first_full_20_site_30_bond_cage"
             if passage is not None:

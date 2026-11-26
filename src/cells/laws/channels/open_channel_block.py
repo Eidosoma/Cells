@@ -1,4 +1,4 @@
-"""open_channel_block_weighted_modes@1: an open-channel blocker in weighted modes (FR-51, D327).
+"""cells.channel_block.open_channel_block_weighted_modes@1: an open-channel blocker in weighted modes (FR-51, D327).
 
 The law is Woodhull's single-site block (Woodhull 1973, J. Gen. Physiol. 61:687-708, PMID 4541078,
 DOI 10.1085/jgp.61.6.687), applied in up to MAX_MODES weighted modes of one channel population.
@@ -44,7 +44,7 @@ domain_valid refuses one that is not, since compiled CPU code flushes subnormals
     0.97 to 0.98 mV per mV.
   - One lab finds that raising internal K moves the half-block voltage about +5 mV, where V - E_K
     predicts -36 mV. That is an indication.
-- kir2p1_mh2@1's gates read absolute voltage. A world in which external K changes declares Kir2.1
+- cells.channel.kir2p1_mh2@1's gates read absolute voltage. A world in which external K changes declares Kir2.1
   as an always-open K population carrying this block on a K reversal reference (D356). That
   composition is development-only until the post-landing registration (D353) passes.
 - Version 1's limits: the blocker is held at a declared constant concentration, not a species row;
@@ -62,7 +62,7 @@ import numpy as np
 from cells.laws.electrochemistry import F, R
 from cells.modules import Citation, CitedWork, Law
 
-LAW_ID = "open_channel_block_weighted_modes@1"
+LAW_ID = "cells.channel_block.open_channel_block_weighted_modes@1"
 CHANNEL_BLOCK_LAW = "cells.channel_block_law@1"  # The interface, declared in @3's model-table row.
 MAX_MODES = 4  # The mode axis is static, and its sums are unrolled.
 MAX_STEEPNESS = 8.0  # m_k's limit: |a_k V_ref| <= 147 over the admitted domain.
@@ -207,7 +207,7 @@ LAW = ChannelBlockLaw(
     unblocked_fraction,
     slope,
     domain_valid,
-    host="cells.resolved_pump_tissue@3",
+    host="cells.model.resolved_pump_tissue@3",
     provenance="cited",
     source=Citation(
         "Woodhull's single-site block (A. M. Woodhull, 1973, J. Gen. Physiol. 61:687-708, PMID "

@@ -33,12 +33,15 @@ FLOOR_FMOL = 1e-20
 D_S = 1e-10  # m^2/s, an effective (FRAP-kind) diffusivity, synthetic.
 WALL_AREA_M2, WALL_C_F = 1e-10, 1e-12
 CONTACT_AREA_M2, CONTACT_C_F = 1e-11, 1e-13
-TURNOVER, EXCHANGE = "scheduled_species_turnover@1", "scheduled_species_exchange@1"
-IMEX = "imex_ars222_face_electromigration@1"
+TURNOVER, EXCHANGE = (
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.scheduled_species_exchange@1",
+)
+IMEX = "cells.solver.imex_ars222_face_electromigration@1"
 JUNCTION_AREA_M2, JUNCTION_THRESHOLD_V, JUNCTION_MINIMUM = 1e-11, 0.015, 0.1
-REPLACEMENT = "scheduled_cell_replacement@1"
+REPLACEMENT = "cells.operator.scheduled_cell_replacement@1"
 FORMATION = dict(
-    law="delayed_first_order_junction_formation@1",
+    law="cells.junction_formation.delayed_first_order_junction_formation@1",
     initial_abundance=0.0,
     lag_s=600.0,
     time_constant_s=1800.0,
@@ -83,7 +86,7 @@ def _patch(name, inside, outside, area, capacitance):
         area_m2=area,
         capacitance_F=capacitance,
         permeability_m_per_s={s: 0.0 for s, _ in ION_SPECIES},
-        law="constant_field@1",
+        law="cells.route.constant_field@1",
         pump=None,
         calcium_pump=None,
     )
@@ -128,7 +131,7 @@ def world(
             area_m2=area,
             length_m=length,
             diffusivity_m2_per_s={s: 0.0 for s, _ in ION_SPECIES},
-            law="logmean_electrodiffusion@1",
+            law="cells.route.logmean_electrodiffusion@1",
         )
         for f, a, b, area, length in faces
     ]
@@ -141,7 +144,7 @@ def world(
             receiver=b,
             area_m2=JUNCTION_AREA_M2,
             permeability_m_per_s={s: 0.0 for s, _ in ION_SPECIES},
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             gate=dict(
                 law=junction_gate.LAW_ID,
                 threshold_voltage_V=JUNCTION_THRESHOLD_V,
@@ -155,7 +158,7 @@ def world(
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=310.0,
             species=[dict(id=s, valence=z) for s, z in ION_SPECIES],
             cells=cell_list,
@@ -164,7 +167,8 @@ def world(
             junctions=junction_list,
             faces=face_list,
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=[],
         ),
@@ -193,7 +197,7 @@ def world(
             jit=True,
             precision="float64",
             solver=solver,
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=int(math.ceil(end / dt)) + 8,
             max_trace_bytes=2**31,
             material_balance_atol_fmol={s: 1e-10 for s, _ in ION_SPECIES},
@@ -392,7 +396,7 @@ def heredity_chain(*, secreted, dt=1e-3, end=0.1, observation_times=None, profil
                 area_m2=CHAIN_FACE[0],
                 length_m=CHAIN_FACE[1],
                 diffusivity_m2_per_s={s: CHAIN_ION_D for s in ids},
-                law="logmean_electrodiffusion@1",
+                law="cells.route.logmean_electrodiffusion@1",
             )
         )
     x.update(extracellular_capacity=2 * CHAIN, membrane_capacity=2 * CHAIN, face_capacity=CHAIN)

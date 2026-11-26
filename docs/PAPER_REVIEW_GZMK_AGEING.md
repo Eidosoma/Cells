@@ -1,5 +1,8 @@
 **Granzyme K and tissue ageing: relevance to Cells — reviewed 13 November 2026**
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Update, 13 November 2026 (D151).** The user: "we want to test all of this in the end". Every ranked candidate below is deferred, not closed; its prerequisite and gate stand as written, and any "park" or "not recommended" reads as "deferred".
 
 **Update, 13 November 2026 (user decision, D150).** "We do have plans to be able to run special modes of Cells at differnt timescales, so down the road nothing right now but for sure the secreted-species transport now." So the organ-scale ageing timescale is deferred to Cells' planned long-time modes rather than excluded, and general secreted-species transport (candidate 1 below) is promoted now as an engine feature, designed first (D142) and never granzyme-specific (D136, D144).

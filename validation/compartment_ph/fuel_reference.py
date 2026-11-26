@@ -3,7 +3,7 @@
 
 Written from the specification in this folder's REFERENCES_USAGE.md ("Finite fuel"), itself from
 ARCHITECTURE.md's "Material identity and fuel" (F2, the first case), D176 (decisions 1 and 2),
-D152's §2.2 (`ideal_detailed_balance_mass_action@1`) and COMPARTMENT_PH_TRANSFER_DESIGN.md's §5
+D152's §2.2 (`cells.species_reaction.ideal_detailed_balance_mass_action@1`) and COMPARTMENT_PH_TRANSFER_DESIGN.md's §5
 and §6 (the pump's form), without reading the engine. numpy, scipy and the standard library.
 
 Units: fmol, pL, mM (= fmol/pL), s, m, m/s; potentials in J/mol; energies in pJ (1e-3 x fmol x

@@ -1,5 +1,11 @@
 # Plasma calcium extrusion and exchange
 
+> **Legacy cleanup (25 November 2026, D386).** `spatial_calcium@2` to `@4` left the engine, with
+> their examples. They are being re-expressed as composite worlds: the pump is
+> `ca_atp_mass_action_positive@1` at another standard state, the exchanger a law module, and the IP3
+> factor a source kind. The laws stay in `laws/reactions/plasma_calcium.py` and
+> `laws/channels/calcium_gates.py`. The tag `pre-cleanup-2026-11-25` keeps the code.
+
 `spatial_calcium@2` adds named plasma calcium transport to the
 [owned spatial calcium model](SPATIAL_CALCIUM.md). The
 [ionic example](../configs/plasma_calcium_cluster.json) and

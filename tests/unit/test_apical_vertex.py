@@ -1,4 +1,4 @@
-"""apical_vertex_mechanics@1: definition, energy, forces, images and the step bound.
+"""cells.model.apical_vertex_mechanics@1: definition, energy, forces, images and the step bound.
 
 Energies and forces are compared with the closed forms of the regular honeycomb
 (validation/morphogenesis/mg1_theory.py) and with the independent numpy reference

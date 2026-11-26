@@ -22,14 +22,14 @@ cell, and every healthy cell, is the same while uncoupled); their end state seed
 run, as cc_discon does. The switch is autonomous, so each coupled run starts its clock at 0.
 
 The model, on today's engine (nothing here adds physics):
-* resolved_pump_composite@1 over resolved_pump_tissue@3, the species-only world of the
+* cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, the species-only world of the
   secreted-species fixtures (ions at the bath's composition, zero permeability, so nothing but the
   switch's species moves);
-* the EMT switch as local_species_reactions@1 reactions per cell (worlds.emt_switch_probe's
+* the EMT switch as cells.operator.local_species_reactions@1 reactions per cell (worlds.emt_switch_probe's
   structure) with GRN_miRNA.py's constants at b2cb370 as docs/EMT_REFERENCE.md states them, Snail
   72 folded into the rates, one scaled unit = 1 uM, BITSEY's time unit taken as 1 s;
-* in the coupled stage, miR200 (u) alone on a cells.passive_routes@1 route
-  (passive_neutral_permeation@1) on each junction, P A = G_GJ, junction gates pinned open; no
+* in the coupled stage, miR200 (u) alone on a cells.kind.passive_routes@1 route
+  (cells.route.passive_neutral_permeation@1) on each junction, P A = G_GJ, junction gates pinned open; no
   routes at D = 0.
 Seeds BITSEY sets to 0 start at the fixtures' trace, 1e-9 mM (1e-6 units): @3 needs positive
 amounts.
@@ -241,7 +241,7 @@ def switch_world(cells, start, *, junctions=(), d=0.0, end, dt, observe):
             dict(
                 id=f"{j['id']}_mir200",
                 junction=j["id"],
-                law="passive_neutral_permeation@1",
+                law="cells.route.passive_neutral_permeation@1",
                 species="u",
                 permeability_m_per_s=conductance(d) / j["area_m2"],
             )
@@ -634,11 +634,11 @@ def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0, shape="lin
         format="gap_junction_tissue.neither_run@1",
         status="development run of the engine, not judged (D138)",
         represents=REPRESENTS_OF[shape],
-        models=["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+        models=["cells.model.resolved_pump_composite@1", "cells.model.resolved_pump_tissue@3"],
         laws=dict(
-            switch="local_species_reactions@1 (GRN_miRNA.py's constants at b2cb370)",
-            junction_route="passive_neutral_permeation@1 (cells.passive_routes@1), miR200 only",
-            junction_gate="junction_voltage_relaxation@1 (pinned open)",
+            switch="cells.operator.local_species_reactions@1 (GRN_miRNA.py's constants at b2cb370)",
+            junction_route="cells.route.passive_neutral_permeation@1 (cells.kind.passive_routes@1), miR200 only",
+            junction_gate="cells.junction.junction_voltage_relaxation@1 (pinned open)",
         ),
         definition_sha256=spec.fingerprint,
         arm=arm_id,

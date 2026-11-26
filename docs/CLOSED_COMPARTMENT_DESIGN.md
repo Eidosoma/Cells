@@ -1,5 +1,8 @@
 # A closed compartment owned by a cell (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Qualified, 18 November 2026.** The registered protocol `fr1-closed-compartment-v1`
 (`validation/tissue/compartment_acceptance_protocol.json`, registered at 05a8d193) was judged once
 from a clean snapshot of that commit: passed, 44 of 44 judged criteria (C1 to C13 with their
@@ -11,7 +14,7 @@ a zero anchor on the compartment, ARS at 1 ms and RK4 at 0.1 ms; V_b's orientati
 
 **Milestone 1 built, 14 November 2026 (§12).** The declaration, the contract's fail-closed marker and the composite's branch for declarations alone are built. S1–S3 hold on every row of every program in a live-owner world, and a planted control breaks them in each program family. S5 is identical in all four pairs, and crossrev is identical in all seven sets. S4 and P2 (on the heredity sheet) are reported. Integration grants no acceptance: C1–C13 and their references come next.
 
-**Refusals 4 and 5, later versions (status 18 November 2026):**
+**Refusals 4, 5 and 6, later versions (status 25 November 2026):**
 - **On main,** with D172's round (ab267c39): refusal 4 version 1.1 (§3.4.1, FR-4's kinds).
 - **On main since fr45-next merged (16 November):**
   - refusal 4 version 1.2 (§3.4.2, FR-5's source kinds);
@@ -23,6 +26,8 @@ a zero anchor on the compartment, ARS at 1 ms and RK4 at 0.1 ms; V_b's orientati
   reads the areas and capacitances as `reference` reads.
 - **Refusal 5 version 1.2 (§3.4.5, 19 November; D217, FR-2):** an anchor is also admitted where an
   admitted operator's routes charge the compartment; checked at the definition.
+- **Refusal 6 version 1.1 (§3.5.1, 25 November; the calcium store):** a compartment is refused where
+  its node is its capacitor component's representative, in place of version 1's held bath.
 
 **As drafted (14 November 2026),** for the lead's review with the advisor and revised the same day
 after that review: no engine code was added or changed. One read-only probe ran on the engine as
@@ -291,8 +296,10 @@ its own node.
    - **Why:** a world whose admitted routes charge the lumen must be able to resume from its own
      checkpoint. FR-5 starts from FR-4's charged steady state.
    - **Still refused:** the no-kind world (the silent version, §3.3) and RK4.
-6. **A held-bath topology (version 1).** The owner's capacitor component holds a held bath, so the
-   compartment is a free node of the reduction (§3.5).
+6. **Not its component's representative (version 1.1, §3.5.1).** The capacitor solve fixes one node
+   of a component that holds no held bath: the gauge where the component holds it, else its first
+   outside node. The compartment's node is never that one, so it is a free node of the reduction
+   (§3.5). Version 1 asked for a held bath in the owner's component.
 7. **The composition** is on the admitted list of §4, which fails closed. Replacement@1 schedules
    no event on an owner's slot, and names no owner as a donor (§1.5). Providers and closers of the
    volumes, the areas, the capacitances and the masks are refused through the declaration's own
@@ -602,6 +609,10 @@ routes.
   drift".
 - A face-free node has no face drift. Its charge relaxes through its patch alone, explicitly, with
   the fast mode's rate about G_b (1/C_b + 1/C_i) ≈ G_b / C_b for C_b ≪ C_i.
+- **Amended 25 November 2026** (CALCIUM_STORE_AND_CHANNELS_DESIGN §8.3): where a world has a
+  floating node, as every compartment is, a cell's row divides by the capacitance of its other
+  patches alone, and each patch that faces a floating node has its own row, with kinds or without. A
+  cell with a store read up to 1 + C_b/C_m times too low before.
 
 **The size of it (S; `arithmetic/`).** With the specific capacitance c_m, G_b/C_b = P F² c/(RT c_m),
 independent of the compartment's size. Here c is the larger of the two sides' concentrations, as
@@ -650,6 +661,9 @@ here, and the table's volume and area agree with a 0.68 µm sphere.
    max over free face-free finite nodes of Σ_m G_m / C_node in `explicit_rate_bound` and
    `membrane_rate`, statically gated, so a world with no such node carrying an ion route is
    unchanged.
+   **Amended 25 November 2026** (the same section): the term is one row per patch in place of the
+   node's sum (the same where one patch faces the node, as at a compartment), and the per-stage rule
+   holds it in kind-free worlds too.
    - It touches the same two functions as the queued D148 round for neutral species on membranes and
      junctions (finding 3, probe C4), so the two are one round (the lead's ruling).
    - It makes the steps honest, but the chloride route above would then need dt ≤ 1/(4.8 × 10³ s⁻¹),
@@ -679,6 +693,11 @@ each kind's slope at both ends of its patch (`stage_term` per node). Version 1 s
 ion route on a bounding patch, and it saw no kind at all, so a kind's route there passed unchecked:
 it failed open.
 
+**Amended 25 November 2026:** the per-stage rule holds the compartment's node with kinds or without
+(CALCIUM_STORE_AND_CHANNELS_DESIGN §8.3). So the reason below for admitting a permeability only
+beside kinds is weaker than it was (**S**, the calcium note's author's reading; not tried). The rule
+itself is unchanged, and widening it would need a ruling of its own.
+
 **The rule (refusal 4, version 1.1).** For each declared compartment's bounding patch:
 - **@3's own routes:** a Na/K or Ca pump, or a channel population, stays refused: the per-stage
   rule does not hold its slope at the compartment's node (a pump's slope is in no per-stage term,
@@ -700,6 +719,9 @@ it failed open.
     concentration. That is a material question, like finding 3's neutral-species term (the
     inner-model note's §13.6), not the charged door's, and it is recorded here as open. It needs a
     measurement or a bound term before a fast neutral population sits on a bounding patch.
+    **Since 25 November 2026:** version 2 of that law, `atp_driven_transporter_mass_action_positive@2`,
+    declares the kind's charge slope and its material rate, so refusal 4 (version 1.3) admits its
+    moves at a compartment's node. Version 1's neutral law declares neither and stays refused.
   - cells.rapid_proton_buffer@1 is a stage read and declares no route.
   - **Any other kind is refused** while a compartment is declared: the operator cannot know
     whether its routes cross the bounding patch (D180's external kinds), so it fails closed, as
@@ -898,20 +920,65 @@ did (the lead's ruling (a)). No saved result holds it.
 
 ### 3.5 Floating components and the gauge
 
-- **Version 1 requires a held-bath topology** (refusal 6). The owner's capacitor component holds a
-  held bath, as every qualification world so far does and as S5 requires of its worlds. In such a
-  component no representative is chosen, so the compartment is a free node.
+- **Version 1 required a held-bath topology** (refusal 6; version 1.1, §3.5.1, asks less). The owner's
+  capacitor component held a held bath, as every qualification world of version 1 does and as S5
+  requires of its worlds. In such a component no representative is chosen, so the compartment is a
+  free node.
 - **With finite extracellular space and floating components** (D147's free offsets), `bind` takes
   the gauge node, or else the component's lowest-index outside node, as its representative. That
   could be the compartment. The physics would be unchanged if the component's net charge were
   exactly zero, but the compartment's row would then carry the component's net-charge residual.
 - **The door:** refuse a compartment that would be a representative (`field_fixed` at its node, read
-  from the bound layout), with an acceptance item on a floating world. Probe P3.
+  from the bound layout), with an acceptance item on a floating world. Probe P3. Version 1.1 (§3.5.1)
+  is that refusal, read from the declared topology by the rule that `bind` applies; the acceptance
+  item is still open.
 - **The gauge** is never a compartment: refusal 1.
 - **The D147 record** (the lead's item 4; part A of FR-10's probe 1, a host-side definition parse of
   `field_solver_choice.free_field_offsets`, from the clean snapshot of main): **0** for the
   species-only compartment world and **0** for the mixed one. A held-bath topology has no free offset,
   so they keep field solver version 2, as D150's arms and MG0c's did.
+
+### 3.5.1 Refusal 6 version 1.1: the component's representative (the calcium store; the lead's ruling, 25 November 2026)
+
+**Why.** Version 1 asked for a held bath in the owner's component, so that the compartment is a free
+node of the capacitor solve. The reason is the free node, not the bath. A closed world (one gauge, no
+bath) has the gauge for its representative, so a compartment there is a free node too.
+
+**The rule.** The compartment's node is not its component's representative: the gauge where the
+component holds it, else the component's first outside node in the definition's order, and none where
+it holds a held bath. One helper, `surface_field.representative`, gives it to `bind` and to this
+check, so the two cannot drift.
+
+**The message:** "{law}: compartment {node} is the representative of its capacitor component (no held
+bath and no gauge is in it, and {node} is its first outside node); the capacitor solve fixes a
+representative, so its row would carry the component's net charge. Declare another outside node of the
+component first (refusal 6, version 1.1)".
+
+**What stays.** Refusals 1 to 5 and 7; the parse as the place (it reads the base definition alone);
+the silence claims S1 to S3, which are claims of the held-bath topology; FR-1's judged run, which
+covers the build it judged.
+
+**Not extended.** S1 to S3 are claims of the held-bath topology until a row shows them in a closed
+one. A provider of areas, capacitances or masks (trafficking, for one) still refuses a floating
+component by its own check, and replacement still needs a held bath in the replaced cell's component.
+
+**FR-1's R6 pair.** The protocol's R6 world (a gauge in place of the held bath) is admitted by version
+1.1. The registered protocol and its record are not edited. The driver's R6 world becomes one that
+still refuses, a floating component whose first outside node is the compartment's, under the same
+class key and label; `classify()` gains the new phrase beside the old, so old records classify as
+before (the old one in a second table, since the first holds one row per label). This section is the
+dated amendment that a re-judge would cite.
+
+**Text.** The scope string of every compartment world's summary names version 1.1. No saved result
+holds it.
+
+**Tests** (`tests/unit/test_cell_owned_compartments.py`):
+- a floating component whose first outside node is the compartment's, refused by name; one whose first
+  is another node, and a closed world with the gauge, admitted;
+- the check's representatives are the nodes that `bind` fixes, in four topologies;
+- a closed world with a charged store: its patch holds −q/C_b at a nonzero anchor;
+- FR-1's R6 pair through its driver's own `refusal_pairs()` and `classify()`, with version 1's message;
+- the scope string's start.
 
 ### 3.6 The field-input node cap, node cost and the species budget
 
@@ -1099,7 +1166,7 @@ snapshot.
 | D, division (§1.5) | Pending compartment slots and the entity hierarchy | Inheritance of organelle pools |
 | C, creation (§1.5) | An event opening a pending slot | FR-2 |
 | F, fusion and fission (§1.5) | A transfer between a compartment and another node | FR-5's exocytosis |
-| Floating topology (§3.5) | The representative refusal, and a floating world's acceptance | Finite-extracellular tissues |
+| Floating topology (§3.5) | The representative refusal (built, §3.5.1), and a floating world's acceptance | Finite-extracellular tissues |
 | Coupling source and route (§4) | D156's source-semantics and routing doors | FR-5 |
 | S, slot-scoped provision (FR-10's note) | A provider and a reader of one view field declare their slots; only an intersection is refused | The requester's dose, uptake, compartment and reactions world (§4) |
 | The membrane-state wall (§4) | Membrane state beside a compartment: a field-input provider, so the 64-node cap and the held-bath topology. Opened for FR-2's trafficking on 19 November 2026, with the areas and capacitances read as references (D217) | FR-2 (opened); FR-3's sites on a bounding patch (waiting) |

@@ -1,17 +1,17 @@
-"""Small worlds for population_unit_turnover@1 (FR-7's unit producer).
+"""Small worlds for cells.operator.population_unit_turnover@1 (FR-7's unit producer).
 
 All values are synthetic. The base world is one heredity cell facing its held bath
 (validation/tissue/pump_water_fixtures.heredity_cell: its pump, and Kir and NaV populations on one
-patch). Every population is declared in membrane_entity_state@1 at one reference density. A
+patch). Every population is declared in cells.operator.membrane_entity_state@1 at one reference density. A
 neutral precursor species is declared by the engine's helper (cells.registry.inventory_species):
 loaded in the cell at a resolved level and at a trace elsewhere.
 
 * cell: that composite definition, with the membrane state and no producer;
 * route, with_producer: a route entry, and the operator's block with its schedule;
 * with_supply: D150's turnover supplying the precursor in the cell, the second writer of its row;
-* with_template_route: a template species in the cell, and species_regulated_availability@2
+* with_template_route: a template species in the cell, and cells.operator.species_regulated_availability@2
   routing a Hill factor of it onto the producer's assembly rate (B1′), declared before it;
-* with_compartment, with_release: a compartment of the cell (cell_owned_compartments@1), and an
+* with_compartment, with_release: a compartment of the cell (cells.operator.cell_owned_compartments@1), and an
   exchange route releasing a neutral species from it into the cell at first order (FR-7's U2
   world with a releasing compartment; D217's clause on releasing compartments).
 """
@@ -22,10 +22,10 @@ from cells.definitions import pump_composite_spec as cs
 from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import pump_water_fixtures as wfx
 
-LAW = "population_unit_turnover@1"
-STATE = "membrane_entity_state@1"
-TURNOVER = "scheduled_species_turnover@1"
-COUPLING_2 = "species_regulated_availability@2"
+LAW = "cells.operator.population_unit_turnover@1"
+STATE = "cells.operator.membrane_entity_state@1"
+TURNOVER = "cells.operator.scheduled_species_turnover@1"
+COUPLING_2 = "cells.operator.species_regulated_availability@2"
 TEMPLATE = "template"
 PRECURSOR = "subunit"  # The heredity cell already declares a species P.
 CELL = "cell_0"
@@ -45,12 +45,12 @@ SECOND = "leak_1"  # A second gate-free K population on the same patch, at half 
 
 def leak_cell(raw):
     """raw's heredity cell made pump-free with gate-free K populations, the coupling operator's
-    qualified scope: kir_0 becomes kleak_always_open@1 (no gate), a second such population leak_1
+    qualified scope: kir_0 becomes cells.channel.kleak_always_open@1 (no gate), a second such population leak_1
     joins it at half its abundance, and nav_0 and the pump are dropped."""
     out = copy.deepcopy(raw)
     m, e = out["model"], out["experiment"]
     kir = next(c for c in m["channels"] if c["id"] == "kir_0")
-    kir.update(kinetic_law="kleak_always_open@1", initial_gate=[])
+    kir.update(kinetic_law="cells.channel.kleak_always_open@1", initial_gate=[])
     second = copy.deepcopy(kir)
     second.update(id=SECOND, abundance=0.5 * kir["abundance"])
     m["channels"] = [kir, second]
@@ -210,8 +210,8 @@ def with_template_route(
     return out
 
 
-COMPARTMENT_LAW = "cell_owned_compartments@1"
-EXCHANGE = "scheduled_species_exchange@1"
+COMPARTMENT_LAW = "cells.operator.cell_owned_compartments@1"
+EXCHANGE = "cells.operator.scheduled_species_exchange@1"
 COMPARTMENT = "endosome"  # The compartment's own ID.
 NODE, BOUNDING = "endo_0", "endo_patch"  # Its storage (an outside node) and its bounding patch.
 RELEASE = "release"
@@ -237,7 +237,7 @@ def with_compartment(
     at the owner's concentrations of every species, `amounts_fmol` replacing some, its fixed
     charge making its content neutral at a zero charge anchor (refusal 5), bounded by the one patch
     `patch`, which no species crosses (refusal 4), on the owner's side; and the
-    cell_owned_compartments@1 declaration, appended."""
+    cells.operator.cell_owned_compartments@1 declaration, appended."""
     out = copy.deepcopy(raw)
     m, e, x = out["model"], out["experiment"], out["execution"]
     cell = next(c for c in m["cells"] if c["id"] == owner)
@@ -265,7 +265,7 @@ def with_compartment(
             area_m2=area_m2,
             capacitance_F=capacitance_F,
             permeability_m_per_s=dict.fromkeys(valence, 0.0),
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             pump=None,
             calcium_pump=None,
         )
@@ -288,12 +288,12 @@ def with_compartment(
 
 def release_velocity(kappa_per_s, *, volume_pL=NODE_pL, area_m2=BOUNDING_m2):
     """The uptake velocity k_u (m/s) of an exchange import whose rate constant out of the node is
-    kappa = k_u A 1e15 / V_o (V_o in pL; scheduled_species_exchange@1's first-order import)."""
+    kappa = k_u A 1e15 / V_o (V_o in pL; cells.operator.scheduled_species_exchange@1's first-order import)."""
     return kappa_per_s * volume_pL / (area_m2 * 1e15)
 
 
 def with_release(raw, changes, *, species=TEMPLATE, owner=CELL, patch=BOUNDING, name=RELEASE):
-    """raw with scheduled_species_exchange@1 releasing `species` from the compartment behind
+    """raw with cells.operator.scheduled_species_exchange@1 releasing `species` from the compartment behind
     `patch` into `owner` at first order: an import route, changes [(time, k_u in m/s), ...]
     keyed by the owner. Appended last, after every writer of membrane state's fields, since its
     current read of the areas follows their changes at stage split (C2)."""

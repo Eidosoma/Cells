@@ -91,7 +91,7 @@ class ReactionLaw(Law):
     # the world's exchange_encounter token to it; and the extent's kind (EXTENTS).
     rate_key: object = "forward_rate_per_s"
     extent: str = "locus"
-    # OL6 (H1, D304): the law's large-count limit for cells.rate_equations@1, or None (refused
+    # OL6 (H1, D304): the law's large-count limit for cells.assembly_representation.rate_equations@1, or None (refused
     # there); and its formulas, written only into that representation's records.
     limit: Callable | None = None
     limit_formulas: dict | None = None
@@ -174,7 +174,7 @@ class RateFactorLaw(Law):
     update: Callable  # (state, layout, places, delta, xp) -> the state after a step.
     log_factor: Callable  # (state, layout, view, xp) -> ln g at each step's common state.
     formulas: dict
-    # OL6 (H1, D304): the law's large-count limit for cells.rate_equations@1, or None (refused
+    # OL6 (H1, D304): the law's large-count limit for cells.assembly_representation.rate_equations@1, or None (refused
     # there); and its formulas, written only into that representation's records.
     limit: Callable | None = None
     limit_formulas: dict | None = None
@@ -210,7 +210,7 @@ class FreeEnergyTerm(Law):
     value: Callable  # Host: F_term(counts) exactly, for the ledger and the check.
     delta: Callable  # (state, layout, view, delta, xp) -> F_term(n + delta) - F_term(n), per step.
     formulas: dict
-    # OL6 (H1, D304): the law's large-count limit for cells.rate_equations@1, or None (refused
+    # OL6 (H1, D304): the law's large-count limit for cells.assembly_representation.rate_equations@1, or None (refused
     # there); and its formulas, written only into that representation's records.
     limit: Callable | None = None
     limit_formulas: dict | None = None

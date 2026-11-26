@@ -1,9 +1,9 @@
-"""cells.shear_fission@1: division at shear events in a single lineage (OL3 milestone 1).
+"""cells.operator.shear_fission@1: division at shear events in a single lineage (OL3 milestone 1).
 
 The lead's rulings are §0.2c rules 9–13 and §0.2d items 6, 7, 9 and 10
 (docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §2).
 
-**The world** declares `division = {law: cells.shear_fission@1, continuation: first | uniform}`,
+**The world** declares `division = {law: cells.operator.shear_fission@1, continuation: first | uniform}`,
 with an optional `critical_stress_Pa = {value, provenance}`. Division needs a geometry and an
 osmotic lumen: a daughter's own volume, the v test, the lumen's terms in the shear work and lysis at
 birth all follow from them. The experiment declares the shear schedules,
@@ -344,7 +344,7 @@ CONTRACT = {
 
 OPERATOR = operator_registry.BUILTIN.register(
     AssemblyOperator(
-        "cells.shear_fission@1",
+        "cells.operator.shear_fission@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

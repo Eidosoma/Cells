@@ -4,7 +4,7 @@ One heredity cell (validation/tissue/surface_pump_v3_fixtures.heredity_cells)
 started on the D branch, steady gates at the D voltage, with the NaV1.2
 permeability scaled by s. Below the scale at which the D steady state
 disappears, the trajectory lingers near the D ghost and then switches to H.
-For each scale, fine steps of the definition's own IMEX step (resolved_pump_tissue@3
+For each scale, fine steps of the definition's own IMEX step (cells.model.resolved_pump_tissue@3
 imex_step, jitted chunks; the per-row host checks are omitted because the scan
 only selects the scale) run to the protocol's 1800 s horizon or until the
 switch, the first chunk end with Vm < -50 mV (chunk resolution, CHUNK_STEPS).

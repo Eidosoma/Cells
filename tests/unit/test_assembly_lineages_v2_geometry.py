@@ -1,4 +1,4 @@
-"""OL2's geometry worlds in cells.assembly_lineages@2: the bilayer geometry, phase exchange and
+"""OL2's geometry worlds in cells.model.assembly_lineages@2: the bilayer geometry, phase exchange and
 permeation (docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1, §5; the design note's §0.2b-§0.2d).
 
 Each claim with a planted error it must catch (D187):
@@ -363,7 +363,7 @@ def test_ol1_worlds_carry_no_geometry():
 
 REFUSALS = {
     "an inner pair outside a shell": (  # FR-46 (R6): refused by name, even with no inner step
-        lambda w: _inner_pair(site_binding(w)), "admits in a cells.prescribed_shell@1 world only"),
+        lambda w: _inner_pair(site_binding(w)), "admits in a cells.assembly_geometry.prescribed_shell@1 world only"),
     "exchange_encounter without a geometry": (
         lambda w: (w.pop("geometry"), w["steps"].pop(0)), "declared only by a world that declares"),
     "a geometry without exchange_encounter": (
@@ -721,7 +721,7 @@ SHELL_REFUSALS = {
         "without a solution potential"),
     "a lumen potential on a bilayer": (
         lambda w: w.clear() or w.update(_bilayer_with_lumen_potential()),
-        "admits in a cells.prescribed_shell@1 world only"),
+        "admits in a cells.assembly_geometry.prescribed_shell@1 world only"),
 }  # fmt: skip
 
 

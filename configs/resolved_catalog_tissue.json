@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "model": {
-    "id": "resolved_tissue@8",
+    "id": "cells.model.resolved_tissue@8",
     "temperature_K": 298.15,
     "species": [
       {
@@ -132,10 +132,10 @@
           "Cl": 8e-10,
           "Ca": 1e-09
         },
-        "law": "constant_field@1",
+        "law": "cells.route.constant_field@1",
         "pump": {
           "id": "pump_0",
-          "law": "nak_atp_mass_action_positive@1",
+          "law": "cells.cycle.nak_atp_mass_action_positive@1",
           "roles": {
             "sodium": "Na",
             "potassium": "K"
@@ -149,7 +149,7 @@
           "km_k_mM": 0.2,
           "km_atp_mM": 0.5,
           "metabolism": {
-            "kind": "maintained_chemical_reservoirs@1",
+            "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -169,10 +169,10 @@
           "Cl": 8e-10,
           "Ca": 1e-09
         },
-        "law": "constant_field@1",
+        "law": "cells.route.constant_field@1",
         "pump": {
           "id": "pump_1",
-          "law": "nak_atp_mass_action_positive@1",
+          "law": "cells.cycle.nak_atp_mass_action_positive@1",
           "roles": {
             "sodium": "Na",
             "potassium": "K"
@@ -186,7 +186,7 @@
           "km_k_mM": 0.2,
           "km_atp_mM": 0.5,
           "metabolism": {
-            "kind": "maintained_chemical_reservoirs@1",
+            "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -206,10 +206,10 @@
           "Cl": 8e-10,
           "Ca": 1e-09
         },
-        "law": "constant_field@1",
+        "law": "cells.route.constant_field@1",
         "pump": {
           "id": "pump_2",
-          "law": "nak_atp_mass_action_positive@1",
+          "law": "cells.cycle.nak_atp_mass_action_positive@1",
           "roles": {
             "sodium": "Na",
             "potassium": "K"
@@ -223,7 +223,7 @@
           "km_k_mM": 0.2,
           "km_atp_mM": 0.5,
           "metabolism": {
-            "kind": "maintained_chemical_reservoirs@1",
+            "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -243,10 +243,10 @@
           "Cl": 8e-10,
           "Ca": 1e-09
         },
-        "law": "constant_field@1",
+        "law": "cells.route.constant_field@1",
         "pump": {
           "id": "pump_3",
-          "law": "nak_atp_mass_action_positive@1",
+          "law": "cells.cycle.nak_atp_mass_action_positive@1",
           "roles": {
             "sodium": "Na",
             "potassium": "K"
@@ -260,7 +260,7 @@
           "km_k_mM": 0.2,
           "km_atp_mM": 0.5,
           "metabolism": {
-            "kind": "maintained_chemical_reservoirs@1",
+            "kind": "cells.fuel_kind.maintained_chemical_reservoirs@1",
             "atp_mM": 1.5,
             "adp_mM": 0.1,
             "pi_mM": 0.1,
@@ -281,9 +281,9 @@
           "Cl": 1e-09,
           "Ca": 1e-09
         },
-        "law": "constant_field@1",
+        "law": "cells.route.constant_field@1",
         "gate": {
-          "law": "junction_voltage_relaxation@1",
+          "law": "cells.junction.junction_voltage_relaxation@1",
           "threshold_voltage_V": 0.015,
           "minimum_open_fraction": 0.1,
           "initial_gate": 0.6
@@ -303,7 +303,7 @@
           "Cl": 1.5000000000000002e-14,
           "Ca": 1e-10
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       },
       {
         "id": "face_1",
@@ -317,7 +317,7 @@
           "Cl": 1e-14,
           "Ca": 1e-10
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       },
       {
         "id": "face_2",
@@ -331,7 +331,7 @@
           "Cl": 2e-14,
           "Ca": 1e-10
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       },
       {
         "id": "face_3",
@@ -345,7 +345,7 @@
           "Cl": 1e-14,
           "Ca": 1e-10
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       },
       {
         "id": "face_4",
@@ -359,18 +359,18 @@
           "Cl": 2e-14,
           "Ca": 1e-10
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       }
     ],
     "closure": {
-      "law": "resolved_capacitor_components_current_continuity@1",
+      "law": "cells.field_closure.resolved_capacitor_components_current_continuity@1",
       "gauge_reference": "outside_4"
     },
     "channels": [
       {
         "id": "channel_0",
         "membrane_id": "membrane_0",
-        "kinetic_law": "kv1p5_mh@1",
+        "kinetic_law": "cells.channel.kv1p5_mh@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.5,
         "initial_gate": [
@@ -387,7 +387,7 @@
       {
         "id": "channel_1",
         "membrane_id": "membrane_1",
-        "kinetic_law": "kir2p1_mh2@1",
+        "kinetic_law": "cells.channel.kir2p1_mh2@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.6,
         "initial_gate": [
@@ -404,7 +404,7 @@
       {
         "id": "channel_2",
         "membrane_id": "membrane_2",
-        "kinetic_law": "kv1p5_mh@1",
+        "kinetic_law": "cells.channel.kv1p5_mh@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.7,
         "initial_gate": [
@@ -421,7 +421,7 @@
       {
         "id": "channel_3",
         "membrane_id": "membrane_3",
-        "kinetic_law": "kir2p1_mh2@1",
+        "kinetic_law": "cells.channel.kir2p1_mh2@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.8,
         "initial_gate": [
@@ -438,7 +438,7 @@
       {
         "id": "channel_4",
         "membrane_id": "membrane_0",
-        "kinetic_law": "kir2p1_mh2@1",
+        "kinetic_law": "cells.channel.kir2p1_mh2@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.5,
         "initial_gate": [
@@ -455,7 +455,7 @@
       {
         "id": "sodium_0",
         "membrane_id": "membrane_0",
-        "kinetic_law": "nav1p2_m3h_regularized@1",
+        "kinetic_law": "cells.channel.nav1p2_m3h_regularized@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.2,
         "initial_gate": [
@@ -472,7 +472,7 @@
       {
         "id": "sodium_1",
         "membrane_id": "membrane_2",
-        "kinetic_law": "nav1p2_m3h_regularized@1",
+        "kinetic_law": "cells.channel.nav1p2_m3h_regularized@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.30000000000000004,
         "initial_gate": [
@@ -489,7 +489,7 @@
       {
         "id": "hcn_1",
         "membrane_id": "membrane_0",
-        "kinetic_law": "hcn1_m@1",
+        "kinetic_law": "cells.channel.hcn1_m@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.12,
         "initial_gate": [
@@ -514,7 +514,7 @@
       {
         "id": "hcn_2",
         "membrane_id": "membrane_1",
-        "kinetic_law": "hcn2_m@1",
+        "kinetic_law": "cells.channel.hcn2_m@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.2,
         "initial_gate": [
@@ -539,7 +539,7 @@
       {
         "id": "hcn_4",
         "membrane_id": "membrane_2",
-        "kinetic_law": "hcn4_m@1",
+        "kinetic_law": "cells.channel.hcn4_m@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.28,
         "initial_gate": [
@@ -564,7 +564,7 @@
       {
         "id": "kv1_1",
         "membrane_id": "membrane_0",
-        "kinetic_law": "kv1p1_mh2@1",
+        "kinetic_law": "cells.channel.kv1p1_mh2@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.1,
         "initial_gate": [
@@ -581,7 +581,7 @@
       {
         "id": "kv1_2",
         "membrane_id": "membrane_1",
-        "kinetic_law": "kv1p2_mh@1",
+        "kinetic_law": "cells.channel.kv1p2_mh@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.14,
         "initial_gate": [
@@ -598,7 +598,7 @@
       {
         "id": "kv1_3",
         "membrane_id": "membrane_2",
-        "kinetic_law": "kv1p3_mh@1",
+        "kinetic_law": "cells.channel.kv1p3_mh@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.18,
         "initial_gate": [
@@ -615,7 +615,7 @@
       {
         "id": "kv1_4",
         "membrane_id": "membrane_3",
-        "kinetic_law": "kv1p4_mh@1",
+        "kinetic_law": "cells.channel.kv1p4_mh@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.22,
         "initial_gate": [
@@ -632,7 +632,7 @@
       {
         "id": "kv1_6",
         "membrane_id": "membrane_0",
-        "kinetic_law": "kv1p6_mh@1",
+        "kinetic_law": "cells.channel.kv1p6_mh@1",
         "max_permeability_m_per_s": 3e-10,
         "abundance": 0.26,
         "initial_gate": [
@@ -649,7 +649,7 @@
       {
         "id": "cav_population_0",
         "membrane_id": "membrane_0",
-        "kinetic_law": "cav1p2_m2h@1",
+        "kinetic_law": "cells.channel.cav1p2_m2h@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.1,
         "initial_gate": [
@@ -666,7 +666,7 @@
       {
         "id": "cav_population_1",
         "membrane_id": "membrane_1",
-        "kinetic_law": "cav1p3_m2h@1",
+        "kinetic_law": "cells.channel.cav1p3_m2h@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.12000000000000001,
         "initial_gate": [
@@ -683,7 +683,7 @@
       {
         "id": "cav_population_2",
         "membrane_id": "membrane_2",
-        "kinetic_law": "cav2p1_m@1",
+        "kinetic_law": "cells.channel.cav2p1_m@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.14,
         "initial_gate": [
@@ -700,7 +700,7 @@
       {
         "id": "cav_population_3",
         "membrane_id": "membrane_3",
-        "kinetic_law": "cav2p2_m2h_regularized@1",
+        "kinetic_law": "cells.channel.cav2p2_m2h_regularized@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.16,
         "initial_gate": [
@@ -717,7 +717,7 @@
       {
         "id": "cav_population_4",
         "membrane_id": "membrane_0",
-        "kinetic_law": "cav2p3_mh@1",
+        "kinetic_law": "cells.channel.cav2p3_mh@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.18,
         "initial_gate": [
@@ -734,7 +734,7 @@
       {
         "id": "cav_population_5",
         "membrane_id": "membrane_1",
-        "kinetic_law": "cav3p1_mh_piecewise_tau_m@1",
+        "kinetic_law": "cells.channel.cav3p1_mh_piecewise_tau_m@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.2,
         "initial_gate": [
@@ -751,7 +751,7 @@
       {
         "id": "cav_population_6",
         "membrane_id": "membrane_2",
-        "kinetic_law": "cav3p3_mh@1",
+        "kinetic_law": "cells.channel.cav3p3_mh@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.22,
         "initial_gate": [
@@ -768,7 +768,7 @@
       {
         "id": "catalog_population_0",
         "membrane_id": "membrane_0",
-        "kinetic_law": "nav1p3_m3h_regularized@1",
+        "kinetic_law": "cells.channel.nav1p3_m3h_regularized@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.05,
         "initial_gate": [
@@ -785,7 +785,7 @@
       {
         "id": "catalog_population_1",
         "membrane_id": "membrane_1",
-        "kinetic_law": "navrat2_m3h_regularized@1",
+        "kinetic_law": "cells.channel.navrat2_m3h_regularized@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.060000000000000005,
         "initial_gate": [
@@ -802,7 +802,7 @@
       {
         "id": "catalog_population_2",
         "membrane_id": "membrane_2",
-        "kinetic_law": "navrat1_m3h_regularized@1",
+        "kinetic_law": "cells.channel.navrat1_m3h_regularized@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.07,
         "initial_gate": [
@@ -819,7 +819,7 @@
       {
         "id": "catalog_population_3",
         "membrane_id": "membrane_3",
-        "kinetic_law": "navrat3_m3h_regularized@1",
+        "kinetic_law": "cells.channel.navrat3_m3h_regularized@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.08,
         "initial_gate": [
@@ -836,7 +836,7 @@
       {
         "id": "catalog_population_4",
         "membrane_id": "membrane_0",
-        "kinetic_law": "naleak_always_open@1",
+        "kinetic_law": "cells.channel.naleak_always_open@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.05,
         "initial_gate": [
@@ -853,7 +853,7 @@
       {
         "id": "catalog_population_5",
         "membrane_id": "membrane_1",
-        "kinetic_law": "nav1p6_persistent_m@1",
+        "kinetic_law": "cells.channel.nav1p6_persistent_m@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.060000000000000005,
         "initial_gate": [
@@ -870,7 +870,7 @@
       {
         "id": "catalog_population_6",
         "membrane_id": "membrane_2",
-        "kinetic_law": "kv2p1_mh@1",
+        "kinetic_law": "cells.channel.kv2p1_mh@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.07,
         "initial_gate": [
@@ -887,7 +887,7 @@
       {
         "id": "catalog_population_7",
         "membrane_id": "membrane_3",
-        "kinetic_law": "kv2p2_mh@1",
+        "kinetic_law": "cells.channel.kv2p2_mh@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.08,
         "initial_gate": [
@@ -904,7 +904,7 @@
       {
         "id": "catalog_population_8",
         "membrane_id": "membrane_0",
-        "kinetic_law": "kv3p1_m@1",
+        "kinetic_law": "cells.channel.kv3p1_m@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.05,
         "initial_gate": [
@@ -921,7 +921,7 @@
       {
         "id": "catalog_population_9",
         "membrane_id": "membrane_1",
-        "kinetic_law": "kv3p2_m2@1",
+        "kinetic_law": "cells.channel.kv3p2_m2@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.060000000000000005,
         "initial_gate": [
@@ -938,7 +938,7 @@
       {
         "id": "catalog_population_10",
         "membrane_id": "membrane_2",
-        "kinetic_law": "kv3p3_m2h_long_tau@1",
+        "kinetic_law": "cells.channel.kv3p3_m2h_long_tau@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.07,
         "initial_gate": [
@@ -955,7 +955,7 @@
       {
         "id": "catalog_population_11",
         "membrane_id": "membrane_3",
-        "kinetic_law": "kv3p4_mh@1",
+        "kinetic_law": "cells.channel.kv3p4_mh@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.08,
         "initial_gate": [
@@ -972,7 +972,7 @@
       {
         "id": "catalog_population_12",
         "membrane_id": "membrane_0",
-        "kinetic_law": "k_fast_mh@1",
+        "kinetic_law": "cells.channel.k_fast_mh@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.05,
         "initial_gate": [
@@ -989,7 +989,7 @@
       {
         "id": "catalog_population_13",
         "membrane_id": "membrane_1",
-        "kinetic_law": "kleak_always_open@1",
+        "kinetic_law": "cells.channel.kleak_always_open@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.060000000000000005,
         "initial_gate": [
@@ -1006,7 +1006,7 @@
       {
         "id": "catalog_population_14",
         "membrane_id": "membrane_2",
-        "kinetic_law": "clleak_always_open@1",
+        "kinetic_law": "cells.channel.clleak_always_open@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.07,
         "initial_gate": [
@@ -1023,7 +1023,7 @@
       {
         "id": "catalog_population_15",
         "membrane_id": "membrane_3",
-        "kinetic_law": "catleak_na_k@1",
+        "kinetic_law": "cells.channel.catleak_na_k@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.08,
         "initial_gate": [
@@ -1048,7 +1048,7 @@
       {
         "id": "catalog_population_16",
         "membrane_id": "membrane_0",
-        "kinetic_law": "catleak2_na_k_ca@1",
+        "kinetic_law": "cells.channel.catleak2_na_k_ca@1",
         "max_permeability_m_per_s": 1e-09,
         "abundance": 0.05,
         "initial_gate": [
@@ -1531,7 +1531,7 @@
     "jit": true,
     "precision": "float64",
     "solver": "rk4",
-    "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@1",
     "max_steps": 8192,
     "max_trace_bytes": 4294967296,
     "material_balance_atol_fmol": {

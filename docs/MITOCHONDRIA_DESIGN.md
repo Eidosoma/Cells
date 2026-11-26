@@ -1,5 +1,8 @@
 # Mitochondria: design (proposed)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 **Status: DECIDED, 16 November 2026: the options of §3 and the questions of §9.1 (D193).** Built
 in step 4 of D194's order. Beard 2005's legibility, since checked, is under the screen items. Proposed
 the same day; design only, no engine code. Written on branch
@@ -380,6 +383,10 @@ The mitochondria review (PAPER_REVIEW_MITOCHONDRIA.md) sets three requirements.
     against its own patches.
   - With kinds declared, the per-stage rule (`surface_pump_v3.membrane_rate` with
     `free_outside_nodes`) does the same, taking each kind's `stage_term` at both ends of its patch.
+  - **Amended 25 November 2026** (CALCIUM_STORE_AND_CHANNELS_DESIGN §8.3): both hold one row per patch
+    that faces such a node, in place of the node's sum, and the per-stage rule holds it with kinds
+    or without. At the matrix node one patch faces it, so the row is the same. A cell's row divides
+    by its other patches' capacitance alone.
 - **A charged start.**
   - At the base, refusal 5 version 1 refuses any nonzero charge anchor
     (`compartments.refuse_charge_anchor`).
@@ -2129,7 +2136,9 @@ cycles add patch conductances. Both sit in the same SPD operator.
 
 
 - **Still explicit:**
-  - the kinds' material slopes (D4's material term, dt × material ≤ the bound);
+  - the kinds' material slopes (D4's material term, dt × material ≤ the bound; since 25 November
+    2026 a population of the seven laws that move a charged row at both ends gives its whole rate,
+    CALCIUM_STORE_AND_CHANNELS_DESIGN §6.3);
   - the face's diffusion: about 18 µs at the source's p_Pi (P1′);
   - the general closure's lag;
   - X2's order condition and its integration-error cap, which registered runs select.

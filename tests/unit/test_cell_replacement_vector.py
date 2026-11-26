@@ -1,4 +1,4 @@
-"""resolved_pump_replacement@1 in vectorized worlds (execution/vector_windows.py).
+"""cells.model.resolved_pump_replacement@1 in vectorized worlds (execution/vector_windows.py).
 
 Two worlds with different replacement schedules and templates, advanced as one
 vmapped batch with device checks, reproduce each world's own windowed run to

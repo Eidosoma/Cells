@@ -1,4 +1,4 @@
-"""R-fac: the coupling factors of species_regulated_availability@1, an independent reference.
+"""R-fac: the coupling factors of cells.operator.species_regulated_availability@1, an independent reference.
 
 Written from docs/INVENTORY_COUPLING_DESIGN.md, Appendix A.2 with §1.3 (laws, sides, the basal
 level) and §1.6 (declaration), and from the textbook Hill forms. It was written without reading

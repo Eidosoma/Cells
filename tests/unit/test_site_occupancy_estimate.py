@@ -1,7 +1,7 @@
-"""site_occupancy@1's share of the trace estimate (the external review's finding 1, 18 November 2026).
+"""cells.operator.site_occupancy@1's share of the trace estimate (the external review's finding 1, 18 November 2026).
 
 cells.execution.resources.trace_bytes sizes a run's stored trace from the model's working_size: the
-values stored per accepted step, plus a margin (surface_pump.working_size). site_occupancy@1 owns six
+values stored per accepted step, plus a margin (surface_pump.working_size). cells.operator.site_occupancy@1 owns six
 arrays per population and two node-indexed energy arrays in every state row, so its share must count
 them. On a fixed mesh, doubling the populations must raise the estimate by at least the six arrays
 of each added population. The share must also cover every field the operator owns, so a field added
@@ -20,7 +20,7 @@ from cells.operators import OPERATORS
 from cells.registry.models import get_model
 from validation.tissue import site_occupancy_acceptance_fixtures as so
 
-LAW = "site_occupancy@1"
+LAW = "cells.operator.site_occupancy@1"
 PER_POPULATION = 6  # site_{free,bound}_increment, bound_net, internalised, work, energy_magnitude
 
 

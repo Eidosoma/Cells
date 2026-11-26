@@ -1,4 +1,4 @@
-"""Projective-integration readouts of the resolved pump family (resolved_pump_tissue@1-@3).
+"""Projective-integration readouts of the resolved pump family (cells.model.resolved_pump_tissue@1-@3).
 
 cells.execution.projective calls these on accepted host rows (NumPy). They read the
 model's own state, laws and ledgers and add none:

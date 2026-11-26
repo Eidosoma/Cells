@@ -1,17 +1,17 @@
-"""Worlds of scheduled_cell_replacement@2 over water (docs/PUMP_COMPOSITE_V2_DESIGN.md §2).
+"""Worlds of cells.operator.scheduled_cell_replacement@2 over water (docs/PUMP_COMPOSITE_V2_DESIGN.md §2).
 
 The heredity sheet of the replacement fixtures (seven cells, each facing its own held bath,
 the centre cell_3 in D and the ring in H, voltage-gated junctions, no fixed background) under
-ideal_osmosis_linear_compliance_water@1 as pump_water_fixtures.with_water declares it, then
-scheduled_cell_replacement@2 with the replacement fixtures' templates and events. Every cell
+cells.operator.ideal_osmosis_linear_compliance_water@1 as pump_water_fixtures.with_water declares it, then
+cells.operator.scheduled_cell_replacement@2 with the replacement fixtures' templates and events. Every cell
 carries the same impermeant P, which no route moves.
 """
 
 from validation.tissue import cell_replacement_fixtures as rfx
 
-WATER = "ideal_osmosis_linear_compliance_water@1"
-LAW = "scheduled_cell_replacement@2"
-V1 = "scheduled_cell_replacement@1"
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"
+LAW = "cells.operator.scheduled_cell_replacement@2"
+V1 = "cells.operator.scheduled_cell_replacement@1"
 DT = 1e-3
 PF_M_S = 5e-4  # Fast water (aquaporin range), so volumes move within a short run.
 
@@ -47,5 +47,5 @@ def over_water(raw, templates=(), events=(), **kw):
 
 
 def replacement_v1(raw, templates=(), events=(), *, formation=None):
-    """The same replacement as the frozen resolved_pump_replacement@1 definition."""
+    """The same replacement as the frozen cells.model.resolved_pump_replacement@1 definition."""
     return rfx.with_replacement(raw, templates, events, formation=formation)

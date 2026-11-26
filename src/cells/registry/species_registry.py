@@ -105,7 +105,7 @@ A source that cites reaction-level standard free energies, not species potential
 potentials only up to one reference per conserved quantity. A named set (PotentialSet; the lead's
 rulings of 20 November 2026, D234's B1) states its references and derives every other potential
 from its values, so its potentials hold together only as a whole:
-* **References:** mu°/RT = 0 at 1 M for one row per conserved quantity (beard2005@1 and @2: H+, K+,
+* **References:** mu°/RT = 0 at 1 M for one row per conserved quantity (cells.potential_set.beard2005@1 and @2: H+, K+,
   Mg2+, O2, NAD, Q, cytochrome c oxidised, ADP3-, HPO4 2- and the substrate's oxidised form). Water
   is never a row: it stands at unit activity with mu = 0 and is omitted from every stoichiometry,
   so each dG° is at unit water activity.
@@ -116,7 +116,7 @@ from its values, so its potentials hold together only as a whole:
   forms, P the row's binding polynomial). dG° is treated as independent of temperature, since no
   dH° is cited: an approximation. A reaction may instead give its equilibrium constant in base
   forms at 1 M, which, like a K_d, carries no temperature: matched to a cited constant on totals
-  at a declared buffer, from which the set derives it (SetMatch; beard2005@2's adenylate kinase).
+  at a declared buffer, from which the set derives it (SetMatch; cells.potential_set.beard2005@2's adenylate kinase).
   Every value is moved to the world's c0 by ln(c0 / 1 M), evaluated at FREE_ENERGY_DIGITS digits
   and rounded once.
 * **The limit:** a dG° computed from these potentials is meaningful only for a reaction that
@@ -133,7 +133,7 @@ from its values, so its potentials hold together only as a whole:
   1 M, checked at the definition like the set's rows.
 * **A set's name versions its derivation:** check_potential_set compares the doubles exactly, so
   the name covers the derivation's arithmetic as well as the set's data. Any change to
-  potential_set_values or to a set's values is a new version (beard2005@2), never an edit of an
+  potential_set_values or to a set's values is a new version (cells.potential_set.beard2005@2), never an edit of an
   existing one, so no recorded world that names a set is refused by a later revision.
 * **Not potentials:** a closure's binding rates (k_on) are the world's, declared in its block; the
   source's X_MgA is class C, set large. Each set's notes say what its sources leave to it.
@@ -875,7 +875,7 @@ class SetReaction(NamedTuple):
 
     Or, in place of the value in kJ/mol (dG_kJ_mol None), `match`: its equilibrium constant in
     base forms at 1 M, matched to a constant on totals (SetMatch). Like a form's K_d it carries no
-    temperature: dG°/RT = -ln K_base at every temperature (beard2005@2's adenylate kinase). Such a
+    temperature: dG°/RT = -ln K_base at every temperature (cells.potential_set.beard2005@2's adenylate kinase). Such a
     reaction is on the 1 M basis, with no totals and a multiple of 1."""
 
     determines: str
@@ -906,7 +906,7 @@ _BEARD_2005 = "Beard 2005, PLoS Comput Biol 1(4):e36"
 _APPENDIX = "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b"
 _BEARD_2006 = "Beard 2006 (correction), PLoS Comput Biol 2(1):e8"
 BEARD_2005 = PotentialSet(
-    name="beard2005@1",
+    name="cells.potential_set.beard2005@1",
     sources=(
         "Beard DA (2005), A biophysical model of the mitochondrial respiratory system and "
         "oxidative phosphorylation, PLoS Comput Biol 1(4):e36, doi:10.1371/journal.pcbi.0010036 "
@@ -971,13 +971,13 @@ BEARD_2005 = PotentialSet(
         "The source's X_MgA (Table 1) is class C, set large.",
     ),
 )
-# beard2005@2 (D236): @1 with AMP2-, whose potential adenylate kinase's constant in base forms
+# cells.potential_set.beard2005@2 (D236): @1 with AMP2-, whose potential adenylate kinase's constant in base forms
 # fixes, and AMP in the adenine and phosphorus moieties. Frame B, Eq. 24 as run and the balanced
 # supply add nothing to the set: phosphate's proton form and the ATP reaction's total phosphate
 # are @1's already, Eq. 7's protons are complex III's scalar protons, and the supply's held pair
 # sets its drive against the declared reaction's anchor, which stays @1's.
 BEARD_2005_V2 = BEARD_2005._replace(
-    name="beard2005@2",
+    name="cells.potential_set.beard2005@2",
     rows=(*BEARD_2005.rows, ("AMP", -2)),
     reactions=(
         *BEARD_2005.reactions,
@@ -1151,7 +1151,7 @@ def potential_set_values(name, *, temperature_K, standard_concentration_mM):
     nu ln P(h_ref), P the row's proton binding polynomial), a form's ln K_d, and every value moved
     to c0 by ln(c0 / 1 M). Its arithmetic is part of every set's version: a change that moves a
     set's doubles is a new version of that set, since check_potential_set compares them exactly
-    (beard2005@2's constant path leaves @1's doubles bit for bit)."""
+    (cells.potential_set.beard2005@2's constant path leaves @1's doubles bit for bit)."""
     s = POTENTIAL_SETS[name]
     problems = potential_set_errors(s)
     if problems:
@@ -1545,7 +1545,7 @@ def check_background(spec, *, rtol=1e-12):
     """With a registry declared: no row is an exact zero (or below zero, or not finite) at a cell
     or outside node, since an absent row is a declared trace (operators/PLAN.md §2.4); each declared
     background holds (amount >= trace_mM x volume at every node), and the species' ledger floor is
-    its material_balance_atol_fmol. Legacy definitions (no registry) keep the inner model's own
+    its material_balance_atol_fmol. Definitions without a registry keep the inner model's own
     refusal."""
     model = declared(spec)
     if model is None:
@@ -1634,7 +1634,10 @@ INNER_MOVERS = ("membrane", "junction", "channel", "face", "pump")
 # admission): at a general closure's rows it moves each binder's forms and each ligand's free
 # amount from the closure's own read, so check_closure_rows admits it there, as it admits a kind
 # whose law reads the closure; today's face law stays refused. Names, so this module imports no law.
-FORMS_FACE_LAW, FORMS_FACE_READ = "logmean_electrodiffusion_forms@1", "rapid_binding@1"
+FORMS_FACE_LAW, FORMS_FACE_READ = (
+    "cells.route.logmean_electrodiffusion_forms@1",
+    "cells.binding.rapid_binding@1",
+)
 
 
 def _deferred_to_closure(spec):
@@ -1899,11 +1902,11 @@ def check_closure_rows(spec):
 
 # Operators that sum every stored row of a node as free particles (the second review's finding 3,
 # verified; the lead's ruling, 18 November 2026): the water law's osmolyte sum, and the lumen's
-# fill, whose bath work and dilution term sum the stored rows (restricted_cleft_lumen@2 reuses
+# fill, whose bath work and dilution term sum the stored rows (cells.operator.restricted_cleft_lumen@2 reuses
 # @1's fill unmodified). Beside a stage read that stores totals (a closure: H_eq beside its
 # buffers' totals) they count every bound ligand twice.
-WATER_LAWS = ("ideal_osmosis_linear_compliance_water@1",)
-LUMEN_LAWS = ("restricted_cleft_lumen@1", "restricted_cleft_lumen@2")
+WATER_LAWS = ("cells.operator.ideal_osmosis_linear_compliance_water@1",)
+LUMEN_LAWS = ("cells.operator.restricted_cleft_lumen@1", "cells.operator.restricted_cleft_lumen@2")
 
 
 def check_stage_read_rows(spec):
@@ -1980,12 +1983,12 @@ def check_stage_read_rows(spec):
 
 
 # Route laws that read their row's amounts at both ends, never a closure's free forms (FR-15 P2:
-# passive_constant_field_permeation@1; the lead's ruling of 19 November 2026, option (a)). The
+# cells.route.passive_constant_field_permeation@1; the lead's ruling of 19 November 2026, option (a)). The
 # charged law is listed because its flux and its material slope |dJ/dn| are taken against the
 # stored amount, which at a closure row is the total, not the free species: the wrong derivative.
 # Any future route law with a material term must be checked against this list. The proton leak is
 # not one: it reads free h through B4's closure.
-AMOUNT_READING_ROUTE_LAWS = ("passive_constant_field_permeation@1",)
+AMOUNT_READING_ROUTE_LAWS = ("cells.route.passive_constant_field_permeation@1",)
 
 
 def check_amount_reading_routes(spec):

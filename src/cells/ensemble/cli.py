@@ -130,16 +130,8 @@ def aggregate(rows):
             raise ValueError("An ensemble cannot mix an adapter family's results with others")
         (adapter,) = adapters.values()
         return aggregate_adapter(adapter, rows)
-    clusters = [r for r in rows if model_of(r) == "assembly_regulated_cluster@1"]
-    if clusters:
-        if len(clusters) != len(rows):
-            raise ValueError("An ensemble cannot mix cluster and other result families")
-        from cells.registry.legacy_entry import legacy  # An older family's (D188 R1).
-
-        aggregate_cluster = legacy().ensemble("assembly_regulated_cluster@1").aggregate()
-        return aggregate_cluster(clusters)
-    ionic = [row for row in rows if model_of(row) == "ionic_worlds@1"]
-    assembly = [row for row in rows if model_of(row) != "ionic_worlds@1"]
+    ionic = [row for row in rows if model_of(row) == "cells.model.ionic_worlds@1"]
+    assembly = [row for row in rows if model_of(row) != "cells.model.ionic_worlds@1"]
     if ionic and assembly:
         raise ValueError("An ensemble cannot mix ionic and assembly result families")
     if ionic:
@@ -177,7 +169,7 @@ def aggregate(rows):
             raise ValueError("An arm changed its registered observation grid")
         for key in ("not_completed_counts", "final_size_histogram", "dwell_by_size_total_s"):
             arm[key] = [a + b for a, b in zip(arm[key], row[key], strict=True)]
-        if model_of(row) in ("finite_bond_assembly@1", "assembly_regulated_cell@1"):
+        if model_of(row) == "cells.model.finite_bond_assembly@1":
             arm["model"] = row["model"]
             arm["completion_event"] = row["completion_event"]
             for key in (
@@ -193,8 +185,6 @@ def aggregate(rows):
             reaction = arm.setdefault("reaction_counts", dict.fromkeys(row["reaction_counts"], 0))
             for key, count in row["reaction_counts"].items():
                 reaction[key] += count
-        if model_of(row) == "assembly_regulated_cell@1":
-            add_ionic_observables(arm, row)
     for arm in groups.values():
         n = arm["worlds"]
         arm["completion_probability"] = arm["completed_shells"] / n
@@ -211,8 +201,6 @@ def add_ionic_observables(arm, row):
     # Report per-cell aggregate voltage and material/charge/energy maxima; all
     # individual states are retained in the complete task checkpoints.
     voltages = row["final_voltage_V"]
-    if voltages and not isinstance(voltages[0], list):
-        voltages = [[v] for v in voltages]
     totals = [math.fsum(world[i] for world in voltages) for i in range(len(voltages[0]))]
     if "final_voltage_sum_V" not in arm:
         arm["final_voltage_sum_V"] = [0.0] * len(totals)
@@ -223,12 +211,6 @@ def add_ionic_observables(arm, row):
     maxima = arm.setdefault("ionic_accounting", {})
     for key, value in row["ionic_accounting"].items():
         maxima[key] = max(maxima.get(key, 0.0), value)
-    for source, destination in (
-        ("channel_transferred_fmol", "channel_transferred_total_fmol"),
-        ("availability_exposure_s", "availability_exposure_total_s"),
-    ):
-        if source in row:
-            arm[destination] = arm.get(destination, 0.0) + math.fsum(row[source])
 
 
 def aggregate_ionic(rows):
@@ -237,7 +219,7 @@ def aggregate_ionic(rows):
         arm = groups.setdefault(
             row["arm"],
             {
-                "model": "ionic_worlds@1",
+                "model": "cells.model.ionic_worlds@1",
                 "physical_model": row["physical_model"],
                 "deterministic_replicas": True,
                 "worlds": 0,
@@ -508,12 +490,10 @@ def register(args):
     planned = plan(definition, len(selected))
     for task in planned["tasks"]:
         raw = task["definition"]
-        component = {
-            "ionic_worlds@1": "simulation",
-            "assembly_regulated_cell@1": "ionic",
-            "assembly_regulated_cluster@1": "ionic",
-        }.get(families.model_of(raw["model"]))
-        if component and raw[component]["execution"]["backend"] != "gpu":
+        if (
+            families.model_of(raw["model"]) == "cells.model.ionic_worlds@1"
+            and raw["simulation"]["execution"]["backend"] != "gpu"
+        ):
             raise ValueError("GPU ensembles require an explicit GPU ionic definition")
     output = args.output.resolve()
     if not within_output_root(output) or output.exists():

@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of scheduled_cell_replacement@2 over water (v2 design §2).
+"""Tier-1 smoke test of cells.operator.scheduled_cell_replacement@2 over water (v2 design §2).
 
 The operator's event map on the bound heredity sheet under water, in NumPy (no compile):
 * on occupants swollen or shrunk, with changed composition, replaced by a template at its own
@@ -329,10 +329,10 @@ def test_the_definition_refusals():
     alone = copy.deepcopy(good)
     alone["model"]["operators"] = alone["model"]["operators"][1:]
     del alone["experiment"]["water_controls"]
-    refused(alone, "requires ideal_osmosis_linear_compliance_water@1 before it")
+    refused(alone, "requires cells.operator.ideal_osmosis_linear_compliance_water@1 before it")
     reversed_ = copy.deepcopy(good)
     reversed_["model"]["operators"] = reversed_["model"]["operators"][::-1]
-    refused(reversed_, "requires ideal_osmosis_linear_compliance_water@1 before it")
+    refused(reversed_, "requires cells.operator.ideal_osmosis_linear_compliance_water@1 before it")
     steady = dict(fx.rfx.FORMATION, initial_abundance=1.0, lag_s=0.0, gate_at_arrival="law_steady")
     refused(fx.over_water(raw, templates, events, formation=steady), "law_steady")
     outside = fx.templates(raw, volumes={"h": 0.4 * v0})

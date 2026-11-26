@@ -1,4 +1,4 @@
-"""Operator local_species_reactions@1: reactions on the shared species inventory (D152, version 1).
+"""Operator cells.operator.local_species_reactions@1: reactions on the shared species inventory (D152, version 1).
 
 docs/SHARED_INVENTORY_REACTIONS_DESIGN.md (accepted 14 November 2026; rulings in §9). One reaction
 network per composition, a split part (Strang halves) around @3's step. Every reaction is local: it
@@ -10,7 +10,8 @@ accumulator, no membrane-process hook.
 Declaration (§2.1): `standard_concentration_mM` (c0 > 0); `species`, each a species of the inner
 model with `moieties` (integer counts; null: the species is its own moiety), `standard_mu_RT`
 (mu°/RT at c0), D150's identity (`catalogue`, `evidence`; species_common.parse_species, which
-refuses a species with a membrane, junction or channel route of @3's) and, optionally,
+refuses a species with a membrane, junction or channel route of @3's, a channel whose law declares
+its material term excepted) and, optionally,
 `counter_ion` (FR-15 S1: a charged row that keeps @3's routes where @3's explicit-rate bound
 covers it, species_common.check_counter_ion); `reactions`, each with `sites` ({"cells": [...] or
 "all", "outside": [...] or "all"}: cells and finite outside nodes), integer `reactants` and
@@ -26,7 +27,7 @@ Laws (§2.2), with c = n/V at the declared volume V and m the scheduled multipli
   null and `max_rate_mM_per_s` V_max >= 0 (the other case's key is refused, with the reason);
   `saturation_mM` K_M > 0; reactants exactly {S: 1}, so no other species is consumed without
   appearing in the rate;
-* `ideal_detailed_balance_mass_action@1` (passive): J = m V c0 k_f [prod a^alpha -
+* `cells.species_reaction.ideal_detailed_balance_mass_action@1` (passive): J = m V c0 k_f [prod a^alpha -
   exp(sum nu mu°/RT) prod a^beta], a = c/c0, `forward_rate_per_s` k_f > 0; closed, no factors,
   each side of molecularity <= 3; through laws/reactions/mass_action.reversible_flux, unchanged;
 * factors on driven laws (they multiply): `hill_activation` x^n/(K^n + x^n) and `hill_inhibition`
@@ -103,7 +104,7 @@ its reaction's.
 Refusals at the definition (§2.5): the cases above; a held-bath site; more than 1,024 species per
 world (D150's cap: FR-43 / D315, 16 by FR-9 / D165); an identity that differs from a D150
 operator's; a turnover route on a (species, node) a reaction writes (one local-kinetics writer per
-row, §1.1); a cell route on a slot that scheduled_cell_replacement@1 replaces (§2.1); RK4 (§4.6);
+row, §1.1); a cell route on a slot that cells.operator.scheduled_cell_replacement@1 replaces (§2.1); RK4 (§4.6);
 every provider or closer of the masks and outside anchors (CONFLICTS_VIEW: insertion@1 and @2, the
 partition and the bridge); and a volume changer other than water (the lumens, replacement@2 by its
 water: check_volume_changers). The stationary analysis refuses the composite by its own ID check
@@ -156,13 +157,13 @@ from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
 from cells.operators.species_turnover import ROW_BARRIER, set_rows
 
-LAW_ID = "local_species_reactions@1"
+LAW_ID = "cells.operator.local_species_reactions@1"
 STEP_ID = "ssprk33_unidirectional_stage_condition_exact_bookings@1"
 THETA = 0.5  # The stage condition h max L <= THETA at every stage (dt L <= 1 at one sub-step).
 SERIES_BELOW = 1e-6  # |x| below which mu-bar's ratio (1 + x) log1p(x) / x takes its series.
 CONTROLS_KEY = "reaction_controls"
-TURNOVER_LAW = "scheduled_species_turnover@1"
-PASSIVE_LAW = "ideal_detailed_balance_mass_action@1"
+TURNOVER_LAW = "cells.operator.scheduled_species_turnover@1"
+PASSIVE_LAW = "cells.species_reaction.ideal_detailed_balance_mass_action@1"
 MASS_ACTION, MICHAELIS_MENTEN = "mass_action", "michaelis_menten"
 LAWS = (PASSIVE_LAW, MASS_ACTION, MICHAELIS_MENTEN)
 # Route law codes (layout) and factor kinds (layout; 0 pads a reaction's unused factor slots).
@@ -906,7 +907,7 @@ def bind(spec, declaration):
 # ------------------------------------------------------------------ definition checks
 
 
-WATER = "ideal_osmosis_linear_compliance_water@1"  # The one volume changer admitted (FR-43).
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"  # The one volume changer admitted (FR-43).
 
 
 def check_volume_changers(spec, law=LAW_ID):

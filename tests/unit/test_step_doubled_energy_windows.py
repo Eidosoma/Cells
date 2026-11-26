@@ -53,7 +53,7 @@ def step_doubled_world(steps=STEPS):
     raw["experiment"]["end_time"] = steps * dt
     raw["experiment"]["observation_times"] = [0.0, 7 * dt, steps * dt]
     raw["execution"]["energy_check"] = dict(
-        check="step_doubled_energy@1", integration_error_cap=3e-2
+        check="cells.execution.step_doubled_energy@1", integration_error_cap=3e-2
     )
     return raw
 

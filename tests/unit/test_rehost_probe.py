@@ -1,4 +1,4 @@
-"""G0 re-host probe: the two-task fixture builds on resolved_tissue@2 and steps stably."""
+"""G0 re-host probe: the two-task fixture builds on cells.model.resolved_tissue@2 and steps stably."""
 
 import json
 

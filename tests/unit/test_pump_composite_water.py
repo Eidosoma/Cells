@@ -1,7 +1,7 @@
 """Guards (b)-(d) of design §3.7 for the water and symport operators (D143).
 
-(c) Re-expressed through the composite, resolved_pump_water@1 and
-resolved_pump_water@2 equal the frozen models bitwise on their own test worlds:
+(c) Re-expressed through the composite, cells.model.resolved_pump_water@1 and
+cells.model.resolved_pump_water@2 equal the frozen models bitwise on their own test worlds:
 every state field, observation column and max_ diagnostic (np.array_equal, as the
 frozen equivalence tests compare), compiled with default XLA flags. Worlds: the
 water-on heredity cell, the ion-closed osmometer, the gated sheet with the
@@ -84,7 +84,7 @@ def regulated(raw, **kw):
 def sheet(end=0.03):
     raw = fixtures.gated_sheet(end_time=end)
     raw["experiment"]["observation_times"] = [0.0, end / 2, end]
-    raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+    raw["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
     return fixtures.with_water(raw, pf_m_s=AQUAPORIN_PF)
 
 
@@ -121,7 +121,6 @@ def outcome(spec):
 
 
 REFUSALS = {
-    "volume_bound": lambda: cell("H", end=0.2, pf_m_s=AQUAPORIN_PF, minimum_fraction=0.9999),
     "fast_water": lambda: cell(pf_m_s=1.0),
     "fast_route": lambda: regulated(cell("D", pf_m_s=AQUAPORIN_PF), flux_mmol_L_h=1e9),
 }

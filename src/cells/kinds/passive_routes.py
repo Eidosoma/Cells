@@ -1,27 +1,27 @@
-"""cells.passive_routes@1: the passive routes' insertion point, laws by contract (A5).
+"""cells.kind.passive_routes@1: the passive routes' insertion point, laws by contract (A5).
 
 docs/INNER_MODEL_V4_DESIGN.md §7.4 (i), §7.5 (version 1, ruled), §11; the lead's scope ruling (15
 November): one kind for passive routes, its laws by contract. The kernels are the FR-4/FR-5
 owner's, called here and never edited:
-- `passive_neutral_permeation@1` (laws/routes/passive_permeation.py): a neutral species, Fick's law
+- `cells.route.passive_neutral_permeation@1` (laws/routes/passive_permeation.py): a neutral species, Fick's law
   at valence 0, with §7.5's exact booking;
-- `proton_constant_field_leak@1` (laws/transport/proton_leak.py): an H+ constant-field route at
+- `cells.route.proton_constant_field_leak@1` (laws/transport/proton_leak.py): an H+ constant-field route at
   valence +1 on a membrane patch, reading free h through the stage read (B4) at buffered nodes;
   tableau-booked (charged), with its slope conductance in the stage rule (B7) and its flux in the
   membrane current;
-- `proton_constant_field_leak@2` (laws/transport/proton_leak_v2.py; MT-1b's face plan, item 3):
-  @1's kernel declared as a law that reads the general closure (rapid_binding@1), whose stage read
+- `cells.route.proton_constant_field_leak@2` (laws/transport/proton_leak_v2.py; MT-1b's face plan, item 3):
+  @1's kernel declared as a law that reads the general closure (cells.binding.rapid_binding@1), whose stage read
   writes free h into the held H row. It runs through @1's mask and fields (`passive_leak`), so it
   adds no field and gives @1's arithmetic on the same read. Its own refusal: an end at a node of
   B4's version-1 closure, whose free h @1 reads. At the general closure's rows the species
   registry's admission reads its declared read;
-- `inward_rectifier_linear_driving_force@1` (laws/routes/inward_rectifier_linear_driving_force.py,
+- `cells.route.inward_rectifier_linear_driving_force@1` (laws/routes/inward_rectifier_linear_driving_force.py,
   the kinds owner's; D228 item 2): an instantaneous inward rectifier at valence +1 on a membrane
   patch, I = m A g_ref (c_o/K_ref)^(1/2) q(V - E) (V - E); tableau-booked as the leak is, with
   its slope conductance's magnitude in the stage rule (it turns negative) and its flux in the
   membrane current. Its fields exist only in a definition that declares it (declared_fields), so
   a definition without it keeps today's fields and programs;
-- `passive_constant_field_permeation@1` (laws/routes/constant_field_permeation.py; FR-15 F2's
+- `cells.route.passive_constant_field_permeation@1` (laws/routes/constant_field_permeation.py; FR-15 F2's
   P2, the lead's rulings of 19 November 2026, and its junction hosting, D310): a charged
   species' constant-field route at its own valence on a membrane patch or a junction, reading the
   row's amounts at both ends (the leak's flux at any z != 0); tableau-booked as the leak is. Its
@@ -38,9 +38,9 @@ The declaration (model key `passive_routes`, FR-4's form in validation/compartme
 definitions.py), each route on one host (`patch`, or `junction` for the neutral and charged
 laws):
 
-    [{"id": "proton_leak_0", "patch": "bounding_0", "law": "proton_constant_field_leak@1",
+    [{"id": "proton_leak_0", "patch": "bounding_0", "law": "cells.route.proton_constant_field_leak@1",
       "permeability_m_per_s": 6e-7},
-     {"id": "cargo_0", "patch": "bounding_0", "law": "passive_neutral_permeation@1",
+     {"id": "cargo_0", "patch": "bounding_0", "law": "cells.route.passive_neutral_permeation@1",
       "species": "X", "permeability_m_per_s": 1e-9}]
 
 `species` is the neutral law's carried row; the leak's is the proton row (`species`, default "H",
@@ -50,7 +50,7 @@ which must be B4's proton_row when B4 is declared). `factors` is a list of facto
 The rectifier's route declares its coefficients in place of a permeability, and its carried row:
 
     {"id": "rectifier_0", "patch": "rectifier_patch_0",
-     "law": "inward_rectifier_linear_driving_force@1", "species": "K", "g_ref_S_per_m2": 1.0,
+     "law": "cells.route.inward_rectifier_linear_driving_force@1", "species": "K", "g_ref_S_per_m2": 1.0,
      "k_ref_mM": 5.0, "v_half_V": 0.01, "slope_V": 0.01}
 
 each finite: g_ref >= 0 (0, a closed route), K_ref > 0, s > 0 and V_h any value. Its patch's own
@@ -65,8 +65,10 @@ refuses any other route law it hosts.
   records it and its fields gain the control `passive_multiplier` [route], held at 1; each
   factored route's slot is routed (`routed_controls`), so at every stage it is the left fold of
   its sources' factors. Each route's opening is multiplied by it in rates and stage_term.
-  Booking, its scope, bound_rate (m <= 1) and moved_rows are unchanged. A definition whose routes
-  declare no factors keeps today's entry, fields and programs.
+  Booking, its scope, bound_rate (m <= 1) and moved_rows are unchanged. A factored route that moves
+  a row its own source reads closes a loop: the sink's feedback hooks (routed_rows and routed_flux;
+  kind_registry.Kind) give the core its row and its routed flux, and the core bounds the loop. A
+  definition whose routes declare no factors keeps today's entry, fields and programs.
 
 - **The flux,** inward from the host's outside end (a patch's outside node, a junction's receiver)
   to its inside end (a patch's cell, a junction's sender), at every explicit stage, on the read
@@ -141,7 +143,7 @@ from cells.numerics.species_sums import entity_sum, species_sum
 from cells.registry import laws as law_registry
 from cells.registry.kind_registry import BUILTIN, ConfigError, Kind, KindFields, KindView
 
-KIND_ID = "cells.passive_routes@1"
+KIND_ID = "cells.kind.passive_routes@1"
 MODEL_KEY = "passive_routes"
 LAW_ID = passive.LAW_ID  # The neutral law.
 LEAK_LAW_ID = leak.LAW_ID  # The charged proton leak.
@@ -485,11 +487,11 @@ def structure_entry(declaration):
 
 
 def declared_fields(entry):
-    """The kind's fields for its entry (§7.4 (n) 5): the multiplier exists only where factored,
-    the rectifier's fields only where a route runs it, the charged law's field and its
-    material_term only where a route runs that law, the readouts' field, columns and hook only
-    where a route asks (FR-34), and the one-way records' fields, mask and hooks only where a route
-    keeps them (FR-50), so no other entry's program or observation changes."""
+    """The kind's fields for its entry (§7.4 (n) 5): the multiplier and the sink's feedback hooks
+    exist only where factored, the rectifier's fields only where a route runs it, the charged law's
+    field and its material_term only where a route runs that law, the readouts' field, columns and
+    hook only where a route asks (FR-34), and the one-way records' fields, mask and hooks only where
+    a route keeps them (FR-50), so no other entry's program or observation changes."""
     one_way = isinstance(entry, OneWay)
     readout = isinstance(entry, ReadOut) or (one_way and entry.readout)
     laws = entry.laws if isinstance(entry, (Factored, ReadOut, OneWay)) else entry
@@ -506,7 +508,9 @@ def declared_fields(entry):
         layout,
         (MULTIPLIER,) if factored else (),
         READOUT_COLUMNS if readout else (),
-        (() if charged else ("material_term",)) + (() if readout else ("readouts",)),
+        (() if charged else ("material_term",))
+        + (() if readout else ("readouts",))
+        + (() if factored else ("routed_rows", "routed_flux")),
         (ONE_WAY_RECORD,) if one_way else (),
     )
 
@@ -531,6 +535,20 @@ def routed_controls(declaration):
     return tuple(
         (MULTIPLIER, k, route.factors) for k, route in enumerate(declaration) if route.factors
     )
+
+
+def routed_rows(declaration):
+    """The row each factored route moves, between its two ends, in routed_controls' order (a
+    factor's feedback, kind_registry.Kind; names only)."""
+    return tuple(
+        ((route.species, route.inside, route.outside),) for route in declaration if route.factors
+    )
+
+
+def routed_flux(read, potentials, control, p, *, xp):
+    """{the multiplier: [species, route] the inward flux (fmol/s)} at the routed control, the
+    rates' own (_flux): a factor's feedback (kind_registry.Kind)."""
+    return {MULTIPLIER: _flux(read, potentials, control, p, xp=xp).flux}
 
 
 def _node_ids(spec):
@@ -1167,7 +1185,7 @@ def check_definition(spec):
     patches = {p.id: p for p in m.membranes}
     junctions = {j.id: j for j in m.junctions}
     taken = {x.id for x in (*m.cells, *m.extracellular, *m.membranes, *m.junctions, *m.faces)}
-    closure = kinds.get("cells.rapid_proton_buffer@1")
+    closure = kinds.get("cells.kind.rapid_proton_buffer@1")
     crossing = None  # The junctions that cross a floating component, read once where needed.
     for route in declaration:
         if route.id in taken:
@@ -1192,7 +1210,7 @@ def check_definition(spec):
         if route.law == LEAK_V2_LAW_ID and closure is not None:
             buffered = () if hasattr(closure, "closure_rows") else dict(closure.buffers)
             at = [end for end in (route.inside, route.outside) if end in buffered]
-            if at:  # B4's version 1: its free h is @1's read, not rapid_binding@1's.
+            if at:  # B4's version 1: its free h is @1's read, not cells.binding.rapid_binding@1's.
                 raise ConfigError(
                     f"{MODEL_KEY} {route.id}: {LEAK_V2_LAW_ID} reads {leak_v2.CLOSURE_READ_ID}'s "
                     f"free h, and {at[0]} is a buffered node of B4's version-1 closure; "
@@ -1396,6 +1414,8 @@ PASSIVE_ROUTES = BUILTIN.register(
         declared_fields=declared_fields,
         control_values=control_values,
         routed_controls=routed_controls,
+        routed_rows=routed_rows,
+        routed_flux=routed_flux,
         view=VIEW,
         view_sets=view_sets,
         label_refusals=label_refusals,  # FR-42's hook (D303 item 6): traced only with labels.

@@ -7,17 +7,17 @@ against the summary the rows came from), and drawn by draw_relations.py in a fre
 imports no engine code. The report is OUT/second_consumer.json. Development runs, not judged.
 
 Engine models run (AGENTS.md):
-- egg: resolved_pump_composite@1 over resolved_pump_tissue@3 with membrane_entity_state@1,
-  scheduled_membrane_insertion@2, restricted_cleft_lumen@2, isopotential_partition@1,
-  cytoplasmic_bridge_closure@1 and electrode_current_injection@1: S5's egg-scale accounting
+- egg: cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3 with cells.operator.membrane_entity_state@1,
+  cells.operator.scheduled_membrane_insertion@2, cells.operator.restricted_cleft_lumen@2, cells.operator.isopotential_partition@1,
+  cells.operator.cytoplasmic_bridge_closure@1 and cells.operator.electrode_current_injection@1: S5's egg-scale accounting
   world (validation/division/egg_division_world) at scale 0.002, three partitions in two
   generations;
-- replacement and replacement_donors: resolved_pump_replacement@1, the composite over @3 with
-  scheduled_cell_replacement@1: crossrev's base worlds of those names (composite_crossrev.worlds,
+- replacement and replacement_donors: cells.model.resolved_pump_replacement@1, the composite over @3 with
+  cells.operator.scheduled_cell_replacement@1: crossrev's base worlds of those names (composite_crossrev.worlds,
   rebuilt here from the same fixtures and recipe): one slot replaced twice, donor copies, one with
   a route-only template;
-- volume_events: the composite over @3 with ideal_osmosis_linear_compliance_water@1 and
-  scheduled_cell_replacement@2: crossrev's volume set's world of that name: templates at their own
+- volume_events: the composite over @3 with cells.operator.ideal_osmosis_linear_compliance_water@1 and
+  cells.operator.scheduled_cell_replacement@2: crossrev's volume set's world of that name: templates at their own
   volumes, two events at one time, and a copy that replaces a newcomer.
 
 The checks, against the definition:
@@ -70,7 +70,9 @@ def worlds():
     ]
     events = ((t1, "cell_0", "h", "n1"), (t2, "cell_2", "h", "n2"), (t3, "cell_0", "d", "n4"))
     out["replacement"] = rfx.with_replacement(cells, templates, events)
-    fast = dict(rfx.NO_ROUTES, channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3e-7})
+    fast = dict(
+        rfx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+    )
     donor_events = (
         (t1, "cell_0", None, "c1", "cell_3"),
         (t2, "cell_4", "fast_nav", "c2", "cell_3"),
@@ -145,7 +147,9 @@ def replacement_checks(definition, tables, directory):
     model, experiment = definition["model"], definition["experiment"]
     cells = [c["id"] for c in model["cells"]]
     species = [s["id"] for s in model["species"]]
-    if "replacement" in model:  # resolved_pump_replacement@1's own block, or the operator's.
+    if (
+        "replacement" in model
+    ):  # cells.model.resolved_pump_replacement@1's own block, or the operator's.
         declared = model["replacement"]
     else:
         (declared,) = [op for op in model["operators"] if op["law"] in adapter.REPLACEMENTS]

@@ -1,4 +1,4 @@
-"""Pin the judged tolerances of the resolved_pump_water@1 qualification (W1e).
+"""Pin the judged tolerances of the cells.model.resolved_pump_water@1 qualification (W1e).
 
 Order (docs/PUMP_WATER_MODEL.md): the predictions are frozen first, then the engine
 dt study runs, then this script pins each tolerance, and only then is the judge run.

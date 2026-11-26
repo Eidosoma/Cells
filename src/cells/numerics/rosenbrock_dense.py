@@ -1,4 +1,4 @@
-"""rosenbrock_rodas4_dense@1: Rodas4, a Rosenbrock method with an embedded error estimate and a
+"""cells.solver.rosenbrock_rodas4_dense@1: Rodas4, a Rosenbrock method with an embedded error estimate and a
 dense output (OL6; docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md §6.1, D304).
 
 **The method** (Hairer and Wanner 1996, Solving Ordinary Differential Equations II, §VI.4: RODAS's
@@ -48,7 +48,7 @@ import jax.numpy as jnp
 import jax.scipy.linalg as jsl
 import numpy as np
 
-METHOD_ID = "rosenbrock_rodas4_dense@1"
+METHOD_ID = "cells.solver.rosenbrock_rodas4_dense@1"
 ORDER = 4  # the solution's; the embedded estimate and the dense output are of order 3
 GAMMA = 0.25
 A = np.array(

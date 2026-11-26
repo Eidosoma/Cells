@@ -1,8 +1,8 @@
-"""resolved_pump_tissue@3: gates, equivalence and the IMEX split.
+"""cells.model.resolved_pump_tissue@3: gates, equivalence and the IMEX split.
 
 A shard of the former test_surface_pump_v3.py: the exponential gate update is bounded,
 exact and second order; with no channels the identity reproduces @2; the RK4 law
-reproduces resolved_tissue@8's catalog; single-patch currents against it; the explicit
+reproduces cells.model.resolved_tissue@8's catalog; single-patch currents against it; the explicit
 and implicit parts sum to the law.
 """
 
@@ -16,8 +16,7 @@ from cells.definitions.specs import parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.execution.runner import run
 from cells.laws.channels import sodium_channels
-from cells.legacy.models import surface_catalog
-from cells.models import surface_pump_v2, surface_pump_v3
+from cells.models import surface_kinetic, surface_pump_v2, surface_pump_v3
 from cells.numerics import exponential_gates as gates
 from cells.numerics import surface_imex as imex
 from cells.registry.models import get_model
@@ -123,13 +122,20 @@ def test_exponential_gate_update_is_bounded_exact_and_second_order():
 
 
 @pytest.mark.parametrize("solver", ["rk4", *SOLVERS])
-def test_without_channels_reproduces_resolved_pump_tissue_2(solver):
+def test_without_channels_reproduces_resolved_pump_tissue_2(solver, monkeypatch):
     """Same states and observations as @2; the channel terms are exact zeros.
 
     Observed bitwise on CPU; the bound is the requested 1e-13 of each array's
-    magnitude, which admits a compiled reordering.
+    magnitude, which admits a compiled reordering. Fix (A) (D273) is @3's alone:
+    this world's junction joins two capacitor components and one floats, so under
+    ARS(2,2,2) @3's explicit stage rates read each stage's quasi-static potentials
+    and @2's do not (1.2e-7 of amount_increment here, first order in dt). That arm
+    asserts the switch is on for this world, then checks the identity with it off.
     """
     spec = parse_spec(fixtures.definition("release", solver=solver, channels=False))
+    if solver == imex.ARS222_ID:
+        assert surface_pump_v3.structure(spec.model).crossing_junctions == ("junction_0",)
+        monkeypatch.setattr(surface_pump_v3, "crossing_junctions", lambda model: ())
     model = get_model(spec.model)
     assert isinstance(model, surface_pump_v3.InnerImplementation)
     assert model.structure == surface_pump_v3.structure(spec.model)
@@ -153,7 +159,7 @@ def test_without_channels_reproduces_resolved_pump_tissue_2(solver):
 def test_rk4_law_reproduces_the_resolved_tissue_8_catalog():
     """Kv1.5, Kir2.1, NaV1.2 and both leaks: same currents, gates and ledgers.
 
-    resolved_tissue@8 keeps two unused gates for its leak laws; those rows are
+    cells.model.resolved_tissue@8 keeps two unused gates for its leak laws; those rows are
     not compared. Its dense field agrees with the factored one to 1e-12.
     """
     raw = fixtures.definition("clamped", calcium=False)
@@ -163,7 +169,8 @@ def test_rk4_law_reproduces_the_resolved_tissue_8_catalog():
         definition["execution"].update(dt=dt, max_steps=1024)
         definition["experiment"].update(end_time=5e-4, observation_times=[0.0, 200 * dt, 5e-4])
     a, b = run(parse_spec(raw)), run(parse_spec(reference))
-    assert get_model(b.spec.model) is surface_catalog
+    assert get_model(b.spec.model).MODEL_ID == "cells.model.resolved_tissue@8"
+    assert type(b.final.layout) is surface_kinetic.CATALOG_LAYOUT_TYPE
     gated = [i for i, row in enumerate(fixtures.CHANNELS) if row[-1]]
     for key in surface_pump_v3.STATE_TYPE._fields:
         if key.startswith("calcium"):
@@ -180,7 +187,7 @@ def test_rk4_law_reproduces_the_resolved_tissue_8_catalog():
 def test_single_patch_channel_currents_match_the_rk4_catalog_at_small_steps():
     """All five laws on one patch, gates off steady state: IMEX converges to RK4.
 
-    The reference is resolved_tissue@8 (RK4 at its 1.25 us bound). Each
+    The reference is cells.model.resolved_tissue@8 (RK4 at its 1.25 us bound). Each
     population's flux, scaled by its own largest magnitude, converges at second
     order under ARS(2,2,2).
     """

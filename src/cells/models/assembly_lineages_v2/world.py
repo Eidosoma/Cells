@@ -11,12 +11,12 @@ that carries meaning is a list, so the canonical JSON that names a world fixes i
                 "membrane": {"species": ["A", "B"]},
                 "lumen": {"volume_L": V, "species": ["S"]}},
      "steps": [{"id", "reactants", "products", "phase" | "locus", "law", "forward_rate_per_s"}],
-     "free_energy": [{"law": "cells.ideal_mixing@1"}, {"law": "cells.regular_mixing@1", ...}],
-     "rate_factor": {"law": "cells.transition_state_factor@1", ...},        optional
+     "free_energy": [{"law": "cells.free_energy.ideal_mixing@1"}, {"law": "cells.free_energy.regular_mixing@1", ...}],
+     "rate_factor": {"law": "cells.rate_factor.transition_state_factor@1", ...},        optional
      "founder": {"A@membrane": 10, ...},                      every finite place, explicitly
      "world_role": "probe",                                    optional (§0.2b rule 8)
      "sites": [{"site": "R", "complex": "XR"}, ...],           optional (FR-21; §0.2f; FR-46's face)
-     "hazard": {"law": "cells.pore_nucleation@1", ...}}        optional (FR-31; pore_nucleation.py)
+     "hazard": {"law": "cells.assembly_hazard.pore_nucleation@1", ...}}        optional (FR-31; pore_nucleation.py)
 
 **Species** take D152's species form (SHARED_INVENTORY_REACTIONS_DESIGN §2.1): `moieties` (positive
 integer counts, or null: the species is its own moiety), the identity (`catalogue`, `evidence`,
@@ -50,7 +50,7 @@ phase has that phase. Held places take part only as pool places.
 **Sites** (FR-21; §0.2f, the lead's rulings of 20 November 2026, D244 and D246). A pair declares a
 membrane species as a binding site and another as its complex, the site with one bound molecule.
 In a world with a geometry, rule 3 admits one interfacial step for a declared pair, exactly
-X@pool + site@membrane -> complex@membrane under cells.stochastic_mass_action@1 with count_on_m
+X@pool + site@membrane -> complex@membrane under cells.reaction.stochastic_mass_action@1 with count_on_m
 (spec._geometry_refusals); an undeclared pair stays refused. On a bilayer both take area.
 
 **A pair's face** (FR-46; D323): `"face": "outer"` (the default, never written) or `"inner"`. An
@@ -177,7 +177,7 @@ class World:
     # declared pair binds from the pool, as FR-21's do).
     inner_sites: tuple | None = None
     hazard: tuple | None = None  # FR-31: a vesicle hazard, (law ID, parsed data), or None.
-    # OL6 S7: cells.size_threshold_division@1's declaration (size_division.py), or None. It is
+    # OL6 S7: cells.operator.size_threshold_division@1's declaration (size_division.py), or None. It is
     # declared in the world's division block, by law, and kept apart from `division` (shear's).
     size_division: dict | None = None
 

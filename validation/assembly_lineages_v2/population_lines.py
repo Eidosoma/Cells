@@ -1,4 +1,4 @@
-"""F12 and generation inheritance along the lines of a cells.assembly_lineages@2 population (R4;
+"""F12 and generation inheritance along the lines of a cells.model.assembly_lineages@2 population (R4;
 analysis, not engine physics; the lead's rulings of 20 November 2026).
 
 In a population every daughter lives, so descent branches, while F12 is defined along one line.

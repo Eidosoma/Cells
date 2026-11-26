@@ -1,7 +1,7 @@
 """Time-varying kind controls on the composite and vector-window paths (§7.4 (l) of
 docs/INNER_MODEL_V4_DESIGN.md); split from test_kind_schedules_runs.py, whose run of the scheduled
 world it repeats once for this module, to keep each file under the tier cap (16 November 2026):
-- an empty composition of the scheduled world is its resolved_pump_tissue@3 run, bitwise, with the
+- an empty composition of the scheduled world is its cells.model.resolved_pump_tissue@3 run, bitwise, with the
   kind's change records as its breakpoints;
 - on the vector-window path each world's move is exact at its own schedule, and the first world's
   equals its scalar run.

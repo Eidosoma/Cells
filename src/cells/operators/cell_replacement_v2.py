@@ -1,8 +1,8 @@
-"""Operator scheduled_cell_replacement@2: scheduled carrier replacement over water.
+"""Operator cells.operator.scheduled_cell_replacement@2: scheduled carrier replacement over water.
 
-docs/PUMP_COMPOSITE_V2_DESIGN.md §2. This is scheduled_cell_replacement@1
+docs/PUMP_COMPOSITE_V2_DESIGN.md §2. This is cells.operator.scheduled_cell_replacement@1
 (operators/cell_replacement.py, unchanged) over a volume owner,
-ideal_osmosis_linear_compliance_water@1, which must precede it: the same event map,
+cells.operator.ideal_osmosis_linear_compliance_water@1, which must precede it: the same event map,
 formation law, templates, donor rule, route values and bookings, plus the slot's volume and
 water's free energy. It writes none of @1's fields.
 
@@ -63,7 +63,7 @@ from cells.numerics.species_sums import entity_sum
 from cells.operators import cell_replacement as replacement
 from cells.operators import osmotic_water as water
 
-LAW_ID = "scheduled_cell_replacement@2"
+LAW_ID = "cells.operator.scheduled_cell_replacement@2"
 ARRIVAL_STEPS = 64  # arrival_volumes: the most floats a bound arrival volume moves inward.
 
 VOLUME_STATE_AXES = {

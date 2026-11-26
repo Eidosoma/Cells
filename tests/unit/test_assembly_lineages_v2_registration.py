@@ -1,4 +1,4 @@
-"""cells.assembly_lineages@2's laws on seam F's template and registry, and U2 in both families.
+"""cells.model.assembly_lineages@2's laws on seam F's template and registry, and U2 in both families.
 
 Structural only for version 2 (no rate of its laws is computed). Each claim with a planted error it
 must catch (D187):
@@ -114,9 +114,17 @@ HOMES = {
 }  # fmt: skip
 OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
     SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
-    "cells.serial_transfer@1": (transfer, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
-    "cells.pool_replacement@1": (replacement, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
-    "cells.pool_withdrawal@1": (withdrawal, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.operator.serial_transfer@1": (transfer, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.operator.pool_replacement@1": (
+        replacement,
+        interfaces.AssemblyOperator,
+        OPERATOR_INTERFACE,
+    ),
+    "cells.operator.pool_withdrawal@1": (
+        withdrawal,
+        interfaces.AssemblyOperator,
+        OPERATOR_INTERFACE,
+    ),
     TENSION_HOLD: (tension_hold, interfaces.AssemblyOperator, OPERATOR_INTERFACE),  # FR-31
     # OL6 S7 (D304): the size-threshold division.
     SIZE_THRESHOLD_DIVISION: (size_division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
@@ -191,33 +199,46 @@ def test_u2_holds_structurally_in_version_2():
     law_registry.active()
     reaction = mass_action.LAW
     _refused(
-        dataclasses.replace(reaction, law_id="tests.driven_reaction@1", energy_role="driven"),
+        dataclasses.replace(
+            reaction, law_id="tests.reaction.driven_reaction@1", energy_role="driven"
+        ),
         "U2",
     )
     _refused(
-        dataclasses.replace(reaction, law_id="tests.sourced_reaction@1", energy_source="fuel"),
+        dataclasses.replace(
+            reaction, law_id="tests.reaction.sourced_reaction@1", energy_source="fuel"
+        ),
         "U2",
     )
     _refused(
-        dataclasses.replace(reaction, law_id="tests.v1_host@1", host="cells.assembly_lineages@1"),
-        "is hosted by cells.assembly_lineages@2",
+        dataclasses.replace(
+            reaction, law_id="tests.reaction.v1_host@1", host="cells.model.assembly_lineages@1"
+        ),
+        "is hosted by cells.model.assembly_lineages@2",
     )
     factor = transition_state.LAW
     _refused(
-        dataclasses.replace(factor, law_id="tests.each_direction@1", evaluated_on="each_direction"),
+        dataclasses.replace(
+            factor, law_id="tests.rate_factor.each_direction@1", evaluated_on="each_direction"
+        ),
         "common state m only",
     )
     _refused(
-        dataclasses.replace(factor, law_id="tests.dilute@1", catalysing_phases=("lumen",)),
+        dataclasses.replace(
+            factor, law_id="tests.rate_factor.dilute@1", catalysing_phases=("lumen",)
+        ),
         "condensed phase only",
     )
     _refused(
-        dataclasses.replace(regular_mixing.TERM, law_id="tests.term@1", part="other"),
+        dataclasses.replace(regular_mixing.TERM, law_id="tests.free_energy.term@1", part="other"),
         "its part is one of",
     )
     # Control: a passive declaration under its own namespace is admitted.
-    admitted = dataclasses.replace(reaction, law_id="tests.passive_reaction@1")
-    assert law_registry.BUILTIN.extended(admitted).lookup("tests.passive_reaction@1") is admitted
+    admitted = dataclasses.replace(reaction, law_id="tests.reaction.passive_reaction@1")
+    assert (
+        law_registry.BUILTIN.extended(admitted).lookup("tests.reaction.passive_reaction@1")
+        is admitted
+    )
 
 
 def test_d215_s_guard_on_1_admits_only_d192_s_labelled_exception():
@@ -226,13 +247,15 @@ def test_d215_s_guard_on_1_admits_only_d192_s_labelled_exception():
     assert law_registry.BUILTIN.lookup(GARD_SINGLE_EVENT) is gard.SINGLE_EVENT
     single = gard.SINGLE_EVENT
     for change in ({"law_set": "other"}, {"comparison_only": False}, {"form": "pair-consistent"}):
-        planted = dataclasses.replace(single, law_id="tests.second_driven@1", **change)
+        planted = dataclasses.replace(single, law_id="tests.rate_factor.second_driven@1", **change)
         _refused(planted, "U2, D199; D215")
     # @1's own kernel test plants a variant that keeps the label: still admitted.
-    kept = dataclasses.replace(single, law_id="tests.row_update@1", update=lambda *a: None)
+    kept = dataclasses.replace(
+        single, law_id="tests.rate_factor.row_update@1", update=lambda *a: None
+    )
     assert kept.errors() == []
     # A passive law needs no label.
-    passive = dataclasses.replace(gard.PAIR_CONSISTENT, law_id="tests.renamed_factor@1")
+    passive = dataclasses.replace(gard.PAIR_CONSISTENT, law_id="tests.rate_factor.renamed_factor@1")
     assert passive.errors() == []
 
 

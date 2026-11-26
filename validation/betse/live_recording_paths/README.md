@@ -1,5 +1,8 @@
 # D128: disjoint output ownership and shared-worker integration gate
 
+> **Legacy cleanup (25 November 2026, D386).** This folder's drivers are retired (D374), and their
+> code left the tree; the tag `pre-cleanup-2026-11-25` keeps it. This page stays as a record.
+
 Correct the D125 campaign harness's output-path collision without modifying
 executed code or production Cells. D127's continuation stopped after 79.799 s:
 one Cells case completed all three windows, then a checkpoint-enabled case

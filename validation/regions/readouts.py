@@ -4,7 +4,7 @@ engine change.
 
 **The world map** (world_map) gives, for one species:
 - its nodes: the cells, then the outside nodes;
-- which cell owns each compartment (cell_owned_compartments@1);
+- which cell owns each compartment (cells.operator.cell_owned_compartments@1);
 - each exchange route's source and destination.
 
 **The region export** (region_rows): one row per sample for one species and a declared region, a
@@ -23,7 +23,7 @@ cell, so outside >= 0, within its stored amounts' rounding.
   (turnover_produced_fmol, with a reaction's produced amount).
 
 **A label's amounts** (label_nodes; FR-42's neutral labels, D289, which replaced D1's label
-families, retired by D300): where neutral_arrival_labels@1 labels the species, the label owner
+families, retired by D300): where cells.operator.neutral_arrival_labels@1 labels the species, the label owner
 carries each label's shares across every mover the engine follows (faces and routes included), so a
 label's amount at a node is the species' amount there times the label's share, read from the
 state, at every node. The movers' cumulative records stay the species' own (region_rows), since
@@ -43,7 +43,7 @@ The export's transfer columns would miss those moves. For the tracer it is worse
 movement can leave every net record at zero while labelled material goes one way and unlabelled
 the other (two equal nodes exchanging by diffusion keep both totals and the net face flux at 0).
 The tracer would then report no movement at all. A law that moves every species at its nodes
-without naming one (the wash, scheduled_compartment_wash@1) is refused too: a check that looked
+without naming one (the wash, cells.operator.scheduled_compartment_wash@1) is refused too: a check that looked
 for a species field would miss it, and the tracer would keep the washed-out label (a review
 finding, 21 November 2026).
 
@@ -137,10 +137,10 @@ import numpy as np
 
 from cells.registry.models import get_model
 
-TURNOVER = "scheduled_species_turnover@1"
-EXCHANGE = "scheduled_species_exchange@1"
-REACTIONS = "local_species_reactions@1"
-COMPARTMENTS = "cell_owned_compartments@1"
+TURNOVER = "cells.operator.scheduled_species_turnover@1"
+EXCHANGE = "cells.operator.scheduled_species_exchange@1"
+REACTIONS = "cells.operator.local_species_reactions@1"
+COMPARTMENTS = "cells.operator.cell_owned_compartments@1"
 CLOSURE_ULPS = 64
 # The largest O/S at a node that gains material in a step or sends it along a route (module
 # docstring, "The resolution").
@@ -206,38 +206,38 @@ TRACER_READS = (TURNOVER, EXCHANGE)
 # Laws shown to move no species amount: their declarations write no amount field, provide no
 # amount view and close no node (test_region_readouts.py checks each against its contract).
 SHOWN_INERT = {
-    "ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
-    "membrane_entity_state@1": "provides channel abundances, membrane areas and capacitances",
+    "cells.operator.ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
+    "cells.operator.membrane_entity_state@1": "provides channel abundances, membrane areas and capacitances",
     COMPARTMENTS: "declares which cell owns each compartment",
-    "species_regulated_availability@1": "scales other laws' availabilities; its state is its own",
-    "species_regulated_availability@2": "scales other laws' availabilities and rates; its state "
+    "cells.operator.species_regulated_availability@1": "scales other laws' availabilities; its state is its own",
+    "cells.operator.species_regulated_availability@2": "scales other laws' availabilities and rates; its state "
     "is its own",
-    "site_occupant_replacement@1": "resets site pools at replacement events; free amounts stay",
-    "neutral_arrival_labels@1": "holds labels' shares of species rows; it moves no amount (FR-42)",
+    "cells.operator.site_occupant_replacement@1": "resets site pools at replacement events; free amounts stay",
+    "cells.operator.neutral_arrival_labels@1": "holds labels' shares of species rows; it moves no amount (FR-42)",
 }
 # Every other registered law, with why it is refused (fail closed: a law in no list is refused
 # too, until it is classified here).
 REFUSED = {
     REACTIONS: "is not read by the tracer (a reversible reaction's net record has no direction)",
-    "site_occupancy@1": "binds and releases its ligands (a two-way exchange with bound pools)",
-    "population_unit_turnover@1": "consumes its precursors into units",
-    "integer_unit_population@1": "moves species across its sites' patches, between cells and "
+    "cells.operator.site_occupancy@1": "binds and releases its ligands (a two-way exchange with bound pools)",
+    "cells.operator.population_unit_turnover@1": "consumes its precursors into units",
+    "cells.operator.integer_unit_population@1": "moves species across its sites' patches, between cells and "
     "outside nodes; the readouts do not read its transfers",
-    "k_anion_symport_mass_action@1": "moves its potassium and anion across membranes in-step",
-    "electrode_current_injection@1": "moves its carriers between the electrode and a cell",
-    "scheduled_cell_replacement@1": "swaps a replaced cell's pools at its events",
-    "scheduled_cell_replacement@2": "swaps a replaced cell's pools at its events",
-    "isopotential_partition@1": "splits a dividing cell's contents between its daughters",
-    "cytoplasmic_bridge_closure@1": "sets a daughter bridge's availability (with the partition)",
-    "scheduled_membrane_insertion@1": "opens onset nodes with their declared contents",
-    "scheduled_membrane_insertion@2": "opens and retires nodes and patches",
-    "restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
-    "restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
-    "scheduled_bath_composition@1": "sets held baths' compositions at its events",
-    "scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
-    "scheduled_compartment_wash@1": "collects and refills every free species at its nodes",
+    "cells.operator.k_anion_symport_mass_action@1": "moves its potassium and anion across membranes in-step",
+    "cells.operator.electrode_current_injection@1": "moves its carriers between the electrode and a cell",
+    "cells.operator.scheduled_cell_replacement@1": "swaps a replaced cell's pools at its events",
+    "cells.operator.scheduled_cell_replacement@2": "swaps a replaced cell's pools at its events",
+    "cells.operator.isopotential_partition@1": "splits a dividing cell's contents between its daughters",
+    "cells.operator.cytoplasmic_bridge_closure@1": "sets a daughter bridge's availability (with the partition)",
+    "cells.operator.scheduled_membrane_insertion@1": "opens onset nodes with their declared contents",
+    "cells.operator.scheduled_membrane_insertion@2": "opens and retires nodes and patches",
+    "cells.operator.restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
+    "cells.operator.restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
+    "cells.operator.scheduled_bath_composition@1": "sets held baths' compositions at its events",
+    "cells.operator.scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
+    "cells.operator.scheduled_compartment_wash@1": "collects and refills every free species at its nodes",
     # Gene regulation's option A (G4): a recorded exception naming the table's owner.
-    "templated_polymerisation@1": "makes, degrades and recharges species at its routes' cells; "
+    "cells.operator.templated_polymerisation@1": "makes, degrades and recharges species at its routes' cells; "
     "neither tool reads its counters",
 }
 
@@ -417,15 +417,21 @@ def label_nodes(spec, times, states, species, label, *, samples=None):
     """A label's amounts (module docstring) at the sampled times (every given time by default):
     {times, node_fmol: {node: [...]}, nodes, species, label}, at every node (the cells, then the
     outside nodes), each the species' amount there times the label's share, the shares read from
-    the states (neutral_arrival_labels@1's label_share and label_outside_share). A species or label
+    the states (cells.operator.neutral_arrival_labels@1's label_share and label_outside_share). A species or label
     the world does not label is refused."""
     owner = next(
-        (d for d in getattr(spec.model, "operators", ()) if d.law == "neutral_arrival_labels@1"),
+        (
+            d
+            for d in getattr(spec.model, "operators", ())
+            if d.law == "cells.operator.neutral_arrival_labels@1"
+        ),
         None,
     )
     labelled = [] if owner is None else [s.id for s in owner.species]
     if species not in labelled:
-        raise ValueError(f"{species} is not labelled (neutral_arrival_labels@1 names {labelled})")
+        raise ValueError(
+            f"{species} is not labelled (cells.operator.neutral_arrival_labels@1 names {labelled})"
+        )
     entry = owner.species[labelled.index(species)]
     if label not in entry.labels:
         raise ValueError(f"{species} has no label {label!r} (its labels: {list(entry.labels)})")

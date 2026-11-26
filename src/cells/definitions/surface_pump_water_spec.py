@@ -1,6 +1,6 @@
-"""resolved_pump_water@1: resolved_pump_tissue@3 plus osmotic water and compliant volumes.
+"""cells.model.resolved_pump_water@1: cells.model.resolved_pump_tissue@3 plus osmotic water and compliant volumes.
 
-Every field of resolved_pump_tissue@3 keeps its meaning and is parsed by that
+Every field of cells.model.resolved_pump_tissue@3 keeps its meaning and is parsed by that
 identity's own parser. The model adds ``water``:
 
 * ``law``: the water law, numerics/osmotic_water.LAW_ID (ideal van 't Hoff
@@ -38,7 +38,7 @@ from cells.definitions.spec_values import identifier, positive, signed_number
 from cells.definitions.specs import ChannelChange, ConfigError, _fields, _number
 from cells.numerics.osmotic_water import LAW_ID as WATER_LAW_ID
 
-MODEL_ID = "resolved_pump_water@1"
+MODEL_ID = "cells.model.resolved_pump_water@1"
 COMPARTMENT_FIELDS = (
     "compartment_id",
     "reference_volume_pL",
@@ -147,7 +147,7 @@ class Experiment(ionic.Experiment):
 
 
 def projection(spec):
-    """The resolved_pump_tissue@3 part of a definition (no water declarations)."""
+    """The cells.model.resolved_pump_tissue@3 part of a definition (no water declarations)."""
     m, e = spec.model, spec.experiment
     model = ionic.SurfacePumpChannelModel(
         **{k: getattr(m, k) for k in ionic.SurfacePumpChannelModel.__dataclass_fields__}
@@ -267,7 +267,7 @@ def parse(data):
     raw = copy.deepcopy(data)
     m, e = raw.get("model"), raw.get("experiment")
     if not isinstance(m, dict) or not isinstance(e, dict) or m.get("id") != MODEL_ID:
-        raise ConfigError("Require resolved_pump_water@1")
+        raise ConfigError("Require cells.model.resolved_pump_water@1")
     if "water" not in m or "water_controls" not in e:
         raise ConfigError("Declare water and water_controls")
     water, controls = m.pop("water"), e.pop("water_controls")
@@ -295,7 +295,7 @@ def parse(data):
 
 
 def control_values(spec, times):
-    """resolved_pump_tissue@3 controls plus the water availabilities (padded to membranes)."""
+    """cells.model.resolved_pump_tissue@3 controls plus the water availabilities (padded to membranes)."""
     base = ionic.control_values(projection(spec), times)
     changes = spec.experiment.changes
     indices = np.searchsorted([c.time for c in changes], times, side="right") - 1

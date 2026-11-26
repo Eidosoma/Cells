@@ -1,5 +1,10 @@
 # Multispecies membrane: first production assembly
 
+> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools
+> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps
+> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without
+> this note.
+
 CORE-006 / D048, Cells 0.11.0. A new `multispecies_membrane@1` family through
 the existing CPU/float64 JAX engine. This is one fixed-volume cell, one membrane
 and one maintained bath, not tissue, calcium signaling or BETSE feature parity.

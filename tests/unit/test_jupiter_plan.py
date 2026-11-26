@@ -66,12 +66,11 @@ def test_sixteen_gpus_cannot_be_filled_by_eight_tasks():
         jupiter_plan(experiment(), 4)
 
 
-@pytest.mark.parametrize("family", ["ionic", "assembly_cell"])
-def test_integrated_models_keep_world_identity_across_four_nodes(family):
+def test_integrated_models_keep_world_identity_across_four_nodes():
     from cells.ensemble.families import parse_definition, population
     from tests.unit.test_integrated_ensemble import experiment as integrated
 
-    data = integrated(family, backend="gpu", worlds=64, width=2)
+    data = integrated(backend="gpu", worlds=64, width=2)
     data["execution"]["max_output_bytes"] = 4 * 1024**3
     result = jupiter_plan(data, 4)
     ids = []

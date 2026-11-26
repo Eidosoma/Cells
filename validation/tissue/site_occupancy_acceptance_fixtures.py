@@ -1,4 +1,4 @@
-"""FR-3's acceptance worlds: site_occupancy@1 in the references' registered worlds (FR-3, D216).
+"""FR-3's acceptance worlds: cells.operator.site_occupancy@1 in the references' registered worlds (FR-3, D216).
 
 The worlds are the references' own: validation/fr3/references/reference_inputs.json, registered
 code-blind before any engine output (the lead's ruling of 17 November 2026: the references design
@@ -19,7 +19,7 @@ The layout, from the physical description (reference_inputs.json's conventions):
   from the cytosol; its patch carries no other role in a face-free world);
 * the ligand L is the engine's neutral species S (D150's), declared at every node at its listed
   concentration, the trace included, and at the world's trace in the held bath; the world's
-  `trace_mM` is the ligand's declared trace (site_occupancy@1's form (a), §4.3);
+  `trace_mM` is the ligand's declared trace (cells.operator.site_occupancy@1's form (a), §4.3);
 * `site_controls` epochs become one schedule per population and route. A population without an
   internalisation route gets no internalisation schedule (the engine refuses a schedule for an
   undeclared route; the inputs list a multiplier for it, which no law reads);

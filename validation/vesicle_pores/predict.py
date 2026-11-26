@@ -2,7 +2,7 @@
 `pores-laws-sheet-registered-2026-11-22`; the lead's rulings D293, D294 and D295), computed from the
 recorded fit (fit_rows.py) at the sealed extractor's conditions, before any held-out value is read.
 
-**The prediction** at each held-out condition (σ, T) is the fitted law (cells.pore_nucleation@1):
+**The prediction** at each held-out condition (σ, T) is the fitted law (cells.assembly_hazard.pore_nucleation@1):
 
     ln k_pred = ln C + ½·ln σ − (3/2)·ln T − E_A/(R·T) − (π/(k_B·T·σ))·Γ²
 
@@ -166,14 +166,23 @@ def main(argv):
         "standing": "the blind test's stage-1 predictions, computed before any held-out value is "
         "read (the sheet's §8; D293, D294, D295)",
         "sheet": SHEET_TAG,
-        "law": "cells.pore_nucleation@1 (src/cells/models/assembly_lineages_v2/pore_nucleation.py)",
-        "fit": {"path": str(fit_path), "sha256": _sha256(fit_path),
-                "estimates": fit["estimates"], "covariance_unscaled": fit["covariance_unscaled"],
-                "chi2": fit["chi2"], "dof": fit["dof"],
-                "birge_factor_unscored": fit["birge_view"]["factor"]},  # fmt: skip
+        "law": "cells.assembly_hazard.pore_nucleation@1 (src/cells/models/assembly_lineages_v2/pore_nucleation.py)",
+        "fit": {
+            "path": str(fit_path),
+            "sha256": _sha256(fit_path),
+            "estimates": fit["estimates"],
+            "covariance_unscaled": fit["covariance_unscaled"],
+            "chi2": fit["chi2"],
+            "dof": fit["dof"],
+            "birge_factor_unscored": fit["birge_view"]["factor"],
+        },  # fmt: skip
         "conditions": {p.name: _sha256(p) for p in (s1, s1b, s1c)},
-        "inputs": {"E_A_J_per_mol": E_A_J_PER_MOL, "R_J_per_mol_K": law.R, "k_B_J_per_K": law.K_B,
-                   "in_range_K": list(IN_RANGE_K)},  # fmt: skip
+        "inputs": {
+            "E_A_J_per_mol": E_A_J_PER_MOL,
+            "R_J_per_mol_K": law.R,
+            "k_B_J_per_K": law.K_B,
+            "in_range_K": list(IN_RANGE_K),
+        },  # fmt: skip
         "rule": {
             "tau": "t (s_read^2 + s_dig^2 + s_T^2 + s_pred^2 [+ s_area^2, set 2])^(1/2), t = 4.303",
             "two_sided": "passes when |ln k_pred - ln k_read| <= tau",

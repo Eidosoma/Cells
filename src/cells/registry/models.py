@@ -7,7 +7,6 @@ the runner owns scheduling, integration, replay, and resource policy.
 
 from cells.definitions.specs import ConfigError, ReactionTransportSpec
 from cells.models import reaction_transport
-from cells.registry.legacy_entry import legacy
 
 
 def get_model(spec):
@@ -54,6 +53,21 @@ def get_model(spec):
         from cells.models import surface_pump
 
         return surface_pump
+    from cells.definitions.surface_kinetic_spec import SurfaceCatalogModel, SurfaceKineticModel
+    from cells.definitions.surface_tissue_spec import SurfaceTissueModel
+
+    if type(spec) is SurfaceTissueModel:  # Each resolved tissue derives from the one before it.
+        from cells.models import surface_tissue
+
+        return surface_tissue
+    if type(spec) is SurfaceKineticModel:
+        from cells.models import surface_kinetic
+
+        return surface_kinetic
+    if type(spec) is SurfaceCatalogModel:
+        from cells.models import surface_catalog
+
+        return surface_catalog
     if isinstance(spec, ReactionTransportSpec):
         return reaction_transport
     from cells.models.assembly_lineages.spec import LineageModel
@@ -68,7 +82,4 @@ def get_model(spec):
         from cells.models.assembly_lineages_v2 import model as assemblies
 
         return assemblies
-    model = legacy().model_for(spec)  # The older families (D188 R1).
-    if model is not None:
-        return model
     raise ConfigError(f"No registered implementation for {type(spec).__name__}")

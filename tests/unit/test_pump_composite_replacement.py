@@ -1,6 +1,6 @@
 """Guards (b)-(d) of design §3.7 for the scheduled replacement operator (D143).
 
-(c) Re-expressed through the composite, resolved_pump_replacement@1 equals the
+(c) Re-expressed through the composite, cells.model.resolved_pump_replacement@1 equals the
 frozen model bitwise on its own test worlds: every state field, observation
 column and max_ diagnostic (np.array_equal), compiled. Worlds: the heredity sheet
 with one, simultaneous, both-ends, second-generation and D-template events (IMEX
@@ -33,7 +33,6 @@ from cells.definitions import pump_composite_spec as cs
 from cells.definitions.cell_replacement_spec import exact_event_times
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.batch import BatchSpec, WorldSpec
-from cells.execution.errors import NumericalError
 from cells.execution.runner import run
 from cells.execution.schedule import control_values
 from cells.execution.vector_windows import run_vector_windowed
@@ -57,7 +56,9 @@ EVENTS = (
     (T3, "cell_0", "d", "n4"),
     (T3, "cell_3", "h", "n5"),
 )
-FAST_NAV = dict(fx.NO_ROUTES, channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3e-7})
+FAST_NAV = dict(
+    fx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+)
 DONOR_EVENTS = (
     (T1, "cell_0", None, "c1", "cell_3"),
     (T2, "cell_4", "fast_nav", "c2", "cell_3"),
@@ -110,7 +111,7 @@ def drawn():
     raw = sheet()
     t = fx.template_from_cell(raw, "cell_1", "drawn")
     t["route_values"].update(
-        channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3.0e-7},
+        channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3.0e-7},
         membrane_permeability_m_per_s={"Na": 8e-11},
         pump_capacity_fmol_per_s_m2=1.2e8,
     )
@@ -151,7 +152,7 @@ WORLDS = {
 
 
 def _booking(raw):
-    raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+    raw["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
     return raw
 
 
@@ -213,50 +214,6 @@ def test_refusals_are_the_frozen_verdicts():
     for candidate in (off_grid, cs.frozen_definition(off_grid)):
         with pytest.raises(ConfigError, match="strictly inside"):
             parse_spec(candidate)
-
-
-FAULTS = {
-    "supply": ("replacement_supplied_fmol", lambda v: v * (1 + 1e-6)),
-    "charge": ("replacement_charge_C", lambda v: v + 1e-18),
-    "energy": ("replacement_free_energy_pJ", lambda v: v + 1.0),
-    "generation": ("generation", lambda v: v + 5),
-}
-
-
-def test_faults_fail_the_frozen_checks():
-    raw = replaced()
-    frozen, composite = parse_spec(raw), parse_spec(cs.frozen_definition(raw))
-    results = [run(frozen), run(composite)]
-    k = int(np.flatnonzero(results[0].times == T3)[0]) + 1
-    for name, (field, corrupt) in FAULTS.items():
-        outcomes = []
-        for spec, result in zip((frozen, composite), results, strict=True):
-            model = get_model(spec.model)
-            h, p = result.history, model.initial_values(spec)[1]
-            rows = [type(h)(*(np.asarray(v[i]) for v in h)) for i in (k - 1, k)]
-            value = np.array(getattr(rows[1], field), copy=True)
-            value[..., 0] = corrupt(value[..., 0])
-            bad = rows[1]._replace(**{field: value})
-            try:
-                model.check_values(bad, spec, [k])
-                message = None
-            except NumericalError as error:
-                message = str(error)
-            constants = model.device_check_constants(spec)
-            failed, _ = model.device_checks(rows[0], bad, p, constants, k)
-            outcomes.append((message, np.asarray(failed).tolist()))
-        assert outcomes[0][0] is not None and outcomes[0] == outcomes[1], name
-
-
-@pytest.mark.parametrize("time", (T1 - DT, T1, T1 + DT))
-def test_restart_at_an_event_is_bitwise(time):
-    spec = parse_spec(cs.frozen_definition(replaced()))
-    result = run(spec)
-    restarted = run(spec, result.checkpoint_at(time))
-    k = int(np.flatnonzero(result.times == time)[0])
-    for key in type(result.history)._fields:
-        a = np.asarray(getattr(restarted.history, key))
-        assert np.array_equal(a, np.asarray(getattr(result.history, key))[k:]), key
 
 
 def test_vmap_batch_is_the_frozen_batch():

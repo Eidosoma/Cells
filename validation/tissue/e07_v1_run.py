@@ -7,10 +7,10 @@ the stepping are the turnover pre-screen's (validation/tissue/heredity_turnover_
 definition, layout_check, Stepper, run_segments), which run the model's checked step and
 its device row checks on every accepted row.
 
-Engine models run: resolved_pump_replacement@1 (resolved_pump_composite@1 with
-scheduled_cell_replacement@1 over resolved_pump_tissue@3; junction formation
-delayed_first_order_junction_formation@1), IMEX ARS(2,2,2), junction_heat_booking
-trapezoid_nonnegative@1. Every definition is declared through
+Engine models run: cells.model.resolved_pump_replacement@1 (cells.model.resolved_pump_composite@1 with
+cells.operator.scheduled_cell_replacement@1 over cells.model.resolved_pump_tissue@3; junction formation
+cells.junction_formation.delayed_first_order_junction_formation@1), IMEX ARS(2,2,2), junction_heat_booking
+cells.heat.trapezoid_nonnegative@1. Every definition is declared through
 validation/tissue/field_solver_choice.declare() (D147). Nothing here adds physics.
 
 Parts (each its own process: the analysis never runs in an arm's process):
@@ -258,7 +258,7 @@ def part_arm(args):
     steps = k_end - start_k
     write_json(out / "result.json", dict(
         arm=arm["id"], seed=args.seed, label=label(args.seed),
-        engine_models=["resolved_pump_replacement@1 (inner resolved_pump_tissue@3)"],
+        engine_models=["cells.model.resolved_pump_replacement@1 (inner cells.model.resolved_pump_tissue@3)"],
         dt=dt, end_step=k_end, end_s=k_end * dt, planned_end_s=record["planned_end_s"],
         stop=reason, refusal=refusal, resumed_at_s=resumed, checks=checks, layout=layout,
         worst_device_diagnostics=None if worst is None else dict(

@@ -1,14 +1,14 @@
-"""cells.prescribed_shell@1: a prescribed protein shell's geometry, declared, not grown (FR-21).
+"""cells.assembly_geometry.prescribed_shell@1: a prescribed protein shell's geometry, declared, not grown (FR-21).
 
 The design is docs/ASSEMBLY_SHELL_DESIGN.md §4.2. The rulings are D244 and D246, and the shell's
 acceptance is the requester's, relayed on 20 November 2026 (docs/FEATURE_REQUESTS.md, FR-21).
 
-**The declaration.** `geometry: {"law": "cells.prescribed_shell@1", "area_m2": {value,
+**The declaration.** `geometry: {"law": "cells.assembly_geometry.prescribed_shell@1", "area_m2": {value,
 provenance}}`. The lumen is the existing `lumen_volume: declared`, with `phases.lumen.volume_L`.
 
 **The wall is the membrane phase.** Its species (subunits, gate forms, free and bound sites) carry
 no area quanta, and their counts set neither the shell's area nor its lumen. So the shell's entry
-law, cells.shell_permeation@1, takes the constant extent A_sh·ρ0, and its conductance
+law, cells.reaction.shell_permeation@1, takes the constant extent A_sh·ρ0, and its conductance
 G_s = P_s·A_sh does not follow the wall's counts, the site count or the lumen.
 
 **What a shell refuses,** each at the parse with its reason:
@@ -97,7 +97,7 @@ def log_extent(world):
 FORMULAS = {
     "area": "A_sh, declared (m^2): the wall's counts set neither it nor the lumen",
     "lumen": "V_lumen, declared (phases.lumen.volume_L)",
-    "extent": "cells.shell_permeation@1: E = A_sh rho0, a constant of the world, rho0 = N_A c0 "
+    "extent": "cells.reaction.shell_permeation@1: E = A_sh rho0, a constant of the world, rho0 = N_A c0 "
     "(molecules per m^3)",
     "conductance": "G_s = P_s A_sh (m^3/s) for each permeant, independent of the wall's "
     "inventory, the site count and the lumen",

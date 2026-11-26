@@ -1,5 +1,8 @@
 # Plain-language pages for the engine's laws, kinds, operators and models (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 *Status: proposed, 17 November 2026, for the lead. Docs only, with no code. The code was read at
 main 14f03753, whose `src/` equals 75e925ea's, where seam F landed. The manifest quoted is the
 lead's example, written from main at 75e925ea

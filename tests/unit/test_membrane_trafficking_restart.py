@@ -1,4 +1,4 @@
-"""T7 of scheduled_membrane_trafficking@1 (FR-2 version 1), restart: resumed before, at and after
+"""T7 of cells.operator.scheduled_membrane_trafficking@1 (FR-2 version 1), restart: resumed before, at and after
 a schedule change, and through a written snapshot, the cycle world's run is bitwise the original's
 in every history field (the fixtures' cycle: 5 ms, observed every step, the change at 2 ms).
 

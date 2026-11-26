@@ -1,5 +1,8 @@
 # Molecular machines: individually and in aggregate, at the detail set by what is looked at (design)
 
+> **Legacy cleanup (25 November 2026, D386).** Paths under `src/cells/legacy/` and the older model
+> IDs named below left the engine. The tag `pre-cleanup-2026-11-25` keeps them.
+
 *Status: proposed, 17 November 2026, for the lead and then the user (FR-13, D204). Docs only:
 nothing here is built, and nothing is built before the user has discussed the options (D142).
 Branch `machines-design` from main e5edba97. Code is cited `file`:line at e5edba97, by today's paths

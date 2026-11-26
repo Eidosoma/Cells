@@ -1,4 +1,4 @@
-"""F12's restored futures on cells.assembly_lineages@2: fresh runs founded from a lineage's
+"""F12's restored futures on cells.model.assembly_lineages@2: fresh runs founded from a lineage's
 post-fission landmarks (route (b), the lead's ruling of 20 November 2026; analysis tooling, no
 engine change).
 

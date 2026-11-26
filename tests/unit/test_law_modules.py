@@ -23,21 +23,22 @@ from cells.models import inner_laws
 from cells.registry import laws as law_registry
 
 OWN = {  # Each law's own module: its declarer.
-    "kv1p5_mh@1": "cells.laws.channels.kv1p5_mh",
-    "kir2p1_mh2@1": "cells.laws.channels.kir2p1_mh2",
-    "nav1p2_m3h_regularized@1": "cells.laws.channels.nav1p2_m3h_regularized",
-    "kleak_always_open@1": "cells.laws.channels.kleak_always_open",
-    "naleak_always_open@1": "cells.laws.channels.naleak_always_open",
-    "junction_voltage_relaxation@1": "cells.laws.junctions.junction_voltage_relaxation",
-    "junction_series_gates@1": "cells.laws.junctions.junction_series_gates",  # FR-30 (D262).
-    "nak_atp_mass_action_positive@1": "cells.laws.pumps.nak_atp_mass_action_positive",
-    "ca_atp_mass_action_positive@1": "cells.laws.pumps.ca_atp_mass_action_positive",
-    "constant_field@1": "cells.laws.routes.constant_field",
-    "logmean_electrodiffusion@1": "cells.laws.routes.logmean_electrodiffusion",
-    "passive_neutral_permeation@1": "cells.laws.routes.passive_permeation",
-    "proton_constant_field_leak@1": "cells.laws.transport.proton_leak",
+    "cells.channel.kv1p5_mh@1": "cells.laws.channels.kv1p5_mh",
+    "cells.channel.kir2p1_mh2@1": "cells.laws.channels.kir2p1_mh2",
+    "cells.channel.nav1p2_m3h_regularized@1": "cells.laws.channels.nav1p2_m3h_regularized",
+    "cells.channel.kleak_always_open@1": "cells.laws.channels.kleak_always_open",
+    "cells.channel.naleak_always_open@1": "cells.laws.channels.naleak_always_open",
+    "cells.channel.cav1p2_m2h@1": "cells.laws.channels.cav1p2_m2h",
+    "cells.junction.junction_voltage_relaxation@1": "cells.laws.junctions.junction_voltage_relaxation",
+    "cells.junction.junction_series_gates@1": "cells.laws.junctions.junction_series_gates",  # FR-30 (D262).
+    "cells.cycle.nak_atp_mass_action_positive@1": "cells.laws.pumps.nak_atp_mass_action_positive",
+    "cells.cycle.ca_atp_mass_action_positive@1": "cells.laws.pumps.ca_atp_mass_action_positive",
+    "cells.route.constant_field@1": "cells.laws.routes.constant_field",
+    "cells.route.logmean_electrodiffusion@1": "cells.laws.routes.logmean_electrodiffusion",
+    "cells.route.passive_neutral_permeation@1": "cells.laws.routes.passive_permeation",
+    "cells.route.proton_constant_field_leak@1": "cells.laws.transport.proton_leak",
     # @1's kernel reading the general closure (MT-1b's face plan, item 3; the kinds owner's).
-    "proton_constant_field_leak@2": "cells.laws.transport.proton_leak_v2",
+    "cells.route.proton_constant_field_leak@2": "cells.laws.transport.proton_leak_v2",
 }
 SHIMS = {  # Each older kernel module: the per-law module its names moved to, and those names.
     "cells.laws.channels.voltage_gates": (
@@ -51,6 +52,10 @@ SHIMS = {  # Each older kernel module: the per-law module its names moved to, an
     "cells.laws.channels.sodium_channels": (
         "cells.laws.channels.nav1p2_m3h_regularized",
         ("LAW_ID", "nav1p2_kinetics"),
+    ),
+    "cells.laws.channels.calcium_gates": (
+        "cells.laws.channels.cav1p2_m2h",
+        ("LAW_ID", "VOLTAGE_DOMAIN_V", "kinetics", ("open_probability", "opening")),
     ),
     "cells.laws.junctions.junction_gate": (
         "cells.laws.junctions.junction_voltage_relaxation",
@@ -181,13 +186,13 @@ def test_inner_laws_tables_are_the_registered_declarations():
     for table in (inner_laws.JUNCTION_LAWS, inner_laws.PUMP_LAWS, inner_laws.ROUTE_LAWS):
         assert all(registry.lookup(law_id) is law for law_id, law in table.items())
     assert list(inner_laws.PUMP_LAWS) == [
-        "nak_atp_mass_action_positive@1",
-        "ca_atp_mass_action_positive@1",
+        "cells.cycle.nak_atp_mass_action_positive@1",
+        "cells.cycle.ca_atp_mass_action_positive@1",
     ]
     # Planted: a channel law registered in a scoped registry is in the live view there only.
-    kv15 = inner_laws.CHANNEL_LAWS["kv1p5_mh@1"]
-    extra = dataclasses.replace(kv15, law_id="tests.planted_view_channel@1", code=99)
+    kv15 = inner_laws.CHANNEL_LAWS["cells.channel.kv1p5_mh@1"]
+    extra = dataclasses.replace(kv15, law_id="tests.channel.planted_view_channel@1", code=99)
     with law_registry.scope(law_registry.BUILTIN.extended(extra)):
-        assert list(inner_laws.CHANNEL_LAWS)[-1] == "tests.planted_view_channel@1"
-        assert inner_laws.CHANNEL_LAWS["tests.planted_view_channel@1"] is extra
-    assert "tests.planted_view_channel@1" not in inner_laws.CHANNEL_LAWS
+        assert list(inner_laws.CHANNEL_LAWS)[-1] == "tests.channel.planted_view_channel@1"
+        assert inner_laws.CHANNEL_LAWS["tests.channel.planted_view_channel@1"] is extra
+    assert "tests.channel.planted_view_channel@1" not in inner_laws.CHANNEL_LAWS
