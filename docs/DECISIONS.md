@@ -13591,3 +13591,68 @@ It is a port check: it shows that the live engine computes legacy's written equa
   co-writers' registration tag, because it changes the operator that comparison runs.
 - **FR-65's coupling step** (D375 Q1 (b)) shares `contract.py` and the composition table with FR-52, so for now it is a design section only. Its code
   starts once FR-52 lands.
+
+## D402: FR-43 part 3's co-writers comparison is registered; a late build tag disclosed; a run-view defect in FR-51's block; FR-45's first rulings and contract; FR-52, FR-50 phase 2 and FR-65's coupling decided
+
+2026-11-26, written at 21:41 UTC, before any registered table of FR-43 part 3 exists.
+
+- **FR-43 part 3, the co-writers' registration** (its protocol's §5 and §6):
+  - **The judge's tag** `fr43-part3-cowriters-judge-2026-11-26` (995e6222) covers:
+    - the lead's rulings of D394;
+    - the scorer;
+    - the lead's three dated notes of the format samples, the last from the exporter after D400;
+    - the final sample's structure read, with no departure;
+    - the rehearsal's tools;
+    - 152 self-tests;
+    - C0 with no fault.
+  - **The build tag** `fr43-part3-cowriters-build-2026-11-26` (458302ba) was made after the judge's tag, against the protocol's order (step 4
+    before step 5). Its commit predates the judge's tag, and its sample was hashed and read before it. The slip is the lead's.
+  - **The rehearsal** (CRITERIA §10) ran all 132 invented runs from a clean snapshot of 458302ba. The lead hashed the tables before the judge
+    opened them.
+    - 2,646 of 2,646 honest entries pass, as do all 6 families and all 3 arms.
+    - 20 of 20 plants are caught, and 53 of 53 planted faults are flagged as §4 says.
+    - The perturbed coarsest rung owes the retry, and passes after it.
+  - **The registration tag** `fr43-part3-cowriters-registered-2026-11-26` is on 2421e9e9, the lead's merge of the build and judge tags.
+    - All four tags are its ancestors.
+    - Nothing differs from the build tag under src, tests, scripts or the builder's files.
+    - The spec is the criteria tag's plus the three notes, and the references are their tag's.
+    - Its message carries five disclosures made before any table: the late build tag; the lead's hash record made after the judge's first C0
+      pass; the trace counts added after the criteria tag (D397, D400); the builder's reading of the two invented files; the rehearsal's result.
+    - The runs' snapshot is the lead's (`snap-2421e9e9`, clean, empty patch). Its SNAPSHOT.json records 2421e9e9.
+  - **The strings note** (c6549cd1, tag `fr43-part3-cowriters-strings-2026-11-26`) follows the registration tag.
+    - It was parsed from the snapshot first: 282 runs, none refused.
+    - It equals the rehearsal's list, and the protocol's §3 models through the rename map.
+  - The 250 registered runs are running from the snapshot. No retry run is made before the judge's `retry_owed.json` exists and the lead has hashed
+    it.
+  - A fresh, independent checker is building its own recomputation (step 9).
+- **A defect in FR-51's landed block, metadata only.** `run_view.prepare` refuses to write a run view for any blocked world that declares no kind:
+  "declares no axes, unit or layer for its field channel_unblocked_fraction". `InnerImplementation` folds `view_declarations()` only where kinds are
+  declared.
+  - No program, number or record is touched, and FR-51's judged result stands.
+  - FR-50 phase 2 found it by a probe and confirmed it by running the writer. The fix lands with that build, with one row.
+  - FR-30's series-gate refusal is by design (D262).
+- **FR-45, the lead's first rulings** (`/mnt/workspaces/Cells/fr45-readings-20261126/RULINGS-1-2026-11-26.md`):
+  - **Q7:** the registration binds at the protocol's own tag, still to be made at a head that merges the amendment-3 spec, references v2 and
+    main's `agreement.py`. The 23 November tag 6e92d0ec is a waypoint.
+  - **Q8:** P5 on W7 is scored on C6 and C4a (CRITERIA:125, D371). The references hold both.
+  - **Reading 2:** P5 and P7 are caught only when both their named criteria fail; P3 and P6 are caught by either.
+  - **The engine-table contract** the registration lacked is written as `validation/fr45/spec/TABLE.md` on branch `fr45-contract`. Its author, who
+    is not the builder, printed reference values from four files once by mistake. That is disclosed in the contract's §15.
+    - The authorship stands, because only the references agent is bound to blindness, the contract fixes formats, and no number in it comes from
+      those values.
+    - A fresh reviewer who has seen no value reads it before the binding tag.
+  - The remaining readings and the contract's eight decisions come before that tag.
+- **FR-52's build** started at the user's word. Its note gains §9 for D400.
+  - The qualification world joins crossrev's `qualification` set.
+  - At a division, the partition's finiteness check reads the cohort record. That is stated, and it refuses only after an engine fault.
+  - It lands after the co-writers' registered comparison.
+- **FR-50 phase 2's plan is approved:** one-way records for @3's routes, faces and channels, the channel split built from `channel_rates`' own factors.
+  - No new registration is needed: `fr50-one-way-records-v1` §3 and the tagged judge's `--phase 2` cover it.
+  - The kinds' records are refused under `execution.projective`.
+  - The price is 3.25 to 3.75 agent-days. FR-64 waits for it.
+- **FR-65's coupling step** is designed (§11 of its note, branch `fr65-coupling`). The user left its two questions to the lead and the adviser.
+  - **Every read site,** each with a row planted at the starting volume; a site with no such row stays refused.
+  - **Both versions,** with @1's program unchanged as a claim until the round's pair check.
+  - D244's Q2 was the user's, so the site source's concentration beside water stays as declared, and refused.
+  - The price is 2.1 to 3.05 agent-days, against D375's 2 to 2.5. Its code waits for FR-52's landing, since the two share `contract.py`.
+- **Five stale watcher shells,** left by agents of 25 November and polling for files that will never appear, were stopped.
