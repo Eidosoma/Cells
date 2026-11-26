@@ -1,0 +1,4253 @@
+{
+ "schema": "fr43 part 3 co-writers inputs, version 2",
+ "units": {
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM (1 fmol/pL = 1 mM)",
+  "time": "s",
+  "conductance": "pL/s per active unit",
+  "rate_constant": "1/s; 1/(mM s) where two concentrations multiply; a channel's read multiplies by c/(1 mM)"
+ },
+ "constants": {
+  "N_A_per_mol": "6.02214076e23",
+  "copy_fmol": "1e15/N_A"
+ },
+ "arms": {
+  "1": "W5",
+  "2": "W5-exact",
+  "3": "W6"
+ },
+ "firsts": {
+  "W5": [
+   "reactions",
+   "population"
+  ],
+  "W5-exact": [
+   "reactions",
+   "population"
+  ],
+  "W6": [
+   "gene",
+   "population"
+  ]
+ },
+ "copies": 8,
+ "worlds": {
+  "W5": {
+   "kind": "reactions",
+   "cell_pL": 1.25,
+   "node_pL": 0.75,
+   "end_s": 20.0,
+   "rows_fmol": {
+    "S_cell": 1.35,
+    "S_node": 0.09,
+    "X": 9.4,
+    "Y": 6.1,
+    "W": 4e-06
+   },
+   "reactions": [
+    {
+     "id": "make",
+     "reactants": {
+      "X": 1
+     },
+     "products": {
+      "S": 1
+     },
+     "rate_constant": 0.047,
+     "rate_unit": "1/s"
+    },
+    {
+     "id": "spend",
+     "reactants": {
+      "S": 1,
+      "Y": 1
+     },
+     "products": {
+      "W": 1
+     },
+     "rate_constant": 0.041,
+     "rate_unit": "1/(mM s)"
+    }
+   ],
+   "population": {
+    "unit_states": [
+     {
+      "id": "free",
+      "subunits": 1
+     },
+     {
+      "id": "active",
+      "subunits": 2
+     }
+    ],
+    "initial_counts": {
+     "free": 2,
+     "active": 0
+    },
+    "channels": [
+     {
+      "id": "assemble",
+      "reactants": {
+       "free": 2
+      },
+      "products": {
+       "active": 1
+      },
+      "rate_constant": 1.3,
+      "read": {
+       "species": "S",
+       "at": "cell"
+      }
+     },
+     {
+      "id": "dissolve",
+      "reactants": {
+       "active": 1
+      },
+      "products": {
+       "free": 2
+      },
+      "rate_constant": 1.05,
+      "read": null
+     }
+    ],
+    "transfer": {
+     "species": "S",
+     "conductance_pL_per_s": {
+      "free": 0.0,
+      "active": 0.23
+     }
+    }
+   },
+   "rungs_s": [
+    0.02,
+    0.01,
+    0.005,
+    0.0025,
+    0.00125,
+    0.000625
+   ],
+   "retry_rung_s": 0.0003125,
+   "samples_s": [
+    0.0,
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0,
+    11.0,
+    12.0,
+    13.0,
+    14.0,
+    15.0,
+    16.0,
+    17.0,
+    18.0,
+    19.0,
+    20.0
+   ],
+   "seeds": [
+    771001,
+    771002,
+    771003,
+    771004,
+    771005,
+    771006,
+    771007,
+    771008
+   ],
+   "copies": 8
+  },
+  "W5-exact": {
+   "kind": "reactions",
+   "cell_pL": 1.25,
+   "node_pL": 0.75,
+   "end_s": 20.0,
+   "rows_fmol": {
+    "S_cell": 1.35,
+    "S_node": 0.09,
+    "X": 9.4,
+    "Y": 6.1,
+    "W": 4e-06
+   },
+   "reactions": [
+    {
+     "id": "make",
+     "reactants": {
+      "X": 1
+     },
+     "products": {
+      "S": 1
+     },
+     "rate_constant": 0.047,
+     "rate_unit": "1/s"
+    },
+    {
+     "id": "spend",
+     "reactants": {
+      "S": 1,
+      "Y": 1
+     },
+     "products": {
+      "W": 1
+     },
+     "rate_constant": 0.041,
+     "rate_unit": "1/(mM s)"
+    }
+   ],
+   "population": {
+    "unit_states": [
+     {
+      "id": "free",
+      "subunits": 1
+     },
+     {
+      "id": "active",
+      "subunits": 2
+     }
+    ],
+    "initial_counts": {
+     "free": 2,
+     "active": 0
+    },
+    "channels": [
+     {
+      "id": "assemble",
+      "reactants": {
+       "free": 2
+      },
+      "products": {
+       "active": 1
+      },
+      "rate_constant": 1.55,
+      "read": null
+     },
+     {
+      "id": "dissolve",
+      "reactants": {
+       "active": 1
+      },
+      "products": {
+       "free": 2
+      },
+      "rate_constant": 1.0,
+      "read": null
+     }
+    ],
+    "transfer": {
+     "species": "S",
+     "conductance_pL_per_s": {
+      "free": 0.0,
+      "active": 0.23
+     }
+    }
+   },
+   "rungs_s": [
+    0.02,
+    0.005
+   ],
+   "retry_rung_s": null,
+   "samples_s": [
+    0.0,
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0,
+    11.0,
+    12.0,
+    13.0,
+    14.0,
+    15.0,
+    16.0,
+    17.0,
+    18.0,
+    19.0,
+    20.0
+   ],
+   "seeds": [
+    772001,
+    772002,
+    772003,
+    772004,
+    772005,
+    772006,
+    772007,
+    772008
+   ],
+   "copies": 8
+  },
+  "W6": {
+   "kind": "gene",
+   "cell_pL": 1.35,
+   "node_pL": 0.72,
+   "end_s": 600.0,
+   "rows_fmol": {
+    "N": 0.0017,
+    "M": 0.00024,
+    "Pi": 0.0022,
+    "R_cell": 1e-12,
+    "R_node": 1e-12
+   },
+   "gene": {
+    "template_copies": 17,
+    "machines_copies": 32,
+    "product": "R",
+    "residues": 240,
+    "stages": 3,
+    "speed_per_s": 44.0,
+    "draws": {
+     "N": 1
+    },
+    "releases": {
+     "Pi": 2
+    },
+    "saturation_mM": {
+     "N": 0.0012
+    },
+    "initiation_per_mM_s": 9600000.0,
+    "degradation": {
+     "polymer": "R",
+     "monomers": {
+      "M": 240
+     },
+     "rate_per_s": 0.001
+    },
+    "mu_RT": {
+     "N": -21.2,
+     "M": 0.9,
+     "Pi": 0.3,
+     "R": -2784.0
+    },
+    "c0_mM": 1000.0
+   },
+   "population": {
+    "unit_states": [
+     {
+      "id": "free",
+      "subunits": 1
+     },
+     {
+      "id": "active",
+      "subunits": 2
+     }
+    ],
+    "initial_counts": {
+     "free": 2,
+     "active": 0
+    },
+    "channels": [
+     {
+      "id": "assemble",
+      "reactants": {
+       "free": 2
+      },
+      "products": {
+       "active": 1
+      },
+      "rate_constant": 48000.0,
+      "read": {
+       "species": "R",
+       "at": "cell"
+      }
+     },
+     {
+      "id": "dissolve",
+      "reactants": {
+       "active": 1
+      },
+      "products": {
+       "free": 2
+      },
+      "rate_constant": 0.16,
+      "read": null
+     }
+    ],
+    "transfer": {
+     "species": "R",
+     "conductance_pL_per_s": {
+      "free": 0.0,
+      "active": 0.019
+     }
+    }
+   },
+   "rungs_s": [
+    0.5,
+    0.25,
+    0.125,
+    0.0625,
+    0.03125,
+    0.015625
+   ],
+   "retry_rung_s": 0.0078125,
+   "samples_s": [
+    0.0,
+    60.0,
+    120.0,
+    180.0,
+    240.0,
+    300.0,
+    360.0,
+    420.0,
+    480.0,
+    540.0,
+    600.0
+   ],
+   "seeds": [
+    773001,
+    773002,
+    773003,
+    773004,
+    773005,
+    773006,
+    773007,
+    773008
+   ],
+   "copies": 8
+  }
+ },
+ "families": [
+  {
+   "id": "W5 reactions-first",
+   "world": "W5",
+   "first": "reactions",
+   "rungs_s": [
+    0.02,
+    0.01,
+    0.005,
+    0.0025,
+    0.00125,
+    0.000625
+   ],
+   "retry_rung_s": 0.0003125,
+   "arm": 1
+  },
+  {
+   "id": "W5 population-first",
+   "world": "W5",
+   "first": "population",
+   "rungs_s": [
+    0.02,
+    0.01,
+    0.005,
+    0.0025,
+    0.00125,
+    0.000625
+   ],
+   "retry_rung_s": 0.0003125,
+   "arm": 1
+  },
+  {
+   "id": "W5-exact reactions-first",
+   "world": "W5-exact",
+   "first": "reactions",
+   "rungs_s": [
+    0.02,
+    0.005
+   ],
+   "retry_rung_s": null,
+   "arm": 2
+  },
+  {
+   "id": "W5-exact population-first",
+   "world": "W5-exact",
+   "first": "population",
+   "rungs_s": [
+    0.02,
+    0.005
+   ],
+   "retry_rung_s": null,
+   "arm": 2
+  },
+  {
+   "id": "W6 gene-first",
+   "world": "W6",
+   "first": "gene",
+   "rungs_s": [
+    0.5,
+    0.25,
+    0.125,
+    0.0625,
+    0.03125,
+    0.015625
+   ],
+   "retry_rung_s": 0.0078125,
+   "arm": 3
+  },
+  {
+   "id": "W6 population-first",
+   "world": "W6",
+   "first": "population",
+   "rungs_s": [
+    0.5,
+    0.25,
+    0.125,
+    0.0625,
+    0.03125,
+    0.015625
+   ],
+   "retry_rung_s": 0.0078125,
+   "arm": 3
+  }
+ ],
+ "runs": [
+  {
+   "name": "W5 reactions-first h=0.02 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.02 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.02 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.02 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.02 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.02 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.02 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.02 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.01 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.01 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.01 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.01 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.01 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.01 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.01 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.01 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.005 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.005 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.005 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.005 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.005 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.005 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.005 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.005 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.02 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.02 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.02 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.02 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.02 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.02 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.02 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.02 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.01 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.01 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.01 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.01 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.01 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.01 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.01 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.01 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.01,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.005 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.005 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.005 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.005 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.005 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.005 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.005 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.005 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.0025 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.0025 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.0025 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.0025 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.0025 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.0025 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.0025 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.0025 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.0025,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.00125 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.00125 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.00125 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.00125 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.00125 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.00125 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.00125 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.00125 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.00125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.000625 c0",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.000625 c1",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.000625 c2",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.000625 c3",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.000625 c4",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.000625 c5",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.000625 c6",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 population-first h=0.000625 c7",
+   "arm": 1,
+   "world": "W5",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.000625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.02 c0",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.02 c1",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.02 c2",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.02 c3",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.02 c4",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.02 c5",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.02 c6",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.02 c7",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.005 c0",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.005 c1",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.005 c2",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.005 c3",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.005 c4",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.005 c5",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.005 c6",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact reactions-first h=0.005 c7",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.02 c0",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.02 c1",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.02 c2",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.02 c3",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.02 c4",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.02 c5",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.02 c6",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.02 c7",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.02,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.005 c0",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.005 c1",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.005 c2",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.005 c3",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.005 c4",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.005 c5",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.005 c6",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5-exact population-first h=0.005 c7",
+   "arm": 2,
+   "world": "W5-exact",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.005,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.5 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 0,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.5 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 1,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.5 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 2,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.5 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 3,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.5 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 4,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.5 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 5,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.5 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 6,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.5 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 7,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.25 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 0,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.25 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 1,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.25 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 2,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.25 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 3,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.25 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 4,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.25 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 5,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.25 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 6,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.25 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 7,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.125 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 0,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.125 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 1,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.125 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 2,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.125 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 3,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.125 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 4,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.125 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 5,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.125 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 6,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.125 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 7,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.0625 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 0,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.0625 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 1,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.0625 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 2,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.0625 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 3,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.0625 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 4,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.0625 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 5,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.0625 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 6,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.0625 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 7,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.03125 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 0,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.03125 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 1,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.03125 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 2,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.03125 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 3,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.03125 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 4,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.03125 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 5,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.03125 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 6,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.03125 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 7,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.015625 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 0,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.015625 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 1,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.015625 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 2,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.015625 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 3,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.015625 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 4,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.015625 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 5,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.015625 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 6,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 gene-first h=0.015625 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 7,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.5 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.5 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.5 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.5 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.5 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.5 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.5 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.5 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.5,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.25 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.25 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.25 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.25 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.25 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.25 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.25 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.25 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.25,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.125 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.125 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.125 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.125 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.125 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.125 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.125 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.125 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.0625 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.0625 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.0625 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.0625 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.0625 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.0625 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.0625 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.0625 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.0625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.03125 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.03125 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.03125 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.03125 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.03125 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.03125 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.03125 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.03125 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.03125,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.015625 c0",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 0,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.015625 c1",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 1,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.015625 c2",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 2,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.015625 c3",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 3,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.015625 c4",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 4,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.015625 c5",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 5,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.015625 c6",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 6,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W6 population-first h=0.015625 c7",
+   "arm": 3,
+   "world": "W6",
+   "first": "population",
+   "copy": 7,
+   "step_s": 0.015625,
+   "role": "judged",
+   "variant": null
+  },
+  {
+   "name": "W5 reactions-first h=0.005 c0 restart",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.005,
+   "role": "support",
+   "variant": "restart"
+  },
+  {
+   "name": "W6 gene-first h=0.125 c0 restart",
+   "arm": 3,
+   "world": "W6",
+   "first": "gene",
+   "copy": 0,
+   "step_s": 0.125,
+   "role": "support",
+   "variant": "restart"
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c0 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.0025,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c1 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.0025,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c2 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.0025,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c3 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.0025,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c4 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.0025,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c5 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.0025,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c6 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.0025,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.0025 c7 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.0025,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c0 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.00125,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c1 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.00125,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c2 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.00125,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c3 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.00125,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c4 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.00125,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c5 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.00125,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c6 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.00125,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.00125 c7 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.00125,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c0 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 0,
+   "step_s": 0.000625,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c1 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 1,
+   "step_s": 0.000625,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c2 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 2,
+   "step_s": 0.000625,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c3 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 3,
+   "step_s": 0.000625,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c4 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 4,
+   "step_s": 0.000625,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c5 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 5,
+   "step_s": 0.000625,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c6 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 6,
+   "step_s": 0.000625,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  },
+  {
+   "name": "W5 reactions-first h=0.000625 c7 lie",
+   "arm": 1,
+   "world": "W5",
+   "first": "reactions",
+   "copy": 7,
+   "step_s": 0.000625,
+   "role": "plant",
+   "variant": "second halves in declared order"
+  }
+ ],
+ "retry": {
+  "rungs": "the next halving (retry_rung_s, the finest of the n + 1) is added and the coarsest dropped, so the fit uses the finest n",
+  "name": "the run's name plus ' retry'",
+  "role": "judged"
+ },
+ "judged": {
+  "W5": {
+   "E": [
+    "trace",
+    "ledger",
+    "restart"
+   ],
+   "R": [
+    "start",
+    "identity"
+   ],
+   "S": [
+    {
+     "readout": "t_events",
+     "p": 2
+    },
+    {
+     "readout": "n_S_c",
+     "p": 2
+    },
+    {
+     "readout": "n_S_o",
+     "p": 2
+    },
+    {
+     "readout": "moved",
+     "p": 2
+    },
+    {
+     "readout": "xi_2",
+     "p": 2
+    }
+   ],
+   "at_rounding": [],
+   "identities": [
+    "S cell",
+    "S node",
+    "X",
+    "Y",
+    "W",
+    "S moiety",
+    "Y moiety"
+   ],
+   "orders_differ": [
+    "t_events",
+    "n_S_c",
+    "n_S_o",
+    "moved",
+    "xi_2"
+   ],
+   "D": true
+  },
+  "W5-exact": {
+   "E": [
+    "trace",
+    "ledger"
+   ],
+   "R": [
+    "t_events",
+    "start",
+    "identity"
+   ],
+   "S": [],
+   "at_rounding": [],
+   "identities": [
+    "S cell",
+    "S node",
+    "X",
+    "Y",
+    "W",
+    "S moiety",
+    "Y moiety"
+   ],
+   "orders_differ": [
+    "n_S_c",
+    "moved"
+   ],
+   "rungs_differ": [
+    "n_S_c",
+    "moved"
+   ],
+   "D": true,
+   "running": {
+    "readouts": [
+     "xi_1",
+     "xi_2",
+     "moved"
+    ],
+    "multiple": 10000.0,
+    "fraction_of_reference": 0.5
+   }
+  },
+  "W6": {
+   "E": [
+    "trace",
+    "ledger",
+    "restart"
+   ],
+   "R": [
+    "start",
+    "identity"
+   ],
+   "S": [
+    {
+     "readout": "t_events",
+     "p": 2
+    },
+    {
+     "readout": "n_R_c",
+     "p": 2
+    },
+    {
+     "readout": "n_R_o",
+     "p": 2
+    },
+    {
+     "readout": "moved",
+     "p": 2
+    },
+    {
+     "readout": "lost",
+     "p": 2
+    },
+    {
+     "readout": "made",
+     "p": 3
+    },
+    {
+     "readout": "exits",
+     "p": 3
+    }
+   ],
+   "at_rounding": [
+    "made",
+    "exits"
+   ],
+   "identities": [
+    "R cell",
+    "R node",
+    "N",
+    "Pi",
+    "M",
+    "machines",
+    "engaged",
+    "transit",
+    "nucleoside"
+   ],
+   "orders_differ": [
+    "t_events",
+    "n_R_c",
+    "n_R_o",
+    "moved",
+    "lost"
+   ],
+   "D": true
+  }
+ },
+ "identities": {
+  "W5": {
+   "S cell": [
+    [
+     "n_S_c",
+     1.0,
+     "t"
+    ],
+    [
+     "n_S_c",
+     -1.0,
+     "0"
+    ],
+    [
+     "xi_1",
+     -1.0,
+     "t"
+    ],
+    [
+     "xi_2",
+     1.0,
+     "t"
+    ],
+    [
+     "moved",
+     1.0,
+     "t"
+    ]
+   ],
+   "S node": [
+    [
+     "n_S_o",
+     1.0,
+     "t"
+    ],
+    [
+     "n_S_o",
+     -1.0,
+     "0"
+    ],
+    [
+     "moved",
+     -1.0,
+     "t"
+    ]
+   ],
+   "X": [
+    [
+     "n_X",
+     1.0,
+     "t"
+    ],
+    [
+     "n_X",
+     -1.0,
+     "0"
+    ],
+    [
+     "xi_1",
+     1.0,
+     "t"
+    ]
+   ],
+   "Y": [
+    [
+     "n_Y",
+     1.0,
+     "t"
+    ],
+    [
+     "n_Y",
+     -1.0,
+     "0"
+    ],
+    [
+     "xi_2",
+     1.0,
+     "t"
+    ]
+   ],
+   "W": [
+    [
+     "n_W",
+     1.0,
+     "t"
+    ],
+    [
+     "n_W",
+     -1.0,
+     "0"
+    ],
+    [
+     "xi_2",
+     -1.0,
+     "t"
+    ]
+   ],
+   "S moiety": [
+    [
+     "n_X",
+     1.0,
+     "t"
+    ],
+    [
+     "n_S_c",
+     1.0,
+     "t"
+    ],
+    [
+     "n_S_o",
+     1.0,
+     "t"
+    ],
+    [
+     "n_W",
+     1.0,
+     "t"
+    ],
+    [
+     "n_X",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_S_c",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_S_o",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_W",
+     -1.0,
+     "0"
+    ]
+   ],
+   "Y moiety": [
+    [
+     "n_Y",
+     1.0,
+     "t"
+    ],
+    [
+     "n_W",
+     1.0,
+     "t"
+    ],
+    [
+     "n_Y",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_W",
+     -1.0,
+     "0"
+    ]
+   ]
+  },
+  "W6": {
+   "R cell": [
+    [
+     "n_R_c",
+     1.0,
+     "t"
+    ],
+    [
+     "n_R_c",
+     -1.0,
+     "0"
+    ],
+    [
+     "made",
+     -1.0,
+     "t"
+    ],
+    [
+     "lost",
+     1.0,
+     "t"
+    ],
+    [
+     "moved",
+     1.0,
+     "t"
+    ]
+   ],
+   "R node": [
+    [
+     "n_R_o",
+     1.0,
+     "t"
+    ],
+    [
+     "n_R_o",
+     -1.0,
+     "0"
+    ],
+    [
+     "moved",
+     -1.0,
+     "t"
+    ]
+   ],
+   "N": [
+    [
+     "n_N",
+     1.0,
+     "t"
+    ],
+    [
+     "n_N",
+     -1.0,
+     "0"
+    ],
+    [
+     "exits",
+     80.0,
+     "t"
+    ]
+   ],
+   "Pi": [
+    [
+     "n_Pi",
+     1.0,
+     "t"
+    ],
+    [
+     "n_Pi",
+     -1.0,
+     "0"
+    ],
+    [
+     "exits",
+     -160.0,
+     "t"
+    ]
+   ],
+   "M": [
+    [
+     "n_M",
+     1.0,
+     "t"
+    ],
+    [
+     "n_M",
+     -1.0,
+     "0"
+    ],
+    [
+     "lost",
+     -240.0,
+     "t"
+    ]
+   ],
+   "machines": [
+    [
+     "free",
+     1.0,
+     "t"
+    ],
+    [
+     "engaged",
+     1.0,
+     "t"
+    ],
+    [
+     "free",
+     -1.0,
+     "0"
+    ],
+    [
+     "engaged",
+     -1.0,
+     "0"
+    ]
+   ],
+   "engaged": [
+    [
+     "engaged",
+     1.0,
+     "t"
+    ],
+    [
+     "inits",
+     -1.0,
+     "t"
+    ],
+    [
+     "made",
+     1.0,
+     "t"
+    ]
+   ],
+   "transit": [
+    [
+     "transit",
+     1.0,
+     "t"
+    ],
+    [
+     "exits",
+     -80.0,
+     "t"
+    ],
+    [
+     "made",
+     240.0,
+     "t"
+    ]
+   ],
+   "nucleoside": [
+    [
+     "n_N",
+     1.0,
+     "t"
+    ],
+    [
+     "n_M",
+     1.0,
+     "t"
+    ],
+    [
+     "n_R_c",
+     240.0,
+     "t"
+    ],
+    [
+     "n_R_o",
+     240.0,
+     "t"
+    ],
+    [
+     "transit",
+     1.0,
+     "t"
+    ],
+    [
+     "n_N",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_M",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_R_c",
+     -240.0,
+     "0"
+    ],
+    [
+     "n_R_o",
+     -240.0,
+     "0"
+    ],
+    [
+     "transit",
+     -1.0,
+     "0"
+    ]
+   ]
+  },
+  "W5-exact": {
+   "S cell": [
+    [
+     "n_S_c",
+     1.0,
+     "t"
+    ],
+    [
+     "n_S_c",
+     -1.0,
+     "0"
+    ],
+    [
+     "xi_1",
+     -1.0,
+     "t"
+    ],
+    [
+     "xi_2",
+     1.0,
+     "t"
+    ],
+    [
+     "moved",
+     1.0,
+     "t"
+    ]
+   ],
+   "S node": [
+    [
+     "n_S_o",
+     1.0,
+     "t"
+    ],
+    [
+     "n_S_o",
+     -1.0,
+     "0"
+    ],
+    [
+     "moved",
+     -1.0,
+     "t"
+    ]
+   ],
+   "X": [
+    [
+     "n_X",
+     1.0,
+     "t"
+    ],
+    [
+     "n_X",
+     -1.0,
+     "0"
+    ],
+    [
+     "xi_1",
+     1.0,
+     "t"
+    ]
+   ],
+   "Y": [
+    [
+     "n_Y",
+     1.0,
+     "t"
+    ],
+    [
+     "n_Y",
+     -1.0,
+     "0"
+    ],
+    [
+     "xi_2",
+     1.0,
+     "t"
+    ]
+   ],
+   "W": [
+    [
+     "n_W",
+     1.0,
+     "t"
+    ],
+    [
+     "n_W",
+     -1.0,
+     "0"
+    ],
+    [
+     "xi_2",
+     -1.0,
+     "t"
+    ]
+   ],
+   "S moiety": [
+    [
+     "n_X",
+     1.0,
+     "t"
+    ],
+    [
+     "n_S_c",
+     1.0,
+     "t"
+    ],
+    [
+     "n_S_o",
+     1.0,
+     "t"
+    ],
+    [
+     "n_W",
+     1.0,
+     "t"
+    ],
+    [
+     "n_X",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_S_c",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_S_o",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_W",
+     -1.0,
+     "0"
+    ]
+   ],
+   "Y moiety": [
+    [
+     "n_Y",
+     1.0,
+     "t"
+    ],
+    [
+     "n_W",
+     1.0,
+     "t"
+    ],
+    [
+     "n_Y",
+     -1.0,
+     "0"
+    ],
+    [
+     "n_W",
+     -1.0,
+     "0"
+    ]
+   ]
+  }
+ },
+ "start": {
+  "W5": {
+   "n_S_c": 1.35,
+   "n_S_o": 0.09,
+   "n_X": 9.4,
+   "n_Y": 6.1,
+   "n_W": 4e-06,
+   "xi_1": 0.0,
+   "xi_2": 0.0,
+   "moved": 0.0
+  },
+  "W5-exact": {
+   "n_S_c": 1.35,
+   "n_S_o": 0.09,
+   "n_X": 9.4,
+   "n_Y": 6.1,
+   "n_W": 4e-06,
+   "xi_1": 0.0,
+   "xi_2": 0.0,
+   "moved": 0.0
+  },
+  "W6": {
+   "n_N": 0.0017,
+   "n_M": 0.00024,
+   "n_Pi": 0.0022,
+   "n_R_c": 1e-12,
+   "n_R_o": 1e-12,
+   "free": "machines_copies * copy_fmol",
+   "engaged": 0.0,
+   "transit": 0.0,
+   "inits": 0.0,
+   "exits": 0.0,
+   "made": 0.0,
+   "lost": 0.0,
+   "moved": 0.0
+  }
+ },
+ "machines_start": {
+  "W6": {
+   "free_fmol": "machines_copies * copy_fmol",
+   "stage_complexes_fmol": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  }
+ },
+ "minimum_events": {
+  "W5": {
+   "per_copy": 12,
+   "total": 160
+  },
+  "W5-exact": {
+   "per_copy": 12,
+   "total": 160
+  },
+  "W6": {
+   "per_copy": 10,
+   "total": 120
+  }
+ },
+ "guard_steps": 4,
+ "restart": {
+  "W5": {
+   "run": "W5 reactions-first h=0.005 c0",
+   "time_s": 10.0
+  },
+  "W6": {
+   "run": "W6 gene-first h=0.125 c0",
+   "time_s": 300.0
+  }
+ },
+ "draws": {
+  "file": "draws.json",
+  "rule": "LAWS.md section 6",
+  "site_index": 0,
+  "domain": "events",
+  "pairs_per_copy": 160
+ },
+ "placement": [
+  {
+   "world": "W5",
+   "largest_propensity_per_s": 4.0452,
+   "dt_a0_max_at_the_coarsest_step": 0.080904,
+   "basis": "the declared material of S only; S is also made from X without a static bound, so the definition leaves the site unchecked after the build"
+  },
+  {
+   "world": "W5-exact",
+   "largest_propensity_per_s": 4.1,
+   "dt_a0_max_at_the_coarsest_step": 0.08199999999999999,
+   "basis": "constant rates"
+  },
+  {
+   "world": "W6",
+   "largest_propensity_per_s": 1.4069542790653027,
+   "dt_a0_max_at_the_coarsest_step": 0.7034771395326513,
+   "basis": "the declared R plus the horizon times the gene unit's largest production rate, kappa x machines"
+  }
+ ],
+ "plants": [
+  {
+   "id": "P1",
+   "kind": "reference",
+   "world": "W5",
+   "families": "both",
+   "change": {
+    "reactions.make.rate_constant": "x 1.01"
+   },
+   "must_fail": [
+    [
+     "S",
+     "t_events"
+    ],
+    [
+     "S",
+     "n_S_c"
+    ],
+    [
+     "S",
+     "n_S_o"
+    ],
+    [
+     "S",
+     "moved"
+    ],
+    [
+     "S",
+     "xi_2"
+    ]
+   ]
+  },
+  {
+   "id": "P2",
+   "kind": "reference",
+   "world": "W6",
+   "families": "both",
+   "change": {
+    "gene.initiation_per_mM_s": "x 1.01"
+   },
+   "must_fail": [
+    [
+     "S",
+     "t_events"
+    ],
+    [
+     "S",
+     "n_R_c"
+    ],
+    [
+     "S",
+     "n_R_o"
+    ],
+    [
+     "S",
+     "moved"
+    ],
+    [
+     "S",
+     "lost"
+    ],
+    [
+     "S",
+     "made"
+    ],
+    [
+     "S",
+     "exits"
+    ]
+   ]
+  },
+  {
+   "id": "P3",
+   "kind": "engine",
+   "world": "W5",
+   "families": [
+    "W5 reactions-first"
+   ],
+   "runs": "the runs with ` lie`: the three finest rungs, every copy",
+   "change": "second halves in declared order",
+   "must_fail": [
+    [
+     "S",
+     "t_events"
+    ]
+   ]
+  },
+  {
+   "id": "P4",
+   "kind": "reference",
+   "world": "W5",
+   "families": "both",
+   "change": "every reference event time + 10 x the family's expected tau of t_events",
+   "must_fail": [
+    [
+     "S",
+     "t_events"
+    ]
+   ]
+  },
+  {
+   "id": "P4-W6",
+   "kind": "reference",
+   "world": "W6",
+   "families": "both",
+   "change": "every reference event time + 10 x the family's expected tau of t_events",
+   "must_fail": [
+    [
+     "S",
+     "t_events"
+    ]
+   ]
+  },
+  {
+   "id": "P5",
+   "kind": "reference",
+   "world": "W5-exact",
+   "families": "both",
+   "change": {
+    "population.channels.assemble.rate_constant": "x 1.01"
+   },
+   "must_fail": [
+    [
+     "R",
+     "t_events"
+    ]
+   ]
+  },
+  {
+   "id": "P6",
+   "kind": "record",
+   "world": "W5",
+   "families": [
+    "W5 reactions-first"
+   ],
+   "change": "xi_2 x (1 + 1e-3)",
+   "must_fail": [
+    [
+     "R",
+     "identity S cell"
+    ],
+    [
+     "R",
+     "identity Y"
+    ],
+    [
+     "R",
+     "identity W"
+    ]
+   ]
+  },
+  {
+   "id": "P6-W6",
+   "kind": "record",
+   "world": "W6",
+   "families": [
+    "W6 gene-first"
+   ],
+   "change": "lost x (1 + 1e-3)",
+   "must_fail": [
+    [
+     "R",
+     "identity R cell"
+    ],
+    [
+     "R",
+     "identity M"
+    ]
+   ]
+  },
+  {
+   "id": "P7",
+   "kind": "record",
+   "world": "W5",
+   "families": [
+    "W5 reactions-first"
+   ],
+   "change": "n_S_o at its t = 0 value at every sample",
+   "must_fail": [
+    [
+     "R",
+     "identity S node"
+    ]
+   ]
+  },
+  {
+   "id": "P7-W6",
+   "kind": "record",
+   "world": "W6",
+   "families": [
+    "W6 gene-first"
+   ],
+   "change": "n_R_o at its t = 0 value at every sample",
+   "must_fail": [
+    [
+     "R",
+     "identity R node"
+    ]
+   ]
+  },
+  {
+   "id": "P8",
+   "kind": "record",
+   "world": "W5",
+   "families": [
+    "W5 reactions-first"
+   ],
+   "change": "event k = floor(K_c/2) of the record removed, the later ones renumbered, events_total one lower",
+   "must_fail": [
+    [
+     "E",
+     "trace"
+    ]
+   ],
+   "no_margin": true
+  },
+  {
+   "id": "P8-W6",
+   "kind": "record",
+   "world": "W6",
+   "families": [
+    "W6 gene-first"
+   ],
+   "change": "event k = floor(K_c/2) of the record removed, the later ones renumbered, events_total one lower",
+   "must_fail": [
+    [
+     "E",
+     "trace"
+    ]
+   ],
+   "no_margin": true
+  },
+  {
+   "id": "P9",
+   "kind": "reference",
+   "world": "W5",
+   "families": "both",
+   "change": {
+    "population.channels.assemble.read.at": "node"
+   },
+   "must_fail": [
+    [
+     "S",
+     "t_events"
+    ]
+   ]
+  },
+  {
+   "id": "P10",
+   "kind": "reference",
+   "world": "W5",
+   "families": "both",
+   "change": {
+    "reactions": "both rate constants 0"
+   },
+   "must_fail": [
+    [
+     "S",
+     "n_S_c"
+    ],
+    [
+     "S",
+     "n_S_o"
+    ],
+    [
+     "S",
+     "moved"
+    ],
+    [
+     "S",
+     "xi_2"
+    ]
+   ]
+  },
+  {
+   "id": "P10-W6",
+   "kind": "reference",
+   "world": "W6",
+   "families": "both",
+   "change": {
+    "gene.initiation_per_mM_s": 0
+   },
+   "must_fail": [
+    [
+     "S",
+     "n_R_c"
+    ],
+    [
+     "S",
+     "n_R_o"
+    ],
+    [
+     "S",
+     "moved"
+    ],
+    [
+     "S",
+     "lost"
+    ],
+    [
+     "S",
+     "made"
+    ],
+    [
+     "S",
+     "exits"
+    ]
+   ]
+  },
+  {
+   "id": "P11",
+   "kind": "reference",
+   "world": "W6",
+   "families": "both",
+   "change": "transcription's reversibility factor 1 - e^x replaced by 1",
+   "must_fail": [
+    [
+     "S",
+     "made"
+    ],
+    [
+     "S",
+     "exits"
+    ],
+    [
+     "S",
+     "n_R_c"
+    ],
+    [
+     "S",
+     "lost"
+    ],
+    [
+     "S",
+     "t_events"
+    ]
+   ]
+  },
+  {
+   "id": "P12",
+   "kind": "reference",
+   "world": "W6",
+   "families": "both",
+   "change": "the degradation's reversibility factor 1 - e^y replaced by 1",
+   "must_fail": [
+    [
+     "S",
+     "lost"
+    ],
+    [
+     "S",
+     "n_R_c"
+    ]
+   ]
+  },
+  {
+   "id": "P13",
+   "kind": "record",
+   "world": "W6",
+   "families": [
+    "W6 gene-first"
+   ],
+   "change": "n_Pi at its t = 0 value at every sample (a product not released)",
+   "must_fail": [
+    [
+     "R",
+     "identity Pi"
+    ]
+   ]
+  },
+  {
+   "id": "P14",
+   "kind": "record",
+   "world": "W6",
+   "families": [
+    "W6 gene-first"
+   ],
+   "change": "n_N, n_M, n_Pi and free at t = 0 each x 1.01 (a start amount wrong)",
+   "must_fail": [
+    [
+     "R",
+     "start n_N"
+    ],
+    [
+     "R",
+     "start n_M"
+    ],
+    [
+     "R",
+     "start n_Pi"
+    ],
+    [
+     "R",
+     "start free"
+    ]
+   ]
+  },
+  {
+   "id": "P15",
+   "kind": "record",
+   "world": "W6",
+   "families": [
+    "W6 gene-first"
+   ],
+   "change": "n_N and n_M at their t = 0 values at every sample (the monomer neither made nor consumed)",
+   "must_fail": [
+    [
+     "R",
+     "identity N"
+    ],
+    [
+     "R",
+     "identity M"
+    ]
+   ]
+  }
+ ],
+ "reference_accuracy": {
+  "event_time": "1e-11 * end_s (W5-exact: 1e-15 * end_s)",
+  "amount": "1e-11 * the readout's scale"
+ },
+ "echo": {
+  "world_keys": {
+   "reactions": [
+    "kind",
+    "cell_pL",
+    "node_pL",
+    "end_s",
+    "rows_fmol",
+    "reactions",
+    "population",
+    "samples_s"
+   ],
+   "gene": [
+    "kind",
+    "cell_pL",
+    "node_pL",
+    "end_s",
+    "rows_fmol",
+    "gene",
+    "population",
+    "samples_s"
+   ]
+  },
+  "run_keys": [
+   "seed",
+   "step_s",
+   "first",
+   "copy"
+  ],
+  "excluded": [
+   "rungs_s",
+   "retry_rung_s",
+   "seeds",
+   "copies"
+  ]
+ }
+}
