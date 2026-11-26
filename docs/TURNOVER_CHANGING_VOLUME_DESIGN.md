@@ -16,7 +16,7 @@ The build comes after the rename. FR-65 is D301's composition M3, and D150's pla
 **Engine models:** `cells.model.resolved_pump_composite@1` over `cells.model.resolved_pump_tissue@3`. `cells.operator.scheduled_species_turnover@1` sits
 beside `cells.operator.ideal_osmosis_linear_compliance_water@1`, `cells.operator.isopotential_partition@1`, `cells.operator.scheduled_membrane_insertion@1` and
 `@2`, `cells.operator.restricted_cleft_lumen@1` and `@2`, and `cells.operator.neutral_arrival_labels@1`. A1 adds `cells.operator.templated_polymerisation@1`, and in
-the second step `cells.operator.species_regulated_availability@2`.
+the second step `cells.operator.species_regulated_availability@2` (§11 recommends `@1` too).
 
 **S** marks our own reading or derivation. The probes ran on the host only: nothing was compiled or run (§9).
 
@@ -1003,7 +1003,8 @@ Each row has a planted error it must catch. A fix adds a row to an existing para
    - The water door's world is bound, with water's increment set to +0.3 V₀ by hand. At that state these each equal
      their closed form at n/V:
      - the control view's channel availability;
-     - the routed rates of turnover and of the network;
+     - the routed rates of turnover and of the network, through `_routed_control`. No observation column holds a
+       routed turnover or gene-unit rate, so this row is their exact check;
      - one state half-step, through `_half_step`;
      - the observed `coupling_factor`.
    - In A5″'s composition and in a population world, the coupling receives no view of `volume`.
@@ -1020,7 +1021,10 @@ Each row has a planted error it must catch. A fix adds a row to an existing para
    - the lumens are refused by the masks, in their new words.
 
    The same applies to `REFUSED` and to the "volume provider" row of `REFUSALS` in
-   `test_species_regulated_availability.py`. Neither registered protocol runs that file.
+   `test_species_regulated_availability.py`.
+   - No registered protocol runs that file. The coupling's names only
+     `test_species_regulated_availability_regression.py`, as a regression guard outside its judged list. A5″'s names
+     none.
 
 **Tier 3, compiled.** The seconds are estimates, measured at landing (D224).
 - **T1, the water door** (A7's acceptance for version 1.1). New rows in `test_shared_inventory_volume.py`.
@@ -1032,11 +1036,19 @@ Each row has a planted error it must catch. A fix adds a row to an existing para
     - Hill factors of R routed onto S's production and onto the binding reaction's multiplier (routed).
   - **Checks:**
     - R's amount is bitwise constant while V grows by 5% or more;
-    - at every row, the observed availability, the routed rates and `coupling_factor` equal their closed forms at
-      n_R/V;
+    - **at every row,** three observed columns equal their closed forms:
+      - the inner model's `channel_availability` of the population equals its schedule times F at n_R/V and at the
+        row's s;
+      - every route's `coupling_factor` equals its factor at n_R/V, or at s for the state route;
+      - the network's `reaction_rate_fmol_per_s` for `bind` equals its rate at the row's state with the routed
+        multiplier. That rate comes from the network's own rate functions, as the first build's reference uses them.
+
+      Turnover observes only its accumulators, so its routed production is checked through S and the record below;
     - V, S and s follow the first build's in-test reference at h, 2h and 4h, inside C2.6's ratio window. The reference
       is extended by the state's two-state law and the routed factors, written plainly, and solved by SciPy's Radau at
       rtol 1e-12;
+    - the routed routes' `coupling_applied_factor` at each step's end, against F at the reference's volume half a
+      step earlier, falls inside the same window;
     - the energy identity's stepped entry (amendment 3) holds;
     - every host check holds on every row.
   - **Planted:**
@@ -1049,19 +1061,22 @@ Each row has a planted error it must catch. A fix adds a row to an existing para
   `test_fr65_a1_without_the_coupling_runs_in_a_swelling_cell`, plus a labelled row.
   - **Checks:**
     - every host check, and X's closed form, as today;
-    - transcription's observed initiation rate equals k_I·F(n_X/V) at every row;
+    - transcription's route has `coupling_factor` equal to F(n_X/V) at every row. The gene unit observes only its own
+      state, so its routed initiation rate has no column; tier-1 row 4 checks that wiring exactly;
     - **the saved records,** checked against one saved file, which the test names. From `write_run`'s
       `trajectory.npz`, the saved n_X and V give the saved `coupling_factor`, to rounding;
     - a resume mid-run, in process and from a written snapshot, is bitwise;
-    - in the labelled row, the physics is bitwise with and without the labels.
+    - **the labelled row** is FR-38 v2's arm B, labelled, in a swelling cell. Its registered builders keep the IDs
+      from before the move, so its IDs are translated with `validation/id_table.translate`. There the physics is
+      bitwise with and without the labels.
   - **Planted:**
     - the expected rate taken at V₀;
     - k × 1.001 in X's closed form.
   - **Seconds:** about 80 with its resumes, and about 40 for the labelled row.
 - **The companion rows.** The symport and the bath schedule each sit beside water, turnover and the coupling, which
   routes S's production from R.
-  - **Checks:** every host check on every row, and the routed identity at every row.
-  - **Planted:** the expected rate taken at V₀.
+  - **Checks:** every host check on every row, and the routed route's `coupling_factor` at n_R/V at every row.
+  - **Planted:** the expected factor taken at V₀.
   - **Seconds:** about 25 each.
 
 ### 11.9 The price
@@ -1089,6 +1104,7 @@ Each row has a planted error it must catch. A fix adds a row to an existing para
 
 The probes are in `/mnt/workspaces/Cells/fr65-coupling-20261126/probe/`.
 - **How they ran:** on CPU 6, from the clean worktree at 69d2a36a, host only, so nothing was compiled or run.
+  Probe 4 ran at 19a374a3, whose source is the same.
 - **What they changed:** each patched the coupling's class attributes in process, to §11.2's declarations, and
   restored them afterwards. Nothing was saved in the checkout.
 
@@ -1110,6 +1126,18 @@ The three probes:
   - The lumens are refused by the masks.
 - **`coupling-probe-3-69d2a36a.json`** (`coupling_probe_3.py`): `factor_fields`, `view_readers` and the changed
   fields for thirteen compositions, five today and eight lifted (§11.3, item 1).
+- **`coupling-probe-4-19a374a3.json`** (`coupling_probe_4.py`), with the same shim. The checkout was this section's
+  commit, whose source is 69d2a36a's. It parsed sketches of §11.8's worlds: T1's world, the two companion worlds, and
+  arm B, labelled and unlabelled, in a swelling cell. Each is refused today, and each parses under the lift. Arm B's
+  IDs were translated, as T2's labelled row will be.
+
+**What the probes do not show.**
+- **No probe exercised the code's reads.** The lift changes declarations only, so the kernels still read the
+  declared volume, and nothing was compiled or run.
+- **R2′ is designed, not written.** Its wiring and its program identity are claims of §11.3 and §11.7, to be shown
+  by tier-1 row 4 and by D148's pair check.
+- **The sketches' parameters are not yet set** for the runs' criteria: V moving by 5% or more, with R inside its
+  declared range.
 
 ### 11.11 Files, and the order with FR-52
 
