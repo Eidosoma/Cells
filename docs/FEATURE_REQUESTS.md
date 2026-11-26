@@ -2139,7 +2139,7 @@ So large-count vesicle worlds with a shell and washes can run only as exact even
 
 **Status (23 November):** logged. A design note comes first.
 
-**Status (24 November): built; admitted, development-only until fr47-shell-exchange's verdict.**
+**Status (24 November): built; qualified: FR-47's independent check passed at its registered tag (D373).**
 - The build (D323, D327) admits, in a prescribed shell's world only: the shell's limits, the washes
   as operators of the deterministic representation, E2's true zeros at first-order places and
   autonomous switching gates. Outside a shell's world each is refused by name, until a
