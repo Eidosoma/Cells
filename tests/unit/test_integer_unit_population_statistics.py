@@ -16,6 +16,15 @@ validation/fr43_part3/REGISTRATION.md §3 and §4 before any reference value was
 Four compiled programs (the many-site world, the dividing batch, the dividing world with its
 transfer, the two-way world), each run once or twice: about 3-4 min on one core, nearly all
 compiles. They need runs: the statistics need the engine's draws through its own event rule.
+
+FR-43 part 3's co-writers (docs/FR43_PART3_COWRITERS_DESIGN.md §5.2), two more compiled worlds
+(validation/fr43_part3/worlds): the five-writer world (S written by the operator, D152's reactions,
+turnover, exchange and site occupancy) and the gene unit's (the gene unit, a D152 sink, exchange
+and the operator on N). Each through the windows with every host check on every row; then the
+composite's own checks (check_values) on a copy of the records with one writer's books 1e-3 high,
+and with the transfer booked on one side only, must fail; a restart between events is bitwise.
+Their reason: the books, ledgers and restart of every class of co-writer at once need runs (about
+100-130 s on one core, nearly all compiles).
 """
 
 import math
@@ -25,6 +34,7 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import parse_spec
+from cells.execution.errors import NumericalError
 from cells.execution.windows import WindowPolicy, iter_windows
 from cells.numerics import counter_streams as streams
 from cells.registry.models import get_model
@@ -173,3 +183,92 @@ def test_the_integer_state_switches_the_flux_the_node_sees(two_way):
         for name in ("local", "outside", "total", "integer_subunits"):
             assert np.all(np.isfinite(model.balances(rb, p)[name])), (a, name)
     assert filled > 0
+
+
+# ------------------------------------------------------------------ co-writers (FR-43 part 3)
+
+COWRITERS = {
+    "five writers": (lambda: worlds.five_writers(dt=0.02, end=4.0), 50, "reaction_produced_fmol"),
+    "the gene unit's": (lambda: worlds.gene_cowriters(dt=0.5, end=60.0), 30, "poly_produced_fmol"),
+}
+
+
+def _windows(spec, window, checkpoint=None):
+    """(windows, {step: row}): every window of the run (each through the runner's host checks)."""
+    windows = list(iter_windows(spec, WindowPolicy(window, "full"), checkpoint))
+    rows = {}
+    for w in windows:
+        for i, _ in enumerate(np.asarray(w.times)):
+            rows[w.start_step + i] = type(w.history)(*(np.asarray(v)[i] for v in w.history))
+    return windows, rows
+
+
+@pytest.fixture(scope="module", params=sorted(COWRITERS))
+def cowriters(request):
+    build, window, books = COWRITERS[request.param]
+    spec = parse_spec(build())
+    windows, rows = _windows(spec, window)
+    return request.param, spec, window, books, windows, rows
+
+
+def _stacked(rows):
+    steps = sorted(rows)
+    first = rows[steps[0]]
+    return type(first)(*(np.stack([np.asarray(rows[k][i]) for k in steps]) for i in range(
+        len(first)))), np.asarray(steps)  # fmt: skip
+
+
+def test_every_co_writer_books_its_own_moves(cowriters):
+    """Every host check passed on every row (the windows ran them); the integer ledger is exactly
+    0, the population fired, and both transfers moved the row; the composite's own checks on a
+    copy of the records fail with one writer's books 1e-3 high, and with the population's transfer
+    booked at the cell but not at its node."""
+    name, spec, _, books, _, rows = cowriters
+    model = get_model(spec.model)
+    history, steps = _stacked(rows)
+    model.check_values(history, spec, steps=steps)  # The records as run: every check passes.
+    last = rows[max(rows)]
+    assert int(last.integer_events[0]) >= 4 and abs(float(last.integer_transferred_fmol[0, 0])) > 0
+    assert float(np.max(np.abs(last.exchange_moved_fmol))) > 0
+    _, p = model.initial_values(spec)
+    for k, row in rows.items():
+        assert np.all(model.balances(row, p)["integer_subunits"] == 0.0), (name, k)
+    high = history._replace(**{books: np.asarray(getattr(history, books)) * (1 + 1e-3)})
+    with pytest.raises(NumericalError):
+        model.check_values(high, spec, steps=steps)
+    s = list(spec.model.species_ids).index(_moved(spec))
+    node = int(np.asarray(p.integer_site_node)[0])
+    moved = np.asarray(history.integer_transferred_fmol)[:, 0, 0]
+    outside = np.array(history.extracellular_amount_increment, copy=True)
+    outside[:, s, node] -= moved  # The node never received what the cell gave.
+    with pytest.raises(NumericalError):
+        model.check_values(history._replace(extracellular_amount_increment=outside), spec,
+                           steps=steps)  # fmt: skip
+
+
+def _moved(spec):
+    units = next(d for d in spec.model.operators if d.law == worlds.LAW)
+    return units.populations[0].transfers[0].species
+
+
+def test_a_restart_between_events_beside_co_writers_is_bitwise(cowriters):
+    """A same-seed restart cut at a window boundary strictly between two events, after some of
+    them, is bitwise the uninterrupted run: every writer's state resumes with the checkpoint."""
+    _, spec, window, _, windows, rows = cowriters
+    dt = spec.execution.dt
+    last = rows[max(rows)]
+    times = last.integer_trace_time_s[0, : int(last.integer_events[0])]
+    cut = next(
+        k * window
+        for k in range(1, len(windows))
+        if np.sum(times < k * window * dt) >= 2
+        and not np.any(np.abs(times - k * window * dt) < 1e-12)
+    )
+    checkpoint = next(
+        w.checkpoint_at(float(t)) for w in windows for t in np.asarray(w.times)
+        if abs(t - cut * dt) < 1e-9
+    )  # fmt: skip
+    _, resumed = _windows(spec, window, checkpoint)
+    for k in range(cut, len(rows)):
+        for a, b in zip(resumed[k], rows[k], strict=True):
+            assert np.asarray(a).tobytes() == np.asarray(b).tobytes(), k
