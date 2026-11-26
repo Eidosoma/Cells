@@ -9,7 +9,7 @@ import jax.numpy as jnp
 
 from cells.laws.channels import sodium_channels
 
-HCN_LAWS = {f"hcn{i}_m@1": i for i in (1, 2, 4)}
+HCN_LAWS = {"hcn1_m@1": 1, "hcn2_m@1": 2, "hcn4_m@1": 4}
 LAW_CODES = {
     **sodium_channels.LAW_CODES,
     **{law: index for index, law in enumerate(HCN_LAWS, 3)},

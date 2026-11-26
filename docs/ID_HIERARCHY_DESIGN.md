@@ -1,5 +1,10 @@
 # The ID hierarchy: the rename's design
 
+> **Legacy cleanup (25 November 2026, D386).** The legacy package left the tree, and the tag
+> `pre-cleanup-2026-11-25` keeps it. What this note says of legacy's IDs, files and dispatch, and of
+> the live constants that only legacy read, describes the tree before. The move runs on the tree
+> without it, after the deletion (D383).
+
 25 November 2026. Settled by D371 (the user's decisions and the lead's rulings on this note's questions), with the
 legacy plan's input (`legacy-port-plan` ef344334, §11.1). Extended the same day, after FR-58's designer found a live law
 with no row in the table (§1.6). The open items are in §11. A design note only: it writes no engine code and changes no

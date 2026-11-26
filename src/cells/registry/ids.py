@@ -55,9 +55,22 @@ LAW_FAMILIES = MappingProxyType(  # {a law interface: its laws' family}
         "cells.assembly_representation@1": "assembly_representation",
     }
 )
-# The words of the pieces that no registry holds: a law inside an operator or a kind, a fuel kind, a
-# lookup table's key.
-SUBLAW_FAMILIES = ()
+# The words of the pieces that no registry holds (D383): a law inside an operator or a kind, a fuel
+# kind, a lookup table's key. Such a piece may also take an interface's word, as the two other
+# transfer factors do: each word has one place.
+SUBLAW_FAMILIES = (
+    "analysis",
+    "damage",
+    "field_closure",
+    "fuel_kind",
+    "junction_formation",
+    "potential_set",
+    "regulation",
+    "site_binding",
+    "site_internalisation",
+    "species_reaction",
+    "topology",
+)
 FAMILIES = frozenset({*FIXED_FAMILIES, *LAW_FAMILIES.values(), *SUBLAW_FAMILIES})
 
 _PART = r"[a-z][a-z0-9_]*"

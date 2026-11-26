@@ -116,7 +116,10 @@ ML_DYNAMIC_LAWS = frozenset(
 CATALOG_PERMEABILITIES = (
     {law: (("K", 1.0),) for law in (*kv1_reference.LAWS, "kir2p1_mh2@1")}
     | {"nav1p2_m3h_regularized@1": (("Na", 1.0),)}
-    | {f"hcn{i}_m@1": (("Na", 0.2), ("K", 1.0), ("Ca", 0.05)) for i in (1, 2, 4)}
+    | {
+        law: (("Na", 0.2), ("K", 1.0), ("Ca", 0.05))
+        for law in ("hcn1_m@1", "hcn2_m@1", "hcn4_m@1")
+    }
     | {law: (("Ca", 1.0),) for law in cav_reference.LAWS}
     | {law: (("Na", 1.0),) for law in ADDED_SODIUM_LAWS}
     | {law: (("K", 1.0),) for law in ADDED_POTASSIUM_LAWS}
