@@ -21,7 +21,7 @@ At fixed compartment water volumes the change in total matrix and intermembrane-
 - [CellsProofs.Chemistry.MitochondrialCharge.anchor_ne](../CellsProofs/Chemistry/MitochondrialCharge.lean#L63)
 - [CellsProofs.Chemistry.MitochondrialCharge.form_flux_charge](../CellsProofs/Chemistry/MitochondrialCharge.lean#L68)
 
-Direct proof subject `cells.nadh_ubiquinone_proton_cycle@1`, `cells.ubiquinol_cytochrome_c_proton_cycle@1`, `cells.cytochrome_c_oxygen_proton_cycle@1`, `cells.proton_coupled_atp_synthesis_cycle@1`, `cells.electrogenic_nucleotide_exchange@1`, `cells.phosphate_proton_symport@1`, `cells.potassium_proton_exchange@1`
+Direct proof subject `cells.cycle.nadh_ubiquinone_proton_cycle@1`, `cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1`, `cells.cycle.cytochrome_c_oxygen_proton_cycle@1`, `cells.cycle.proton_coupled_atp_synthesis_cycle@1`, `cells.cycle.electrogenic_nucleotide_exchange@1`, `cells.cycle.phosphate_proton_symport@1`, `cells.cycle.potassium_proton_exchange@1`
 
 Proof sources [Cells inner-cycle charge columns specialized to arbitrary signed extents](../CellsProofs/Chemistry/MitochondrialCycles.lean) · [Mathlib finite sum distribution, imported for the weighted row balance](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269) · [Cells G5 and the seventh inventory](https://github.com/Eidosoma/Cells/blob/e924f450ad74a878eda6727ac255527ec5d74ff7/docs/MITOCHONDRIA_DESIGN.md#g5-the-outer-membranes-potential) · [Mathlib exchange of finite sums, imported for form and ligand fluxes](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Sigma.lean#L112-L121)
 

@@ -19,7 +19,7 @@ One signed extent of 2 ADP ⇌ ATP + AMP conserves adenylates, phosphate groups 
 - [CellsProofs.Chemistry.MitochondrialReactions.kinase_peak_gap](../CellsProofs/Chemistry/MitochondrialReactions.lean#L51)
 - [CellsProofs.Chemistry.MitochondrialReactions.kinase_peak_bound](../CellsProofs/Chemistry/MitochondrialReactions.lean#L64)
 
-Direct proof subject `cells.adenylate_kinase@1`
+Direct proof subject `cells.cycle.adenylate_kinase@1`
 
 Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 

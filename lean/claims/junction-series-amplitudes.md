@@ -16,7 +16,7 @@ At fixed voltage, multiplying two independent relaxing gate factors gives a plat
 - [CellsProofs.Transport.JunctionGate.series_clamp_expansion](../CellsProofs/Transport/JunctionGate.lean#L112)
 - [CellsProofs.Transport.JunctionGate.series_amplitudes](../CellsProofs/Transport/JunctionGate.lean#L122)
 
-Direct proof subject `cells.junction_series_gates@1`
+Direct proof subject `cells.junction.junction_series_gates@1`
 
 Proof sources [FR-30 product of independent gate factors at constant voltage](../../docs/JUNCTION_TWO_RELAXATION_DESIGN.md#L174) · [Constant-voltage step and product conductance](../../src/cells/laws/junctions/junction_series_gates.py#L134) · [Physlib two-state partition function, imported in the optional single-gate equilibrium check](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/TwoState.lean#L33-L37) · [Physlib postulate used by the optional check, a positive Boltzmann constant in the chosen units](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L22-L30) · [Cells specialization for one gate with dimensionless open-state energy gap](../checks/physlib/JunctionEquilibrium.lean) · [Engine steady open fraction before residual conductance](../../src/cells/laws/junctions/junction_series_gates.py#L79)
 

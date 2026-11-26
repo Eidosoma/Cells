@@ -493,16 +493,32 @@ def test_membrane_state_is_required():
 
 class _Stub:
     PROCESS = False  # No in-step process (the species registry's moved_in_step reads it).
+    SPLIT = True  # A split part: with an amount write, a split row writer (contract.writes_rows).
+    EVENT_REPLACES = {}
+    SHARED_ROW_POTENTIAL = False
 
-    def __init__(self, law, *, writes=(), role="user", species=()):
-        self.LAW_ID, self.IDENTITY_ROLE = law, role
+    def __init__(self, law, *, writes=(), role="user", species=(), moves=None, rows=(), bound=None):
+        """moves: its ROW_MOVES (None: undeclared); rows: its written rows; bound: its
+        production_bound's rate at each of them (None: no production_bound)."""
+        self.LAW_ID, self.IDENTITY_ROLE, self.ROW_MOVES = law, role, moves
         self.ENTITY_WRITES = dict.fromkeys(writes, ("x",))
         self._species = tuple(SimpleNamespace(id=s) for s in species)
+        self._rows = tuple(rows)
+        if bound is not None:
+            self.production_bound = lambda spec, declaration: dict.fromkeys(self._rows, bound)
 
     def species_identities(self, declaration):
         return self._species
 
+    def written_rows(self, spec, declaration):
+        return self._rows
 
+    def sole_rows(self, spec, declaration):
+        return ()
+
+
+AMOUNTS = ("amount_increment", "extracellular_amount_increment")
+PRECURSOR_ROWS = ((fx.PRECURSOR, fx.CELL), (fx.PRECURSOR, "ecs_0"))
 WRITER_REFUSALS = {
     "trafficking": (
         _Stub(
@@ -511,12 +527,40 @@ WRITER_REFUSALS = {
         ),
         "also writes population units",
     ),
-    "another author": (
-        _Stub("cells.operator.planted_author@1", role="author", species=(fx.PRECURSOR,)),
-        "also declares the precursor",
+    # FR-43 part 3: another conversion of the precursor is refused by name, a transfer by R5 (its
+    # production has no static bound), and an undeclared split row writer fails closed.
+    "another conversion": (
+        _Stub(
+            "cells.operator.planted_conversion@1",
+            writes=AMOUNTS[:1],
+            moves="conversion",
+            rows=PRECURSOR_ROWS[:1],
+        ),
+        "converts the precursor",
+    ),
+    "a transfer": (
+        _Stub(
+            "cells.operator.planted_transfer@1",
+            writes=AMOUNTS,
+            moves="transfer",
+            rows=PRECURSOR_ROWS,
+            bound=float("inf"),
+        ),
+        "made at a rate with no static bound by cells.operator.planted_transfer@1",
+    ),
+    "an undeclared split row writer": (
+        _Stub("cells.operator.planted_writer@1", writes=AMOUNTS[:1]),
+        "declares no ROW_MOVES",
     ),
     "turnover admitted": (
-        _Stub(put.TURNOVER_LAW, role="author", species=(fx.PRECURSOR,)),
+        _Stub(
+            put.TURNOVER_LAW,
+            role="author",
+            species=(fx.PRECURSOR,),
+            writes=AMOUNTS,
+            moves="conversion",
+            rows=PRECURSOR_ROWS[:1],
+        ),
         None,
     ),
 }

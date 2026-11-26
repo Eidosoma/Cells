@@ -17,7 +17,7 @@ from validation.tissue.surface_reference import F, R
 
 DT, END = 2**-15, 2**-11
 TIMES = [0.0, END / 2, END]
-LAW = "clleak_always_open@1"
+LAW = "cells.channel.clleak_always_open@1"
 
 
 def paper_reversal_shift():
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     print(
         json.dumps(
             dict(
-                model="resolved_pump_tissue@3",
+                model="cells.model.resolved_pump_tissue@3",
                 law=LAW,
                 dt_s=DT,
                 end_s=END,

@@ -19,7 +19,7 @@ Per chain, residues supplied at stage exits equal the increase in residues in un
 - [CellsProofs.Chemistry.TerminalRelease.fate_sum](../CellsProofs/Chemistry/TerminalRelease.lean#L35)
 - [CellsProofs.Chemistry.TerminalRelease.residue_step](../CellsProofs/Chemistry/TerminalRelease.lean#L48)
 
-Direct proof subject `cells.templated_polymerisation@1`
+Direct proof subject `cells.operator.templated_polymerisation@1`
 
 Proof sources [Mathlib sum_range_succ, used to telescope stage movements](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505) · [Cells stage layout, cumulative exits and residue ledger](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387) · [Mathlib Finset.sum_add_distrib, used to sum complementary fate fractions](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269) · [Cells per-chain and per-release residue ledgers](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012)
 

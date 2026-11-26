@@ -11,17 +11,24 @@
     "cell-physiology": "Cell physiology"
   },
   "law_categories": {
-    "cells.adenylate_kinase@1": "reactions-and-binding",
-    "cells.bilayer_geometry@1": "molecular-assembly",
-    "cells.gard_catalysis_pair_consistent@2": "molecular-assembly",
-    "cells.held_reductant_supply@1": "reactions-and-binding",
-    "cells.membrane_permeation@1": "membrane-transport",
-    "cells.osmotic_lumen@1": "membrane-transport",
-    "cells.passive_neutral_permeation@1": "membrane-transport",
-    "cells.phase_exchange@1": "molecular-assembly",
-    "cells.shared_pool@1": "molecular-assembly",
-    "cells.logmean_electrodiffusion_forms@1": "tissue-and-conservation",
-    "cells.rate_equations@1": "molecular-assembly"
+    "cells.cycle.adenylate_kinase@1": "reactions-and-binding",
+    "cells.assembly_geometry.bilayer_geometry@1": "molecular-assembly",
+    "cells.rate_factor.gard_catalysis_pair_consistent@2": "molecular-assembly",
+    "cells.cycle.held_reductant_supply@1": "reactions-and-binding",
+    "cells.reaction.membrane_permeation@1": "membrane-transport",
+    "cells.free_energy.osmotic_lumen@1": "membrane-transport",
+    "cells.route.passive_neutral_permeation@1": "membrane-transport",
+    "cells.reaction.phase_exchange@1": "molecular-assembly",
+    "cells.population.shared_pool@1": "molecular-assembly",
+    "cells.route.logmean_electrodiffusion_forms@1": "tissue-and-conservation",
+    "cells.assembly_representation.rate_equations@1": "molecular-assembly",
+    "cells.assembly_observable.root_component_has_cycle@1": "molecular-assembly",
+    "cells.channel.cav1p2_m2h@1": "channels-and-junctions",
+    "cells.cycle.atp_driven_transporter_mass_action_positive@2": "pumps-and-cotransport",
+    "cells.cycle.electroneutral_symport_reversible_tanh@1": "pumps-and-cotransport",
+    "cells.cycle.na_k_2anion_symport_reversible_tanh@1": "pumps-and-cotransport",
+    "cells.cycle.sodium_calcium_exchange_symmetric_barrier@1": "pumps-and-cotransport",
+    "cells.transfer_factor.hill_product_factor@1": "reactions-and-binding"
   },
   "comparisons": {
     "fr51-channel-block-material": {
@@ -4877,7 +4884,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.open_channel_block_weighted_modes@1"
+          "cells.channel_block.open_channel_block_weighted_modes@1"
         ],
         "theorems": {
           "CellsProofs.Transport.OpenChannelBlock.mode_hasDerivAt": "lean/CellsProofs/Transport/OpenChannelBlock.lean",
@@ -4989,8 +4996,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_compartment_wash@1",
-          "cells.neutral_arrival_labels@1"
+          "cells.operator.scheduled_compartment_wash@1",
+          "cells.operator.neutral_arrival_labels@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.CompartmentWash.label_total": "lean/CellsProofs/Tissue/CompartmentWash.lean",
@@ -5173,7 +5180,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.integer_unit_population@1"
+          "cells.operator.integer_unit_population@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.IntegerSegregation.block_mask": "lean/CellsProofs/Tissue/IntegerSegregation.lean",
@@ -5253,8 +5260,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.local_species_reactions@1",
-          "cells.templated_polymerisation@1"
+          "cells.operator.local_species_reactions@1",
+          "cells.operator.templated_polymerisation@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.SharedWriter.split_balance": "lean/CellsProofs/Chemistry/SharedWriter.lean",
@@ -5315,7 +5322,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.rate_equations@1"
+          "cells.assembly_representation.rate_equations@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.RosenbrockInventory.weighted_sum_zero": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
@@ -5405,7 +5412,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.size_threshold_division@1"
+          "cells.operator.size_threshold_division@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.LineageFission.ranked_division": "lean/CellsProofs/Chemistry/LineageFission.lean",
@@ -5458,7 +5465,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.templated_polymerisation@1"
+          "cells.operator.templated_polymerisation@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.ReleaseEnergy.ideal_antitone": "lean/CellsProofs/Chemistry/ReleaseEnergy.lean",
@@ -5502,13 +5509,13 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.nadh_ubiquinone_proton_cycle@1",
-          "cells.ubiquinol_cytochrome_c_proton_cycle@1",
-          "cells.cytochrome_c_oxygen_proton_cycle@1",
-          "cells.proton_coupled_atp_synthesis_cycle@1",
-          "cells.electrogenic_nucleotide_exchange@1",
-          "cells.phosphate_proton_symport@1",
-          "cells.potassium_proton_exchange@1"
+          "cells.cycle.nadh_ubiquinone_proton_cycle@1",
+          "cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1",
+          "cells.cycle.cytochrome_c_oxygen_proton_cycle@1",
+          "cells.cycle.proton_coupled_atp_synthesis_cycle@1",
+          "cells.cycle.electrogenic_nucleotide_exchange@1",
+          "cells.cycle.phosphate_proton_symport@1",
+          "cells.cycle.potassium_proton_exchange@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.MitochondrialCharge.cycles_cancel": "lean/CellsProofs/Chemistry/MitochondrialCharge.lean",
@@ -5568,7 +5575,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.rate_equations@1"
+          "cells.assembly_representation.rate_equations@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.RateEquations.inactive": "lean/CellsProofs/Chemistry/RateEquations.lean",
@@ -5732,7 +5739,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.templated_polymerisation@1"
+          "cells.operator.templated_polymerisation@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.ArrivalWindow.count_residual_le": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
@@ -5781,8 +5788,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.templated_polymerisation@1",
-          "cells.neutral_arrival_labels@1"
+          "cells.operator.templated_polymerisation@1",
+          "cells.operator.neutral_arrival_labels@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.ArrivalWindow.at_start": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
@@ -5917,7 +5924,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.neutral_arrival_labels@1"
+          "cells.operator.neutral_arrival_labels@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.ArrivalCohort.empty_label": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
@@ -5983,7 +5990,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.neutral_arrival_labels@1"
+          "cells.operator.neutral_arrival_labels@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.ArrivalSurvival.no_loss": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
@@ -6034,9 +6041,9 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.shear_fission@1",
-          "cells.osmotic_lumen@1",
-          "cells.shared_pool@1"
+          "cells.operator.shear_fission@1",
+          "cells.free_energy.osmotic_lumen@1",
+          "cells.population.shared_pool@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesicleRelease.birth_receipts": "lean/CellsProofs/Chemistry/VesicleBirth.lean",
@@ -6081,8 +6088,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.osmotic_lumen@1",
-          "cells.shared_pool@1"
+          "cells.free_energy.osmotic_lumen@1",
+          "cells.population.shared_pool@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesicleRelease.release_ledger": "lean/CellsProofs/Chemistry/VesicleRelease.lean",
@@ -6122,7 +6129,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.osmotic_lumen@1"
+          "cells.free_energy.osmotic_lumen@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesicleEvent.cap_eq_sqrt": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
@@ -6170,8 +6177,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.stochastic_mass_action@1",
-          "cells.phase_exchange@1"
+          "cells.reaction.stochastic_mass_action@1",
+          "cells.reaction.phase_exchange@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.AssemblyKinetics.sum_log_draws": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
@@ -6212,8 +6219,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.osmotic_lumen@1",
-          "cells.bilayer_geometry@1"
+          "cells.free_energy.osmotic_lumen@1",
+          "cells.assembly_geometry.bilayer_geometry@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.Vesicle.invagination_bounds": "lean/CellsProofs/Chemistry/Vesicle.lean"
@@ -6273,7 +6280,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.gard_catalysis_pair_consistent@2"
+          "cells.rate_factor.gard_catalysis_pair_consistent@2"
         ],
         "theorems": {
           "CellsProofs.Chemistry.GardCache.grid_model_exists": "lean/CellsProofs/Chemistry/GardCache.lean",
@@ -6322,7 +6329,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.gard_catalysis_pair_consistent@2"
+          "cells.rate_factor.gard_catalysis_pair_consistent@2"
         ],
         "theorems": {
           "CellsProofs.Chemistry.GardCache.one_tick": "lean/CellsProofs/Chemistry/GardCache.lean",
@@ -6367,8 +6374,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.templated_polymerisation@1",
-          "cells.scheduled_cell_replacement@1"
+          "cells.operator.templated_polymerisation@1",
+          "cells.operator.scheduled_cell_replacement@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.TerminalRelease.replacement_residue_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
@@ -6409,7 +6416,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.templated_polymerisation@1"
+          "cells.operator.templated_polymerisation@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.Polymerisation.engaged_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
@@ -6475,7 +6482,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.templated_polymerisation@1"
+          "cells.operator.templated_polymerisation@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.Polymerisation.transit_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
@@ -6536,9 +6543,9 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.templated_polymerisation@1",
-          "cells.scheduled_cell_replacement@1",
-          "cells.neutral_arrival_labels@1"
+          "cells.operator.templated_polymerisation@1",
+          "cells.operator.scheduled_cell_replacement@1",
+          "cells.operator.neutral_arrival_labels@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.ProducerReplacement.at_birth": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
@@ -6648,7 +6655,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.templated_polymerisation@1"
+          "cells.operator.templated_polymerisation@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.TerminalRelease.fate_balance_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
@@ -6692,7 +6699,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.logmean_electrodiffusion@1"
+          "cells.route.logmean_electrodiffusion@1"
         ],
         "theorems": {
           "CellsProofs.Transport.LabelMixingPower.neutral_face_power": "lean/CellsProofs/Transport/LabelMixingPower.lean",
@@ -6737,8 +6744,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_compartment_wash@1",
-          "cells.site_occupancy@1"
+          "cells.operator.scheduled_compartment_wash@1",
+          "cells.operator.site_occupancy@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.WallWash.event_retention": "lean/CellsProofs/Tissue/WallWash.lean",
@@ -6839,8 +6846,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.logmean_electrodiffusion@1",
-          "cells.passive_neutral_permeation@1"
+          "cells.route.logmean_electrodiffusion@1",
+          "cells.route.passive_neutral_permeation@1"
         ],
         "theorems": {
           "CellsProofs.Transport.LabelDiffusion.fick_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
@@ -6899,7 +6906,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_compartment_wash@1"
+          "cells.operator.scheduled_compartment_wash@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.RegionalSampling.inventory": "lean/CellsProofs/Tissue/RegionalSampling.lean",
@@ -7049,8 +7056,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_species_exchange@1",
-          "cells.scheduled_species_turnover@1"
+          "cells.operator.scheduled_species_exchange@1",
+          "cells.operator.scheduled_species_turnover@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.RegionalTracer.equal_donor_traces": "lean/CellsProofs/Tissue/RegionalTracer.lean",
@@ -7145,7 +7152,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.pool_withdrawal@1"
+          "cells.operator.pool_withdrawal@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.MatchedBuffer.matched_mass": "lean/CellsProofs/Chemistry/MatchedBuffer.lean",
@@ -7197,7 +7204,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.pool_withdrawal@1"
+          "cells.operator.pool_withdrawal@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.PoolWithdrawalEnergy.binomial_mass": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
@@ -7250,7 +7257,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.pool_withdrawal@1"
+          "cells.operator.pool_withdrawal@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.PoolWithdrawal.inventory": "lean/CellsProofs/Chemistry/PoolWithdrawal.lean",
@@ -7375,7 +7382,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.pool_replacement@1"
+          "cells.operator.pool_replacement@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesiclePopulation.replacement_state": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
@@ -7441,8 +7448,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.pool_replacement@1",
-          "cells.serial_transfer@1"
+          "cells.operator.pool_replacement@1",
+          "cells.operator.serial_transfer@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesiclePopulation.replacement_capacity_gap": "lean/CellsProofs/Chemistry/VesiclePopulation.lean"
@@ -7474,7 +7481,7 @@
         "The quotient is [ATP]_total [AMP]/[ADP]_total². The equilibrium formula extends to zero Mg by continuity. The engine's log-activity evaluator uses positive inputs."
       ],
       "uses": ["atp-cycle"],
-      "formal": {"status": "proved", "about": ["cells.adenylate_kinase@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.cycle.adenylate_kinase@1"], "theorems": {
         "CellsProofs.Chemistry.MitochondrialReactions.kinase_inventories": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
         "CellsProofs.Chemistry.MitochondrialReactions.kinase_free_flux": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
         "CellsProofs.Chemistry.MitochondrialReactions.kinase_rate_on_totals": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
@@ -7542,7 +7549,7 @@
         "Free activities and the kinetic prefactor are positive. Cells assigns zero standard drive at its reference proton concentration of 10⁻⁷ M. Work and heat refer to instantaneous chemical power."
       ],
       "uses": ["atp-cycle"],
-      "formal": {"status": "proved", "about": ["cells.held_reductant_supply@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.cycle.held_reductant_supply@1"], "theorems": {
         "CellsProofs.Chemistry.MitochondrialReactions.supply_stall": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
         "CellsProofs.Chemistry.MitochondrialReactions.supply_work": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean"
       }},
@@ -7584,13 +7591,13 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.nadh_ubiquinone_proton_cycle@1",
-          "cells.ubiquinol_cytochrome_c_proton_cycle@1",
-          "cells.cytochrome_c_oxygen_proton_cycle@1",
-          "cells.proton_coupled_atp_synthesis_cycle@1",
-          "cells.electrogenic_nucleotide_exchange@1",
-          "cells.phosphate_proton_symport@1",
-          "cells.potassium_proton_exchange@1"
+          "cells.cycle.nadh_ubiquinone_proton_cycle@1",
+          "cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1",
+          "cells.cycle.cytochrome_c_oxygen_proton_cycle@1",
+          "cells.cycle.proton_coupled_atp_synthesis_cycle@1",
+          "cells.cycle.electrogenic_nucleotide_exchange@1",
+          "cells.cycle.phosphate_proton_symport@1",
+          "cells.cycle.potassium_proton_exchange@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.MitochondrialStall.rate_disabled": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
@@ -7661,9 +7668,9 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.nadh_ubiquinone_proton_cycle@1",
-          "cells.ubiquinol_cytochrome_c_proton_cycle@1",
-          "cells.cytochrome_c_oxygen_proton_cycle@1"
+          "cells.cycle.nadh_ubiquinone_proton_cycle@1",
+          "cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1",
+          "cells.cycle.cytochrome_c_oxygen_proton_cycle@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.MitochondrialCycles.charge_on_each_side": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
@@ -7744,10 +7751,10 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.proton_coupled_atp_synthesis_cycle@1",
-          "cells.electrogenic_nucleotide_exchange@1",
-          "cells.phosphate_proton_symport@1",
-          "cells.potassium_proton_exchange@1"
+          "cells.cycle.proton_coupled_atp_synthesis_cycle@1",
+          "cells.cycle.electrogenic_nucleotide_exchange@1",
+          "cells.cycle.phosphate_proton_symport@1",
+          "cells.cycle.potassium_proton_exchange@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.MitochondrialCycles.charge_on_each_side": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
@@ -7829,7 +7836,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.cell_owned_compartments@1"
+          "cells.operator.cell_owned_compartments@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.MembraneTrafficking.sum_owners": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
@@ -7880,7 +7887,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_membrane_trafficking@1"
+          "cells.operator.scheduled_membrane_trafficking@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.MembraneTrafficking.patch_balance": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
@@ -7976,7 +7983,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.isopotential_partition@1"
+          "cells.operator.isopotential_partition@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.DivisionBridge.daughter_charges": "lean/CellsProofs/Tissue/DivisionBridge.lean",
@@ -8029,7 +8036,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.cytoplasmic_bridge_closure@1"
+          "cells.operator.cytoplasmic_bridge_closure@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.DivisionBridge.linear_steps": "lean/CellsProofs/Tissue/DivisionBridge.lean",
@@ -8116,7 +8123,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.population_unit_turnover@1"
+          "cells.operator.population_unit_turnover@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.PopulationUnits.shared_consumption": "lean/CellsProofs/Chemistry/PopulationUnits.lean",
@@ -8261,7 +8268,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.membrane_entity_state@1"
+          "cells.operator.membrane_entity_state@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.PopulationUnits.abundance_from_units": "lean/CellsProofs/Chemistry/PopulationUnits.lean",
@@ -8347,7 +8354,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.membrane_entity_state@1"
+          "cells.operator.membrane_entity_state@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.PopulationUnits.empty_surface": "lean/CellsProofs/Chemistry/PopulationUnits.lean",
@@ -8384,7 +8391,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_cell_replacement@1"
+          "cells.operator.scheduled_cell_replacement@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.CellReplacement.simultaneous_copy": "lean/CellsProofs/Tissue/CellReplacement.lean",
@@ -8436,7 +8443,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_cell_replacement@2"
+          "cells.operator.scheduled_cell_replacement@2"
         ],
         "theorems": {
           "CellsProofs.Tissue.CellReplacement.gross_balance": "lean/CellsProofs/Tissue/CellReplacement.lean",
@@ -8501,7 +8508,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_cell_replacement@2"
+          "cells.operator.scheduled_cell_replacement@2"
         ],
         "theorems": {
           "CellsProofs.Tissue.CellReplacement.template_volume_interior": "lean/CellsProofs/Tissue/CellReplacement.lean"
@@ -8538,7 +8545,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.size_threshold_fission@1"
+          "cells.operator.size_threshold_fission@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.LineageFission.mem_rankedFirst": "lean/CellsProofs/Chemistry/LineageFission.lean",
@@ -8596,7 +8603,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.daughter_continuation@1"
+          "cells.operator.daughter_continuation@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.LineageFission.nonempty_fallback": "lean/CellsProofs/Chemistry/LineageFission.lean",
@@ -8635,7 +8642,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.pore_nucleation@1"
+          "cells.assembly_hazard.pore_nucleation@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesiclePore.rate_eq_area_mul": "lean/CellsProofs/Chemistry/VesiclePore.lean",
@@ -8732,8 +8739,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.pore_nucleation@1",
-          "cells.tension_hold@1"
+          "cells.assembly_hazard.pore_nucleation@1",
+          "cells.operator.tension_hold@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesiclePore.clock_by_cut": "lean/CellsProofs/Chemistry/VesiclePore.lean",
@@ -8784,8 +8791,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.pore_nucleation@1",
-          "cells.tension_hold@1"
+          "cells.assembly_hazard.pore_nucleation@1",
+          "cells.operator.tension_hold@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesiclePore.hold_work": "lean/CellsProofs/Chemistry/VesiclePore.lean",
@@ -8853,7 +8860,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.serial_transfer@1"
+          "cells.operator.serial_transfer@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesiclePopulation.partition_slots": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
@@ -8907,7 +8914,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.shear_fission@1"
+          "cells.operator.shear_fission@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesiclePopulation.split_inventory": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
@@ -8970,7 +8977,7 @@
         },
         "status": "proved",
         "about": [
-          "cells.phase_exchange@1"
+          "cells.reaction.phase_exchange@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesicleExchange.size_scaling": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
@@ -9054,7 +9061,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.membrane_permeation@1"
+          "cells.reaction.membrane_permeation@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.VesicleExchange.size_scaling": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
@@ -9172,7 +9179,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.shared_pool@1"
+          "cells.population.shared_pool@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.SharedPool.event_inventory": "lean/CellsProofs/Chemistry/SharedPool.lean",
@@ -9230,7 +9237,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.bilayer_geometry@1"
+          "cells.assembly_geometry.bilayer_geometry@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.Vesicle.footprint_add": "lean/CellsProofs/Chemistry/Vesicle.lean",
@@ -9380,7 +9387,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.osmotic_lumen@1"
+          "cells.free_energy.osmotic_lumen@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.Vesicle.energy_strict_min": "lean/CellsProofs/Chemistry/Vesicle.lean",
@@ -9592,8 +9599,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.bilayer_geometry@1",
-          "cells.osmotic_lumen@1"
+          "cells.assembly_geometry.bilayer_geometry@1",
+          "cells.free_energy.osmotic_lumen@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.Vesicle.refinement_outcome": "lean/CellsProofs/Chemistry/Vesicle.lean",
@@ -9700,8 +9707,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.restricted_cleft_lumen@1",
-          "cells.restricted_cleft_lumen@2"
+          "cells.operator.restricted_cleft_lumen@1",
+          "cells.operator.restricted_cleft_lumen@2"
         ],
         "theorems": {
           "CellsProofs.Tissue.RestrictedLumen.material_balance": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
@@ -9783,8 +9790,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.restricted_cleft_lumen@1",
-          "cells.restricted_cleft_lumen@2"
+          "cells.operator.restricted_cleft_lumen@1",
+          "cells.operator.restricted_cleft_lumen@2"
         ],
         "theorems": {
           "CellsProofs.Tissue.RestrictedLumen.phi_nonneg": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
@@ -9833,7 +9840,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_bath_composition@1"
+          "cells.operator.scheduled_bath_composition@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.BathSchedule.target_charge": "lean/CellsProofs/Tissue/BathSchedule.lean",
@@ -9900,7 +9907,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_bath_composition@1"
+          "cells.operator.scheduled_bath_composition@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.BathSchedule.recipe_order": "lean/CellsProofs/Tissue/BathSchedule.lean",
@@ -9939,8 +9946,8 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.species_regulated_availability@1",
-          "cells.species_regulated_availability@2"
+          "cells.operator.species_regulated_availability@1",
+          "cells.operator.species_regulated_availability@2"
         ],
         "theorems": {
           "CellsProofs.Transport.RegulatedAvailability.half_step_eq": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
@@ -10089,7 +10096,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.species_regulated_availability@2"
+          "cells.operator.species_regulated_availability@2"
         ],
         "theorems": {
           "CellsProofs.Transport.RegulatedAvailability.routed_rate_bounds": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
@@ -10131,7 +10138,7 @@
       ],
       "formal": {
         "status": "proved",
-        "about": ["cells.scheduled_species_turnover@1"],
+        "about": ["cells.operator.scheduled_species_turnover@1"],
         "theorems": {
           "CellsProofs.Chemistry.SpeciesTurnover.initial_amount": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
           "CellsProofs.Chemistry.SpeciesTurnover.zero_clearance": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
@@ -10265,7 +10272,7 @@
       ],
       "formal": {
         "status": "proved",
-        "about": ["cells.scheduled_species_exchange@1"],
+        "about": ["cells.operator.scheduled_species_exchange@1"],
         "theorems": {
           "CellsProofs.Transport.SpeciesExchange.concentration_rate": "lean/CellsProofs/Transport/SpeciesExchange.lean",
           "CellsProofs.Transport.SpeciesExchange.primitive_rate": "lean/CellsProofs/Transport/SpeciesExchange.lean",
@@ -10391,7 +10398,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.site_occupancy@1"
+          "cells.operator.site_occupancy@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.SiteOccupancy.site_guards": "lean/CellsProofs/Chemistry/SiteOccupancy.lean",
@@ -10428,7 +10435,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.electrode_current_injection@1"
+          "cells.operator.electrode_current_injection@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.CurrentInjection.booked_charge": "lean/CellsProofs/Tissue/CurrentInjection.lean",
@@ -10470,7 +10477,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.passive_constant_field_permeation@1"
+          "cells.route.passive_constant_field_permeation@1"
         ],
         "theorems": {
           "CellsProofs.Transport.MixedMembrane.current_factorization": "lean/CellsProofs/Transport/MixedMembrane.lean",
@@ -10580,7 +10587,7 @@
       "title": "Reversing a junction reverses its flux",
       "statement": "Exchanging the concentrations at the two ends of a constant-field junction and reversing the voltage difference negates the signed flux.",
       "assumptions": ["The ion, temperature, area, permeability and opening are the same in both orientations. Voltage is sender potential minus receiver potential, scaled by zF/(RT).", "The proof treats both the analytic Bernoulli factor and the engine’s near-zero series in real arithmetic. A floating-point error bound for the series remains open."],
-      "formal": {"status": "proved", "about": ["cells.constant_field@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.route.constant_field@1"], "theorems": {
         "CellsProofs.Transport.flux_reverse": "lean/CellsProofs/Transport/ConstantField.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The CPU surface tests exercised reversed routes, multiple patches and padding against the independent flux reference."},
@@ -10592,7 +10599,7 @@
       "title": "At equal voltage, junction flux follows the concentration gradient",
       "statement": "At equal potentials the signed flux is scale × (sender concentration − receiver concentration). A positive scale gives flow from higher to lower concentration.",
       "assumptions": ["The transport factor has value one at zero voltage. The scale is area × permeability × opening divided by mol/fmol. The direction claim requires a positive scale."],
-      "formal": {"status": "proved", "about": ["cells.constant_field@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.route.constant_field@1"], "theorems": {
         "CellsProofs.Transport.flux_zero_voltage": "lean/CellsProofs/Transport/ConstantField.lean",
         "CellsProofs.Transport.flux_down_gradient": "lean/CellsProofs/Transport/ConstantField.lean"
       }},
@@ -10605,7 +10612,7 @@
       "title": "A blocked junction carries zero flux",
       "statement": "Setting the effective transport scale to zero gives zero junction flux at every voltage and concentration difference.",
       "assumptions": ["The constant-field route multiplies the concentration-dependent term by its effective area, permeability and opening scale."],
-      "formal": {"status": "proved", "about": ["cells.constant_field@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.route.constant_field@1"], "theorems": {
         "CellsProofs.Transport.flux_blocked": "lean/CellsProofs/Transport/ConstantField.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The surface blocking and equilibrium tests passed on CPU."},
@@ -10623,7 +10630,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.junction_series_gates@1"
+          "cells.junction.junction_series_gates@1"
         ],
         "theorems": {
           "CellsProofs.Transport.JunctionGate.series_clamp_expansion": "lean/CellsProofs/Transport/JunctionGate.lean",
@@ -10702,7 +10709,7 @@
       "title": "Junction conductance relaxes toward a voltage-dependent target",
       "statement": "At fixed voltage the intrinsic gate approaches its target with one exponential time constant and stays between its residual conductance fraction and one. Increasing voltage magnitude lowers the target if the residual fraction is below one. Reversing polarity preserves the trajectory from the same initial state.",
       "assumptions": ["The junction has one intrinsic conductance state, the declared opening and closing rates, and a fixed threshold. Elapsed time is nonnegative and the initial conductance lies between the residual fraction and one.", "The tissue applies an external availability multiplier to transport. The intrinsic gate keeps evolving during a block. The time-course identity assumes constant junction voltage throughout the interval."],
-      "formal": {"status": "proved", "about": ["cells.junction_voltage_relaxation@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.junction.junction_voltage_relaxation@1"], "theorems": {
         "CellsProofs.Transport.JunctionGate.target_bounds": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.target_decreases": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.rhs_eq_relaxation": "lean/CellsProofs/Transport/JunctionGate.lean",
@@ -10783,7 +10790,7 @@
       "title": "Voltage-gated channel openings stay between zero and one",
       "statement": "For the six Kv1 laws, Kir2.1 and NaV1.2, both targets lie between zero and one and both time constants are positive on the declared voltage interval. An exponential tissue stage preserves the opening bounds when its two endpoint voltages differ. At a fixed voltage each gate’s deviation from its target decays exponentially. The whole-current response combines both gates.",
       "assumptions": ["Voltage is inside minus outside. Both stage endpoint voltages are between −120 and +60 mV, the elapsed time is nonnegative, and both initial gates lie in [0, 1].", "The proof uses the declared kinetics and the tissue’s exponential stage in real arithmetic, including the small-step series and both branches of the regularized sodium rates. A whole-current trace at fixed voltage and concentrations is proportional to the open fraction."],
-      "formal": {"status": "proved", "about": ["cells.kv1p1_mh2@1", "cells.kv1p2_mh@1", "cells.kv1p3_mh@1", "cells.kv1p4_mh@1", "cells.kv1p5_mh@1", "cells.kv1p6_mh@1", "cells.kir2p1_mh2@1", "cells.nav1p2_m3h_regularized@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.channel.kv1p1_mh2@1", "cells.channel.kv1p2_mh@1", "cells.channel.kv1p3_mh@1", "cells.channel.kv1p4_mh@1", "cells.channel.kv1p5_mh@1", "cells.channel.kv1p6_mh@1", "cells.channel.kir2p1_mh2@1", "cells.channel.nav1p2_m3h_regularized@1"], "theorems": {
         "CellsProofs.Transport.ChannelStep.lag_bounds": "lean/CellsProofs/Transport/ChannelStep.lean",
         "CellsProofs.Transport.ChannelStep.stage_bounds": "lean/CellsProofs/Transport/ChannelStep.lean",
         "CellsProofs.Transport.ChannelStep.clamped_residual": "lean/CellsProofs/Transport/ChannelStep.lean",
@@ -11083,7 +11090,7 @@
       "statement": "The seven gated K⁺ laws, one gated Na⁺ law and two single-ion leaks multiply the fully open constant-field flux by their opening and external availability. The opening is m h² for Kv1.1 and Kir2.1, m h for Kv1.2–Kv1.6, m³ h for NaV1.2 and one for the two leaks. With availability between zero and one the magnitude cannot exceed the fully open flux. Blocking gives zero. Only the declared ion crosses, debiting the cell and crediting the exterior. With a block fraction determined by V − E at fixed dose, matched driving voltages give equal blocked/free current ratios wherever the free currents are nonzero.",
       "assumptions": ["The declared population conducts K⁺ or Na⁺ with relative permeability one. The same area, permeability, abundance, voltage and concentrations define the fully open comparison. Positive flux points from the cell to the exterior.", "The gate values and external availability are in [0, 1]. The formal booking uses one cell–exterior pair. A held bath offsets the exterior credit with reservoir supply."],
       "uses": ["channel-gate-bounds", "transfer-inventory"],
-      "formal": {"status": "proved", "about": ["cells.kv1p1_mh2@1", "cells.kv1p2_mh@1", "cells.kv1p3_mh@1", "cells.kv1p4_mh@1", "cells.kv1p5_mh@1", "cells.kv1p6_mh@1", "cells.kir2p1_mh2@1", "cells.nav1p2_m3h_regularized@1", "cells.kleak_always_open@1", "cells.naleak_always_open@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.channel.kv1p1_mh2@1", "cells.channel.kv1p2_mh@1", "cells.channel.kv1p3_mh@1", "cells.channel.kv1p4_mh@1", "cells.channel.kv1p5_mh@1", "cells.channel.kv1p6_mh@1", "cells.channel.kir2p1_mh2@1", "cells.channel.nav1p2_m3h_regularized@1", "cells.channel.kleak_always_open@1", "cells.channel.naleak_always_open@1"], "theorems": {
         "CellsProofs.Transport.IonChannels.leak_opening": "lean/CellsProofs/Transport/IonChannels.lean",
         "CellsProofs.Transport.IonChannels.permeant_flux": "lean/CellsProofs/Transport/IonChannels.lean",
         "CellsProofs.Transport.IonChannels.flux_bound": "lean/CellsProofs/Transport/IonChannels.lean",
@@ -11225,7 +11232,7 @@
       "statement": "For the gate-free Cl⁻ population, outward material flux J produces outward electrical current −F × 10⁻¹⁵ × J amperes for J in fmol/s. The conducting route reverses at V = (RT/F) × (ln inside − ln outside) on the regular Bernoulli branch and at zero voltage. On the small nonzero branch its reversal follows the implemented polynomial ratio.",
       "assumptions": ["Voltage is inside minus outside. Concentrations, absolute temperature, F and RT are positive. Permeability, area, abundance and availability give a positive scale for the reversal claim.", "The formal calculation is over real numbers. The regular branch uses |FV/(RT)| ≥ 10⁻⁴. The sign conversion applies to either flux branch. In the tissue comparison, a single membrane connects the cell to a grounded bath and the chloride population is the only conductive route."],
       "uses": ["proton-leak", "transfer-inventory"],
-      "formal": {"status": "proved", "about": ["cells.clleak_always_open@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.channel.clleak_always_open@1"], "theorems": {
         "CellsProofs.Transport.IonChannels.chloride_flux": "lean/CellsProofs/Transport/IonChannels.lean",
         "CellsProofs.Transport.IonChannels.chloride_reversal_iff": "lean/CellsProofs/Transport/IonChannels.lean",
         "CellsProofs.Transport.IonChannels.chloride_current_positive_iff": "lean/CellsProofs/Transport/IonChannels.lean",
@@ -11294,7 +11301,7 @@
       "statement": "For a neutral solute the inward constant-field flux is the route scale times outside minus inside concentration at any voltage. With a positive scale it is inward exactly when concentration is higher outside. In a closed pair the gradient changes at rate −k times the gradient, where k is the scale times the sum of the reciprocal compartment volumes.",
       "assumptions": ["Valence is zero. The route scale is area × permeability × opening divided by mol/fmol. Concentrations are in mM and flux is in fmol/s.", "The relaxation identity applies to two well-mixed compartments at fixed positive volumes in pL, with this route as the sole transfer of the solute."],
       "uses": ["junction-concentration-gradient"],
-      "formal": {"status": "proved", "about": ["cells.passive_neutral_permeation@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.route.passive_neutral_permeation@1"], "theorems": {
         "CellsProofs.Transport.Neutral.flux_eq_fick": "lean/CellsProofs/Transport/NeutralPermeation.lean",
         "CellsProofs.Transport.Neutral.inward_iff": "lean/CellsProofs/Transport/NeutralPermeation.lean",
         "CellsProofs.Transport.Neutral.closed_pair_gradient_rate": "lean/CellsProofs/Transport/NeutralPermeation.lean"
@@ -11315,7 +11322,7 @@
       "uses": ["proton-leak"],
       "formal": {
         "status": "proved",
-        "about": ["cells.passive_constant_field_permeation@1"],
+        "about": ["cells.route.passive_constant_field_permeation@1"],
         "theorems": {
           "CellsProofs.Transport.ChargedPermeation.reversal_iff": "lean/CellsProofs/Transport/ChargedPermeation.lean",
           "CellsProofs.Transport.ChargedPermeation.heat_nonneg": "lean/CellsProofs/Transport/ChargedPermeation.lean",
@@ -11439,7 +11446,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.proton_constant_field_leak@1"
+          "cells.route.proton_constant_field_leak@1"
         ],
         "theorems": {
           "CellsProofs.Transport.ProtonLeak.series_flux": "lean/CellsProofs/Transport/ProtonLeak.lean",
@@ -11625,7 +11632,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.proton_constant_field_leak@2"
+          "cells.route.proton_constant_field_leak@2"
         ],
         "theorems": {
           "CellsProofs.Transport.BufferedProtonLeak.endpoint_read_unique": "lean/CellsProofs/Transport/BufferedProtonLeak.lean",
@@ -11726,7 +11733,7 @@
       "title": "Free energy sets ATP-driven transport direction and stall",
       "statement": "With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(ΔG/RT)). It runs forward for negative ΔG, reverses for positive ΔG and stalls at zero. A disabled cycle has zero rate. Instantaneous heat is nonnegative in every case. For n protons per ATP, the stall voltage is (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF). At fixed fuel, temperature and coupling, changing the pH gradient shifts stall by exactly the change in the proton equilibrium voltage. Neutral cargo flux is independent of voltage at fixed activities and forward rate.",
       "assumptions": ["One tightly coupled mode hydrolyses one ATP on side N and moves n cargo units from N to P. Cargo valence is +1 for free protons and zero for the neutral role. Voltage is V_N − V_P.", "Activities and absolute temperature are positive. In an enabled population, capacity, availability and the saturation factor are positive. Lean represents their product by its finite logarithm and uses real arithmetic."],
-      "formal": {"status": "proved", "about": ["cells.proton_atp_mass_action_positive@1", "cells.atp_driven_transporter_mass_action_positive@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.cycle.proton_atp_mass_action_positive@1", "cells.cycle.atp_driven_transporter_mass_action_positive@1"], "theorems": {
         "CellsProofs.Transport.ATPCycle.flux_disabled": "lean/CellsProofs/Transport/ATPCycle.lean",
         "CellsProofs.Transport.ATPCycle.flux_eq_mass_action": "lean/CellsProofs/Transport/ATPCycle.lean",
         "CellsProofs.Transport.ATPCycle.forward_iff": "lean/CellsProofs/Transport/ATPCycle.lean",
@@ -11833,7 +11840,7 @@
         "J denotes signed cycles per unit time. Each forward cycle consumes one ATP. The Na⁺/K⁺ pump exports three Na⁺ and imports two K⁺. The Cells calcium pump transports one Ca²⁺ outward and counts only that ion. The formula sums the currents of these two pumps."
       ],
       "uses": ["atp-cycle"],
-      "formal": {"status": "proved", "about": ["cells.nak_atp_mass_action_positive@1", "cells.ca_atp_mass_action_positive@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.cycle.nak_atp_mass_action_positive@1", "cells.cycle.ca_atp_mass_action_positive@1"], "theorems": {
         "CellsProofs.Transport.ElectrogenicPumps.nak_stall_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
         "CellsProofs.Transport.ElectrogenicPumps.calcium_stall_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
         "CellsProofs.Transport.ElectrogenicPumps.nak_forward_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
@@ -11938,7 +11945,7 @@
       "title": "Extracellular face flux follows the electrochemical potential drop",
       "statement": "Reversing the endpoints and voltage reverses the signed flux. A positive face coefficient gives positive flux exactly when the sender’s electrochemical potential is higher. At equilibrium the flux is zero, including when the concentration and electrical drives cancel.",
       "assumptions": ["Both endpoint concentrations and RT are positive. The two orientations use the same ion, temperature, geometry and diffusivity.", "The proof evaluates the two log-ratio branches and the fourth-degree small-gradient mean in exact real arithmetic. The force uses the difference of the endpoint logs."],
-      "formal": {"status": "proved", "about": ["cells.logmean_electrodiffusion@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.route.logmean_electrodiffusion@1"], "theorems": {
         "CellsProofs.Transport.Face.stableLogRatio_eq": "lean/CellsProofs/Transport/LogMeanFace.lean",
         "CellsProofs.Transport.Face.mean_swap": "lean/CellsProofs/Transport/LogMeanFace.lean",
         "CellsProofs.Transport.Face.mean_pos": "lean/CellsProofs/Transport/LogMeanFace.lean",
@@ -11956,7 +11963,7 @@
       "statement": "Each ion’s signed flux multiplied by its electrochemical potential drop is nonnegative. Summing the contributions over all ions gives nonnegative instantaneous face power.",
       "assumptions": ["Endpoint concentrations and RT are positive. Each ion has a nonnegative face coefficient. Power is evaluated at a single state."],
       "uses": ["extracellular-face-direction"],
-      "formal": {"status": "proved", "about": ["cells.logmean_electrodiffusion@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.route.logmean_electrodiffusion@1"], "theorems": {
         "CellsProofs.Transport.Face.dissipation_nonneg": "lean/CellsProofs/Transport/LogMeanFace.lean",
         "CellsProofs.Transport.Face.power_in_pJ_per_s": "lean/CellsProofs/Transport/LogMeanFace.lean",
         "CellsProofs.Transport.Face.face_power_nonneg": "lean/CellsProofs/Transport/LogMeanFace.lean"
@@ -11980,7 +11987,7 @@
       "uses": ["extracellular-face-direction", "transfer-inventory"],
       "formal": {
         "status": "proved",
-        "about": ["cells.logmean_electrodiffusion_forms@1"],
+        "about": ["cells.route.logmean_electrodiffusion_forms@1"],
         "theorems": {
           "CellsProofs.Transport.FormsFace.binder_and_ligand": "lean/CellsProofs/Transport/FormsFace.lean",
           "CellsProofs.Transport.FormsFace.charge_from_rows": "lean/CellsProofs/Transport/FormsFace.lean",
@@ -12062,7 +12069,7 @@
       "title": "Balanced reactions preserve a weighted inventory",
       "statement": "If each reaction balances an integer-weighted inventory, the combined update preserves that inventory for any signed real reaction extents.",
       "assumptions": ["The species and reaction sets at the site are finite. Each species change equals its signed stoichiometric coefficients times the extents, summed over reactions."],
-      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.operator.local_species_reactions@1"], "theorems": {
         "CellsProofs.Chemistry.inventory_after_reactions": "lean/CellsProofs/Chemistry/Stoichiometry.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "The enzyme example compared four stored species changes with the declared coefficients and two nonzero extents across one CPU half-step."},
@@ -12080,7 +12087,7 @@
       ],
       "formal": {
         "status": "proved",
-        "about": ["cells.local_species_reactions@1"],
+        "about": ["cells.operator.local_species_reactions@1"],
         "theorems": {
           "CellsProofs.Chemistry.ReactionCycles.zero_affinity_iff_quotient": "lean/CellsProofs/Chemistry/ReactionCycles.lean",
           "CellsProofs.Chemistry.ReactionCycles.cycle_energy_sum": "lean/CellsProofs/Chemistry/ReactionCycles.lean",
@@ -12158,7 +12165,7 @@
       "statement": "In E + S ⇌ C and C → E + P, total enzyme is E + C and total substrate is S + C + P. Omitting the returned E loses one enzyme unit per catalytic event while preserving substrate.",
       "assumptions": ["Each complex carries one enzyme unit and one substrate unit. Each product retains one substrate unit. The site has no external supply or removal."],
       "uses": ["reaction-inventory"],
-      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "sources": {
+      "formal": {"status": "proved", "about": ["cells.operator.local_species_reactions@1"], "sources": {
         "crnt-lean concentration-rate conservation, imported in the optional check": "https://github.com/marpaia/crnt-lean/blob/7386777488a41efd92e6abc2bccf889fb611660e/CRNT/Examples/Enzyme.lean#L64-L82",
         "Cells comparison of all directed stoichiometric entries and the fixed-volume conversion": "lean/checks/chemistry/Reuse.lean#L22"
       }, "theorems": {
@@ -12182,7 +12189,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.rapid_binding@1"
+          "cells.binding.rapid_binding@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.BindingEnsemble.logWeight_change_frame": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
@@ -12287,7 +12294,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.rapid_binding@1"
+          "cells.binding.rapid_binding@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.BindingResponse.logWeight_perturb": "lean/CellsProofs/Chemistry/BindingResponse.lean",
@@ -12417,7 +12424,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.rapid_binding@1"
+          "cells.binding.rapid_binding@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.BindingEquilibrium.total_hasDerivAt_line": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean",
@@ -12483,7 +12490,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.rapid_binding@1"
+          "cells.binding.rapid_binding@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.BindingFeasibility.equilibrium_has_margin": "lean/CellsProofs/Chemistry/BindingFeasibility.lean",
@@ -12549,7 +12556,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.rapid_binding@1"
+          "cells.binding.rapid_binding@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.BindingVertices.two_ligand_vertex_le": "lean/CellsProofs/Chemistry/BindingVertices.lean",
@@ -12587,7 +12594,7 @@
       "title": "One-site binding follows the free ligand concentration",
       "statement": "At equilibrium the occupied fraction of sites is c / (Kd + c), where c is free ligand concentration and Kd is the dissociation constant. The normalized weights of the two binder forms give the same fraction.",
       "assumptions": ["One ligand binds one site. Each binder has a free and a singly occupied form, with positive total sites and positive association and dissociation rates. Kd is their off-rate divided by their on-rate.", "Both concentrations are expressed in mM. The rate-balance theorem allows zero free ligand. The log-weight theorem uses positive free ligand and a positive Kd."],
-      "formal": {"status": "proved", "about": ["cells.rapid_binding@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.binding.rapid_binding@1"], "theorems": {
         "CellsProofs.Chemistry.SingleSite.occupancy_from_rates": "lean/CellsProofs/Chemistry/SingleSiteBinding.lean",
         "CellsProofs.Chemistry.SingleSite.occupancy_from_log_weights": "lean/CellsProofs/Chemistry/SingleSiteBinding.lean"
       }, "sources": {
@@ -12664,7 +12671,7 @@
       "title": "Uncharged membrane insertion dissipates nonnegative capacitor heat",
       "statement": "The exact network heat in pJ is (10¹²/2) times the sum of C(ΔV)² + ΔC(V + ΔV)² over patches and every allocated patch share is nonnegative. For a single patch against a held bath, the heat is (10¹²/2) C V² ΔC/(C + ΔC) and the bath supplies zero image charge during insertion.",
       "assumptions": ["Inserted membrane arrives uncharged. Each free node keeps its charge and each held node keeps its potential. The network is finite and the voltage changes obey its capacitor equations.", "C and ΔC are nonnegative, expressed in F, with positive starting C in the one-patch formula. V and ΔV are in volts. The proof uses real arithmetic."],
-      "formal": {"status": "proved", "about": ["cells.scheduled_membrane_insertion@1", "cells.scheduled_membrane_insertion@2"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.operator.scheduled_membrane_insertion@1", "cells.operator.scheduled_membrane_insertion@2"], "theorems": {
         "CellsProofs.Tissue.MembraneInsertion.node_patch_work": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
         "CellsProofs.Tissue.MembraneInsertion.fixed_node_balance": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
         "CellsProofs.Tissue.MembraneInsertion.heat_eq_squares": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
@@ -12690,7 +12697,7 @@
       "title": "Molecule entry scales with reservoir activity and assembly size, and exit with species count",
       "statement": "For species i, each molecule in an assembly adds kᵢ to its exit rate. Entry occurs at kᵢθᵢN, where θᵢ = Kᵢρᵢ and N is total size. Balancing every species’ entry and exit at a nonempty state requires Σθᵢ = 1. With a common positive leave constant, the mean-field fractions are stationary at xᵢ = θᵢ/Σθⱼ during growth. Unequal leave constants can move the fractions away from those proportions.",
       "assumptions": ["The well-mixed assembly has finitely many species with integer counts. The transfer constants Kᵢ, held activities ρᵢ and leave constants kᵢ are positive. Exchange has no catalytic multiplier and time is nominal.", "A species’ instantaneous net rate is its entry rate minus its exit rate at the same state. The mean-field fraction derivative uses these rates for the count derivatives and requires N > 0."],
-      "formal": {"status": "proved", "about": ["cells.reservoir_exchange@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.exchange.reservoir_exchange@1"], "theorems": {
         "CellsProofs.Chemistry.ReservoirExchange.leave_increment": "lean/CellsProofs/Chemistry/ReservoirExchange.lean",
         "CellsProofs.Chemistry.ReservoirExchange.join_scaling": "lean/CellsProofs/Chemistry/ReservoirExchange.lean",
         "CellsProofs.Chemistry.ReservoirExchange.boundary_rates": "lean/CellsProofs/Chemistry/ReservoirExchange.lean",
@@ -12710,7 +12717,7 @@
       "statement": "For entry between two nonempty compositions, the logarithm of the entry rate divided by the reverse exit rate at arrival equals the change in the assembly’s log weight. Reversing the event reverses the heat. At extinction the engine assigns the empty state log weight zero, so the last molecule of type i books −ln θᵢ.",
       "assumptions": ["The uncatalyzed assembly exchanges one molecule at a time with positive activities and rate constants. For N > 0 the composition weight is (N−1)! times the product of θᵢ^(nᵢ)/nᵢ! over all species, where θᵢ = Kᵢρᵢ.", "The empty state has zero entry propensity. Its terminal booking uses the change in log weight. The theorem concerns individual transfers in exact arithmetic."],
       "uses": ["assembly-reservoir-exit"],
-      "formal": {"status": "proved", "about": ["cells.reservoir_exchange@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.exchange.reservoir_exchange@1"], "theorems": {
         "CellsProofs.Chemistry.ReservoirExchange.join_heat": "lean/CellsProofs/Chemistry/ReservoirExchange.lean",
         "CellsProofs.Chemistry.ReservoirExchange.leave_heat": "lean/CellsProofs/Chemistry/ReservoirExchange.lean",
         "CellsProofs.Chemistry.ReservoirExchange.extinction_heat": "lean/CellsProofs/Chemistry/ReservoirExchange.lean"
@@ -12725,7 +12732,7 @@
       "statement": "A molecule entering an assembly sees the same catalytic multiplier as its reverse exit when the moving molecule is excluded from both catalyst counts. The log ratio of the two rates then equals the base exchange log-weight change. A singleton’s exit has multiplier one.",
       "assumptions": ["The species set is finite. The counts are nonnegative integers and the catalytic matrix β has nonnegative entries. The assembly exchanges one molecule at a time, with positive rate and transfer constants and fixed positive reservoir activities.", "The reversible transfer connects two nonempty compositions. The singleton’s exit into the empty state is a separate boundary case. Lean evaluates the sums in exact arithmetic."],
       "uses": ["assembly-exchange-heat"],
-      "formal": {"status": "proved", "about": ["cells.gard_catalysis_pair_consistent@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.rate_factor.gard_catalysis_pair_consistent@1"], "theorems": {
         "CellsProofs.Chemistry.GardCatalysis.weighted_addOne": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
         "CellsProofs.Chemistry.GardCatalysis.factor_pos": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
         "CellsProofs.Chemistry.GardCatalysis.pair_reverse_factor": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
@@ -12749,7 +12756,7 @@
       "statement": "The single-event rule evaluates the moving species’ multiplier at each event’s departure state. This adds the log ratio of two composition-dependent multipliers to the base heat. A rank-one β with only β_AA = 1 gives a four-transfer cycle ratio of 81/80. If adding one to every entry of β gives a positive rank-one matrix, the extra heat is a difference of state values and sums to zero around closed paths.",
       "assumptions": ["The assembly exchanges with a held reservoir and each reversible edge joins nonempty states. Base propensities and multipliers are positive on the edges in the cycle.", "The explicit square starts with one molecule each of A and B and follows +A, +B, −A, −B. The sufficient rank-one condition is 1 + βᵢⱼ = uᵢvⱼ. Then the correction to the base log weight is −ln(Σⱼ vⱼnⱼ / N)."],
       "uses": ["assembly-exchange-heat"],
-      "formal": {"status": "proved", "about": ["cells.gard_catalysis_single_event@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.rate_factor.gard_catalysis_single_event@1"], "theorems": {
         "CellsProofs.Chemistry.GardCatalysis.single_heat": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
         "CellsProofs.Chemistry.GardCatalysis.shifted_factor": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
         "CellsProofs.Chemistry.GardCatalysis.shifted_heat": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
@@ -12778,7 +12785,7 @@
           "CellsProofs.Chemistry.AssemblyMixing.first_insertion": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
           "CellsProofs.Chemistry.AssemblyMixing.ideal_transfer": "lean/CellsProofs/Chemistry/AssemblyMixing.lean"
         },
-        "about": ["cells.ideal_mixing@1"]
+        "about": ["cells.free_energy.ideal_mixing@1"]
       },
       "numerical": {
         "status": "checked",
@@ -12874,7 +12881,7 @@
           "CellsProofs.Chemistry.AssemblyMixing.binary_insert": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
           "CellsProofs.Chemistry.AssemblyMixing.binary_chemical_potential": "lean/CellsProofs/Chemistry/AssemblyMixing.lean"
         },
-        "about": ["cells.regular_mixing@1"],
+        "about": ["cells.free_energy.regular_mixing@1"],
         "sources": {
           "Imported Mathlib dot-product and matrix-vector identity": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Matrix/Mul.lean#L662"
         }
@@ -13017,7 +13024,7 @@
           "CellsProofs.Chemistry.AssemblyKinetics.singular_draw": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
           "CellsProofs.Chemistry.AssemblyKinetics.occupancy_by_count": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
         },
-        "about": ["cells.stochastic_mass_action@1"],
+        "about": ["cells.reaction.stochastic_mass_action@1"],
         "sources": {
           "Imported Mathlib falling-factorial identity": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L368"
         }
@@ -13077,7 +13084,7 @@
           "CellsProofs.Chemistry.AssemblyKinetics.ratio_iff": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
           "CellsProofs.Chemistry.AssemblyKinetics.equilibrium_flow_iff": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
         },
-        "about": ["cells.transition_state_factor@1"]
+        "about": ["cells.rate_factor.transition_state_factor@1"]
       },
       "numerical": {
         "status": "checked",
@@ -13109,7 +13116,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.inward_rectifier_linear_driving_force@1"
+          "cells.route.inward_rectifier_linear_driving_force@1"
         ],
         "theorems": {
           "CellsProofs.Transport.InwardRectifier.reversal_shift": "lean/CellsProofs/Transport/InwardRectifier.lean",
@@ -13281,7 +13288,7 @@
       "uses": ["sodium-anion-symport"],
       "formal": {
         "status": "proved",
-        "about": ["cells.na2_anion_symport_diagram@1"],
+        "about": ["cells.cycle.na2_anion_symport_diagram@1"],
         "theorems": {
           "CellsProofs.Transport.SodiumAnionDiagram.stationary_edge": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
           "CellsProofs.Transport.SodiumAnionDiagram.denominator_pos": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
@@ -13412,7 +13419,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.na_anion_symport_factored@1"
+          "cells.cycle.na_anion_symport_factored@1"
         ],
         "theorems": {
           "CellsProofs.Transport.SodiumAnionSymport.source_rate": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
@@ -13525,7 +13532,7 @@
       ],
       "formal": {
         "status": "proved",
-        "about": ["cells.k_anion_symport_mass_action@1"],
+        "about": ["cells.operator.k_anion_symport_mass_action@1"],
         "theorems": {
           "CellsProofs.Transport.PotassiumAnionSymport.fractional_volume_response": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
           "CellsProofs.Transport.PotassiumAnionSymport.outward_iff": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
@@ -13702,7 +13709,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.ideal_osmosis_linear_compliance_water@1"
+          "cells.operator.ideal_osmosis_linear_compliance_water@1"
         ],
         "theorems": {
           "CellsProofs.Transport.OsmoticWater.declared_potential": "lean/CellsProofs/Transport/OsmoticWater.lean",
@@ -13927,9 +13934,9 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.prescribed_shell@1",
-          "cells.shell_permeation@1",
-          "cells.gate_factor@1"
+          "cells.assembly_geometry.prescribed_shell@1",
+          "cells.reaction.shell_permeation@1",
+          "cells.rate_factor.gate_factor@1"
         ],
         "theorems": {
           "CellsProofs.Chemistry.PrescribedShell.same_conductance": "lean/CellsProofs/Chemistry/PrescribedShell.lean",
@@ -13964,7 +13971,7 @@
       ],
       "formal": {
         "status": "proved",
-        "about": ["cells.prescribed_shell@1", "cells.stochastic_mass_action@1"],
+        "about": ["cells.assembly_geometry.prescribed_shell@1", "cells.reaction.stochastic_mass_action@1"],
         "theorems": {
           "CellsProofs.Chemistry.ShellLigandFaces.face_along_path": "lean/CellsProofs/Chemistry/ShellLigandFaces.lean",
           "CellsProofs.Chemistry.ShellLigandFaces.possible_origin": "lean/CellsProofs/Chemistry/ShellLigandFaces.lean",
@@ -14001,7 +14008,7 @@
       "uses": ["fr47-shell-wash-recovery", "assembly-ideal-mixing"],
       "formal": {
         "status": "proved",
-        "about": ["cells.rate_equations@1", "cells.ideal_mixing@1", "cells.prescribed_shell@1", "cells.shell_permeation@1"],
+        "about": ["cells.assembly_representation.rate_equations@1", "cells.free_energy.ideal_mixing@1", "cells.assembly_geometry.prescribed_shell@1", "cells.reaction.shell_permeation@1"],
         "theorems": {
           "CellsProofs.Chemistry.ShellIntervalHeat.site_continuous": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
           "CellsProofs.Chemistry.ShellIntervalHeat.site_zero": "lean/CellsProofs/Chemistry/ShellIntervalHeat.lean",
@@ -14047,7 +14054,7 @@
       "uses": ["prescribed-shell-rates", "scheduled-species-turnover", "pool-withdrawal"],
       "formal": {
         "status": "proved",
-        "about": ["cells.prescribed_shell@1", "cells.shell_permeation@1", "cells.pool_replacement@1", "cells.pool_withdrawal@1"],
+        "about": ["cells.assembly_geometry.prescribed_shell@1", "cells.reaction.shell_permeation@1", "cells.operator.pool_replacement@1", "cells.operator.pool_withdrawal@1"],
         "theorems": {
           "CellsProofs.Chemistry.ShellWashRecovery.mean_flux": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
           "CellsProofs.Chemistry.ShellWashRecovery.exterior_derivative": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
@@ -14114,7 +14121,7 @@
       "uses": ["prescribed-shell-rates"],
       "formal": {
         "status": "proved",
-        "about": ["cells.prescribed_shell@1", "cells.shell_permeation@1"],
+        "about": ["cells.assembly_geometry.prescribed_shell@1", "cells.reaction.shell_permeation@1"],
         "theorems": {
           "CellsProofs.Chemistry.ShellEquilibrium.common_shift": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
           "CellsProofs.Chemistry.ShellEquilibrium.inside_outside_odds": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
@@ -14158,7 +14165,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.site_occupant_replacement@1"
+          "cells.operator.site_occupant_replacement@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.CellReplacement.occupant_ligand_balance": "lean/CellsProofs/Tissue/CellReplacement.lean"
@@ -14194,7 +14201,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_compartment_wash@1"
+          "cells.operator.scheduled_compartment_wash@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.CompartmentWash.same_concentration_ion": "lean/CellsProofs/Tissue/CompartmentWash.lean"
@@ -14231,7 +14238,7 @@
       "formal": {
         "status": "proved",
         "about": [
-          "cells.scheduled_compartment_wash@1"
+          "cells.operator.scheduled_compartment_wash@1"
         ],
         "theorems": {
           "CellsProofs.Tissue.CompartmentWash.inventory": "lean/CellsProofs/Tissue/CompartmentWash.lean",

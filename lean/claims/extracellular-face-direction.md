@@ -20,7 +20,7 @@ Reversing the endpoints and voltage reverses the signed flux. A positive face co
 - [CellsProofs.Transport.Face.flux_at_equilibrium](../CellsProofs/Transport/LogMeanFace.lean#L93)
 - [CellsProofs.Transport.Face.flux_pos_iff](../CellsProofs/Transport/LogMeanFace.lean#L97)
 
-Direct proof subject `cells.logmean_electrodiffusion@1`
+Direct proof subject `cells.route.logmean_electrodiffusion@1`
 
 ## Numerical comparison
 

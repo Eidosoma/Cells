@@ -7,6 +7,7 @@ from fractions import Fraction
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from validation import id_table
 from validation.xenopus_bioelectric import xc0_worlds as xc0
 
 ANCHOR_REFUSAL = "Initial inventory, fixed background and explicit charge anchor disagree"
@@ -60,7 +61,7 @@ def replay(name, original, *, offset_steps=0):
     expected = offset_steps == 0
     assert (abs(Fraction(residual)) <= tolerance) == expected, name
     try:
-        parse_spec(raw)
+        parse_spec(id_table.translate(raw))
         admitted = True
     except ConfigError as exc:
         if ANCHOR_REFUSAL not in str(exc):
@@ -113,7 +114,7 @@ def main():
         assert abs(row["residual_C"]) == abs(anchor)
         rows.append(row)
     return dict(
-        model=xc0.MODEL,
+        model=id_table.translate(xc0.MODEL),
         charge_per_fmol_C=CHARGE_PER_FMOL,
         original_floor_C=1e-20,
         rows=rows,

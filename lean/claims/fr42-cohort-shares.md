@@ -23,7 +23,7 @@ Allocating one well-mixed population’s loss among cohorts in proportion to the
 - [CellsProofs.Chemistry.ArrivalCohort.remaining_derivative](../CellsProofs/Chemistry/ArrivalCohort.lean#L67)
 - [CellsProofs.Chemistry.ArrivalCohort.quadratic_example](../CellsProofs/Chemistry/ArrivalCohort.lean#L78)
 
-Direct proof subject `cells.neutral_arrival_labels@1`
+Direct proof subject `cells.operator.neutral_arrival_labels@1`
 
 Proof sources [FR-42 design requirement](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) · [D289 adopts share vectors on the physical population](https://github.com/Eidosoma/Cells/blob/4e944a5634adafe1944235e540c6a7f0e564a144/docs/DECISIONS.md#d289-fr-42-is-built-as-option-a-labels-as-share-vectors-on-the-physical-row) · [FR-38 erratum B on class rows and the blank](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/TEMPLATED_POLYMERISATION_LAWS.md#913-erratum-b-the-label-rows-are-not-neutral-labels) · [Mathlib division of a finite sum, imported for the cohort balance](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Field.lean#L22) · [Mathlib quotient derivative, imported for the survivor curve](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Inv.lean#L143)
 

@@ -22,7 +22,7 @@ Routes on the same precursor and cell share first-order consumption. Weighting e
 - [CellsProofs.Chemistry.PopulationUnits.pulse_derivatives](../CellsProofs/Chemistry/PopulationUnits.lean#L85)
 - [CellsProofs.Chemistry.PopulationUnits.positive_arrival](../CellsProofs/Chemistry/PopulationUnits.lean#L109)
 
-Direct proof subject `cells.population_unit_turnover@1`
+Direct proof subject `cells.operator.population_unit_turnover@1`
 
 Uses [Production and first-order clearance preserve a positive pool and account for gross turnover](scheduled-species-turnover.md)
 

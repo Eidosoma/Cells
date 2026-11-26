@@ -16,7 +16,7 @@ The membrane state converts declared abundance and a signed unit change to a den
 - [CellsProofs.Chemistry.PopulationUnits.abundance_from_units](../CellsProofs/Chemistry/PopulationUnits.lean#L126)
 - [CellsProofs.Chemistry.PopulationUnits.whole_patch_flow](../CellsProofs/Chemistry/PopulationUnits.lean#L135)
 
-Direct proof subject `cells.membrane_entity_state@1`
+Direct proof subject `cells.operator.membrane_entity_state@1`
 
 Uses [Channel opening scales the signed transfer of sodium or potassium](channel-ion-transfer.md)
 

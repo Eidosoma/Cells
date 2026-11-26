@@ -196,7 +196,19 @@ BESIDE_A_COMPARTMENT = {
         _beside_a_compartment,
         f"outside degradation deg_R_{worlds.SPACE} is at '{worlds.SPACE}', compartment 'lumen_0'",
     ),
+    # FR-43 part 3: a transfer may move a listed row, but not across a compartment's patch.
+    "a transfer of a listed row across the compartment's patch": (
+        lambda: _with_exchange_of_n(_beside_a_compartment(export=False, degradation=False)),
+        f"moves the listed row 'N' at '{worlds.SPACE}', compartment 'lumen_0'",
+    ),
 }
+
+
+def _with_exchange_of_n(raw):
+    from validation.fr43_part3 import worlds as part3
+
+    patch = f"{worlds.EXPORT_PATCH}_{worlds.CELL}_{worlds.SPACE}"
+    return part3.with_exchange_of(raw, "N", patch, worlds.CELL)
 
 
 @pytest.mark.parametrize("name", sorted(BESIDE_A_COMPARTMENT))

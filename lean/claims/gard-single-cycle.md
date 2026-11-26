@@ -18,7 +18,7 @@ The single-event rule evaluates the moving speciesâ€™ multiplier at each eventâ€
 - [CellsProofs.Chemistry.GardCatalysis.shifted_heat](../CellsProofs/Chemistry/GardCatalysis.lean#L94)
 - [CellsProofs.Chemistry.GardCatalysis.raw_rank_one_square](../CellsProofs/Chemistry/GardCatalysis.lean#L117)
 
-Direct proof subject `cells.gard_catalysis_single_event@1`
+Direct proof subject `cells.rate_factor.gard_catalysis_single_event@1`
 
 Uses [Single-molecule exchange heat equals the change in assembly log weight](assembly-exchange-heat.md)
 

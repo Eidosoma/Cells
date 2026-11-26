@@ -24,7 +24,7 @@ At fixed voltage the intrinsic gate approaches its target with one exponential t
 - [CellsProofs.Transport.JunctionGate.single_decay_samples](../CellsProofs/Transport/JunctionGate.lean#L68)
 - [CellsProofs.Transport.JunctionGate.two_decay_samples](../CellsProofs/Transport/JunctionGate.lean#L76)
 
-Direct proof subject `cells.junction_voltage_relaxation@1`
+Direct proof subject `cells.junction.junction_voltage_relaxation@1`
 
 ## Numerical comparison
 

@@ -1,4 +1,4 @@
-"""Check the ten registered Na/K channel laws on one membrane of resolved_pump_tissue@3."""
+"""Check ten Na/K channel laws on one membrane of cells.model.resolved_pump_tissue@3."""
 
 import json
 import subprocess
@@ -17,6 +17,7 @@ from cells.execution.runner import run
 from cells.models import inner_laws
 from cells.models import surface_pump_v3 as host
 from cells.numerics import exponential_gates
+from cells.registry import ids
 from cells.registry import laws as registry
 from cells.registry.models import get_model
 from validation.betse.junction_transport.check import decimal_flux
@@ -36,15 +37,15 @@ REFERENCES = {
 }
 REFERENCES.update(
     {
-        "kir2p1_mh2@1": (kir_reference.kinetics, kir_reference.opening, "K", (1, 2)),
-        "nav1p2_m3h_regularized@1": (
+        "cells.channel.kir2p1_mh2@1": (kir_reference.kinetics, kir_reference.opening, "K", (1, 2)),
+        "cells.channel.nav1p2_m3h_regularized@1": (
             sodium_reference.kinetics,
             sodium_reference.opening,
             "Na",
             (3, 1),
         ),
-        "kleak_always_open@1": (None, None, "K", (0, 0)),
-        "naleak_always_open@1": (None, None, "Na", (0, 0)),
+        "cells.channel.kleak_always_open@1": (None, None, "K", (0, 0)),
+        "cells.channel.naleak_always_open@1": (None, None, "Na", (0, 0)),
     }
 )
 DT, RELEASE, END = 2**-19, 2**-12, 2**-10
@@ -88,7 +89,9 @@ def lean_declarations(laws):
     lines = ["import CellsProofs.Transport.IonChannels", "open CellsProofs.Transport.IonChannels"]
     for law in laws:
         _, _, ion, (mp, hp) = REFERENCES[law.law_id]
-        name = law.law_id.removesuffix("@1")
+        identity = ids.parts(law.law_id)
+        assert (identity.namespace, identity.family, identity.major) == ("cells", "channel", 1)
+        name = identity.name
         lean_ion = {"Na": "sodium", "K": "potassium"}[ion]
         lines.append(f"example : permeant .{name} = .{lean_ion} := rfl")
         lines.append(

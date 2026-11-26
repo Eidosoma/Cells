@@ -15,7 +15,7 @@ At equal potentials the signed flux is scale × (sender concentration − receiv
 - [CellsProofs.Transport.flux_zero_voltage](../CellsProofs/Transport/ConstantField.lean#L47)
 - [CellsProofs.Transport.flux_down_gradient](../CellsProofs/Transport/ConstantField.lean#L52)
 
-Direct proof subject `cells.constant_field@1`
+Direct proof subject `cells.route.constant_field@1`
 
 ## Numerical comparison
 

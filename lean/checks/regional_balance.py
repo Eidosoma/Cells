@@ -26,11 +26,11 @@ def closed_chain():
     )
     model = raw["model"]
     if (
-        model["id"] != "resolved_pump_composite@1"
-        or model["inner_model"] != "resolved_pump_tissue@3"
+        model["id"] != "cells.model.resolved_pump_composite@1"
+        or model["inner_model"] != "cells.model.resolved_pump_tissue@3"
     ):
         raise AssertionError("Expected the composite on the resolved tissue host")
-    if any(f["law"] != "logmean_electrodiffusion@1" for f in model["faces"]):
+    if any(f["law"] != "cells.route.logmean_electrodiffusion@1" for f in model["faces"]):
         raise AssertionError("Expected the declared electrodiffusion faces")
     if any(p["permeability_m_per_s"][s] != 0 for p in model["membranes"] for s in profile):
         raise AssertionError("A and B must be impermeant on all membrane patches")
@@ -94,7 +94,7 @@ def check(run):
     model = run["spec"].model
     (declaration,) = model.operators
     (reaction,) = declaration.reactions
-    if declaration.law != "local_species_reactions@1" or reaction.kind != "closed":
+    if declaration.law != "cells.operator.local_species_reactions@1" or reaction.kind != "closed":
         raise AssertionError("Expected the closed reaction operator")
     names = run["names"]
     weights_by_name = {s.identity.id: dict(s.moieties) for s in declaration.species}
@@ -151,10 +151,10 @@ def check(run):
     if wrong_part["species_within_tolerance"] or not abs(wrong_part["residual_fmol"]) > tolerance:
         raise AssertionError("The regional balance accepted the reversed boundary face")
     return {
-        "model": "resolved_pump_composite@1",
+        "model": "cells.model.resolved_pump_composite@1",
         "inner_model": model.inner_model,
         "operator": declaration.law,
-        "face_law": "logmean_electrodiffusion@1",
+        "face_law": "cells.route.logmean_electrodiffusion@1",
         "backend": run["spec"].execution.backend,
         "dtype": transferred.dtype.name,
         "step_s": run["spec"].execution.dt,

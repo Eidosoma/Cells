@@ -3,7 +3,7 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-! # Equilibrium constants around passive reaction cycles
 
-At one site, `local_species_reactions@1` uses products minus reactants for
+At one site, `cells.operator.local_species_reactions@1` uses products minus reactants for
 each column and one standard potential μ°/(RT) per species. Activities use
 the same standard concentration throughout. -/
 

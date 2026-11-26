@@ -18,7 +18,7 @@ At fixed activities and standard density, the area–permeability product fixes 
 - [CellsProofs.Chemistry.PrescribedShell.absent_gate](../CellsProofs/Chemistry/PrescribedShell.lean#L26)
 - [CellsProofs.Chemistry.PrescribedShell.paired_rates](../CellsProofs/Chemistry/PrescribedShell.lean#L40)
 
-Direct proof subject `cells.prescribed_shell@1`, `cells.shell_permeation@1`, `cells.gate_factor@1`
+Direct proof subject `cells.assembly_geometry.prescribed_shell@1`, `cells.reaction.shell_permeation@1`, `cells.rate_factor.gate_factor@1`
 
 ## Numerical comparison
 

@@ -23,7 +23,7 @@ Let Δ be the lumen standard potential minus the solution standard potential, bo
 - [CellsProofs.Chemistry.ShellEquilibrium.mean_inside_count](../CellsProofs/Chemistry/ShellEquilibrium.lean#L104)
 - [CellsProofs.Chemistry.ShellEquilibrium.mean_concentration_ratio](../CellsProofs/Chemistry/ShellEquilibrium.lean#L132)
 
-Direct proof subject `cells.prescribed_shell@1`, `cells.shell_permeation@1`
+Direct proof subject `cells.assembly_geometry.prescribed_shell@1`, `cells.reaction.shell_permeation@1`
 
 Proof sources [D323 absolute potentials, exit factor and scope](https://github.com/Eidosoma/Cells/blob/9eb9890a91ad6049be9b2e5a1bfae7b383a464eb/docs/DECISIONS.md#L10193-L10201) · [Cells shell geometry and reverse rate](https://github.com/Eidosoma/Cells/blob/9eb9890a91ad6049be9b2e5a1bfae7b383a464eb/src/cells/models/assembly_lineages_v2/kernel.py#L279-L298) · [Mathlib binomial probability mass function, imported and specialized to the lumen count](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Binomial.lean#L23-L56) · [Mathlib adjacent binomial coefficient recurrence, imported for detailed balance](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Choose/Basic.lean#L204-L212) · [Cells real-valued point mass, reused from the pool-withdrawal proof](../CellsProofs/Chemistry/PoolWithdrawalEnergy.lean#L16) · [Exact occupancy and potential-convention checks](../checks/chemistry/ShellEquilibrium.lean)
 

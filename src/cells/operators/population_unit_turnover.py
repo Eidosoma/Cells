@@ -87,7 +87,9 @@ registry's; more than the species cap; another writer of population units anywhe
 simulation, even on a population no route names (D232: the refusal is simulation-wide, so it
 excludes FR-2's recycling, membrane insertion and division, whose moves would mix with this
 removal of every unit, the declared ones included, at k_r); a precursor row that a D152 reaction
-writes, another author of the precursor other than turnover, and an in-step mover of it; dt Λ > 1
+writes, another conversion of the precursor than turnover and the gene unit, a precursor made with
+no static bound (a transfer of it among them: R5), a split row writer that declares no ROW_MOVES
+(FR-43 part 3, fails closed), and an in-step mover of it; dt Λ > 1
 anywhere in the schedule; a schedule that does not start at 0, changes off the dt grid or
 outside 0 < t < end, or holds a negative or non-finite rate; and every provider of volumes and
 closer of masks (CONFLICTS_VIEW, D150's static-tissue list). cells.operator.membrane_entity_state@1 precedes it
@@ -392,13 +394,16 @@ GENE_UNIT_LAW = (
 
 def check_writers(spec, declaration):
     """Refuse another writer of a population's units, a precursor row that a D152 reaction writes,
-    another author of a precursor other than D150's turnover and the gene unit, and an in-step
-    mover of one (module docstring): every unit here, declared ones included, is removed at k_r,
-    and a precursor's writers are this operator, turnover's supply and the gene unit
-    (cells.operator.templated_polymerisation@1, FR-43 / D315: the two-writer rule of 19 November 2026 extended,
-    with the shared row's potential from the species registry, species_registry
-    .check_shared_rows). R5 reads every producer's largest rate (supply_bound), so a precursor
-    the gene unit makes without a static bound (a degradation's monomers) is refused."""
+    another conversion of a precursor than D150's turnover and the gene unit, and an in-step mover
+    of one (module docstring): every unit here, declared ones included, is removed at k_r, and a
+    precursor's writers are this operator, turnover's supply and the gene unit
+    (cells.operator.templated_polymerisation@1, FR-43 / D315: the two-writer rule of 19 November
+    2026 extended, with the shared row's potential from the species registry, species_registry
+    .check_shared_rows). The writers of a row are the species registry's rule (check_row_writers,
+    FR-43 part 3), which fails closed on an undeclared split writer. R5 reads every producer's
+    largest rate (supply_bound), so a precursor made without a static bound is refused: by the gene
+    unit's degradation, release fates or export coupling, or by a transfer (exchange, the integer
+    population), whose rate no static bound holds."""
     precursors = {r.precursor for r in declaration.routes}
     rows = {(r.precursor, r.cell) for r in declaration.routes}
     for op, other, _ in composite_spec.entries(spec):
@@ -420,13 +425,15 @@ def check_writers(spec, declaration):
                     f"{hit[0][1]}: one local-kinetics writer per reacting row, D152's rule "
                     "(declare the precursor's supply and use as the network's own reactions)"
                 )
-        elif op.IDENTITY_ROLE == "author" and op.LAW_ID not in (TURNOVER_LAW, GENE_UNIT_LAW):
-            shared = sorted(precursors & {s.id for s in op.species_identities(other)})
+        elif op.ROW_MOVES == "conversion" and op.LAW_ID not in (TURNOVER_LAW, GENE_UNIT_LAW):
+            shared = sorted(precursors & {name for name, _ in op.written_rows(spec, other)})
             if shared:
                 raise ConfigError(
-                    f"{LAW_ID}: {op.LAW_ID} also declares the precursor {shared[0]!r}; besides "
-                    f"this operator only {TURNOVER_LAW}'s supply is admitted as a writer of it"
+                    f"{LAW_ID}: {op.LAW_ID} converts the precursor {shared[0]!r}; besides this "
+                    f"operator only {TURNOVER_LAW}'s supply and {GENE_UNIT_LAW} are admitted as "
+                    "conversions of it"
                 )
+    species_registry.check_row_writers(spec, LAW_ID)
     for op, other, _ in composite_spec.entries(spec):
         bound = getattr(op, "production_bound", None)  # A producer that declares its bound.
         made = {} if bound is None else bound(spec, other)
@@ -435,8 +442,8 @@ def check_writers(spec, declaration):
                 continue
             raise ConfigError(
                 f"{LAW_ID}: the precursor {name!r} in {cell} is made at a rate with no static "
-                "bound (by a degradation, a release's fates or an export's coupling), which R5's "
-                "largest units need (supply_bound; FR-43 / D315)"
+                f"bound by {op.LAW_ID} (a degradation, a release's fates, an export's coupling, or "
+                "a transfer), which R5's largest units need (supply_bound; FR-43 / D315)"
             )
     moved = species_registry.moved_in_step(spec)
     for name in sorted(precursors):
@@ -449,30 +456,17 @@ def check_writers(spec, declaration):
 
 
 def supply_bound(spec):
-    """{(species, cell): the largest total production rate (fmol/s)} of every producer: turnover's
-    cell routes, over every schedule of each route, and each operator that declares its own
-    production_bound (the gene unit's, FR-43 / D315; math.inf where it has none): an upper bound
-    on the supply a cell's precursor gets. A rate: check_spec_for multiplies it by the horizon."""
+    """{(species, cell): the largest total production rate (fmol/s)} of every producer that
+    declares its production_bound: turnover's cell routes over every schedule of each route, the
+    gene unit's laws (FR-43 / D315), and the others' (FR-43 part 3; math.inf where a producer has
+    no static bound): an upper bound on the supply a cell's precursor gets. A rate: check_spec_for
+    multiplies it by the horizon."""
     out = {}
-    for op, block, schedules in composite_spec.entries(spec):
+    for op, block, _ in composite_spec.entries(spec):
         bound = getattr(op, "production_bound", None)
         if bound is not None:
             for key, rate in bound(spec, block).items():
                 out[key] = out.get(key, 0.0) + rate
-            continue
-        if op.LAW_ID != TURNOVER_LAW:
-            continue
-        kind = {r.id: r for r in block.routes}
-        top = {}
-        for s in schedules:
-            route = kind[s.route_id]
-            if route.kind == "production" and route.cell is not None:
-                peak = max(float(v[0]) for _, v in s.changes)
-                top[route.id] = max(top.get(route.id, 0.0), peak)
-        for route_id, peak in top.items():
-            route = kind[route_id]
-            key = (route.species, route.cell)
-            out[key] = out.get(key, 0.0) + peak
     return out
 
 
@@ -783,6 +777,10 @@ def unit_domain_valid(state, p, *, xp):
 class PopulationUnitTurnover(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # Species registry (D176): it declares the precursor it writes.
+    # FR-43 part 3: a conversion of its precursors into units, and a writer whose shared precursor
+    # needs the species registry's potential (check_shared_rows; FR-43 / D315).
+    ROW_MOVES = "conversion"
+    SHARED_ROW_POTENTIAL = True
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -898,10 +896,16 @@ class PopulationUnitTurnover(Operator):
         """B1′: each route's precursor at its population's cell (assembly consumes it)."""
         return tuple(dict.fromkeys((r.precursor, r.cell) for r in declaration.routes))
 
-    def written_species(self, declaration):
-        """Its precursors, which it consumes: the registry's shared-row rule reads them
-        (species_registry.check_shared_rows; FR-43 / D315)."""
-        return tuple(dict.fromkeys(r.precursor for r in declaration.routes))
+    def written_rows(self, spec, declaration):
+        """Each route's precursor at its population's cell, which it consumes: the registry's row
+        rules read them (species_registry.check_row_writers and check_shared_rows; FR-43 / D315,
+        part 3)."""
+        return tuple(dict.fromkeys((r.precursor, r.cell) for r in declaration.routes))
+
+    def production_bound(self, spec, declaration):
+        """{}: it makes no species row; it consumes its precursors into units (FR-43 part 3: the
+        integer population's event-rate bound counts nothing of it)."""
+        return {}
 
     def species_identities(self, declaration):
         return declaration.species

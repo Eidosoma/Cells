@@ -21,7 +21,7 @@ The seven gated K⁺ laws, one gated Na⁺ law and two single-ion leaks multiply
 - [CellsProofs.Transport.IonChannels.patch_booking](../CellsProofs/Transport/IonChannels.lean#L211)
 - [CellsProofs.Transport.IonChannels.relative_block_at_equal_drive](../CellsProofs/Transport/IonChannels.lean#L333)
 
-Direct proof subject `cells.kv1p1_mh2@1`, `cells.kv1p2_mh@1`, `cells.kv1p3_mh@1`, `cells.kv1p4_mh@1`, `cells.kv1p5_mh@1`, `cells.kv1p6_mh@1`, `cells.kir2p1_mh2@1`, `cells.nav1p2_m3h_regularized@1`, `cells.kleak_always_open@1`, `cells.naleak_always_open@1`
+Direct proof subject `cells.channel.kv1p1_mh2@1`, `cells.channel.kv1p2_mh@1`, `cells.channel.kv1p3_mh@1`, `cells.channel.kv1p4_mh@1`, `cells.channel.kv1p5_mh@1`, `cells.channel.kv1p6_mh@1`, `cells.channel.kir2p1_mh2@1`, `cells.channel.nav1p2_m3h_regularized@1`, `cells.channel.kleak_always_open@1`, `cells.channel.naleak_always_open@1`
 
 Proof sources [Imported Mathlib cancellation of a shared voltage offset](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Group/Defs.lean#L1104) · [Imported Mathlib cancellation of a nonzero free current](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Defs.lean#L178)
 

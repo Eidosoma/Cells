@@ -64,10 +64,9 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - **FR-39, FR-40, FR-41** (high, D286) and the architecture items (D299) are unchanged; no decision of 23 to 24
     November moves them.
 - **Registrations and judged runs still to come:**
-  - **FR-51's two-potassium registration** (D353, D355, D356, D361, D378, D379) is tagged
-    (`fr51-two-potassium-registered-2026-11-25`), pinned to FR-51's landing (955765ef). It is non-blind, and Panama's 10
-    and 20 mM levels are holdouts. Its engine check passes. Two readers wait on one question about the panel's label
-    (a correction on the drafted fallback: D382).
+  - **FR-51's two-potassium registration has stopped by its own §3** (D391, the user's choice, 26 November): the
+    10 mM trace in Panama's Fig. 3E cannot be identified, so neither held-out curve was read or scored. The
+    external-potassium arm stays development-only, and FR-64's build is now free.
   - **FR-38's second comparison has passed and is landed** (D381, D382; 4039dcba), beside D313's failed verdict. The three
     uncovered readout controls go to a later registration, FR-38 v3 (D354).
   - **FR-43 part 3's co-writers** (D328, D383): the note's four questions are accepted (`fr43-part3-cowriters`, c82d8d42). The spec

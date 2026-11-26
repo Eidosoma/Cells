@@ -24,7 +24,7 @@ For a passive ion of either sign, the analytic flux reverses at its Nernst volta
 - [CellsProofs.Transport.ChargedPermeation.conductance_bounds](../CellsProofs/Transport/ChargedPermeation.lean#L127)
 - [CellsProofs.Transport.ChargedPermeation.chord_bounds](../CellsProofs/Transport/ChargedPermeation.lean#L150)
 
-Direct proof subject `cells.passive_constant_field_permeation@1`
+Direct proof subject `cells.route.passive_constant_field_permeation@1`
 
 Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.md)
 

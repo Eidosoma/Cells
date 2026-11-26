@@ -16,7 +16,7 @@ Pure one-way transfer and local first-order degradation give the same donor curv
 - [CellsProofs.Tissue.RegionalTracer.equal_donor_traces](../CellsProofs/Tissue/RegionalTracer.lean#L128)
 - [CellsProofs.Tissue.RegionalTracer.receiver_and_loss_distinguish](../CellsProofs/Tissue/RegionalTracer.lean#L136)
 
-Direct proof subject `cells.scheduled_species_exchange@1`, `cells.scheduled_species_turnover@1`
+Direct proof subject `cells.operator.scheduled_species_exchange@1`, `cells.operator.scheduled_species_turnover@1`
 
 Proof sources [Cells first-order turnover amount and clearance, specialized at zero production](../CellsProofs/Chemistry/SpeciesTurnover.lean#L19-L26) · [Mathlib strict exponential bound, imported (Real.exp_lt_one_iff)](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L323-L330)
 

@@ -20,7 +20,7 @@ For a donor copy, transfer of the donor's volume increment preserves its physica
 - [CellsProofs.Tissue.CellReplacement.water_jump](../CellsProofs/Tissue/CellReplacement.lean#L97)
 - [CellsProofs.Tissue.CellReplacement.same_volume_water_jump](../CellsProofs/Tissue/CellReplacement.lean#L106)
 
-Direct proof subject `cells.scheduled_cell_replacement@2`
+Direct proof subject `cells.operator.scheduled_cell_replacement@2`
 
 Uses [Simultaneous replacement books the old and arriving species, charge and electrical work](scheduled-cell-replacement.md) · [Water potential sets flow, heat and osmometric equilibrium](osmotic-water.md)
 

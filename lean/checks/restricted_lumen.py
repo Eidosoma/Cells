@@ -37,10 +37,12 @@ def world(version, old, bath, *, divided=False):
     else:
         base = insertion.cleft_cell(end=TIMES[-1])
         raw = insertion.with_operators(base, insertion.furrow_insertion(rate=RATE, onset=ONSET))
-        raw["model"]["operators"][1]["law"] = f"scheduled_membrane_insertion@{version}"
+        raw["model"]["operators"][1]["law"] = (
+            f"cells.operator.scheduled_membrane_insertion@{version}"
+        )
         raw["model"]["operators"].append(
             dict(
-                law=f"restricted_cleft_lumen@{version}",
+                law=f"cells.operator.restricted_cleft_lumen@{version}",
                 lumens=[dict(node_id="cleft", source_id="bath_0", gap_width_m=WIDTH)],
             )
         )

@@ -23,7 +23,7 @@ On a row’s integer grid, every signed update within the 106-bit bound produces
 - [CellsProofs.Chemistry.GardCache.split_product_word](../CellsProofs/Chemistry/GardCache.lean#L163)
 - [CellsProofs.Chemistry.GardCache.stress_reverse](../CellsProofs/Chemistry/GardCache.lean#L171)
 
-Direct proof subject `cells.gard_catalysis_pair_consistent@2`
+Direct proof subject `cells.rate_factor.gard_catalysis_pair_consistent@2`
 
 Proof sources [Mathlib finite-sum inequality, used to bound each weighted composition](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Group/Finset.lean#L102-L113) · [Mathlib least-witness principle, used to construct the nearest-word grid model](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Find.lean#L56-L74) · [Ogita, Rump and Oishi, Theorem 3.4. The published TwoSum interface is an explicit assumption of the Cells specialization](https://doi.org/10.1137/030601818)
 

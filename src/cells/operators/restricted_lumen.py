@@ -419,6 +419,9 @@ def own_valid(state, p, *, xp):
 
 class RestrictedCleftLumen(Operator):
     LAW_ID = LAW_ID
+    # FR-43 part 3: a conversion, filling each lumen's node with its source bath's fluid
+    # (written_rows).
+    ROW_MOVES = "conversion"
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -450,6 +453,12 @@ class RestrictedCleftLumen(Operator):
 
     def to_dict(self, declaration, base):
         return lumens_to_dict(declaration)
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: every species at each lumen's node, which its fill brings in at the
+        source bath's composition (a scheduled bath may hold any species)."""
+        species = spec.model.species_ids
+        return tuple((s, lumen.node_id) for lumen in declaration.lumens for s in species)
 
     def check_definition(self, spec, declaration, schedule, model):
         check_definition(spec, declaration)

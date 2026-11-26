@@ -15,7 +15,7 @@ Subtracting a nonnegative volume of bath-origin liquid inside an inward tube put
 
 - [CellsProofs.Chemistry.Vesicle.invagination_bounds](../CellsProofs/Chemistry/Vesicle.lean#L83)
 
-Direct proof subject `cells.osmotic_lumen@1`, `cells.bilayer_geometry@1`
+Direct proof subject `cells.free_energy.osmotic_lumen@1`, `cells.assembly_geometry.bilayer_geometry@1`
 
 Proof sources [Cells outer-volume bound and fixed-area equilibrium](../CellsProofs/Chemistry/Vesicle.lean) · [Figure 2 geometry and compartment definitions](https://doi.org/10.1039/D0SM00155D)
 

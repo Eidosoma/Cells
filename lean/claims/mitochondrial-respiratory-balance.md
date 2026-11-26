@@ -17,7 +17,7 @@ For signed extents of mitochondrial complexes I, III and IV, restoring reduced q
 - [CellsProofs.Chemistry.MitochondrialCycles.carrier_balance_iff](../CellsProofs/Chemistry/MitochondrialCycles.lean#L72)
 - [CellsProofs.Chemistry.MitochondrialCycles.respiratory_net](../CellsProofs/Chemistry/MitochondrialCycles.lean#L84)
 
-Direct proof subject `cells.nadh_ubiquinone_proton_cycle@1`, `cells.ubiquinol_cytochrome_c_proton_cycle@1`, `cells.cytochrome_c_oxygen_proton_cycle@1`
+Direct proof subject `cells.cycle.nadh_ubiquinone_proton_cycle@1`, `cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1`, `cells.cycle.cytochrome_c_oxygen_proton_cycle@1`
 
 Uses [Balanced reactions preserve a weighted inventory](reaction-inventory.md)
 

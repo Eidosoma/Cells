@@ -86,7 +86,8 @@ def myoglobin(studies):
 def kir_availability_control():
     raw = clamp.specimen(1.0)
     index = next(
-        i for i, ch in enumerate(raw["model"]["channels"]) if ch["kinetic_law"] == "kir2p1_mh2@1"
+        i for i, ch in enumerate(raw["model"]["channels"])
+        if ch["kinetic_law"] == "cells.channel.kir2p1_mh2@1"
     )
     spec = parse_spec(raw)
     model = get_model(spec.model)

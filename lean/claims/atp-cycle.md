@@ -23,7 +23,7 @@ With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(Δ
 - [CellsProofs.Transport.ATPCycle.proton_stall_shift](../CellsProofs/Transport/ATPCycle.lean#L71)
 - [CellsProofs.Transport.ATPCycle.neutral_voltage_independent](../CellsProofs/Transport/ATPCycle.lean#L64)
 
-Direct proof subject `cells.proton_atp_mass_action_positive@1`, `cells.atp_driven_transporter_mass_action_positive@1`
+Direct proof subject `cells.cycle.proton_atp_mass_action_positive@1`, `cells.cycle.atp_driven_transporter_mass_action_positive@1`
 
 ## Numerical comparison
 

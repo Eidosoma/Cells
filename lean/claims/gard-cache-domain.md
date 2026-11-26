@@ -18,7 +18,7 @@ The 106-bit width condition alone admits overflow. With the repaired upper and l
 - [CellsProofs.Chemistry.GardRange.upper_margin](../CellsProofs/Chemistry/GardRange.lean#L12)
 - [CellsProofs.Chemistry.GardRange.grid_floor](../CellsProofs/Chemistry/GardRange.lean#L21)
 
-Direct proof subject `cells.gard_catalysis_pair_consistent@2`
+Direct proof subject `cells.rate_factor.gard_catalysis_pair_consistent@2`
 
 Proof sources [Cells exact upper and lower parser guards](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/src/cells/models/assembly_lineages/gard.py#L398-L428) · [Mathlib integer absolute-value lower bound, used for the positive grid tick](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Group/Unbundled/Int.lean#L83) · [Original width-only guard for the historical witnesses](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L359-L396)
 

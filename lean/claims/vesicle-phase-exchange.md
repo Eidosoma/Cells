@@ -19,7 +19,7 @@ At fixed external number density, scaling the area-equivalent radius by s scales
 - [CellsProofs.Chemistry.VesicleExchange.transfer_footprint](../CellsProofs/Chemistry/VesicleExchange.lean#L46)
 - [CellsProofs.Chemistry.VesicleExchange.pair_balance](../CellsProofs/Chemistry/VesicleExchange.lean#L60)
 
-Direct proof subject `cells.phase_exchange@1`
+Direct proof subject `cells.reaction.phase_exchange@1`
 
 Proof sources [VeriBiota preservation of a weighted count under an enabled firing, imported in the optional check](https://github.com/OmnisGenomics/VeriBiota/blob/a145b640d7d8009a5a653849c41ef9a1d6b1c176/Biosim/Proofs/Invariants.lean#L113-L121) · [Cells specialization to a one-molecule transfer from a finite pool](../checks/chemistry/Reuse.lean#L63)
 

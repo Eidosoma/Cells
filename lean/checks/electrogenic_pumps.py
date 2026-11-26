@@ -1,4 +1,4 @@
-"""Compare two pump reversal voltages and their combined current in resolved_pump_tissue@3."""
+"""Check pump reversals and combined current in cells.model.resolved_pump_tissue@3."""
 
 import json
 import math

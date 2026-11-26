@@ -554,6 +554,7 @@ def check_anchor_providers(spec, declaration):
 class ScheduledSpeciesTurnover(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # Species registry (D176): it declares its species.
+    ROW_MOVES = "conversion"  # FR-43 part 3: production and clearance at its routes' nodes.
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -665,6 +666,34 @@ class ScheduledSpeciesTurnover(Operator):
 
     def species_identities(self, declaration):
         return declaration.species
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: each route's species at its node, a cell or a finite outside node (a route
+        on a held bath is refused)."""
+        return tuple(dict.fromkeys((r.species, r.node) for r in declaration.routes))
+
+    def production_bound(self, spec, declaration):
+        """{(species, cell): fmol/s}: the largest total production of each row, for a consumer's
+        bounds (the unit producer's R5, population_unit_turnover.supply_bound; the integer
+        population's event rates, integer_unit_population.check_hazard_bound; FR-43 / D315 and
+        part 3): each production route's largest scheduled rate over its schedules, summed per
+        row. A rate route's factor is at most 1, so the scheduled rate is the maximum."""
+        from cells.definitions import pump_composite_spec as composite_spec
+
+        (schedule,) = (s for _, d, s in composite_spec.entries(spec) if d is declaration)
+        kind = {r.id: r for r in declaration.routes}
+        top = {}
+        for s in schedule:
+            route = kind[s.route_id]
+            if route.kind == "production" and route.cell is not None:
+                peak = max(float(v[0]) for _, v in s.changes)
+                top[route.id] = max(top.get(route.id, 0.0), peak)
+        out = {}
+        for route_id, peak in top.items():
+            route = kind[route_id]
+            key = (route.species, route.cell)
+            out[key] = out.get(key, 0.0) + peak
+        return out
 
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)

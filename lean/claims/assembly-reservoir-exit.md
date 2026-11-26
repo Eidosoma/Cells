@@ -20,7 +20,7 @@ For species i, each molecule in an assembly adds kᵢ to its exit rate. Entry oc
 - [CellsProofs.Chemistry.ReservoirExchange.common_rate_fraction_drift](../CellsProofs/Chemistry/ReservoirExchange.lean#L60)
 - [CellsProofs.Chemistry.ReservoirExchange.unequal_rates_fraction_example](../CellsProofs/Chemistry/ReservoirExchange.lean#L79)
 
-Direct proof subject `cells.reservoir_exchange@1`
+Direct proof subject `cells.exchange.reservoir_exchange@1`
 
 Proof sources [Mathlib quotient rule used for the mean-field fraction](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Inv.lean#L143)
 

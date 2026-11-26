@@ -19,7 +19,7 @@ Updating the symmetric pair energy equals recomputing it from all membrane count
 - [CellsProofs.Chemistry.AssemblyMixing.binary_insert](../CellsProofs/Chemistry/AssemblyMixing.lean#L121)
 - [CellsProofs.Chemistry.AssemblyMixing.binary_chemical_potential](../CellsProofs/Chemistry/AssemblyMixing.lean#L128)
 
-Direct proof subject `cells.regular_mixing@1`
+Direct proof subject `cells.free_energy.regular_mixing@1`
 
 Proof sources [Imported Mathlib dot-product and matrix-vector identity](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Matrix/Mul.lean#L662)
 

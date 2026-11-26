@@ -21,7 +21,7 @@ The inward molecular rate equals permeability times area times outside number de
 - [CellsProofs.Chemistry.VesicleExchange.transfer_clearance](../CellsProofs/Chemistry/VesicleExchange.lean#L96)
 - [CellsProofs.Chemistry.VesicleExchange.washout_derivative](../CellsProofs/Chemistry/VesicleExchange.lean#L103)
 
-Direct proof subject `cells.membrane_permeation@1`
+Direct proof subject `cells.reaction.membrane_permeation@1`
 
 Uses [Lipid insertion scales with membrane area and diffusion-limited capture scales with radius](vesicle-phase-exchange.md) · [Bilayer area is half the sum of the molecular footprints in its two leaflets](bilayer-footprint.md) · [Production and first-order clearance preserve a positive pool and account for gross turnover](scheduled-species-turnover.md)
 

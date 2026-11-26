@@ -17,7 +17,7 @@ Starting at the triggering step’s own pool, each finite pool gains the molecul
 - [CellsProofs.Chemistry.VesicleRelease.release_ledger](../CellsProofs/Chemistry/VesicleRelease.lean#L29)
 - [CellsProofs.Chemistry.VesicleRelease.total_returned](../CellsProofs/Chemistry/VesicleRelease.lean#L45)
 
-Direct proof subject `cells.osmotic_lumen@1`, `cells.shared_pool@1`
+Direct proof subject `cells.free_energy.osmotic_lumen@1`, `cells.population.shared_pool@1`
 
 Proof sources [Mathlib Finset.sum_ite_eq sums a receipt at its unique destination](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Piecewise.lean#L142) · [Mathlib Finset.sum_add_distrib separates a source contribution from the remaining receipts](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L268)
 

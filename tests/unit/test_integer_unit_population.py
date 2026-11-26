@@ -17,6 +17,17 @@ validation/fr43_part3/references/spec/part3.json):
 
 The compiled world runs once per module (about 30 s on one core, most of it the compile): the
 restart and the closed forms need a run, and the run's rows serve every compiled check here.
+
+FR-43 part 3's co-writers (docs/FR43_PART3_COWRITERS_DESIGN.md §5.2):
+* the event-rate bound counts a co-writer's bounded production (a zero-order source refused at dt
+  a0,max), and a producer with no static bound leaves the site unchecked (the lead's L3), where
+  the same site alone is refused;
+* a second compiled world, the operator beside D152's zero-order source of S in the cell
+  (validation/fr43_part3/worlds.source_world, crossrev's and G1's co-writer world): the first event
+  at its closed form with the source, far from the one without it; each writer's books of S at
+  every row (the network's production, the transfer), a 1e-3 error in one of them caught; the
+  integer ledger exact; a restart between events bitwise. Its reason: the event and restart claims
+  need a run (about 35 s on one core, most of it the compile).
 """
 
 import json
@@ -451,6 +462,139 @@ def test_a_same_seed_restart_between_events_is_bitwise(w1):
         for w in windows
         for t in np.asarray(w.times)
         if abs(t - cut * DT) < 1e-9
+    )
+    _, resumed = _collect(spec, checkpoint)
+    for k in range(cut, len(rows)):
+        for a, b in zip(resumed[k], rows[k], strict=True):
+            assert np.asarray(a).tobytes() == np.asarray(b).tobytes(), k
+
+
+# ------------------------------------------------------------------ co-writers (FR-43 part 3)
+
+HAZARD = {
+    "a bounded source over the bound is counted": (
+        lambda: worlds.beside_reactions("source", rate=10.0, end=10.0),
+        "dt a0,max",
+    ),
+    "a producer with no static bound leaves the site unchecked": (
+        lambda: worlds.beside_reactions("first_order", block=worlds.units(k_dissolve=80.0)),
+        None,
+    ),
+    "the same site alone is over the bound": (
+        lambda: worlds.with_units(
+            worlds.cowriter_world(dt=0.02, end=0.04), worlds.units(k_dissolve=80.0)
+        ),
+        "dt a0,max",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(HAZARD))
+def test_the_event_rate_bound_beside_a_co_writer(name):
+    """check_hazard_bound sums the conversions' production_bound (FR-43 part 3): a zero-order
+    source of 10 mM/s over 10 s raises the read row's bound past dt a0,max = 1, which the declared
+    material alone keeps far below; a first-order source (no static bound) leaves the site
+    unchecked, the run-time cap its guard, where the site alone is refused."""
+    build, message = HAZARD[name]
+    if message is None:
+        parse_spec(build())
+        return
+    with pytest.raises(ConfigError, match=message):
+        parse_spec(build())
+
+
+SOURCE_DT, SOURCE_END = 0.01, 4.0
+
+
+@pytest.fixture(scope="module")
+def beside_a_source():
+    spec = parse_spec(worlds.source_world(dt=SOURCE_DT, end=SOURCE_END))
+    windows, rows = _collect(spec)
+    model = get_model(spec.model)
+    _, p = model.initial_values(spec)
+    return spec, model, p, windows, rows
+
+
+def _blocks(spec):
+    units = next(d for d in spec.model.operators if d.law == iup.LAW_ID)
+    network = next(d for d in spec.model.operators if d.law == worlds.REACTIONS)
+    return units, network
+
+
+def test_the_first_event_beside_a_source_is_its_closed_form(beside_a_source):
+    """Two free subunits at the start: nothing moves before the first event, and the network's
+    zero-order source raises the read concentration as c0 + k t, so H(t) = k_a ff (c0 t + k t^2/2)
+    and the first event solves H = E0 (within the splitting's O(dt^2): dt^2 r / 8 with r about
+    1/s); without the source it would fire at E0 / (k_a ff c0), much later."""
+    spec, _, p, _, rows = beside_a_source
+    units, network = _blocks(spec)
+    k_a = units.populations[0].channels[0].rate_per_s * 2  # ff(2, 2) = 2.
+    k = network.reactions[0].rate_constant  # mM/s: J = k V, so dc/dt = k.
+    s = list(spec.model.species_ids).index(worlds.SPECIES)
+    c0 = float(np.asarray(p.amount_reference)[s, 0]) / spec.model.cells[0].volume_pL
+    words = jnp.asarray([streams.key_data(units.seed, 0, "events")])
+    e0 = -math.log(float(streams.site_uniforms(words, jnp.asarray([0]), 2)[0, 0]))
+    a, b = k_a * k / 2.0, k_a * c0
+    with_source = (-b + math.sqrt(b * b + 4.0 * a * e0)) / (2.0 * a)
+    without = e0 / b
+    first = rows[max(rows)].integer_trace_time_s[0, 0]
+    assert abs(first - with_source) <= 1e-4, (first, with_source)
+    assert abs(without - with_source) > 100 * 1e-4  # The plant: the source left out.
+
+
+def _books_error(spec, p, rows, produced_scale=1.0):
+    """The largest error of S's amounts against its writers' books at every row: in the cell, its
+    start plus the network's production less the transfer; at the node, its start plus the
+    transfer (cell to node positive)."""
+    s = list(spec.model.species_ids).index(worlds.SPECIES)
+    cell_ref = float(np.asarray(p.amount_reference)[s, 0])
+    node_ref = float(np.asarray(p.extracellular_amount_reference)[s, 1])
+    worst, start = 0.0, rows[0]
+    for row in rows.values():
+        produced = (row.reaction_produced_fmol[s, 0] - start.reaction_produced_fmol[s, 0]) * (
+            produced_scale
+        )
+        moved = row.integer_transferred_fmol[0, 0] - start.integer_transferred_fmol[0, 0]
+        cell = row.amount_increment[s, 0] - start.amount_increment[s, 0]
+        node = row.extracellular_amount_increment[s, 1] - start.extracellular_amount_increment[s, 1]
+        worst = max(worst, abs(cell - (produced - moved)), abs(node - moved))
+    return worst, cell_ref + node_ref
+
+
+def test_each_writer_books_its_own_moves_beside_a_source(beside_a_source):
+    """S's amount at every row is its start plus each writer's own books, to the rounding of that
+    many accumulations (64 eps per row at the books' scale); both writers move S; the integer
+    ledger is exactly 0 on every row; the network's production 1e-3 high is caught."""
+    spec, model, p, _, rows = beside_a_source
+    s = list(spec.model.species_ids).index(worlds.SPECIES)
+    last = rows[max(rows)]
+    produced, moved = last.reaction_produced_fmol[s, 0], last.integer_transferred_fmol[0, 0]
+    assert produced > 0 and moved > 0 and int(last.integer_events[0]) >= 4
+    error, start = _books_error(spec, p, rows)
+    tolerance = 64 * np.finfo(float).eps * len(rows) * (start + produced)
+    assert error <= tolerance, (error, tolerance)
+    assert _books_error(spec, p, rows, produced_scale=1 + 1e-3)[0] > tolerance
+    for k, row in rows.items():
+        assert np.all(model.balances(row, p)["integer_subunits"] == 0.0), k
+
+
+def test_a_restart_between_events_beside_a_source_is_bitwise(beside_a_source):
+    """A same-seed restart cut at a window boundary strictly between two events, after some of
+    them, is bitwise the uninterrupted run (both writers' state included)."""
+    spec, _, _, windows, rows = beside_a_source
+    last = rows[max(rows)]
+    times = last.integer_trace_time_s[0, : int(last.integer_events[0])]
+    cut = next(
+        k * WINDOW
+        for k in range(1, len(windows))
+        if np.sum(times < k * WINDOW * SOURCE_DT) >= 2
+        and not np.any(np.abs(times - k * WINDOW * SOURCE_DT) < 1e-12)
+    )
+    checkpoint = next(
+        w.checkpoint_at(float(t))
+        for w in windows
+        for t in np.asarray(w.times)
+        if abs(t - cut * SOURCE_DT) < 1e-9
     )
     _, resumed = _collect(spec, checkpoint)
     for k in range(cut, len(rows)):

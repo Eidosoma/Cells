@@ -19,7 +19,7 @@ The general binding closure determines a unique free proton read at either endpo
 - [CellsProofs.Transport.ProtonLeak.outside_change](../CellsProofs/Transport/ProtonLeak.lean#L138)
 - [CellsProofs.Transport.ProtonLeak.strictMono_outside](../CellsProofs/Transport/ProtonLeak.lean#L145)
 
-Direct proof subject `cells.proton_constant_field_leak@2`
+Direct proof subject `cells.route.proton_constant_field_leak@2`
 
 Proof sources [Cells held-ligand equilibrium uniqueness, specialized at the proton row](../CellsProofs/Chemistry/BindingEquilibrium.lean#L96) · [Cells constant-field reversal, specialized with the two free logs](../CellsProofs/Transport/ProtonLeak.lean#L112) · [Mathlib logarithm of the real exponential, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L70)
 

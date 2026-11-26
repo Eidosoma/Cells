@@ -1470,6 +1470,10 @@ def stage_report(state, control, p, dt, volumes=None):
 
 class LocalSpeciesReactions(Operator):
     LAW_ID = LAW_ID
+    # FR-43 part 3: a conversion of the rows its routes write, whose shared rows need the species
+    # registry's potential (check_shared_rows; FR-43 / D315).
+    ROW_MOVES = "conversion"
+    SHARED_ROW_POTENTIAL = True
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"  # Declared; RK4 is refused at the definition (§4.6).
@@ -1667,10 +1671,49 @@ class LocalSpeciesReactions(Operator):
         """The species identities it declares (registry/species_registry.py, D176)."""
         return tuple(s.identity for s in declaration.species)
 
-    def written_species(self, declaration):
-        """The species its routes write (a nonzero net coefficient at a node): the registry's
-        shared-row rule reads them (species_registry.check_shared_rows; FR-43 / D315)."""
-        return tuple(dict.fromkeys(name for name, _ in written(declaration)))
+    def written_rows(self, spec, declaration):
+        """The rows its routes write, a nonzero net coefficient at a node (written; a catalyst or
+        a factor's row is read, not written): the registry's row rules read them
+        (species_registry.check_row_writers and check_shared_rows; FR-43 / D315, part 3)."""
+        return tuple(written(declaration))
+
+    def production_bound(self, spec, declaration):
+        """{(species, node): fmol/s}: the largest rate at which its routes make each row (FR-43
+        part 3), for a consumer's bounds (the integer population's event rates,
+        integer_unit_population.check_hazard_bound; the unit producer's R5, supply_bound). A
+        driven route makes its products only: a zero-order mass-action source at most nu k V m, a
+        Michaelis-Menten route without a catalyst at most nu V_max V m, with m the route's largest
+        multiplier over its schedule and its newcomers' templates (a factor or a rate route
+        multiplies it by at most 1) and V its node's largest volume (species_common
+        .largest_volumes). Any other driven route makes its products with no static bound
+        (math.inf), and a passive route, which runs both ways, every row it changes. A route
+        whose largest multiplier is 0 makes nothing."""
+        (schedule,) = (s for _, d, s in composite_spec.entries(spec) if d is declaration)
+        tables = route_tables(declaration, schedule, spec)
+        volumes = common.largest_volumes(spec)
+        by_id = {r.id: r for r in declaration.reactions}
+        out = {}
+        for route, table in zip(declaration.routes, tables, strict=True):
+            r = by_id[route.reaction]
+            multiplier = max(float(m) for _, m in table)
+            if multiplier == 0.0:
+                continue
+            nu = dict.fromkeys((s for s, _ in (*r.reactants, *r.products)), 0)
+            for s, c in r.reactants:
+                nu[s] -= c
+            for s, c in r.products:
+                nu[s] += c
+            if r.law == PASSIVE_LAW:
+                made = {s: math.inf for s, v in nu.items() if v}
+            else:
+                bounded = (r.law == MASS_ACTION and not r.reactants) or (
+                    r.law == MICHAELIS_MENTEN and r.catalyst is None
+                )
+                rate = r.rate_constant * volumes[route.node] * multiplier if bounded else math.inf
+                made = {s: v * rate for s, v in nu.items() if v > 0}
+            for s, value in made.items():
+                out[(s, route.node)] = out.get((s, route.node), 0.0) + value
+        return out
 
     def species_potentials(self, declaration):
         """Its declared mu°/RT of each reacting species at its c0 (core/species_registry.py,

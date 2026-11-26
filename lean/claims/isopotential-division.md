@@ -19,7 +19,7 @@ Each species balances across the daughters when charge carriers compensate for t
 - [CellsProofs.Tissue.DivisionBridge.patch_voltage](../CellsProofs/Tissue/DivisionBridge.lean#L30)
 - [CellsProofs.Tissue.DivisionBridge.unmixing_nonneg](../CellsProofs/Tissue/DivisionBridge.lean#L37)
 
-Direct proof subject `cells.isopotential_partition@1`
+Direct proof subject `cells.operator.isopotential_partition@1`
 
 Uses [Only boundary transfers change a region’s inventory during transport](transfer-inventory.md)
 

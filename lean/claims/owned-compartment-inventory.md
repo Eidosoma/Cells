@@ -17,7 +17,7 @@ Summing each cell's cytosol with the compartments it owns counts every species a
 - [CellsProofs.Tissue.MembraneTrafficking.lumen_potential](../CellsProofs/Tissue/MembraneTrafficking.lean#L27)
 - [CellsProofs.Tissue.MembraneTrafficking.lumen_above_owner](../CellsProofs/Tissue/MembraneTrafficking.lean#L34)
 
-Direct proof subject `cells.cell_owned_compartments@1`
+Direct proof subject `cells.operator.cell_owned_compartments@1`
 
 Uses [Only boundary transfers change a region’s inventory during transport](transfer-inventory.md)
 

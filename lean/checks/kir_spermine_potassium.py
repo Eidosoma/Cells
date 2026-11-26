@@ -102,7 +102,7 @@ def clamp_ratios(ci, co, temp, blocker, params, anchor_root, voltage_mV):
             modes=modes,
         )
 
-    ch = dict(m["channels"][0], kinetic_law="kir2p1_mh2@1", initial_gate=[0.7, 0.6])
+    ch = dict(m["channels"][0], kinetic_law="cells.channel.kir2p1_mh2@1", initial_gate=[0.7, 0.6])
     m["channels"] = [
         dict(ch, id="blocked", block=declaration({"reversal_of": "K"}, anchor_root)),
         dict(ch, id="free"),

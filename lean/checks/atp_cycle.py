@@ -98,7 +98,7 @@ def check_panel(law):
             counts["forward" if j > 0 else "reverse"] += 1
 
     # Test proton reversal near stall and voltage independence at a nonzero neutral flux.
-    charged = law["law_id"] == "cells.proton_atp_mass_action_positive@1"
+    charged = law["law_id"] == "cells.cycle.proton_atp_mass_action_positive@1"
     voltage_input = (
         next(r for r in inputs if r["tag"] == "static_head_+0") if charged else inputs[0]
     )
@@ -204,7 +204,7 @@ if __name__ == "__main__":
     print(
         json.dumps(
             {
-                "model": "resolved_pump_tissue@3",
+                "model": "cells.model.resolved_pump_tissue@3",
                 "backend": "cpu",
                 "jax": jax.__version__,
                 "dtype": "float64",

@@ -10,6 +10,7 @@ import numpy as np
 
 from cells.definitions.specs import parse_spec
 from cells.operators import species_labels
+from validation import id_table
 from validation.gene_regulation.sheet_check import COPY_FMOL
 
 
@@ -109,11 +110,15 @@ def compare(path):
     )
     folder = path.parent / "checkpoint"
     manifest = json.loads((folder / "manifest.json").read_text())
-    spec, clock = manifest["spec"], manifest["clock"]
+    spec, clock = id_table.translate(manifest["spec"]), manifest["clock"]
     model = spec["model"]
     (cell,) = model["cells"]
-    gene = next(op for op in model["operators"] if op["law"] == "templated_polymerisation@1")
-    labels_op = next(op for op in model["operators"] if op["law"] == "neutral_arrival_labels@1")
+    gene = next(
+        op for op in model["operators"] if op["law"] == "cells.operator.templated_polymerisation@1"
+    )
+    labels_op = next(
+        op for op in model["operators"] if op["law"] == "cells.operator.neutral_arrival_labels@1"
+    )
     (chain,) = gene["chains"]
     release = chain["release"]
     (pair,) = release["fates"]

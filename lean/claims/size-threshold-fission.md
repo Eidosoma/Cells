@@ -23,7 +23,7 @@ Single-molecule growth and conservative division at the threshold cannot oversho
 - [CellsProofs.Chemistry.LineageFission.independent_no_marker](../CellsProofs/Chemistry/LineageFission.lean#L93)
 - [CellsProofs.Chemistry.LineageFission.binomial_moments](../CellsProofs/Chemistry/LineageFission.lean#L127)
 
-Direct proof subject `cells.size_threshold_fission@1`
+Direct proof subject `cells.operator.size_threshold_fission@1`
 
 Uses [Shear fission partitions the parent among all daughters and books discarded siblings](vesicle-shear-fission.md)
 

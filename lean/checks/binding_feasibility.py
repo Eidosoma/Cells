@@ -1,4 +1,4 @@
-"""Compare rapid_binding@1's joint margin with independently allocated binder inventories."""
+"""Check cells.binding.rapid_binding@1 feasibility against independent binder inventories."""
 
 import json
 from fractions import Fraction

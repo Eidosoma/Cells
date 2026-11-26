@@ -72,6 +72,8 @@ and a general feature, never one built for one study (D144).
 | [FR-64](#fr-64--a-declared-voltage-shift-on-a-channel-population) | A declared voltage shift on a channel population: an ion's reversal or a sourced shift per pH unit, read by its gates or its block | Normal (logged by the user, 24 November 2026; D356, D361) | **Logged:** one mechanism for FR-51's reversal reference and FR-63's pH shift | A design note, before FR-51's law is registered |
 | [FR-65](#fr-65--turnover-beside-a-changing-volume) | Turnover beside a changing volume: reading the current volume and masks beside water, partition or insertion | **High** (logged by the user, 24 November 2026, as part of FR-43; D365) | **Logged:** refused at parse today (D347's gap 4); D301's composition M3 | A design note |
 | [FR-66](#fr-66--a-passive-fluorescence-reader-over-regional-amount-exports) | A passive fluorescence reader over regional amount exports: several masks over one trajectory, against a prebleach state | Medium (logged by the user, 24 November 2026; D372) | **Logged:** nothing on main reads fluorescence or a prebleach state | A short design note |
+| [FR-67](#fr-67--pressure-driven-flow-on-a-network-of-compliant-tubes) | Pressure-driven flow on a network of compliant tubes: Poiseuille edges, compliant nodes, advection and shear remodelling | Normal (logged by the user, 26 November 2026; D393) | **Logged:** no tube network on main | A design note, after FR-57's tagged spec is read for overlap |
+| [FR-68](#fr-68--a-consistency-check-on-standard-potentials) | A consistency check on standard potentials: each potential's source and conditions, and cited reaction values, at check time | Normal (logged by the user, 26 November 2026; D393) | **Logged:** cycles close by construction; no check ties a potential to its source | A design note |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2940,6 +2942,69 @@ reader is a host computation over saved regional amounts, with no engine state. 
 since it computes a consequence for users, with a closed-form check in the tests.
 
 **Status (24 November):** logged. A short design note comes first.
+
+## FR-67 — Pressure-driven flow on a network of compliant tubes
+
+**Logged 26 November 2026 by the user, priority normal. Design first; no build is scheduled (D393).**
+
+**Why.** Liquid driven through a network of tubes by pressure carries its solutes along, stretches compliant walls,
+and over time reshapes the tubes it flows through. Cells moves water across membranes and moves declared volumes
+between places (FR-27's washes; FR-54 and FR-57's liquid routing), but it has no network of tubes: no edge law gives a
+volume flow along a tube from the pressures at its ends, no wall stores volume against pressure, and no conductance
+adapts to the flow it carries.
+
+**The request.** Four parts, each a general law or operator with conserved accounting:
+1. **Flow on a graph.** Each edge is a tube with a Hagen–Poiseuille conductance, G = πr⁴/(8μL). Volume is conserved at
+   each node (Kirchhoff's current law). Boundary pressures or inflows are declared.
+2. **Compliant compartments.** A node's volume follows its pressure through a declared compliance. A prescribed wall
+   activation (a time course of rest volume) drives flow, peristaltic pumping being one case. The wall's work and the
+   viscous dissipation are booked.
+3. **Advection.** Solutes move with the edge flows, upwind, with amounts conserved to rounding, beside diffusion where
+   it is declared.
+4. **Remodelling.** Each tube's radius adapts slowly to its wall shear stress by a declared, sourced law with its own
+   time scale, separate from the fast flow.
+
+**Acceptance (a proposal for the design note):**
+- one tube against Poiseuille's closed form;
+- a two-loop network against its Kirchhoff solution;
+- solute amounts conserved under advection to rounding;
+- one compliant chamber's pressure relaxation against its closed form;
+- remodelling's steady state at a junction against its analytic fixed point, where the declared law has one.
+
+**First reading (the lead).** None of the four is on main. Before the design, FR-57's tagged spec is read for
+overlap: whether liquid routing's edge flows can carry a time-varying flow from part 1, so that solute transport is
+built once.
+
+**Status (26 November):** logged. A design note comes first.
+
+## FR-68 — A consistency check on standard potentials
+
+**Logged 26 November 2026 by the user, priority normal. Design first; no build is scheduled (D393).**
+
+**Why.** A reaction network's equilibria come from its species' standard potentials. A slip in one entry (a sign, a
+unit, a factor of ten, a value left at zero) gives wrong equilibria without any run failing, and no check catches it
+today. Each mass-action reaction takes its reverse constant from its species' potentials
+(`laws/reactions/mass_action.py`), so every cycle closes whatever the values are, and transporter diagrams check
+Wegscheider's condition at the registry's own potentials (`kinds/transporter.py`).
+
+**The request.** At check time, before a run:
+- each standard potential a world uses states its source and the conditions it holds at (temperature, pH, ionic
+  strength, free magnesium); tables held at different conditions are refused by name unless a declared transform
+  joins them;
+- where a cited source gives a reaction's standard free energy or equilibrium constant, the value from the species'
+  potentials is compared with it, and a difference beyond a stated tolerance is named with its residual;
+- a reaction whose constant is declared on its own, outside the species' potentials, joins a cycle-closure check:
+  Σ_r v_r ln K_r = 0 over each independent cycle of the stoichiometry.
+
+**Acceptance (a proposal):** a consistent table passes; one planted slip (a sign, a factor of ten, a value left at
+zero) is caught and named against its cited reaction value; tables at two pH values are refused unless a transform is
+declared.
+
+**First reading (the lead).** Closure around a cycle already holds by construction where constants come from the
+species' potentials, so this check's value is in tying each potential to its source and conditions. The design note
+decides whether a failure refuses or warns.
+
+**Status (26 November):** logged. A design note comes first.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 

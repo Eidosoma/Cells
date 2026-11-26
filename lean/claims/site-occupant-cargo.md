@@ -15,7 +15,7 @@ For each due population the newcomer carries its template occupancy times its ca
 
 - [CellsProofs.Tissue.CellReplacement.occupant_ligand_balance](../CellsProofs/Tissue/CellReplacement.lean#L114)
 
-Direct proof subject `cells.site_occupant_replacement@1`
+Direct proof subject `cells.operator.site_occupant_replacement@1`
 
 ## Numerical comparison
 

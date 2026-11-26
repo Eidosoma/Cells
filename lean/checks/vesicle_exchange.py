@@ -1,4 +1,4 @@
-"""Vesicle insertion, permeation and fixed-volume washout in cells.assembly_lineages@2."""
+"""Vesicle insertion, permeation and fixed-volume washout in cells.model.assembly_lineages@2."""
 
 import json
 import math

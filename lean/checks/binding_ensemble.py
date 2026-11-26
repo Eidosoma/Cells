@@ -1,4 +1,4 @@
-"""Compare rapid_binding@1 form fractions with a finite partition at fixed ligand activities."""
+"""Check form fractions from cells.binding.rapid_binding@1 against a fixed-activity partition."""
 
 import json
 import math

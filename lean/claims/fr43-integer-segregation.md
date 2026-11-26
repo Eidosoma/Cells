@@ -21,7 +21,7 @@ At an accepted division, each occupied unit goes to exactly one daughter. The tw
 - [CellsProofs.Tissue.IntegerSegregation.two_unit_difference](../CellsProofs/Tissue/IntegerSegregation.lean#L86)
 - [CellsProofs.Tissue.IntegerSegregation.four_unit_difference](../CellsProofs/Tissue/IntegerSegregation.lean#L92)
 
-Direct proof subject `cells.integer_unit_population@1`
+Direct proof subject `cells.operator.integer_unit_population@1`
 
 Proof sources [Imported Mathlib partition of a finite set by a predicate and its complement](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Finset/Card.lean#L554) · [Imported Mathlib size of a natural half-open interval](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Order/Interval/Finset/Nat.lean#L73) · [Cells specializes its existing independent-trial expectation at two and four units](https://github.com/Eidosoma/Cells/blob/8e0fb796849064735e44763cf0322e6fa55b041a/lean/CellsProofs/Chemistry/LineageFission.lean#L106)
 

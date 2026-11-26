@@ -20,7 +20,7 @@ A finite binding ensemble has exactly one positive equilibrium if and only if ev
 - [CellsProofs.Chemistry.BindingFeasibility.existsUnique_held_equilibrium_iff](../CellsProofs/Chemistry/BindingFeasibility.lean#L306)
 - [CellsProofs.Chemistry.BindingFeasibility.positive_totals_admit_equilibrium](../CellsProofs/Chemistry/BindingFeasibility.lean#L324)
 
-Direct proof subject `cells.rapid_binding@1`
+Direct proof subject `cells.binding.rapid_binding@1`
 
 Proof sources [Mathlib compactness of the ligand simplex, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Topology.lean#L74-L79) · [Mathlib extreme value theorem for a continuous potential, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Topology/Order/Compact.lean#L268-L276) · [Mathlib derivative at a local minimum, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/LocalExtr/Basic.lean#L253-L255) · [Cells equilibrium total and uniqueness](../CellsProofs/Chemistry/BindingEquilibrium.lean)
 

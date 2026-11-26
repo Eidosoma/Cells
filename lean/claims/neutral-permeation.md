@@ -17,7 +17,7 @@ For a neutral solute the inward constant-field flux is the route scale times out
 - [CellsProofs.Transport.Neutral.inward_iff](../CellsProofs/Transport/NeutralPermeation.lean#L18)
 - [CellsProofs.Transport.Neutral.closed_pair_gradient_rate](../CellsProofs/Transport/NeutralPermeation.lean#L23)
 
-Direct proof subject `cells.passive_neutral_permeation@1`
+Direct proof subject `cells.route.passive_neutral_permeation@1`
 
 Uses [At equal voltage, junction flux follows the concentration gradient](junction-concentration-gradient.md)
 

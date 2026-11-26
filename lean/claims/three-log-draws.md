@@ -16,7 +16,7 @@ For a feasible number of ordered draws, summing one logarithm per draw gives the
 - [CellsProofs.Chemistry.AssemblyKinetics.sum_log_draws](../CellsProofs/Chemistry/AssemblyKinetics.lean#L48)
 - [CellsProofs.Chemistry.AssemblyKinetics.three_log_draws](../CellsProofs/Chemistry/AssemblyKinetics.lean#L61)
 
-Direct proof subject `cells.stochastic_mass_action@1`, `cells.phase_exchange@1`
+Direct proof subject `cells.reaction.stochastic_mass_action@1`, `cells.reaction.phase_exchange@1`
 
 Proof sources [Mathlib descending-factorial recursion, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L316) · [Existing Cells log-draw identity](../CellsProofs/Chemistry/AssemblyKinetics.lean#L33) · [Three-term calculation and feasible-side mask](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/mass_action.py#L76-L136)
 

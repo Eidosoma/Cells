@@ -21,7 +21,7 @@ The exact network heat in pJ is (10¹²/2) times the sum of C(ΔV)² + ΔC(V + �
 - [CellsProofs.Tissue.MembraneInsertion.one_patch_heat](../CellsProofs/Tissue/MembraneInsertion.lean#L75)
 - [CellsProofs.Tissue.MembraneInsertion.one_patch_image_zero](../CellsProofs/Tissue/MembraneInsertion.lean#L82)
 
-Direct proof subject `cells.scheduled_membrane_insertion@1`, `cells.scheduled_membrane_insertion@2`
+Direct proof subject `cells.operator.scheduled_membrane_insertion@1`, `cells.operator.scheduled_membrane_insertion@2`
 
 ## Numerical comparison
 

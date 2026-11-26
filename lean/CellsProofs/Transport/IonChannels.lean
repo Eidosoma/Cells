@@ -2,7 +2,7 @@ import CellsProofs.Accounting.Transfer
 import CellsProofs.Transport.ChannelStep
 import CellsProofs.Transport.ProtonLeak
 
-/-! # The channel declarations of resolved_pump_tissue@3
+/-! # The channel declarations of cells.model.resolved_pump_tissue@3
 
 Voltage is inside minus outside in volts. Both gate time constants are in
 seconds. The gate-free laws have no dynamic gate rows; their dispatch fills

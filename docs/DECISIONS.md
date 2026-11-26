@@ -13250,3 +13250,111 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - AGENTS.md's gate sentence gains D358's map refresh.
   - FR-47's ledger limit stays and its alternative is not built; FR-55 is not built, and is reopened on one lab's paired low-dose record (its retitle and a request to the Lean track follow).
   - The scratch trees of the cleanup are deleted; the JUPITER check's rebuild waits.
+
+## D391: FR-51's two-potassium registration stops by its own §3; FR-64's build is free
+
+2026-11-26, written at 15:48 UTC. The user's choice (verbatim "a"), between stopping as registered and a tagged erratum that would read 20 mM alone.
+
+- **Why it stops.** The registration (`validation/fr51_two_potassium/REGISTRATION.md`, tag `fr51-two-potassium-registered-2026-11-25`) says in §3: "If it cannot say which traces are which, the
+  registration stops." The reader's sheet (831ed099, branch `fr51-reader-sheet`) found that the panel's legend does not settle which of two lines at the circled 10 in Panama and Lopatin (2006), Fig. 3E, is
+  the 10 mM trace. The Lean track and its search, reading the original figure, found the same: two strokes below the circled 10 and no key in the legend (relayed by the user, 26 November).
+- **What was read:** nothing of the held-out curves. Neither reader was started; neither the 10 nor the 20 mM curve was read or scored. The lead has not opened the figure, and
+  `kir_spermine_potassium.json` stays unopened, so both levels stay reserved for any later registration.
+- **What it leaves:** the composition keeps its development-only label for changes of external potassium; no law changes; the stop is recorded under D351. The engine check of §2 passed
+  (09b718d3) and stands. The internal arm (§6) was never a test and is unchanged. The drafted erratum (`fr51-two-k-erratum-1`, bdfc9e3e) stays untagged and is not used.
+- **Not chosen:** an erratum to read 20 mM alone. The 10 mM level could only block a pass, so dropping it would make a pass easier, in a registration whose rule was written knowing the study's 60 mM
+  result (D382).
+- **FR-64:** its build was to follow FR-51's follow-up and the rename (D361). Both are now done, so FR-64 (a declared voltage shift on a channel population, with FR-63 re-formed as a pH shift) is free to
+  build at normal priority.
+
+## D392: an external review of the landing, checked; a correction of D390's test count
+
+2026-11-26, written at 15:56 UTC. A review of main at c52d0998, relayed by the user and checked with the adviser.
+
+- **It agrees with the record** on the landing, the re-expression's two parts, the rename's step 13, what tier 3 caught, and the gate's scope rule.
+- **Where it was wrong, by the record:**
+  - The three loose ends it puts under fix (A) (D273) are two of step 0's charge rule (D387: a face with no charged conductance beside a conducting patch, admitted at a step it cannot take; the vector and
+    batch programs of the eight changed checked_step programs, not rerun) and one of fix (A)'s (the structure-free step of `validation/tissue/excitable_probe.py`).
+  - 1,704 files are 1,693 by the deletion and 11 by the retirements' commit; the 193 retirements are test rows, not files.
+  - FR's renewed baselines are read by three gate scripts (`fr_landing_holder.sh`, `fr_landing_set.sh`, `cache_qualify.sh`); no test reads them.
+  - It predates D391.
+- **Correction of D390, dated:** the 11,131 tests that collect is the count before the ID move; at the landed head 11,144 collect (the final gate's ID step).
+- **Adopted:**
+  - The folder of FR's renewed baselines is marked load-bearing, and the baselines move to a dated permanent folder (as D307's were), with the three scripts repointed, in the next landing that touches
+    `scripts/gates`.
+  - Step 0's two follow-ups (the neutral-face gap, and a vector and batch-window check of the changed programs) come before any multi-cell store run of record.
+  - The calcium laws re-expressed in Part 2 are ported and regression-sealed, not calibrated against data (D389, D390).
+- **To the user:** the order of the queue, and any new requests, which the user logs.
+
+## D393: the user's answers on the review's seven calls; Protocol D's development label lifted; FR-67 and FR-68 logged; ten cache folders removed
+
+2026-11-26, written at 16:32 UTC. The user: "sounds good on the calls but get adviser in on those as well if not already". The adviser was in on each call.
+
+- **The queue is kept:** FR-43 part 3 and FR-65 now; then FR-52, liquid routing (FR-54, FR-57) and FR-64. FR-61 and FR-62 follow them and still need the
+  user's answers to their note's Q4 and Q6. No third engine build starts before the co-writers land.
+- **Two requests are logged,** design first, with no build scheduled: FR-67 (pressure-driven flow on a network of compliant tubes) and FR-68 (a consistency
+  check on standard potentials). The commit checks stay as they are.
+- **Protocol D's development label is lifted** on D368's evidence: Protocol D v2 passed its independent check at its registered tag
+  `ol6-protocol-d-v2-registered-2026-11-24`. No earlier entry said so. The run record's wording changes with FR-47's (lifted by D373) and with the GPU
+  refusal message's (owed by D380, missed by the cleanup's landing), on one small branch that lands stacked with the next engine landing.
+- **The ten tier-1 and tier-2 failures,** none an engine fault:
+  - the five assembly command-line tests write under /tmp, which the command's output guard (there since 11 October) refuses. They are fixed on that
+    branch, keeping a check that the guard refuses;
+  - three tests of BETSE references (the calcium and sodium leak references, the native multi-cell environment) assert that the engine is not loaded in
+    their process, but `tests/conftest.py` imports it into every test process (its present import since D188's move of 18 November). The references
+    import clean in a fresh process. The fourth, the voltage-domain reference, fails because its catalogue no longer refuses one calcium channel at
+    0.2 V. All four are held for a keep-or-remove question on the BETSE modules they test;
+  - the unstimulated diagnostic differs from its field by 1.7e-10 relative where it asserts equality. It is looked at first.
+- **Ten cache-only folders** under `src/cells` (no tracked file in any) are removed from the main checkout, so `import cells.legacy` fails there as it does
+  in a snapshot.
+- **FR-45's judge** is briefed after the co-writers builder's host sweep covers FR-45's and FR-49's registered worlds, since sites on a listed row now refuse
+  (the build's L1).
+- **FR-43 part 3's judge:** C0 passes at the judge's head 3e8523dc with the lead's hash record of the eight registered files. The record was made on
+  26 November from the references tag, after the judge's first pass. Readings 4 and 13 are settled by published values; the other readings are ruled from
+  the criteria's text before any table exists.
+
+## D394: the user's answers on FR-55, the BETSE files and FR-45; a correction of D393 on FR-45's judge; FR-43 part 3's readings ruled
+
+2026-11-26, written at 17:16 UTC. The user: "Yes as you suggest", to five calls the lead put with the adviser's view.
+
+- **A correction of D393.** D393 said FR-45's judge would be briefed after the co-writers' host sweep. FR-45's registration makes the judge the
+  builder's own (its protocol §5, "`validation/fr45/judge.py`, the build's"; amendment 1 §2.2), with no separate blind judge and no C0. The judge
+  briefed today saw this and stopped before writing anything. Its reading notes go to FR-45's builder; its scripts do not.
+- **FR-45's build** (planned in D327; no engine code on main, D377) starts when the co-writers land. Before any builder runs, the lead rules from
+  the record which tag binds the registration (6e92d0ec, or a later protocol tag its text proposes), P5 on W7, and the open readings.
+- **FR-55 stays closed.** The Lean track's search found:
+  - one lab's closing after a low and a high calcium pulse (Pedarzani et al.: about 40 and 32 ms, read from a figure to about 5 ms, not stated to
+    be one patch);
+  - one patch's openings at three calcium levels (Hirschberg et al.: the share of long openings rises; the closing times do not trend).
+
+  Neither is a same-patch closing record at two calcium levels (D351's condition). A single study is an indication only.
+- **The BETSE files.** 397 files under `validation/` and their tests were checked. None came from the engine, none imports it, and no decision after
+  D131 keeps them, except where named below.
+  - Removed: 307 files that nothing runs, with the three tests that read only them (the native capture budget, comparison runtime and prefix payload
+    tests). Among them is `validation/geometry/betse_geometry_native.py`, which the removal of 8 November kept: it was the only BETSE import outside
+    `validation/betse/`.
+  - Removed: the ECM and material references (18 files), with the six tests that read only them: the calcium-leak, sodium-leak and voltage-domain
+    references, the ECM failure test and the two material tests. They compare BETSE with a re-derivation of BETSE, not with Cells (D131). The
+    voltage-domain failure was a stale test: d61f8875 (31 October) admits the constant calcium leak at any voltage, on purpose.
+  - Renamed: `betse_normal_channel_join_runtime.py`, which a test kept on 8 November imports. After the batch, no `betse_normal_*` or
+    `betse_native_*` file remains, so AGENTS.md's sentence holds as written.
+  - Kept: 46 files by decisions or live use (D211's seven channel captures, compared with the engine; D374's and D386's spatial drivers and their
+    hooks; the extraction tools), and 23 that the user kept on 25 November (none of which compares with the engine).
+  - The work runs as one batch on its own branch after the test-slimming landing. Its proof is all three tiers collected, before and after.
+  - **A finding:** the two largest tests that read the spatial drivers have been skipped since 8 November ("awaits re-hosting on a Cells physical
+    model"), so the comparison those files are kept for does not run in the gate today.
+- **The ten tier-1 and tier-2 failures** (D393) are settled.
+  - The five assembly tests are fixed.
+  - Three BETSE-reference failures go with their references.
+  - The native multi-cell environment test now checks its import in a fresh process.
+  - The unstimulated diagnostic compares with a stated tolerance (relative 1e-9, absolute 1e-12 V). The frozen run of 12 October predates the
+    compensated charge summation (296af182, 18 October), and changing the diagnostic's order instead broke all 280 of its replays.
+- **FR-43 part 3's judge readings are ruled** before any table or format sample exists. A reader who read the criteria tag alone gathered the
+  governing sentences, and the judge quoted the registered inputs.
+  - Of 19 readings, 6 were changed, each to the reading that cannot make a pass easier: a missing recorded-only key, a null `definition`, a null
+    extra echo key, CRITERIA:321 for plants with an unscorable entry, C0's own recomputations (now findings for the lead, not faults), and
+    provenance.
+  - Two are settled by published values (S in an event's bound; the planted reference's "also has").
+  - One open ruling takes the easier reading, and is disclosed: R compares numerically, so −0.0 is zero. The judge lists every −0.0 it accepts.
+  - The rulings file is committed on the judge's branch, and the judge's tag follows the protocol's own order: the format sample, hashed by the
+    lead, is read for structure only, then any dated change to the contract, then the tag.

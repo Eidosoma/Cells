@@ -27,7 +27,7 @@ The saturable import route has a unique positive remaining amount for every fini
 - [CellsProofs.Transport.SpeciesExchange.iterate_bounds](../CellsProofs/Transport/SpeciesExchange.lean#L152)
 - [CellsProofs.Transport.SpeciesExchange.amount_error_le_residual](../CellsProofs/Transport/SpeciesExchange.lean#L165)
 
-Direct proof subject `cells.scheduled_species_exchange@1`
+Direct proof subject `cells.operator.scheduled_species_exchange@1`
 
 ## Numerical comparison
 

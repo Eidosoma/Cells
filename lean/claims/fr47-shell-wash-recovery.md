@@ -23,7 +23,7 @@ A full tracer-free wash leaves the retained lumen mean L and sets the exterior c
 - [CellsProofs.Chemistry.ShellWashRecovery.withdrawal_mean](../CellsProofs/Chemistry/ShellWashRecovery.lean#L95)
 - [CellsProofs.Chemistry.ShellWashRecovery.removed_after_recovery](../CellsProofs/Chemistry/ShellWashRecovery.lean#L110)
 
-Direct proof subject `cells.prescribed_shell@1`, `cells.shell_permeation@1`, `cells.pool_replacement@1`, `cells.pool_withdrawal@1`
+Direct proof subject `cells.assembly_geometry.prescribed_shell@1`, `cells.reaction.shell_permeation@1`, `cells.operator.pool_replacement@1`, `cells.operator.pool_withdrawal@1`
 
 Proof sources [Registered FR-47 rates, finite bath and wash actions](https://github.com/Eidosoma/Cells/blob/231aae399bd9f8d5db35bc31fe95207ec664ab7b/validation/assembly_lineages_v2/fr47_spec/SPEC.md#L37-L79) · [Mathlib ODE uniqueness on a closed time interval, imported and specialized to shell exchange](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/ODE/Gronwall.lean#L351-L364) · [Mathlib derivative of a finite sum, imported to close the mean equation](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Add.lean#L184-L186) · [Cells constant-source interval solution, reused with source k_out times surviving total](../CellsProofs/Chemistry/SpeciesTurnover.lean#L73) · [Cells conditional mean of the sampler, reused at each possible exterior count](../CellsProofs/Chemistry/PoolWithdrawal.lean#L107)
 

@@ -20,7 +20,7 @@ Each population keeps its total of free and bound sites. Both site counts stay n
 - [CellsProofs.Chemistry.SiteOccupancy.network_step](../CellsProofs/Chemistry/SiteOccupancy.lean#L54)
 - [CellsProofs.Chemistry.SiteOccupancy.site_capacity_step](../CellsProofs/Chemistry/SiteOccupancy.lean#L67)
 
-Direct proof subject `cells.site_occupancy@1`
+Direct proof subject `cells.operator.site_occupancy@1`
 
 ## Numerical comparison
 

@@ -249,10 +249,13 @@ Refused at the definition
 - m not dividing L, and a draw without its K;
 - a transfer that is not a reaction (a sign missing), and a degradation whose polymer a chain makes
   at another length;
-- another writer of a listed row: an author or an in-step mover. FR-43 / D315 admits a D152 network
-  writing or declaring one and the unit producer (cells.operator.population_unit_turnover@1) consuming one, the
-  two-writer rule of 19 November 2026 extended (check_writers): the row's potential from the species
-  registry, each writer's own books, and a labelled or exported row keeping this operator alone;
+- another writer of a listed row: a conversion other than those admitted, or an in-step mover.
+  FR-43 / D315 admits a D152 network writing one and the unit producer
+  (cells.operator.population_unit_turnover@1) consuming one, the two-writer rule of 19 November
+  2026 extended (check_writers): the row's potential from the species registry, each writer's own
+  books, and a labelled or exported row keeping this operator alone (sole_rows). FR-43 part 3
+  admits a transfer of a listed row (exchange, the integer population; the species registry's
+  check_row_writers), except across a compartment's patch, and refuses an undeclared split writer;
 - a volume changer other than water (the lumens, replacement@2 by its water): the volumes are
   current reads at the split, the view's where water changes them, the declared ones otherwise
   (C1's fallback; FR-43 / D315);
@@ -1356,19 +1359,6 @@ def value_at(changes, time):
 UNIT_PRODUCER = (
     "cells.operator.population_unit_turnover@1"  # FR-43: the unit producer, a precursor's consumer.
 )
-WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"
-
-
-def largest_volumes(spec):
-    """{cell id: the largest volume it can take}: its declared volume, or where water changes the
-    volumes its water compartment's declared maximum."""
-    out = {c.id: c.volume_pL for c in spec.model.cells}
-    for op, water, _ in composite_spec.entries(spec):
-        if op.LAW_ID == WATER:
-            for c in water.compartments:
-                if c.compartment_id in out:
-                    out[c.compartment_id] = max(out[c.compartment_id], c.maximum_volume_pL)
-    return out
 
 
 def production_bound(spec, declaration, schedule):
@@ -1378,7 +1368,8 @@ def production_bound(spec, declaration, schedule):
     - a chain's release, J = kappa C phi with phi <= 1 and C at most its pool's machines, is at
       most kappa M_pool, kappa = v stages / residues;
     - a transfer's, V V_C times its saturations and its affinity factor (each at most 1), at most
-      nu V_C V for each row it makes, V the cell's largest volume (largest_volumes);
+      nu V_C V for each row it makes, V the cell's largest volume (species_common
+      .largest_volumes);
     - a row it makes in a cell otherwise (a degradation's monomers, a release's fates, an
       export's coupling) has no such static bound: math.inf, so a consumer refuses it."""
     top = {s.route_id: max(v for _, v in s.changes) for s in schedule}
@@ -1386,7 +1377,7 @@ def production_bound(spec, declaration, schedule):
         for name, value in values:
             top[name] = max(top.get(name, 0.0), value)
     machines = {pool.id: pool.machines * COPY_FMOL for pool in declaration.pools}
-    volumes = largest_volumes(spec)
+    volumes = common.largest_volumes(spec)
     out = {}
 
     def add(row, cell, rate):
@@ -1433,10 +1424,10 @@ COMPARTMENTS_LAW = "cells.operator.cell_owned_compartments@1"
 
 def check_compartments(spec, declaration):
     """FR-49 (D327; validation/fr49/REGISTRATION.md, Part H): beside cells.operator.cell_owned_compartments@1,
-    refuse an outside degradation at a declared compartment's node, then an export into one, each
-    with its reason. Degradations are checked first, so that each refusal has a world that reaches
-    it (a degradation needs an export carrying its polymer into its node). A world declaring no
-    compartment is unchanged."""
+    refuse an outside degradation at a declared compartment's node, then an export into one, then a
+    transfer of a listed row there (FR-43 part 3), each with its reason. Degradations are checked
+    first, so that each refusal has a world that reaches it (a degradation needs an export carrying
+    its polymer into its node). A world declaring no compartment is unchanged."""
     owners = {}
     for op, other, _ in composite_spec.entries(spec):
         if op.LAW_ID == COMPARTMENTS_LAW:
@@ -1459,46 +1450,48 @@ def check_compartments(spec, declaration):
                 f"({COMPARTMENTS_LAW}); secretion into a compartment is a later step, with its "
                 "own books at the compartment's node (FR-49)"
             )
+    # FR-43 part 3: a transfer may move a listed row (check_row_writers), but not across a
+    # compartment's bounding patch until FR-49's combination checks cover it.
+    listed = {s.id for s in declaration.species}
+    for op, other, _ in composite_spec.entries(spec):
+        if op.ROW_MOVES != "transfer":
+            continue
+        for name, node in op.written_rows(spec, other):
+            if name in listed and node in owners:
+                cid, owner = owners[node]
+                raise ConfigError(
+                    f"{LAW_ID}: {op.LAW_ID} moves the listed row {name!r} at {node!r}, compartment "
+                    f"{cid!r} of {owner!r} ({COMPARTMENTS_LAW}); a transfer of a listed row across "
+                    "a compartment's patch waits for FR-49's combination checks (FR-43 part 3)"
+                )
 
 
 def check_writers(spec, declaration):
-    """Refuse another writer of a listed row (one writer: the sheet's §4.5 and the design's §7.5):
-    another author's declaration of it and an in-step mover. A D152 network may write or declare a
-    listed row, and the unit producer (cells.operator.population_unit_turnover@1) may consume one as its
-    precursor (FR-43 / D315: the two-writer rule of 19 November 2026, extended): each writer is a
-    split part whose half-steps (SSP of order three here and in D152, exact in the producer) run in
-    declared order and book their own moved amounts and the exact dG of their own moves from the
-    state they receive, so the composition is Strang's, second order; the row's standard potential
-    has the species registry as its one authority (species_registry.check_shared_rows). A labelled
-    or exported row keeps this operator as its one writer (single_writer_rows)."""
+    """Refuse another writer of a listed row (one writer: the sheet's §4.5 and the design's §7.5)
+    other than those admitted, and an in-step mover. A D152 network may write a listed row, and
+    the unit producer (cells.operator.population_unit_turnover@1) may consume one as its precursor
+    (FR-43 / D315: the two-writer rule of 19 November 2026, extended); any other conversion of a
+    listed row (D150's turnover, cells.operator.site_occupancy@1's binding) is refused. A transfer
+    may move a listed row (FR-43 part 3: the species registry's rule, check_row_writers). Each
+    writer is a split part whose half-steps (SSP of order three here and in D152, exact in the
+    producer and a transfer) run in declared order and book their own moved amounts and the exact
+    dG of their own moves from the state they receive, so the composition is Strang's, second
+    order; the row's standard potential has the species registry as its one authority
+    (species_registry.check_shared_rows). A labelled or exported row keeps this operator as its one
+    writer (sole_rows, refused by check_row_writers)."""
     listed = {s.id for s in declaration.species}
-    single = single_writer_rows(spec, declaration)
+    admitted = (species_reactions.LAW_ID, UNIT_PRODUCER)
     for op, other, _ in composite_spec.entries(spec):
-        if op.LAW_ID == LAW_ID:
+        if op.LAW_ID == LAW_ID or op.ROW_MOVES != "conversion" or op.LAW_ID in admitted:
             continue
-        if op.LAW_ID == species_reactions.LAW_ID:
-            hit = sorted(
-                name for name, _ in species_reactions.written(other) if name in listed & single
+        shared = sorted(listed & {name for name, _ in op.written_rows(spec, other)})
+        if shared:
+            raise ConfigError(
+                f"{LAW_ID}: {op.LAW_ID} converts {shared[0]!r}, a listed row; beside this operator "
+                f"a listed row's conversions are its own, {species_reactions.LAW_ID}'s and "
+                f"{UNIT_PRODUCER}'s (FR-43 / D315, part 3)"
             )
-            if hit:
-                raise ConfigError(
-                    f"{LAW_ID}: a {op.LAW_ID} reaction writes {hit[0]!r}, a labelled or exported "
-                    "row, which keeps this operator as its one writer (FR-43 / D315)"
-                )
-        elif op.IDENTITY_ROLE == "author":
-            shared = sorted(listed & {s.id for s in op.species_identities(other)})
-            if shared and op.LAW_ID == UNIT_PRODUCER:
-                kept = sorted(set(shared) & single)
-                if kept:
-                    raise ConfigError(
-                        f"{LAW_ID}: {op.LAW_ID} consumes {kept[0]!r}, a labelled or exported row, "
-                        "which keeps this operator as its one writer (FR-43 / D315)"
-                    )
-            elif shared:
-                raise ConfigError(
-                    f"{LAW_ID}: {op.LAW_ID} also declares {shared[0]!r}; this operator is the one "
-                    "writer of its listed rows"
-                )
+    species_registry.check_row_writers(spec, LAW_ID)
     moved = species_registry.moved_in_step(spec)
     for name in sorted(listed):
         movers = moved.get(name, {}).get("cell", ())
@@ -2935,6 +2928,10 @@ def poly_domain_valid(state, p, *, xp):
 class TemplatedPolymerisation(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # Species registry (D176): it declares the rows it writes.
+    # FR-43 part 3: a conversion of its listed rows, which claims its exported and labelled rows
+    # alone (sole_rows) and whose shared rows need the registry's potential (FR-43 / D315).
+    ROW_MOVES = "conversion"
+    SHARED_ROW_POTENTIAL = True
     # FR-42 (D296): its chains are label sources, and its holds label pools (static, by class).
     LABEL_SOURCES = True
     LABEL_POOLS = True
@@ -3234,10 +3231,30 @@ class TemplatedPolymerisation(Operator):
         row, whose labels the hold carries, its cell)."""
         return tuple((r.id, r.fates[0][0], c.cell) for c, r in releases_of(declaration))
 
-    def written_species(self, declaration):
-        """Its listed rows, whose writer its half-steps are (check_writers): the registry's
-        shared-row rule reads them (species_registry.check_shared_rows; FR-43 / D315)."""
-        return tuple(s.id for s in declaration.species)
+    def written_rows(self, spec, declaration):
+        """Its listed rows at its cells and at its exported rows' nodes, whose writer its half-steps
+        are: the registry's row rules read them (species_registry.check_row_writers and
+        check_shared_rows; FR-43 / D315, part 3)."""
+        cells = dict.fromkeys(
+            e.cell
+            for e in (*declaration.pools, *declaration.chains, *declaration.degradations,
+                      *declaration.transfers, *declaration.exports)
+        )  # fmt: skip
+        nodes = (*cells, *exported_nodes(declaration))
+        return tuple((s.id, node) for s in declaration.species for node in nodes)
+
+    def sole_rows(self, spec, declaration):
+        """Its listed rows that keep it as their one writer at every node (single_writer_rows:
+        exported rows, outside degradations' monomers and labelled rows; FR-43 / D315, amendment T),
+        which the registry refuses a second writer of (check_row_writers, FR-43 part 3)."""
+        listed = {s.id for s in declaration.species}
+        reason = (
+            f"a labelled or exported row, which keeps {LAW_ID} as its one writer (FR-43 / D315; "
+            "amendment T)"
+        )
+        return tuple(
+            (name, None, reason) for name in sorted(listed & single_writer_rows(spec, declaration))
+        )
 
     def production_bound(self, spec, declaration):
         """{(species, cell): fmol/s}: the largest rate at which it makes each row (module function

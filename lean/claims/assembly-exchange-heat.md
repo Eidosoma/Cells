@@ -17,7 +17,7 @@ For entry between two nonempty compositions, the logarithm of the entry rate div
 - [CellsProofs.Chemistry.ReservoirExchange.leave_heat](../CellsProofs/Chemistry/ReservoirExchange.lean#L138)
 - [CellsProofs.Chemistry.ReservoirExchange.extinction_heat](../CellsProofs/Chemistry/ReservoirExchange.lean#L146)
 
-Direct proof subject `cells.reservoir_exchange@1`
+Direct proof subject `cells.exchange.reservoir_exchange@1`
 
 Uses [Molecule entry scales with reservoir activity and assembly size, and exit with species count](assembly-reservoir-exit.md)
 
