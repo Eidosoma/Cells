@@ -22,6 +22,10 @@ not reach the captured worlds.
 The bitwise windows (`windows`): the first window, at most 200 steps, of every world on a kept ID.
 They prove a move or a prune, not a re-expression, and depend on the route.
 
+The second set (`extra`) holds used worlds that the science set left out: the integrated ensemble's
+(finite_extracellular@3, configs/junction_finite_cluster.json), at h, h/2 and h/4, where h is its
+own step. It has its own ORIGIN and job list, and the first set's lists are not read or written.
+
 What "every recorded array" is:
 - an ionic job saves, for each window of at most WINDOW_STEPS steps, the accepted times, the
   complete state at every accepted step, every observation field, the diagnostics and the final
@@ -33,6 +37,8 @@ What "every recorded array" is:
 Actions:
   write SNAPSHOT ORIGIN      the definitions, jobs-{science,check,windows}.json and manifest.json
                              (with the admission of each definition, checked by parsing it)
+  write-extra SNAPSHOT ORIGIN   the second set alone: its definitions, jobs-extra.json and
+                             manifest.json
   ionic DEFINITION OUT       one ionic job, in this process [--window-steps N] [--max-windows N]
   shard SNAPSHOT ORIGIN OUT SET   claim and run jobs until none is left (one per CPU; capture.sh)
   finish SNAPSHOT ORIGIN OUT SET  MANIFEST.json (every file's sha256) and EXIT
@@ -75,6 +81,7 @@ IONIC = {
     "jupiter_baseline": "spatial_kinetic_cluster",
     "jupiter_pump_release": "spatial_kinetic_cluster",
 }
+EXTRA = {"finite_junction_cluster": "junction_finite_cluster"}  # The second set: world -> source.
 CLUSTER = "assembly-cluster"
 ORDER = {"assembly-cell": 10**6, CLUSTER: 10**5}  # The slowest first (the pilot's compile times).
 ASSEMBLY = {
@@ -398,6 +405,53 @@ def write(snapshot, origin):
         ),
     )
     print(f"{len(jobs)} science jobs and {len(window_jobs)} bitwise windows in {origin}")
+
+
+def write_extra(snapshot, origin):
+    """The second set alone, in a new folder: the first set's lists stay as they are."""
+    origin.mkdir(parents=True, exist_ok=False)
+    jobs, worlds = [], {}
+    for world, source in EXTRA.items():
+        raw = config(snapshot, source)
+        row = worlds[world] = dict(config=f"configs/{source}.json", kind="ionic", steps={})
+        for step, reduction in REDUCTIONS.items():
+            definition = at_step(raw, reduction)
+            path = f"extra/ionic/{world}/{step}.json"
+            write_json(origin / path, dict(name=step, definition=definition))
+            admission = admit_ionic(definition)
+            row["steps"][step] = dict(dt=definition["execution"]["dt"], **admission)
+            jobs.append(
+                dict(
+                    job=f"{world}-{step}",
+                    kind="ionic",
+                    definition=path,
+                    world=world,
+                    step=step,
+                    order=admission.get("steps", 0),
+                )
+            )
+    write_json(origin / "jobs-extra.json", sorted(jobs, key=lambda j: -j["order"]))
+    write_json(
+        origin / "manifest.json",
+        dict(
+            kind=KIND,
+            utc=utc(),
+            snapshot=snapshot_record(snapshot),
+            tool=tool_record(),
+            changed_only=["execution.dt"],
+            worlds=worlds,
+            configs_sha256={
+                f"configs/{n}.json": sha256(snapshot / f"configs/{n}.json")
+                for n in sorted(EXTRA.values())
+            },
+            files_sha256={
+                str(p.relative_to(origin)): sha256(p)
+                for p in sorted(origin.rglob("*.json"))
+                if p.name != "manifest.json"
+            },
+        ),
+    )
+    print(f"{len(jobs)} extra jobs in {origin}")
 
 
 # ---------------------------------------------------------------------------------- one ionic job
@@ -819,19 +873,19 @@ def science_rows(base, science, manifest):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="action", required=True)
-    one = sub.add_parser("write")
+    one, extra = sub.add_parser("write"), sub.add_parser("write-extra")
     two = sub.add_parser("ionic")
     two.add_argument("definition", type=Path)
     two.add_argument("out", type=Path)
     two.add_argument("--window-steps", type=int, default=WINDOW_STEPS)
     two.add_argument("--max-windows", type=int, help="stop early (a pilot)")
     three, four = sub.add_parser("shard"), sub.add_parser("finish")
-    for p in (one, three, four):
+    for p in (one, extra, three, four):
         p.add_argument("snapshot", type=Path)
         p.add_argument("origin", type=Path)
     for p in (three, four):
         p.add_argument("out", type=Path)
-        p.add_argument("set", choices=("science", "check", "windows"))
+        p.add_argument("set", choices=("science", "check", "windows", "extra"))
     three.add_argument("--cap-bytes", type=int, required=True)
     three.add_argument("--job-seconds", type=int, required=True)
     five = sub.add_parser("compare")
@@ -850,6 +904,9 @@ def main(argv=None):
         return 0 if report["identical"] else 1
     if a.action == "write":
         write(a.snapshot.resolve(), a.origin.resolve())
+        return 0
+    if a.action == "write-extra":
+        write_extra(a.snapshot.resolve(), a.origin.resolve())
         return 0
     if a.action == "ionic":
         return ionic(a.definition.resolve(), a.out.resolve(), a.window_steps, a.max_windows)

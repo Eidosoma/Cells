@@ -1,0 +1,120 @@
+[
+ {
+  "file": "docs/BETSE_VOLTAGE_GATE_CONTACT.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/BIOELECTRIC_NUMERICS.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/E02_BDF_REFINEMENT_A1.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/E02_CANDIDATE_ENGINEERING.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/E02_COMPARISON_RECORDING.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/E02_DIAGNOSTIC_OPTIMIZATION.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/E02_INTEGRATION_EVALUATION.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/E02_LOSSLESS_EVIDENCE.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/E02_REFERENCE_POLICY_A2.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/FINITE_EXTRACELLULAR_SPEC.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/PHYSICAL_IONIC_GRAPH_SPEC.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/SELECTIVE_CONTACT_NUMERICS.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/SOURCE_COUPLING_MAP.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/SOURCE_EMT_GRAPH_REFERENCE.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/SOURCE_EMT_PAIR_NUMERICS.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/SOURCE_GRAPH_CONTINUATION.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/SOURCE_GRAPH_PATHS_REFERENCE.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/SOURCE_PREPARATION_REFERENCE.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay. Old records\n> pin this page's bytes by their hash: the pinned bytes are the tag's, without this note.\n\n",
+  "why": "names files of the optional batch"
+ },
+ {
+  "file": "docs/EMT_REFERENCE.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay.\n\n",
+  "after_note": true,
+  "why": "names files of the optional batch; it already has a note"
+ },
+ {
+  "file": "docs/VOLTAGE_GATED_MEMBRANE.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay.\n\n",
+  "after_note": true,
+  "why": "names files of the optional batch; it already has a note"
+ },
+ {
+  "file": "validation/betse/README.md",
+  "note": "> **Legacy cleanup's optional batch (D386).** The references, tests and tools that this page names\n> under `tests/`, `scripts/` and `validation/` left the tree with the batch; the tag\n> `pre-cleanup-2026-11-25` keeps them. The page, its reports and its frozen results stay.\n\n",
+  "after_note": true,
+  "why": "names files of the optional batch; it already has a note"
+ },
+ {
+  "file": "docs/MULTISPECIES_MEMBRANE_SPEC.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash; the scripts that read the pin are the batch's"
+ },
+ {
+  "file": "docs/SELECTIVE_CONTACT_SPEC.md",
+  "note": "> **Legacy cleanup (25 November 2026, D386).** The models, configurations, commands, tests and tools\n> that this page names for the older families left the tree, and the tag `pre-cleanup-2026-11-25` keeps\n> them. Old records pin this page's bytes by their hash: the pinned bytes are the tag's, without\n> this note.\n\n",
+  "why": "pinned by hash; the scripts that read the pin are the batch's"
+ }
+]
