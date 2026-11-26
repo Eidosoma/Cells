@@ -13462,3 +13462,37 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - It gets its own round after FR-65, and every existing field must stay bit for bit. Crossrev's and G1's records for the co-writer world
     are renewed.
   - The rehearsal and the registration tag wait for it.
+
+## D398: FR-65 is landed, with the small fixes stacked; tier 3's record refrozen for four files
+
+2026-11-26, written at 19:14 UTC.
+
+- **Landed** at ae349721 (tag `fr65-landed-2026-11-26`), from e69b618f.
+  - e69b618f adds only the design note's section 10 to the gated head b4372df9, which is main 4be34f74 merged with `small-fixes-20261126`
+    (c574cc41).
+  - The landing's trial ran the twelve changed tier-1 and tier-2 files with the guard set: 649 passed, 1 skipped.
+- **FR-65** (D375): turnover reads the current volume and its masks beside water, partition and insertion.
+  - The occupant hook, its tables and the founder rule move to the definition.
+  - `scheduled_cell_replacement@2` gives no hook, so the volume rule refuses it beside turnover.
+  - Exactly the design note's 19 of 5,559 sequences newly parse, and nothing that parsed before is lost.
+- **The small fixes** (D393, D394):
+  - FR-47's and Protocol D v2's run-record status follows D373 and D393, and the GPU refusal message follows D380.
+  - The assembly command-line and pool tests run under `CELLS_OUTPUT_ROOT`, with the guard still tested.
+  - The native environment test checks its import in a fresh process.
+  - The unstimulated diagnostic compares at a stated tolerance.
+  - Of the ten failures D393 found, these settle the last seven. The other three left with the BETSE references (D397).
+- **The D148 round** on b4372df9, against 4be34f74:
+  - crossrev: 11 of 11 sets identical;
+  - G1: 113 of 113, identical for base and head;
+  - FR's set passes (quick 9, windowed T and R);
+  - the judges' derivative programs: 257 files identical;
+  - turnover's pair check: 24 of 24 program texts, constants and bindings identical;
+  - tiers 1 and 2: 516 of 520 files as recorded. The other four are the small fixes' files, which now pass.
+  - The small fixes' text changes surfaced in none of the compared sets.
+- **Tier 3, run on a trial merge onto 4f4a4c34** (frozen as `snap-trial-67e96e21`; its worktree is kept because the record cites it):
+  - FR-65's three files pass: shared inventory, 9 tests in 380.0 s; partition, 16 in 493.7 s; insertion, 13 in 448.9 s;
+  - the two slimmed frozen=composite files pass on this code: 258.5 and 538.5 s;
+  - `test_unstimulated_diagnostic.py`, which the slimming moved to tier 3, passes, 7 of 7.
+- **`tests/tier3_record.json` is refrozen for those four files** (D398 in its `refrozen` header). It was built from main's runs plus the two new run
+  folders under `/mnt/workspaces/Cells/tier3-records/fr65-20261126/`, and changes nothing else.
+- **Next:** the per-event counts fix's D148 round starts on main ae349721.
