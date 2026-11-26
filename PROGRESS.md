@@ -14,10 +14,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
-- **26 November, evening (D395): FR-43 part 3's co-writers engine build is landed** (4be34f74, tag
-  `fr43-part3-cowriters-landed-2026-11-26`): rules for which writers may share a row, with a clean D148 round. The registered
-  comparison is next (the judge's rulings are made, D394; the format sample comes first). FR-65 runs its round now, with
-  the small fixes stacked (D393). The BETSE file removal (D394) follows the test slimming's landing; FR-45's build starts next.
+- **26 November, evening: four landings.**
+  - FR-43 part 3's co-writers engine build (D395, 4be34f74).
+  - The test slimming, with tier 3 now weekly (D396, 033bde25).
+  - The BETSE file removal, 331 files (D397, fc94f893).
+  - FR-65, turnover beside a changing volume, with the small fixes stacked (D398, ae349721).
+  - Next:
+    - the per-event counts in `integer_unit_population@1` (D397), whose D148 round is running;
+    - then the co-writers' rehearsal, the final format sample, the judge's tag and the registered comparison;
+    - FR-45's rulings before its build, FR-64's design note, and the docs refresh.
 - **26 November (D390): the legacy cleanup is landed** (805c48a4; records 67c0de27). One full gate, every difference attributed;
   tier 3 first failed on ID-move defects, fixed. Next: FR-43 part 3's co-writers (engine build, then the registered
   comparison as tagged), FR-65 alongside, the heavy tests slimmed, tier 3 weekly. The viewer is on hold today.
@@ -55,8 +60,9 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     (with amendment 6, dd21509b) settles an independent audit's findings (D383). The references are tagged
     (`liquid-routing-references-2026-11-25`, D384), and the line holds. The wash retires only after FR-49's World B and C1 and FR-45's W2 and W7 have run, or those runs are
     pinned to an earlier snapshot.
-  - **FR-65** (high, part of FR-43; D365, D375): turnover beside a changing volume, with a lumen. Note `fr65-design`
-    (df473a02); about 3.1 to 4.45 agent-days for the first build, 2 to 2.5 more for the volume-reading step.
+  - **FR-65** (high, part of FR-43; D365, D375, D398): turnover beside a changing volume, with a lumen. The first build is
+    landed (ae349721). Next: the coupling's step (note §3.8, about 2 to 2.5 agent-days); the water worlds' run view (§9.2)
+    goes to water's owner.
   - **FR-64** (normal; D356, D361): one declared voltage shift on a channel population, with FR-63 (normal; D353)
     re-formed as a pH shift on it. Note `docs/VOLTAGE_SHIFT_DESIGN.md` (377a1b34, branch `fr64-design`); the build
     follows FR-51's follow-up and the rename.
