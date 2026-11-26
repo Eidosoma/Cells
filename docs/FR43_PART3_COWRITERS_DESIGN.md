@@ -695,3 +695,23 @@ world stays in tier 2 under §5.2's 80 s rule; the producer's, the gene unit's a
 
 **What stays for others:** §6.3's two items are FR-65's (the lead's order: this build lands first); §5.3's comparison
 is registered (`fr43-part3-cowriters-criteria-2026-11-25`) and follows the landing.
+
+**The trace's counts (26 November 2026, branch `fr43-trace-counts`; the user's choice (1), the lead's terms).** The
+registration's trace check (CRITERIA.md §3.1, counts against the channel) needs the engine's own counts after each
+event, and the trace held none. So the population records them: `integer_trace_counts` [site, trace slot, unit state],
+int64, -1 where no event is recorded, beside each recorded event's time, channel and pools.
+- **What it holds.** The value written is the counts the event loop carries on after the event (`counts_new`, which
+  becomes the next segment's counts and the state's `integer_counts`). It is never formed again from the channel's
+  declared jump. So a trace whose counts break the declared jump shows an engine that applied another one.
+- **The plant.** `test_the_trace_records_the_counts_the_loop_carries` has two rows. The declared engine's record keeps
+  the jumps and every row's counts. A planted one, assemble's change zeroed in the bound layout (a wrong jump that
+  keeps the subunits), records the counts it carries, which break the declared jump.
+- **In place under @1** (the lead, after MODULE_SYSTEM §2.3): no declaration key and no meaning changes, and no rate,
+  check, ledger or draw reads the field. It is a write-only record sized by `trace_events`.
+- **What changes.** The state layout gains one owned field, zero-size at `trace_events` = 0 but still a leaf. So the
+  program text changes for every world of the operator, not only those with a trace. Checkpoints saved before it do
+  not load.
+- **The round** waits for FR-65's landing (the lead assigns lanes): every existing field bit for bit, part 3's judged
+  traces and statistics included. Crossrev's co-writer world's nine files are superseded, not added (the 23 November
+  renewal's pattern), and its G1 save is renewed.
+- **The registration's exporter copies the field and derives nothing** (validation/fr43_part3_cowriters).
