@@ -13266,3 +13266,22 @@ It is a port check: it shows that the live engine computes legacy's written equa
   result (D382).
 - **FR-64:** its build was to follow FR-51's follow-up and the rename (D361). Both are now done, so FR-64 (a declared voltage shift on a channel population, with FR-63 re-formed as a pH shift) is free to
   build at normal priority.
+
+## D392: an external review of the landing, checked; a correction of D390's test count
+
+2026-11-26, written at 15:56 UTC. A review of main at c52d0998, relayed by the user and checked with the adviser.
+
+- **It agrees with the record** on the landing, the re-expression's two parts, the rename's step 13, what tier 3 caught, and the gate's scope rule.
+- **Where it was wrong, by the record:**
+  - The three loose ends it puts under fix (A) (D273) are two of step 0's charge rule (D387: a face with no charged conductance beside a conducting patch, admitted at a step it cannot take; the vector and
+    batch programs of the eight changed checked_step programs, not rerun) and one of fix (A)'s (the structure-free step of `validation/tissue/excitable_probe.py`).
+  - 1,704 files are 1,693 by the deletion and 11 by the retirements' commit; the 193 retirements are test rows, not files.
+  - FR's renewed baselines are read by three gate scripts (`fr_landing_holder.sh`, `fr_landing_set.sh`, `cache_qualify.sh`); no test reads them.
+  - It predates D391.
+- **Correction of D390, dated:** the 11,131 tests that collect is the count before the ID move; at the landed head 11,144 collect (the final gate's ID step).
+- **Adopted:**
+  - The folder of FR's renewed baselines is marked load-bearing, and the baselines move to a dated permanent folder (as D307's were), with the three scripts repointed, in the next landing that touches
+    `scripts/gates`.
+  - Step 0's two follow-ups (the neutral-face gap, and a vector and batch-window check of the changed programs) come before any multi-cell store run of record.
+  - The calcium laws re-expressed in Part 2 are ported and regression-sealed, not calibrated against data (D389, D390).
+- **To the user:** the order of the queue, and any new requests, which the user logs.
