@@ -6,7 +6,7 @@
 export const LAWS_FORMAT = "cells.visualizer.laws@2";
 /** The manifest this view reads, and the one major of it it knows (the engine's page docs/library/DECLARATIONS_FORMAT.md). */
 export const MANIFEST = "cells.declarations";
-export const MANIFEST_MAJOR = 2;
+export const MANIFEST_MAJOR = 3;
 /** Ids the page uses for this view's parts: a piece or a model, by its declared id. */
 export const PREFIX = "laws:";
 export const WHERE = [
@@ -15,7 +15,22 @@ export const WHERE = [
 ];
 /** A model with no rows, by the manifest's type: drawn as a closed case on the plinth. */
 export const FAMILY = "family";
-const ID = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)?@[0-9]+$/;
+const ID = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*@[0-9]+$/;
+
+// Only the engine's published move table translates old identifiers into current ones.
+export function canonicalAddress(id, aliases = {}) {
+  if (typeof id !== "string") return id;
+  const move = name => Object.hasOwn(aliases, name) ? aliases[name] : name;
+  if (id.startsWith("op.")) return "op." + move(id.slice(3));
+  if (!id.startsWith(PREFIX)) return move(id);
+  const raw = id.slice(PREFIX.length);
+  if (!raw.includes("/")) return PREFIX + move(raw);
+  try {
+    const [type, owner, ...rest] = raw.split("/").map(decodeURIComponent);
+    if (type !== "field" && type !== "bridge") return id;
+    return PREFIX + [type, move(owner), ...rest].map(encodeURIComponent).join("/");
+  } catch { return id; }
+}
 
 export const pageId = (id) => (id ? PREFIX + id : null);
 export const engineId = (id) => (typeof id === "string" && id.startsWith(PREFIX) ? id.slice(PREFIX.length) : null);
@@ -64,6 +79,7 @@ export function problemsOf(raw) {
   const problems = [];
   const manifest = raw.stamp?.manifest;
   if (majorOf(manifest?.kind) !== MANIFEST_MAJOR) problems.push(`read from ${manifest?.kind}, not ${MANIFEST}@${MANIFEST_MAJOR}`);
+  if (raw.viewer_ids?.revision !== manifest?.revision) problems.push("the identifier moves and manifest have different revisions");
   if (manifest?.dirty !== false) problems.push("read from a manifest whose tree was not clean");
   if (!/^[0-9a-f]{40}$/.test(String(manifest?.revision))) problems.push("the manifest's revision is not a full Git revision");
   const families = new Set((raw.families || []).map((family) => family.id));
@@ -96,7 +112,11 @@ export class Library {
     this.familyById = new Map(raw.families.map((family) => [family.id, family]));
     this.shelfById = new Map((raw.shelves || []).map((shelf) => [shelf.id, shelf]));
     this.notExtracted = new Set((raw.not_extracted || []).map((item) => `${item.interface}|${item.key}`));
-    this.legacy = new Map((raw.legacy || []).map((item) => [namespaced(item.id), item]));
+    this.aliases = raw.viewer_ids?.aliases || {};
+    const historical = raw.viewer_ids?.historical;
+    const active = new Set(raw.models.map(model => model.id));
+    this.legacy = new Map((historical?.legacy || []).filter(id => !active.has(this.resolve(id)))
+      .map(id => [namespaced(id), {id, revision: historical.revision}]));
     // Pieces: the manifest's, as declared, then those a design note names. Both spellings of an ID find one.
     this.pieces = raw.pieces.map((piece) => ({ ...piece, kind: piece.declared ? interfaceWords(piece.declared) : piece.kind }));
     this.byKey = new Map(this.pieces.map((piece) => [namespaced(piece.id), piece]));
@@ -158,13 +178,15 @@ export class Library {
     return out;
   }
 
-  /** A piece by either spelling of its ID. */
+  resolve(id) { return canonicalAddress(id, this.aliases); }
+
+  /** A piece by its current ID or an exact historical bookmark. */
   piece(id) {
-    return this.byKey.get(namespaced(id)) || null;
+    return this.byKey.get(namespaced(this.resolve(id))) || null;
   }
 
   frame(id) {
-    return this.frameByKey.get(namespaced(id)) || null;
+    return this.frameByKey.get(namespaced(this.resolve(id))) || null;
   }
 
   /** A legacy model ID, as the manifest lists it ({ id, legacy, piece }), or null. */
@@ -174,7 +196,7 @@ export class Library {
 
   /** A row of a model with no entry of its own (a fuel kind), or null. */
   rowOf(id) {
-    return this.rowOnly.get(namespaced(id)) || null;
+    return this.rowOnly.get(namespaced(this.resolve(id))) || null;
   }
 
   /** The models with rows, drawn as racks: a model family with rows of its own among them. */

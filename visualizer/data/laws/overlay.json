@@ -1,6 +1,6 @@
 {
   "format": "cells.visualizer.laws_overlay@2",
-  "as_of": "2026-11-18",
+  "as_of": "2026-11-26",
   "note": "The viewer's own layer of the Laws library (schema/LAWS_LIBRARY.md). What a piece is, which model holds it and where it is declared come from the engine's declarations (data/engine/declarations.json) alone. This file holds only how the wall shelves the declared pieces (by interface, an operator by its parts of the step, and a model family's own laws and operators each on a shelf of their own, since they are not the inner model's laws nor the composite's operators), the models' short names on the picture and the Engine view's boxes for them, and the laws that design notes name and the declarations do not list. Every word here is the viewer's.",
   "shelves": [
     { "id": "laws", "label": "Laws of the inner model", "band": 0 },
@@ -16,6 +16,9 @@
     { "id": "route", "label": "Route laws", "short": "Route", "shelf": "laws", "match": { "piece": "law", "interface": "cells.route_law@1" } },
     { "id": "junction", "label": "Junction laws", "short": "Junction", "shelf": "laws", "match": { "piece": "law", "interface": "cells.junction_law@1" } },
     { "id": "binding", "label": "Binding laws", "short": "Binding", "shelf": "laws", "match": { "piece": "law", "interface": "cells.binding_law@1" } },
+    {"id": "assembly", "label": "Assembly geometry & events", "short": "Assembly", "shelf": "family-laws", "description": "Vesicle geometry, rupture hazards, representations and structural observables.", "match": {"piece": "law", "interfaces": ["cells.assembly_geometry@1", "cells.assembly_hazard@1", "cells.assembly_observable@1", "cells.assembly_representation@1", "cells.population_structure@1"]}},
+    {"id": "reaction", "label": "Reactions & free energy", "short": "Reaction & energy", "shelf": "family-laws", "description": "Reactions, exchange and contributions to free energy.", "match": {"piece": "law", "interfaces": ["cells.reaction_law@1", "cells.free_energy_term@1", "cells.exchange_law@1"]}},
+    {"id": "regulation", "label": "Regulation & rate factors", "short": "Regulation", "shelf": "family-laws", "description": "Laws that modify a rate, block a channel or scale a transfer.", "match": {"piece": "law", "interfaces": ["cells.rate_factor_law@1", "cells.rate_factor_law@2", "cells.transfer_factor_law@1", "cells.channel_block_law@1"]}},
     { "id": "law", "label": "Laws of a model family", "short": "Family laws", "shelf": "family-laws", "match": { "piece": "law" } },
     { "id": "kind", "label": "Kinds", "short": "Kinds", "shelf": "kinds", "match": { "piece": "kind", "interface": "cells.kind@1" } },
     { "id": "split", "label": "Operators with a split part", "short": "Split", "shelf": "operators", "match": { "piece": "operator", "interface": "cells.operator@1", "parts": ["split"] } },
@@ -23,7 +26,7 @@
     { "id": "event", "label": "Operators in the event map", "short": "Event", "shelf": "operators", "match": { "piece": "operator", "interface": "cells.operator@1", "parts": ["event"] } },
     { "id": "process", "label": "Operators with an in-step process", "short": "Process", "shelf": "operators", "match": { "piece": "operator", "interface": "cells.operator@1", "parts": ["process"] } },
     { "id": "no-part", "label": "Operators with no part of the step", "short": "No part", "shelf": "operators", "match": { "piece": "operator", "interface": "cells.operator@1", "parts": [] } },
-    { "id": "operator", "label": "Operators of a model family", "short": "Family operators", "shelf": "family-operators", "match": { "piece": "operator" } },
+    { "id": "operator", "label": "Operators of a model family", "short": "Assembly & lineage", "shelf": "family-operators", "match": { "piece": "operator" } },
     { "id": "design-channel", "label": "Channel laws named in a design note", "short": "Channel", "shelf": "design" },
     { "id": "design-cycle", "label": "Cycle laws named in a design note", "short": "Cycle", "shelf": "design" },
     { "id": "design-junction", "label": "A junction law named in a design note", "short": "Junction", "shelf": "design" },
@@ -31,25 +34,25 @@
     { "id": "design-factor", "label": "A factor named in a design note", "short": "Factor", "shelf": "design" }
   ],
   "models": {
-    "resolved_pump_tissue@3": { "short": "@3", "boxes": ["models.pump_tissue", "models.modular"] },
-    "resolved_pump_composite@1": { "short": "composite", "boxes": ["models.composite"] },
-    "resolved_pump_water@1": { "short": "water@1", "boxes": ["models.water"] },
-    "resolved_pump_water@2": { "short": "water@2", "boxes": ["models.water"] },
-    "resolved_pump_replacement@1": { "short": "replacement@1", "boxes": ["models.replacement"] }
+    "cells.model.resolved_pump_tissue@3": { "short": "@3", "boxes": ["models.pump_tissue", "models.modular"] },
+    "cells.model.resolved_pump_composite@1": { "short": "composite", "boxes": ["models.composite"] },
+    "cells.model.resolved_pump_water@1": { "short": "water@1", "boxes": ["models.water"] },
+    "cells.model.resolved_pump_water@2": { "short": "water@2", "boxes": ["models.water"] },
+    "cells.model.resolved_pump_replacement@1": { "short": "replacement@1", "boxes": ["models.replacement"] }
   },
   "designed": [
-    { "id": "junction_ungated@1", "family": "design-junction", "kind": "junction law", "named_in": [{ "path": "docs/EXCITABLE_TISSUE_DESIGN.md", "section": "3.3 The laws (new IDs, mechanism names, cited)", "line": 332 }] },
-    { "id": "fast_sodium_m3hj@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/EXCITABLE_TISSUE_DESIGN.md", "section": "3.3 The laws (new IDs, mechanism names, cited)", "line": 333 }, { "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 168 }] },
-    { "id": "l_type_calcium_cdi@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/EXCITABLE_TISSUE_DESIGN.md", "section": "3.3 The laws (new IDs, mechanism names, cited)", "line": 334 }, { "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 171 }] },
-    { "id": "transient_outward_potassium@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/EXCITABLE_TISSUE_DESIGN.md", "section": "3.3 The laws (new IDs, mechanism names, cited): only if needed", "line": 335 }, { "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 170 }] },
-    { "id": "late_sodium_mh@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 169 }] },
-    { "id": "rapid_delayed_rectifier_potassium@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 172 }] },
-    { "id": "slow_delayed_rectifier_potassium@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 173 }] },
-    { "id": "inward_rectifier_potassium@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 174 }] },
-    { "id": "potassium_instantaneous_factor@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 175 }] },
-    { "id": "sodium_calcium_exchange_cycle@1", "family": "design-cycle", "kind": "cycle law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 179 }] },
-    { "id": "sodium_potassium_pump_cycle@1", "family": "design-cycle", "kind": "cycle law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 180 }] },
-    { "id": "graded_sr_calcium_release@1", "family": "design-release", "kind": "release law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 181 }] },
-    { "id": "calcium_triggered_phosphorylation_trapping@1", "family": "design-factor", "kind": "factor", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 185 }] }
+    { "id": "junction_ungated@1", "family": "design-junction", "kind": "junction law", "named_in": [{ "path": "docs/EXCITABLE_TISSUE_DESIGN.md", "section": "3.3 The laws (new IDs, mechanism names, cited)", "line": 335 }] },
+    { "id": "fast_sodium_m3hj@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/EXCITABLE_TISSUE_DESIGN.md", "section": "3.3 The laws (new IDs, mechanism names, cited)", "line": 336 }, { "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 191 }] },
+    { "id": "l_type_calcium_cdi@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/EXCITABLE_TISSUE_DESIGN.md", "section": "3.3 The laws (new IDs, mechanism names, cited)", "line": 337 }, { "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 194 }] },
+    { "id": "transient_outward_potassium@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/EXCITABLE_TISSUE_DESIGN.md", "section": "3.3 The laws (new IDs, mechanism names, cited): only if needed", "line": 338 }, { "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 193 }] },
+    { "id": "late_sodium_mh@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 192 }] },
+    { "id": "rapid_delayed_rectifier_potassium@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 195 }] },
+    { "id": "slow_delayed_rectifier_potassium@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 196 }] },
+    { "id": "inward_rectifier_potassium@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 197 }] },
+    { "id": "potassium_instantaneous_factor@1", "family": "design-channel", "kind": "channel law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 198 }] },
+    { "id": "sodium_calcium_exchange_cycle@1", "family": "design-cycle", "kind": "cycle law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 202 }] },
+    { "id": "sodium_potassium_pump_cycle@1", "family": "design-cycle", "kind": "cycle law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 203 }] },
+    { "id": "graded_sr_calcium_release@1", "family": "design-release", "kind": "release law", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 204 }] },
+    { "id": "calcium_triggered_phosphorylation_trapping@1", "family": "design-factor", "kind": "factor", "named_in": [{ "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md", "section": "2. The law set for a human ventricular myocyte", "line": 208 }] }
   ]
 }

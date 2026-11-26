@@ -7,7 +7,7 @@ What comes from the checkout (and so cannot drift from it):
   * the plan's gates and the shared-state entities.
 
 What comes from the engine's declarations manifest (data/engine/declarations.json,
-cells.declarations@2), written by the engine at the checkout's own revision from a clean tree
+cells.declarations@3), written by the engine at the checkout's own revision from a clean tree
 (a manifest of another major or revision, or from a tree with changes, is refused):
   * every registered operator of the composite model, with the declarations of its
     contract (what it requires, writes, provides, reads and conflicts with);
@@ -176,7 +176,7 @@ def join_names(names, limit=6):
     return shown + (f" and {len(names) - limit} more" if len(names) > limit else "")
 
 
-DECLARATIONS_KIND = "cells.declarations@2"
+DECLARATIONS_KIND = "cells.declarations@3"
 DECLARATIONS_FILE = HERE.parent / "data" / "engine" / "declarations.json"
 
 
@@ -226,6 +226,8 @@ class Build:
         self.repo = repo
         self.declarations_path = Path(declarations) if declarations else DECLARATIONS_FILE
         self._declarations = None
+        self.viewer_ids = json.loads((HERE.parent / "data/engine/viewer-ids.json").read_text())
+        self.aliases = self.viewer_ids["aliases"]
         self.overlay = overlay
         self.protein_data = proteins  # (snapshot, overlay, folder of species atlases) of the protein atlas, or None
         self.proteins = None
@@ -281,6 +283,8 @@ class Build:
         """The engine's manifest, read once, at the checkout's own revision."""
         if self._declarations is None:
             self._declarations = read_declarations(self.declarations_path, git(self.repo, "rev-parse", "HEAD").strip())
+        if self.viewer_ids["revision"] != self._declarations["revision"]:
+            raise SystemExit("The identifier moves and declarations are from different revisions.")
         return self._declarations
 
     def is_legacy(self, path):
@@ -536,7 +540,6 @@ class Build:
         declared = {}
         for model in self.declarations["models"]:
             declared[model["declared_id"]] = declared[model["id"]] = model["declared_id"]
-        self.legacy_models = {item["id"] for item in self.declarations["legacy"]}
         placed, drawn = defaultdict(list), set()
         self.undeclared_models = []  # (part, model ID, file)
         for part, paths in matched.items():
@@ -553,8 +556,7 @@ class Build:
                     drawn.add(declared[model])
                 elif isinstance(model, str):
                     self.undeclared_models.append((part, model, path))
-                    if model not in self.legacy_models:
-                        self.warnings.append(f"{path} names model {model}, which the engine's declarations list neither as active nor among the older families")
+                    self.warnings.append(f"{path} names model {model} outside the active registry")
         for model in self.declarations["models"]:
             if model["declared_id"] in drawn:
                 continue
@@ -590,10 +592,12 @@ class Build:
         placed = self.place_models(matched)
         for component, _ in compiled:
             paths = matched.get(component["id"], [])
-            if not paths and held.get(component["id"]):
+            patterns = component.get("match", [])
+            retired = bool(patterns) and not held.get(component["id"]) and all(self.is_legacy(pattern) for pattern in patterns)
+            if not paths and (retired or held.get(component["id"])):
                 # Every file of this part is held legacy code: the part is left out of the picture.
                 rule = self.legacy_rule
-                self.leave_out(component["id"], "component", component["label"], {"since": rule["since"], "says": component["label"], "reason": rule["reason"]}, layer=component["layer"], files=len(held[component["id"]]))
+                self.leave_out(component["id"], "component", component["label"], {"since": rule["since"], "says": component["label"], "reason": "its source was removed from the engine" if retired else rule["reason"]}, layer=component["layer"], files=len(held.get(component["id"], [])))
                 continue
             python = [path for path in paths if path.endswith(".py")]
             lines = sum(count_lines(self.repo / path) for path in python)
@@ -621,11 +625,7 @@ class Build:
                     ["Read by this map", f"{manifest['kind']}, written at {manifest['revision'][:8]}"],
                     ["Laws, kinds and operators", f"{pieces['law']}, {pieces['kind']} and {pieces['operator']}"],
                     ["Active models", f"{len(manifest['models'])}"],
-                    ["Older model identifiers, by ID only", f"{len(manifest['legacy'])}"],
                 ]
-            older = sorted({model for part, model, _ in self.undeclared_models if part == component["id"] and model in self.legacy_models})
-            if older:
-                facts.append(["Older families' models, which the engine lists by ID only", ", ".join(older)])
             # The laws, kinds and family operators the engine declares from this part's files (its manifest's
             # module_path). A family operator is an operator of an interface other than the composite's.
             declared = [piece for piece in self.declarations["pieces"] if is_drawn_on_its_part(piece) and piece.get("module_path") in paths]
@@ -853,6 +853,11 @@ class Build:
         # One found only here is named in a remark: its link on the page opens once that checkout has it.
         for entity in self.entities.values():
             for source in entity.get("sources", []):
+                if source.get("revision"):
+                    result = subprocess.run(["git", "-C", str(self.repo), "cat-file", "-e", f"{source['revision']}:{source['path']}"], capture_output=True)
+                    if result.returncode:
+                        self.warnings.append(f"{entity['id']}: missing historical source {source['path']} at {source['revision']}")
+                    continue
                 if source["path"] in tracked:
                     continue
                 if own_file(source["path"]):
@@ -918,7 +923,8 @@ def main():
         arguments.species, arguments.cells, arguments.models, {item["id"]: item["scale"] for item in overlay["capabilities"]}, hidden,
         tracked=build.files, own=HERE.parent, parts={item["id"]: item["part"] for item in overlay["capabilities"]},
         # A modelled entry names a model the engine declares with its structure (schema/ENTRIES.md).
-        declared={name for model in build.declarations["models"] if model.get("rows") for name in (model["declared_id"], model["id"])},
+        declared={name for model in build.declarations["models"] if model.get("rows")
+                  for name in [model["id"], *(old for old, new in build.aliases.items() if new == model["id"])]},
     )
     for model in models:
         for run in model.get("runs", []):
@@ -1015,7 +1021,6 @@ def main():
                 "revision": build.declarations["revision"],
                 "pieces": dict(Counter(piece["piece"] for piece in build.declarations["pieces"])),
                 "models": len(build.declarations["models"]),
-                "legacy_models": len(build.declarations["legacy"]),
             },
             "counts": {
                 **coverage,
@@ -1058,9 +1063,9 @@ def main():
     composite = sum(1 for piece in declared["pieces"] if piece.get("piece") == "operator" and piece.get("interface") == "cells.operator@1")
     family = sum(1 for piece in declared["pieces"] if piece.get("piece") == "operator") - composite
     print(f"read from the engine's declarations ({declared['kind']} at {declared['revision'][:8]}): {composite} composite operators, {family} family operators, "
-          f"{len(declared['models'])} active models, {len(declared['legacy'])} legacy model IDs")
+          f"{len(declared['models'])} active models")
     for part, model, path in build.undeclared_models:
-        print(f"  not drawn as a declared model: {model} ({path}, in {part}), which the manifest {'lists as legacy' if model in {item['id'] for item in declared['legacy']} else 'does not list'}")
+        print(f"  not drawn as a declared model: {model} ({path}, in {part}), outside the active registry")
     if build.proteins:
         stamp = build.proteins["stamp"]
         print(f"protein inventory of {stamp['created']} (engine read at {stamp['read_at']}): {stamp['records']} law records, found {stamp['found']}")

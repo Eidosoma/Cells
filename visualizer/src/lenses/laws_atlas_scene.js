@@ -13,6 +13,7 @@ const poses = {
   junction: [-6.55, 0.25],
   binding: [-5.45, 2.55],
   law: [-2.7, 3.2],
+  assembly: [-2.7, 3.2], reaction: [-3.8, 5.4], regulation: [-7.7, 3.6],
   kind: [-0.85, -0.85],
   split: [0.55, -3.8],
   "event-split": [3.25, -3.3],

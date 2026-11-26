@@ -5,7 +5,7 @@
   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
  },
  "map": {
-  "revision": "cbe54031d0f3a98c1e846fe48259eab6c60b4d59"
+  "revision": "4f4a4c348bd2e8e750c67051942db770a796790b"
  },
  "on_main": [
   "05a8d1934e785ea9a575fbe5673569f589bdbc42",
@@ -18,6 +18,7 @@
   "3e39bcc55206832d8dbd75aae7079883bf6a21a1",
   "407ba164830d29954882c4040f8a6d422fa8f8f2",
   "4465b48dd36e095b4cd4fdf923a6c767b845b4ae",
+  "4f4a4c348bd2e8e750c67051942db770a796790b",
   "537787e35a423abd2a020ba82c3317798b38ee52",
   "555d87716178774abf9725129877cbe2b2b6d67d",
   "5ab4326abbbed07f025bc5e9d1f590f19fbafd50",
@@ -40,7 +41,6 @@
   "acd4ead96a3e96af70adc7387ec1a02991dff543",
   "ba8694f87cc2b0831ce45f51eb726235f6d05cc4",
   "ca70d4a68456559e37e4c86218203d4c2fe62839",
-  "cbe54031d0f3a98c1e846fe48259eab6c60b4d59",
   "cecfb13dc9b9c037cc1b8d88773674e69d811f86",
   "cfbe7122ede8af49b6362d8ebb122f0b5287844a",
   "e8ded038e23426adfd348930794f480567e3506d",
@@ -126,7 +126,7 @@
    "part": "laws.inventory_coupling",
    "path": "docs/DECISIONS.md",
    "where": "D155 and D156",
-   "revision": "cbe54031d0f3a98c1e846fe48259eab6c60b4d59",
+   "revision": "4f4a4c348bd2e8e750c67051942db770a796790b",
    "missing": "place"
   },
   {
@@ -138,11 +138,19 @@
    "missing": "place"
   },
   {
+   "card": "fr7",
+   "part": "fr.abundance_to_function",
+   "path": "validation/fr7/loop_mapper.py",
+   "where": "The composite cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, holding:",
+   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
+   "missing": "place"
+  },
+  {
    "card": "parity",
    "part": "exp.parity",
    "path": "PROGRESS.md",
    "where": "Plan table",
-   "revision": "cbe54031d0f3a98c1e846fe48259eab6c60b4d59",
+   "revision": "4f4a4c348bd2e8e750c67051942db770a796790b",
    "missing": "place"
   },
   {

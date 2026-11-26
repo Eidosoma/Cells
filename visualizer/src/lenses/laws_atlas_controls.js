@@ -4,6 +4,7 @@ import { displayName, modelName, relationLabel } from "./laws_connections.js";
 import { NEIGHBOURS_PER_LAYER } from "./laws_atlas_scene.js";
 
 export function control(label, key, options, active, change) {
+  const option = ([value, text]) => h("option", { value, selected: value === active }, text);
   const select = h(
     "select",
     {
@@ -18,7 +19,7 @@ export function control(label, key, options, active, change) {
         (folded ? folded.querySelector("summary") : next)?.focus({ preventScroll: true });
       },
     },
-    options.map(([value, text]) => h("option", { value, selected: value === active }, text)),
+    options.map(item => Array.isArray(item[1]) ? h("optgroup", {label:item[0]}, item[1].map(option)) : option(item)),
   );
   return h("label", { class: "laws-control" }, h("span", {}, label), select);
 }

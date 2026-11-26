@@ -32,7 +32,7 @@ from pathlib import Path
 
 from .static_eval import Unresolved, plain
 
-IDENTIFIER = re.compile(r"\b[A-Za-z][A-Za-z0-9_]*@\d+")
+IDENTIFIER = re.compile(r"\b[A-Za-z][A-Za-z0-9_.]*@\d+")
 PDB = re.compile(r"PDB (\d[A-Z0-9]{3})")
 GROUP = "proteins"
 SPECIES_FORMAT = "cells.visualizer.species_atlas@2"
@@ -116,7 +116,9 @@ class Atlas:
         self.engine = sorted(path for path in build.files if path.startswith("src/cells/") and path.endswith(".py"))
         self.texts = {}
         self.module_ids = {}
-        self.renamed = {}
+        self.archive_revision = snapshot["inventory"]["read_at_revision"]
+        self.archived = set()
+        self.pieces = {piece["id"]: piece for piece in build.declarations["pieces"]}
         self.mapping = {item["inventory"]: item for item in overlay["mappings"]}
         self.evidence = {item["id"]: item for item in overlay["evidence"]}
         self.sites = {item["id"]: item for item in overlay["sites"]}
@@ -155,6 +157,9 @@ class Atlas:
     def file_of(self, law):
         """The file a law record names, where it stands now: a file that a move of the engine's source
         moved is found at its new place through the engine's own path table (D188), and said so."""
+        identifier = self.build.aliases.get(law.get("id"), law.get("id"))
+        if identifier in self.pieces:
+            return self.pieces[identifier]["module_path"]
         path = self.build.current_path(law["file"])
         if path != law["file"]:
             self.moved[law["file"]] = path
@@ -164,35 +169,27 @@ class Atlas:
         """Where each law record's identifier is found in the checkout being read."""
         tracked = set(self.engine)
         found = Counter()
-        self.known_ids = set()
         self.moved = {}  # a file the inventory names -> where it stands now, for the files a move moved
         self.in_legacy = {}  # unit id -> its law records whose files are held legacy code
-        for path in self.engine:
-            self.known_ids |= set(IDENTIFIER.findall(self.text(path)))
-        for law in self.snapshot["laws"]:
-            self.known_ids |= self.ids_defined_in(self.file_of(law)) if self.file_of(law) in tracked else set()
         for law in self.snapshot["laws"]:
             name = law.get("id") or law.get("identity", "")[:60]
             file = self.file_of(law)
-            if file not in tracked:
-                found["missing"] += 1
-                self.build.warnings.append(f"protein inventory: {name} names {law['file']}, which is not tracked any more")
-                continue
-            if not law.get("id"):
-                function = re.match(r"(\w+)\(\)", law.get("identity", ""))
-                if function and re.search(rf"^def {function.group(1)}\(", self.text(file), re.M):
-                    found["function"] += 1
-                else:
-                    found["missing"] += 1
-                    self.build.warnings.append(f"protein inventory: {name} is not defined in {file} any more")
-                continue
-            if law["id"] in self.ids_defined_in(file):
+            live = self.build.aliases.get(law.get("id"), law.get("id"))
+            function = re.match(r"(\w+)\(\)", law.get("identity", ""))
+            if live in self.pieces and file in tracked:
+                found["declared"] += 1
+            elif file in tracked and live and live in self.ids_defined_in(file):
                 found["named_file"] += 1
-            elif law["id"] in self.known_ids:
-                found["elsewhere"] += 1
+            elif file in tracked and function and re.search(rf"^def {function.group(1)}\(", self.text(file), re.M):
+                found["function"] += 1
             else:
-                found["missing"] += 1
-                self.build.warnings.append(f"protein inventory: {law['id']} is not found in the engine any more")
+                # Its law record belongs to the inventory revision. Check its historical
+                # file and never turn a surviving file name into a current modelled_by edge.
+                original = self.build.git("show", f"{self.archive_revision}:{law['file']}")
+                if not original:
+                    self.build.warnings.append(f"protein inventory: {name} lacks its source at {self.archive_revision}")
+                self.archived.add((law["file"], name))
+                found["archived"] += 1
         return dict(found)
 
     def gained_since(self, revision):
@@ -204,7 +201,8 @@ class Atlas:
             found = {}
             for line in listing.splitlines():
                 _, path, name = line.split(":", 2)
-                found.setdefault(name.strip("\"'"), set()).add(path)
+                name = name.strip("\"'")
+                found.setdefault(self.build.aliases.get(name, name), set()).add(path)
             return found
 
         before, now = at(revision), at("HEAD")
@@ -226,26 +224,6 @@ class Atlas:
             "where": [list(item) for item in where],
             "review": {**review, "covers_all": len(added) <= review["count"]} if review else None,
         }
-
-    def current(self, text):
-        """Inventory text with identifiers that were renamed since brought up to date."""
-        if not text:
-            return text
-
-        def swap(match):
-            token = match.group(0)
-            if token in self.known_ids:
-                return token
-            rename = self.overlay["renamed"].get(token)
-            if rename and rename["to"] in self.known_ids:
-                self.renamed[token] = rename["to"]
-                return rename["to"]
-            warning = f"protein inventory: its text names {token}, which the engine no longer has"
-            if warning not in self.build.warnings:
-                self.build.warnings.append(warning)
-            return token
-
-        return IDENTIFIER.sub(swap, text)
 
     # ------------------------------------------------------------ one unit
 
@@ -286,11 +264,14 @@ class Atlas:
         if evidence is None:
             raise SystemExit(f"{law.get('id')}: unknown kind of evidence {law.get('evidence_kind')}")
         lines = []
+        name = law.get("id") or law.get("identity", "")[:60]
+        if (law["file"], name) in self.archived:
+            lines.append(f"Historical inventory record at {self.archive_revision}.")
         if law.get("ion_routes"):
             ions = ", ".join(ion if weight == 1 else f"{ion} × {weight:g}" for ion, weight in law["ion_routes"])
             lines.append(f"Passes {ions}")
         if law.get("coefficients"):
-            lines.append(f"Coefficients: {self.current(law['coefficients'])}")
+            lines.append(f"Coefficients: {law['coefficients']}")
         published = law.get("published") or {}
         if published.get("citation"):
             context = ", ".join(published[key] for key in ("organism", "cell_type", "preparation") if published.get(key))
@@ -299,12 +280,12 @@ class Atlas:
         if published.get("pmid"):
             links.append(_fill(self.overlay["links"]["pubmed"], published["pmid"]))
         return {
-            "label": law.get("id") or self.current(law.get("identity")),
+            "label": law.get("id") or law.get("identity"),
             "code": bool(law.get("id")),
             "tag": evidence["label"],
             "tag_title": evidence["description"],
             "lines": lines,
-            "note": self.current(law.get("notes")),
+            "note": law.get("notes"),
             "links": links,
         }
 
@@ -390,12 +371,15 @@ class Atlas:
                 sources.append({"path": path})
             else:
                 self.dropped_docs.add(path)
-        for path in dict.fromkeys(self.file_of(law) for law in laws):
+        for path in dict.fromkeys(law["file"] for law in laws):
+            sources.append({"path": path, "revision": self.archive_revision, "where": "Protein inventory source"})
+        live_laws = [law for law in laws if (law["file"], law.get("id") or law.get("identity", "")[:60]) not in self.archived]
+        for path in dict.fromkeys(self.file_of(law) for law in live_laws):
             # A file of held legacy code is left out of the picture, and so is a link to it.
             if path in tracked and not build.is_legacy(path):
                 sources.append({"path": path})
 
-        notes = [text for text in (mapping.get("note"), self.current(unit.get("note"))) if text]
+        notes = [text for text in (mapping.get("note"), unit.get("note")) if text]
         identifier = f"unit.{unit['id']}"
         genes = [product["gene"] for product in unit.get("products", [])]
         build.add(
@@ -426,14 +410,14 @@ class Atlas:
                 **({"species": self.species.of_unit(unit["id"])} if self.species and self.species.atlases else {}),
             }
         )
-        for law in laws:
+        for law in live_laws:
             file = self.file_of(law)
             owner = build.owner.get(file)
             if owner and owner in build.entities:
                 build.link(identifier, owner, "modelled_by", law.get("id") or "a function without an identifier")
             elif build.is_legacy(file):
                 # Its file is held legacy code, which the map leaves out of the picture: no link, and said so.
-                self.in_legacy.setdefault(unit["id"], []).append(law.get("id") or self.current(law.get("identity", ""))[:80])
+                self.in_legacy.setdefault(unit["id"], []).append(law.get("id") or law.get("identity", "")[:80])
             else:
                 build.warnings.append(f"protein atlas: {self.file_of(law)} ({unit['id']}) belongs to no part of the engine map")
         target = extra.get("cell_view", kind.get("cell_view"))
@@ -522,7 +506,8 @@ class Atlas:
                 "read_at": described["read_at_revision"],
                 "records": len(snapshot["laws"]),
                 "found": found,
-                "renamed": [{"from": old, "to": new} for old, new in sorted(self.renamed.items())],
+                "renamed": [{"from": law["id"], "to": self.build.aliases[law["id"]]} for law in snapshot["laws"]
+                            if law.get("id") in self.build.aliases and self.build.aliases[law["id"]] in self.pieces],
                 # The files the inventory names that a move of the engine's source moved, each found at its new place.
                 "moved": [{"from": old, "to": new, "move": self.build.moves[old][1]} for old, new in sorted(self.moved.items())],
                 # The units whose law records' files are held legacy code: those links are left out with the code.

@@ -8,9 +8,9 @@ comes off the wall.
 
 ## Navigating the library
 
-The opening star atlas gives each family a pod. Each piece has a fixed position within its family, derived from its ID. A solid star marks a declared piece and an open ring marks a design note. Highlight a model to light its members in place. A family label then gives its highlighted and total counts. Selecting a family brings its stars and names into view. Search and the family selector reach every piece, including those whose labels overlap.
+The opening star atlas gives each family a pod. Each piece has a fixed position within its family, derived from its ID. A solid star marks a declared piece and an open ring marks a design note. Highlight a model to light its members in place. A family label then gives its highlighted and total counts. Selecting a family brings its stars and names into view. Its connection map aggregates explicit cross-family relationships and lists the declarations behind each arc. Following a listed relationship opens its piece trace. Search and the family selector reach every piece, including those whose labels overlap.
 
-Select a piece and choose a relationship to draw its recorded neighbours. Following a link moves the camera along its arc and adds a stop to the breadcrumb. Travelled links stay amber. Selecting an earlier stop restores its neighbours. For example, Site occupant replacement requires Scheduled cell replacement, which reads membrane area. Fields and model references appear at the end of the declaring piece’s links. The field inspector can lead to another operator when the Engine map explicitly lists the edge and its field at the same revision. An empty or unextracted declaration retains the explanation in its inspector. The positions, arc lengths and navigation pulse have display meaning only.
+Select a piece and choose a relationship to draw its recorded neighbours. Following a link moves the camera along its arc and adds a stop to the breadcrumb. Travelled links stay amber. Selecting an earlier stop restores its neighbours. For example, Site occupant replacement requires Scheduled cell replacement, which reads membrane area. Fields and model references appear at the end of the declaring piece’s links. A read that names a current piece lands at that piece, and its reverse appears under Read by. The field inspector can lead to another operator when the Engine map explicitly lists the edge and its field at the same revision. An empty or unextracted declaration retains the explanation in its inspector. The positions, arc lengths and navigation pulse have display meaning only.
 
 Compare models opens a matrix with one row per piece in the two models. It distinguishes direct declarations and membership through an inner model or host kind. Filter to shared or exclusive pieces, or select a row to trace its connections. The address preserves the model pair, family, traced piece and mapped Scope or Engine entrance. A shared flight includes its selected relationship in `lawRelation` and up to its most recent 40 links in `lawTrail`. The viewer checks each link against the loaded declarations before restoring it. The earlier model-and-family bridge layout is available at `?lens=laws&lawLayout=atlas` and the shelf layout at `?lens=laws&lawLayout=shelves`.
 
@@ -22,7 +22,7 @@ The original shelf and rack drawing is available with `?lens=laws&lawLayout=shel
 
 | File | Made by | Holds |
 | --- | --- | --- |
-| `data/engine/declarations.json` | The engine's own command, copied unchanged (`data/engine/README.md`) | The manifest, `cells.declarations@2`: the input, and the tests' oracle |
+| `data/engine/declarations.json` | The engine's own command, copied unchanged (`data/engine/README.md`) | The manifest, `cells.declarations@3`: the input, and the tests' oracle |
 | `data/laws/pieces.json` | `tools/extract_laws.py` (generated: do not edit) | The manifest's pieces and models, each carried unchanged, with the viewer's layer |
 | `data/laws/overlay.json` | Hand (`cells.visualizer.laws_overlay@2`) | The viewer's words: the families and shelves, the models' short names and Engine view boxes, the laws design notes name |
 | `data/laws/law_port.json` | `tools/extract_law_port.py` (generated: do not edit) | The law-port inventory's table (`cells.visualizer.law_port@1`, below): what a unit of the Protein atlas says of a law no active model declares |
@@ -38,7 +38,7 @@ nothing of it and runs nothing of it. Making the list again from the same manife
 gives the same bytes (a test holds it).
 
 **The reader refuses** (exit status 2, nothing written):
-- a manifest whose `kind` is not `cells.declarations@2` (another major, or not a declarations
+- a manifest whose `kind` is not `cells.declarations@3` (another major, or not a declarations
   manifest);
 - a manifest whose tree was not clean (`dirty` not false);
 - a manifest whose `revision` is not a full Git revision.
@@ -52,7 +52,7 @@ a tree that was not clean as well.
 "stamp": {
   "generator": "visualizer/tools/extract_laws.py",
   "read": "Read from the engine's declarations at main 93fc8c2c",
-  "manifest": { "path": "data/engine/declarations.json", "kind": "cells.declarations@2", "revision": "<40 hex digits>", "short": "93fc8c2c", "dirty": false, "origin": "git checkout" },
+  "manifest": { "path": "data/engine/declarations.json", "kind": "cells.declarations@3", "revision": "<40 hex digits>", "short": "93fc8c2c", "dirty": false, "origin": "git checkout" },
   "overlay_as_of": "2026-11-18",
   "boxes": "data/architecture/overlay.json: the Engine view's components, matched to each piece's module_path"
 }
@@ -232,14 +232,10 @@ over every column on it (a test holds this).
 
 ## What the wall does not show
 
-- **The older model families** of the manifest's `legacy` list are not drawn. The List names them
-  by ID, as the manifest gives them, under "Not shown: the older model families (legacy code, to
-  be dropped)". An address naming one opens the notice: "The engine's declarations list <id>
-  among the older model families: legacy code, to be dropped, with no page of its own. The map
-  does not show it."
-- **Any other ID** an address names, a piece of an older list included, opens: "The engine's
-  declarations do not list <id>: no active registry declares it, so the map does not show it."
-  It is never called legacy unless the manifest's `legacy` names it.
+- **Historical model bookmarks** come from the v58 catalogue in `data/engine/viewer-ids.json`.
+  A bookmark that resolves through the published ID moves to a current model opens that model.
+  The other bookmarks open a historical entry with its catalogue revision.
+- **Currently unlisted IDs** open a notice pointing back to the current registry.
 - **A row with no piece of its own** (the fuel kind) is drawn as its socket; its address opens
   what the model says of it and the cycle laws that run on it.
 

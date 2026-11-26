@@ -9,7 +9,10 @@ export const relationLabel = {
   kind: "via host kind",
   requires: "requires",
   requiredBy: "required by",
+  readBy: "read by",
   reads: "reads",
+  hosts: "hosts",
+  hostedBy: "hosted by",
   writes: "writes",
   ledgers: "ledger",
   provides: "provides",
@@ -28,13 +31,13 @@ export function partsOf(id) {
 }
 export function displayName(id) {
   return String(id)
-    .replace(/^cells\./, "")
+    .replace(/^(?:[a-z][\w]*\.[a-z][\w]*\.|cells\.)/, "")
     .replace(/_/g, " ")
     .replace(/@(\d+)$/, " · v$1");
 }
 export function modelName(frame) {
   const words = frame.id
-    .replace(/^cells\./, "")
+    .replace(/^(?:[a-z][\w]*\.[a-z][\w]*\.|cells\.)/, "")
     .replace(/^resolved_pump_/, "")
     .replace(/_/g, " ")
     .replace(/@(\d+)$/, " @$1");
@@ -46,6 +49,7 @@ export class LawConnections {
     this.bundles = new Map();
     this.members = new Map(library.frames.map((frame) => [frame.id, new Set()]));
     this.incoming = new Map();
+    this.readers = new Map();
     this.operatorLinks = new Map();
     // Only use the Engine map's explicit operator edges when it describes this same revision.
     if (scene?.meta?.revision && library.manifest.revision.startsWith(scene.meta.revision)) {
@@ -77,6 +81,12 @@ export class LawConnections {
         if (!this.bundles.has(id)) this.bundles.set(id, { id, model: entry.frame, family: piece.family, entries: [] });
         this.bundles.get(id).entries.push({ piece, ...entry });
         this.members.get(entry.frame).add(piece.id);
+      }
+      for (const read of piece.declared?.reads || []) {
+        const target = library.byKey.get(read.name);
+        if (!target?.declared) continue;
+        if (!this.readers.has(target.id)) this.readers.set(target.id, new Set());
+        this.readers.get(target.id).add(piece);
       }
       for (const name of this.requirements(piece)) {
         const target = library.piece(name);
@@ -112,6 +122,13 @@ export class LawConnections {
     }
     for (const p of this.incoming.get(piece.id) || [])
       out.push({ id: pageId(p.id), label: displayName(p.id), verb: "requiredBy", layer: "pieces", incoming: true });
+    const host = this.library.byKey.get(d?.host);
+    if (host?.declared && host !== piece)
+      out.push({id: pageId(host.id), label: displayName(host.id), verb: "hostedBy", layer: "pieces"});
+    for (const name of d?.laws || []) {
+      const child = this.library.byKey.get(name);
+      if (child?.declared) out.push({id: pageId(child.id), label: displayName(child.id), verb: "hosts", layer: "pieces"});
+    }
     const field = (verb, name, note) =>
       out.push({ id: fieldKey(piece.id, verb, name), label: name.replace(/_/g, " "), name, note, verb, layer: "fields" });
     const reads = new Map();
@@ -120,7 +137,14 @@ export class LawConnections {
       if (!reads.has(read.name)) reads.set(read.name, new Set());
       reads.get(read.name).add([read.mode, read.stage, read.scoped ? "scoped" : ""].filter(Boolean).join(" · "));
     }
-    for (const [name, notes] of reads) field("reads", name, [...notes].filter(Boolean).join(", "));
+    for (const [name, notes] of reads) {
+      const note = [...notes].filter(Boolean).join(", ");
+      const target = this.library.byKey.get(name);
+      if (target?.declared) out.push({id: pageId(target.id), label: displayName(target.id), verb: "reads", name, note, layer: "pieces"});
+      else field("reads", name, note);
+    }
+    for (const reader of this.readers.get(piece.id) || [])
+      out.push({id: pageId(reader.id), label: displayName(reader.id), verb: "readBy", incoming: true, layer: "pieces"});
     for (const [name, entries] of Object.entries(d?.writes || {})) field("writes", name, Array.isArray(entries) ? entries.join(", ") : "");
     for (const name of new Set(d?.ledgers || [])) field("ledgers", name, "");
     for (const name of d?.provides || []) field("provides", name, "");
@@ -138,6 +162,20 @@ export class LawConnections {
       });
     }
     return out;
+  }
+  familyRoutes(family, pieces) {
+    const groups = new Map();
+    for (const source of pieces) {
+      if (source.family !== family) continue;
+      for (const edge of this.neighbours(source)) {
+        if (edge.layer !== "pieces" || !edge.id) continue;
+        const target = this.library.piece(engineId(edge.id));
+        if (!target || target.family === family) continue;
+        if (!groups.has(target.family)) groups.set(target.family, []);
+        groups.get(target.family).push({source, edge});
+      }
+    }
+    return groups;
   }
   describe(id) {
     const [type, key, verb, field] = partsOf(id);

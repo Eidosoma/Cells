@@ -1,14 +1,39 @@
 import { h, emit } from "../ui/dom.js";
 import { engineId, pageId } from "./laws_data.js";
-import { bridgeKey, displayName, modelName } from "./laws_connections.js";
+import { bridgeKey, displayName, familyKey, modelName } from "./laws_connections.js";
 import { action, control, search } from "./laws_atlas_controls.js";
 import { NEIGHBOURS_PER_LAYER } from "./laws_atlas_scene.js";
-import { starVerb } from "./laws_star_scene.js";
+import { starVerb, sectorLabel } from "./laws_star_scene.js";
 
 const note = text => h("p", { class: "laws-guide" }, text);
 const tally = text => h("p", { class: "laws-tally", "aria-live": "polite" }, text);
 const modelOptions = (view, except) => view.library.frames.filter(f => f.id !== except).map(f => [f.id, modelName(f)]);
 const declaration = (view, id) => action("Read declaration", "declaration", () => view.selectOnPage(id));
+
+function familyGuide(view) {
+  if (view.family) {
+    const family = view.library.familyById.get(view.family);
+    const routes = view.familyRoutes();
+    return h("div",{class:"star-family-guide"},
+      family.description ? note(family.description) : null,
+      routes.size ? action(view.showFamilyRoutes ? "Focus on this family" : "Map connected families · "+routes.size,"family-routes",()=>{
+        view.showFamilyRoutes=!view.showFamilyRoutes;
+        view.notice({fit:true});
+        if (!view.showFamilyRoutes) view.focus(familyKey(family.id));
+      }) : null,
+      view.showFamilyRoutes ? [...routes].map(([id,rows]) => h("details",{class:"star-route-list"},
+        h("summary",{},view.library.familyById.get(id).short+" · "+rows.length),
+        rows.map(({source,edge})=>action(displayName(source.id)+" "+starVerb[edge.verb].toLowerCase()+" "+edge.label,
+          "route-"+source.id+"-"+edge.verb+"-"+edge.id,()=>view.showRoute(source,edge.verb))))) : null);
+  }
+  if (view.filter.query || view.primary || view.anatomy || view.filter.box || view.filter.where) return null;
+  const pump = view.library.piece("cells.cycle.atp_driven_transporter_mass_action_positive@2");
+  const model = view.library.frame("cells.model.assembly_lineages@2");
+  return h("details",{class:"star-family-index",open:true},h("summary",{},"Explore the atlas"),
+    pump && pump.declared.reads?.some(r=>view.library.byKey.has(r.name)) ?
+      action("ATP transport → binding","tour-binding",()=>view.showRoute(pump,"reads")) : null,
+    model ? action("Vesicle events & division","tour-vesicle",()=>view.setPrimary(model.id)) : null);
+}
 
 export function starControls(view) {
   const library = view.library;
@@ -31,22 +56,29 @@ export function starControls(view) {
       h("p", {class:"laws-subject"}, displayName(p.id)),
       note(p.declared ? library.familyById.get(p.family).label : "Named in a design note."),
       group.length ? h("div", {class:"star-destinations"}, view.visibleEdges().map(e =>
-        e.id ? action("Follow " + e.label,"follow",() => view.follow(e.id)) : note(e.label))) : note("This piece has no recorded connections."),
+        e.id ? h("div", {class:"star-destination"}, action("Follow " + e.label,"follow",() => view.follow(e.id)),
+          e.note && e.layer === "pieces" ? h("small",{},e.note) : null) : note(e.label))) : note("This piece has no recorded connections."),
       pages > 1 ? control("Connections page","page",Array.from({length:pages},(_,i)=>[String(i),String(i+1)+" of "+pages]),
         String(view.page), value => { view.page = Number(value); view.notice({fit:true}); }) : null,
       declaration(view,pageId(p.id)));
   }
   const pieces = view.filtered(), source = view.anatomy && view.model.get(view.anatomy);
   const count = view.overviewCount();
+  const familyOptions = library.shelves.map(shelf => [sectorLabel[shelf.id] || shelf.label,
+    library.families.filter(f => f.shelf === shelf.id).map(f => [f.id,f.label])]);
   const familyMemberships = view.primary && view.family && view.graph.bundles.get(bridgeKey(view.primary,view.family));
   return h("div", {class:"laws-navigation"},
     control("Highlight a model","model",[["","Whole catalogue"],...modelOptions(view)],view.primary || "",id=>view.setPrimary(id)),
     tally(count.pieces + " pieces across " + count.families + " families"),
-    control("Explore a family","family",[["","All families"],...library.families.map(f=>[f.id,f.label])],view.family || "",id=>view.setMark(id)),
+    control("Explore a family","family",[["","All families"],...familyOptions],view.family || "",id=>view.setMark(id)),
+    familyGuide(view),
+    view.primary === "cells.model.assembly_lineages@2" && !view.family && !view.filter.query ?
+      h("div",{class:"star-family-guide"},["cells.assembly_hazard.pore_nucleation@1","cells.operator.size_threshold_division@1"]
+        .filter(id=>view.graph.members.get(view.primary)?.has(id)).map(id=>action(displayName(id),"vesicle-"+id,()=>view.tracePiece(id)))) : null,
     familyMemberships ? action("Inspect family memberships","memberships",()=>view.selectOnPage(familyMemberships.id)) : null,
     search(view,pieces),
     (view.family || source || view.filter.box) && !view.filter.query ?
-      control("Trace a piece","piece",[["","Choose a piece…"],...pieces.map(p=>[p.id,displayName(p.id)])],"",id=>id && view.tracePiece(id)) : null,
+      control("Trace a piece","piece",[["","Choose a piece…"],...pieces.filter(p=>!view.primary || view.graph.members.get(view.primary)?.has(p.id)).map(p=>[p.id,displayName(p.id)])],"",id=>id && view.tracePiece(id)) : null,
     h("details",{class:"laws-filters",open:Boolean(view.filter.where)}, h("summary",{},"Filter catalogue"),
       control("Catalogue entries","origin",[["all","All entries"],["declared","Declared pieces"],["design","Design notes"]],
         view.filter.where || "all",id=>view.setMode(id))),

@@ -52,8 +52,14 @@ export class LawsAtlasLens {
     return Boolean(name && (isId(name) || this.library.rowOf(name) || this.graph.describe(id)));
   }
   canonical(id) {
-    const name = engineId(id),
-      entity = this.library.piece(name) || this.library.frame(name);
+    id = this.library.resolve(id);
+    const [type, owner, verb, name] = partsOf(id);
+    if (type === "field" && verb === "reads") {
+      const target = this.library.piece(name);
+      if (target && this.library.piece(owner)?.declared?.reads?.some(r => r.name === target.id)) return pageId(target.id);
+    }
+    const nameOf = engineId(id),
+      entity = this.library.piece(nameOf) || this.library.frame(nameOf);
     return entity ? pageId(entity.id) : id;
   }
   describe(id) {

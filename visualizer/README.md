@@ -1090,7 +1090,7 @@ run outputs ──adapters (next)── run view ──────────�
 
 | Path | Holds |
 | --- | --- |
-| `tools/extract_architecture.py`, `tools/lib/static_eval.py` | The extractor. Standard library only; parses source with `ast` and never imports `cells`. Since 17 November 2026 it takes the engine's operators (the composite's, and a family's own), laws, kinds and models from the engine's declarations manifest (`data/engine/declarations.json`, `cells.declarations@2`), and refuses one of another major, one written at another revision than the checkout read, or one from a tree with changes (`tests/engine_declarations.test.mjs`). From the source it still reads the files, their sizes and imports, the plan's gates and the shared-state table, which the manifest does not hold; each model module's `MODEL_ID`, only to place a declared model on its part; and four things of an operator that the manifest does not hold apart: `RK4`, `ACCEPTS_WRITES`, and which of its `provides` and `controls` are view fields and multiplied availabilities |
+| `tools/extract_architecture.py`, `tools/lib/static_eval.py` | The extractor. Standard library only; parses source with `ast` and never imports `cells`. Since 17 November 2026 it takes the engine's operators (the composite's, and a family's own), laws, kinds and models from the engine's declarations manifest (`data/engine/declarations.json`, `cells.declarations@3`), and refuses one of another major, one written at another revision than the checkout read, or one from a tree with changes (`tests/engine_declarations.test.mjs`). From the source it still reads the files, their sizes and imports, the plan's gates and the shared-state table, which the manifest does not hold; each model module's `MODEL_ID`, only to place a declared model on its part; and four things of an operator that the manifest does not hold apart: `RK4`, `ACCEPTS_WRITES`, and which of its `provides` and `controls` are view fields and multiplied availabilities |
 | `data/architecture/overlay.json` | The curated layer: layers, statuses with sources and dates, plain lines, planned parts, the capability map. Each part names the engine files it holds by pattern; the first part whose pattern matches a file takes it, so the catch-all parts stand last. It was last reviewed entry by entry against the record on 16 November 2026, after the landing of the engine's rework, at main 3b7f1cff |
 | `data/architecture/architecture.scene.json` | The generated scene (committed, so changes show in diffs) |
 | `tools/import_protein_inventory.py` | Makes the slim snapshot of the law inventory. It leaves out machine paths, Xenbase identifiers and every field the view does not show |
@@ -1471,7 +1471,7 @@ Ideas kept for after the basics (the user, 14 November 2026):
   states no level and no page yet, so the wall shows none; the 13 laws named in design notes
   are checked against their notes at that revision. The atlas's units that name no declared
   law (33 of 48) stay in the atlas; their laws, and U07's undeclared one, say what the law-port
-  inventory of 17 November 2026 marks them (D211), and the table is made again only when that inventory changes. Five
+  inventory of 17 November 2026 marks them (D211), and the table is made again only when that inventory changes. Seven
   of its rows' laws are declared since 1ca5eada, and their units open them through a door. The
   14 laws on the other 15 units that the inventory has no row for say that the declarations
   do not list them. At rest on a wide

@@ -90,14 +90,15 @@ export class SceneModel {
    * Laws library's) links at that revision, in the same repository.
    */
   sourceUrl(source) {
+    const line = Number.isInteger(source.line) && source.line > 0 ? "#L" + source.line : "";
     if (source.revision) {
       const base = this.meta.source_base_url;
       const at = /\/blob\/[^/]+\/$/;
-      return base && at.test(base) && /^[0-9a-f]{7,40}$/.test(source.revision) ? base.replace(at, `/blob/${source.revision}/`) + source.path : null;
+      return base && at.test(base) && /^[0-9a-f]{7,40}$/.test(source.revision) ? base.replace(at, `/blob/${source.revision}/`) + source.path + line : null;
     }
     const own = this.meta.own_source_base_url && String(source.path || "").startsWith("visualizer/");
     const base = own ? this.meta.own_source_base_url : this.meta.source_base_url;
-    return base ? base + source.path : null;
+    return base ? base + source.path + line : null;
   }
 }
 

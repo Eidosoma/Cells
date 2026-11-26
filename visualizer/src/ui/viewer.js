@@ -20,6 +20,7 @@ import { CellLens, defaultSpecies, MODELLED } from "../lenses/cell.js";
 import { ProteinLens, defaultAtlas, inSpecies } from "../lenses/proteins.js";
 import { loadBeside } from "../lenses/protein_shelves.js";
 import { ReplayLens } from "../lenses/replay.js";
+import { canonicalAddress } from "../lenses/laws_data.js";
 import { makeLawsView } from "../lenses/laws_star.js";
 import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
 import { LAWS_CSS } from "../lenses/laws_styles.js";
@@ -594,6 +595,8 @@ class CellsViewer extends HTMLElement {
   // ------------------------------------------------------------ state changes
 
   select(id, { fly = false, waited = false } = {}) {
+    id = canonicalAddress(id, this.model.raw.laws?.viewer_ids?.aliases);
+    if (id?.startsWith("laws:")) id = this.lenses.get("laws")?.canonical?.(id) || id;
     if (this.state.about) this.about.toggle(false, { from: false }); // a choice closes About, as it closes any panel
     // An id a view makes itself (laws:…), named by an address or a link from another view: that view opens first.
     // The view shown keeps an id it holds itself (a machine's closer view in the Cell view keeps `machine:<id>`).

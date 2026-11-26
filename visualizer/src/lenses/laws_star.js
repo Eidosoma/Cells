@@ -20,6 +20,7 @@ export class LawsStarLens extends LawsAtlasLens {
     this.map = starLayout(this.library);
     this.light = new StarLight();
     this.primary = null;
+    this.showFamilyRoutes = false;
     this.path = [];
     this.terminal = false;
     this.matrixPage = 0;
@@ -62,7 +63,15 @@ export class LawsStarLens extends LawsAtlasLens {
   examplePiece() {
     const members = this.graph.members.get(this.primary);
     const pieces = this.filtered().filter(p=>(!members || members.has(p.id)) && p.declared);
-    return pieces.find(p=>p.id==="site_occupant_replacement@1") || pieces.find(p=>this.graph.requirements(p).length) || pieces[0];
+    return pieces.find(p=>p.id==="cells.operator.site_occupant_replacement@1") || pieces.find(p=>this.graph.requirements(p).length) || pieces[0];
+  }
+  familyRoutes() {
+    const members = this.graph.members.get(this.primary);
+    return this.graph.familyRoutes(this.family, this.filtered().filter(p => !members || members.has(p.id)));
+  }
+  showRoute(source, verb) {
+    this.tracePiece(source.id);
+    this.setRelation(verb);
   }
   overviewCount() {
     const members = this.graph.members.get(this.primary);
@@ -78,7 +87,7 @@ export class LawsStarLens extends LawsAtlasLens {
   }
   roomChanged() { super.roomChanged(); this.syncInsets(); }
   fit(fly=true, box) {
-    const bounds = this.mode==="wiring" && this.traceBox ? this.traceBox : box || this.focusBox || this.drawing.bounds;
+    const bounds = this.mode==="wiring" && this.traceBox ? this.traceBox : this.familyBounds || box || this.focusBox || this.drawing.bounds;
     // Keep the heading the visitor chose when following a connection.
     const aimed = this.mode==="wiring" && this.path.length;
     const orientation = aimed ? {azimuth:this.stage.rig.azimuth,polar:this.stage.rig.polar,margin:.23} :
@@ -106,7 +115,7 @@ export class LawsStarLens extends LawsAtlasLens {
     this.clearPanel();
     this.stopEffects();
     if (this.primary && !this.stage.reducedMotion && !this.stage.rig.instant) this.sweepTime=0;
-    this.notice();
+    this.notice({fit:this.showFamilyRoutes});
   }
   openMatrix() {
     const frames=this.library.frames;
@@ -122,6 +131,7 @@ export class LawsStarLens extends LawsAtlasLens {
     super.compareWith(id);
   }
   setMark(id) {
+    this.showFamilyRoutes=false;
     super.setMark(id);
     this.refreshConsole();
   }
@@ -194,6 +204,7 @@ export class LawsStarLens extends LawsAtlasLens {
       super.back();
     }
     if (this.mode==="compare") this.back();
+    this.showFamilyRoutes=false;
     this.family=null;this.nearFamily=null;this.focusBox=null;
     this.clearPanel();this.notice({fit:true});
   }
@@ -216,7 +227,8 @@ export class LawsStarLens extends LawsAtlasLens {
       for (const item of saved.slice(1)) {
         if (!p || terminal || !Array.isArray(item)) break;
         const edges=this.graph.neighbours(p).filter(e=>e.verb===item[0]);
-        const i=edges.findIndex(e=>e.id && e.id===item[1]);
+        const endpoint=this.canonical(item[1]);
+        const i=edges.findIndex(e=>e.id && e.id===endpoint);
         if (i<0) break;
         const page=Math.floor(i/NEIGHBOURS_PER_LAYER), offset=i%NEIGHBOURS_PER_LAYER;
         const curve=starConnection(this.map,p.id,edges[i],offset,Math.min(NEIGHBOURS_PER_LAYER,edges.length-page*NEIGHBOURS_PER_LAYER));

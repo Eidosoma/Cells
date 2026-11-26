@@ -3,7 +3,7 @@
  "note": "The Experiments landing's cards, built by tools/build_cards.py from data/replays/cards.source.json (what is typed), the Engine map's overlay, the catalogue's overlay and selection, the model-system entries, and data/replays/cards.readings.json (what was read from the record). Not edited by hand: schema/EXPERIMENT_CARDS.md.",
  "built_from": {
   "map": {
-   "revision": "cbe54031d0f3a98c1e846fe48259eab6c60b4d59",
+   "revision": "4f4a4c348bd2e8e750c67051942db770a796790b",
    "as_of": "2026-11-22"
   },
   "record": {
@@ -616,7 +616,7 @@
      "label": "Qualified or judged",
      "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
     },
-    "part": "op.scheduled_bath_composition@1"
+    "part": "op.cells.operator.scheduled_bath_composition@1"
    },
    "record": [
     {
@@ -1469,7 +1469,7 @@
      "label": "Implemented and guarded",
      "says": "On main with its tests and guards: the plan's 'implemented' and 'guarded' levels. Not yet qualified by a registered protocol."
     },
-    "part": "op.scheduled_membrane_trafficking@1"
+    "part": "op.cells.operator.scheduled_membrane_trafficking@1"
    },
    "record": []
   },

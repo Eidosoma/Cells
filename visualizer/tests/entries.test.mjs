@@ -177,7 +177,8 @@ test("the GARD entry is a model, not an organism, under Origin of life, and clai
   // and the engine's declarations (data/engine/declarations.json, written at main 93fc8c2c) list its model with its laws and operators. Its runs are not judged.
   assert.equal(gard.modelled.state, "modelled");
   assert.equal(gard.modelled.model, "cells.assembly_lineages@1", "the model the engine's declarations list");
-  const declared = JSON.parse(readFileSync(path.join(ROOT, "data", "engine", "declarations.json"), "utf8")).models.find((item) => item.id === gard.modelled.model);
+  const { aliases } = JSON.parse(readFileSync(path.join(ROOT, "data", "engine", "viewer-ids.json"), "utf8"));
+  const declared = JSON.parse(readFileSync(path.join(ROOT, "data", "engine", "declarations.json"), "utf8")).models.find((item) => item.id === aliases[gard.modelled.model]);
   assert.ok(declared && declared.rows.length > 0, "the model the entry names is a model of the engine's declarations, with its pieces");
   assert.equal(gard.modelled.design, "docs/GARD_DESIGN.md");
   assert.match(gard.modelled.text, /^Modelled for comparison only \(D197\)/);

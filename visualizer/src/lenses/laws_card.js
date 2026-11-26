@@ -243,7 +243,7 @@ export function describe(library, id, { drawn = null, map = null } = {}) {
   const row = library.rowOf(name);
   if (row) return describeRow(library, row);
   const legacy = library.legacyOf(name);
-  if (legacy) return notice(name, `The engine's declarations list ${legacy.id} among the older model families: legacy code, to be dropped, with no page of its own. The map does not show it.`, "Legacy code; not shown");
+  if (legacy) return notice(name, `${legacy.id} was listed as a legacy model in the v58 catalogue at ${legacy.revision.slice(0,8)}. The current registry has no active entry for this bookmark.`, "Historical model");
   return isId(name) ? notice(name, `The engine's declarations do not list ${name}: no active registry declares it, so the map does not show it.`, "Not declared") : null;
 }
 
@@ -269,14 +269,14 @@ function describePiece(library, piece, drawn, map) {
   const facts = [];
   const sections = [];
   const sources = [];
-  const host = d.declared_host ? d.declared_host : `${d.host} (not stated as a registered model, kind or operator)`;
+  const host = library.frame(d.host) || library.piece(d.host) ? d.host : `${d.host} (host outside this catalogue)`;
   facts.push(["ID", d.declared_id === d.id ? d.id : `${d.id}, declared as ${d.declared_id}`]);
   facts.push(["Interface", d.interface]);
   facts.push(["Host", host]);
   facts.push(["Family", d.family]);
   facts.push(["Models", list(d.models)]);
   facts.push(["Declared in", d.module_path ? `${d.module_path}, line ${d.line}` : `${d.module}, outside the cells package`]);
-  if (d.module_path) sources.push({ path: d.module_path, where: `line ${d.line}${at.words}`, revision: at.revision });
+  if (d.module_path) sources.push({ path: d.module_path, line: d.line, where: `line ${d.line}${at.words}`, revision: at.revision });
   // The keys a piece of its kind may state, each as the manifest states it.
   for (const key of Object.keys(KEY_WORDS)) {
     const said = stated(library, piece, key);
@@ -385,7 +385,7 @@ function describePiece(library, piece, drawn, map) {
     eyebrow: `${family?.label || piece.family} · ${interfaceWords(d)}`,
     status: null,
     chips: [{ label: whereWords(piece) }, ...(d.provenance?.tag ? [{ label: capitalise(TAGS[d.provenance.tag] || d.provenance.tag).replace(/ \(.*\)$/, "") }] : [])],
-    plain: `${/^[aeiou]/i.test(interfaceWords(d)) ? "An" : "A"} ${interfaceWords(d)}, hosted by ${d.declared_host || d.host}${d.family !== d.host ? `, in the registries of ${d.family}` : ""}. The engine declares it in ${d.module_path || d.module}${d.line ? `, at line ${d.line}` : ""}. Being declared is not a level: its status is said apart, where the declarations give one.`,
+    plain: `${/^[aeiou]/i.test(interfaceWords(d)) ? "An" : "A"} ${interfaceWords(d)}, hosted by ${host}${d.family !== d.host ? `, in the registries of ${d.family}` : ""}. The engine declares it in ${d.module_path || d.module}${d.line ? `, at line ${d.line}` : ""}. Being declared is not a level: its status is said apart, where the declarations give one.`,
     facts,
     sections,
     opens,
@@ -416,7 +416,7 @@ const MODEL_WORDS = {
   "inner model": "The inner model: it hosts its own laws and its kinds.",
   composite: "The composite: an inner model and any ordered list of operators. Any ordered list of them is a definition's composition.",
   composition: "A composition: the composite with a fixed operator list, an inner model and each operator by position.",
-  [FAMILY]: "A model family with no rows: its laws are tables inside it, and the engine's declarations list none of them as a piece.",
+  [FAMILY]: "The registry lists this active model with no declared rows.",
   "family with rows": "A model family of its own: its laws and its operators are its rows, each a declared piece of its own interface.",
 };
 
@@ -441,7 +441,7 @@ function describeModel(library, frame, drawn, map) {
   if (d.next_code !== null && d.next_code !== undefined) facts.push(["Next free channel code", `${d.next_code}: a new channel law takes it`]);
   facts.push(["Rows", d.rows.length ? String(d.rows.length) : NONE_WORDS]);
   facts.push(["Page", d.doc ? d.doc : d.type === "family" && !d.rows.length ? "none: a family with no rows gets no page" : "none given yet: the engine's pages are written in batches"]);
-  const sources = [{ path: d.module_path, where: `its parse${at.words}`, revision: at.revision }];
+  const sources = [{ path: d.module_path, line: d.line, where: `its parse${at.words}`, revision: at.revision }];
   if (d.doc) sources.push({ path: d.doc, where: `its page${at.words}`, revision: at.revision });
   const boxes = (frame.boxes || []).filter((box) => drawn && drawn(box.id)).map((box) => box.id);
   return {
@@ -554,7 +554,7 @@ export function sections(library) {
   out.push({ label: "Model families with no rows", entities: library.cases.map((frame) => ({ id: pageId(frame.id), label: frame.id, swatch: "laws-case", keywords: `model family ${frame.declared.id} ${frame.declared.module_path}` })) });
   out.push({ label: "Rows with no piece of their own", entities: [...library.rowOnly.values()].map((row) => ({ id: pageId(row.id), label: row.id, swatch: "laws-none", keywords: `${row.role} ${row.frame}` })) });
   // What the wall does not show, by ID as the manifest gives it, in the manifest's own words.
-  out.push({ label: "Not shown: the older model families (legacy code, to be dropped)", limit: 12, entities: [...library.legacy.values()].map((item) => ({ id: pageId(item.id), label: item.id, keywords: "legacy older model family not shown" })) });
+  out.push({ label: "Historical model bookmarks · v58", limit: 12, entities: [...library.legacy.values()].map((item) => ({ id: pageId(item.id), label: item.id, keywords: "legacy older model family not shown" })) });
   return out.filter((section) => section.entities.length);
 }
 

@@ -130,7 +130,7 @@ test("the reader refuses another major of the manifest, a tree that was not clea
   const scratch = mkdtempSync(path.join(ROOT, "out", "laws-reader-"));
   try {
     for (const [change, says] of [
-      [{ kind: "cells.declarations@3" }, /another major/],
+      [{ kind: "cells.declarations@4" }, /another major/],
       [{ kind: "cells.declarations@1" }, /another major/],
       [{ kind: "something.else@2" }, /not a cells\.declarations manifest/],
       [{ dirty: true }, /not clean/],
@@ -148,17 +148,17 @@ test("the reader refuses another major of the manifest, a tree that was not clea
     rmSync(scratch, { recursive: true, force: true });
   }
   // The view refuses a list read from another major, or from a tree that was not clean, as well.
-  assert.throws(() => new Library({ ...raw, stamp: { ...raw.stamp, manifest: { ...raw.stamp.manifest, kind: "cells.declarations@3" } } }), /not cells\.declarations@2/);
+  assert.throws(() => new Library({ ...raw, stamp: { ...raw.stamp, manifest: { ...raw.stamp.manifest, kind: "cells.declarations@4" } } }), /not cells\.declarations@3/);
   assert.throws(() => new Library({ ...raw, stamp: { ...raw.stamp, manifest: { ...raw.stamp.manifest, dirty: true } } }), /not clean/);
 });
 
 test("a manifest that gains pieces takes no change: a model family with rows of its own, its laws and operators of its own interfaces", async () => {
   const { describe } = await import("../src/lenses/laws_card.js");
   const grown = JSON.parse(JSON.stringify(manifest));
-  const law = { ...JSON.parse(JSON.stringify(manifest.pieces.find((piece) => piece.declared_id === "kv1p5_mh@1"))), id: "cells.lineage_split@1", declared_id: "cells.lineage_split@1", name: "lineage_split", interface: "cells.lineage_law@1", host: "cells.assembly_lineages@1", declared_host: "cells.assembly_lineages@1", family: "cells.assembly_lineages@1", models: ["cells.assembly_lineages@1"], reads: null, changes: null, fields: { rate: 1 }, provenance: { tag: "cited", citation: null, source: null }, units: {}, signs: {} };
+  const law = { ...JSON.parse(JSON.stringify(manifest.pieces.find((piece) => piece.declared_id === "cells.channel.kv1p5_mh@1"))), id: "cells.lineage_split@1", declared_id: "cells.lineage_split@1", name: "lineage_split", interface: "cells.lineage_law@1", host: "cells.model.assembly_lineages@1", declared_host: "cells.model.assembly_lineages@1", family: "cells.model.assembly_lineages@1", models: ["cells.model.assembly_lineages@1"], reads: null, changes: null, fields: { rate: 1 }, provenance: { tag: "cited", citation: null, source: null }, units: {}, signs: {} };
   const operator = { ...JSON.parse(JSON.stringify(law)), id: "cells.lineage_census@1", declared_id: "cells.lineage_census@1", name: "lineage_census", piece: "operator", interface: "cells.lineage_operator@1", fields: {} };
   grown.pieces.push(law, operator);
-  grown.models.find((model) => model.id === "cells.assembly_lineages@1").rows = [
+  grown.models.find((model) => model.id === "cells.model.assembly_lineages@1").rows = [
     { role: "law", id: law.id, declared_id: law.declared_id, piece: "law", slot: null },
     { role: "operator", id: operator.id, declared_id: operator.declared_id, piece: "operator", slot: null },
   ];
@@ -174,9 +174,9 @@ test("a manifest that gains pieces takes no change: a model family with rows of 
     const grownLibrary = new Library(list);
     assert.equal(grownLibrary.piece("cells.lineage_split@1").family, "law", "a family's own law stands among the laws");
     assert.equal(grownLibrary.piece("cells.lineage_census@1").family, "operator", "a family's own operator among the operators");
-    const frame = grownLibrary.frame("cells.assembly_lineages@1");
+    const frame = grownLibrary.frame("cells.model.assembly_lineages@1");
     assert.ok(grownLibrary.racks.includes(frame) && !grownLibrary.cases.includes(frame), "a family with rows is a rack");
-    assert.deepEqual(grownLibrary.piece("cells.lineage_split@1").declared_by, [{ frame: "cells.assembly_lineages@1", how: "direct" }]);
+    assert.deepEqual(grownLibrary.piece("cells.lineage_split@1").declared_by, [{ frame: "cells.model.assembly_lineages@1", how: "direct" }]);
     // A family's own law: kernels, provenance and test apply; reads and changes do not (they are cells laws' keys).
     assert.equal(grownLibrary.nullMeaning(grownLibrary.piece("cells.lineage_split@1"), "reads"), "not applicable");
     assert.equal(grownLibrary.nullMeaning(grownLibrary.piece("cells.lineage_census@1"), "test"), "not stated");
@@ -185,7 +185,7 @@ test("a manifest that gains pieces takes no change: a model family with rows of 
     // And the view draws it: a bar on the wall and a card in its rack.
     const lens = new LawsLens(lensFor().stage, { raw: { laws: list } }, { add: () => ({ element: { classList: { toggle() {}, add() {}, remove() {} }, style: {} } }), clear() {}, remove() {} });
     assert.ok(lens.layout.bars.some((bar) => bar.id === "cells.lineage_split@1"));
-    assert.ok(lens.cardList.some((card) => card.piece === "cells.lineage_census@1" && card.frame === "cells.assembly_lineages@1"));
+    assert.ok(lens.cardList.some((card) => card.piece === "cells.lineage_census@1" && card.frame === "cells.model.assembly_lineages@1"));
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
@@ -214,7 +214,7 @@ test("each model's rows are its rows in the manifest: their roles, their slots, 
 test("what declares a piece follows the manifest: its own row, the kind that hosts it, or the inner model a model holds", () => {
   for (const piece of library.pieces.filter((item) => item.where === "declared")) {
     const d = piece.declared;
-    assert.ok(piece.declared_by.length, `${piece.id}: some model declares it`);
+    assert.equal(Boolean(piece.declared_by.length), Boolean(d.models.length), `${piece.id}: model membership agrees with the manifest`);
     for (const entry of piece.declared_by) {
       const frame = frameById.get(entry.frame);
       if (entry.how === "direct") assert.ok(frame.declared.rows.some((row) => row.id === d.id), `${piece.id}: a row of ${entry.frame}`);
@@ -246,9 +246,9 @@ test("a design note's laws are kept only where the note still names them at the 
 
 test("the three meanings of null, as the format page defines them, and an empty list as none", async () => {
   const { describe } = await import("../src/lenses/laws_card.js");
-  const kv = library.piece("kv1p5_mh@1");
-  const kind = library.piece("cells.transporter@1");
-  const operator = library.piece("ideal_osmosis_linear_compliance_water@1");
+  const kv = library.piece("cells.channel.kv1p5_mh@1");
+  const kind = library.piece("cells.kind.transporter@1");
+  const operator = library.piece("cells.operator.ideal_osmosis_linear_compliance_water@1");
   // Not applicable: a law owns nothing and a kind has no kernels; nothing is said.
   assert.equal(library.nullMeaning(kv, "owns"), "not applicable");
   assert.equal(library.nullMeaning(kind, "kernels"), "not applicable");
@@ -259,7 +259,7 @@ test("the three meanings of null, as the format page defines them, and an empty 
   // Not stated: the key applies, and the declaration does not state it.
   assert.equal(library.nullMeaning(kv, "test"), "not stated");
   const facts = (piece) => new Map(describe(library, `laws:${piece.id}`).facts);
-  assert.equal(facts(kv).get("Test"), "not stated");
+  assert.equal(facts(kv).get("Test"), kv.declared.test);
   assert.equal(facts(kv).get("Energy"), "not yet extracted in the engine's declarations");
   assert.ok(!facts(kv).has("Owns"), "nothing is said of what does not apply");
   assert.equal(facts(kind).get("Provenance"), "not yet extracted in the engine's declarations");
@@ -267,8 +267,8 @@ test("the three meanings of null, as the format page defines them, and an empty 
   // An empty list: the declaration lists none.
   assert.equal(facts(kv).get("Reads"), "the declaration lists none");
   // A nested null keeps its field's own meaning: a leak law with no gate has no RK4 step bound; an operator with no split part, no step method.
-  assert.equal(facts(library.piece("kleak_always_open@1")).get("Reference RK4 step bound"), "none: a law with no gate");
-  assert.equal(facts(library.piece("cell_owned_compartments@1")).get("Step method"), "none");
+  assert.equal(facts(library.piece("cells.channel.kleak_always_open@1")).get("Reference RK4 step bound"), "none: a law with no gate");
+  assert.equal(facts(library.piece("cells.operator.cell_owned_compartments@1")).get("Step method"), "none");
   const label = { kernels: "Kernels", provenance: "Provenance", test: "Test", reads: "Reads", changes: "Changes", owns: "Owns", writes: "Writes", provides: "Provides", controls: "Controls", ledgers: "Ledgers", energy: "Energy", units: "Units", signs: "Signs", requires: "Requires", laws: "Laws it hosts" };
   // Held on every piece: a null key is said by its meaning, and never by a value.
   for (const piece of library.pieces.filter((item) => item.where === "declared")) {
@@ -287,11 +287,11 @@ test("the three meanings of null, as the format page defines them, and an empty 
 test("what the manifest has not exercised yet is said as the format page says it: a status with its source, a page, a work's DOI or URL, a calibrated piece, a scoped read, a piece outside the package", async () => {
   const { describe } = await import("../src/lenses/laws_card.js");
   const fixture = JSON.parse(JSON.stringify(raw));
-  const kv = fixture.pieces.find((piece) => piece.id === "kv1p5_mh@1").declared;
+  const kv = fixture.pieces.find((piece) => piece.id === "cells.channel.kv1p5_mh@1").declared;
   Object.assign(kv, {
     status: "established",
     status_source: "docs/SOME_RECORD.md",
-    doc: "docs/library/cells/laws/kv1p5_mh@1.md",
+    doc: "docs/library/cells/laws/cells.channel.kv1p5_mh@1.md",
     test: "tests/unit/test_kv1p5.py::test_planted",
     provenance: { tag: "calibrated", source: "a fit to recorded currents", citation: { source: "a paper", place: "table 2", licence: "CC BY 4.0", departures: ["one gate fewer"], works: [{ authors: ["A. Author"], year: 2001, title: "A title", doi: "10.1000/xyz", url: null }, { authors: ["B. Author"], year: 2002, title: "Another", doi: null, url: "https://example.org/b" }] } },
     reads: [{ name: "membrane_area", mode: "reference", stage: "inner", scoped: true }],
@@ -299,21 +299,21 @@ test("what the manifest has not exercised yet is said as the format page says it
     line: null,
   });
   const other = new Library(fixture);
-  const said = describe(other, "laws:kv1p5_mh@1");
+  const said = describe(other, "laws:cells.channel.kv1p5_mh@1");
   const facts = new Map(said.facts);
   assert.equal(facts.get("Status"), "established (from docs/SOME_RECORD.md)");
-  assert.equal(facts.get("Page"), "docs/library/cells/laws/kv1p5_mh@1.md");
+  assert.equal(facts.get("Page"), "docs/library/cells/laws/cells.channel.kv1p5_mh@1.md");
   assert.equal(facts.get("Test"), "tests/unit/test_kv1p5.py::test_planted");
   assert.equal(facts.get("Provenance"), "calibrated");
   assert.equal(facts.get("Rests on"), "a fit to recorded currents");
   assert.equal(facts.get("Departs from it"), "one gate fewer");
   // With no file, the panel names the module the manifest gives (moved by seam F's laws as modules at main 4dda2285).
   assert.equal(facts.get("Declared in"), `${kv.module}, outside the cells package`);
-  assert.equal(kv.module, manifest.pieces.find((piece) => piece.declared_id === "kv1p5_mh@1").module);
+  assert.equal(kv.module, manifest.pieces.find((piece) => piece.declared_id === "cells.channel.kv1p5_mh@1").module);
   const works = said.sections.find((section) => section.title === "Works").items;
   assert.deepEqual(works.map((work) => work.links.map((link) => link.url)), [["https://doi.org/10.1000/xyz"], ["https://example.org/b"]]);
   assert.equal(said.sections.find((section) => section.title === "Reads").items[0].detail, "reference, at the inner stage, only the slots it names");
-  assert.ok(said.sources.some((source) => source.path === "docs/library/cells/laws/kv1p5_mh@1.md" && source.revision === manifest.revision), "the page links at the manifest's revision");
+  assert.ok(said.sources.some((source) => source.path === "docs/library/cells/laws/cells.channel.kv1p5_mh@1.md" && source.revision === manifest.revision), "the page links at the manifest's revision");
   assert.ok(!said.sources.some((source) => !source.path), "no link to a file outside the package");
   // Today: no page linked anywhere, and no level shown.
   for (const piece of library.pieces.filter((item) => item.where === "declared")) {
@@ -325,8 +325,8 @@ test("what the manifest has not exercised yet is said as the format page says it
   // later with a key no word is written for: each said by what it is, under its own name, its data counted, never poured.
   const formSaid = (form) => {
     const grown = JSON.parse(JSON.stringify(raw));
-    Object.assign(grown.pieces.find((piece) => piece.id === "cells.na_anion_symport_factored@1").declared.fields.cycle, form);
-    const said = describe(new Library(grown), "laws:cells.na_anion_symport_factored@1");
+    Object.assign(grown.pieces.find((piece) => piece.id === "cells.cycle.na_anion_symport_factored@1").declared.fields.cycle, form);
+    const said = describe(new Library(grown), "laws:cells.cycle.na_anion_symport_factored@1");
     return { summary: new Map(said.facts).get("Its general form"), items: new Map(said.sections.find((section) => section.title === "Its general form").items.map((item) => [item.label, item.detail])) };
   };
   const monomial = formSaid({ kinetics: "monomial", saturation: [], monomial: { rates: [{ log_k: 0, orders: [], zeta: 0, factors: [], share: 1 }], read_roles: [["H", 1]], standard_state_mM: 1000 } });
@@ -384,7 +384,7 @@ test("the law-port table is the tool's reading of the inventory: four facts a ro
   // a door (held unit by unit in the doors' test below). The documents say how many such rows there are, and are held
   // to the number here, so that the next one is noticed where it is written.
   const declaredIds = new Set(manifest.pieces.flatMap((piece) => [piece.id, piece.declared_id, namespaced(piece.declared_id)]));
-  const overtaken = port.rows.filter((row) => declaredIds.has(namespaced(row.law)));
+  const overtaken = port.rows.filter((row) => declaredIds.has(library.resolve(row.law)));
   for (const row of overtaken) assert.ok(row.has_id && row.mark === "port as is", `${row.law} is declared by an active model now, and its row is marked "${row.mark}": those words no longer hold of it`);
   const spelled = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"][overtaken.length] ?? String(overtaken.length);
   for (const name of ["README.md", "docs/LAWS_LIBRARY.md"]) {
@@ -566,7 +566,7 @@ test("atlas bridges and model comparisons preserve each declaration and each rou
 test("tracing follows the declaration, and a field links to another operator only with explicit same-revision Engine evidence", () => {
   const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
   const graph = new LawConnections(library, scene),
-    p = library.piece("site_occupant_replacement@1"),
+    p = library.piece("cells.operator.site_occupant_replacement@1"),
     rows = graph.neighbours(p);
   assert.deepEqual(
     rows.filter((e) => e.verb === "requires").map((e) => e.id),
@@ -577,7 +577,7 @@ test("tracing follows the declaration, and a field links to another operator onl
     Object.keys(p.declared.writes),
   );
   const id = fieldKey(p.id, "writes", "site_bound_increment_fmol");
-  assert.ok(graph.describe(id).opens.some((g) => g.title.includes("Engine map") && g.items.some((e) => e.id === "laws:site_occupancy@1")));
+  assert.ok(graph.describe(id).opens.some((g) => g.title.includes("Engine map") && g.items.some((e) => e.id === "laws:cells.operator.site_occupancy@1")));
   const different = new LawConnections(library, { ...scene, meta: { revision: "00000000" } });
   assert.equal(different.describe(id).opens.length, 1);
   assert.equal(graph.describe(fieldKey(p.id, "writes", "unlisted")), null);
@@ -586,7 +586,7 @@ test("tracing follows the declaration, and a field links to another operator onl
 
 test("the two atlas layouts keep their landmarks and draw budget as the catalogue grows to a thousand entries", () => {
   const enlarged = structuredClone(raw),
-    frame = enlarged.models.find((m) => m.id === "cells.assembly_lineages@2");
+    frame = enlarged.models.find((m) => m.id === "cells.model.assembly_lineages@2");
   const row = frame.declared.rows.find((r) => r.piece === "law"),
     original = enlarged.pieces.find((p) => p.id === row.id);
   while (enlarged.pieces.length < 1000) {
@@ -705,7 +705,7 @@ test("search, family and where narrow the wall; the arrow keys step through what
 test("every piece and every frame can be chosen by id; the list holds every id the view accepts", () => {
   const { lens } = lensFor();
   const listed = lens.sections().flatMap((section) => section.entities.map((entity) => entity.id));
-  const expected = [...raw.pieces.map((piece) => piece.id), ...raw.models.map((model) => model.id), ...[...library.rowOnly.values()].map((row) => row.id), ...raw.legacy.map((item) => item.id)];
+  const expected = [...raw.pieces.map((piece) => piece.id), ...raw.models.map((model) => model.id), ...[...library.rowOnly.values()].map((row) => row.id), ...[...library.legacy.values()].map((item) => item.id)];
   assert.deepEqual(new Set(listed), new Set(expected.map((id) => `laws:${id}`)));
   assert.equal(listed.length, new Set(listed).size, "no id is listed twice");
   for (const id of listed) {
@@ -714,12 +714,12 @@ test("every piece and every frame can be chosen by id; the list holds every id t
     assert.equal(lens.selected, id);
     assert.ok(lens.describe(id)?.label, `${id}: the panel has nothing to say`);
   }
-  assert.equal(lens.has("kv1p5_mh@1"), false, "a bare engine id is not this view's");
+  assert.equal(lens.has("cells.channel.kv1p5_mh@1"), false, "a bare engine id is not this view's");
   // Either spelling of a declared ID names one piece (D185), and the view draws it by its declared spelling.
-  lens.setSelection("laws:cells.kv1p5_mh@1");
-  assert.equal(lens.selected, "laws:kv1p5_mh@1");
-  lens.setSelection("laws:atp_driven_transporter_mass_action_positive@1");
-  assert.equal(lens.selected, "laws:cells.atp_driven_transporter_mass_action_positive@1");
+  lens.setSelection("laws:cells.channel.kv1p5_mh@1");
+  assert.equal(lens.selected, "laws:cells.channel.kv1p5_mh@1");
+  lens.setSelection("laws:cells.cycle.atp_driven_transporter_mass_action_positive@1");
+  assert.equal(lens.selected, "laws:cells.cycle.atp_driven_transporter_mass_action_positive@1");
   // Any other ID is answered: the declarations do not list it.
   assert.equal(lens.has("laws:nothing@1"), true);
   assert.match(lens.describe("laws:nothing@1").plain, /^The engine's declarations do not list nothing@1/);
@@ -743,9 +743,9 @@ test("a piece is chosen by pointer: a ray at its bar or its slot hits it", () =>
     }
     return null;
   };
-  for (const id of ["kv1p5_mh@1", "cells.transporter@1", "ideal_osmosis_linear_compliance_water@1", "junction_ungated@1"]) assert.equal(pickAt(lens.barPoint(id)), `laws:${id}`, id);
-  const card = lens.cardList.find((item) => item.piece === "nak_atp_mass_action_positive@1");
-  assert.equal(pickAt(new THREE.Vector3(card.x, card.y, card.z)), "laws:nak_atp_mass_action_positive@1");
+  for (const id of ["cells.channel.kv1p5_mh@1", "cells.kind.transporter@1", "cells.operator.ideal_osmosis_linear_compliance_water@1", "junction_ungated@1"]) assert.equal(pickAt(lens.barPoint(id)), `laws:${id}`, id);
+  const card = lens.cardList.find((item) => item.piece === "cells.cycle.nak_atp_mass_action_positive@1");
+  assert.equal(pickAt(new THREE.Vector3(card.x, card.y, card.z)), "laws:cells.cycle.nak_atp_mass_action_positive@1");
 });
 
 test("a piece's panel says what the manifest states of it, links its files at the manifest's revision, and shows no level it does not give", () => {
@@ -778,6 +778,7 @@ test("a piece's panel says what the manifest states of it, links its files at th
       if (!(key in d.fields)) continue;
       const value = d.fields[key];
       if (value === null) assert.equal(facts.get(named[key]), "none", `${piece.id}: ${key}`);
+      else if (key === "forms" && Array.isArray(value)) assert.ok(value.every(([name]) => facts.get(named[key]).includes(name)), piece.id);
       else if (key === "forms") assert.match(facts.get(named[key]), new RegExp(`^${value}: `), `${piece.id}: ${key}`);
       else assert.equal(facts.get(named[key]), value, `${piece.id}: ${key}`);
       assert.ok(!facts.has(key), `${piece.id}: no row under the raw key ${key}`);
@@ -795,10 +796,10 @@ test("a piece's panel says what the manifest states of it, links its files at th
     }
   }
   const formOf = (id) => Object.fromEntries(lens.describe(`laws:${id}`).sections.find((section) => section.title === "Its general form").items.map((said) => [said.label, said.detail]));
-  assert.equal(formOf("cells.na2_anion_symport_diagram@1")["Its diagram"], "8 states joined by 8 steps, with 1 Hill cycle");
-  assert.equal(formOf("cells.na_anion_symport_factored@1")["Mode import"], "per forward cycle: Na at N +n_Na, Na at P −n_Na, B at N +1, B at P −1");
-  assert.equal(formOf("cells.proton_atp_mass_action_positive@1")["Temperature domain"], "200 to 400 K");
-  const parameters = new Map(lens.describe("laws:cells.na_anion_symport_factored@1").sections.find((section) => section.title === "Its general form: its parameters").items.map((said) => [said.label, said.detail]));
+  assert.equal(formOf("cells.cycle.na2_anion_symport_diagram@1")["Its diagram"], "8 states joined by 8 steps, with 1 Hill cycle");
+  assert.equal(formOf("cells.cycle.na_anion_symport_factored@1")["Mode import"], "per forward cycle: Na at N +n_Na, Na at P −n_Na, B at N +1, B at P −1");
+  assert.equal(formOf("cells.cycle.proton_atp_mass_action_positive@1")["Temperature domain"], "200 to 400 K");
+  const parameters = new Map(lens.describe("laws:cells.cycle.na_anion_symport_factored@1").sections.find((section) => section.title === "Its general form: its parameters").items.map((said) => [said.label, said.detail]));
   assert.equal(parameters.get("n_Na"), "a whole number, from 1 to 4, above zero, no unit");
   assert.equal(parameters.get("K_Na_mM"), "above zero, in mM");
   for (const frame of library.frames) assert.equal(lens.describe(`laws:${frame.id}`).status, null, `${frame.id}: a model takes no status from its parts`);
@@ -826,7 +827,7 @@ test("only what is chosen glows: bloom is off at rest, and on only from the chos
     return out;
   })();
   assert.equal(lens.litBars.mesh.count + lens.litSlots.mesh.count, 0, "and at rest it holds nothing to draw");
-  const piece = byId.get("nak_atp_mass_action_positive@1");
+  const piece = byId.get("cells.cycle.nak_atp_mass_action_positive@1");
   lens.setSelection(`laws:${piece.id}`);
   assert.equal(bloom.at(-1), LAWS_BLOOM_LIGHT.strength, "in the light theme, the light theme's bloom");
   assert.equal(lens.litBars.mesh.count, 1, "the chosen bar's lit copy");
@@ -846,7 +847,7 @@ test("only what is chosen glows: bloom is off at rest, and on only from the chos
 });
 
 test("a chosen rack in the light theme shines at its edges and rails, its cards still cards; in the dark it shines whole", () => {
-  const id = "resolved_pump_composite@1";
+  const id = "cells.model.resolved_pump_composite@1";
   const at = (set, n) => {
     const matrix = new THREE.Matrix4(), position = new THREE.Vector3(), scale = new THREE.Vector3();
     set.mesh.getMatrixAt(n, matrix);
@@ -987,7 +988,7 @@ test("the room's names are written from the list: each family once, a shelf only
     // Each slot's code, key or position, where its model has slots; the row with no piece by its ID.
     const tags = plaques.filter((plaque) => plaque.kind === "tag").map((plaque) => plaque.text);
     for (const row of manifest.models.flatMap((model) => model.rows)) if (row.slot) assert.ok(tags.includes(String(Object.values(row.slot)[0])), `${row.id}: ${JSON.stringify(row.slot)}`);
-    assert.ok(plaques.some((plaque) => plaque.kind === "none" && plaque.text === "maintained_chemical_reservoirs@1: no piece"));
+    assert.ok(plaques.some((plaque) => plaque.kind === "none" && plaque.text === "cells.fuel_kind.maintained_chemical_reservoirs@1: no piece"));
     // Names of one band never run into each other: each is narrower than the step between columns (letters at most 0.62 of an em wide).
     const heads = lens.layout.heads;
     const step = Math.min(...heads.flatMap((head, n) => (n && heads[n - 1].band === head.band ? [head.x - heads[n - 1].x] : [])));
@@ -1007,13 +1008,13 @@ test("the library opens on all of itself, nothing cut and the frame filled; choo
   assert.ok(Math.max(...ys) > 0.85 || (Math.max(...xs) > 0.85 && Math.min(...xs) < -0.85), "the library fills the frame: no band of it left empty");
   assert.ok(Math.max(...ys) + Math.min(...ys) < 0.12 && Math.max(...ys) + Math.min(...ys) > -0.12, "and it is centred, with as much room above as below");
   const home = lens.homeView();
-  lens.focus("laws:kir2p1_mh2@1");
+  lens.focus("laws:cells.channel.kir2p1_mh2@1");
   const toPiece = flights.at(-1);
   assert.ok(toPiece.distance < home.distance, "a piece: the camera comes closer");
-  lens.focus("laws:resolved_pump_tissue@3");
+  lens.focus("laws:cells.model.resolved_pump_tissue@3");
   assert.ok(flights.at(-1).distance <= home.distance && flights.at(-1).target.distanceTo(home.target) > 0.5, "a frame: the camera moves toward it");
   // The viewer sets the panel's room after it asks for the move: within the flight the move is fitted again beside the panel.
-  lens.focus("laws:kir2p1_mh2@1");
+  lens.focus("laws:cells.channel.kir2p1_mh2@1");
   const asked = flights.length;
   stage.insets = { right: 420 };
   lens.update(16);
@@ -1022,8 +1023,8 @@ test("the library opens on all of itself, nothing cut and the frame filled; choo
   assert.equal(flights.length, asked + 1, "and only once");
   stage.insets = {};
   // Letting go ends the move: a change of the panel's room afterwards fits nothing again.
-  lens.setSelection("laws:kir2p1_mh2@1");
-  lens.focus("laws:kir2p1_mh2@1");
+  lens.setSelection("laws:cells.channel.kir2p1_mh2@1");
+  lens.focus("laws:cells.channel.kir2p1_mh2@1");
   lens.setSelection(null);
   const after = flights.length;
   stage.insets = { right: 420 };
@@ -1032,9 +1033,9 @@ test("the library opens on all of itself, nothing cut and the frame filled; choo
   // With the panel open beside it: a rack is come up to, and every lit slot of a piece is whole beside the panel.
   const right = 416, width = stage.width, height = stage.height;
   stage.insets = { right };
-  lens.setSelection("laws:resolved_pump_composite@1");
-  lens.focus("laws:resolved_pump_composite@1");
-  const rack = lens.layout.frames.find((frame) => frame.id === "resolved_pump_composite@1");
+  lens.setSelection("laws:cells.model.resolved_pump_composite@1");
+  lens.focus("laws:cells.model.resolved_pump_composite@1");
+  const rack = lens.layout.frames.find((frame) => frame.id === "cells.model.resolved_pump_composite@1");
   assert.ok(flights.at(-1).distance < home.distance * 0.85 && Math.abs(flights.at(-1).target.x - rack.x) < rack.w / 2, "the camera comes up to the rack");
   const seen = (view, items) => {
     place(view);
@@ -1049,7 +1050,7 @@ test("the library opens on all of itself, nothing cut and the frame filled; choo
     camera.clearViewOffset();
     camera.updateProjectionMatrix();
   };
-  for (const id of ["nak_atp_mass_action_positive@1", "kir2p1_mh2@1"]) {
+  for (const id of ["cells.cycle.nak_atp_mass_action_positive@1", "cells.channel.kir2p1_mh2@1"]) {
     lens.setSelection(`laws:${id}`);
     lens.focus(`laws:${id}`);
     const items = lens.library.slotsOf(id).map((slot) => lens.slotItem(slot.block ? `${slot.frame}|${slot.block}` : `${slot.frame}|${slot.row}|${slot.index}`));
@@ -1064,7 +1065,7 @@ test("the library opens on all of itself, nothing cut and the frame filled; choo
   lens.setMark("all");
   assert.ok(Math.abs(flights.at(-1).distance - home.distance) < 1e-6, "and home again");
   // An address naming what the map does not show (a legacy model ID): accepted, nothing lit, no move, no bloom.
-  const gone = raw.legacy[0];
+  const gone = [...library.legacy.values()][0];
   const moves = flights.length;
   lens.setSelection(`laws:${gone.id}`);
   lens.focus(`laws:${gone.id}`);
@@ -1084,13 +1085,13 @@ test("the library opens on all of itself, nothing cut and the frame filled; choo
 
 test("with less motion asked for nothing eases and no light runs: the routes stand at once", () => {
   const still = lensFor({ moving: false }).lens;
-  still.setSelection("laws:kv1p5_mh@1");
+  still.setSelection("laws:cells.channel.kv1p5_mh@1");
   assert.equal(still.growth, 1);
   assert.equal(still.running, 0, "no light runs along the routes");
   assert.equal(still.materials.line.uniforms.pulse.value, 0);
   assert.equal(still.update(16), false, "nothing is left to move");
   const moving = lensFor({ moving: true }).lens;
-  moving.setSelection("laws:kv1p5_mh@1");
+  moving.setSelection("laws:cells.channel.kv1p5_mh@1");
   assert.equal(moving.growth, 0);
   assert.equal(moving.update(16), true, "the route grows toward its slot");
   for (let n = 0; n < 600 && moving.update(16); n++);
@@ -1100,13 +1101,13 @@ test("with less motion asked for nothing eases and no light runs: the routes sta
 
 test("what it costs to draw, at the real size and at a thousand pieces", () => {
   const { lens } = lensFor();
-  lens.setSelection("laws:resolved_pump_composite@1"); // the most lines at once
+  lens.setSelection("laws:cells.model.resolved_pump_composite@1"); // the most lines at once
   const today = lens.cost();
   assert.ok(today.draws <= 40 && today.triangles <= 40000, `today: ${JSON.stringify(today)}`);
   lens.setSize(1000);
   assert.equal(lens.layout.bars.length, 1000, "the test of size fills the wall to a thousand places");
   assert.equal(lens.layout.bars.filter((bar) => bar.id).length, raw.pieces.length, "and adds no piece");
-  lens.setSelection("laws:resolved_pump_composite@1");
+  lens.setSelection("laws:cells.model.resolved_pump_composite@1");
   const thousand = lens.cost();
   assert.ok(thousand.draws <= 40 && thousand.triangles <= 60000, `at a thousand: ${JSON.stringify(thousand)}`);
   assert.ok(thousand.draws <= today.draws + 1, "a thousand bars cost no more draws than the real list, but the empty slots' own set");
@@ -1240,18 +1241,18 @@ test("on the map's page: the doors into the library open a declared piece, or sa
     assert.deepEqual(words.map((door) => door.label), expected, unit.id);
     // No law no active model declares is said to be declared: the lines name only such laws (above), none opens a door, and
     // each says "declared" only to deny it.
-    for (const law of undeclared) assert.ok(!declaredIds.has(namespaced(law)), `${unit.id}: ${law}`);
+    for (const law of undeclared) assert.ok(!declaredIds.has(library.resolve(law)), `${unit.id}: ${law}`);
     for (const door of words) assert.ok(!/declar/i.test(door.label.replace(/not yet declared by an active model|No active model declares|The engine's declarations do not list/g, "")), `${unit.id}: ${door.label}`);
     if (groups.length) saying.add(code);
     uncovered.push(...none.map((law) => [code, law]));
     if (doors.some((door) => door.lens)) opening.push(unit.label);
   }
   // As many units open a piece as name a law the manifest declares (10 of the 48 at 79d23cd5): counted from the manifest, not fixed here.
-  assert.equal(opening.length, units.filter((unit) => unitLaws(unit).some((law) => declaredIds.has(namespaced(law)))).length, opening.join("; "));
+  assert.equal(opening.length, units.filter((unit) => unitLaws(unit).some((law) => declaredIds.has(library.resolve(law)))).length, opening.join("; "));
   // Every row of the table whose law is still undeclared is said on each unit it names, and the units that say a mark's
   // words are those rows' units. A row whose law the manifest declares since the inventory was made is said on none:
   // each of its units opens that law through a door, and no line of words names it.
-  const standing = port.rows.filter((row) => !declaredIds.has(namespaced(row.law))), overtaken = port.rows.filter((row) => declaredIds.has(namespaced(row.law)));
+  const standing = port.rows.filter((row) => !declaredIds.has(library.resolve(row.law))), overtaken = port.rows.filter((row) => declaredIds.has(library.resolve(row.law)));
   assert.deepEqual(said.map(([code, law]) => `${code} ${law}`).sort(), standing.flatMap((row) => row.units.map((code) => `${code} ${row.law}`)).sort());
   assert.deepEqual([...saying].sort(), [...new Set(standing.flatMap((row) => row.units))].sort());
   for (const row of overtaken) {
@@ -1288,8 +1289,8 @@ test("on the map's page: the doors into the library open a declared piece, or sa
   // A door onto one piece chooses it, as a press would: the page hears the choice.
   const heard = [];
   lens.stage.canvas = { dispatchEvent: (event) => heard.push(event.detail) };
-  lens.setFinding("laws:cells.kv1p5_mh@1");
-  assert.deepEqual(heard, [{ id: "laws:kv1p5_mh@1", fly: true }]);
+  lens.setFinding("laws:cells.channel.kv1p5_mh@1");
+  assert.deepEqual(heard, [{ id: "laws:cells.channel.kv1p5_mh@1", fly: true }]);
   assert.equal(lens.chrome().card.find.label, "Find a piece", "the card offers a search field");
 });
 
@@ -1312,9 +1313,9 @@ test("where no 3D can be drawn, the list and the panel come from the scene's lis
   const scene = { laws: raw };
   const library = new Library(raw);
   assert.deepEqual(textSections(scene), sections(library));
-  assert.deepEqual(textDescribe(scene, "laws:kir2p1_mh2@1"), describe(library, "laws:kir2p1_mh2@1"));
+  assert.deepEqual(textDescribe(scene, "laws:cells.channel.kir2p1_mh2@1"), describe(library, "laws:cells.channel.kir2p1_mh2@1"));
   assert.deepEqual(textSections({}), [], "a page that carries no list lists nothing");
-  assert.equal(textDescribe({}, "laws:kir2p1_mh2@1"), null);
+  assert.equal(textDescribe({}, "laws:cells.channel.kir2p1_mh2@1"), null);
 });
 
 // ------------------------------------------------------------ what the wall does not show, and its links
@@ -1322,28 +1323,28 @@ test("where no 3D can be drawn, the list and the panel come from the scene's lis
 test("an address naming what the wall does not show is answered: a legacy model ID in the manifest's words, a row with no piece, and any other ID as not declared", async () => {
   const { describe } = await import("../src/lenses/laws_card.js");
   // A legacy model ID: the manifest's own words for what it is; nothing of what it was.
-  for (const item of manifest.legacy) {
+  for (const item of library.legacy.values()) {
     const said = describe(library, `laws:${item.id}`);
-    assert.equal(said.plain, `The engine's declarations list ${item.id} among the older model families: legacy code, to be dropped, with no page of its own. The map does not show it.`);
+    assert.equal(said.plain, `${item.id} was listed as a legacy model in the v58 catalogue at ${item.revision.slice(0,8)}. The current registry has no active entry for this bookmark.`);
     assert.deepEqual([said.status, said.facts, said.sources], [null, [], []], item.id);
   }
   // The wall lists them where it lists what it does not show, by ID as the manifest gives them.
-  const notShown = listSections(library).find((section) => section.label.startsWith("Not shown"));
-  assert.deepEqual(notShown.entities.map((entity) => entity.label), manifest.legacy.map((item) => item.id));
+  const notShown = listSections(library).find((section) => section.label.startsWith("Historical model bookmarks"));
+  assert.deepEqual(notShown.entities.map((entity) => entity.label), [...library.legacy.values()].map((item) => item.id));
   // A row with no piece of its own: the fuel kind, and the cycle laws that run on it.
-  const fuel = describe(library, "laws:maintained_chemical_reservoirs@1");
-  assert.equal(fuel.eyebrow, "A row of resolved_pump_tissue@3 · fuel kind");
+  const fuel = describe(library, "laws:cells.fuel_kind.maintained_chemical_reservoirs@1");
+  assert.equal(fuel.eyebrow, "A row of cells.model.resolved_pump_tissue@3 · fuel kind");
   assert.match(fuel.plain, /a row with no entry of its own in the engine's declarations/);
-  assert.deepEqual(fuel.opens[0].items.map((item) => item.label).sort(), manifest.pieces.filter((piece) => (piece.fields?.fuel_kinds || []).includes("maintained_chemical_reservoirs@1")).map((piece) => piece.declared_id).sort());
+  assert.deepEqual(fuel.opens[0].items.map((item) => item.label).sort(), manifest.pieces.filter((piece) => (piece.fields?.fuel_kinds || []).includes("cells.fuel_kind.maintained_chemical_reservoirs@1")).map((piece) => piece.declared_id).sort());
   // Any other ID, an old piece of the wall included: not listed, so not shown; never called legacy unless the manifest says so.
-  for (const id of ["cav1p2_m2h@1", "rk4", "capsid_graph@1", "source_decay@1", "neutral_mobile_leak@1"]) {
+  for (const id of ["unknown_law@91", "rk4", "cells.model.capsid_graph@1", "source_decay@1", "neutral_mobile_leak@1"]) {
     const said = describe(library, `laws:${id}`);
     if (!said) continue; // not an ID at all (rk4 has no version): the view does not answer it
     assert.equal(said.plain, `The engine's declarations do not list ${id}: no active registry declares it, so the map does not show it.`, id);
     assert.ok(!/legacy|older/.test(said.plain), id);
   }
   // A piece still declared keeps the address the wall gave it before, whichever spelling that was (the wall read at fa19d80c).
-  for (const id of ["atp_driven_transporter_mass_action_positive@1", "proton_atp_mass_action_positive@1", "rapid_proton_buffer@1", "cells.passive_routes@1", "kv1p5_mh@1", "site_occupancy@1"]) assert.ok(library.piece(id), `${id} still opens its piece`);
+  for (const id of ["cells.cycle.atp_driven_transporter_mass_action_positive@1", "cells.cycle.proton_atp_mass_action_positive@1", "cells.kind.rapid_proton_buffer@1", "cells.kind.passive_routes@1", "cells.channel.kv1p5_mh@1", "cells.operator.site_occupancy@1"]) assert.ok(library.piece(id), `${id} still opens its piece`);
 });
 
 test("the library's own sources link at the manifest's revision, said beside the link where the map's differs, and every linked file is there", async (t) => {
@@ -1358,14 +1359,14 @@ test("the library's own sources link at the manifest's revision, said beside the
     const said = describe(library, `laws:${id}`, { map: scene.meta });
     for (const source of said.sources) {
       assert.equal(source.revision, manifest.revision, `${id}: ${source.path}`);
-      assert.equal(model.sourceUrl(source), scene.meta.source_base_url.replace(at, `/blob/${manifest.revision}/`) + source.path, id);
+      assert.equal(model.sourceUrl(source), scene.meta.source_base_url.replace(at, `/blob/${manifest.revision}/`) + source.path + (source.line ? `#L${source.line}` : ""), id);
       if (differs) assert.ok(source.where.endsWith(`, as declared at main ${manifest.revision.slice(0, 8)}`), `${id}: ${source.where}`);
       linked.add(source.path);
     }
   }
   // On a map at the manifest's revision, the links need no words.
   const same = { ...scene.meta, revision: manifest.revision.slice(0, 8), source_base_url: scene.meta.source_base_url.replace(at, `/blob/${manifest.revision}/`) };
-  assert.equal(describe(library, "laws:kv1p5_mh@1", { map: same }).sources[0].where, `line ${manifest.pieces.find((piece) => piece.declared_id === "kv1p5_mh@1").line}`);
+  assert.equal(describe(library, "laws:cells.channel.kv1p5_mh@1", { map: same }).sources[0].where, `line ${manifest.pieces.find((piece) => piece.declared_id === "cells.channel.kv1p5_mh@1").line}`);
   // Where the main checkout is here to ask, every file linked is there at that revision.
   const common = spawnSync("git", ["-C", ROOT, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).stdout.trim();
   const repo = common ? path.dirname(common) : null;

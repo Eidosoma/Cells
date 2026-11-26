@@ -7,24 +7,33 @@ const v = (x, y, z) => new THREE.Vector3(x, y, z);
 // These are display coordinates. A shelf and its families keep their addresses as pieces are added.
 const berths = {
   channel: [-10.2, .3, -5.8], cycle: [-6.3, 1.2, -7.4], route: [-3.5, .55, -4.4],
-  junction: [-8.8, .45, -1.6], binding: [-4.7, .05, -.25], law: [-9.3, -.1, 4.55],
+  junction: [-8.8, .45, -1.6], binding: [-4.7, .05, -.25], law: [-13.8, .15, 4.2],
+  assembly: [-9.3, -.1, 4.55], reaction: [-8.2, .45, 9.1], regulation: [-12.8, .8, -.1],
   kind: [-.55, 1.25, -1.75], split: [2.05, 1.35, -6.6], "event-split": [5.9, 1.65, -7.6],
   event: [6.1, .72, -2.9], process: [2.7, .22, -.25], "no-part": [10.3, .6, -4.6],
   operator: [-4.15, -.35, 5.75], "design-channel": [1.45, -.55, 4.3],
   "design-cycle": [5.55, -.4, 3.3], "design-junction": [9.65, -.2, 2.25],
   "design-release": [4.25, -1.1, 8.25], "design-factor": [8.7, -.75, 6.9],
 };
-const shelfNames = { laws: "Inner-model laws", "family-laws": "Model-family laws", kinds: "Kinds",
-  operators: "Composite operators", "family-operators": "Model-family operators", design: "Design notes" };
+export const sectorLabel = {
+  laws: "Membrane & transport laws", "family-laws": "Assembly, reactions & regulation", kinds: "Kinds",
+  operators: "Composite operators", "family-operators": "Assembly & lineage operators", design: "Design notes",
+};
+const sectorFloor = {
+  laws: {label:[-9.25,-.65,-11.2], rim:"#284957", perimeter:[[-12.15,-8],[-6.3,-9.65],[-1.5,-6.6],[-1.7,.8],[-5.2,1.8],[-10.5,.65]]},
+  operators: {label:[6.2,-.65,-11.7], rim:"#284e4d", perimeter:[[.1,-8.5],[4.7,-9.75],[11.5,-7.3],[12.3,-1.2],[6.65,1],[.8,1.85]]},
+  design: {label:[7.0,-1,.35], rim:"#554738", perimeter:[[.1,2.6],[7.3,1],[11.45,.5],[11.45,8.9],[4.7,10.3],[.1,7]]},
+  "family-laws": {label:[-11.1,-.85,3.4], rim:"#473c58", perimeter:[[-14.9,-1.6],[-10.6,1.35],[-10.2,2.05],[-6.4,2.55],[-6.2,11],[-10.35,11],[-12.95,6.9]]},
+};
 const tones = { laws: "#76dff1", "family-laws": "#b3a1fc", kinds: "#8dbcf7", operators: "#75e6c4",
   "family-operators": "#c1a6ff", design: "#e9bc87" };
 export const linkTone = {
-  requires: "#62eee4", requiredBy: "#62eee4", reads: "#83c4ff", writes: "#ffc189",
+  hosts: "#cfa3ff", hostedBy: "#cfa3ff", readBy: "#83c4ff", requires: "#62eee4", requiredBy: "#62eee4", reads: "#83c4ff", writes: "#ffc189",
   direct: "#a3ddec", inner: "#bdabff", kind: "#cba5f6", ledgers: "#c9a8ef",
   provides: "#91eab6", owns: "#a8c5df", conflicts: "#ff9ca9",
 };
 export const starVerb = { requires: "Requires", reads: "Reads", writes: "Writes", provides: "Provides",
-  owns: "Owns", ledgers: "Lists ledger", requiredBy: "Required by", conflicts: "Cannot combine with",
+  hosts: "Hosts", hostedBy: "Hosted by", readBy: "Read by", owns: "Owns", ledgers: "Lists ledger", requiredBy: "Required by", conflicts: "Cannot combine with",
   direct: "Declared by", inner: "Via inner model", kind: "Via host kind" };
 
 // An ID, rather than its row number, locates a piece. Inserting an alphabetically earlier
@@ -47,9 +56,10 @@ export function starLayout(library) {
     if (!shelves.has(family.shelf)) shelves.set(family.shelf, []);
     shelves.get(family.shelf).push(center);
     library.inFamily.get(family.id).forEach(p => {
-      const radius = .15 + 1.32 * Math.sqrt(coordinate(p.id,0));
-      const angle = TAU * coordinate(p.id,1);
-      const height = .32 + (.32 + 1.25 * coordinate(p.id,2)) * Math.sqrt(1 - (radius/1.7)**2);
+      const seed = library.raw.viewer_ids?.layout_seeds?.[p.id] || p.id;
+      const radius = .15 + 1.32 * Math.sqrt(coordinate(seed,0));
+      const angle = TAU * coordinate(seed,1);
+      const height = .32 + (.32 + 1.25 * coordinate(seed,2)) * Math.sqrt(1 - (radius/1.7)**2);
       stars.set(p.id, center.clone().add(v(radius * Math.cos(angle), height, radius * Math.sin(angle))));
     });
   }
@@ -120,7 +130,7 @@ function drawFamilies(d, view) {
   const filtering = Boolean(view.filter.query || view.filter.where || view.filter.box || view.anatomy);
   for (const f of library.families) {
     const at = map.families.get(f.id), key = familyKey(f.id), pieces = library.inFamily.get(f.id);
-    const tone = tones[f.shelf] || tones.kinds, active = activeFamily === f.id;
+    const tone = ({assembly:"#a9acf9", reaction:"#ecaa7e", regulation:"#f093c8"})[f.id] || tones[f.shelf] || tones.kinds, active = activeFamily === f.id;
     const matching = pieces.filter(p => view.matches(p) && (!members || members.has(p.id)));
     const lit = !tracing && (!family || active) && matching.length > 0;
     const rim = tracing && !active ? "#22384a" : lit || active ? tone : "#3a5366";
@@ -152,11 +162,11 @@ function drawFamilies(d, view) {
     }
   }
   if (!tracing && !family && !nearFamily) {
-    for (const [id, centres] of map.shelves) {
-      if (centres.length < 2) continue;
-      const box = new THREE.Box3().setFromPoints(centres), at = box.getCenter(v(0,0,0));
-      at.z = box.min.z - 1.85; at.y += .45;
-      d.anchor(null, at, shelfNames[id] || id, 780, "star-sector");
+    for (const [id, sector] of Object.entries(sectorFloor)) {
+      if (!map.shelves.has(id)) continue;
+      const outline = sector.perimeter.map(([x,z]) => v(x,-1.05,z));
+      outline.forEach((point,i) => light.line(point,outline[(i+1)%outline.length],sector.rim));
+      d.anchor(null, v(...sector.label), sectorLabel[id], 780, "star-sector");
     }
   }
 }
@@ -172,6 +182,21 @@ export function starConnection(map, sourceId, edge, index, count) {
 export function drawStars(d, view) {
   const { light } = view;
   light.reset(); drawCompass(light); drawFamilies(d, view);
+  view.familyBounds = null;
+  if (view.mode === "atlas" && view.family && view.showFamilyRoutes) {
+    const start = view.map.families.get(view.family).clone().add(v(0,1.8,0));
+    const box = new THREE.Box3().setFromCenterAndSize(start,v(4,3,4));
+    for (const [destination, rows] of view.familyRoutes()) {
+      const end = view.map.families.get(destination).clone().add(v(0,1.8,0));
+      const curve = routeCurve(start,end);
+      const key = familyKey(destination);
+      // The arc counts the listed relationships, which can run in either direction.
+      drawRoute(d,light,curve,"#89bcca",key,false,true);
+      d.anchor(null,curve.getPoint(.55),String(rows.length),870,"star-verb");
+      box.expandByPoint(end); box.expandByPoint(curve.getPoint(.5));
+    }
+    view.familyBounds = box.expandByScalar(1.65);
+  }
   view.links = new Map();
   if (view.mode === "wiring") {
     const subject = view.library.piece(view.trace), origin = view.map.stars.get(subject.id);

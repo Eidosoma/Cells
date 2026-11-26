@@ -281,7 +281,7 @@
       "kind": "standing",
       "title": "FR-10: a dose schedule",
       "asks": "Can a held bath's composition change on a schedule, for a wash-in, a wash-out or a dose?",
-      "map": "op.scheduled_bath_composition@1",
+      "map": "op.cells.operator.scheduled_bath_composition@1",
       "record": [
         {
           "progress": { "entry": "FR-10 judged: passed", "scope": "Scope:" },
@@ -641,7 +641,7 @@
       "kind": "standing",
       "title": "FR-2: membrane retrieval and recycling",
       "asks": "Can membrane move from a cell's surface into a pool inside the cell and back, with its charge following it?",
-      "map": "op.scheduled_membrane_trafficking@1",
+      "map": "op.cells.operator.scheduled_membrane_trafficking@1",
       "record": [
         { "progress": { "entry": "FR-2 version 1 against its code-blind references" } }
       ],

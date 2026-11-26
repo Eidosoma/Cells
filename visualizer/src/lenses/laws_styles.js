@@ -82,6 +82,11 @@ export const LAWS_CSS = `
 .star-console .laws-action { white-space:nowrap; }
 .star-console button:focus-visible { outline:2px solid #9bf4e7; }
 .star-overview-console .laws-primary { background:#b5f4e8; color:#102630; border-color:#b5f4e8; }
+.star-family-index,.star-family-guide { display:grid; gap:5px; }
+.star-family-index summary,.star-route-list summary { cursor:pointer; color:var(--muted); font-size:12px; padding:3px 0; }
+.star-family-index[open] .laws-action,.star-route-list[open] .laws-action { display:block; width:100%; text-align:left; margin-top:5px; }
+.star-family-guide .laws-action { white-space:normal; }
+.star-destination small { display:block; color:var(--muted); padding:2px 0 5px; }
 .star-scope { padding-inline:4px; color:#bad0db; font-size:12px; }
 .star-flight-console { flex-wrap:wrap; }
 .star-breadcrumbs { flex:1 1 auto; overflow-x:auto; padding:3px; min-width:0; max-width:100%; scrollbar-width:thin; }

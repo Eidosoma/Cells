@@ -49,6 +49,7 @@ import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { DEFAULT_RUNS, DEFAULT_SCENE, ROOT } from "./lib/build_page.mjs";
 import { phraseOf } from "../src/lenses/law_port.js";
+import { fieldKey } from "../src/lenses/laws_connections.js";
 import { unitLaws } from "../src/lenses/laws_card.js";
 
 const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
@@ -85,7 +86,9 @@ const literally = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // The units the law-port cases open are found from the data too: a law the table marks may be declared at a later
 // merge (the five Kv1 laws of U05–U08 and U10 were, at 1ca5eada), and then its unit opens a door instead.
 const DECLARED = new Set(MANIFEST.pieces.flatMap((piece) => [piece.id, piece.declared_id]));
-const declaredLaw = (law) => DECLARED.has(law) || DECLARED.has(`cells.${law}`);
+const aliases = JSON.parse(await readFile(path.join(ROOT, "data/engine/viewer-ids.json"), "utf8")).aliases;
+const currentID = id => aliases[id] || id;
+const declaredLaw = law => DECLARED.has(currentID(law));
 const UNITS = JSON.parse(await readFile(DEFAULT_SCENE, "utf8")).entities.filter((entity) => entity.kind === "unit");
 const PORT_AS_IS = (() => {
   for (const unit of UNITS) {
@@ -219,7 +222,7 @@ try {
     check("every catalogue piece has a star at its own address", await evaluate(`${L}.map.stars.size===${L}.library.pieces.length && ${L}.light.root.parent===${V}.stage.scene`));
     await shot(NAME+"-overview");
     const position = await state();
-    await choose("model","resolved_pump_composite@1");
+    await choose("model","cells.model.resolved_pump_composite@1");
     check("model membership lights the catalogue in place", await evaluate(`${L}.overviewCount().pieces===${L}.graph.members.get(${L}.primary).size`) &&
       JSON.stringify((await state()).target)===JSON.stringify(position.target));
     await shot(NAME+"-model");
@@ -232,7 +235,7 @@ try {
     await press('[data-atlas-action="example"]'); await settled();
     check("the example shows the two real requirements",await evaluate(`${L}.relation==="requires" && ${L}.links.size===2`));
     await shot(NAME+"-requires");
-    const destination="laws:scheduled_cell_replacement@1";
+    const destination="laws:cells.operator.scheduled_cell_replacement@1";
     const targetSelector='.label-star-target[data-label="'+destination+'"]:not(.is-off)';
     const target=await placeOf("root.querySelector("+JSON.stringify(targetSelector)+")");
     if (target) await click(target.x,target.y,30);
@@ -260,7 +263,7 @@ try {
     await open(query);
     check("a shared flight restores the endpoint and its path",await evaluate(`${L}.terminal && ${L}.path.at(-1).edge.name==="membrane_area" && ${L}.path.length===2`));
     await evaluate(`${root}.querySelector('[data-star-stop="0"]').click()`);
-    check("a breadcrumb returns to that piece and relation",await evaluate(`${L}.trace==="site_occupant_replacement@1" && ${L}.relation==="requires" && !${L}.path.length`));
+    check("a breadcrumb returns to that piece and relation",await evaluate(`${L}.trace==="cells.operator.site_occupant_replacement@1" && ${L}.relation==="requires" && !${L}.path.length`));
     await press('[data-atlas-action="overview"]');
     await press('[data-atlas-action="open-matrix"]');
     check("the matrix compares actual memberships",await evaluate(`${L}.mode==="compare" && ${root}.querySelectorAll(".star-matrix tbody tr").length>0 && ${root}.querySelector(".star-matrix [data-star-group='1']").textContent.includes(String(${L}.graph.compare(${L}.primary,${L}.other)[1].length))`));
@@ -270,9 +273,26 @@ try {
     await page("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
     await press('[data-atlas-action="example"]');
     await evaluate(`${L}.follow(${JSON.stringify(destination)})`);
-    check("reduced motion lands immediately without a pulse",await evaluate(`!${V}.stage.rig.flight && !${L}.light.pulse.visible && ${L}.trace==="scheduled_cell_replacement@1"`));
+    check("reduced motion lands immediately without a pulse",await evaluate(`!${V}.stage.rig.flight && !${L}.light.pulse.visible && ${L}.trace==="cells.operator.scheduled_cell_replacement@1"`));
+    await open("lens=laws&lawFamily=cycle&still=1");
+    check("families are grouped in the catalogue control", await evaluate(`${root}.querySelectorAll('[data-atlas-control="family"] optgroup').length >= 4`));
+    await evaluate(`${root}.querySelector('[data-atlas-action="family-routes"]').click()`);
+    await settled();
+    check("the cycle family maps declared reads to the Binding family", await evaluate(`${L}.showFamilyRoutes && ${L}.familyBounds && ${L}.familyRoutes().get("binding").some(({source,edge})=>source.id==="cells.cycle.atp_driven_transporter_mass_action_positive@2" && edge.verb==="reads")`));
+    await shot(NAME+"-family-connections");
+    const legacy = new URLSearchParams({
+      lens: "laws", trace: "scheduled_cell_replacement@1", lawRelation: "reads",
+      lawModel: "resolved_pump_composite@1",
+      lawTrail: JSON.stringify(["site_occupant_replacement@1", ["requires","laws:scheduled_cell_replacement@1"],
+        ["reads","laws:field/scheduled_cell_replacement%401/reads/membrane_area"]]),
+    });
+    await open(legacy.toString());
+    const currentField = fieldKey(currentID("scheduled_cell_replacement@1"),"reads","membrane_area");
+    check("a v58 flight restores the field and both links under canonical IDs", await evaluate(`${L}.terminal && ${L}.path.length===2 && ${L}.path.at(-1).edge.id===${JSON.stringify(currentField)}`));
     await evaluate(`${V}.setLens("engine",true)`);
     check("leaving the atlas releases its sky and controls",await evaluate(`!${root}.querySelector(".laws-space,.star-overlay") && !${V}.stage.scene.children.includes(${V}.lenses.get("laws").light.root)`));
+    await open("lens=engine&select=op.site_occupant_replacement@1");
+    check("a v58 Engine operator link opens the canonical operator", (await state()).selected==="op.cells.operator.site_occupant_replacement@1");
   } else if (ATLAS) {
     await open("lens=laws&still=1");
     const root = V + ".shadowRoot";
@@ -332,13 +352,13 @@ try {
     check(
       "the written field points to its receiving operator",
       await evaluate(
-        L + ".describe(" + L + '.selected)?.opens.some(g=>g.title.includes("Engine map")&&g.items.some(e=>e.id==="laws:site_occupancy@1"))',
+        L + ".describe(" + L + '.selected)?.opens.some(g=>g.title.includes("Engine map")&&g.items.some(e=>e.id==="laws:cells.operator.site_occupancy@1"))',
       ),
     );
     await tap(".exp-back");
     await phoneMenu();
-    await choose("model", "resolved_pump_water@2");
-    await choose("compare", "resolved_pump_replacement@1");
+    await choose("model", "cells.model.resolved_pump_water@2");
+    await choose("compare", "cells.model.resolved_pump_replacement@1");
     check(
       "comparison displays each of the two models’ pieces once",
       await evaluate(
@@ -351,16 +371,16 @@ try {
     await open(url);
     check(
       "reloading the comparison preserves the pair",
-      await evaluate(L + '.mode==="compare" && ' + L + '.primary==="resolved_pump_water@2" && ' + L + '.other==="resolved_pump_replacement@1"'),
+      await evaluate(L + '.mode==="compare" && ' + L + '.primary==="cells.model.resolved_pump_water@2" && ' + L + '.other==="cells.model.resolved_pump_replacement@1"'),
     );
     await phoneMenu();
-    await choose("piece", "scheduled_cell_replacement@1");
+    await choose("piece", "cells.operator.scheduled_cell_replacement@1");
     await phoneMenu();
     await tap('[data-atlas-action="trace"]');
     await tap(".exp-back");
     check(
       "returning to the pair restores the inspected piece",
-      await evaluate(L + '.mode==="compare" && ' + L + '.selected==="laws:scheduled_cell_replacement@1"'),
+      await evaluate(L + '.mode==="compare" && ' + L + '.selected==="laws:cells.operator.scheduled_cell_replacement@1"'),
     );
     await open("lens=cell&select=cap.channels&still=1");
     const mapped = await evaluate(
@@ -391,7 +411,7 @@ try {
     await shot(`${NAME}-rest`);
 
     // ---------------------------------------------------------- a real press on a bar
-    const id = "nak_atp_mass_action_positive@1";
+    const id = "cells.cycle.nak_atp_mass_action_positive@1";
     const at = await barAt(id);
     await click(at.x, at.y, 1500);
     s = await state();
@@ -410,7 +430,7 @@ try {
     check("Escape lets go", !s.selected, String(s.selected));
 
     // ---------------------------------------------------------- a model family: chosen by a press, found in the List; no word says older
-    const family = "resolved_pump_tissue@2";
+    const family = "cells.model.resolved_pump_tissue@2";
     const caseAt = await evaluate(`(() => { const v = ${V}, item = v.current.layout.cases.find((c) => c.id === ${JSON.stringify(family)}); const p = new v.stage.camera.position.constructor(item.x, item.y, item.z + item.d / 2); v.stage.project(p, p); const r = v.canvas.getBoundingClientRect(); return { x: r.left + p.x, y: r.top + p.y }; })()`);
     await click(caseAt.x, caseAt.y, 1500);
     s = await state();
@@ -419,7 +439,7 @@ try {
     await evaluate(`${V}.toggleIndex(true)`);
     await sleep(400);
     const listed = await evaluate(`(() => { const root = ${V}.shadowRoot, search = root.querySelector("#cells-index-search"); search.value = "resolved_pump_tissue"; search.dispatchEvent(new Event("input")); return [...root.querySelectorAll("cells-index section")].map((section) => [section.querySelector("h3").textContent, [...section.querySelectorAll(".index-name")].map((name) => name.textContent)]); })()`);
-    check("the List's search finds the model families by name, under Model families with no rows", JSON.stringify(listed.find(([label]) => label === "Model families with no rows")?.[1]) === JSON.stringify(["resolved_pump_tissue@1", "resolved_pump_tissue@2"]), JSON.stringify(listed));
+    check("the List's search finds the model families by name, under Model families with no rows", JSON.stringify(listed.find(([label]) => label === "Model families with no rows")?.[1]) === JSON.stringify(["cells.model.resolved_pump_tissue@1", "cells.model.resolved_pump_tissue@2"]), JSON.stringify(listed));
     await evaluate(`(() => { const search = ${V}.shadowRoot.querySelector("#cells-index-search"); search.value = ""; search.dispatchEvent(new Event("input")); })()`);
     if (!(await evaluate(`${V}.state.legendOpen`))) await evaluate(`${V}.shadowRoot.dispatchEvent(new CustomEvent("cells-legend-toggle"))`);
     await sleep(400);
@@ -428,7 +448,7 @@ try {
     const legacy = await evaluate(`(() => { const section = [...${V}.shadowRoot.querySelectorAll("cells-index section")].find((item) => item.querySelector("h3").textContent.startsWith("Not shown")); return section ? [section.querySelector("h3").textContent, section.querySelectorAll(".index-row").length, section.querySelector(".index-more")?.textContent || ""] : null; })()`);
     check("the List names the legacy model IDs as not shown, in the manifest's words", legacy && legacy[0] === "Not shown: the older model families (legacy code, to be dropped)" && legacy[1] === 12 && new RegExp(`and ${MANIFEST.legacy.length - 12} more`).test(legacy[2]), JSON.stringify(legacy));
     // A cited law's panel: its citation as the manifest states it.
-    await evaluate(`${V}.select("laws:proton_constant_field_leak@1")`);
+    await evaluate(`${V}.select("laws:cells.route.proton_constant_field_leak@1")`);
     await sleep(1500);
     s = await state();
     check("a cited law's panel says its citation, where in it, its licence and how it departs", /Provenance\s*cited/.test(s.panel) && /Goldman-Hodgkin-Katz/.test(s.panel) && /Where in it\s*docs\/COMPARTMENT_PH_TRANSFER_DESIGN\.md/.test(s.panel) && /Licence\s*no numbers taken/.test(s.panel) && /Departs from it\s*it reads free h/.test(s.panel), s.panel.slice(0, 300));
@@ -513,7 +533,7 @@ try {
     await shot(`${NAME}-after-loss`);
   } else if (CASE === "gone") {
     // ---------------------------------------------------------- a box the Engine view does not draw
-    check("the page opens on a piece whose box is not drawn", await open("lens=laws&select=laws:nak_atp_mass_action_positive@1"));
+    check("the page opens on a piece whose box is not drawn", await open("lens=laws&select=laws:cells.cycle.nak_atp_mass_action_positive@1"));
     const s = await state();
     check("its panel quotes no level of any box", !/established|qualified|landed|planned/i.test(s.panel), s.panel.slice(0, 200));
     check("and offers no link to the box the page does not draw", !/On the Engine view/.test(s.panel));
@@ -522,27 +542,27 @@ try {
     await shot(`${NAME}-piece`);
     check("the Engine view has no such box to open", (await open(`lens=engine&select=${GONE_BOX}`)) && !(await state()).selected);
   } else if (CASE === "address") {
-    check("select=laws:<id> with no lens opens the library on that piece", (await open("select=laws:kir2p1_mh2@1")) && (await state()).selected === "laws:kir2p1_mh2@1" && (await state()).lens === "laws", JSON.stringify(await state()));
+    check("select=laws:<id> with no lens opens the library on that piece", (await open("select=laws:cells.channel.kir2p1_mh2@1")) && (await state()).selected === "laws:cells.channel.kir2p1_mh2@1" && (await state()).lens === "laws", JSON.stringify(await state()));
     await shot(`${NAME}-select`);
-    check("and so it does from lens=engine", (await open("lens=engine&select=laws:resolved_pump_tissue@3")) && (await state()).lens === "laws" && (await state()).selected === "laws:resolved_pump_tissue@3", JSON.stringify(await state()));
+    check("and so it does from lens=engine", (await open("lens=engine&select=laws:cells.model.resolved_pump_tissue@3")) && (await state()).lens === "laws" && (await state()).selected === "laws:cells.model.resolved_pump_tissue@3", JSON.stringify(await state()));
     check("#laws in the address opens it too", (await open("x=1#laws")) && (await state()).lens === "laws");
     // Either spelling of a declared ID opens the one piece (the manifest's ID rule).
-    await open("select=laws:cells.kv1p5_mh@1");
-    check("select=laws:cells.kv1p5_mh@1 opens kv1p5_mh@1, the spelling it is declared with", (await evaluate(`${L}.selected`)) === "laws:kv1p5_mh@1" && /kv1p5_mh@1/.test((await state()).panel), String(await evaluate(`${L}.selected`)));
+    await open("select=laws:cells.channel.kv1p5_mh@1");
+    check("select=laws:cells.channel.kv1p5_mh@1 opens cells.channel.kv1p5_mh@1, the spelling it is declared with", (await evaluate(`${L}.selected`)) === "laws:cells.channel.kv1p5_mh@1" && /cells.channel.kv1p5_mh@1/.test((await state()).panel), String(await evaluate(`${L}.selected`)));
     // An old link in the other spelling: its piece is chosen, and the camera goes to it as for its own spelling.
     await open("lens=laws");
     const home = await state();
-    await open("select=laws:atp_driven_transporter_mass_action_positive@1");
+    await open("select=laws:cells.cycle.atp_driven_transporter_mass_action_positive@1");
     await until(`!${V}.stage.rig.flight`, 240);
     const there = await state();
-    check("an old link in the other spelling chooses its piece, and the camera goes to it", (await evaluate(`${L}.selected`)) === "laws:cells.atp_driven_transporter_mass_action_positive@1" && (there.distance < home.distance - 1 || there.target.join() !== home.target.join()), JSON.stringify([home.distance, there.distance, home.target, there.target]));
+    check("an old link in the other spelling chooses its piece, and the camera goes to it", (await evaluate(`${L}.selected`)) === "laws:cells.cycle.atp_driven_transporter_mass_action_positive@1" && (there.distance < home.distance - 1 || there.target.join() !== home.target.join()), JSON.stringify([home.distance, there.distance, home.target, there.target]));
     // An address naming what the wall does not show: the library opens and says so plainly.
     const said = {
       // A legacy model ID: the manifest's own words for what it is.
-      "resolved_tissue@1": (text) => /Legacy code; not shown/.test(text) && /The engine's declarations list resolved_tissue@1 among the older model families: legacy code, to be dropped, with no page of its own\./.test(text),
+      "cells.model.resolved_tissue@1": (text) => /Legacy code; not shown/.test(text) && /The engine's declarations list cells.model.resolved_tissue@1 among the older model families: legacy code, to be dropped, with no page of its own\./.test(text),
       // IDs the manifest does not list at all, an old piece and an old model family among them: never called legacy.
       "assembly_regulated_cell@1": (text) => /Not declared/.test(text) && /The engine's declarations do not list assembly_regulated_cell@1: no active registry declares it/.test(text) && !/legacy/.test(text),
-      "cav1p2_m2h@1": (text) => /The engine's declarations do not list cav1p2_m2h@1/.test(text),
+      "cells.channel.cav1p2_m2h@1": (text) => /The engine's declarations do not list cells.channel.cav1p2_m2h@1/.test(text),
     };
     for (const [id, says] of Object.entries(said)) {
       await open(`select=laws:${id}`);
@@ -551,31 +571,31 @@ try {
     }
     await shot(`${NAME}-not-shown`);
     // A model family with no rows: its own panel, its case lit.
-    await open("select=laws:apical_vertex_mechanics@1");
+    await open("select=laws:cells.model.apical_vertex_mechanics@1");
     const family = await state();
     const lit = await evaluate(`${L}.litSlots.mesh.count`);
-    check("select=laws:apical_vertex_mechanics@1 opens a model family's panel, its case lit", family.selected === "laws:apical_vertex_mechanics@1" && /A model family with no rows/.test(family.panel) && /its laws are tables inside it/.test(family.panel) && lit === 1, JSON.stringify([family.panel.slice(0, 200), lit]));
+    check("select=laws:cells.model.apical_vertex_mechanics@1 opens a model family's panel, its case lit", family.selected === "laws:cells.model.apical_vertex_mechanics@1" && /A model family with no rows/.test(family.panel) && /its laws are tables inside it/.test(family.panel) && lit === 1, JSON.stringify([family.panel.slice(0, 200), lit]));
     // The fuel kind: a row of the inner model with no piece of its own; its socket lit, and the cycle laws that run on it.
-    await open("select=laws:maintained_chemical_reservoirs@1");
+    await open("select=laws:cells.fuel_kind.maintained_chemical_reservoirs@1");
     const fuel = await state();
-    check("select=laws:maintained_chemical_reservoirs@1 opens the inner model's row with no piece, its socket lit", /A row of resolved_pump_tissue@3 · fuel kind/.test(fuel.panel) && /nak_atp_mass_action_positive@1/.test(fuel.panel) && (await evaluate(`${L}.litSlots.mesh.count`)) === 1, fuel.panel.slice(0, 200));
+    check("select=laws:cells.fuel_kind.maintained_chemical_reservoirs@1 opens the inner model's row with no piece, its socket lit", /A row of cells.model.resolved_pump_tissue@3 · fuel kind/.test(fuel.panel) && /cells.cycle.nak_atp_mass_action_positive@1/.test(fuel.panel) && (await evaluate(`${L}.litSlots.mesh.count`)) === 1, fuel.panel.slice(0, 200));
     // A piece links where it is declared at the manifest's revision, and the words beside the link say so where the map's is another.
-    await open("select=laws:kv1p5_mh@1");
+    await open("select=laws:cells.channel.kv1p5_mh@1");
     const links = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .sources li")].map((item) => ({ href: item.querySelector("a")?.href || null, text: item.textContent }))`);
     const meta = await evaluate(`${V}.model.meta`);
-    const declared = links.find((link) => link.text.startsWith(fileOf("kv1p5_mh@1")) && new RegExp(`line ${lineOf("kv1p5_mh@1")}(?!\\d)`).test(link.text));
+    const declared = links.find((link) => link.text.startsWith(fileOf("cells.channel.kv1p5_mh@1")) && new RegExp(`line ${lineOf("cells.channel.kv1p5_mh@1")}(?!\\d)`).test(link.text));
     const other = !meta.source_base_url.includes(MANIFEST.revision);
-    check("a piece links the file it is declared in at the manifest's revision, with its line, and says so where the map's is another", Boolean(declared?.href?.includes(`/blob/${MANIFEST.revision}/${fileOf("kv1p5_mh@1")}`)) && (!other || new RegExp(`as declared at main ${MANIFEST.revision.slice(0, 8)}`).test(declared.text)) && links.every((link) => link.href?.includes(`/blob/${MANIFEST.revision}/`)), JSON.stringify([links, meta.revision]));
+    check("a piece links the file it is declared in at the manifest's revision, with its line, and says so where the map's is another", Boolean(declared?.href?.includes(`/blob/${MANIFEST.revision}/${fileOf("cells.channel.kv1p5_mh@1")}`)) && (!other || new RegExp(`as declared at main ${MANIFEST.revision.slice(0, 8)}`).test(declared.text)) && links.every((link) => link.href?.includes(`/blob/${MANIFEST.revision}/`)), JSON.stringify([links, meta.revision]));
     // A unit of the Protein atlas: a door onto its declared law, and words with no door for a law the manifest does not list.
     await open("select=unit.U09");
     let unit = await state();
     const unitDoors = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-door")].map((door) => ({ text: door.textContent, button: Boolean(door.querySelector("button")) }))`);
-    check("a unit's panel has a door onto its declared law, and says of each other law that no active model declares it, with no door", unitDoors.some((door) => door.button && /^Explore kv1p5_mh@1 in the Laws atlas/.test(door.text)) && unitDoors.filter((door) => !door.button).length === 1 && /^No active model declares these laws of this unit: kv1p5_ml_dynamic_m@1, kv1p5s_ml_slow_dynamic_m@1\./.test(unitDoors.find((door) => !door.button).text), JSON.stringify([unit.lens, unitDoors]));
+    check("a unit's panel has a door onto its declared law, and says of each other law that no active model declares it, with no door", unitDoors.some((door) => door.button && /^Explore cells.channel.kv1p5_mh@1 in the Laws atlas/.test(door.text)) && unitDoors.filter((door) => !door.button).length === 1 && /^No active model declares these laws of this unit: cells.channel.kv1p5_ml_dynamic_m@1, cells.channel.kv1p5s_ml_slow_dynamic_m@1\./.test(unitDoors.find((door) => !door.button).text), JSON.stringify([unit.lens, unitDoors]));
     await shot(`${NAME}-unit-doors`);
-    const unitDoor = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => /^Explore kv1p5_mh@1 in the Laws atlas/.test(button.textContent))`);
+    const unitDoor = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => /^Explore cells.channel.kv1p5_mh@1 in the Laws atlas/.test(button.textContent))`);
     if (unitDoor) await click(unitDoor.x, unitDoor.y, 2200);
     unit = await state();
-    check("the unit's door opens the library on that law, chosen", unit.lens === "laws" && (await evaluate(`${L}.selected`)) === "laws:kv1p5_mh@1" && /kv1p5_mh@1/.test(unit.panel), JSON.stringify([unit.lens, unit.selected]));
+    check("the unit's door opens the library on that law, chosen", unit.lens === "laws" && (await evaluate(`${L}.selected`)) === "laws:cells.channel.kv1p5_mh@1" && /cells.channel.kv1p5_mh@1/.test(unit.panel), JSON.stringify([unit.lens, unit.selected]));
     // A unit of each mark of the law-port inventory: its law, a colon, and that mark's words, in one line that opens nothing.
     check(`a unit whose every law the law-port table marks "port as is", none of them declared, is found (${PORT_AS_IS?.join(" ")})`, Boolean(PORT_AS_IS));
     for (const [id, law] of [...(PORT_AS_IS ? [PORT_AS_IS] : []), ["U42", "ncx_3na_1ca_symmetric_barrier@1"], ["U47", "mitochondrial_passive_continuous_si@1"], ["U37", "junction_flux() in the nominal profile"]]) {
@@ -593,7 +613,7 @@ try {
       const id = PORT_DECLARED.units[0];
       await open(`select=unit.${id}`);
       const doors = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-door")].map((door) => ({ text: door.textContent, button: Boolean(door.querySelector("button")) }))`);
-      check(`unit.${id}: ${PORT_DECLARED.law}, which the table marks "${PORT_DECLARED.mark}" and the manifest declares, opens its door, and the mark's words are not said`, doors.some((door) => door.button && new RegExp(`^Explore ${literally(PORT_DECLARED.law)} in the Laws atlas`).test(door.text.trim())) && !doors.some((door) => !door.button && door.text.includes(PORT_DECLARED.law)), JSON.stringify(doors));
+      check(`unit.${id}: ${PORT_DECLARED.law}, which the table marks "${PORT_DECLARED.mark}" and the manifest declares, opens its door, and the mark's words are not said`, doors.some((door) => door.button && new RegExp(`^Explore ${literally(currentID(PORT_DECLARED.law))} in the Laws atlas`).test(door.text.trim())) && !doors.some((door) => !door.button && door.text.includes(PORT_DECLARED.law)), JSON.stringify(doors));
       await shot(`${NAME}-unit-${id}-declared`);
     }
     // What the view leaves behind: the Cell view opened after it is as the Cell view opened alone.
@@ -612,7 +632,7 @@ try {
     check("it says that 3D is not available", /3D drawing is not available/.test(said), said);
     const listed = await evaluate(`${V}.sections().map((section) => [section.label, section.entities.length])`);
     check("the list holds the library's families, models, cases and what it does not show", listed.length >= 15 && listed.some(([label, n]) => label === "Models" && n === RACKS) && listed.some(([label, n]) => label === "Model families with no rows" && n === CASES) && listed.some(([label, n]) => label.startsWith("Not shown") && n === MANIFEST.legacy.length), JSON.stringify(listed.slice(-4)));
-    await evaluate(`${V}.select("laws:kir2p1_mh2@1")`);
+    await evaluate(`${V}.select("laws:cells.channel.kir2p1_mh2@1")`);
     await sleep(800);
     const s = await state().catch(() => null);
     const panel = await evaluate(`(() => { const p = ${V}.shadowRoot.querySelector("cells-panel"); return p && !p.hidden ? p.textContent : ""; })()`);
@@ -647,17 +667,17 @@ try {
     check("and a real press on the line folds it again", p.card === null && p.toggle?.expanded === "false", JSON.stringify(p));
     // A piece named in the address on a phone: the room is laid out again for the tall screen after the piece was chosen,
     // and the piece is framed in the new room, in the picture above the panel's sheet (17 November 2026: it stood far above the screen).
-    check("select=laws:<id> opens the library on a phone, with the piece chosen", (await open("select=laws:kir2p1_mh2@1")) && (await state()).selected === "laws:kir2p1_mh2@1");
+    check("select=laws:<id> opens the library on a phone, with the piece chosen", (await open("select=laws:cells.channel.kir2p1_mh2@1")) && (await state()).selected === "laws:cells.channel.kir2p1_mh2@1");
     await sleep(2200);
-    const named = await barAt("kir2p1_mh2@1");
+    const named = await barAt("cells.channel.kir2p1_mh2@1");
     const sheet = await evaluate(`(() => { const p = ${V}.shadowRoot.querySelector("cells-panel"); const r = p && !p.hidden ? p.getBoundingClientRect() : null; return r && r.height ? Math.round(r.top) : ${HEIGHT}; })()`);
     check("the piece named in the address stands in the picture, between the bar and the panel", Boolean(named) && named.x >= 0 && named.x <= WIDTH && named.y >= 56 && named.y <= sheet, JSON.stringify([named, sheet]));
     await shot(`${NAME}-named`);
     await shot(`${NAME}-rest`);
-    await evaluate(`${V}.select("laws:nak_atp_mass_action_positive@1", { fly: true })`);
+    await evaluate(`${V}.select("laws:cells.cycle.nak_atp_mass_action_positive@1", { fly: true })`);
     await sleep(2000);
     s = await state();
-    check("a piece chosen opens the panel as a sheet, and the picture keeps room above it", s.selected === "laws:nak_atp_mass_action_positive@1" && s.insets.bottom > 0 && !s.insets.left, JSON.stringify(s.insets));
+    check("a piece chosen opens the panel as a sheet, and the picture keeps room above it", s.selected === "laws:cells.cycle.nak_atp_mass_action_positive@1" && s.insets.bottom > 0 && !s.insets.left, JSON.stringify(s.insets));
     await shot(`${NAME}-piece`);
   }
   const errors = pageLog.filter((line) => /error|exception|rejection|blocked/i.test(line));

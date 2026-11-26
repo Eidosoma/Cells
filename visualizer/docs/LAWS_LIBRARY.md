@@ -22,6 +22,13 @@ stand on two lines (`src/lenses/laws_layout.js`; a test holds every slot inside 
 Since main 93fc8c2c a cycle law's card says its general form in words, key by key, and never pours
 its data (`schema/LAWS_LIBRARY.md`, "A cycle law's general form").
 
+**26 November 2026.** The v59 atlas reads declarations format 3. The family view groups
+assembly geometry and events, reactions and free energy, and regulation and rate factors
+into three pods. A selected family can map its cross-family relationships, with the individual
+declarations available to trace. Shared addresses use the published ID move table.
+The Engine view reports declared fields. Resolved writer and sole-writer rows depend on a
+world's species and node configuration and require an export from that world.
+
 **What a unit of the Protein atlas says of a law no active model declares (18 November 2026).**
 On 17 November 2026 the project decided to port tested older laws to the active engine (D211),
 and the engine's lead made a read-only inventory of the 54 law IDs behind the 38 units that open
@@ -32,8 +39,8 @@ viewer's table of it, `data/laws/law_port.json`, is made from the inventory by
 tests' class, with the inventory's kind, date and head. A unit's panel says, in one line for each
 mark and with no door, the mark's words after the laws' names (`src/lenses/law_port.js`): 47 laws
 are marked "port as is", 5 "fold into an owner's planned law" (all five the cardiac lane's), and 2
-"not a port", each of those two with words of its own. A door still opens only a declared piece, whatever the table says: since main 1ca5eada five of
-its rows' laws, the Kv1 laws of U05 to U08 and U10, are declared, and those units open them. The
+"not a port", each of those two with words of its own. A door still opens only a declared piece, whatever the table says: since main 1ca5eada Seven of
+its rows' laws, five Kv1 laws, CaV1.2 and electroneutral symport, are declared, and those units open them. The
 14 laws on the atlas's units that the inventory has no row for, all on seven of the 15 units that
 open a declared piece, keep the earlier words: the engine's declarations do not list them.
 
