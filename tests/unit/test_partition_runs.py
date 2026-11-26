@@ -182,6 +182,53 @@ def test_turnover_leaves_closed_slots_untouched_and_follows_each_carrier(turnove
         assert np.max(np.abs(n[born, slot] - today)) > bound
 
 
+def w3_divided():
+    """FR-43 part 3's divided world (validation/fr43_part3/worlds.divided: membrane state, the
+    partition and cells.operator.integer_unit_population@1 on the contact patch, its sites mapped)
+    with W3_two_way_turnover's turnover (the spec world's P in the cell, k at the node), the cell
+    routes keyed by carriers: the founder cell_0 from 0, c1 and c2 from their birth."""
+    from validation.fr43_part3 import worlds as part3
+    from validation.tissue import secreted_species_fixtures as ssf
+
+    rates = part3.spec_worlds()["W3_two_way_turnover"]["turnover"]
+    make, clear = rates["production_cell_fmol_per_s"], rates["clearance_node_per_s"]
+    raw = part3.divided("W3_two_way_turnover")
+    (at,) = [e["time"] for e in raw["experiment"]["partition_events"]]
+    routes = [(f"make_{c}", c, "production") for c in ("cell_0", "d1", "d2")]
+    controls = [("make_cell_0", "cell_0", [(0.0, make)])]
+    controls += [(f"make_{d}", c, [(at, make)]) for d, c in (("d1", "c1"), ("d2", "c2"))]
+    routes.append(("clear", "ecs_0", "clearance"))
+    controls.append(("clear", None, [(0.0, clear)]))
+    return ssf.with_turnover(raw, routes, controls), make, at
+
+
+def test_turnover_beside_the_population_in_a_dividing_cell():
+    """D327's check of a composition FR-65 newly admits (FR-43 part 3's co-writers note, §6.3:
+    membrane state, the partition, the population and turnover parse together, in either order of
+    the last two): W3's turnover in part 3's divided world, one run with every host check on every
+    row (each writer's books in S's ledgers). Turnover's production follows the occupant rule
+    there: the parent's is P t until the division and then held, each daughter's is P (t - b)
+    from its birth b, and the pending daughters' S stays untouched before it. Planted: a
+    daughter's production from time 0 misses. Seconds and reason (D224): about 40 s, one compile
+    and 5 steps; the four operators are newly admitted together."""
+    raw, make, at = w3_divided()
+    spec = parse_spec(raw)
+    result = run(spec)  # Every host check on every accepted row.
+    h, times = result.history, np.asarray(result.times)
+    row = list(spec.model.species_ids).index("S")
+    produced = np.asarray(h.turnover_produced_fmol)[:, row]
+    born = times > at + 1e-12  # Rows after the step whose event divides.
+    eps = np.finfo(float).eps
+    bound = 8 * eps * len(times) * make * float(times[-1])
+    assert np.max(np.abs(produced[~born, 0] - make * times[~born])) <= bound
+    assert (produced[born, 0] == produced[np.flatnonzero(born)[0] - 1, 0]).all()  # Held.
+    assert not np.asarray(h.amount_increment)[~born, row][:, 1:3].any()
+    for slot in (1, 2):
+        assert not produced[~born, slot].any()
+        assert np.max(np.abs(produced[born, slot] - make * (times[born] - at))) <= bound
+        assert np.max(np.abs(produced[born, slot] - make * times[born])) > bound  # Planted.
+
+
 def test_the_declared_mask_twin_writes_a_pending_slot_and_is_refused():
     """FR-65 §6.1, today's code at run level: turnover reading the declared masks (P2) with the
     daughters' rates in force from time 0 (P3, no leading zero) writes S into the pending slots d1
