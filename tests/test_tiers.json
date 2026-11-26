@@ -403,7 +403,8 @@
   "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure/measured-41.json",
   "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure-fixes/measured.json",
   "/mnt/workspaces/Cells/test-slimming-20261126/job1/measure/measured-placed.json",
-  "/mnt/workspaces/Cells/test-slimming-20261126/job2/gates-row/measure/measured.json"
+  "/mnt/workspaces/Cells/test-slimming-20261126/job2/gates-row/measure/measured.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/regen/measure/measured-placed.json"
  ],
  "measured_provenance": [
   {
@@ -3448,6 +3449,14 @@
    "root": "/mnt/workspaces/Cells/test-slimming-20261126/job2/dry/20261126/snapshot",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-26T15:39:46+00:00"
+  },
+  {
+   "git_revision": "c52d099805027ca43c93da99467dbca3980fa9fb",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/test-slimming-20261126/snap-c52d0998",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T15:48:34+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6636,22 +6645,6 @@
     }
    },
    {
-    "file": "tests/unit/test_fr7_references_loop_regeneration.py",
-    "seconds": 40.31,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
-    }
-   },
-   {
-    "file": "tests/unit/test_fr7_references_regeneration.py",
-    "seconds": 79.44,
-    "exit_code": 0,
-    "counts": {
-     "passed": 2
-    }
-   },
-   {
     "file": "tests/unit/test_gates_gate.py",
     "seconds": 62.97,
     "exit_code": 0,
@@ -7517,14 +7510,6 @@
     "counts": {
      "passed": 2
     }
-   },
-   {
-    "file": "tests/unit/test_xenopus_xc0_references_regenerate.py",
-    "seconds": 182.47,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
-    }
    }
   ],
   "3": [
@@ -7689,6 +7674,20 @@
    {
     "file": "tests/unit/test_fr38_replace_restart.py",
     "seconds": 90.12,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_fr7_references_loop_regeneration.py",
+    "seconds": 41.99,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_fr7_references_regeneration.py",
+    "seconds": 90.02,
     "exit_code": null,
     "counts": {}
    },
@@ -8078,6 +8077,12 @@
    {
     "file": "tests/unit/test_windows.py",
     "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_xenopus_xc0_references_regenerate.py",
+    "seconds": 90.01,
     "exit_code": null,
     "counts": {}
    }

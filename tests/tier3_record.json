@@ -34,19 +34,31 @@
    ],
    "note": "the parked decodability and re-hosting assays' tests (everything under tests/ that imports validation.assays but test_betse_charge_precision.py), moved from tiers 1 and 2 to tier 3 by the user's ruling of 26 November 2026, beside tests/unit/test_rehost_probe.py, already a tier-3 row. Run as tier 3 at c52d0998 (cap 1800 s, CPUs 8-11 with their siblings idle under lane B's lock): 94.79 s in all; every test passes but test_unstimulated_diagnostic.py's one chronic failure, which tier 1's record held as failing and which is frozen here as it fails",
    "evidence": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/"
+  },
+  {
+   "decision": "D390",
+   "files": [
+    "tests/unit/test_fr7_references_loop_regeneration.py",
+    "tests/unit/test_fr7_references_regeneration.py",
+    "tests/unit/test_xenopus_xc0_references_regenerate.py"
+   ],
+   "note": "the three code-blind reference regenerations, moved from tier 2 to tier 3 by the lead's answer of 26 November 2026 (the test review's 'after landing: nightly' row; their fast integrity checks, test_fr7_references.py and test_xenopus_xc0_references.py, stay in tier 1). Run as tier 3 at c52d0998 (cap 1800 s, CPUs 9-11 with their siblings idle under lane B's lock): every test passes",
+   "evidence": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/"
   }
  ],
- "frozen_utc": "2026-11-26T15:31:19+00:00",
+ "frozen_utc": "2026-11-26T15:55:17+00:00",
  "cap_seconds": 1800.0,
  "runs": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc",
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-fixes-046d3b9c",
-  "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run"
+  "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run",
+  "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run"
  ],
  "collected": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/collected.json",
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-fixes-046d3b9c/collected.json",
-  "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/collected.json"
+  "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/collected.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/collected.json"
  ],
  "time": "file wall seconds only: the -q logs carry no per-test times",
  "outcomes": [
@@ -485,6 +497,15 @@
    ["test_the_retention_check_never_passes_without_an_error_estimate[100.0-1.7077379790555396-nan-insufficient resolution]", "passed"],
    ["test_the_retention_check_never_passes_without_an_error_estimate[100.0-1.7077379790555394-2.84e-12-disagree]", "passed"],
    ["test_the_retention_check_never_passes_without_an_error_estimate[1.7077379790555396-1.7077379790555394-2.84e-12-agree]", "passed"]
+  ]},
+  "tests/unit/test_fr7_references_loop_regeneration.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/logs/tests__unit__test_fr7_references_loop_regeneration.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 3}, "seconds": 75.38, "collected": 3, "reached": 3, "aligned": true, "tests": [
+   ["test_the_loop_inputs_regenerate", "passed"],
+   ["test_the_loop_design_regenerates", "passed"],
+   ["test_the_floor_table_regenerates", "passed"]
+  ]},
+  "tests/unit/test_fr7_references_regeneration.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/logs/tests__unit__test_fr7_references_regeneration.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 2}, "seconds": 150.64, "collected": 2, "reached": 2, "aligned": true, "tests": [
+   ["test_the_inputs_regenerate", "passed"],
+   ["test_the_whole_design_regenerates", "passed"]
   ]},
   "tests/unit/test_inner_dispatch_steps_release.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_inner_dispatch_steps_release.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 2}, "seconds": 88.04, "collected": 2, "reached": 2, "aligned": true, "tests": [
    ["test_declared_dispatch_steps_like_todays_catalogue[release]", "passed"],
@@ -1497,6 +1518,14 @@
    ["test_invalid_checkpoint_request_leaves_no_output[0.071]", "passed"],
    ["test_invalid_checkpoint_request_leaves_no_output[2]", "passed"],
    ["test_clock_validation_still_rejects_tampering_and_new_reducers_require_contract", "passed"]
+  ]},
+  "tests/unit/test_xenopus_xc0_references_regenerate.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/logs/tests__unit__test_xenopus_xc0_references_regenerate.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 6}, "seconds": 275.04, "collected": 6, "reached": 6, "aligned": true, "tests": [
+   ["test_reference_values_regenerate_byte_for_byte", "passed"],
+   ["test_bands_and_plants_regenerate_byte_for_byte", "passed"],
+   ["test_internal_checks_hold", "passed"],
+   ["test_every_plant_is_seen_where_it_is_expected_to_be", "passed"],
+   ["test_nothing_here_imports_the_engine_or_a_reference_simulator", "passed"],
+   ["test_inputs_copy_is_the_frozen_declared_input_set", "passed"]
   ]}
  }
 }
