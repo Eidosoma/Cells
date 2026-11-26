@@ -1,12 +1,12 @@
-"""B3 of FR-3's milestone 1, claim 1: every multiplier zero is bitwise idle (§4.8).
+"""B3 of FR-3's milestone 1: the operator is bitwise idle (§4.8).
 
 Criteria fixed before any code (/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/HANDOFF.md):
 * every multiplier zero: every inner field bitwise equal to the composition without the operator
   (the half-step selects the start state with where, never adding a computed zero);
 * no populations declared: statically idle, and bitwise too.
-This file holds the first claim; the second is test_site_occupancy_idle_empty.py (split from this
-file for the 90 s cap). The face-free world under ARS(2,2,2) at 1 ms, every step observed. Two
-compiles: not tier 1.
+This file holds both claims; test_site_occupancy_idle_empty.py, split from it for the 90 s cap, is
+merged back (D390). The face-free world under ARS(2,2,2) at 1 ms, every step observed. Three
+compiles (the plain world's run serves both claims): not tier 1.
 """
 
 import jax
@@ -53,3 +53,9 @@ def test_zero_multipliers_are_bitwise_idle():
     }
     idle = run(parse_spec(sfx.with_site_occupancy(plain(), pops, controls=zero)))
     same_inner(reference, idle)
+
+
+def test_no_populations_is_bitwise_idle():  # Static idleness itself: test_site_occupancy.py.
+    reference = run(parse_spec(plain()))
+    empty = run(parse_spec(sfx.with_site_occupancy(plain(), [])))
+    same_inner(reference, empty)

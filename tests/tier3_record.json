@@ -14,15 +14,64 @@
   "record": "the record frozen 2026-11-16T18:14:35+00:00 at the tag d172-landed-2026-11-16, with its retired and added lists (in Git's history)",
   "why": "the legacy cleanup's landing (D383, D389): 145 of its files were deleted and 163 tests left files that stay; the law-ID move (d6d46d2d) had re-spelled its test IDs in place"
  },
- "frozen_utc": "2026-11-26T14:55:53+00:00",
+ "added": [
+  {
+   "decision": "D390",
+   "files": [
+    "tests/unit/test_baseline_transfer_diagnostic.py",
+    "tests/unit/test_channel_compensation_design.py",
+    "tests/unit/test_channel_compensation_diagnostic.py",
+    "tests/unit/test_cue_separation_diagnostic.py",
+    "tests/unit/test_local_channel_design.py",
+    "tests/unit/test_source_order_diagnostic.py",
+    "tests/unit/test_source_order_long_diagnostic.py",
+    "tests/unit/test_source_order_observation_design.py",
+    "tests/unit/test_source_order_selected_diagnostic.py",
+    "tests/unit/test_source_order_spanning_diagnostic.py",
+    "tests/unit/test_template_diagnostic.py",
+    "tests/unit/test_two_task_diagnostic.py",
+    "tests/unit/test_unstimulated_diagnostic.py"
+   ],
+   "note": "the parked decodability and re-hosting assays' tests (everything under tests/ that imports validation.assays but test_betse_charge_precision.py), moved from tiers 1 and 2 to tier 3 by the user's ruling of 26 November 2026, beside tests/unit/test_rehost_probe.py, already a tier-3 row. Run as tier 3 at c52d0998 (cap 1800 s, CPUs 8-11 with their siblings idle under lane B's lock): 94.79 s in all; every test passes but test_unstimulated_diagnostic.py's one chronic failure, which tier 1's record held as failing and which is frozen here as it fails",
+   "evidence": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/"
+  },
+  {
+   "decision": "D390",
+   "files": [
+    "tests/unit/test_fr7_references_loop_regeneration.py",
+    "tests/unit/test_fr7_references_regeneration.py",
+    "tests/unit/test_xenopus_xc0_references_regenerate.py"
+   ],
+   "note": "the three code-blind reference regenerations, moved from tier 2 to tier 3 by the lead's answer of 26 November 2026 (the test review's 'after landing: nightly' row; their fast integrity checks, test_fr7_references.py and test_xenopus_xc0_references.py, stay in tier 1). Run as tier 3 at c52d0998 (cap 1800 s, CPUs 9-11 with their siblings idle under lane B's lock): every test passes",
+   "evidence": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/"
+  }
+ ],
+ "refrozen": [
+  {
+   "decision": "D390",
+   "files": [
+    "tests/unit/test_pump_composite_replacement.py",
+    "tests/unit/test_pump_composite_water.py"
+   ],
+   "note": "the frozen = composite guards slimmed at the definition (f4741843): the same test IDs and outcomes, their entries refrozen from their run at f4741843 (cap 1800 s, CPUs 8-9 with their siblings idle under lane B's lock), since their seconds fell",
+   "evidence": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after/"
+  }
+ ],
+ "frozen_utc": "2026-11-26T17:11:33+00:00",
  "cap_seconds": 1800.0,
  "runs": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc",
-  "/mnt/workspaces/Cells/final-gate-20261126/tier3-fixes-046d3b9c"
+  "/mnt/workspaces/Cells/final-gate-20261126/tier3-fixes-046d3b9c",
+  "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run",
+  "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run",
+  "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after"
  ],
  "collected": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/collected.json",
-  "/mnt/workspaces/Cells/final-gate-20261126/tier3-fixes-046d3b9c/collected.json"
+  "/mnt/workspaces/Cells/final-gate-20261126/tier3-fixes-046d3b9c/collected.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/collected.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/collected.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after/collected.json"
  ],
  "time": "file wall seconds only: the -q logs carry no per-test times",
  "outcomes": [
@@ -60,6 +109,15 @@
    ["test_a_tree_without_an_entry_point_cannot_decide", "passed"],
    ["test_a_gpu_checkpoint_is_admitted_with_the_patch_noted", "passed"],
    ["test_a_gpu_program_edit_is_refused_on_both_lowerings", "passed"]
+  ]},
+  "tests/unit/test_baseline_transfer_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_baseline_transfer_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 7}, "seconds": 2.93, "collected": 7, "reached": 7, "aligned": true, "tests": [
+   ["test_shared_background_translation_restores_transfer_without_refitting_responses", "passed"],
+   ["test_background_reference_cannot_hide_cue_dependent_drift", "passed"],
+   ["test_inconsistent_duplicate_controls_are_rejected[calibration]", "passed"],
+   ["test_inconsistent_duplicate_controls_are_rejected[heldout]", "passed"],
+   ["test_reference_does_not_depend_on_stimulated_labels_strengths_or_responses", "passed"],
+   ["test_translation_checks_reject_changed_scores_and_decisions", "passed"],
+   ["test_zero_drift_has_no_spurious_relative_fraction", "passed"]
   ]},
   "tests/unit/test_batch.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_batch.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 38}, "seconds": 57.65, "collected": 38, "reached": 38, "aligned": true, "tests": [
    ["test_every_route_matches_scalar_with_independent_clocks[reaction_transport_single-rk4]", "passed"],
@@ -300,6 +358,39 @@
   "tests/unit/test_cell_replacement_vector.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_cell_replacement_vector.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 1}, "seconds": 83.36, "collected": 1, "reached": 1, "aligned": true, "tests": [
    ["test_vectorized_worlds_reproduce_their_own_runs", "passed"]
   ]},
+  "tests/unit/test_channel_compensation_design.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_channel_compensation_design.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 21}, "seconds": 21.8, "collected": 21, "reached": 21, "aligned": true, "tests": [
+   ["test_calibration_only_and_equal_arm_work", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[cpu-0-sham-1.0]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[cpu-0-channel_lower-0.9]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[cpu-0-channel_higher-1.1]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[cpu-1-sham-1.0]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[cpu-1-channel_lower-0.9]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[cpu-1-channel_higher-1.1]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[cpu-2-sham-1.0]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[cpu-2-channel_lower-0.9]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[cpu-2-channel_higher-1.1]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[gpu-0-sham-1.0]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[gpu-0-channel_lower-0.9]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[gpu-0-channel_higher-1.1]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[gpu-1-sham-1.0]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[gpu-1-channel_lower-0.9]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[gpu-1-channel_higher-1.1]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[gpu-2-sham-1.0]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[gpu-2-channel_lower-0.9]", "passed"],
+   ["test_only_remote_channels_change_at_fixed_impairment[gpu-2-channel_higher-1.1]", "passed"],
+   ["test_rejects_heldout_cases_and_unregistered_interventions", "passed"],
+   ["test_rejects_unbound_source_and_candidate_changes", "passed"]
+  ]},
+  "tests/unit/test_channel_compensation_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_channel_compensation_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 8}, "seconds": 2.83, "collected": 8, "reached": 8, "aligned": true, "tests": [
+   ["test_factorial_separates_cancellation_and_interaction", "passed"],
+   ["test_spatial_temporal_contributions_and_zero_signal", "passed"],
+   ["test_calibration_only_named_loading", "passed"],
+   ["test_closest_pair_interpolation_preserves_small_difference", "passed"],
+   ["test_common_background_shift_is_not_a_cue_or_pair_improvement", "passed"],
+   ["test_bad_features_rejected[value0]", "passed"],
+   ["test_bad_features_rejected[value1]", "passed"],
+   ["test_bad_features_rejected[value2]", "passed"]
+  ]},
   "tests/unit/test_cleft_division_runs.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_cleft_division_runs.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 5}, "seconds": 232.44, "collected": 5, "reached": 5, "aligned": true, "tests": [
    ["test_the_furrow_world_runs_through_onset_division_and_closure", "passed"],
    ["test_one_to_two_to_four_with_a_bridge", "passed"],
@@ -309,6 +400,15 @@
   ]},
   "tests/unit/test_cleft_tissue_crosscheck.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_cleft_tissue_crosscheck.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 1}, "seconds": 87.97, "collected": 1, "reached": 1, "aligned": true, "tests": [
    ["test_r_tissue_reproduces_the_prediction_of_record_on_s3s_egg", "passed"]
+  ]},
+  "tests/unit/test_cue_separation_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_cue_separation_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 7}, "seconds": 3.78, "collected": 7, "reached": 7, "aligned": true, "tests": [
+   ["test_voltage_windows_count_shared_endpoint_once", "passed"],
+   ["test_corrupted_shared_state_clock_or_observation_is_rejected[state__cell_concentration-0]", "passed"],
+   ["test_corrupted_shared_state_clock_or_observation_is_rejected[state__elapsed_s-0]", "passed"],
+   ["test_corrupted_shared_state_clock_or_observation_is_rejected[observed__vm-0]", "passed"],
+   ["test_separate_feature_drift_from_common_calibration_shift[True]", "passed"],
+   ["test_separate_feature_drift_from_common_calibration_shift[False]", "passed"],
+   ["test_attribution_rejects_changed_saved_scores", "passed"]
   ]},
   "tests/unit/test_current_injection_runs.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_current_injection_runs.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 5}, "seconds": 144.53, "collected": 5, "reached": 5, "aligned": true, "tests": [
    ["test_both_polarities_are_booked_and_the_ledgers_close", "passed"],
@@ -411,6 +511,15 @@
    ["test_the_retention_check_never_passes_without_an_error_estimate[100.0-1.7077379790555394-2.84e-12-disagree]", "passed"],
    ["test_the_retention_check_never_passes_without_an_error_estimate[1.7077379790555396-1.7077379790555394-2.84e-12-agree]", "passed"]
   ]},
+  "tests/unit/test_fr7_references_loop_regeneration.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/logs/tests__unit__test_fr7_references_loop_regeneration.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 3}, "seconds": 75.38, "collected": 3, "reached": 3, "aligned": true, "tests": [
+   ["test_the_loop_inputs_regenerate", "passed"],
+   ["test_the_loop_design_regenerates", "passed"],
+   ["test_the_floor_table_regenerates", "passed"]
+  ]},
+  "tests/unit/test_fr7_references_regeneration.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/logs/tests__unit__test_fr7_references_regeneration.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 2}, "seconds": 150.64, "collected": 2, "reached": 2, "aligned": true, "tests": [
+   ["test_the_inputs_regenerate", "passed"],
+   ["test_the_whole_design_regenerates", "passed"]
+  ]},
   "tests/unit/test_inner_dispatch_steps_release.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_inner_dispatch_steps_release.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 2}, "seconds": 88.04, "collected": 2, "reached": 2, "aligned": true, "tests": [
    ["test_declared_dispatch_steps_like_todays_catalogue[release]", "passed"],
    ["test_declared_dispatch_steps_like_todays_catalogue[rk4_single_patch]", "passed"]
@@ -501,6 +610,41 @@
    ["test_reaction_transport_guard_admits_the_mg0a_drift_rate", "passed"],
    ["test_pinned_junction_gate_sets_no_gate_step_bound", "passed"]
   ]},
+  "tests/unit/test_local_channel_design.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_local_channel_design.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 33}, "seconds": 34.78, "collected": 33, "reached": 33, "aligned": true, "tests": [
+   ["test_grid_budgets_and_flank_topology", "passed"],
+   ["test_only_selected_flank_changes[cpu-0-sham-owners0-1.0]", "passed"],
+   ["test_only_selected_flank_changes[cpu-0-source1_flank_lower-owners1-0.9]", "passed"],
+   ["test_only_selected_flank_changes[cpu-0-source1_flank_higher-owners2-1.1]", "passed"],
+   ["test_only_selected_flank_changes[cpu-0-source4_flank_lower-owners3-0.9]", "passed"],
+   ["test_only_selected_flank_changes[cpu-0-source4_flank_higher-owners4-1.1]", "passed"],
+   ["test_only_selected_flank_changes[cpu-1-sham-owners0-1.0]", "passed"],
+   ["test_only_selected_flank_changes[cpu-1-source1_flank_lower-owners1-0.9]", "passed"],
+   ["test_only_selected_flank_changes[cpu-1-source1_flank_higher-owners2-1.1]", "passed"],
+   ["test_only_selected_flank_changes[cpu-1-source4_flank_lower-owners3-0.9]", "passed"],
+   ["test_only_selected_flank_changes[cpu-1-source4_flank_higher-owners4-1.1]", "passed"],
+   ["test_only_selected_flank_changes[cpu-2-sham-owners0-1.0]", "passed"],
+   ["test_only_selected_flank_changes[cpu-2-source1_flank_lower-owners1-0.9]", "passed"],
+   ["test_only_selected_flank_changes[cpu-2-source1_flank_higher-owners2-1.1]", "passed"],
+   ["test_only_selected_flank_changes[cpu-2-source4_flank_lower-owners3-0.9]", "passed"],
+   ["test_only_selected_flank_changes[cpu-2-source4_flank_higher-owners4-1.1]", "passed"],
+   ["test_only_selected_flank_changes[gpu-0-sham-owners0-1.0]", "passed"],
+   ["test_only_selected_flank_changes[gpu-0-source1_flank_lower-owners1-0.9]", "passed"],
+   ["test_only_selected_flank_changes[gpu-0-source1_flank_higher-owners2-1.1]", "passed"],
+   ["test_only_selected_flank_changes[gpu-0-source4_flank_lower-owners3-0.9]", "passed"],
+   ["test_only_selected_flank_changes[gpu-0-source4_flank_higher-owners4-1.1]", "passed"],
+   ["test_only_selected_flank_changes[gpu-1-sham-owners0-1.0]", "passed"],
+   ["test_only_selected_flank_changes[gpu-1-source1_flank_lower-owners1-0.9]", "passed"],
+   ["test_only_selected_flank_changes[gpu-1-source1_flank_higher-owners2-1.1]", "passed"],
+   ["test_only_selected_flank_changes[gpu-1-source4_flank_lower-owners3-0.9]", "passed"],
+   ["test_only_selected_flank_changes[gpu-1-source4_flank_higher-owners4-1.1]", "passed"],
+   ["test_only_selected_flank_changes[gpu-2-sham-owners0-1.0]", "passed"],
+   ["test_only_selected_flank_changes[gpu-2-source1_flank_lower-owners1-0.9]", "passed"],
+   ["test_only_selected_flank_changes[gpu-2-source1_flank_higher-owners2-1.1]", "passed"],
+   ["test_only_selected_flank_changes[gpu-2-source4_flank_lower-owners3-0.9]", "passed"],
+   ["test_only_selected_flank_changes[gpu-2-source4_flank_higher-owners4-1.1]", "passed"],
+   ["test_rejects_unregistered_cases_and_changed_support", "passed"],
+   ["test_completed_source_and_diagnosis_bindings", "passed"]
+  ]},
   "tests/unit/test_membrane_insertion_runs.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_membrane_insertion_runs.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 10}, "seconds": 360.54, "collected": 10, "reached": 10, "aligned": true, "tests": [
    ["test_idle_membrane_state_equals_the_composition_without_it[<lambda>0]", "passed"],
    ["test_idle_membrane_state_equals_the_composition_without_it[<lambda>1]", "passed"],
@@ -561,7 +705,7 @@
    ["test_empty_composition_on_wider_worlds", "passed"],
    ["test_empty_composition_vmap_batch_and_restart", "passed"]
   ]},
-  "tests/unit/test_pump_composite_replacement.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_pump_composite_replacement.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 13}, "seconds": 679.92, "collected": 13, "reached": 13, "aligned": true, "tests": [
+  "tests/unit/test_pump_composite_replacement.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after", "log": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after/logs/tests__unit__test_pump_composite_replacement.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 13}, "seconds": 519.87, "collected": 13, "reached": 13, "aligned": true, "tests": [
    ["test_re_expressed_replacement_is_the_frozen_model[events_ars]", "passed"],
    ["test_re_expressed_replacement_is_the_frozen_model[events_euler]", "passed"],
    ["test_re_expressed_replacement_is_the_frozen_model[trapezoid]", "passed"],
@@ -576,7 +720,7 @@
    ["test_refusals_are_the_frozen_verdicts", "passed"],
    ["test_vmap_batch_is_the_frozen_batch", "passed"]
   ]},
-  "tests/unit/test_pump_composite_water.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_pump_composite_water.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 14}, "seconds": 558.35, "collected": 14, "reached": 14, "aligned": true, "tests": [
+  "tests/unit/test_pump_composite_water.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after", "log": "/mnt/workspaces/Cells/test-slimming-20261126/fc/timing2/after/logs/tests__unit__test_pump_composite_water.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 14}, "seconds": 238.14, "collected": 14, "reached": 14, "aligned": true, "tests": [
    ["test_re_expressed_water_models_are_the_frozen_models[water_on]", "passed"],
    ["test_re_expressed_water_models_are_the_frozen_models[osmometer]", "passed"],
    ["test_re_expressed_water_models_are_the_frozen_models[euler_kicked]", "passed"],
@@ -649,6 +793,77 @@
   "tests/unit/test_shared_inventory_volume.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_shared_inventory_volume.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 2}, "seconds": 97.4, "collected": 2, "reached": 2, "aligned": true, "tests": [
    ["test_c25_a_tracer_keeps_its_amount_and_dilutes_with_the_volume", "passed"],
    ["test_c27_the_energy_identity_closes_at_second_order_and_the_v0_plant_is_refused", "passed"]
+  ]},
+  "tests/unit/test_source_order_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_source_order_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 11}, "seconds": 3.02, "collected": 11, "reached": 11, "aligned": true, "tests": [
+   ["test_both_label_collision_is_distinct_from_single_task_separation", "passed"],
+   ["test_known_strength_probe_exposes_strength_ambiguity_without_fixing_other_label", "passed"],
+   ["test_orthogonal_tasks_remain_resolved_without_oracle_information", "passed"],
+   ["test_four_corner_contrasts_include_interaction_and_ignore_shared_background", "passed"],
+   ["test_null_and_one_dimensional_geometry_have_no_spurious_second_direction", "passed"],
+   ["test_mismatched_joint_panels_are_rejected[duplicate]", "passed"],
+   ["test_mismatched_joint_panels_are_rejected[strength]", "passed"],
+   ["test_mismatched_joint_panels_are_rejected[nonfinite]", "passed"],
+   ["test_changed_saved_scores_and_identities_are_rejected[location]", "passed"],
+   ["test_changed_saved_scores_and_identities_are_rejected[timing]", "passed"],
+   ["test_summary_preserves_failures_and_timestep_borderlines_for_both_tasks", "passed"]
+  ]},
+  "tests/unit/test_source_order_long_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_source_order_long_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 6}, "seconds": 2.87, "collected": 6, "reached": 6, "aligned": true, "tests": [
+   ["test_independent_time_point_separates_known_strength_order_ambiguity", "passed"],
+   ["test_time_and_cell_identity_survive_without_scaling_or_metadata_leakage", "passed"],
+   ["test_changed_observation_support_is_rejected[source_cells]", "passed"],
+   ["test_changed_observation_support_is_rejected[time]", "passed"],
+   ["test_changed_observation_support_is_rejected[width]", "passed"],
+   ["test_changed_observation_support_is_rejected[nonfinite]", "passed"]
+  ]},
+  "tests/unit/test_source_order_observation_design.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_source_order_observation_design.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 32}, "seconds": 6.84, "collected": 32, "reached": 32, "aligned": true, "tests": [
+   ["test_closed_segment_ground_truth_and_orientation[points0-0]", "passed"],
+   ["test_closed_segment_ground_truth_and_orientation[points1-1]", "passed"],
+   ["test_closed_segment_ground_truth_and_orientation[points2-1]", "passed"],
+   ["test_closed_segment_ground_truth_and_orientation[points3-2]", "passed"],
+   ["test_closed_segment_ground_truth_and_orientation[points4-1.4142135623730951]", "passed"],
+   ["test_closed_segment_ground_truth_and_orientation[points5-2]", "passed"],
+   ["test_closed_segment_ground_truth_and_orientation[points6-5]", "passed"],
+   ["test_closed_segment_ground_truth_and_orientation[points7-0]", "passed"],
+   ["test_closed_segment_ground_truth_and_orientation[points8-0]", "passed"],
+   ["test_closed_segment_ground_truth_and_orientation[points9-0]", "passed"],
+   ["test_distance_preserves_metric_under_scale_offset_and_rotation[9.313225746154785e-10-offset0]", "passed"],
+   ["test_distance_preserves_metric_under_scale_offset_and_rotation[1e-100-offset1]", "passed"],
+   ["test_distance_preserves_metric_under_scale_offset_and_rotation[1e+100-offset2]", "passed"],
+   ["test_distance_preserves_metric_under_scale_offset_and_rotation[3.5-offset3]", "passed"],
+   ["test_invalid_segment_input_is_rejected[points0]", "passed"],
+   ["test_invalid_segment_input_is_rejected[points1]", "passed"],
+   ["test_invalid_segment_input_is_rejected[points2]", "passed"],
+   ["test_invalid_segment_input_is_rejected[points3]", "passed"],
+   ["test_opposite_label_separation_includes_interiors_not_just_vertices", "passed"],
+   ["test_opposite_label_comparison_includes_different_other_task_labels", "passed"],
+   ["test_heldout_changes_and_removal_leave_all_candidate_scores_unchanged", "passed"],
+   ["test_archived_time_cell_identity_and_incumbent_are_exact", "passed"],
+   ["test_changed_support_or_calibration_is_rejected[cell]", "passed"],
+   ["test_changed_support_or_calibration_is_rejected[time]", "passed"],
+   ["test_changed_support_or_calibration_is_rejected[width]", "passed"],
+   ["test_changed_support_or_calibration_is_rejected[nonfinite]", "passed"],
+   ["test_changed_support_or_calibration_is_rejected[incumbent]", "passed"],
+   ["test_changed_support_or_calibration_is_rejected[duplicate]", "passed"],
+   ["test_changed_support_or_calibration_is_rejected[missing]", "passed"],
+   ["test_changed_support_or_calibration_is_rejected[margin]", "passed"],
+   ["test_ties_prefer_incumbent_then_lexicographic_schedule_with_fixed_tolerance", "passed"],
+   ["test_backend_disagreement_is_recorded_without_claiming_reproducible_improvement", "passed"]
+  ]},
+  "tests/unit/test_source_order_selected_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_source_order_selected_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 9}, "seconds": 3.28, "collected": 9, "reached": 9, "aligned": true, "tests": [
+   ["test_paired_gain_regression_and_borderline_join_uses_identity_without_mutation", "passed"],
+   ["test_incomplete_or_mismatched_pairings_are_rejected[duplicate_row]", "passed"],
+   ["test_incomplete_or_mismatched_pairings_are_rejected[duplicate_case]", "passed"],
+   ["test_incomplete_or_mismatched_pairings_are_rejected[missing_case]", "passed"],
+   ["test_incomplete_or_mismatched_pairings_are_rejected[missing_level]", "passed"],
+   ["test_incomplete_or_mismatched_pairings_are_rejected[level_order]", "passed"],
+   ["test_incomplete_or_mismatched_pairings_are_rejected[panel]", "passed"],
+   ["test_incomplete_or_mismatched_pairings_are_rejected[prediction_id]", "passed"],
+   ["test_incomplete_or_mismatched_pairings_are_rejected[target]", "passed"]
+  ]},
+  "tests/unit/test_source_order_spanning_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_source_order_spanning_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 3}, "seconds": 3.58, "collected": 3, "reached": 3, "aligned": true, "tests": [
+   ["test_unresolved_cases_preserve_failures_and_diagnostic_oracles[False]", "passed"],
+   ["test_unresolved_cases_preserve_failures_and_diagnostic_oracles[True]", "passed"],
+   ["test_resolved_cases_are_not_mislabeled_as_failures", "passed"]
   ]},
   "tests/unit/test_species_cap_large.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_species_cap_large.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 4}, "seconds": 279.87, "collected": 4, "reached": 4, "aligned": true, "tests": [
    ["test_a_1024_species_chain_meets_its_closed_form_and_books_its_free_energy_drop", "passed"],
@@ -1194,6 +1409,32 @@
    ["test_ensemble_endpoint_reports_real_patch_voltages_and_complete_state", "passed"],
    ["test_cpu_gpu_complete_saved_states_and_observations", "skipped"]
   ]},
+  "tests/unit/test_template_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_template_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 7}, "seconds": 3.08, "collected": 7, "reached": 7, "aligned": true, "tests": [
+   ["test_projection_known_parallel_perpendicular_and_null", "passed"],
+   ["test_projection_and_interval_reject_invalid_support", "passed"],
+   ["test_exact_linear_curves_can_still_have_strength_timing_ambiguity", "passed"],
+   ["test_orthogonal_timing_survives_strength_changes", "passed"],
+   ["test_curvature_residual_is_distinguished_from_strength_alignment", "passed"],
+   ["test_no_cue_and_unused_labels_cannot_create_timing_evidence", "passed"],
+   ["test_changed_saved_score_cannot_be_silently_diagnosed", "passed"]
+  ]},
+  "tests/unit/test_two_task_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_two_task_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 6}, "seconds": 2.97, "collected": 6, "reached": 6, "aligned": true, "tests": [
+   ["test_omitted_one_hot_support_has_analytically_wrong_centroid", "passed"],
+   ["test_balancing_restores_known_input_but_changes_generalization", "passed"],
+   ["test_input_marginalization_uses_axes_not_labels", "passed"],
+   ["test_no_cue_stays_unresolved_in_both_diagnostics", "passed"],
+   ["test_paired_effects_separate_known_factors_and_keep_all_pairs", "passed"],
+   ["test_replay_rejects_changed_decisions_and_scores", "passed"]
+  ]},
+  "tests/unit/test_unstimulated_diagnostic.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/job1/tier3-run/logs/tests__unit__test_unstimulated_diagnostic.py.log", "status": "fail", "exit_code": 1, "timed_out": false, "counts": {"failed": 1, "passed": 6}, "seconds": 3.03, "collected": 7, "reached": 7, "aligned": true, "tests": [
+   ["test_voltage_history_matches_field_and_area_weighting", "failed", ["E       AssertionError:", "E       Arrays are not equal", "E", "E       Mismatched elements: 90 / 90 (100%)", "E       First 5 mismatches are at indices:", "E        [0, 0]: -0.02112387994125729 (ACTUAL), -0.021123879940936195 (DESIRED)", "E        [0, 1]: -0.021023879941257286 (ACTUAL), -0.021023879940936192 (DESIRED)", "E        [0, 2]: -0.02112387994125729 (ACTUAL), -0.021123879940936195 (DESIRED)", "E        [0, 3]: -0.02112387994125729 (ACTUAL), -0.021123879940936195 (DESIRED)", "E        [0, 4]: -0.014457213274749855 (ACTUAL), -0.014457213274298199 (DESIRED)", "E       Max absolute difference among violations: 4.51656074e-13", "E       Max relative difference among violations: 1.73069384e-10"]],
+   ["test_pair_separation_and_time_trends", "passed"],
+   ["test_pair_nulls_and_invalid_histories", "passed"],
+   ["test_both_tasks_distinguish_strength_alignment_from_weak_amplitude[location]", "passed"],
+   ["test_both_tasks_distinguish_strength_alignment_from_weak_amplitude[timing]", "passed"],
+   ["test_true_curve_probe_exposes_calibration_curvature_without_retuning", "passed"],
+   ["test_changed_saved_score_is_rejected", "passed"]
+  ]},
   "tests/unit/test_vector_windows.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_vector_windows.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 8}, "seconds": 289.38, "collected": 8, "reached": 8, "aligned": true, "tests": [
    ["test_batch_reproduces_independent_worlds_within_rounding[@1]", "passed"],
    ["test_batch_reproduces_independent_worlds_within_rounding[@2]", "passed"],
@@ -1290,6 +1531,14 @@
    ["test_invalid_checkpoint_request_leaves_no_output[0.071]", "passed"],
    ["test_invalid_checkpoint_request_leaves_no_output[2]", "passed"],
    ["test_clock_validation_still_rejects_tampering_and_new_reducers_require_contract", "passed"]
+  ]},
+  "tests/unit/test_xenopus_xc0_references_regenerate.py": {"run": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run", "log": "/mnt/workspaces/Cells/test-slimming-20261126/regen/tier3-run/logs/tests__unit__test_xenopus_xc0_references_regenerate.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 6}, "seconds": 275.04, "collected": 6, "reached": 6, "aligned": true, "tests": [
+   ["test_reference_values_regenerate_byte_for_byte", "passed"],
+   ["test_bands_and_plants_regenerate_byte_for_byte", "passed"],
+   ["test_internal_checks_hold", "passed"],
+   ["test_every_plant_is_seen_where_it_is_expected_to_be", "passed"],
+   ["test_nothing_here_imports_the_engine_or_a_reference_simulator", "passed"],
+   ["test_inputs_copy_is_the_frozen_declared_input_set", "passed"]
   ]}
  }
 }

@@ -36,7 +36,7 @@ RD=$G/../run_detached.sh
 Q=$G/fr_landing_queue.sh
 PY=${PY:-/mnt/workspaces/Cells/venv-cpu/bin/python}
 LOCK=${LANE_LOCK:-/mnt/workspaces/Cells/locks/gate-cores-8-11.lock}
-P=/mnt/workspaces/Cells/final-gate-20261126/fr-baselines-805c48a4
+P=/mnt/workspaces/Cells/fr-baselines/805c48a4-20261126  # D392: the dated permanent copy of final-gate-20261126/fr-baselines-805c48a4
 F4=$P/fr4-quick F5=$P/fr5
 log() { echo "$(date -u +%FT%TZ) holder $*" >> "$O/run.log"; }
 log "the lock is held"

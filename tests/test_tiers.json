@@ -402,7 +402,11 @@
   "/mnt/workspaces/Cells/id-rename-tool-20261125/measure-l1/measured.json",
   "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure/measured-41.json",
   "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure-fixes/measured.json",
-  "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148/measure-2/measured.json"
+  "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148/measure-2/measured.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/job1/measure/measured-placed.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/job2/gates-row/measure/measured.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/regen/measure/measured-placed.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/split/so_idle/m1/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3439,6 +3443,38 @@
    "root": "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/snap-head-34928328",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-26T17:15:38+00:00"
+  },
+  {
+   "git_revision": "c52d099805027ca43c93da99467dbca3980fa9fb",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/test-slimming-20261126/snap-c52d0998",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T15:28:59+00:00"
+  },
+  {
+   "git_revision": "928908710b2e506637f3332cd416c8ba2616bb91",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/test-slimming-20261126/job2/dry/20261126/snapshot",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T15:39:46+00:00"
+  },
+  {
+   "git_revision": "c52d099805027ca43c93da99467dbca3980fa9fb",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/test-slimming-20261126/snap-c52d0998",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T15:48:34+00:00"
+  },
+  {
+   "git_revision": "f4741843a7cab2272f2ff5331d1ec681c88268d7",
+   "dirty": true,
+   "patch_sha256": "9b07809658a3b17974d625271c2c0099f46ad43dcdd2b6e0c35163cc1ff49de7",
+   "root": "/mnt/workspaces/Cells/test-slimming-20261126/split/so_idle/snapshot",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T17:11:29+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3617,14 +3653,6 @@
    {
     "file": "tests/unit/test_atp_transporter.py",
     "seconds": 1.37,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
-    "file": "tests/unit/test_baseline_transfer_diagnostic.py",
-    "seconds": 2.92,
     "exit_code": 0,
     "counts": {
      "passed": 7
@@ -3923,14 +3951,6 @@
     }
    },
    {
-    "file": "tests/unit/test_channel_compensation_diagnostic.py",
-    "seconds": 3.6,
-    "exit_code": 0,
-    "counts": {
-     "passed": 8
-    }
-   },
-   {
     "file": "tests/unit/test_channel_law_kernels.py",
     "seconds": 17.13,
     "exit_code": 0,
@@ -4152,14 +4172,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 8
-    }
-   },
-   {
-    "file": "tests/unit/test_cue_separation_diagnostic.py",
-    "seconds": 4.33,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
     }
    },
    {
@@ -5725,46 +5737,6 @@
     }
    },
    {
-    "file": "tests/unit/test_source_order_diagnostic.py",
-    "seconds": 3.89,
-    "exit_code": 0,
-    "counts": {
-     "passed": 11
-    }
-   },
-   {
-    "file": "tests/unit/test_source_order_long_diagnostic.py",
-    "seconds": 2.72,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
-    }
-   },
-   {
-    "file": "tests/unit/test_source_order_observation_design.py",
-    "seconds": 9.54,
-    "exit_code": 0,
-    "counts": {
-     "passed": 32
-    }
-   },
-   {
-    "file": "tests/unit/test_source_order_selected_diagnostic.py",
-    "seconds": 3.13,
-    "exit_code": 0,
-    "counts": {
-     "passed": 9
-    }
-   },
-   {
-    "file": "tests/unit/test_source_order_spanning_diagnostic.py",
-    "seconds": 4.73,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
-    }
-   },
-   {
     "file": "tests/unit/test_source_snapshot.py",
     "seconds": 3.22,
     "exit_code": 0,
@@ -6013,14 +5985,6 @@
     }
    },
    {
-    "file": "tests/unit/test_template_diagnostic.py",
-    "seconds": 3.73,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
     "file": "tests/unit/test_tier3_record.py",
     "seconds": 0.57,
     "exit_code": 0,
@@ -6058,23 +6022,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 80
-    }
-   },
-   {
-    "file": "tests/unit/test_two_task_diagnostic.py",
-    "seconds": 3.14,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
-    }
-   },
-   {
-    "file": "tests/unit/test_unstimulated_diagnostic.py",
-    "seconds": 3.58,
-    "exit_code": 1,
-    "counts": {
-     "failed": 1,
-     "passed": 6
     }
    },
    {
@@ -6476,14 +6423,6 @@
     }
    },
    {
-    "file": "tests/unit/test_channel_compensation_design.py",
-    "seconds": 31.92,
-    "exit_code": 0,
-    "counts": {
-     "passed": 21
-    }
-   },
-   {
     "file": "tests/unit/test_cleft_tissue_reference.py",
     "seconds": 22.26,
     "exit_code": 0,
@@ -6724,27 +6663,11 @@
     }
    },
    {
-    "file": "tests/unit/test_fr7_references_loop_regeneration.py",
-    "seconds": 40.31,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
-    }
-   },
-   {
-    "file": "tests/unit/test_fr7_references_regeneration.py",
-    "seconds": 79.44,
-    "exit_code": 0,
-    "counts": {
-     "passed": 2
-    }
-   },
-   {
     "file": "tests/unit/test_gates_gate.py",
-    "seconds": 63.39,
+    "seconds": 62.97,
     "exit_code": 0,
     "counts": {
-     "passed": 201
+     "passed": 202
     }
    },
    {
@@ -6881,14 +6804,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
-    }
-   },
-   {
-    "file": "tests/unit/test_local_channel_design.py",
-    "seconds": 33.26,
-    "exit_code": 0,
-    "counts": {
-     "passed": 33
     }
    },
    {
@@ -7261,18 +7176,10 @@
    },
    {
     "file": "tests/unit/test_site_occupancy_idle.py",
-    "seconds": 49.17,
+    "seconds": 49.79,
     "exit_code": 0,
     "counts": {
-     "passed": 1
-    }
-   },
-   {
-    "file": "tests/unit/test_site_occupancy_idle_empty.py",
-    "seconds": 41.12,
-    "exit_code": 0,
-    "counts": {
-     "passed": 1
+     "passed": 2
     }
    },
    {
@@ -7613,14 +7520,6 @@
     "counts": {
      "passed": 2
     }
-   },
-   {
-    "file": "tests/unit/test_xenopus_xc0_references_regenerate.py",
-    "seconds": 182.47,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
-    }
    }
   ],
   "3": [
@@ -7635,6 +7534,14 @@
     "seconds": 90.01,
     "exit_code": null,
     "counts": {}
+   },
+   {
+    "file": "tests/unit/test_baseline_transfer_diagnostic.py",
+    "seconds": 3.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
    },
    {
     "file": "tests/unit/test_batch.py",
@@ -7685,6 +7592,22 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_channel_compensation_design.py",
+    "seconds": 22.27,
+    "exit_code": 0,
+    "counts": {
+     "passed": 21
+    }
+   },
+   {
+    "file": "tests/unit/test_channel_compensation_diagnostic.py",
+    "seconds": 5.2,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
     "file": "tests/unit/test_cleft_division_runs.py",
     "seconds": 90.17,
     "exit_code": null,
@@ -7695,6 +7618,14 @@
     "seconds": 90.01,
     "exit_code": null,
     "counts": {}
+   },
+   {
+    "file": "tests/unit/test_cue_separation_diagnostic.py",
+    "seconds": 4.46,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
    },
    {
     "file": "tests/unit/test_current_injection_runs.py",
@@ -7757,6 +7688,20 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_fr7_references_loop_regeneration.py",
+    "seconds": 41.99,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_fr7_references_regeneration.py",
+    "seconds": 90.02,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/unit/test_inner_dispatch_steps_release.py",
     "seconds": 90.13,
     "exit_code": null,
@@ -7791,6 +7736,14 @@
     "seconds": 90.11,
     "exit_code": null,
     "counts": {}
+   },
+   {
+    "file": "tests/unit/test_local_channel_design.py",
+    "seconds": 34.67,
+    "exit_code": 0,
+    "counts": {
+     "passed": 33
+    }
    },
    {
     "file": "tests/unit/test_membrane_insertion_runs.py",
@@ -7887,6 +7840,46 @@
     "seconds": 90.07,
     "exit_code": null,
     "counts": {}
+   },
+   {
+    "file": "tests/unit/test_source_order_diagnostic.py",
+    "seconds": 6.34,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_long_diagnostic.py",
+    "seconds": 2.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_observation_design.py",
+    "seconds": 6.64,
+    "exit_code": 0,
+    "counts": {
+     "passed": 32
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_selected_diagnostic.py",
+    "seconds": 3.18,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_spanning_diagnostic.py",
+    "seconds": 3.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
    },
    {
     "file": "tests/unit/test_species_cap_large.py",
@@ -8043,6 +8036,31 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_template_diagnostic.py",
+    "seconds": 2.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_two_task_diagnostic.py",
+    "seconds": 2.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_unstimulated_diagnostic.py",
+    "seconds": 2.92,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_vector_windows.py",
     "seconds": 90.17,
     "exit_code": null,
@@ -8069,6 +8087,12 @@
    {
     "file": "tests/unit/test_windows.py",
     "seconds": 90.1,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_xenopus_xc0_references_regenerate.py",
+    "seconds": 90.01,
     "exit_code": null,
     "counts": {}
    }

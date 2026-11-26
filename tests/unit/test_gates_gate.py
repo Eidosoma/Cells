@@ -1741,6 +1741,7 @@ def test_every_variable_the_tools_read_is_dropped_from_the_tests():
     ("gate.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
     ("stack.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
     ("nightly_tiers.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("weekly_tier3.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
     ("fr_landing_set.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
     ("fr_landing_holder.sh", "--env JAX_ENABLE_COMPILATION_CACHE=false", False),  # Its queue units.
 ])
