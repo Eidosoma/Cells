@@ -44,7 +44,9 @@ The rehearsal compares `operators` with this list (CRITERIA.md §4.1), in place 
   engine's `integer_counts`, and the listed channels against its per-channel totals (`integer_channel_events`). A
   mismatch is a `harness` refusal.
   - The user chose (1) instead: the engine records the counts (branch `fr43-trace-counts`, its own landing).
-  - Once (1) lands, the exporter copies `integer_trace_counts` and derives nothing.
+  - Once (1) lands, the exporter copies `integer_trace_counts` and derives nothing. The field holds the counts the
+    event loop carries after each event. No rate, draw or ledger reads it. The composite's finiteness check over the
+    operator's owned fields covers it, and is always true for an integer field.
 - **`inputs`** is read back from the definition the engine parsed (its `to_dict`), with exactly `echo`'s keys:
   - `copy` comes from the site's ID (`site_c<copy>`);
   - `machines_copies` is the pool's machines as the engine parsed them, a float, written as its integer when whole
