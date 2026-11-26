@@ -1,4 +1,4 @@
-# The engine's output format for OL1's roles (`cells.assembly_lineages@2`)
+# The engine's output format for OL1's roles (`cells.model.assembly_lineages@2`)
 
 The files describe themselves; this page says where to look. Nothing here needs the engine's code.
 The physical choices are the lead's rulings in `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` §0.2a (D215,
@@ -58,7 +58,7 @@ w = −Σ ν μ_held, μ_held = μ°_sol + ln(c/c0).
 
 - `tau: neg_log_u1_over_a0` and `select: first_prefix_gt_u2_a0`, over a serial left fold of the
   channels in channel order. Two uniforms per event come from the occupant's event stream (domain
-  1, the same derivation and uniforms as `cells.assembly_lineages@1`) at counter = the event count.
+  1, the same derivation and uniforms as `cells.model.assembly_lineages@1`) at counter = the event count.
 - **Channels** (run.json `channels`): row r is the forward of step r (trace code +(r+1)); row R + r
   is its reverse (code −(r+1)), each with its reactants and products.
 - An event whose time would pass the horizon is not committed.

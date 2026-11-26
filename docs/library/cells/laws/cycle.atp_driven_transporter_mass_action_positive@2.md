@@ -1,4 +1,4 @@
-# ATP-driven transport of one kind of ion or molecule, on held fuel (`cells.atp_driven_transporter_mass_action_positive@2`)
+# ATP-driven transport of one kind of ion or molecule, on held fuel (`cells.cycle.atp_driven_transporter_mass_action_positive@2`)
 
 **In one sentence:** A membrane pump that spends one ATP per cycle, from a supply held constant, to move a fixed number of ions or molecules of one kind, charged or not.
 
@@ -32,8 +32,8 @@ protein, and it leaves out counter-transport, regulation and fuel that runs out.
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.cycle_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#cycle-laws)) |
-| ID | `cells.atp_driven_transporter_mass_action_positive@2`; definitions write `cells.atp_driven_transporter_mass_action_positive@2` |
-| Runs in | `cells.transporter@1`, its host, in `cells.resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
+| ID | `cells.cycle.atp_driven_transporter_mass_action_positive@2`; definitions write `cells.cycle.atp_driven_transporter_mass_action_positive@2` |
+| Runs in | `cells.kind.transporter@1`, its host, in `cells.model.resolved_pump_tissue@3`. Definitions of `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3` can declare it |
 | Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
@@ -44,7 +44,7 @@ protein, and it leaves out counter-transport, regulation and fuel that runs out.
 
 | Role | What | Unit | Which way is positive |
 | --- | --- | --- | --- |
-| Reads | `rapid_binding@1`, current at each inner stage | | |
+| Reads | `cells.binding.rapid_binding@1`, current at each inner stage | | |
 | Changes | `role@N`: `-stoichiometry` per cycle | | inward-positive, per forward cycle |
 | Changes | `role@P`: `stoichiometry` per cycle | | inward-positive, per forward cycle |
 | Changes | `ATP@N`: -1 per cycle | | inward-positive, per forward cycle |
@@ -63,7 +63,7 @@ Energy role: not yet extracted; the law template has no energy role yet.
 | --- | --- | --- |
 | Stage term | `stage_term` |  |
 | Material term | `material_term` |  |
-| Fuel kinds | `maintained_held_rows@1` |  |
+| Fuel kinds | `cells.fuel_kind.maintained_held_rows@1` |  |
 
 <!-- /generated -->
 
@@ -105,7 +105,7 @@ $$J = k v S\,(1 - e^x), \qquad S = \frac{1}{1 + (K/c_N)^n}\cdot\frac{1}{1 + K_\t
   ([refusal 4](../../../CLOSED_COMPARTMENT_DESIGN.md)). A cargo that version 1's proton buffer holds
   is refused by name: its read has no derivative for the rate. RK4 runs are refused, as for every
   kind.
-- **At a binding closure:** it declares the read `rapid_binding@1` and base forms, so where a
+- **At a binding closure:** it declares the read `cells.binding.rapid_binding@1` and base forms, so where a
   closure holds the cargo it reads the free amount and moves the total, and the material rate runs
   through the closure's derivative.
 - **One law per pathway:** beside this law, for the same species on the same patch, the kind refuses
@@ -140,10 +140,10 @@ law.
 
 | Law | Who runs it | When it retires |
 | --- | --- | --- |
-| `cells.atp_driven_transporter_mass_action_positive@1` (a neutral cargo) | FR-50's judged worlds, and tests | Superseded on held fuel: at valence zero this law is its equation. It also runs on finite fuel, which this law does not. Either it goes in a commit of its own after the calcium plan's step 5, when FR-50's driver and the tests move to this law and version 1's fields leave (recommended there), or with version 1's layout, when those worlds are judged again |
-| `cells.proton_atp_mass_action_positive@1` (a proton) | FR-4's and FR-5's judged worlds | It folds into this law, with the form's pH band, when those worlds are judged again. Until then it stays: it has a band and a closure read that this law does not declare |
-| `cells.ca_atp_mass_action_positive@1` (the inner model's own) | the inner model's worlds | When the sodium-potassium and calcium pumps move onto the kind ([the roadmap](../../../CORE_LAWS_ROADMAP.md), family 2) |
-| `cells.nak_atp_mass_action_positive@1` (the inner model's own) | the inner model's worlds | With the same item, into a cycle law of its own: it moves two ions, so it is another mechanism |
+| `cells.cycle.atp_driven_transporter_mass_action_positive@1` (a neutral cargo) | FR-50's judged worlds, and tests | Superseded on held fuel: at valence zero this law is its equation. It also runs on finite fuel, which this law does not. Either it goes in a commit of its own after the calcium plan's step 5, when FR-50's driver and the tests move to this law and version 1's fields leave (recommended there), or with version 1's layout, when those worlds are judged again |
+| `cells.cycle.proton_atp_mass_action_positive@1` (a proton) | FR-4's and FR-5's judged worlds | It folds into this law, with the form's pH band, when those worlds are judged again. Until then it stays: it has a band and a closure read that this law does not declare |
+| `cells.cycle.ca_atp_mass_action_positive@1` (the inner model's own) | the inner model's worlds | When the sodium-potassium and calcium pumps move onto the kind ([the roadmap](../../../CORE_LAWS_ROADMAP.md), family 2) |
+| `cells.cycle.nak_atp_mass_action_positive@1` (the inner model's own) | the inner model's worlds | With the same item, into a cycle law of its own: it moves two ions, so it is another mechanism |
 | the older family's two calcium pump laws | no one: the family is gone | Gone with it; the two rate functions they were built on stay, since the inner model's own calcium pump calls them |
 
 ## How it is checked
@@ -194,8 +194,8 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/laws/pumps/atp_transporter_v2.py`](../../../../src/cells/laws/pumps/atp_transporter_v2.py) (`cells.laws.pumps.atp_transporter_v2`).
-- Runs in `cells.transporter@1`.
-- Manifest entry: (law, `cells.atp_driven_transporter_mass_action_positive@2`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.atp_driven_transporter_mass_action_positive@2`.
+- Runs in `cells.kind.transporter@1`.
+- Manifest entry: (law, `cells.cycle.atp_driven_transporter_mass_action_positive@2`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.cycle.atp_driven_transporter_mass_action_positive@2`.
 
 <!-- /generated -->

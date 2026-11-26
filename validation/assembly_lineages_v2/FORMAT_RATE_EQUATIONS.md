@@ -1,4 +1,4 @@
-# The deterministic representation's records (`cells.rate_equations@1`)
+# The deterministic representation's records (`cells.assembly_representation.rate_equations@1`)
 
 OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
 `ol6-design-note-2026-11-22`). A definition chooses this representation with
@@ -11,24 +11,24 @@ OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
   "backend": "cpu", "precision": "float64", "mode": "single_lineage",
   "stream": {"seed": 1, "environment": 0, "lineage": 0, "branch": 0},
   "representation": {
-    "id": "cells.rate_equations@1",
+    "id": "cells.assembly_representation.rate_equations@1",
     "envelope": {"min_count": 1000, "provenance": "..."},
-    "integrator": {"id": "rosenbrock_rodas4_dense@1", "rtol": 1e-8, "atol_count": 1e-3,
+    "integrator": {"id": "cells.solver.rosenbrock_rodas4_dense@1", "rtol": 1e-8, "atol_count": 1e-3,
                    "step_limit": 1000000}
   }
 }
 ```
 
 - `molecule_capacity`, `chunk_events` and `unroll` do not apply, and are refused.
-- `mode` is `single_lineage` or `population` (a world with a `cells.shared_pool@1` block of at most
+- `mode` is `single_lineage` or `population` (a world with a `cells.population.shared_pool@1` block of at most
   64 slots), as the world's population block says.
 - The experiment block is the exact run's. `event_limit` and `row_every_events` are stated as not
   applicable in the record; `trace`, `uniforms` and `diagnostic` are refused when true.
 - Slices S1 to S3 run OL1's laws, the bilayer geometry, the osmotic lumen, lysis, the shared
-  pool, shear fission, serial transfer, the pore law's clock (`cells.pore_nucleation@1`) and held
-  tensions (`cells.tension_hold@1`).
-- **FR-47 (D323)** runs FR-21's prescribed shell (`cells.prescribed_shell@1`, its
-  `cells.shell_permeation@1` and its `cells.gate_factor@1`), with FR-48's lumen potential, and in a
+  pool, shear fission, serial transfer, the pore law's clock (`cells.assembly_hazard.pore_nucleation@1`) and held
+  tensions (`cells.operator.tension_hold@1`).
+- **FR-47 (D323)** runs FR-21's prescribed shell (`cells.assembly_geometry.prescribed_shell@1`, its
+  `cells.reaction.shell_permeation@1` and its `cells.rate_factor.gate_factor@1`), with FR-48's lumen potential, and in a
   shell's world FR-20's replacement and FR-35's withdrawal (its mean) and E2. Refused by name in
   version 1, each until a qualification covers it: a replacement, a withdrawal or the gate factor
   outside a shell's world, site binding in a shell's world, a gate driven by anything but its own
@@ -69,8 +69,8 @@ OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
 
 | Key | Contents |
 | --- | --- |
-| `world`, `model`, `definition_sha256` | As for exact events: the world's id, `cells.assembly_lineages@2`, and the definition's fingerprint |
-| `engine_models` | The world's laws and operators, and `representation: cells.rate_equations@1` |
+| `world`, `model`, `definition_sha256` | As for exact events: the world's id, `cells.model.assembly_lineages@2`, and the definition's fingerprint |
+| `engine_models` | The world's laws and operators, and `representation: cells.assembly_representation.rate_equations@1` |
 | `representation` | The declared envelope and integrator; `formulas`; `statuses`; `not_applicable`; and `statistics`: steps accepted and rejected, `restarts` (the lumen's kink), `crossings` (located roots), rtol, atol, the end time, `stop_reason` (`envelope` or `floor` for `outside_envelope`) and `schedule_draws` (Poisson gaps on domain 6, as exact). A run whose world uses FR-47's paths adds `qualification`: `status` ("admitted, development-only until fr47-shell-exchange's verdict"), `protocol` (the registered tag) and `paths` (of `shell`, `washes`, `e2` and `gate`) |
 | `conventions` | The world's tokens, echoed |
 | `laws` | Each law as an exact run states it (id, interface, formulas, provenance, test), plus its `limit_formulas`; a law with no limit kernel (the bilayer geometry) states the representation's rule for it |

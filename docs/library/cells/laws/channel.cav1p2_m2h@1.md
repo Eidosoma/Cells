@@ -1,4 +1,4 @@
-# CaV1.2-type calcium channel gating (`cells.cav1p2_m2h@1`)
+# CaV1.2-type calcium channel gating (`cells.channel.cav1p2_m2h@1`)
 
 **In one sentence:** A calcium channel that opens within milliseconds when the membrane voltage rises and shuts within tens of milliseconds, so that a rise lets in a short pulse of calcium.
 
@@ -30,8 +30,8 @@ the charge that moves with a gate, and the energy of the channel protein.
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.channel_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#channel-laws)) |
-| ID | `cells.cav1p2_m2h@1`; definitions write `cav1p2_m2h@1` |
-| Runs in | `cells.resolved_pump_tissue@3`, its host, which definitions write `resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
+| ID | `cells.channel.cav1p2_m2h@1`; definitions write `cells.channel.cav1p2_m2h@1` |
+| Runs in | `cells.model.resolved_pump_tissue@3`, its host. Definitions of `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3` can declare it |
 | Registry code | 11 |
 | Provenance | `parity`: moved from an older family; moving is not calibrating |
 
@@ -81,7 +81,7 @@ $$\frac{dm}{dt} = \frac{m_\infty - m}{\tau_m}, \qquad \frac{dh}{dt} = \frac{h_\i
 - **The current:** the host multiplies the open fraction by the population's permeability, abundance
   and availability, and moves calcium by the
   [constant-field flux](../../GLOSSARY.md#constant-field-flux) at
-  [valence](../../GLOSSARY.md#valence) 2, the form of the route law `cells.constant_field@1`. The law
+  [valence](../../GLOSSARY.md#valence) 2, the form of the route law `cells.route.constant_field@1`. The law
   is the one authority for that valence: a model whose calcium has another is refused. Which way a
   positive flux points is not declared.
 - **Step rules:** the law names the kernel of its material term: how fast the flux changes with
@@ -151,7 +151,7 @@ the term at one end only, and leaving it out at the node must each miss, and the
 than the fastest rate of calcium's own block there. A step above the bound is refused.
 
 Rows of the older calcium catalogue's test run the source's unchanged class out of process and compare
-it with these kernels, which that catalogue (`resolved_tissue@8`'s) still calls. No run was compared
+it with these kernels, which that catalogue (`cells.model.resolved_tissue@8`'s) still calls. No run was compared
 with a measurement.
 
 ## Status
@@ -168,8 +168,8 @@ Not stated: no record states a level for this piece.
 
 - Declared in [`src/cells/laws/channels/cav1p2_m2h.py`](../../../../src/cells/laws/channels/cav1p2_m2h.py) (`cells.laws.channels.cav1p2_m2h`).
 - Kernels: `kinetics`, `cells.laws.channels.cav1p2_m2h.kinetics`; `opening`, `cells.laws.channels.cav1p2_m2h.opening`.
-- Runs in `cells.resolved_pump_tissue@3`.
-- Manifest entry: (law, `cells.cav1p2_m2h@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.cav1p2_m2h@1`.
+- Runs in `cells.model.resolved_pump_tissue@3`.
+- Manifest entry: (law, `cells.channel.cav1p2_m2h@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.channel.cav1p2_m2h@1`.
 
 <!-- /generated -->

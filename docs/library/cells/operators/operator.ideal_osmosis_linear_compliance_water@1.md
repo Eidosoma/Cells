@@ -1,4 +1,4 @@
-# Osmotic water flow and cell volume (`cells.ideal_osmosis_linear_compliance_water@1`)
+# Osmotic water flow and cell volume (`cells.operator.ideal_osmosis_linear_compliance_water@1`)
 
 **In one sentence:** Water crosses each cell membrane toward the side with more dissolved particles, so cells swell or shrink until an elastic back-pressure balances that pull.
 
@@ -35,8 +35,8 @@ open solution, and the effect of temperature on permeability.
 | | |
 | --- | --- |
 | Piece | Operator, interface `cells.operator@1` ([its fields](../../DECLARATIONS_FORMAT.md#operators)) |
-| ID | `cells.ideal_osmosis_linear_compliance_water@1`; definitions write `ideal_osmosis_linear_compliance_water@1` |
-| Runs in | `cells.resolved_pump_composite@1`, its host, which definitions write `resolved_pump_composite@1`. Definitions of `cells.resolved_pump_composite@1` can declare it |
+| ID | `cells.operator.ideal_osmosis_linear_compliance_water@1`; definitions write `cells.operator.ideal_osmosis_linear_compliance_water@1` |
+| Runs in | `cells.model.resolved_pump_composite@1`, its host. Definitions of `cells.model.resolved_pump_composite@1` can declare it |
 | Where it acts in the step | A split part, by `heun_frozen_amount_water@1`; scheduled by `water_controls` |
 | Needs | No law or kind |
 | Provenance | Not yet extracted: the composite's operator contract has no provenance field yet |
@@ -141,7 +141,7 @@ graphs: the stage values, conservation over an owned graph, sealed edges and the
 the relaxation bound, and the refusal of invalid volumes.
 
 Recorded evidence, with its scope: on 11 November the water law was qualified as the model
-`resolved_pump_water@1`. Its judged run passed 25 of 25 criteria against predictions frozen from an
+`cells.model.resolved_pump_water@1`. Its judged run passed 25 of 25 criteria against predictions frozen from an
 independent reference ([Progress](../../../../PROGRESS.md), "Osmotic water and volume qualified and
 landed"). This operator is that law, moved unchanged. But the record names the model, not this
 operator in today's compositions, so no status is copied from it.
@@ -159,9 +159,9 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/operators/osmotic_water.py`](../../../../src/cells/operators/osmotic_water.py), class `OsmoticWater` (`cells.operators.osmotic_water`).
-- Runs in `cells.resolved_pump_composite@1`.
-- Manifest entry: (operator, `cells.ideal_osmosis_linear_compliance_water@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.ideal_osmosis_linear_compliance_water@1`.
+- Runs in `cells.model.resolved_pump_composite@1`.
+- Manifest entry: (operator, `cells.operator.ideal_osmosis_linear_compliance_water@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.operator.ideal_osmosis_linear_compliance_water@1`.
 
 <!-- /generated -->
 

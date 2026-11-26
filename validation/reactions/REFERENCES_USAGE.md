@@ -1,6 +1,6 @@
 # Using the D152 reaction references (interface only)
 
-How to feed the independent references for `local_species_reactions@1` and read their outputs,
+How to feed the independent references for `cells.operator.local_species_reactions@1` and read their outputs,
 without reading their source. They were written from Appendix A of
 [SHARED_INVENTORY_REACTIONS_DESIGN.md](../../docs/SHARED_INVENTORY_REACTIONS_DESIGN.md), with §2.2,
 §3.1–§3.4, §4.2 and §6.2–§6.4, and from textbooks. Their author never read the operator's code,
@@ -57,7 +57,7 @@ net = nr.Network(
 | `Species` | `name` | – | Unique name. |
 | | `mu0_RT` | – | Standard potential μ°/RT at c0 (default 0). |
 | | `moieties` | – | `{moiety: integer count}`; `None` (default) means the species is its own moiety. |
-| `Reaction` | `name`, `law` | – | `law`: `"mass_action"`, `"michaelis_menten"`, or `"passive"` (alias `"ideal_detailed_balance_mass_action@1"`). |
+| `Reaction` | `name`, `law` | – | `law`: `"mass_action"`, `"michaelis_menten"`, or `"passive"` (alias `"cells.species_reaction.ideal_detailed_balance_mass_action@1"`). |
 | | `reactants`, `products` | – | `{species: integer coefficient}`; an empty side is a source or a sink. |
 | | `rate_constant` | mM^(1−q) s⁻¹ | mass_action's k, q = Σ α ≤ 3. |
 | | `k_f_per_s` | s⁻¹ (at c0) | passive's k_f. |

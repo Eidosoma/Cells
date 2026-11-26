@@ -1,4 +1,4 @@
-# The engine's output format for a lumen standard potential (`cells.assembly_lineages@2`; FR-48)
+# The engine's output format for a lumen standard potential (`cells.model.assembly_lineages@2`; FR-48)
 
 FR-48 (D323). This page adds to `FORMAT.md` and `FORMAT_OL2.md` what a world writes when a species
 declares a lumen standard potential. A world that declares none writes exactly what those pages
@@ -30,11 +30,11 @@ describe: no key, row or record entry below appears in it.
 
 ## Version 1's refusals, each by name
 
-- a lumen potential in a world whose geometry is not `cells.prescribed_shell@1`. A bilayer's
+- a lumen potential in a world whose geometry is not `cells.assembly_geometry.prescribed_shell@1`. A bilayer's
   osmotic lumen, its lysis returns and its division would each read it;
 - on a species with no lumen place;
 - without a solution potential, since the records report Δ;
-- in `cells.rate_equations@1`, until FR-47's qualification.
+- in `cells.assembly_representation.rate_equations@1`, until FR-47's qualification.
 
 ## The records
 

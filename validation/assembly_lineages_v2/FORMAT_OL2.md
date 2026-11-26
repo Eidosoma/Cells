@@ -1,4 +1,4 @@
-# The engine's output format for OL2's and OL3's worlds (`cells.assembly_lineages@2`): OL2 milestones 1 and 2, OL3 milestone 1
+# The engine's output format for OL2's and OL3's worlds (`cells.model.assembly_lineages@2`): OL2 milestones 1 and 2, OL3 milestone 1
 
 This page adds to `FORMAT.md` (OL1's, unchanged) what a world that declares a geometry writes:
 milestone 1's geometry, and milestone 2's osmotic lumen and lysis. The physical choices are the
@@ -12,7 +12,7 @@ where a value without a source says so, its provenance beginning "unsourced".
 
 ## The world (world.json `world`)
 
-- **`geometry`** (only when declared): `{law: cells.bilayer_geometry@1, area_quantum_m2: q,
+- **`geometry`** (only when declared): `{law: cells.assembly_geometry.bilayer_geometry@1, area_quantum_m2: q,
   area_per_leaflet: {species: {quanta: k, provenance}}, vesicle_floor: {quanta, provenance}}`, with
   the closure cost in one of two forms (§0.2e rule 6), and `sigma_max_N_per_m: {value,
   provenance}` exactly under `lumen_volume: osmotic` (§0.2c rule 8).
@@ -27,10 +27,10 @@ where a value without a source says so, its provenance beginning "unsourced".
 - **`conventions.exchange_encounter`**: `insertion_area` or `diffusion_radius`, declared exactly
   when `geometry` is (§0.2c rule 1). Never written otherwise.
 - **A step's rate key** is its law's:
-  - `forward_rate_per_s` for `cells.stochastic_mass_action@1`, a bare number as in OL1;
+  - `forward_rate_per_s` for `cells.reaction.stochastic_mass_action@1`, a bare number as in OL1;
   - `insertion_velocity_m_per_s` (m/s) or `diffusivity_m2_per_s` (m²/s) for
-    `cells.phase_exchange@1`, by the token, as `{value, provenance}` (§0.2e rule 7);
-  - `permeability_m_per_s` (m/s) for `cells.membrane_permeation@1`, as `{value, provenance}`.
+    `cells.reaction.phase_exchange@1`, by the token, as `{value, provenance}` (§0.2e rule 7);
+  - `permeability_m_per_s` (m/s) for `cells.reaction.membrane_permeation@1`, as `{value, provenance}`.
 
 ## The rates
 
@@ -51,7 +51,7 @@ where a value without a source says so, its provenance beginning "unsourced".
 ## The bundle
 
 - **records.npz** gains `membrane_footprint_quanta` [row]: W at each row (int64).
-- **run.json:** the laws include `cells.bilayer_geometry@1`, and `records` names the footprint.
+- **run.json:** the laws include `cells.assembly_geometry.bilayer_geometry@1`, and `records` names the footprint.
 - **world.json `derived`** gains `geometry`: `rho0_per_m3`, `log_area_constant` (ln(q·ρ0/2)),
   `log_radius_constant` (ln(4π·ρ0) + ½ ln(q/(8π))), `floor_quanta` and `closure_kT`.
 - **free_energy_kT** includes C_close once, for the one living vesicle (§0.2c rule 8). The ledger's
@@ -63,7 +63,7 @@ where a value without a source says so, its provenance beginning "unsourced".
 
 - **`conventions.lumen_volume: osmotic`**, only with a geometry. Its lumen block declares no
   `volume_L`, and every lumen species is an ideal solute in a volume that water sets at once.
-- **`free_energy`** adds `{law: cells.osmotic_lumen@1, outside_osmolarity_mM: {value, provenance}}`:
+- **`free_energy`** adds `{law: cells.free_energy.osmotic_lumen@1, outside_osmolarity_mM: {value, provenance}}`:
   c_ext, the outside's total osmolarity, held (§0.2c rule 6).
 - **Refused at parse:**
   - osmotic without a geometry, without a lumen or without its term;
@@ -121,7 +121,7 @@ Development only: not yet compared against OL5's references, which need the prob
 
 ### The world and the experiment
 
-- **The world** declares `division = {law: cells.shear_fission@1, continuation: first | uniform}`,
+- **The world** declares `division = {law: cells.operator.shear_fission@1, continuation: first | uniform}`,
   with an optional `critical_stress_Pa = {value, provenance}`. It needs a geometry and an osmotic
   lumen.
 - **The experiment** declares `schedules = [{index, kind: shear, k, times_s, stress_Pa?}]`. A
@@ -224,7 +224,7 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
   - the initial and final states (each slot's key and counts, and the pool);
   - the world's key, the end reason and the environment record.
 
-### The shared pool (`cells.shared_pool@1`, the first `cells.population_structure@1`)
+### The shared pool (`cells.population.shared_pool@1`, the first `cells.population_structure@1`)
 
 - **The world** declares `population = {structure, slots: K, founders: [{place: count} of every
   finite membrane and lumen place]}`, with a geometry.
@@ -246,7 +246,7 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
   - with too few free slots the run stops `slots_full` before the draw.
 
   The division block declares no `continuation` in a population.
-- **A transfer** (`cells.serial_transfer@1`, `{index, kind: transfer, times_s, K_keep,
+- **A transfer** (`cells.operator.serial_transfer@1`, `{index, kind: transfer, times_s, K_keep,
   fresh_pool}`, one fresh count per finite pool place) works as follows:
   - it draws one uniform per living assembly on its own stream and keeps the K_keep smallest;
   - the others end `removed`;
@@ -308,7 +308,7 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
   - in relations@2, the lives alive at the cut are `continued`.
 - **The joining rule** for the two segments' records is `checkpoints.py`'s module docstring.
 
-## FR-20: a pool replacement, a pulse or a washout (`cells.pool_replacement@1`)
+## FR-20: a pool replacement, a pulse or a washout (`cells.operator.pool_replacement@1`)
 
 - **The declaration:** `{index, kind: replacement, times_s, pool}`, beside the shear and transfer
   schedules. `pool` gives one count per finite pool place, in place order, as a transfer's
@@ -347,7 +347,7 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
   - A world without sites writes no key, so its id and fingerprint are unchanged.
 - **The step it admits** in a world with a geometry (rule 3, amended):
   - `{"locus": "membrane", "reactants": {"X@pool": 1, "R@membrane": 1}, "products":
-    {"XR@membrane": 1}, "law": "cells.stochastic_mass_action@1", "forward_rate_per_s": k_f}`;
+    {"XR@membrane": 1}, "law": "cells.reaction.stochastic_mass_action@1", "forward_rate_per_s": k_f}`;
   - declared in this direction, for a declared pair.
 
   Its rates are a⁺ = k_f·θ⁺·n_R and a⁻ = k_f·exp(μ°_XR − μ°_R − μ°_X)·n_XR. Any other interfacial
@@ -357,14 +357,14 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
 
 ## FR-21, the shell: a prescribed wall and lumen (§0.2g)
 
-- **The geometry:** `{"law": "cells.prescribed_shell@1", "area_m2": {"value", "provenance"}}`.
+- **The geometry:** `{"law": "cells.assembly_geometry.prescribed_shell@1", "area_m2": {"value", "provenance"}}`.
   - The world has `lumen_volume: declared` and `phases.lumen.volume_L`, and no
     `exchange_encounter`.
   - The wall's species carry no area quanta.
 - **The entry:** `{"locus": "membrane", "reactants": {"S@pool": 1}, "products": {"S@lumen": 1},
-  "law": "cells.shell_permeation@1", "permeability_m_per_s": {"value", "provenance"}}`, with
+  "law": "cells.reaction.shell_permeation@1", "permeability_m_per_s": {"value", "provenance"}}`, with
   a⁺ = P_s·A_sh·ρ0·θ⁺.
-- **The gate factor (optional):** `{"law": "cells.gate_factor@1", "forms": [...],
+- **The gate factor (optional):** `{"law": "cells.rate_factor.gate_factor@1", "forms": [...],
   "entries": [{"form", "step", "ddG_kT"}]}`, with fractions over the gate's forms only.
 - **world.json's `derived.shell`** gives `rho0_per_m3`, `area_m2`, `lumen_volume_L`, `log_extent`
   = ln(A_sh·ρ0), and `conductance_m3_per_s` (G_s = P_s·A_sh per permeant).
@@ -372,7 +372,7 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
   - `membrane_footprint_quanta`, where written, is 0: the wall has no quanta.
   - There is no tension, lysis or division record.
 
-## FR-35: a pool withdrawal, a partial exchange (`cells.pool_withdrawal@1`)
+## FR-35: a pool withdrawal, a partial exchange (`cells.operator.pool_withdrawal@1`)
 
 The design is [the note](../../docs/ASSEMBLY_WITHDRAWAL_DESIGN.md) under D261.
 
@@ -431,7 +431,7 @@ The module's docstring gives the mapping field by field; it checks nothing, so e
 the engine parser's. In short:
 - **Places** are `species@phase`. The pool's places are its `finite` species in order, then its
   `held_mM` species in order; then the membrane's and the lumen's species in order.
-- **Steps:** a join is `cells.phase_exchange@1` and an entry `cells.membrane_permeation@1`, one
+- **Steps:** a join is `cells.reaction.phase_exchange@1` and an entry `cells.reaction.membrane_permeation@1`, one
   molecule from the direction's first phase to its second; a mass-action step keeps its law, locus
   and sides. Rates are `{value, provenance}`.
 - **Units:** `standard_concentration_M` and `outside_osmolarity_M` × 10³ become mM; held
@@ -441,7 +441,7 @@ the engine parser's. In short:
   run's `slots`; the world's founder then holds the pool and every vesicle place at 0.
 - **The run:** `mode`; `t_end_s` → `time_horizon_s`; `max_events` → `event_limit`; `schedules`
   unchanged (none when empty). Amendment 7's division inputs give `division = {law:
-  cells.shear_fission@1, continuation?}`.
+  cells.operator.shear_fission@1, continuation?}`.
 - **Provenance** (§0.2e rule 3, as ruled for these roles on 22 November 2026): a value takes the
   registered world's own source text where the registered format carries one, and otherwise
   `unsourced; registered OL5 world <id>`. The format carries one only for σ_max

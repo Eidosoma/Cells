@@ -1,4 +1,4 @@
-# The engine's output format for the size-threshold division (`cells.size_threshold_division@1`)
+# The engine's output format for the size-threshold division (`cells.operator.size_threshold_division@1`)
 
 OL6 S7. This page adds to `FORMAT.md` and `FORMAT_OL2.md` what a world writes when it declares
 the size-threshold division (`size_division.py`). A world that does not declare it writes
@@ -6,7 +6,7 @@ exactly what those pages describe: no key, row, record or legend entry below app
 
 The state-triggered division of the OL6 design note's §6.8 (G2; D304), by Protocol G's §3
 interface contract (tag `ol6-protocol-g-registered-2026-11-23`). It is @1's
-`cells.size_threshold_fission@1`, with its draw layout, partition, continuation and keys, in version
+`cells.operator.size_threshold_fission@1`, with its draw layout, partition, continuation and keys, in version
 2's worlds. Its first reader is Protocol G's scope 2, the GARD limit through 50 fissions.
 
 ## The world
@@ -14,7 +14,7 @@ interface contract (tag `ol6-protocol-g-registered-2026-11-23`). It is @1's
 - **The declaration**, a single lineage's:
 
   ```json
-  "division": {"law": "cells.size_threshold_division@1", "size": 80,
+  "division": {"law": "cells.operator.size_threshold_division@1", "size": 80,
                "partition": {"rule": "exact_fraction", "fraction": 0.5},
                "continuation": "first"}
   ```
@@ -23,13 +23,13 @@ interface contract (tag `ol6-protocol-g-registered-2026-11-23`). It is @1's
   - `fraction` lies strictly between 0 and 1, with floor(fraction × size) ≥ 1.
   - `continuation` is `first`.
 - **Version 1 refuses:**
-  - a geometry, since a vesicle's physical division is `cells.shear_fission@1`'s (D2);
+  - a geometry, since a vesicle's physical division is `cells.operator.shear_fission@1`'s (D2);
   - finite lumen places;
   - a step whose forward changes the membrane's count by more than one molecule, so the trigger is
     exact;
   - a founder whose membrane holds `size` or more;
   - population mode, schedules, tension holds and `diagnostic: true`;
-  - `cells.rate_equations@1`, by name.
+  - `cells.assembly_representation.rate_equations@1`, by name.
 
   `trace` and `uniforms` are admitted.
 

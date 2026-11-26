@@ -1,4 +1,4 @@
-# Whether an assembly has a closed ring (`cells.root_component_has_cycle@1`)
+# Whether an assembly has a closed ring (`cells.assembly_observable.root_component_has_cycle@1`)
 
 **In one sentence:** It says whether a molecular assembly has a closed ring of bonds, by comparing how many bonds it has with how many building blocks are joined in it.
 
@@ -32,8 +32,8 @@ law leaves out how many rings there are, which blocks make them, and any energy 
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.assembly_observable@1` ([its fields](../../DECLARATIONS_FORMAT.md#family-interfaces)) |
-| ID | `cells.root_component_has_cycle@1`; definitions write `root_component_has_cycle@1` |
-| Runs in | `cells.finite_bond_assembly@1`, its host. No model's definitions can declare it |
+| ID | `cells.assembly_observable.root_component_has_cycle@1`; definitions write `cells.assembly_observable.root_component_has_cycle@1` |
+| Runs in | `cells.model.finite_bond_assembly@1`, its host. No model's definitions can declare it |
 | Provenance | `parity`: moved from an older family; moving is not calibrating |
 
 <!-- /generated -->
@@ -84,7 +84,7 @@ $$\text{true where } E \ge V, \qquad \text{false where } E < V .$$
 
 Provenance: `parity` (moved from an older family; moving is not calibrating).
 
-- **Source, as declared:** The cycle rank of a connected graph, E - V + 1 (elementary graph theory), read from an assembly of finite_bond_assembly@1: a topology readout, no number
+- **Source, as declared:** The cycle rank of a connected graph, E - V + 1 (elementary graph theory), read from an assembly of cells.model.finite_bond_assembly@1: a topology readout, no number
 - **Place:** docs/CAPSID_ASSEMBLY.md, 'Driving ionic channels from pools', which states the rule; its use as a channel's control is a hypothesis with no literature source
 - **Licence of the numbers:** no numbers taken: the levels of its values are a composed file's data
 - **Departures:** the pool keeps its assembly connected to its root, so one component is assumed
@@ -131,8 +131,8 @@ Not stated: no record states a level for this piece.
 
 - Declared in [`src/cells/assembly_pool/observables.py`](../../../../src/cells/assembly_pool/observables.py) (`cells.assembly_pool.observables`).
 - Kernels: `evaluate`, `cells.assembly_pool.observables.cycle_index`.
-- Runs in `cells.finite_bond_assembly@1`.
-- Manifest entry: (law, `cells.root_component_has_cycle@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.root_component_has_cycle@1`.
+- Runs in `cells.model.finite_bond_assembly@1`.
+- Manifest entry: (law, `cells.assembly_observable.root_component_has_cycle@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.assembly_observable.root_component_has_cycle@1`.
 
 <!-- /generated -->

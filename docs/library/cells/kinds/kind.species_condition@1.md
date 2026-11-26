@@ -1,4 +1,4 @@
-# Species condition at a node (`cells.species_condition@1`)
+# Species condition at a node (`cells.kind.species_condition@1`)
 
 **In one sentence:** A condition at a node reads the concentrations of chosen substances there and gives a number between zero and one that opens or closes routes and channels.
 
@@ -30,9 +30,9 @@ It leaves out binding, so what it reads is never used up, and any delay or inact
 | | |
 | --- | --- |
 | Piece | Kind, interface `cells.kind@1` ([its fields](../../DECLARATIONS_FORMAT.md#kinds)) |
-| ID | `cells.species_condition@1`; definitions write `cells.species_condition@1` |
-| Runs in | `cells.resolved_pump_tissue@3`, its host, which definitions write `resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it, under the key `species_conditions` |
-| Laws it hosts | `cells.hill_product_factor@1` |
+| ID | `cells.kind.species_condition@1`; definitions write `cells.kind.species_condition@1` |
+| Runs in | `cells.model.resolved_pump_tissue@3`, its host. Definitions of `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3` can declare it, under the key `species_conditions` |
+| Laws it hosts | `cells.transfer_factor.hill_product_factor@1` |
 | Provenance | Not yet extracted: the kind contract has no provenance field yet |
 
 <!-- /generated -->
@@ -71,7 +71,7 @@ $$\ln x_j = \ln N_{s_j} - \ln V$$
 from the amounts that every rate of the stage reads: a [species row](../../GLOSSARY.md#species-row)'s
 free amount where a closure owns the row, and the node's current volume. It is a concentration, so
 the species' [valence](../../GLOSSARY.md#valence) does not enter. The factor is
-`hill_product_factor@1`'s.
+`cells.transfer_factor.hill_product_factor@1`'s.
 
 - **The door.** Each route or channel slot that names conditions takes its held value times their
   factors, multiplied in its own declared order, at every explicit stage and at each observed row. A
@@ -90,7 +90,7 @@ the species' [valence](../../GLOSSARY.md#valence) does not enter. The factor is
 - **Beside operators:** water (the read takes the current volume), the compartment wash and arrival
   labels are admitted. An operator that closes, divides or retires slots refuses it, and so does one
   that builds the inner model's fields in a fixed layout, such as cell replacement.
-- **The pH condition** (`ph_condition@1`) is a condition with one activation reading of the proton
+- **The pH condition** (`cells.kind.ph_condition@1`) is a condition with one activation reading of the proton
   row, $K = 10^{3 - \text{pH}_{50}}$ mM and $n$ its slope: the two factors differ by at most 2.3e-15
   (absolute) on 20,000 random points. It retires in a landing of its own, with the worlds that declare
   it.
@@ -106,7 +106,7 @@ Provenance: not yet extracted; the kind contract has no provenance field yet.
 - **The kind is Cells' own design:** [the note on ligand-gated store
   release](../../../IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md), Part I, on the routing door of
   [the inner-model design](../../../INNER_MODEL_V4_DESIGN.md) (§7.4 (n)). FT.
-- **Its law declares its own citation** (`hill_product_factor@1`). No number is taken by either.
+- **Its law declares its own citation** (`cells.transfer_factor.hill_product_factor@1`). No number is taken by either.
 
 ## How it is checked
 
@@ -143,9 +143,9 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/kinds/species_condition.py`](../../../../src/cells/kinds/species_condition.py) (`cells.kinds.species_condition`).
-- Hosts `cells.hill_product_factor@1`.
-- Runs in `cells.resolved_pump_tissue@3`.
-- Manifest entry: (kind, `cells.species_condition@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.species_condition@1`.
+- Hosts `cells.transfer_factor.hill_product_factor@1`.
+- Runs in `cells.model.resolved_pump_tissue@3`.
+- Manifest entry: (kind, `cells.kind.species_condition@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.kind.species_condition@1`.
 
 <!-- /generated -->

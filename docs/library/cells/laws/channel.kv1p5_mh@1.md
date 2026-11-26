@@ -1,4 +1,4 @@
-# Kv1.5-type potassium channel gating (`cells.kv1p5_mh@1`)
+# Kv1.5-type potassium channel gating (`cells.channel.kv1p5_mh@1`)
 
 **In one sentence:** A potassium channel that opens within milliseconds when the membrane voltage rises, then slowly shuts over seconds, letting potassium out so that the voltage falls back.
 
@@ -32,8 +32,8 @@ that moves when a gate moves, and the energy of the channel protein itself.
 | | |
 | --- | --- |
 | Piece | Law, interface `cells.channel_law@1` ([its fields](../../DECLARATIONS_FORMAT.md#channel-laws)) |
-| ID | `cells.kv1p5_mh@1`; definitions write `kv1p5_mh@1` |
-| Runs in | `cells.resolved_pump_tissue@3`, its host, which definitions write `resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it |
+| ID | `cells.channel.kv1p5_mh@1`; definitions write `cells.channel.kv1p5_mh@1` |
+| Runs in | `cells.model.resolved_pump_tissue@3`, its host. Definitions of `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3` can declare it |
 | Registry code | 0 |
 | Provenance | `parity`: moved from an older family; moving is not calibrating |
 
@@ -82,7 +82,7 @@ $$\frac{dm}{dt} = \frac{m_\infty - m}{\tau_m}, \qquad \frac{dh}{dt} = \frac{h_\i
 - **The current:** the host multiplies the [open fraction](../../GLOSSARY.md#open-fraction) by the
   population's permeability, abundance and availability, and moves potassium by the
   [constant-field flux](../../GLOSSARY.md#constant-field-flux), the form of the route law
-  `cells.constant_field@1`. Which way a positive flux points is not declared.
+  `cells.route.constant_field@1`. Which way a positive flux points is not declared.
 - **Integration:** the host advances each gate by its exponential stage update. The reference RK4
   step is at most 25 µs.
 - **Left out:** gating charge, conformational energy and protein turnover.
@@ -141,9 +141,9 @@ Not stated: no record states a level for this piece.
 
 - Declared in [`src/cells/laws/channels/kv1p5_mh.py`](../../../../src/cells/laws/channels/kv1p5_mh.py) (`cells.laws.channels.kv1p5_mh`).
 - Kernels: `kinetics`, `cells.laws.channels.kv1p5_mh.kinetics`; `opening`, `cells.laws.channels.kv1p5_mh.opening`.
-- Runs in `cells.resolved_pump_tissue@3`.
-- Manifest entry: (law, `cells.kv1p5_mh@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.kv1p5_mh@1`.
+- Runs in `cells.model.resolved_pump_tissue@3`.
+- Manifest entry: (law, `cells.channel.kv1p5_mh@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.channel.kv1p5_mh@1`.
 
 <!-- /generated -->
 

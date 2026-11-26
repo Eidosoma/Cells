@@ -1,4 +1,4 @@
-# A timed partial wash of a closed space (`cells.scheduled_compartment_wash@1`)
+# A timed partial wash of a closed space (`cells.operator.scheduled_compartment_wash@1`)
 
 **In one sentence:** At set times, a chosen fraction of the liquid in a closed space outside the cells is drawn off and replaced by fresh buffer, as in a laboratory wash.
 
@@ -32,8 +32,8 @@ membrane or face.
 | | |
 | --- | --- |
 | Piece | Operator, interface `cells.operator@1` ([its fields](../../DECLARATIONS_FORMAT.md#operators)) |
-| ID | `cells.scheduled_compartment_wash@1`; definitions write `scheduled_compartment_wash@1` |
-| Runs in | `cells.resolved_pump_composite@1`, its host, which definitions write `resolved_pump_composite@1`. Definitions of `cells.resolved_pump_composite@1` can declare it |
+| ID | `cells.operator.scheduled_compartment_wash@1`; definitions write `cells.operator.scheduled_compartment_wash@1` |
+| Runs in | `cells.model.resolved_pump_composite@1`, its host. Definitions of `cells.model.resolved_pump_composite@1` can declare it |
 | Where it acts in the step | An event map; scheduled by `compartment_wash_events` |
 | Needs | No law or kind |
 | Provenance | Not yet extracted: the composite's operator contract has no provenance field yet |
@@ -100,7 +100,7 @@ with $c' = (1 - f)\,c + f\,c_\text{buf}$ and $\varphi(x) = x \ln x - x + 1$.
   - the outside and total material ledgers gain $r - a$ at the node;
   - the energy ledger gains $H_\text{mix} - (F_\text{buffer} - F_\text{sample})$ against the node's
     own chemical jump, so its closure checks the split.
-- **The labelled report.** Beside `cells.neutral_arrival_labels@1` the event also reports
+- **The labelled report.** Beside `cells.operator.neutral_arrival_labels@1` the event also reports
   $(r, a)$ for the labelled rows at the nodes washed in this step, and zero elsewhere. These are
   read from the latest event's level records, never from a cumulative record's gain.
   - The label owner then carries $r$ away with the node's shares and adds $a$ to the unlabelled
@@ -131,7 +131,7 @@ Provenance: not yet extracted; the composite's operator contract has no provenan
 - **Ideal dilute mixing at constant volume** (Der): the event map, the free-energy split and the
   heat of mixing were derived for this piece. The whole wash's booking, the old pool to its sink
   and the fresh pool from its source, agrees with Cells' exact-count pool replacement
-  (`cells.pool_replacement@1`), the whole-exchange execution of the same mechanism.
+  (`cells.operator.pool_replacement@1`), the whole-exchange execution of the same mechanism.
 - **The form of $\varphi$** (Der): its series near 1, its log1p form and its ratio form, derived for
   the restricted lumen's fix and shared with it bit for bit.
 
@@ -173,8 +173,8 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/operators/wash_schedule.py`](../../../../src/cells/operators/wash_schedule.py), class `ScheduledCompartmentWash` (`cells.operators.wash_schedule`).
-- Runs in `cells.resolved_pump_composite@1`.
-- Manifest entry: (operator, `cells.scheduled_compartment_wash@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
-- In the Laws library: `select=laws:cells.scheduled_compartment_wash@1`.
+- Runs in `cells.model.resolved_pump_composite@1`.
+- Manifest entry: (operator, `cells.operator.scheduled_compartment_wash@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
+- In the Laws library: `select=laws:cells.operator.scheduled_compartment_wash@1`.
 
 <!-- /generated -->
