@@ -5990,14 +5990,6 @@
     }
    },
    {
-    "file": "tests/unit/test_unstimulated_diagnostic.py",
-    "seconds": 3.58,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
     "file": "tests/unit/test_vector_failure_mask.py",
     "seconds": 15.32,
     "exit_code": 0,
@@ -8021,6 +8013,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_unstimulated_diagnostic.py",
+    "seconds": 3.58,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
     }
    },
    {
