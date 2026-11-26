@@ -209,6 +209,45 @@ def swelling_cell(*, network_multiplier=1.0, dt=0.01, end=40.0, every=0.5, **kwa
     return with_water_first(raw, keep=(fx.SPECIES, "A", "B", "C"), **kwargs)
 
 
+# ------------------------------------------------------------------ turnover, changing volume
+
+TURNOVER_MAKE = 1.0  # fmol/s: S made in the cell, enough to move the volume (FR-65 §6.1).
+TURNOVER_CLEAR = 1e-3  # 1/s: S's first-order clearance, P/k far above S while V moves (§4.1).
+COUPLING_2 = "cells.operator.species_regulated_availability@2"
+
+
+def swelling_turnover(*, make=TURNOVER_MAKE, clear=TURNOVER_CLEAR, network_multiplier=1.0,
+                      dt=0.01, end=40.0, every=0.5, **kwargs):  # fmt: skip
+    """FR-65 (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §6.1): the swelling cell (swelling_cell, water
+    declared first, the network active unless network_multiplier 0) with
+    cells.operator.scheduled_species_turnover@1 declared last, making the tracer S at `make` fmol/s
+    and clearing it at `clear` /s in the cell from time 0. Turnover reads the cell's volume current
+    at its split, so its booked work is the free-energy change at the swelling volume."""
+    raw = swelling_cell(
+        network_multiplier=network_multiplier, dt=dt, end=end, every=every, **kwargs
+    )
+    return fx.with_turnover(
+        raw,
+        [("make_s", "cell_0", "production"), ("clear_s", "cell_0", "clearance")],
+        [("make_s", "cell_0", [(0.0, make)]), ("clear_s", "cell_0", [(0.0, clear)])],
+    )
+
+
+def swelling_a1(*, coupling=False, dt=0.5, end=None, every=60.0, **kwargs):
+    """FR-65's A1 in a swelling cell: the gene regulation sheet's A1
+    (validation/gene_regulation/worlds.a1: the gene unit, turnover of X, and the coupling's Hill
+    factor of X on transcription's initiation) under water declared first (with_water_first).
+    coupling False removes the coupling and its controls: its current-volume reads are FR-65's
+    second step (§3.8), so the first build runs A1 without it, X turnover's alone."""
+    raw = gw.a1(dt=dt, end=end, every=every)
+    if not coupling:
+        operators = raw["model"]["operators"]
+        raw["model"]["operators"] = [o for o in operators if o["law"] != COUPLING_2]
+        for key in ("coupling_controls", "regulatory_writes"):
+            raw["experiment"].pop(key, None)
+    return with_water_first(raw, **kwargs)
+
+
 # ------------------------------------------------------------------ beside the unit producer
 
 UNIT_PRODUCER = "cells.operator.population_unit_turnover@1"

@@ -170,26 +170,32 @@ def test_identities_must_agree_and_never_reach_the_arrays():
 
 def test_version_1_refuses_volume_providers_area_providers_and_mask_providers():
     from tests import membrane_insertion_fixtures as mfx
-    from validation.tissue import pump_water_fixtures as wfx
 
-    base = wfx.heredity_cell("H", dt=1e-3, end_time=0.004)
-    base["experiment"]["observation_times"] = [0.0, 0.004]
-    water = cs.frozen_definition(wfx.with_water(base, pf_m_s=5e-4))
-    water = add_inventory_species(
-        water, "S", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
-    )
-    cell = water["model"]["cells"][0]["id"]
-    with_water = fx.with_turnover(water, [("p", cell, "production")], [("p", cell, [(0.0, 1e-6)])])
-    with pytest.raises(ConfigError, match="reads volume as declared"):
-        parse_spec(with_water)
+    # The first two cases, amended on 26 November 2026 and disclosed (FR-65; the rule of
+    # docs/OPERATOR_COMPOSITION_DESIGN.md §16.1, with the 20 November precedent below). Turnover
+    # beside water, refused in version 1 on its fixed volume reads, is admitted by FR-65's current
+    # reads (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md; D375 and the lead's rulings), and the
+    # admission is tested outside Q5's list (test_species_turnover.py::
+    # test_beside_the_changers_it_reads_by_name). In the static-tissue scope a volume changer other
+    # than water stays refused where turnover reads the volume: a lumen at the node it clears, by
+    # the shared volume rule. Turnover clearing at insertion@1's onset node stays refused, now by
+    # the anchor guard (it reads that node's anchor as declared), no longer by its mask read.
     cleft = mfx.with_operators(mfx.cleft_cell(), mfx.furrow_insertion())
     cleft = add_inventory_species(
         cleft, "S", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
     )
+    cell = cleft["model"]["cells"][0]["id"]
     with_insertion = fx.with_turnover(
         cleft, [("c", "cleft", "clearance")], [("c", None, [(0.0, 1.0)])]
     )
-    with pytest.raises(ConfigError, match="reads outside_active as declared"):
+    lumen = dict(
+        law=mfx.LUMENS[1], lumens=[dict(node_id="cleft", source_id="bath_0", gap_width_m=2e-6)]
+    )
+    with_lumen = copy.deepcopy(with_insertion)
+    with_lumen["model"]["operators"].insert(-1, lumen)
+    with pytest.raises(ConfigError, match=r"the outside volume at cleft\); water is the one"):
+        parse_spec(with_lumen)
+    with pytest.raises(ConfigError, match="changes the outside anchors at cleft"):
         parse_spec(with_insertion)
     # The third case, amended on 20 November 2026 and disclosed (docs/OPERATOR_COMPOSITION_DESIGN.md
     # §16.1's rule for Q5): exchange beside membrane state alone, refused in version 1 on its fixed

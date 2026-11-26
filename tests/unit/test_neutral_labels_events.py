@@ -323,9 +323,10 @@ def test_derived_producer_labels_follow_cell_ids_and_events_not_the_cells_order(
 
     from cells.operators import species_common
     from cells.operators import species_labels as labels
+    from cells.operators.contract import Occupant
 
     def life(cell, births):
-        return tuple(species_common.Occupant(cell, b, 0.0, "newcomer", None, None) for b in births)
+        return tuple(Occupant(cell, b, 0.0, "newcomer", None, None) for b in births)
 
     lives = {"cell_a": life("cell_a", (0.0, 2.0, 5.0)), "cell_b": life("cell_b", (0.0,))}
     chains = (("tx_a", "R", "cell_a"), ("tx_b", "R", "cell_b"))

@@ -407,7 +407,11 @@
   "/mnt/workspaces/Cells/test-slimming-20261126/job2/gates-row/measure/measured.json",
   "/mnt/workspaces/Cells/test-slimming-20261126/regen/measure/measured-placed.json",
   "/mnt/workspaces/Cells/test-slimming-20261126/split/so_idle/m1/measured.json",
-  "/mnt/workspaces/Cells/betse-cleanup-20261126/c3/measure/measured.json"
+  "/mnt/workspaces/Cells/betse-cleanup-20261126/c3/measure/measured.json",
+  "/mnt/workspaces/Cells/fr65-build-20261126/round/measured.json/measured.json",
+  "/mnt/workspaces/Cells/small-fixes-20261126/measured2-assembly/measured.json",
+  "/mnt/workspaces/Cells/small-fixes-20261126/measured3/measured.json",
+  "/mnt/workspaces/Cells/small-fixes-20261126/measured4/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3484,6 +3488,35 @@
    "root": "/mnt/workspaces/Cells/betse-cleanup-20261126/c3/snapshot",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-26T17:49:50+00:00"
+  },
+  {
+   "git_revision": "b4372df9451761a20d893be4317021a356b8f79c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr65-build-20261126/round/snap-head-b4372df9",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T18:10:18+00:00"
+  },
+  {
+   "git_revision": "d0b75e5b2240eafe797fd9a13b0711c036e585a9",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/small-fixes-20261126/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T16:38:06+00:00"
+  },
+  {
+   "git_revision": "799f8f74f5445f99e17b2c9e88686f119a19df77",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/small-fixes-20261126/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T16:41:46+00:00"
+  },
+  {
+   "git_revision": "c574cc41521e7a6c9600f38c025da942296c73e9",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/small-fixes-20261126/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T17:07:07+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3492,11 +3525,10 @@
   "1": [
    {
     "file": "tests/integration/test_assembly_cli.py",
-    "seconds": 9.38,
-    "exit_code": 1,
+    "seconds": 19.54,
+    "exit_code": 0,
     "counts": {
-     "failed": 4,
-     "passed": 2
+     "passed": 6
     }
    },
    {
@@ -4006,7 +4038,7 @@
    },
    {
     "file": "tests/unit/test_composition_matrix.py",
-    "seconds": 6.38,
+    "seconds": 5.68,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -4014,7 +4046,7 @@
    },
    {
     "file": "tests/unit/test_composition_order.py",
-    "seconds": 3.62,
+    "seconds": 2.57,
     "exit_code": 0,
     "counts": {
      "passed": 29
@@ -5175,11 +5207,10 @@
    },
    {
     "file": "tests/unit/test_native_multi_cell_environment_native.py",
-    "seconds": 10.93,
-    "exit_code": 1,
+    "seconds": 9.64,
+    "exit_code": 0,
     "counts": {
-     "failed": 1,
-     "passed": 39
+     "passed": 40
     }
    },
    {
@@ -5624,7 +5655,7 @@
    },
    {
     "file": "tests/unit/test_secreted_species.py",
-    "seconds": 5.43,
+    "seconds": 4.47,
     "exit_code": 0,
     "counts": {
      "passed": 20
@@ -5736,7 +5767,7 @@
    },
    {
     "file": "tests/unit/test_species_reactions_refusals.py",
-    "seconds": 5.03,
+    "seconds": 5.22,
     "exit_code": 0,
     "counts": {
      "passed": 93
@@ -5832,10 +5863,10 @@
    },
    {
     "file": "tests/unit/test_species_turnover.py",
-    "seconds": 8.34,
+    "seconds": 9.18,
     "exit_code": 0,
     "counts": {
-     "passed": 23
+     "passed": 51
     }
    },
    {
@@ -5956,6 +5987,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 80
+    }
+   },
+   {
+    "file": "tests/unit/test_unstimulated_diagnostic.py",
+    "seconds": 3.58,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
     }
    },
    {
@@ -6226,11 +6265,10 @@
    },
    {
     "file": "tests/unit/test_assembly_pool.py",
-    "seconds": 27.9,
-    "exit_code": 1,
+    "seconds": 36.21,
+    "exit_code": 0,
     "counts": {
-     "failed": 1,
-     "passed": 20,
+     "passed": 25,
      "skipped": 1
     }
    },
@@ -6822,7 +6860,7 @@
    },
    {
     "file": "tests/unit/test_neutral_labels_events.py",
-    "seconds": 69.75,
+    "seconds": 62.58,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -7360,7 +7398,7 @@
    },
    {
     "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 24.83,
+    "seconds": 24.22,
     "exit_code": 0,
     "counts": {
      "passed": 59
@@ -7982,15 +8020,6 @@
     "seconds": 2.78,
     "exit_code": 0,
     "counts": {
-     "passed": 6
-    }
-   },
-   {
-    "file": "tests/unit/test_unstimulated_diagnostic.py",
-    "seconds": 2.92,
-    "exit_code": 1,
-    "counts": {
-     "failed": 1,
      "passed": 6
     }
    },

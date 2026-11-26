@@ -459,6 +459,13 @@ class ScheduledReplacementOverWater(replacement.ScheduledReplacement):
         check_impermeants(spec, declaration, schedule, model)
         replacement.check_definition(spec, declaration, schedule, model, apply=apply_events)
 
+    def slot_occupants(self, spec, declaration, schedule):
+        """None, not @1's (FR-65 §3.4): the occupant rule reads replacement@1's and the partition's
+        carriers. Every reader of carriers' rates is refused beside this operator by name (water's
+        volumes, or the shared volume rule, species_common.check_volume_changers), so its slots keep
+        their founders in the tables, as before the hook."""
+        return {}
+
     def inner_check_spec(self, check_spec, spec, declaration, schedule):
         """@1's route maxima applied to the incoming check spec (not discarded)."""
         base = check_spec

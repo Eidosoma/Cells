@@ -210,8 +210,10 @@ def test_fault_evidence_reaches_callback():
     assert any(np.any(state.fault == 2) for state in evidence)
 
 
-def test_public_cli_run_and_resume(tmp_path, capsys):
+def test_public_cli_run_and_resume(tmp_path, capsys, monkeypatch):
     from cells.__main__ import main
+
+    monkeypatch.setenv("CELLS_OUTPUT_ROOT", str(tmp_path))
 
     spec = parse_spec({"worlds": 8, "end_time_s": 0.5})
     config = tmp_path / "pool.json"
