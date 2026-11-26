@@ -655,8 +655,18 @@ def test_label_errors_take_each_kinds_reasons_from_the_model():
     assert any("need the parsed model" in e for e in blanket)
 
 
-@pytest.mark.parametrize("own", [False, True])
-@pytest.mark.parametrize("solver", [None, "cells.solver.imex_euler_face_electromigration@1"])
+EULER = "cells.solver.imex_euler_face_electromigration@1"
+
+
+@pytest.mark.parametrize(
+    "solver, own",
+    [
+        pytest.param(None, False, id="None"),  # Phase 1's two rows keep their IDs.
+        pytest.param(EULER, False, id=EULER),
+        pytest.param(None, True, id="None-own"),  # Phase 2: @3's own record beside them.
+        pytest.param(EULER, True, id=f"{EULER}-own"),
+    ],
+)
 def test_labels_beside_one_way_records_share_the_steps_ends_and_change_nothing(solver, own):
     """FR-50 (D327) beside FR-42: the world's route and pump keep one-way records too, and with
     `own` (phase 2) @3's wall patch keeps its own Y record (its one_way_records). Over three host
