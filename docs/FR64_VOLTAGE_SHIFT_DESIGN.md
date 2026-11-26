@@ -129,6 +129,19 @@ its control and its acid.
 | `channel_material_rates`, for laws with a material term such as `cells.channel.cav1p2_m2h@1` | the stage's potentials | the read's |
 | `channel_domain_valid`: readouts, `explicit_rates` and `potential_kinetics` | V, on −120 to 60 mV | none |
 
+**The sweep beyond @3's module** (`src/cells`, `validation/` and `scripts/`, for `channel_kinetics`,
+`potential_kinetics`, `channel_rates`, direct calls of a law's `.kinetics(` and `channel_targets`):
+- **No other engine site evaluates @3's channel laws.**
+  - The composite and its adapter forward @3's own functions (`FORWARDED`, and the implementation object's names).
+  - The projective mode's settling test (`surface_pump_projective.py`) and the composite's `_channel_targets` read the
+    readouts' `channel_targets`, so they see the shift.
+  - The catalogue call in `surface_kinetic.py` belongs to another model family.
+  - @3's own dispatch with no structure never meets a shift, since a shifted world fails closed without its structure
+    (§5).
+- **Three validation drivers** call `surface_pump_v3.channel_kinetics(...)` at a plain V, on their own unshifted
+  worlds: `validation/tissue/composite_guard.py`, `pump_water_qualification.py` and `pump_water_kcc_qualification.py`.
+  The function keeps its signature, with the per-row voltages as an optional argument (§3.4), so they are untouched.
+
 **What FR-64 must change (S):**
 - **The IMEX stage gates never pass through `channel_rates`.**
   - A shifted gate would read V at every stage after the first, while the step's start kinetics read V_ref.
@@ -303,7 +316,7 @@ it.
 | Site | Concentrations | The change |
 | --- | --- | --- |
 | `channel_rates` | the caller's read, as today | V_r for each gate row, and V_ref for the block, from `reader_voltages` |
-| `channel_kinetics` | none | takes [rows, channel] voltages where a gate shifts (below) |
+| `channel_kinetics` | none | takes [rows, channel] voltages, as an optional argument, where a gate shifts (below). A call at a plain V is unchanged |
 | `potential_kinetics`, at the IMEX stages | **the stage's read (new)** | as `channel_rates` |
 | `channel_block`, `channel_block_terms` | the caller's | V_ref and ΔV from `reader_voltages`, and the pH term (§4.2) |
 | `_patch_slopes`, `block_material_rates` | **the stage read, for ΔV (new)** | as above |
@@ -454,6 +467,9 @@ Each check refuses the step, and none clips.
 - **The block** keeps its normal-number check (`domain_valid`).
   - For the pH kind, the definition bounds |ΔV| by 0.369 V over the widened window, which is FR-51's admitted reversal.
     So |V_ref| stays within FR-51's 0.49 V, and its normal-number argument holds unchanged.
+  - Both numbers are FR-51's registration's (`validation/fr51/REGISTRATION.md`, "Why the domain's limits"). |V_ref| ≤
+    0.49 V comes from the laws' −120 to +60 mV less a reversal of at most 0.369 V, for concentrations from 1e-3 to
+    1e3 mM. It keeps |a_k V_ref| ≤ 147 and every K_k within [1e-79, 1e79] mM.
   - The reversal kind keeps FR-51's checks.
 - **pH:** h is finite and positive, and the pH lies inside the window, under its margin (§3.5).
 - **E:** both concentrations are finite and positive. @3's domain already keeps every row positive.
@@ -488,8 +504,8 @@ Each choice below is the lead's to rule, except where a question in §15 asks th
 
 | Option | For | Against |
 | --- | --- | --- |
-| **A. A pure module, `laws/channels/voltage_shift.py` (recommended)** | One home for the closed set: the types, the ΔV and slope kernels and the margin. The spec, the model, `validation/` closed forms and the tests import one thing. It mirrors the block law's module | One more module with no registry record. A guard must not mistake it for a law home |
-| B. Private functions in @3's model module | No new file | The spec's parse and the closed forms would import the model module. The kinds would be split between two places |
+| **A. A pure module, `laws/channels/voltage_shift.py` (recommended)** | One home for the closed set: the types, the ΔV and slope kernels and the margin. The spec, the model and the engine's tests import one thing. It mirrors the block law's module. The closed forms in `validation/` stay independent of it (§9) | One more module with no registry record. A guard must not mistake it for a law home |
+| B. Private functions in @3's model module | No new file | The spec's parse would import the model module. The kinds would be split between two places |
 | C. A law family (`cells.voltage_shift.nernst_reversal@1` and `cells.voltage_shift.linear_ph@1`) | A provenance record and a library page per kind | A family and an interface for two one-line forms, against D361's "no new ID" and ID_HIERARCHY §7. It is the natural form if the set is ever opened |
 
 **O2. The stage read at the IMEX stage gates** (worlds with a shifted gate only, static).
@@ -551,9 +567,10 @@ case no registered law reaches.
 
 **Frozen files are read through the live driver, as the rename decided** (D371 Q7: "translate", with the engine
 strict).
-- **`validation/fr51/engine.py`** is live, and already copies `cases.json`'s `reference` into the declaration. Its
-  `_block_declaration` now writes the shift instead: `voltage_shift.block` for a reversal, and nothing for
-  `membrane_voltage`.
+- **`validation/fr51/engine.py`** is live, and already copies `cases.json`'s `reference` into the declaration.
+  - Its `_block_declaration` builds the block, and now leaves `reference` out.
+  - `raw_world` puts the shift on the channel entry: `voltage_shift: {"block": ...}` for a reversal, and nothing for
+    `membrane_voltage`.
 - **`closed_forms.py`** reads the frozen spec's own spelling and stays as it is. **`plants.py`** patches the moved
   function and fields. **`judge.py`** and `references/spec/` are frozen and untouched.
 - **So the earlier note's fallback is retired.** That fallback added about 20 host rows if the tagged files could not
