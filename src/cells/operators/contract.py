@@ -304,6 +304,7 @@ Defaults below are the idle answers: no parts, no terms, no columns.
 
 import inspect
 from collections.abc import Mapping
+from dataclasses import dataclass
 from types import MappingProxyType
 from typing import NamedTuple
 
@@ -352,6 +353,21 @@ class Read(NamedTuple):
     mode: str
     stage: str
     scoped: bool = False
+
+
+@dataclass(frozen=True)
+class Occupant:
+    """One carrier's life in a slot (D150 §5.2, the occupant rule; FR-65 §3.4): an operator that
+    decides who occupies its slots gives them through slot_occupants, and the readers of carriers'
+    rates build their per-world controls from them (species_common.occupants and route_tables),
+    without importing that operator."""
+
+    carrier_id: str
+    birth: float
+    death: float  # math.inf for the last occupant.
+    kind: str  # "founder", a replacement's newcomer kind, or "daughter".
+    template: str | None
+    donor: str | None
 
 
 class LiquidExchange(NamedTuple):
@@ -644,6 +660,14 @@ class Operator:
     def onset_patches(self, spec, declaration, schedule):
         """{patch id: onset time} for the patches this operator opens at an onset (host side,
         as above)."""
+        return {}
+
+    def slot_occupants(self, spec, declaration, schedule):
+        """{cell id: (Occupant, ...)} for the slots whose occupants this operator decides (host
+        side, as above), each slot's carriers in time order from its first: a founder from time 0,
+        or a daughter from its birth (a pending slot has no occupant before it). The readers of
+        carriers' rates merge them over the founders (species_common.occupants), and a slot two
+        operators fill is refused. {}: it decides none."""
         return {}
 
     def changed_volume_nodes(self, spec, declaration):

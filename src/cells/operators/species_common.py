@@ -54,6 +54,7 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
+from cells.operators import contract
 from cells.registry import species_registry as registry
 
 REPLACEMENT_LAW = "cells.operator.scheduled_cell_replacement@1"
@@ -93,16 +94,6 @@ class RouteSchedule:
 class TemplateRates:
     template_id: str
     rates: tuple  # ((route id, values), ...)
-
-
-@dataclass(frozen=True)
-class Occupant:
-    carrier_id: str
-    birth: float
-    death: float  # math.inf for the last occupant.
-    kind: str  # "founder", or replacement's newcomer kind.
-    template: str | None
-    donor: str | None
 
 
 # ------------------------------------------------------------------ identity and the cap
@@ -397,10 +388,11 @@ def parse_schedules(raw, base, routes, law, key, parse_values):
 
     routes: the declaration's routes, each with `id` and `cell` (its slot's cell ID; None for an
     outside-node route). parse_values(route, entry) returns one change's value tuple. An
-    outside-node route has exactly one schedule, with carrier_id null; a cell-side route needs
-    its founder's (carrier_id its cell ID); newcomers' schedules are optional and checked against
-    their lives with the definition. Founder and node schedules start at time 0; every change is
-    on the clock's grid (D283) inside the horizon, in increasing order.
+    outside-node route has exactly one schedule, with carrier_id null, starting at time 0. A
+    cell-side route's schedules are keyed by carrier and checked against the slot's occupants with
+    the definition (route_tables; FR-65 moved the founder rule there, since a partition's pending
+    slot has no founder). Every change is on the clock's grid (D283) inside the horizon, in
+    increasing order.
     """
     if type(raw) is not list:
         raise ConfigError(f"{key} requires an explicit list")
@@ -438,20 +430,12 @@ def parse_schedules(raw, base, routes, law, key, parse_values):
         times = [t for t, _ in changes]
         if any(b <= a for a, b in zip(times, times[1:], strict=False)):
             raise ConfigError(f"{law}: schedule times increase strictly")
-        founder = carrier is None or carrier == route.cell
-        if founder and times[0] != 0.0:
-            raise ConfigError(
-                f"{law}: route {route.id}'s "
-                + ("node" if carrier is None else "founder")
-                + " schedule starts at time 0"
-            )
+        if carrier is None and times[0] != 0.0:
+            raise ConfigError(f"{law}: route {route.id}'s node schedule starts at time 0")
         schedules.append(RouteSchedule(route.id, carrier, tuple(changes)))
     for route in routes:
-        if (route.id, route.cell) not in seen:
-            raise ConfigError(
-                f"{law}: route {route.id} needs a schedule for "
-                + ("its node" if route.cell is None else f"its founder carrier {route.cell}")
-            )
+        if route.cell is None and (route.id, None) not in seen:
+            raise ConfigError(f"{law}: route {route.id} needs a schedule for its node")
     return tuple(schedules)
 
 
@@ -517,49 +501,90 @@ def replacement_of(spec):
 
 
 def occupants(spec):
-    """{cell id: (Occupant, ...)}: each slot's founder, then its newcomers in time order."""
-    _, events = replacement_of(spec)
-    by_slot = {c.id: [] for c in spec.model.cells}
-    for v in sorted(events, key=lambda v: v.time):
-        by_slot[v.slot].append(v)
-    lives = {}
-    for cell, rows in by_slot.items():
-        deaths = [v.time for v in rows] + [math.inf]
-        lives[cell] = (
-            Occupant(cell, 0.0, deaths[0], "founder", None, None),
-            *(
-                Occupant(v.carrier_id, v.time, deaths[k + 1], v.newcomer, v.template, v.donor)
-                for k, v in enumerate(rows)
-            ),
-        )
+    """{cell id: (contract.Occupant, ...)}: each slot's carriers in time order (FR-65 §3.4).
+
+    A slot no operator fills holds its founder, its own cell ID, from time 0 to the end. An
+    operator that decides a slot's occupants gives them through the contract's slot_occupants
+    (replacement@1 from its events, the partition from its lineage), never imported here (the J2
+    line). A slot two operators fill is refused. Without such an operator every slot holds its
+    founder alone, and with replacement@1 alone the lives are replacement's as before."""
+    lives = {
+        c.id: (contract.Occupant(c.id, 0.0, math.inf, "founder", None, None),)
+        for c in spec.model.cells
+    }
+    filled = {}
+    for op, declaration, schedule in composite_spec.entries(spec):
+        for cell, records in op.slot_occupants(spec, declaration, schedule).items():
+            if cell in filled:
+                raise ConfigError(
+                    f"Slot {cell}'s occupants are decided by both {filled[cell]} and {op.LAW_ID}; "
+                    "one operator decides a slot's occupants (the occupant rule, D150 §5.2)"
+                )
+            filled[cell] = op.LAW_ID
+            lives[cell] = tuple(records)
     return lives
 
 
-def route_tables(spec, routes, schedules, templates, law):
+def route_tables(spec, routes, schedules, templates, law, idle=None):
     """Per route, its value table over the run: ((time, values), ...) in increasing time.
 
     An outside-node route's table is its schedule. A cell-side route's follows its slot's
-    occupants (module docstring): the founder's schedule; at each newcomer's birth its template's
-    rate, or for a donor copy the rate in force just before (the donor's, by admission); then the
-    newcomer's own changes. Refused here with the reason: a schedule change outside its carrier's
-    life, a schedule naming a carrier that never occupies the route's slot, and a template newcomer
-    whose template declares no rate for a route of its slot.
+    occupants (module docstring; occupants): a founder's own schedule from time 0; at a newcomer's
+    birth its template's rate, or for a donor copy the rate in force just before (the donor's, by
+    admission), then its own changes; a daughter's own schedule from its birth (D150 §5.2: its
+    rates are its own). Where the slot has no occupant (a pending daughter's slot before its birth,
+    a retired carrier's after its retirement) the table holds `idle`, the reader's idle values,
+    by explicit entries (control_arrays reads a table's first entry for every time before it), and
+    a reader that gives none is refused there (fails closed). Refused here with the reason: a
+    founder or daughter without its own schedule, or whose schedule does not start at its birth (a
+    founder's at time 0), a change outside its carrier's life, a schedule naming a carrier that
+    never occupies the route's slot, and a template newcomer whose template declares no rate for a
+    route of its slot.
     """
     lives = occupants(spec)
     names = {t.template_id: dict(t.rates) for t in templates}
     keyed = {(s.route_id, s.carrier_id): s.changes for s in schedules}
     used, tables = set(), []
+
+    def unoccupied(route, time):
+        if idle is None:
+            raise ConfigError(
+                f"{law}: route {route.id}'s slot {route.cell} has no occupant from {time} s, and "
+                f"{law} gives no idle rate for an empty slot (the occupant rule, D150 §5.2)"
+            )
+        return (time, idle)
+
     for route in routes:
         if route.cell is None:
             used.add((route.id, None))
             tables.append(keyed[(route.id, None)])
             continue
-        table = []
+        table, end = [], 0.0
         for occupant in lives[route.cell]:
+            if occupant.birth > end:  # The slot is empty until this carrier's birth.
+                table.append(unoccupied(route, end))
             own = keyed.get((route.id, occupant.carrier_id), ())
             if own:
                 used.add((route.id, occupant.carrier_id))
-            if occupant.kind == "founder":  # Its schedule starts at 0 (parse_schedules).
+            if occupant.kind in ("founder", "daughter"):  # Its own schedule, from its birth.
+                if not own:
+                    raise ConfigError(
+                        f"{law}: route {route.id} needs a schedule for "
+                        + (
+                            f"its founder carrier {occupant.carrier_id}"
+                            if occupant.kind == "founder"
+                            else f"carrier {occupant.carrier_id}, a daughter born in slot "
+                            f"{route.cell} at {occupant.birth} s, whose rates are its own (D150 "
+                            "§5.2)"
+                        )
+                    )
+                if own[0][0] != occupant.birth:
+                    raise ConfigError(
+                        f"{law}: route {route.id}'s founder schedule starts at time 0"
+                        if occupant.kind == "founder"
+                        else f"{law}: carrier {occupant.carrier_id}'s schedule of route "
+                        f"{route.id} starts at its birth, {occupant.birth} s"
+                    )
                 start, later = own[:1], own[1:]
             elif occupant.kind == "isolated_template":
                 rates = names.get(occupant.template, {})
@@ -578,6 +603,9 @@ def route_tables(spec, routes, schedules, templates, law):
                     f"outside its life at {route.cell} ({occupant.birth}, {occupant.death}) s"
                 )
             table.extend((*start, *later))
+            end = occupant.death
+        if end < math.inf:  # Retired with no successor: empty from then on.
+            table.append(unoccupied(route, end))
         tables.append(tuple(table))
     unused = sorted(set(keyed) - used, key=str)
     if unused:
@@ -587,6 +615,37 @@ def route_tables(spec, routes, schedules, templates, law):
             "occupies its slot"
         )
     return tables
+
+
+def node_onsets(spec):
+    """{outside node id: its onset time} for the nodes an operator opens at an onset: a node
+    opens with its onset patches (contract.onset_patches, insertion@2's), read without importing
+    the operator that decides them."""
+    outside = {p.id: p.outside for p in spec.model.membranes}
+    out = {}
+    for op, declaration, schedule in composite_spec.entries(spec):
+        for patch, time in op.onset_patches(spec, declaration, schedule).items():
+            node = outside[patch]
+            out[node] = min(float(time), out.get(node, math.inf))
+    return out
+
+
+def check_node_onsets(spec, routes, tables, law):
+    """D150 §5.3 and FR-65 §3.4: refuse an outside-node route with a positive value in force
+    before its node's onset. Outside routes are environment, scheduled per node, and a closed node
+    is no route's: a rate there would act on its declared content before the node exists."""
+    onsets = node_onsets(spec)
+    for route, table in zip(routes, tables, strict=True):
+        onset = onsets.get(route.node) if route.cell is None else None
+        if onset is None:
+            continue
+        for time, values in table:
+            if time < onset and any(v > 0 for v in values):
+                raise ConfigError(
+                    f"{law}: route {route.id} has a positive rate at {route.node} from {time} s, "
+                    f"before the node's onset at {onset} s; a node is environment from its onset "
+                    "(D150 §5.3)"
+                )
 
 
 def control_arrays(tables, times, width):

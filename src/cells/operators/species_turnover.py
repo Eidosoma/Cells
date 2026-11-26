@@ -99,6 +99,9 @@ CHARGED_LIMIT = (
 )
 STEP_ID = "exact_production_clearance_half_steps@1"
 KINDS = ("production", "clearance")
+# A route's value where its slot has no occupant (the occupant rule's idle value, FR-65 §3.4): a
+# pending daughter's slot before its birth and a retired carrier's after its retirement.
+IDLE = (0.0,)
 # _node_update: the half-step clearance exponent kh above which the stored change is formed net,
 # (P/k - n) f, rather than as produced - cleared (the module docstring).
 NET_EXPONENT = 1.0
@@ -549,7 +552,7 @@ class ScheduledSpeciesTurnover(Operator):
 
     def control_values(self, spec, declaration, schedule, records, indices, times):
         tables = common.route_tables(
-            spec, declaration.routes, schedule, declaration.templates, LAW_ID
+            spec, declaration.routes, schedule, declaration.templates, LAW_ID, idle=IDLE
         )
         return (common.control_arrays(tables, times, 1)[..., 0],)
 
@@ -572,9 +575,10 @@ class ScheduledSpeciesTurnover(Operator):
         common.check_identities(spec, LAW_ID, declaration.species)
         common.check_templates(spec, declaration.templates, declaration.routes, LAW_ID)
         tables = common.route_tables(
-            spec, declaration.routes, schedule, declaration.templates, LAW_ID
+            spec, declaration.routes, schedule, declaration.templates, LAW_ID, idle=IDLE
         )
         common.check_donor_copies(spec, declaration.routes, tables, LAW_ID, key_of)
+        common.check_node_onsets(spec, declaration.routes, tables, LAW_ID)
 
     def batch_signature(self, declaration):
         """The static route structure; identities and rates are not part of it."""

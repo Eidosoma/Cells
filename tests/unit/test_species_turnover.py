@@ -16,6 +16,8 @@ and compiled (kernels only, no world).
 """
 
 import contextlib
+import math
+import re
 from decimal import Decimal, getcontext
 from types import SimpleNamespace
 from typing import NamedTuple
@@ -299,6 +301,109 @@ def test_definition_refusals(change, message):
     change(raw)
     with pytest.raises(ConfigError, match=message):
         parse_spec(raw)
+
+
+# ------------------------------------------------------------ the occupant rule's tables (FR-65)
+
+
+def test_the_occupant_tables_follow_the_partition_s_carriers_and_refuse_their_gaps(monkeypatch):
+    """FR-65 §3.4 (D150 §5.2), host side, about 0.3 s, no world compiled. On S5's divided world
+    (cell_0 into d1 and d2 at 2 ms, carriers c1 and c2), routes on all three slots: a daughter's
+    rate is zero before its birth and its own after, and the parent's is its own until its
+    retirement and zero after. Planted (P3): a table without the daughter's leading zero, and one
+    that keeps the parent's rate, each fails the row's check. Refused, with their reasons: a
+    daughter keyed by its slot (P4), a daughter without its own schedule or with one that starts
+    before its birth, a reader with no idle value, a slot two operators fill, and replacement@2's
+    newcomers. Without a lifecycle operator every slot holds its founder, and replacement@1's slots
+    are its events' (the occupants of today's rule). An outside rate before its node's onset
+    (insertion@2's) is refused, at the onset admitted."""
+    from cells.operators import OPERATORS
+    from cells.operators import species_common as common
+    from cells.operators.contract import Occupant
+    from tests import membrane_insertion_fixtures as mfx
+    from tests import partition_fixtures as pfx
+
+    spec, birth = parse_spec(pfx.divided()), pfx.EVENT
+    routes = tuple(
+        turnover.Route(f"p_{c}", fx.SPECIES, c, "production", c) for c in ("cell_0", "d1", "d2")
+    )
+    rates = {"cell_0": 1e-6, "c1": 2e-6, "c2": 3e-6}
+    keys = (("p_cell_0", "cell_0", 0.0), ("p_d1", "c1", birth), ("p_d2", "c2", birth))
+
+    def tables(keys=keys, idle=turnover.IDLE):
+        schedules = tuple(
+            common.RouteSchedule(r, c, ((t, (rates.get(c, 5e-6),)),)) for r, c, t in keys
+        )
+        return common.route_tables(spec, routes, schedules, (), LAW_ID_TURNOVER, idle=idle)
+
+    times = [0.0, 0.001, birth, 0.003]
+    expected = np.array([[1e-6, 0, 0], [1e-6, 0, 0], [0, 2e-6, 3e-6], [0, 2e-6, 3e-6]])
+
+    def follows(tables):
+        return np.array_equal(common.control_arrays(tables, times, 1)[..., 0], expected)
+
+    built = tables()
+    assert follows(built)
+    assert not follows([built[0], built[1][1:], built[2]])  # P3: the leading zero dropped.
+    assert not follows([built[0][:-1], built[1], built[2]])  # P3: the parent's rate kept.
+    lives = common.occupants(spec)
+    assert lives["d1"] == (Occupant("c1", birth, math.inf, "daughter", None, None),)
+    assert lives["cell_0"] == (Occupant("cell_0", 0.0, birth, "founder", None, None),)
+    for keyed, words in (
+        ((*keys, ("p_d1", "d1", 0.0)), "names carrier d1, which never occupies its slot"),
+        ((keys[0], ("p_d1", "d1", 0.0), keys[2]), "carrier c1, a daughter born in slot d1"),
+        ((keys[0], ("p_d1", "c1", 0.001), keys[2]), "starts at its birth, 0.002 s"),
+    ):
+        with pytest.raises(ConfigError, match=re.escape(words)):
+            tables(keyed)
+    with pytest.raises(ConfigError, match="gives no idle rate for an empty slot"):
+        tables(idle=None)
+    # Without a lifecycle operator, founders alone; with replacement@1, its events' carriers.
+    plain = parse_spec(definition())
+    assert common.occupants(plain) == {
+        "cell_0": (Occupant("cell_0", 0.0, math.inf, "founder", None, None),)
+    }
+    raw = fx.secreting_cell()
+    raw = fx.with_replacement(raw, [fx.template(raw, "cell_0", "T")], [(0.002, "cell_0", "T", "n")])
+    replaced = parse_spec(
+        fx.with_turnover(
+            raw,
+            [("p", "cell_0", "production")],
+            [("p", "cell_0", [(0.0, 1e-6)])],
+            templates=[("T", {"p": 2e-6})],
+        )
+    )
+    assert common.occupants(replaced)["cell_0"] == (
+        Occupant("cell_0", 0.0, 0.002, "founder", None, None),
+        Occupant("n", 0.002, math.inf, "isolated_template", "T", None),
+    )
+    # A slot two operators fill, and replacement@2's newcomers, are refused by name.
+    class Filler(Operator):
+        LAW_ID = "tests.operator.planted_filler@1"
+
+        def slot_occupants(self, spec, declaration, schedule):
+            return {"d1": (Occupant("x", 0.001, math.inf, "daughter", None, None),)}
+
+    entries = common.composite_spec.entries(spec)
+    monkeypatch.setattr(
+        common.composite_spec, "entries", lambda s: (*entries, (Filler(), None, None))
+    )
+    with pytest.raises(ConfigError, match="decided by both"):
+        common.occupants(spec)
+    over_water = OPERATORS["cells.operator.scheduled_cell_replacement@2"]
+    monkeypatch.setattr(common.composite_spec, "entries", lambda s: ((over_water, None, None),))
+    with pytest.raises(ConfigError, match="not cells.operator.scheduled_cell_replacement@2's"):
+        common.occupants(spec)
+    monkeypatch.undo()
+    # D150 §5.3: an outside route before its node's onset (insertion@2's furrow opens the cleft).
+    raw = mfx.with_operators(mfx.cleft_cell(), mfx.furrow_insertion(onset=0.002))
+    raw["model"]["operators"][-1]["law"] = "cells.operator.scheduled_membrane_insertion@2"
+    cleft = parse_spec(raw)
+    assert common.node_onsets(cleft) == {"cleft": 0.002}
+    route = (turnover.Route("c", fx.SPECIES, "cleft", "clearance", None),)
+    common.check_node_onsets(cleft, route, [((0.0, (0.0,)), (0.002, (0.5,)))], LAW_ID_TURNOVER)
+    with pytest.raises(ConfigError, match=r"before the node's onset at 0\.002 s"):
+        common.check_node_onsets(cleft, route, [((0.0, (0.5,)),)], LAW_ID_TURNOVER)
 
 
 # ------------------------------------------------------------ the stored change at stiff rates

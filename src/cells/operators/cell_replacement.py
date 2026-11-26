@@ -51,6 +51,7 @@ Contract (operators/contract.py):
   replaced slots need a held bath in their capacitor component.
 """
 
+import math
 from dataclasses import replace
 
 import jax
@@ -71,7 +72,7 @@ from cells.models import surface_pump_v3 as ionic
 from cells.models import surface_tissue as tissue
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
-from cells.operators.contract import Operator
+from cells.operators.contract import Occupant, Operator
 
 LAW_ID = replacement_spec.OPERATION_LAW_ID
 IONIC_FIELDS = ionic.STATE_TYPE._fields
@@ -759,6 +760,25 @@ class ScheduledReplacement(Operator):
 
     def check_definition(self, spec, declaration, schedule, model):
         check_definition(spec, declaration, schedule, model)
+
+    def slot_occupants(self, spec, declaration, schedule):
+        """The occupant rule's carriers (D150 §5.2; the contract's hook, FR-65 §3.4): each replaced
+        slot's founder until its first event, then each newcomer from its event to the next, its
+        kind, template and donor its event's. Slots without an event keep their founder."""
+        by_slot = {}
+        for v in sorted(schedule, key=lambda v: v.time):
+            by_slot.setdefault(v.slot, []).append(v)
+        out = {}
+        for cell, rows in by_slot.items():
+            deaths = [v.time for v in rows] + [math.inf]
+            out[cell] = (
+                Occupant(cell, 0.0, deaths[0], "founder", None, None),
+                *(
+                    Occupant(v.carrier_id, v.time, deaths[k + 1], v.newcomer, v.template, v.donor)
+                    for k, v in enumerate(rows)
+                ),
+            )
+        return out
 
     def inner_check_spec(self, check_spec, spec, declaration, schedule):
         """@3's step checks on the worst-case inner definition, every occupant included."""
