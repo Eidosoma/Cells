@@ -2,6 +2,7 @@
 
 import ast
 import copy
+import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -183,7 +184,18 @@ def test_descriptor_construction_is_before_any_reference_parameter_or_caller_bir
     text = ast.unparse(evaluate)
     assert text.index("descriptor_before_birth(") < text.index("clone(legacy._execute")
     assert "parameter_type(**kwargs) if '_conf' in kwargs" in text
-    assert not any(name == "cells" or name.startswith("cells.") for name in sys.modules)
+    # tests/conftest.py imports the engine into every test process, so ask a fresh one.
+    code = (
+        "import sys; sys.path.insert(0, sys.argv[1]); "
+        "import validation.betse.native_multi_cell_environment_native; "
+        "print(any(m == 'cells' or m.startswith('cells.') for m in sys.modules))"
+    )
+    root = str(Path(n.__file__).resolve().parents[2])
+    fresh = subprocess.run(
+        [sys.executable, "-I", "-c", code, root], capture_output=True, text=True, timeout=60
+    )
+    assert fresh.returncode == 0, fresh.stderr
+    assert fresh.stdout.strip() == "False"
 
 
 @pytest.mark.parametrize("fail", [False, True])
