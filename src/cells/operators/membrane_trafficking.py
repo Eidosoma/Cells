@@ -826,6 +826,9 @@ def booked(row):
 
 class ScheduledMembraneTrafficking(Operator):
     LAW_ID = LAW_ID
+    # FR-43 part 3: a conversion, carrying its carriers' charge to and from the outside nodes of its
+    # plasma and pool patches (written_rows).
+    ROW_MOVES = "conversion"
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -963,6 +966,17 @@ class ScheduledMembraneTrafficking(Operator):
         retrieval = np.array([[r for r, _ in record] for record in records], dtype=float)
         recycling = np.array([[r for _, r in record] for record in records], dtype=float)
         return retrieval[indices], recycling[indices]
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: each route's carriers at the outside nodes of its plasma patch and its
+        compartment's bounding patch, where finite (a held bath supplies what its node gives)."""
+        held = {c.id for c in spec.model.extracellular if c.reservoir}
+        rows = []
+        for route, plasma, pool, _ in resolved_routes(spec, declaration):
+            for patch in (plasma, pool):
+                if patch.outside not in held:
+                    rows.extend((s, patch.outside) for s, _ in route.carriers)
+        return tuple(dict.fromkeys(rows))
 
     def check_definition(self, spec, declaration, schedule, model):
         check_definition(spec, declaration, schedule)

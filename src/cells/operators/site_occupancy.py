@@ -1301,9 +1301,24 @@ def stage_report(state, control, p, dt):
 class SiteOccupancy(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "user"  # Species registry (D176): its ligands are species others declare.
+    # FR-43 part 3: a conversion, binding and releasing a ligand at the node its population faces
+    # and internalising it into the patch's cell (written_rows).
+    ROW_MOVES = "conversion"
 
     def species_identities(self, declaration):
         return tuple(ligand.identity for ligand in declaration.species)
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: each population's ligand at the node it faces (a cell, or a finite outside
+        node: a patch on a held bath is refused), and at its receiving cell where it
+        internalises."""
+        m = spec.model
+        rows = []
+        for p in declaration.populations:
+            rows.append((p.ligand, facing_node(m, p)[1]))
+            if p.internalisation_rate is not None:
+                rows.append((p.ligand, receiving_cell(m, p)))
+        return tuple(dict.fromkeys(rows))
 
     STEP_ID = STEP_ID
     SPLIT = True

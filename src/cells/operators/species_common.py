@@ -323,6 +323,23 @@ def check_identities(spec, law, identities):
     registry.check_identities(spec, law, identities)
 
 
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"  # The one volume changer admitted.
+
+
+def largest_volumes(spec):
+    """{node id: the largest volume it can take (pL)} for every cell and outside node: its declared
+    volume, or where water changes the volumes its water compartment's declared maximum (FR-43 /
+    D315: a producer's static bound reads it; the gene unit's and D152's production_bound)."""
+    m = spec.model
+    out = {c.id: c.volume_pL for c in m.cells} | {c.id: c.volume_pL for c in m.extracellular}
+    for op, water, _ in composite_spec.entries(spec):
+        if op.LAW_ID == WATER:
+            for c in water.compartments:
+                if c.compartment_id in out:
+                    out[c.compartment_id] = max(out[c.compartment_id], c.maximum_volume_pL)
+    return out
+
+
 def summary_identities(identities):
     return {
         s.id: dict(

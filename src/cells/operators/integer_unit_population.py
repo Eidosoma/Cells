@@ -57,8 +57,21 @@ too): a site that would need more refuses the step (never
 truncated), and the definition refuses dt a0,max > 1 where a0,max is bounded
 (check_hazard_bound). The time of an event is the operator's compensated clock at
 the half-step's start (Neumaier's sum of its h's) plus the offset inside it. The splitting against
-other writers of a row it reads or moves (turnover, exchange, @3's step) is Strang's, O(dt^2) in
-the event times; with nothing else moving its rows, the event times are exact at every dt.
+other writers of a row it reads or moves (turnover, exchange, D152's reactions, the gene unit,
+@3's step) is Strang's, O(dt^2) in the event times and the amounts; with nothing else moving its
+rows, the event times are exact at every dt, and they stay exact beside a co-writer where no event
+rate depends on it, directly or through the transfer (docs/FR43_PART3_COWRITERS_DESIGN.md §2).
+Second order holds while the transfer is slow against the step, lambda dt of about 2 or less; a
+world with a faster transfer shows its own halving. The pools recorded at an event
+(integer_trace_cell_fmol, integer_trace_node_fmol) are this operator's view inside the step, first
+order in dt beside a co-writer (off by up to half its kick per step): they are reported, not
+judged.
+
+**Co-writers** (FR-43 part 3; the species registry's rule, check_row_writers). The operator is a
+transfer (ROW_MOVES): a moved row may have any declared split writer beside it, a reaction or the
+gene unit included, each with its own half-steps and books in declared order, unless a writer
+claims the row alone (the gene unit's exported and labelled rows). An event changes unit states
+only, so no co-writer can touch the integer ledger, and every row stays continuous across events.
 
 **Stages.** Sites whose rows meet, one of them moving a row the other moves or reads while both
 can be live (stages: a parent and its daughters never meet, rows both only read do not), run in
@@ -92,9 +105,9 @@ and the lumens are refused (version 1).
 
 **Refused at the definition**, each with its reason: a charged moved species, or one with an @3
 route; an unknown read species; a patch on a held bath; a malformed or non-conserving channel; a
-reactant order above MAX_ORDER; more than MAX_SUBUNITS subunits at a site; a moved row that a D152
-reaction or the gene unit
-writes, or that an in-step process moves; replacement and every event that replaces amounts; a
+reactant order above MAX_ORDER; more than MAX_SUBUNITS subunits at a site; a moved row that an
+in-step process moves, or that a writer claims alone; a split row writer that declares no
+ROW_MOVES (fails closed); replacement and every event that replaces amounts; a
 provider or closer of the activity masks that does not divide through the composite's lifecycle
 (insertion@1 and @2 among them), and a composite without the hook; a label owner; units at a site
 whose cell is born later; a dividing patch whose sites lack site maps, maps that do not follow the
@@ -140,8 +153,6 @@ REPLACEMENT_LAWS = (
     "cells.operator.scheduled_cell_replacement@1",
     "cells.operator.scheduled_cell_replacement@2",
 )
-GENE_UNIT_LAW = "cells.operator.templated_polymerisation@1"
-REACTIONS_LAW = "cells.operator.local_species_reactions@1"
 LEDGER_FLOOR_UNITS = 0.0  # The subunit ledger is exact, in integers.
 
 STATE_AXES = {
@@ -1077,13 +1088,14 @@ def _entries(spec):
 
 
 def check_writers(spec, declaration, model):
-    """The writers, closers and neighbours version 1 admits (module docstring)."""
+    """The writers, closers and neighbours version 1 admits (module docstring). The writers of a
+    moved row are the species registry's rule (check_row_writers, FR-43 part 3): any declared split
+    writer, unless a writer claims the row alone; an undeclared one fails closed."""
     rows = set()
     for population, site in sites_of(declaration):
         moved, _ = site_rows(population, site)
         rows |= moved
-    moved_species = {s.id for s in declaration.species}
-    for op, other, _ in _entries(spec):
+    for op, _, _ in _entries(spec):
         if op.LAW_ID == LAW_ID:
             continue
         if op.LAW_ID in REPLACEMENT_LAWS or "amount_increment" in op.EVENT_REPLACES:
@@ -1104,23 +1116,7 @@ def check_writers(spec, declaration, model):
                 "composite's lifecycle, so a site there would gain or keep units with no rule "
                 "(fails closed)"
             )
-        if op.LAW_ID == REACTIONS_LAW:
-            from cells.operators import species_reactions
-
-            written = {(s, n) for s, n in species_reactions.written(other)}
-            for species, _, node in sorted(rows):
-                if (species, node) in written:
-                    raise ConfigError(
-                        f"{LAW_ID}: a {REACTIONS_LAW} reaction writes {species} at {node}, a row "
-                        "this operator moves: one local-kinetics writer per reacting row (D152)"
-                    )
-        if op.LAW_ID == GENE_UNIT_LAW:
-            shared = sorted(moved_species & {s.id for s in op.species_identities(other)})
-            if shared:
-                raise ConfigError(
-                    f"{LAW_ID}: {GENE_UNIT_LAW} lists {shared[0]!r}, which this operator moves; "
-                    "the gene unit is its listed rows' one writer"
-                )
+    species_registry.check_row_writers(spec, LAW_ID)
     if any(op.CLOSES for op, _, _ in _entries(spec)):
         if not any(o is not None and o.LAW_ID == LAW_ID for o in _owned_dividers(model)):
             raise ConfigError(
@@ -1190,9 +1186,13 @@ def check_lives(spec, declaration):
 def check_hazard_bound(spec, declaration):
     """dt a0,max <= HAZARD_BOUND per site, where a0,max is bounded: the largest counts the
     subunits allow, the rates, and for a read of a moved species its largest concentration, all
-    of that species' declared material in cells and finite nodes, plus turnover's largest
-    production over the horizon, at the read node's volume. A read of a read-only species is not
-    bounded here: the run-time cap guards it (module docstring)."""
+    of that species' declared material in cells and finite nodes, plus what the conversions that
+    write it can make over the horizon (each one's production_bound: turnover's production, a
+    reaction's bounded source, the gene unit's chains; FR-43 part 3), at the read node's volume.
+    A transfer keeps the species' total, which the declared material already counts. A read of a
+    read-only species, or of a species that a conversion writes without a static bound (no
+    production_bound, or math.inf: a site's release, a first-order reaction), is not bounded here:
+    the run-time cap guards it (module docstring; the lead's ruling L3)."""
     m, dt = spec.model, spec.execution.dt
     species = list(m.species_ids)
     volume = {c.id: c.volume_pL for c in m.cells} | {c.id: c.volume_pL for c in m.extracellular}
@@ -1203,15 +1203,20 @@ def check_hazard_bound(spec, declaration):
         total = math.fsum(c.initial_amount_fmol[i] for c in m.cells)
         total += math.fsum(c.initial_amount_fmol[i] for c in m.extracellular if not c.reservoir)
         material[s] = total
-    horizon = spec.experiment.end_time if hasattr(spec.experiment, "end_time") else None
-    for op, block, schedules in _entries(spec):
-        if op.LAW_ID != "cells.operator.scheduled_species_turnover@1" or horizon is None:
+    horizon = spec.experiment.end_time
+    for op, block, _ in _entries(spec):
+        if op.ROW_MOVES != "conversion":
             continue
-        kind = {r.id: r for r in block.routes}
-        for s in schedules:
-            route = kind[s.route_id]
-            if route.kind == "production" and route.species in material:
-                material[route.species] += horizon * max(float(v[0]) for _, v in s.changes)
+        written = sorted({name for name, _ in op.written_rows(spec, block)} & set(material))
+        bound = getattr(op, "production_bound", None)
+        made = {} if bound is None else bound(spec, block)
+        for name in written:
+            if bound is None:
+                material[name] = math.inf  # A conversion without a bound: unchecked (L3).
+                continue
+            for (row, _), rate in made.items():
+                if row == name:
+                    material[name] += horizon * rate
     for population, site in sites_of(declaration):
         weight = {u.id: u.subunits for u in population.unit_states}
         total = sum(weight[s] * n for s, n in site.initial_counts)
@@ -1225,7 +1230,7 @@ def check_hazard_bound(spec, declaration):
             factor = 1.0
             if c.read is not None:
                 name, at = c.read
-                if name not in moved:
+                if name not in moved or math.isinf(material[name]):
                     bounded = False
                     continue
                 node = site.cell if at == "cell" else site.node
@@ -1244,6 +1249,9 @@ def check_hazard_bound(spec, declaration):
 class IntegerUnitPopulationOperator(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # It declares the species it moves (D176).
+    # FR-43 part 3: a transfer, moving each route's species between its site's cell and outside
+    # node and booking both sides in integer_transferred_fmol (written_rows).
+    ROW_MOVES = "transfer"
     STEP_ID = STEP_ID
     SPLIT = True
     RK4 = "split"
@@ -1368,6 +1376,21 @@ class IntegerUnitPopulationOperator(Operator):
 
     def species_identities(self, declaration):
         return declaration.species
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: each site's moved rows, its routes' species at its cell and at its
+        patch's outside node (a finite node: a site on a held bath is refused)."""
+        rows = (
+            (species, node)
+            for population, site in sites_of(declaration)
+            for species, _, node in sorted(site_rows(population, site)[0])
+        )
+        return tuple(dict.fromkeys(rows))
+
+    def production_bound(self, spec, declaration):
+        """{(species, node): fmol/s}: a transfer's rate has no static bound at either of its rows
+        (math.inf), so the unit producer's R5 refuses it on a precursor (FR-43 part 3)."""
+        return dict.fromkeys(self.written_rows(spec, declaration), math.inf)
 
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)

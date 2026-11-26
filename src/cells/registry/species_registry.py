@@ -669,11 +669,13 @@ def check_potentials(spec):
                 )
 
 
-def operator_written_rows(op, declaration):
-    """The species rows an operator's split half-steps write, for the shared-row rule: its
-    written_species hook, or none (an operator without the hook writes no shared row)."""
-    hook = getattr(op, "written_species", None)
-    return () if hook is None else tuple(hook(declaration))
+def operator_written_rows(spec, op, declaration):
+    """((species, node), ...) the rows an operator's half-steps write: the contract's written_rows
+    of a declared split row writer (ROW_MOVES), the one authority for them (FR-43 part 3); () for
+    an operator that declares none."""
+    if getattr(op, "ROW_MOVES", None) is None:
+        return ()
+    return tuple(op.written_rows(spec, declaration))
 
 
 def check_shared_rows(spec, law):
@@ -681,11 +683,17 @@ def check_shared_rows(spec, law):
     extended to the gene unit beside a D152 network by FR-43 / D315) when the species registry
     gives no standard potential for it. Each writer books the exact dG of its own moves from its
     own mu°/RT, so the row needs one authority for its potential, and check_potentials holds both
-    writers to the registry's value, but only where the registry gives one. One function, called
-    by every operator with writers and naming the caller, so no pairwise check is added (D176)."""
+    writers to the registry's value, but only where the registry gives one. The writers it asks are
+    the conversions that declare SHARED_ROW_POTENTIAL (D152's reactions, the gene unit and the unit
+    producer), by the species of their written rows; a transfer keeps the species' total, and no
+    standard potential enters its moves (FR-43 part 3). One function, called by every operator
+    with writers and naming the caller, so no pairwise check is added (D176)."""
     writers = {}
     for op, declaration in _entries(spec):
-        for species in dict.fromkeys(operator_written_rows(op, declaration)):
+        if not getattr(op, "SHARED_ROW_POTENTIAL", False):
+            continue
+        rows = operator_written_rows(spec, op, declaration)
+        for species in dict.fromkeys(name for name, _ in rows):
             writers.setdefault(species, []).append(op.LAW_ID)
     for species, laws in writers.items():
         if len(laws) > 1 and standard_potential(spec, species) is None:
@@ -694,6 +702,40 @@ def check_shared_rows(spec, law):
                 "operators write needs its standard potential in the species registry, its one "
                 "authority (FR-43 / D315)"
             )
+
+
+def check_row_writers(spec, law):
+    """The writers of one row (FR-43 part 3; docs/FR43_PART3_COWRITERS_DESIGN.md §3.2): a transfer
+    may share a row with any declared writer, unless a writer claims that row alone. Called by each
+    operator that guards its rows, naming the caller, so no pairwise check is added (D176's form,
+    as check_shared_rows). It refuses, in this order:
+    - a split row writer that declares no ROW_MOVES (contract.writes_rows): its rows are unknown, so
+      whether it may share one cannot be checked (fails closed);
+    - a second writer, transfer or conversion, of a row that a declared writer claims alone
+      (its sole_rows), with the claim's reason.
+    Conversions beside conversions keep each guard's own rules (which law owns a row's chemistry),
+    and check_shared_rows asks for the potential."""
+    from cells.operators.contract import writes_rows
+
+    entries = _entries(spec)
+    for op, _ in entries:
+        if writes_rows(op) and getattr(op, "ROW_MOVES", None) is None:
+            raise ConfigError(
+                f"{law}: {op.LAW_ID} writes species rows in its half-steps and declares no "
+                f"ROW_MOVES, so whether it may share a row with {law} cannot be checked (fails "
+                "closed; FR-43 part 3)"
+            )
+    written = [operator_written_rows(spec, op, declaration) for op, declaration in entries]
+    for k, (claimant, declaration) in enumerate(entries):
+        if getattr(claimant, "ROW_MOVES", None) is None:
+            continue
+        for species, node, reason in claimant.sole_rows(spec, declaration):
+            for j, (op, _) in enumerate(entries):
+                if j == k:
+                    continue
+                for name, at in written[j]:
+                    if name == species and node in (None, at):
+                        raise ConfigError(f"{law}: {op.LAW_ID} writes {name!r} at {at}, {reason}")
 
 
 def declared_free_energies(spec):

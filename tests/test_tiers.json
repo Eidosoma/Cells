@@ -401,7 +401,8 @@
   "/mnt/workspaces/Cells/fr38-v2-landing-20261125/measure/measured.json",
   "/mnt/workspaces/Cells/id-rename-tool-20261125/measure-l1/measured.json",
   "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure/measured-41.json",
-  "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure-fixes/measured.json"
+  "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure-fixes/measured.json",
+  "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148/measure-2/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3430,6 +3431,14 @@
    "root": "/mnt/workspaces/Cells/final-gate-20261126/snap-fixes-d224e2b8",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-26T12:29:01+00:00"
+  },
+  {
+   "git_revision": "349283281d509c55bf3222de5ddc7806ab99cf74",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/snap-head-34928328",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T17:15:38+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4019,7 +4028,7 @@
    },
    {
     "file": "tests/unit/test_composition_matrix.py",
-    "seconds": 6.43,
+    "seconds": 6.38,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -5693,10 +5702,10 @@
    },
    {
     "file": "tests/unit/test_shared_inventory_writers.py",
-    "seconds": 3.62,
+    "seconds": 5.33,
     "exit_code": 0,
     "counts": {
-     "passed": 7
+     "passed": 31
     }
    },
    {
@@ -5861,10 +5870,10 @@
    },
    {
     "file": "tests/unit/test_species_registry_movers.py",
-    "seconds": 0.52,
+    "seconds": 2.32,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 16
     }
    },
    {
@@ -6780,10 +6789,10 @@
    },
    {
     "file": "tests/unit/test_integer_unit_population.py",
-    "seconds": 35.51,
+    "seconds": 63.87,
     "exit_code": 0,
     "counts": {
-     "passed": 62
+     "passed": 68
     }
    },
    {
@@ -7076,10 +7085,10 @@
    },
    {
     "file": "tests/unit/test_population_unit_turnover.py",
-    "seconds": 29.43,
+    "seconds": 25.38,
     "exit_code": 0,
     "counts": {
-     "passed": 47
+     "passed": 49
     }
    },
    {
@@ -7510,10 +7519,10 @@
    },
    {
     "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 25.35,
+    "seconds": 24.83,
     "exit_code": 0,
     "counts": {
-     "passed": 58
+     "passed": 59
     }
    },
    {

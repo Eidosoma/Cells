@@ -251,6 +251,9 @@ class ElectrodeCurrentInjection(Operator):
     # the species registry sees the rows it moves: refused beside a stage read that holds one (the
     # second review's finding 3; the binding owner's recorded exception, 18 November 2026).
     IDENTITY_ROLE = "user"
+    # FR-43 part 3: a conversion, adding or removing its carriers at its electrodes' cells
+    # (written_rows).
+    ROW_MOVES = "conversion"
     # Refused over a volume owner (water): the source's work is @3's free-energy change on the
     # declared volume, without water's dilution term -RT N_tot log(V/V0), which the injected
     # amounts change too (a probe left exactly that unbooked; v2 design §2.10, question 6).
@@ -346,6 +349,12 @@ class ElectrodeCurrentInjection(Operator):
             for c in g:
                 if on_grid(c.time, dt) is None:
                     raise ConfigError(f"A current change must be {ON_THE_GRID}")
+
+    def written_rows(self, spec, declaration):
+        """FR-43 part 3: each electrode's carriers at its cell."""
+        return tuple(
+            dict.fromkeys((s, e.cell_id) for e in declaration.electrodes for s, _ in e.carriers)
+        )
 
     def species_identities(self, declaration):
         """Its electrodes' carrier species, each a NamedRow (no catalogue, no evidence, no

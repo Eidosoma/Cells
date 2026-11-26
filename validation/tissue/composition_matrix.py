@@ -1601,15 +1601,16 @@ RULES = (
     ),
     dict(
         rule="cells.operator.templated_polymerisation@1 exports into no compartment's node and degrades outside "
-        "at none",
-        laws=("cells.operator.templated_polymerisation@1", COMPARTMENTS),
+        "at none, and no transfer moves a listed row across a compartment's patch",
+        laws=("cells.operator.templated_polymerisation@1", COMPARTMENTS, EXCHANGE),
         level="data",
         check=OPS + "templated_polymerisation.py::check_compartments",
         test=TESTS + "test_templated_polymerisation.py::test_beside_a_compartment",
         tag=REAL,
         why="A compartment lies behind its owner's membrane: secretion into it is a later step, "
         "with its own books at the compartment's node; routes in the owner's cytosol compose "
-        "(FR-49, D327)",
+        "(FR-49, D327). A transfer of a listed row there waits for FR-49's combination checks "
+        "(FR-43 part 3)",
     ),
     dict(
         rule="beside a compartment, cells.operator.neutral_arrival_labels@1 refuses membrane state",
@@ -1677,21 +1678,59 @@ RULES = (
     dict(
         rule="a unit producer's precursor row has no writer but turnover's supply and the gene "
         "unit",
-        laws=(PRODUCER, REACTIONS, TURNOVER, EXCHANGE),
+        laws=(PRODUCER, REACTIONS, TURNOVER, EXCHANGE, INTEGER, SITES),
         level="data",
         check=OPS + "population_unit_turnover.py::check_writers",
-        test=TESTS + "test_population_unit_turnover.py::"
-        "test_a_d152_reaction_on_the_precursor_and_an_in_step_mover_are_refused",
+        test=TESTS + "test_population_unit_turnover.py::test_the_writers_of_units_and_precursor",
         tag=REAL,
         why="Two writers of one row are admitted only as split parts with exact half-steps in "
         "declared order (the lead's ruling of 19 November 2026): turnover's supply beside the "
         "producer's consumption, Strang-split, and the gene unit's production (FR-43 / D315, its "
         "SSP half-steps; the row's potential the registry's, its supply's production_bound read "
         "by R5). A row that a D152 reaction writes is refused, "
-        "mirroring D152's one local-kinetics writer per row, and so are another operator that "
-        "declares the precursor (species_exchange@1 among them) and an in-step mover of it: the "
+        "mirroring D152's one local-kinetics writer per row, and so are another conversion of "
+        "the precursor (site occupancy among them), a transfer of it (exchange, the integer "
+        "population: R5 needs a static bound, which no transfer's rate has; FR-43 part 3), an "
+        "undeclared split row writer (fails closed), and an in-step mover of it: the "
         "inner model's movers and any operator's in-step process (species_registry."
         "moved_in_step)",
+    ),
+    dict(
+        rule="the writers of one row: a transfer shares a row with any declared writer unless a "
+        "writer claims it alone; beside the integer population, the gene unit or the unit "
+        "producer an undeclared split row writer is refused",
+        laws=(
+            INTEGER,
+            EXCHANGE,
+            PRODUCER,
+            REACTIONS,
+            TURNOVER,
+            SITES,
+            "cells.operator.templated_polymerisation@1",
+        ),
+        level="data",
+        check="src/cells/registry/species_registry.py::check_row_writers",
+        test=TESTS + "test_shared_inventory_writers.py::test_each_co_writer_refusal",
+        tag=REAL,
+        why="FR-43 part 3 (docs/FR43_PART3_COWRITERS_DESIGN.md §3.2): a transfer keeps the "
+        "species' total and claims no row, so each writer's half-steps in declared order and its "
+        "own books compose at second order (Strang); the gene unit claims its labelled and "
+        "exported rows alone, whose moves its counters and its label reports cover; an "
+        "undeclared writer's rows are unknown (fails closed)",
+    ),
+    dict(
+        rule="beside cells.operator.templated_polymerisation@1, a listed row's conversions are "
+        "its own, D152's and the unit producer's",
+        laws=("cells.operator.templated_polymerisation@1", TURNOVER, SITES, REACTIONS, PRODUCER),
+        level="data",
+        check=OPS + "templated_polymerisation.py::check_writers",
+        test=TESTS
+        + "test_shared_inventory_writers.py::test_turnover_on_a_listed_row_stays_refused",
+        tag=REAL,
+        why="The gene unit's listed rows keep its one-writer rule (the design's §7.5) except for "
+        "the two-writer rule's admitted pairs (FR-43 / D315); site occupancy, which binds a "
+        "ligand without declaring it, is a conversion and refused by name (the lead's L1, FR-43 "
+        "part 3)",
     ),
     dict(
         rule="FR-42's labels refuse closers, retirers, amount-view providers, events that write "

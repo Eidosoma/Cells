@@ -5,8 +5,10 @@ The set is recorded with validation/tissue/composite_crossrev's own tracing and 
 _traced, const_record, check_constants), in its file format, so composite_crossrev's compare checks
 two revisions' outputs, as validation/tissue/secreted_species_crossrev.py does for D150. The worlds
 are compositions version 1 admits: the enzyme network with faces and face-free, its idle copy at
-zero multipliers, the per-site schedule world, the two-factor world with padded slots, and C2's
-mixed heredity chain.
+zero multipliers, the per-site schedule world, the two-factor world with padded slots, C2's
+mixed heredity chain, and FR-43 part 3's co-writer world (the lead's L4): the integer unit
+population beside a zero-order source of the row it moves and reads (validation/fr43_part3/worlds
+.source_world, 200 steps of 10 ms, so G1's first window holds its events).
 
 `check` tests the promise (§2.3; ruling Q11 (b)): per-world law parameters (k, k_cat, V_max, K_M,
 k_f, the Hill K and n, mu°/RT, c0) are layout bindings and the multipliers control arrays, never
@@ -34,6 +36,7 @@ from pathlib import Path
 
 import numpy as np
 
+from validation.fr43_part3 import worlds as fr43_part3
 from validation.tissue import composite_crossrev as crossrev
 from validation.tissue import species_reactions_fixtures as rfx
 
@@ -130,6 +133,7 @@ def reaction_worlds():
         reactions_padded=padded(),
         reactions_mixed=mixed,
         reactions_mixed_values=changed(mixed, 1.3),
+        reactions_integer_source=fr43_part3.source_world(dt=0.01, end=2.0),
     )
 
 

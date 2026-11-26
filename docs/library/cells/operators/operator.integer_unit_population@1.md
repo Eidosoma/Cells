@@ -10,10 +10,10 @@ This [operator](../../GLOSSARY.md#operator) follows such a small population exac
 in clusters on a membrane patch. Each active unit lets an uncharged dissolved substance pass
 downhill between the cell and the finite space outside it. The units' switching can speed up with
 that substance's concentration, so the units and the supply shape each other. Other processes, such
-as a steady production or removal, can change the same supplies. When a cell divides, each unit
-goes to one daughter or the other at random. The units store no energy; only the substance does.
-Left out: charged substances, saturable transport, a supply shared with reaction networks or the
-gene unit, and changing volumes.
+as a steady production or removal, chemical reactions or gene expression, can change the same
+supplies. When a cell divides, each unit goes to one daughter or the other at random. The units
+store no energy; only the substance does. Left out: charged substances, saturable transport, and
+changing volumes.
 
 ## Seen from each field
 
@@ -142,19 +142,34 @@ $$J = \Big(\sum_k g_k n_k\Big)\left(\frac{n_\text{c}}{V_\text{c}} - \frac{n_\tex
 - **Refused beside a wash.** `cells.operator.scheduled_compartment_wash@1` reads no path of this operator's
   transfers across a washed surface, so the wash refuses it (fail-closed, version 1). Lifting that
   is its own qualified extension.
+- **Beside other writers of its rows** (FR-43 part 3). The operator is a transfer: it keeps the
+  substance's total. Any declared writer may share a moved row, such as a reaction network, the gene
+  unit, turnover, exchange or site occupancy, unless a writer claims the row alone, as the gene unit
+  claims its exported and labelled rows.
+  - **The order.** Each writer's half-steps run in declared order (Strang's splitting), so the
+    event times and the amounts are second order in the step. The event times stay exact where no
+    event rate depends on the other writer, directly or through the transfer.
+  - **A limit.** Second order holds while the transfer is slow against the step, $\lambda\,dt$ of
+    about 2 or less. A world with a faster transfer shows its own halving.
+  - **The trace.** The pools recorded at an event are the operator's view inside the step. Beside
+    another writer they are first order in the step, so they are reported, not judged.
+  - **The bound.** $a_{0,\max}$ counts what other writers can make of a read substance over the
+    run. A writer with no static bound on that leaves the site unchecked, and the run-time cap of
+    64 events guards it.
 - **Refused, never repaired:**
   - a charged moved species;
   - a site on a held bath;
   - a non-conserving channel;
   - more than 1,024 subunits at a site;
   - $dt\,a_{0,\max} > 1$ where it is bounded;
+  - a writer of its rows that declares neither kind of move (fails closed);
   - more than 64 events at a site in one half-step;
   - a pool that would not stay positive.
 - **Assumptions:**
   - fixed volumes;
   - ideal dilute pools;
   - units that carry no free energy;
-  - sites sharing a pool split at second order in stages.
+  - sites sharing a pool, or other writers sharing a row, split at second order.
 
 ## Sources
 
