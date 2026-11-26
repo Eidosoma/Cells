@@ -724,3 +724,165 @@ at the build (§5.3).
 2. The build, after the rename lands.
 3. The gate: tiers 1 and 2, the FR set and the proofs.
 4. The landing's evidence, with the world added to G1 and crossrev.
+
+## 9. Amendment for D400 (26 November 2026)
+
+**Written** on branch `fr52-build` at main 69d2a36a, before any code, as the lead asked. The note above is c43f9a4a's,
+unchanged. D400 landed a write-only trace field in `cells.operator.integer_unit_population@1`, `integer_trace_counts`,
+holding the counts the event loop carries after each event (7f98d838, tag `fr43-trace-counts-landed-2026-11-26`). This
+section supersedes the sentences it quotes, and nothing else. Every decision of §7, every frozen value of §3 and the
+record's rounding bound (§2.3) stand. **S** marks this section's own reading or proposal, as above. Two items wait for
+the lead's ruling (§9.4 and §9.5).
+
+### 9.1 The trace's size
+
+- **§1's premise,** "T (2 + 2R) values per site (`working_size`)", becomes **T (2 + 2R + S)**. S is the operator's
+  padded state axis, the most unit states of any of its populations (`dimensions`' K, not the K of §2.3's bound). A
+  recorded event holds its time, its channel, the two pools on each route and the counts after it in each state.
+  `working_size` is now 2 n ((2S + J + R + 7) + T (2 + 2R + S)).
+- **§2.1's option B,** "an hour at one event per second holds 3,600 × 4 values per site in each row", now holds
+  3,600 × (4 + S) values with one route: 3,600 × 8 for the qualification world's four states. B stays not taken
+  (D371). Its capacity is unchanged, and its rows now grow faster.
+- **The record's own size** does not change with D400. Its axes are [cohort, state, label], so it holds 4 S values per
+  cohort in each row, with the states outside the class at 0. §2.1's "4 values per class state per cohort per row"
+  counted the class only. Where a cohort is declared, `working_size` gains 2 · 4 S per cohort. Where none is, it gains
+  nothing, since the record and its layout are zero-size: FR-43 part 3's worlds keep D400's row size (§9.6).
+
+### 9.2 What the reference's trace reader finds
+
+**Per recorded event the trace now holds** its time (`integer_trace_time_s`), its channel (`integer_trace_channel`),
+the pools at it (`integer_trace_cell_fmol`, `integer_trace_node_fmol`) and the counts after it (`integer_trace_counts`
+[site, slot, state], int64).
+- **As the code reads at 69d2a36a** (`bind` and `_run_stage`):
+  - an unrecorded slot holds −1 in its channel and in every state;
+  - a recorded slot holds the counts the loop carries on after the event (`counts_new`), written as the loop forms
+    them and never formed again from the declared jump;
+  - in a population with fewer states than S, a recorded slot holds 0 in the padded states, not −1, since their
+    initial counts and changes are 0. The reader's test checks this on the two-population world, the first world to
+    compile two populations (§3).
+- **The reference keeps rebuilding the counts** from the trace's channels and the declared stoichiometry (§2.3), so it
+  stays independent of the engine's counts. It never seeds or steps its counts from `integer_trace_counts`. The n_k its
+  exact update reads before each event are its own rebuilt counts.
+- **The new integrity row (the lead):** at every recorded event, the reference's rebuilt counts after it equal the
+  slot's `integer_trace_counts` exactly, in every state of the site's own population, with 0 in the padded states.
+  Beside it:
+  - the slots agree with the channels: a slot holds a channel ≥ 0 exactly when its counts are ≥ 0, and from
+    `integer_events` up to T every slot holds −1 throughout;
+  - §2.3's row stays: the rebuilt counts equal the saved `integer_counts` at every row, exactly;
+  - a failure is unresolved, never 0 or ∞. A row past the trace's capacity is unresolved from there on (row B's
+    truncation), since the trace's counts end with the trace.
+- **What the row adds.** It places a wrong jump at its own event, and it catches what the row check cannot: two wrong
+  jumps inside one row whose sum is the declared one. A wrong but balanced jump (D400's plant) fails both rows,
+  because the reference rebuilds from the declaration. A reference seeded from the trace's counts would pass it, which
+  is why the reference is not seeded (§9.8).
+- **The record does not read the trace.** Its update reads the loop's counts before the event, the chosen channel's
+  declared stoichiometry and the event's time (§2.2), so D400 changes nothing in it.
+
+### 9.3 A zero-size leaf still changes the program
+
+- **D400's finding.** An owned field of zero size is still a leaf. So the state layout and the program text change for
+  every world of the operator, declared or not, and checkpoints saved before do not load. D400's pair check
+  (`/mnt/workspaces/Cells/fr43-cowriters-build-20261126/trace-counts-dev/RESULT.md`, and the round's
+  `d148-counts/ROUND.md`) found that dead-code elimination drops the leaf's input. In eight of its nine worlds the
+  eliminated programs were then identical, apart from names and the loops' `ft_in` and `ft_out` annotations, which
+  count a carried leaf. The ninth, the dividing world, is §9.5's.
+- **So §2.2's** "With no cohort the record is zero-size, and a static branch keeps it out of the segment, as
+  `if trace:` keeps the trace's updates out at T = 0. So the program is unchanged." **is withdrawn.** FR-52 adds one
+  owned leaf (`integer_cohort_units`) and four layout leaves (`integer_cohort_site`, `integer_cohort_class`,
+  `integer_cohort_pairs`, `integer_cohort_window_s`), each zero-size where no cohort is declared. There the values stay
+  unchanged, not the text.
+- **The build's form (S).** Where no cohort is declared, a static branch keeps the record out of the event loop's
+  carry as well as out of the segment, so the loops' text and annotations stay as they are. The outer programs then
+  differ only by the zero-size leaves they pass through. Where a cohort is declared, the loop carries the record.
+- **The proof where undeclared** is D400's pair check, rerun with FR-52's base and head over the operator's worlds
+  (D400's nine, the co-writer world among them): every existing field equal at every step, every common binding
+  equal, and the programs compared after dead-code elimination as D400 compared them. The landing's rerun of FR-43
+  part 3's evidence (§2.2, §9.6) stays.
+- **What the landing renews,** besides adding the qualification world (§9.4). crossrev's `reactions_integer_source`
+  will again differ in its four program texts and its bindings, so its files are renewed again, as at D400. G1's save
+  of it gains the new field's arrays (its history and observations, zero-size), and the renewed save goes beside G1's
+  record, as D400's did.
+- **§2.4's old checkpoints.** D400 made the checkpoints before it unloadable, and FR-52 does the same to D400's. §2.4's
+  expectation stands, now with that precedent.
+
+### 9.4 crossrev and G1 already hold a world of this operator
+
+- **§2.2's** "But crossrev's sets hold no world of this operator today." **is outdated.** Since D395 (the lead's L4),
+  crossrev's reactions set holds the co-writer world `reactions_integer_source` (`source_world` in
+  `validation/fr43_part3/worlds.py`), and G1 saves it through `crossrev-reactions`. It runs the operator with no
+  cohort. No other world of the operator is in either set.
+- **So §2.2's paragraph "What that world guards, and what it does not" changes.** The qualification world will guard
+  the program with the record, and the co-writer world already guards the program without one, at every later gate.
+  The undeclared programs of other compositions (several populations, a division, a trace of capacity 0) are in
+  neither set. A change in their compiled form that leaves the twins' values unchanged would still pass a later gate.
+- **Which set takes the qualification world (to rule).** The reactions set's `check` reads the reaction parameters
+  (`PARAMETER_FIELDS`) of every world in the set and marks a world without them MISSING. So the qualification world,
+  which has no reaction, cannot join that set as it stands.
+  - **Proposed (S):** the `qualification` set of `validation/tissue/composite_crossrev.py` (`qualification_worlds`).
+    It has no `check` action, and G1 reads it as `crossrev-qualification`. That is one world entry, with no change to
+    the runner (`scripts/gates/crossrev_sets.py`) or to G1's sets.
+  - **The alternatives:** a new set, in `crossrev_sets.py` and in G1's sets (`validation/results_baseline.py`), or
+    the reactions set's `check` skipping the world by name.
+
+### 9.5 The partition's finiteness check reads the record (to rule)
+
+- **What D400's pair check found.** A dividing world's step gains a finiteness test of each new field. `event_map` in
+  `cells.operator.isopotential_partition@1` (`operators/partition.py`) ands `isfinite` of every field of the
+  composite's state into a division's validity (`for value in new`). For an int64 field the test is constant true.
+- **For FR-52's record, a float, it is a real read.** It reads the record wherever a cohort is declared in a world that
+  composes the partition. §2.6's refusal 5 refuses a cohort at a site that divides or is born. It does not refuse one
+  at a non-dividing site of a world where another cell divides.
+- **So these sentences hold as written only where no partition is composed:** §0's "No law, validity check or random
+  draw reads the record", and §2.2's "No rate, validity check, ledger, heat or draw reads the record" and "An
+  observation never stops a run". Where no cohort is declared, the record is zero-size and the test is constant true,
+  as for D400's field.
+- **The record is finite by construction.** Its update multiplies and adds finite values ≥ 0. A consumed state has
+  n ≥ r ≥ 1 at its event, and the kernel guards the division where n = 0. So the test is true wherever the kernel is
+  right. A non-finite record, which only an engine fault could make, would refuse that division's step instead of
+  being saved.
+- **The options.** `partition.py` is not this build's file, and a staleness guard pins its event checks
+  (`tests/unit/test_s5_protocol_binding.py`).
+  - **(a) Accept it, and say so as the program shows,** here and on the library page: one check reads the record, the
+    partition's finiteness test at a division, which is true for every record the kernel can make. **Recommended
+    (S):** it costs nothing, changes no other file, and refuses a fault rather than saving it.
+  - **(b) Refuse a cohort in any world that composes the partition,** with one more row in `REFUSALS`, so that no
+    check reads the record. Version 1's cohorts would then not run in a dividing world at all.
+
+### 9.6 The twins, the rerun and the test cost
+
+- **The twins (§2.2) and case E (§3)** compare `integer_trace_counts` bit for bit with the rest of the trace.
+  - FR-43 part 3's co-writers registration copies that field into its export (branch `fr43-cowriters-builder`), so
+    the twins' list names it.
+  - That exporter reads named fields only, and its judge (tag `fr43-part3-cowriters-judge-2026-11-26`) reads the
+    exporter's files and imports nothing from `cells`. So neither needs an erratum, and part 3's own judge stays as
+    §2.2 says.
+- **FR-43 part 3's rerun at the landing (§2.2)** runs its statistics in windows of at most 10 steps, as
+  `validation/fr43_part3/statistics.py` has done since bec67c3f. That was the lead's ruling (a) in D400's round, after
+  the trace's counts put C3.3's estimate over the 2^31-byte cap.
+  - The targets stay evidence-52935908's: the 11 traces equal (`wall_s` aside), and `verdict.json` and
+    `statistics.json` byte-identical.
+  - FR-52 adds no value to those rows, since no world of part 3 declares a cohort.
+- **Test cost (§5.3).** `tests/unit/test_integer_unit_population.py` measures 61.41 s with 70 tests at D400's fold,
+  not 35.5 s. The host rows' +3 s leave it about 25 s under the 90 s cap. The compiled qualification world still needs
+  its own file.
+
+### 9.7 Drift that D400 did not cause
+
+- **The rename has landed** (the ID move, steps 4 to 7). The IDs are `cells.operator.integer_unit_population@1`,
+  `cells.model.resolved_pump_composite@1` and `cells.model.resolved_pump_tissue@3`. The step's ID in the code is still
+  `located_events_exact_transfer_half_steps@1`. §4's "Under the rename" column is now today's.
+- **Co-writers (D395).** The operator now admits a declared split writer on a row it moves. A co-writer changes no
+  unit count, so the record's update is unchanged. Beside a co-writer the event times are second order in dt (the
+  module's docstring), and a cohort's labels follow the recorded times, as the trace does. The qualification world has
+  no co-writer.
+- **Unchanged premises.** `check_writers` still refuses a label owner, and the wash still refuses the operator (§1's
+  neighbours). The operator's test file is `tests/unit/test_integer_unit_population.py`.
+
+### 9.8 Planted errors added to §5.2
+
+Both run on host traces, with no compile.
+
+| Plant | It fails |
+| --- | --- |
+| One recorded slot's counts altered between two saved rows, the rows' counts as they were (two compensating wrong jumps) | The per-event integrity row (§9.2). The row check passes it |
+| A wrong but balanced jump (D400's plant: assemble's change zeroed in the bound layout), in the trace the reference reads | Both integrity rows, since the reference rebuilds from the declaration. A reference seeded from `integer_trace_counts` would pass it |
