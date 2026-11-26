@@ -82,7 +82,9 @@ def same(a, b, fields):
     return all(np.array_equal(np.asarray(getattr(a, k)), np.asarray(getattr(b, k))) for k in fields)
 
 
-@pytest.mark.parametrize("jit", [True, False])
+# The compiled arm went with the test review: test_pump_composite_water.py's idle row runs
+# these worlds, and test_pump_composite_contract.py's one-computation row holds the formats.
+@pytest.mark.parametrize("jit", [False])
 def test_no_route_and_blocked_routes_are_resolved_pump_water_1(jit):
     end = 0.2 if jit else 0.005
     reference = run(parse_spec(water(end=end, jit=jit))).history

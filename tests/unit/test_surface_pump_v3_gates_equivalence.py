@@ -122,13 +122,20 @@ def test_exponential_gate_update_is_bounded_exact_and_second_order():
 
 
 @pytest.mark.parametrize("solver", ["rk4", *SOLVERS])
-def test_without_channels_reproduces_resolved_pump_tissue_2(solver):
+def test_without_channels_reproduces_resolved_pump_tissue_2(solver, monkeypatch):
     """Same states and observations as @2; the channel terms are exact zeros.
 
     Observed bitwise on CPU; the bound is the requested 1e-13 of each array's
-    magnitude, which admits a compiled reordering.
+    magnitude, which admits a compiled reordering. Fix (A) (D273) is @3's alone:
+    this world's junction joins two capacitor components and one floats, so under
+    ARS(2,2,2) @3's explicit stage rates read each stage's quasi-static potentials
+    and @2's do not (1.2e-7 of amount_increment here, first order in dt). That arm
+    asserts the switch is on for this world, then checks the identity with it off.
     """
     spec = parse_spec(fixtures.definition("release", solver=solver, channels=False))
+    if solver == imex.ARS222_ID:
+        assert surface_pump_v3.structure(spec.model).crossing_junctions == ("junction_0",)
+        monkeypatch.setattr(surface_pump_v3, "crossing_junctions", lambda model: ())
     model = get_model(spec.model)
     assert isinstance(model, surface_pump_v3.InnerImplementation)
     assert model.structure == surface_pump_v3.structure(spec.model)

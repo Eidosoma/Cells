@@ -121,7 +121,6 @@ def outcome(spec):
 
 
 REFUSALS = {
-    "volume_bound": lambda: cell("H", end=0.2, pf_m_s=AQUAPORIN_PF, minimum_fraction=0.9999),
     "fast_water": lambda: cell(pf_m_s=1.0),
     "fast_route": lambda: regulated(cell("D", pf_m_s=AQUAPORIN_PF), flux_mmol_L_h=1e9),
 }

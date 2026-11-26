@@ -120,6 +120,7 @@ def test_node_bounds_by_solver_version():
         field.SOLVER_ID: 256,
         field.FACTORED_SOLVER_ID: 2048,
         field.FLOOR_SOLVER_ID: 2048,  # Version 2's reduction and bound.
+        field.SPARSE_SOLVER_ID: 65536,  # FR-17 stage 1's sparse solver (D317).
     }
     n, o = 1, 299
     layout = surface.Layout(
