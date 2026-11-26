@@ -2055,14 +2055,6 @@
    "cls": [
     "cut"
    ],
-   "path": "validation/geometry/stable_initial_mesh_preparation_replay.py",
-   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
-   "reason": "array keys"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
    "path": "validation/mitochondria/appendix_check.py",
    "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
    "reason": "a number's digits"
@@ -2194,14 +2186,6 @@
    "path": "validation/tissue/shared_inventory_references.py",
    "text": "refusal",
    "reason": "a word of a refusal's message"
-  },
-  {
-   "cls": [
-    "partial"
-   ],
-   "path": "validation/betse/native_multi_cell_caller_comparison_runtime.py",
-   "text": "\\.so",
-   "reason": "a file name"
   },
   {
    "cls": [

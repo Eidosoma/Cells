@@ -5184,14 +5184,6 @@
     }
    },
    {
-    "file": "tests/unit/test_native_init_capture_budget.py",
-    "seconds": 2.44,
-    "exit_code": 0,
-    "counts": {
-     "passed": 35
-    }
-   },
-   {
     "file": "tests/unit/test_native_mapping_setup_diagnostic.py",
     "seconds": 0.52,
     "exit_code": 0,
@@ -5205,14 +5197,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 19
-    }
-   },
-   {
-    "file": "tests/unit/test_native_multi_cell_caller_comparison_runtime.py",
-    "seconds": 5.25,
-    "exit_code": 0,
-    "counts": {
-     "passed": 64
     }
    },
    {
@@ -5254,14 +5238,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 62
-    }
-   },
-   {
-    "file": "tests/unit/test_native_single_cell_prefix_payload.py",
-    "seconds": 1.17,
-    "exit_code": 0,
-    "counts": {
-     "passed": 26
     }
    },
    {
