@@ -13517,3 +13517,33 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - D361 labelled the pH gate pair "claimed". It stays an indication, unjudged, until such a quantity is found.
 - **Still the lead's to rule, before FR-64's build is briefed:** the new note's questions 1, 4 and 5, its options O1 to O4, and the retired 20-row
   fallback. FR-64's build keeps its place in the queue (D393).
+
+## D400: the per-event counts in `integer_unit_population@1` are landed; crossrev's record renewed for the co-writer world
+
+2026-11-26, written at 20:19 UTC.
+
+- **Landed** at 7f98d838 (tag `fr43-trace-counts-landed-2026-11-26`), from bec67c3f. The landing's trial ran the guard set and the changed test
+  file: 136 passed.
+- **What it builds** (the user's choice in D397):
+  - `integer_trace_counts`, a write-only trace field, in place under @1 (MODULE_SYSTEM §2.3). It holds the counts the event loop carries after
+    each event, never the counts before plus the declared jump.
+  - A planted lost jump is recorded as carried and breaks the channel rule.
+  - No rate, draw or ledger reads the field. The composite's finiteness check over owned fields covers it, and is always true for an integer
+    field.
+  - Every world of the operator changes its state layout and program text, so checkpoints from before do not load.
+  - Trace storage grows by sites × trace length × states. Part 3's many-site world now runs its statistics in windows of 10 steps, beside the 2^31
+    cap, with statistics byte-identical to the evidence's.
+- **The D148 round** on b926d62c (main ae349721 merged), against ae349721:
+  - crossrev: 10 of 11 sets identical. In reactions, only `reactions_integer_source`'s four program texts and its bindings differ.
+  - G1: 113 of 113, base equal to head.
+  - FR's set passes.
+  - The judges' derivative programs: 257 files identical.
+  - The pair check over the operator's nine worlds: every existing field is equal at every step, and the new field equals the carried counts in
+    2,622 checks.
+  - Tiers 1 and 2: 495 files, none changed.
+  - Part 3's evidence is reproduced. Its 11 traces and verdict equal evidence-52935908's, its statistics are byte-identical, and the tier-3
+    statistics file passes 12 of 12.
+- **Crossrev's record** (`record-cda5dc82`): the world's five changed files are renewed, with the old five kept in `reactions-superseded-20261126/`.
+  The renewal is dated in `RENEWAL-20261126-reactions-trace-counts.txt`. The renewed G1 save of that world stays beside G1's record.
+- **Next:** the co-writers' exporter copies the field, and the final format sample is made from it. Then come the judge's structure read and its
+  tag, the registration tag, the rehearsal and the registered comparison.
