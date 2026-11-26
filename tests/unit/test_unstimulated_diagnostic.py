@@ -28,7 +28,12 @@ def test_voltage_history_matches_field_and_area_weighting():
     expected = [
         passive.field(initial._replace(cell_concentration=c), layout, xp=np) for c in concentrations
     ]
-    np.testing.assert_array_equal(patch, np.stack([f.membrane_voltage_V for f in expected]))
+    # The frozen run of 12 October predates the compensated charge summation of 296af182
+    # (18 October), so the diagnostic keeps the frozen run's order and agrees with the live
+    # field law to rounding.
+    np.testing.assert_allclose(
+        patch, np.stack([f.membrane_voltage_V for f in expected]), rtol=1e-9, atol=1e-12
+    )
     for i in range(7):
         mask = layout.cell_owner == i
         reference = (
