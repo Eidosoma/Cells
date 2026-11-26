@@ -139,6 +139,7 @@ class Judge:
         self.states: dict[str, RunState] = {}
         self.records: list[dict] = []  # refusals, flags and ignored names
         self.results: list[Result] = []
+        self.negative_zeros: set[tuple] = set()  # ruling 14: every -0.0 that class R reads (run, entry, leaf, index)
 
     # ---- reading ----
 
@@ -159,6 +160,7 @@ class Judge:
         self.states = {name: RunState(spec=spec) for name, spec in specs.items()}
         retry_names = {Inputs.retry_name(f, c): f.id for f in self.inputs.families.values() if f.retry_rung
                        for c in range(self.inputs.worlds[f.world].copies)}
+        elsewhere: dict[str, list[Entry]] = {}
         for table in self.tables:
             table_effect = table.effect()
             for issue in table.issues:
@@ -178,18 +180,31 @@ class Judge:
                 state = self.states[entry.name]
                 kind = self.inputs.worlds[state.spec.world].kind
                 read_entry(entry, kind)
-                if table.world is not None and table.world != state.spec.world:
-                    entry.add("table placement", "flag", "table", f"a {state.spec.world} run in {table.name} "
-                                                                  "(runs are matched by name)")
                 if table_effect == "nothing":
                     entry.add("hash", "nothing", table.name, "its table's hash departs")
                 elif table_effect == "refused":
                     entry.add("top-level key", "refused", table.name, "its table's top level is refused")
+                if table.world is not None and table.world != state.spec.world:
+                    elsewhere.setdefault(entry.name, []).append(entry)
+                    continue
                 state.entries.append(entry)
+        # The lead's ruling 19: a run found only in another world's table is missing from its own world (its entries
+        # unformed) and flagged in the other table; a name in its own table and in another follows ruling 17 (each
+        # entry judged, a fail in any stands).
+        for name, entries in elsewhere.items():
+            state = self.states[name]
+            for entry in entries:
+                self.records.append({"run": name, "table": entry.table, "row": "another world's table",
+                                     "effect": "flag", "message": f"a {state.spec.world} run in {entry.table}"})
+            if state.entries:
+                state.entries.extend(entries)
         for state in self.states.values():
             if state.missing:
-                state.issues.append(Issue("missing", "missing", state.spec.name,
-                                          "in missing" if state.in_missing else "in neither runs nor missing"))
+                if state.spec.name in elsewhere:
+                    why = "found only in another world's table (ruling 19)"
+                else:
+                    why = "in missing" if state.in_missing else "in neither runs nor missing"
+                state.issues.append(Issue("missing", "missing", state.spec.name, why))
             if state.listed_twice:
                 state.issues.append(Issue("listed twice", "refused", state.spec.name,
                                           f"{len(state.entries)} entries" + (" and in missing" if state.in_missing
@@ -206,7 +221,7 @@ class Judge:
         if entry.status == "refused" and raw.get("inputs") is None:
             entry.add("refused run", "flag", "inputs", "no echo: refused before its definition was parsed")
         else:
-            departures = echo_departures(self.inputs, spec, raw, self.operators.get(spec.family))
+            departures = echo_departures(self.inputs, spec, raw, self.operators.get(spec.family), self.rehearsal)
             if departures:
                 entry.add("echo", "nothing", "echo", "; ".join(departures[:6]) + (" ..." if len(departures) > 6
                                                                                      else ""))
@@ -435,6 +450,7 @@ class Judge:
                         out.append(Result(family, spec.name, f"R start {readout}", "R", "unformed",
                                           note="no t = 0 value"))
                         continue
+                    _note_negative_zero(self.negative_zeros, spec.name, f"R start {readout}", readout, 0, values[0])
                     sv = start_at(values[0], declared)
                     out.append(Result(family, spec.name, f"R start {readout}", "R",
                                       compared_outcome(not sv.passes, formed_run),
@@ -489,6 +505,9 @@ class Judge:
                 if spec.variant == RESTART_VARIANT and t == 0.0:
                     continue
                 at_t = {n: entry.series[n][i] for n in needed}
+                for name, _, when in terms:
+                    _note_negative_zero(self.negative_zeros, spec.name, f"R identity {ident}", name,
+                                        i if when == "t" else 0, at_t[name] if when == "t" else at0[name])
                 value = identity_at(terms, at_t, at0, steps(registered[i], spec.step))
                 if value.ratio >= worst_ratio:
                     worst_ratio = value.ratio
@@ -555,6 +574,7 @@ class Judge:
             if i >= len(entry.times):
                 break
             listed += 1
+            _note_negative_zero(self.negative_zeros, spec.name, "R t_events", "events.time_s", k, entry.times[i])
             d = abs(Fraction(entry.times[i]) - Fraction(ref.times[k]))
             worst_d = max(worst_d, float(d))
             if d > Fraction(tol):
@@ -1058,6 +1078,8 @@ class Judge:
             "entries": [r.as_dict() for r in self.run_results + self.s_results + pair_results],
             "plants": {pid: {"score": plant_scores[pid], "entries": rows} for pid, rows in plant_rows.items()},
             "refusals_and_flags": self.records + self._entry_issues(),
+            "r_negative_zeros": [{"run": r, "entry": e, "leaf": leaf, "index": i}
+                                 for r, e, leaf, i in sorted(self.negative_zeros)],
             "retry_owed": {"kind": RETRY_KIND, "families": retry_families, "runs": retry_runs},
         }
         return record
@@ -1071,6 +1093,12 @@ class Judge:
                 for issue in entry.issues:
                     out.append({"run": state.spec.name, "table": entry.table, **issue.as_dict()})
         return out
+
+
+def _note_negative_zero(store: set, run: str, entry: str, leaf: str, index: int, value: float) -> None:
+    """Ruling 14: R compares numerically, so -0.0 is zero there; every one it reads is listed in the verdict."""
+    if value == 0.0 and math.copysign(1.0, value) < 0:
+        store.add((run, entry, leaf, index))
 
 
 def _plant_score(rows: list[dict]) -> str:

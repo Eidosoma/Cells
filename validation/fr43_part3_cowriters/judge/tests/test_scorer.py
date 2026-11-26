@@ -1,8 +1,9 @@
 """The scorer's self-tests on fabricated tables of the invented set (tests/fabricate.py; no engine).
 
 CRITERIA.md §6.3's five self-tests, every row of §4's fault table, the S statistic's outcomes, the pair, W5-exact's
-rungs and running check, the plants, the retry flow and the structure-only read. About 60 s on one core (each case
-is one judge pass of about 1 s over the invented worlds).
+rungs and running check, the plants, the retry flow and the structure-only read; and one row for each ruling of the
+lead's RULINGS-2026-11-26.md that changed the scorer (2b, 2c, 6b and 6c with CRITERIA:321, 7, 15, 16, 19; 3b and 8
+are in test_echo.py) and for its records (14). About 90 s on one core (a case is one judge pass of about 1 s).
 """
 
 from __future__ import annotations
@@ -463,13 +464,61 @@ def test_a_missing_support_run_unforms_the_restart_alone(base, tmp_path) -> None
 def test_recorded_only_leaves_are_flagged_only(base, tmp_path) -> None:
     sc = Scenario(base)
     name = sc.name("W6 gene-first", 0, 0)
-    del sc.entry(name)["definition"]
     sc.entry(name)["steps"] = 7
     sc.entry(name)["samples_echo"] = [1.0]
+    sc.entry(name)["definition"] = {"note": float("nan")}
+    sc.raw_text["table_W6.json"] = json.dumps(sc.tables["table_W6.json"])
     record = sc.run(str(tmp_path))
     assert record["claim"] == "pass"
     flags = [r for r in record["refusals_and_flags"] if r.get("run") == name]
-    assert {r["where"] for r in flags} >= {"definition", "steps", "samples_echo"}
+    assert {r["where"] for r in flags} >= {"definition/note", "steps", "samples_echo"}
+
+
+@pytest.mark.parametrize("key, value, refused", [
+    ("definition", "delete", True), ("checks", "delete", True), ("pools_at_event", "delete", True),
+    ("samples_echo", "delete", True), ("steps", "delete", True), ("checks", 5, True), ("checks", None, True),
+    ("samples_echo", {"t": 1.0}, True), ("definition", [1, 2], True),
+    ("pools_at_event", None, False), ("steps", "seven", False),
+])
+def test_ruling_2b_a_recorded_only_key_itself(base, tmp_path, key, value, refused) -> None:
+    sc = Scenario(base)
+    name = sc.name("W5 population-first", 2, 3)
+    if value == "delete":
+        del sc.entry(name)[key]
+    else:
+        sc.entry(name)[key] = value
+    record = sc.run(str(tmp_path))
+    if refused:
+        assert "entry key" in issues(record, name)
+        assert fam(record, "W5 population-first") == "inconclusive"
+    else:
+        assert "entry key" not in issues(record, name) and record["claim"] == "pass"
+
+
+def test_ruling_2c_a_null_definition_in_a_completed_run(base, tmp_path) -> None:
+    sc = Scenario(base)
+    name = sc.name("W6 population-first", 1, 2)
+    sc.entry(name)["definition"] = None
+    record = sc.run(str(tmp_path))
+    assert "entry key" in issues(record, name) and fam(record, "W6 population-first") == "inconclusive"
+    # refused by its key: compared all the same, and a miss fails
+    sc.entry(name)["series"]["n_Pi"][3] *= 1 + 1e-6
+    record = sc.run(str(tmp_path / "miss"))
+    assert outcome(record, name, "R identity Pi") == ["fail"] and fam(record, "W6 population-first") == "fail"
+
+
+@pytest.mark.parametrize("key, value", [("snapshot_patch_sha256", ""), ("python", ""), ("machine", None),
+                                        ("jax", 3), ("blas_threads", "1"), ("numpy", "delete")])
+def test_ruling_15_provenance_incomplete(base, tmp_path, key, value) -> None:
+    sc = Scenario(base)
+    name = sc.name("W5 reactions-first", 5, 1)
+    if value == "delete":
+        del sc.entry(name)["source"][key]
+    else:
+        sc.entry(name)["source"][key] = value
+    record = sc.run(str(tmp_path))
+    assert "provenance" in issues(record, name)
+    assert fam(record, "W5 reactions-first") == "inconclusive"
 
 
 def test_a_duplicate_key_in_an_entry_and_a_non_finite_elsewhere(base, tmp_path) -> None:
@@ -694,3 +743,124 @@ def test_the_structure_only_read(base, tmp_path) -> None:
 def test_nothing_of_the_engine_is_imported(base, tmp_path) -> None:
     Scenario(base).run(str(tmp_path))
     assert not [m for m in sys.modules if m == "cells" or m.startswith("cells.")]
+
+
+# ---- the lead's rulings of 26 November: 6b and 6c with CRITERIA:321, 16, 19, 14 and 7 ----
+
+def test_ruling_6c_a_lie_run_whose_t_events_cannot_be_formed(base, tmp_path) -> None:
+    sc = Scenario(base)
+    lie = [s.name for s in sc.inputs.run_list if s.variant == "second halves in declared order"][5]
+    entry = sc.entry(lie)
+    for key in ("time_s", "channel", "counts_after"):
+        entry["events"][key] = entry["events"][key][:4]
+    entry["events_total"] = 4
+    record = sc.run(str(tmp_path))
+    assert record["plants"]["P3"]["score"] == "unscorable"
+    assert record["arms"]["W5"]["verdict"] == "inconclusive"
+
+
+def _make_inconclusive(sc: Scenario, family: str) -> None:
+    """Two rungs that are one series: the family's t_events is inconclusive and owes nothing."""
+    for c in range(sc.inputs.worlds[sc.inputs.families[family].world].copies):
+        sc.entry(sc.name(family, 3, c))["events"]["time_s"] = list(sc.entry(sc.name(family, 2, c))["events"]["time_s"])
+
+
+def _widen(sc: Scenario, family: str, factor: float) -> None:
+    """The family's errors in t_events multiplied (order unchanged): its tau grows past P4's shift."""
+    world = sc.inputs.families[family].world
+    ref = sc.raw[world]["copies"]
+    for c in range(sc.inputs.worlds[world].copies):
+        for rung in range(6):
+            e = sc.entry(sc.name(family, rung, c))
+            e["events"]["time_s"] = [r + factor * (t - r) for t, r in zip(e["events"]["time_s"],
+                                                                           ref[c]["events"]["time_s"])]
+
+
+@pytest.mark.parametrize("other, expected", [("honest", "unscorable"), ("widened", "not caught")])
+def test_criteria_321_on_a_plant_with_an_unscorable_entry(base, tmp_path, other, expected) -> None:
+    sc = Scenario(base)
+    _make_inconclusive(sc, "W5 reactions-first")
+    if other == "widened":
+        _widen(sc, "W5 population-first", 40.0)
+    record = sc.run(str(tmp_path))
+    rows = {r["family"]: r["score"] for r in record["plants"]["P4"]["entries"]}
+    assert rows["W5 reactions-first"] == "unscorable"
+    assert rows["W5 population-first"] == ("caught" if other == "honest" else "not caught")
+    assert record["plants"]["P4"]["score"] == expected
+
+
+def _p5_planted_as_honest(sc: Scenario, family: str, shift: float | None) -> None:
+    """P5's planted reference of a family set to the honest one, with one event moved by `shift` if given."""
+    sc.refs = copy.deepcopy(sc.refs) if not getattr(sc, "_refs_copied", False) else sc.refs
+    sc._refs_copied = True
+    ref = sc.refs["W5-exact"]
+    for c, pc in zip(ref.copies, ref.planted["P5"][family]):
+        pc.times, pc.channels, pc.counts = list(c.times), list(c.channels), list(c.counts)
+        pc.K, pc.K_all = c.K, c.K_all
+        if shift is not None and c.copy == 0:
+            pc.times[3] += shift
+
+
+@pytest.mark.parametrize("case, expected", [("one event over its bound in each family", "caught"),
+                                            ("no event over its bound in one family", "not caught"),
+                                            ("one family unscorable, the other caught", "unscorable"),
+                                            ("one family unscorable, the other not caught", "not caught")])
+def test_ruling_16_p5(base, tmp_path, case, expected) -> None:
+    sc = Scenario(base)
+    a, b = "W5-exact reactions-first", "W5-exact population-first"
+    if case == "one event over its bound in each family":
+        _p5_planted_as_honest(sc, a, 1e-6)
+        _p5_planted_as_honest(sc, b, 1e-6)
+    elif case == "no event over its bound in one family":
+        _p5_planted_as_honest(sc, b, None)
+    else:
+        sc.entry(sc.name(a, 1, 2))["events"]["time_s"][3] += 1e-10  # a's honest R t_events fails
+        if case.endswith("not caught"):
+            _p5_planted_as_honest(sc, b, None)
+    record = sc.run(str(tmp_path))
+    assert record["plants"]["P5"]["score"] == expected, record["plants"]["P5"]
+
+
+def test_ruling_19_a_run_found_only_in_another_worlds_table(base, tmp_path) -> None:
+    sc = Scenario(base)
+    name = sc.name("W5-exact population-first", 1, 0)
+    sc.tables["table_W6.json"]["runs"][name] = sc.table_of(name)["runs"].pop(name)
+    record = sc.run(str(tmp_path))
+    assert "missing" in issues(record, name)
+    assert any(r.get("row") == "another world's table" and r.get("run") == name for r in record["refusals_and_flags"])
+    assert set(outcome(record, name, "R t_events")) == {"unformed"}
+    assert fam(record, "W5-exact population-first") == "inconclusive" and record["arms"]["W6"]["verdict"] == "pass"
+
+
+def test_ruling_14_every_negative_zero_r_accepts_is_listed(base, tmp_path) -> None:
+    sc = Scenario(base)
+    name = sc.name("W5 reactions-first", 0, 1)
+    sc.entry(name)["series"]["xi_1"][0] = -0.0
+    record = sc.run(str(tmp_path))
+    assert outcome(record, name, "R start xi_1") == ["pass"] and record["claim"] == "pass"
+    listed = {(r["run"], r["entry"], r["leaf"], r["index"]) for r in record["r_negative_zeros"]}
+    assert (name, "R start xi_1", "xi_1", 0) in listed and (name, "R identity X", "xi_1", 0) in listed
+
+
+def test_ruling_7_the_judge_stops_on_a_c0_finding(base, tmp_path) -> None:
+    import shutil
+
+    import run_judge
+
+    refs = tmp_path / "refs"
+    refs.mkdir()
+    for name in ("inputs_invented.json", "draws_invented.json"):
+        shutil.copy(os.path.join(OUT, name), refs / name)
+    data = json.load(open(os.path.join(OUT, "reference_invented.json")))
+    data["W5"]["scales"]["n_S_c"] *= 1.001  # the judge's recomputed scale disagrees: a finding
+    (refs / "reference_invented.json").write_text(json.dumps(data))
+    sc = Scenario(base)
+    fabricate.write(str(tmp_path / "table"), sc.tables)
+    (tmp_path / "operators.json").write_text(json.dumps(sc.operators))
+    argv = ["--inputs", str(refs / "inputs_invented.json"), "--references", str(refs), "--invented",
+            "--tables", str(tmp_path / "table"), "--operators", str(tmp_path / "operators.json"), "--rehearsal"]
+    assert run_judge.main(argv + ["--out", str(tmp_path / "stopped")]) == 3
+    assert (tmp_path / "stopped" / "c0_findings.json").exists()
+    assert not (tmp_path / "stopped" / "record.json").exists()
+    assert run_judge.main(argv + ["--out", str(tmp_path / "go"), "--proceed-after-findings"]) == 0
+    assert json.load(open(tmp_path / "go" / "record.json"))["claim"] == "pass"

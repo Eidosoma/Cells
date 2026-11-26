@@ -23,6 +23,7 @@ def _world_result(coll: Collector, summary: dict | None) -> dict:
     return {
         "refused": bool(coll.faults),
         "faults": [f.as_dict() for f in coll.faults],
+        "findings": [f.as_dict() for f in coll.findings],
         "flags": [f.as_dict() for f in coll.flags],
         "comparisons": len(coll.comparisons),
         "disagreements": disagreements,
@@ -154,20 +155,32 @@ def invented_rules(invented: Inputs, registered: Inputs) -> dict:
                            f"{value!r} ({kind}) equals {registered_values[value]}")
     for name, world in invented.worlds.items():
         if name not in registered.worlds or world.kind != registered.worlds[name].kind:
-            coll.fault("invented world", name, "not a world of a registered kind")
+            coll.finding("invented world", name, "not a world of a registered kind")
     for raw in invented.listed_retry_runs:
         fam_id = f"{raw.get('world')} {raw.get('first')}-first"
         fam = invented.families.get(fam_id)
         if fam is None or fam.retry_rung is None:
-            coll.fault("invented retry", raw.get("name", "?"), "no family with a retry rung")
+            coll.finding("invented retry", raw.get("name", "?"), "no family with a retry rung")
             continue
         expected = Inputs.retry_name(fam, int(raw.get("copy", -1)))
         if raw.get("name") != expected or raw.get("step_s") != fam.retry_rung or raw.get("role") != "judged":
-            coll.fault("invented retry", raw.get("name", "?"), f"not the rule's run {expected!r}")
+            coll.finding("invented retry", raw.get("name", "?"), f"not the rule's run {expected!r}")
     if not invented.listed_retry_runs:
-        coll.fault("invented retry", "retry/runs", "no retry run is listed (SPEC.md §8: the retry is reachable)")
-    return {"faults": [f.as_dict() for f in coll.faults], "refused": bool(coll.faults),
-            "numbers_compared": sum(len(v) for v in inv.values())}
+        coll.finding("invented retry", "retry/runs", "no retry run is listed (SPEC.md §8: the retry is reachable)")
+    return {"faults": [f.as_dict() for f in coll.faults], "findings": [f.as_dict() for f in coll.findings],
+            "refused": bool(coll.faults), "numbers_compared": sum(len(v) for v in inv.values())}
+
+
+def declared_changes(inputs: Inputs) -> list[dict]:
+    """The lead's ruling 8: where a run's declared `change` stands in an inputs file (its key path)."""
+    out = []
+    for i, raw in enumerate(inputs.data.get("runs", [])):
+        if "change" in raw:
+            out.append({"key_path": f"runs[{i}].change", "run": raw.get("name"), "change": raw["change"]})
+    for i, raw in enumerate(inputs.data.get("retry", {}).get("runs", [])):
+        if "change" in raw:
+            out.append({"key_path": f"retry.runs[{i}].change", "run": raw.get("name"), "change": raw["change"]})
+    return out
 
 
 def compare_hashes(record: dict[str, str] | None, files: dict[str, str]) -> dict:
@@ -215,4 +228,17 @@ def run_c0(spec_dir: str, references_out: str, hashes: dict[str, str] | None = N
     out["refused"] = refused
     out["passes"] = (not any(refused.values()) and not out["hashes"]["faults"] and not registered_problems)
     out["hashes_compared"] = hashes is not None  # C0 is complete only with the lead's record compared
+    findings = []
+    for block in [out["invented"], *out["files"].values()]:
+        for world, result in block["worlds"].items():
+            findings += [{"file": block["file"], "world": world, **f} for f in result["findings"]]
+    findings += [{"file": "inputs_invented.json", **f} for f in out["invented_rules"]["findings"]]
+    out["findings"] = findings
+    out["stop"] = bool(findings)  # ruling 7: stop and report to the lead before anything is scored
+    out["ruling_4_p5_tolerance"] = {
+        f"{block['file']} {world}": result["summary"].get("ruling_4_p5_tolerance")
+        for block in [out["invented"], *out["files"].values()] for world, result in block["worlds"].items()
+        if result["summary"].get("ruling_4_p5_tolerance") is not None}
+    out["ruling_8_change"] = {"inputs_invented.json": declared_changes(invented),
+                              "inputs.json": declared_changes(registered)}
     return out

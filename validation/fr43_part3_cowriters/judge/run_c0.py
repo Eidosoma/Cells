@@ -34,7 +34,11 @@ def main(argv: list[str] | None = None) -> int:
     verdict = "no fault" if result["passes"] else "FAULT"
     if result["passes"] and not result["hashes_compared"]:
         verdict += " (the protocol's hashes not compared: no record supplied)"
+    if result["stop"]:
+        verdict += f"; {len(result['findings'])} FINDINGS: stop and report to the lead before anything is scored"
     print(f"C0: {verdict}  ({path})")
+    for finding in result["findings"]:
+        print(f"  finding: {finding}")
     for name, refused in sorted(result["refused"].items()):
         print(f"  {name}: {'refused' if refused else 'no fault'}")
     for block in [result["invented"], *result["files"].values()]:
@@ -43,6 +47,9 @@ def main(argv: list[str] | None = None) -> int:
         for world, wr in block["worlds"].items():
             for fault in wr["faults"]:
                 print(f"  {block['file']} {world}: {fault['code']}: {fault['where']}: {fault['message']}")
+            for finding in wr["findings"]:
+                print(f"  {block['file']} {world}: finding {finding['code']}: {finding['where']}: "
+                      f"{finding['message']}")
             for flag in wr["flags"]:
                 print(f"  {block['file']} {world}: flag {flag['code']}: {flag['where']}: {flag['message']}")
             for dis in wr["disagreements"]:
@@ -53,7 +60,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  invented rules: {fault}")
     print(f"  invented numbers compared: {result['invented_rules']['numbers_compared']}")
     print(f"  hashes: {result['hashes'].get('note') or result['hashes']['faults']}")
-    return 0 if result["passes"] else 1
+    for key, rows in result["ruling_4_p5_tolerance"].items():
+        for row in rows:
+            print(f"  ruling 4, {key} {row['family']}: published tolerance {row['published_tolerance']!r}; "
+                  f"S = t_k/h gives {row['tolerance_S_tk_over_h']!r} (event {row['event']})")
+    print(f"  ruling 8, change: {result['ruling_8_change']}")
+    if not result["passes"]:
+        return 1
+    return 3 if result["stop"] else 0
 
 
 if __name__ == "__main__":

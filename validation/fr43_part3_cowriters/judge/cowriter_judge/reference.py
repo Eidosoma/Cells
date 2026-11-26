@@ -9,6 +9,12 @@ each named `recomputed ...` or `consistency ...`): the sizing's used differences
 pair's and rungs' thresholds; the scales from the published series (READOUTS.md §2); the plants' distances from the
 planted series; K and K_all from the published times; the trace's alternation and ledger; and the closed forms of
 LAWS.md §4 against the draws (every wait in a state where nothing read is active, and W5-exact's times).
+
+The lead's ruling 7 (26 November 2026): a fault is one the spec names, judged on the published values (§4.2's list,
+a duplicate key, a NaN or an infinity, a missing registered key, a margin below 10, an invented number equal to a
+registered one; and the hashes §4.2 reads). A disagreement of the judge's own recomputation or consistency check
+with a published value is not a fault but a finding: it refuses nothing, and the judge stops and reports it to the
+lead before anything is scored.
 """
 
 from __future__ import annotations
@@ -43,21 +49,25 @@ class Fault:
 
 class Collector:
     def __init__(self) -> None:
-        self.faults: list[Fault] = []
+        self.faults: list[Fault] = []  # the spec's named faults: they refuse the reference
+        self.findings: list[Fault] = []  # ruling 7: the judge's own checks; they stop the judge, refuse nothing
         self.flags: list[Fault] = []
         self.comparisons: list[dict] = []
 
     def fault(self, code: str, where: str, message: str) -> None:
         self.faults.append(Fault(code, where, message))
 
+    def finding(self, code: str, where: str, message: str) -> None:
+        self.findings.append(Fault(code, where, message))
+
     def flag(self, code: str, where: str, message: str) -> None:
         self.flags.append(Fault(code, where, message))
 
-    def compare(self, what: str, published: Any, recomputed: Any, rel: float, fault_code: str | None) -> bool:
+    def compare(self, what: str, published: Any, recomputed: Any, rel: float, finding_code: str | None) -> bool:
         ok = _agree(published, recomputed, rel)
         self.comparisons.append({"what": what, "published": published, "recomputed": recomputed, "agree": ok})
-        if not ok and fault_code is not None:
-            self.fault(fault_code, what, f"published {published!r}, recomputed {recomputed!r} (relative {rel:g})")
+        if not ok and finding_code is not None:
+            self.finding(finding_code, what, f"published {published!r}, recomputed {recomputed!r} (relative {rel:g})")
         return ok
 
 
@@ -165,10 +175,12 @@ def _read_events(coll: Collector, obj: Any, where: str, n_states: int) -> dict |
         return None
     k = int(k)
     k_all = int(k_all)
-    if not (len(times) == len(channels) == len(counts) == k_all):
-        coll.fault("consistency events", w, f"lists of {len(times)}, {len(channels)}, {len(counts)} against "
-                                            f"K_all {k_all}")
+    if not (len(times) == len(channels) == len(counts)):
+        coll.fault("missing registered key", w, f"the event lists are of {len(times)}, {len(channels)} and "
+                                                f"{len(counts)} members")
         return None
+    if len(times) != k_all:
+        coll.finding("consistency events", w, f"{len(times)} listed events against K_all {k_all}")
     return {"K": k, "K_all": k_all, "times": times, "channels": list(channels),
             "counts": [tuple(int(x) for x in c) for c in counts], "accuracy_s": float(accuracy)}
 
@@ -227,13 +239,13 @@ def read_world(coll: Collector, obj: Any, inputs: Inputs, world_name: str, where
             cc = need(coll, raw, "copy", "integer", w)
             seed = need(coll, raw, "seed", "integer", w)
             if cc is not _MISSING and int(cc) != c:
-                coll.fault("consistency copies", f"{w}/copy", f"copy {cc} at position {c}")
+                coll.finding("consistency copies", f"{w}/copy", f"copy {cc} at position {c}")
             if seed is not _MISSING and int(seed) != world.seeds[c]:
-                coll.fault("consistency copies", f"{w}/seed", f"seed {seed}, registered {world.seeds[c]}")
+                coll.finding("consistency copies", f"{w}/seed", f"seed {seed}, registered {world.seeds[c]}")
             ev = _read_events(coll, raw, w, len(world.unit_states))
             samples = number_list(coll, raw, "samples_s", w)
             if samples is not None and samples != [float(s) for s in world.samples]:
-                coll.fault("consistency samples", f"{w}/samples_s", "not the registered samples_s")
+                coll.finding("consistency samples", f"{w}/samples_s", "not the registered samples_s")
             ser = _read_series(coll, raw, w, world.series, len(world.samples))
             checks = need(coll, raw, "checks", "list", w)
             if checks is not _MISSING:
@@ -306,7 +318,7 @@ def _read_planted(coll: Collector, planted_raw: Any, inputs: Inputs, world: Worl
                 wc = f"{w}/{c}"
                 cc = need(coll, raw, "copy", "integer", wc)
                 if cc is not _MISSING and int(cc) != c:
-                    coll.fault("consistency copies", f"{wc}/copy", f"copy {cc} at position {c}")
+                    coll.finding("consistency copies", f"{wc}/copy", f"copy {cc} at position {c}")
                 ev = _read_events(coll, raw, wc, len(world.unit_states))
                 ser = _read_series(coll, raw, wc, s_names, len(world.samples))
                 if ev is None or ser is None:
@@ -393,7 +405,7 @@ def c0_world(coll: Collector, ref: ReferenceWorld, inputs: Inputs, draws: dict |
             summary["draws_check_entries"] = int(entries)
             expected_entries = 2 * world.copies * inputs.pairs_per_copy
             if int(entries) <= 0:
-                coll.fault("draws_check", f"{where}/draws_check", "no entry compared")
+                coll.finding("draws_check", f"{where}/draws_check", "no entry compared")
             elif int(entries) != expected_entries:
                 coll.flag("draws_check entries", f"{where}/draws_check",
                           f"{entries} entries; 2 x copies x pairs_per_copy = {expected_entries}")
@@ -454,22 +466,22 @@ def c0_world(coll: Collector, ref: ReferenceWorld, inputs: Inputs, draws: dict |
     for c in copies:
         w = f"{where}/copies/{c.copy}/events"
         if any(not (0 < t <= world.end_s) for t in c.times):
-            coll.fault("consistency events", w, "an event time outside (0, T]")
+            coll.finding("consistency events", w, "an event time outside (0, T]")
         k_count = sum(1 for t in c.times if t <= cut)
         if k_count != c.K:
-            coll.fault("consistency events", w, f"K = {c.K}, but {k_count} times are at or before T - g h_1")
+            coll.finding("consistency events", w, f"K = {c.K}, but {k_count} times are at or before T - g h_1")
         if c.times and min(abs(Fraction(t) - Fraction(cut)) for t in c.times) <= Fraction(1e-9) * Fraction(
                 world.end_s):
-            coll.fault("guard", w, "an event within 1e-9 T of T - g h_1 (SPEC.md §9.8)")
+            coll.finding("guard", w, "an event within 1e-9 T of T - g h_1 (SPEC.md §9.8)")
         if not c.K_all < inputs.pairs_per_copy:
-            coll.fault("draws", w, f"K_all {c.K_all} is not below pairs_per_copy {inputs.pairs_per_copy}")
+            coll.finding("draws", w, f"K_all {c.K_all} is not below pairs_per_copy {inputs.pairs_per_copy}")
         trace = check_trace(world, c.times, c.channels, c.counts, 0, c.K_all, c.K, c.channels, c.counts,
                             world.initial_counts, True, True)
         if trace.fails:
-            coll.fault("consistency trace", w, "; ".join(trace.fails))
+            coll.finding("consistency trace", w, "; ".join(trace.fails))
         led = ledger_fails(world, None, c.counts)
         if led:
-            coll.fault("consistency ledger", w, "; ".join(led))
+            coll.finding("consistency ledger", w, "; ".join(led))
         ks.append(c.K)
         if draws is not None:
             summary["closed_forms_checked"] = summary.get("closed_forms_checked", 0) + _closed_forms(
@@ -493,14 +505,16 @@ def c0_world(coll: Collector, ref: ReferenceWorld, inputs: Inputs, draws: dict |
                 summary["identities_checked"] = summary.get("identities_checked", 0) + 1
                 # bound with S = 0 and 16 u s_id: the published doubles must close to a few roundings
                 if not value.passes:
-                    coll.fault("consistency identity", f"{where}/copies/{c.copy}/{ident}/sample {i}",
+                    coll.finding("consistency identity", f"{where}/copies/{c.copy}/{ident}/sample {i}",
                                f"residual {float(value.residual)!r} over 16 u s_id {float(value.bound)!r}")
         for readout in world.start:
             declared = inputs.start_value(world.name, readout)
             if not start_at(c.series[readout][0], declared).passes:
-                coll.fault("start", f"{where}/copies/{c.copy}/series/{readout}/0",
+                coll.finding("start", f"{where}/copies/{c.copy}/series/{readout}/0",
                            f"{c.series[readout][0]!r} against the declared {declared!r}")
 
+    if "t_events" in world.judged.get("R", []):
+        summary["ruling_4_p5_tolerance"] = p5_tolerance_readings(ref, inputs, world)
     _c0_sizing(coll, ref, inputs, world, where, summary)
     _c0_pair_and_rungs(coll, ref, inputs, world, where, summary)
     _c0_running(coll, ref, inputs, world, where)
@@ -514,7 +528,7 @@ def _closed_forms(coll: Collector, world: World, c: RefCopy, draws: dict, where:
     u1 = draws.get(c.copy)
     checked = 0
     if u1 is None:
-        coll.fault("draws", where, "no draws for this copy")
+        coll.finding("draws", where, "no draws for this copy")
         return checked
     with localcontext() as ctx:
         ctx.prec = 50
@@ -523,7 +537,7 @@ def _closed_forms(coll: Collector, world: World, c: RefCopy, draws: dict, where:
         previous_time = Decimal(0)
         for k, t in enumerate(c.times):
             if k >= len(u1):
-                coll.fault("draws", where, f"event {k} beyond the draws")
+                coll.finding("draws", where, f"event {k} beyond the draws")
                 return checked
             a0 = Decimal(0)
             reads = False
@@ -548,13 +562,13 @@ def _closed_forms(coll: Collector, world: World, c: RefCopy, draws: dict, where:
                 if exact_times:
                     clock += wait
                     if abs(t_dec - clock) > Decimal(c.accuracy_s):
-                        coll.fault("closed form", f"{where}/time_s/{k}",
+                        coll.finding("closed form", f"{where}/time_s/{k}",
                                    f"{t!r} against the decimal sum {float(clock)!r} (accuracy {c.accuracy_s!r})")
                 elif abs((t_dec - previous_time) - wait) > 2 * Decimal(c.accuracy_s):
-                    coll.fault("closed form", f"{where}/time_s/{k}",
+                    coll.finding("closed form", f"{where}/time_s/{k}",
                                f"wait {float(t_dec - previous_time)!r} against E_k/a_0 {float(wait)!r}")
             elif exact_times:
-                coll.fault("closed form", f"{where}/time_s/{k}", "a read channel is active in a constant-rate world")
+                coll.finding("closed form", f"{where}/time_s/{k}", "a read channel is active in a constant-rate world")
                 return checked
             previous_time = Decimal(t)
             state = c.counts[k]
@@ -620,9 +634,9 @@ def _c0_sizing(coll: Collector, ref: ReferenceWorld, inputs: Inputs, world: Worl
             coll.compare(f"{w}/tau", tau_pub, tau_re, REL_RECOMPUTE, "recomputed sizing")
             if readout not in named and lad.q is not None and not (
                     p - SIZING_ORDER_HALF_WINDOW <= lad.q <= p + SIZING_ORDER_HALF_WINDOW):
-                coll.fault("sizing order", w, f"recomputed q = {lad.q!r} outside [p - 0.4, p + 0.4]")
+                coll.finding("sizing order", w, f"recomputed q = {lad.q!r} outside [p - 0.4, p + 0.4]")
             if lad.any_zero:
-                coll.fault("sizing order", w, "a zero step difference")
+                coll.finding("sizing order", w, "a zero step difference")
             rows.append({"family": fam_id, "readout": readout, "p": p, "used": used, "q": q, "E": e_n, "tau": tau_pub,
                          "E_over_tau": e_n / tau_pub if tau_pub > 0 else None,
                          "least_resolution_ratio": min((dj / th for dj, th in zip(d[:max(used, 1)],
@@ -654,9 +668,9 @@ def _c0_sizing(coll: Collector, ref: ReferenceWorld, inputs: Inputs, world: Worl
                 q_re = log_slope(rungs, e_list)
                 coll.compare(f"{w}/q", q, q_re, REL_RECOMPUTE, "recomputed sizing")
                 if not abs(q_re - (p - 1)) <= P3_C0_HALF_WINDOW:
-                    coll.fault("sizing P3", w, f"recomputed q = {q_re!r} not within 1/4 of p - 1")
+                    coll.finding("sizing P3", w, f"recomputed q = {q_re!r} not within 1/4 of p - 1")
             else:
-                coll.fault("sizing P3", w, "a non-positive E")
+                coll.finding("sizing P3", w, "a non-positive E")
             summary.setdefault("mutant", {})[fam_id] = {"E": e_list, "q": q, "rungs": rungs}
 
 
@@ -771,15 +785,15 @@ def _c0_plants(coll: Collector, ref: ReferenceWorld, inputs: Inputs, world: Worl
                 margins.append(row)
                 if plant.no_margin:
                     if no_margin is not True:
-                        coll.fault("plant margin", w, "a no_margin plant without no_margin true")
+                        coll.finding("plant margin", w, "a no_margin plant without no_margin true")
                     if cls == "E" and not distance > 0:
                         coll.fault("plant margin", w, "a class E plant with a zero distance")
                     _plant_recompute(coll, ref, inputs, world, plant, fam, cls, check, distance, tolerance, w)
                     continue
                 if no_margin is not False:
-                    coll.fault("plant margin", w, "no_margin is not false")
+                    coll.finding("plant margin", w, "no_margin is not false")
                 if not sj.is_number(margin):
-                    coll.fault("plant margin", w, "no margin")
+                    coll.fault("missing expected value", w, "no margin")
                     continue
                 if not margin >= PLANT_MARGIN:
                     coll.fault("plant margin", w, f"margin {margin!r} below 10 (1 - 1e-9)")
@@ -818,7 +832,7 @@ def _plant_recompute(coll: Collector, ref: ReferenceWorld, inputs: Inputs, world
             else:
                 coll.compare(f"{w}/distance", distance, d, REL_RECOMPUTE, "recomputed margin")
                 if sj.is_number(tau_pub) and tau_pub > 0 and not d / tau_pub >= PLANT_MARGIN:
-                    coll.fault("plant margin", w, f"recomputed margin {d / tau_pub!r} below 10 (1 - 1e-9)")
+                    coll.finding("plant margin", w, f"recomputed margin {d / tau_pub!r} below 10 (1 - 1e-9)")
         return
     if cls == "R" and plant.kind == "reference" and check == "t_events":
         planted = ref.planted.get(plant.id, {}).get(fam)
@@ -835,7 +849,7 @@ def _plant_recompute(coll: Collector, ref: ReferenceWorld, inputs: Inputs, world
                 coll.compare(f"{w}/margin (R, farthest event)", distance / tolerance if tolerance else None,
                              best[0] / best[1], 1e-6, None)
                 if not best[0] / best[1] >= PLANT_MARGIN:
-                    coll.fault("plant margin", w, "recomputed margin below 10 (1 - 1e-9)")
+                    coll.finding("plant margin", w, "recomputed margin below 10 (1 - 1e-9)")
         return
     if plant.kind == "record" and cls == "E":
         coll.compare(f"{w}/distance (E, entries that differ)", distance,
@@ -847,7 +861,44 @@ def _plant_recompute(coll: Collector, ref: ReferenceWorld, inputs: Inputs, world
             coll.compare(f"{w}/margin (record, copy 0 of the reference)", distance / tolerance if tolerance else None,
                          margin, 1e-6, None)
             if not margin >= PLANT_MARGIN:
-                coll.fault("plant margin", w, f"recomputed margin {margin!r} below 10 (1 - 1e-9)")
+                coll.finding("plant margin", w, f"recomputed margin {margin!r} below 10 (1 - 1e-9)")
+
+
+def p5_tolerance_readings(ref: ReferenceWorld, inputs: Inputs, world: World) -> list[dict]:
+    """The lead's ruling 4: for each class R plant on the event times (P5), the published tolerance and what the
+    other reading of S gives at the same event. The published one is read at the judged event the farthest away
+    (|planted - honest| over e_round(S = T/h_1) + the copy's accuracy); S = t_k/h_1 is evaluated there."""
+    out = []
+    h1 = world.rungs[0]
+    for entry in ref.plants:
+        if not (isinstance(entry, dict) and entry.get("check") == "t_events" and entry.get("family") in
+                ref.planted.get(entry.get("plant"), {})):
+            continue
+        planted = ref.planted[entry["plant"]][entry["family"]]
+        if not isinstance(planted, list):
+            continue
+        best = None
+        for c, pc in zip(ref.copies, planted):
+            tol_t = e_round(M_TIME, steps(world.end_s, h1), world.end_s) + c.accuracy_s
+            for k in range(min(c.K, pc.K_all)):
+                r = abs(pc.times[k] - c.times[k]) / tol_t
+                if best is None or r > best[0]:
+                    best = (r, c, k)
+        if best is None:
+            continue
+        _, c, k = best
+        t_k = c.times[k]
+        s_tk = t_k / h1
+        out.append({
+            "plant": entry["plant"], "family": entry["family"],
+            "published_tolerance": entry.get("expected_tolerance"),
+            "event": {"copy": c.copy, "k": k, "t_k": t_k},
+            "S_T_over_h": float(steps(world.end_s, h1)),
+            "tolerance_S_T_over_h": e_round(M_TIME, steps(world.end_s, h1), world.end_s) + c.accuracy_s,
+            "S_tk_over_h": s_tk,
+            "tolerance_S_tk_over_h": M_TIME * (s_tk + 1.0) * 2.0**-53 * world.end_s + c.accuracy_s,
+        })
+    return out
 
 
 def plant_distance(honest: list[RefCopy], planted: list[RefCopy], readout: str) -> float | None:
@@ -922,16 +973,16 @@ def load_draws(path: str, world: World, coll: Collector, where: str) -> dict[int
     """The first draws u1 of each copy (LAWS.md §6), read from the spec's draws table; its seeds are checked."""
     loaded = sj.load_file(path)
     if list(sj.problems(loaded.data)):
-        coll.fault("draws", where, "the draws file has a duplicate key or a non-finite number")
+        coll.finding("draws", where, "the draws file has a duplicate key or a non-finite number")
         return None
     out: dict[int, list[float]] = {}
     for entry in loaded.data["worlds"][world.name]["copies"]:
         c = int(entry["copy"])
         if c >= world.copies or int(entry["seed"]) != world.seeds[c] or int(entry["site_index"]) != 0:
-            coll.fault("draws", f"{where}/{c}", "the draws table's copy, seed or site does not match the inputs")
+            coll.finding("draws", f"{where}/{c}", "the draws table's copy, seed or site does not match the inputs")
             return None
         out[c] = [float.fromhex(x) for x in entry["u1"]]
     if sorted(out) != list(range(world.copies)):
-        coll.fault("draws", where, "the draws table does not hold every copy")
+        coll.finding("draws", where, "the draws table does not hold every copy")
         return None
     return out

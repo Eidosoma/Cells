@@ -48,6 +48,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sample-hashes", help="JSON: a list of the format sample's sha256 (refused in judgement)")
     parser.add_argument("--format-sample", help="read a format sample folder in structure-only mode")
     parser.add_argument("--sample-note", help="JSON: the lead's note of the format sample's sha256 by file")
+    parser.add_argument("--proceed-after-findings", action="store_true",
+                        help="score although C0 has findings (only on the lead's written instruction, ruling 7)")
     parser.add_argument("--out", required=True)
     args = parser.parse_args(argv)
     os.makedirs(args.out, exist_ok=True)
@@ -71,6 +73,15 @@ def main(argv: list[str] | None = None) -> int:
         draws = args.draws or os.path.join(os.path.dirname(os.path.abspath(args.inputs)), "draws.json")
         paths = {w: os.path.join(args.references, f"reference_{w}.json") for w in inputs.worlds}
         refs, c0 = references_through_c0(inputs, paths, draws)
+    findings = [{"file": name, "world": world, **f} for name, r in c0.items()
+                for world, wr in r.get("worlds", {}).items() for f in wr.get("findings", [])]
+    if findings and not args.proceed_after_findings:
+        _dump(os.path.join(args.out, "c0_findings.json"), {"findings": findings})
+        print(f"C0 has {len(findings)} findings: the judge stops and reports them to the lead before anything is "
+              "scored (ruling 7). Nothing was scored.")
+        for finding in findings:
+            print(f"  {finding}")
+        return 3
     operators = sj.load_file(args.operators).data
     lead = sj.load_file(args.lead_hashes).data if args.lead_hashes else None
     sample = set(sj.load_file(args.sample_hashes).data) if args.sample_hashes else set()

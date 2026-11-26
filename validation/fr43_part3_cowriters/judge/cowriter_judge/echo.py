@@ -2,12 +2,14 @@
 
 - Numbers to 1e-12 relative; a declared zero exactly zero; a registered JSON integer exactly (as a real: 4 and 4.0
   are equal); strings and booleans exactly.
-- null and an absent key are equal where the registered value is null (`read`, and every optional key), and an
-  extra key whose value is null is read as absent.
+- null and an absent key are equal only where the registered value is null (`read`, and every optional key). An
+  extra key departs whatever its value, null included (the lead's ruling 3b, 26 November 2026).
 - A collection keyed by id (the reactions) is compared by id in any order; a declared order (`channels`,
   `unit_states`, `operators`) is compared as a list.
 - The echoed keys are exactly `inputs.json`'s `echo`: the world's keys of its kind and the run's keys. A missing one
-  departs, and so does an extra one with a value (the judge's reading of "exactly the keys").
+  departs, and so does an extra one (rulings 3a and 3b).
+- A run's declared `change` (the invented set's refused and stopped runs) is applied to its registered echo at the
+  rehearsal only, read from the inputs file alone (ruling 8).
 """
 
 from __future__ import annotations
@@ -51,8 +53,8 @@ def compare(registered: Any, run: Any, path: str, key: str = "") -> list[str]:
                     out.append(f"{path}/{k}: missing")
                 continue
             out.extend(compare(v, run[k], f"{path}/{k}", k))
-        for k, v in run.items():
-            if k not in registered and v is not None:
+        for k in run:
+            if k not in registered:
                 out.append(f"{path}/{k}: a key that is not registered")
         return out
     if isinstance(registered, list):
@@ -83,8 +85,9 @@ def compare(registered: Any, run: Any, path: str, key: str = "") -> list[str]:
     return [f"{path}: an unreadable registered value"]
 
 
-def registered_echo(inputs: Inputs, spec: RunSpec) -> dict:
-    """The registered `inputs` of a run: the world's keys of its kind, plus seed, step_s, first and copy."""
+def registered_echo(inputs: Inputs, spec: RunSpec, rehearsal: bool = False) -> dict:
+    """The registered `inputs` of a run: the world's keys of its kind, plus seed, step_s, first and copy. At the
+    rehearsal alone, a run's declared `change` in the inputs file is applied (ruling 8)."""
     world = inputs.worlds[spec.world]
     keys = inputs.echo["world_keys"][world.kind]
     block = {k: world.block[k] for k in keys if k in world.block}
@@ -95,7 +98,7 @@ def registered_echo(inputs: Inputs, spec: RunSpec) -> dict:
     block["step_s"] = spec.raw["step_s"]
     block["first"] = spec.first
     block["copy"] = spec.copy
-    change = spec.raw.get("change")
+    change = spec.raw.get("change") if rehearsal else None
     if isinstance(change, dict):  # a run's own declared change (the invented set's refused and stopped runs)
         block = copy.deepcopy(block)
         for dotted, value in change.items():
@@ -107,7 +110,8 @@ def registered_echo(inputs: Inputs, spec: RunSpec) -> dict:
     return block
 
 
-def echo_departures(inputs: Inputs, spec: RunSpec, entry: dict, operators: list[str] | None) -> list[str]:
+def echo_departures(inputs: Inputs, spec: RunSpec, entry: dict, operators: list[str] | None,
+                    rehearsal: bool = False) -> list[str]:
     """CRITERIA.md §4.1. A planted (Lie) run and a resumed run carry their honest run's registered values apart
     from `variant`, which is their own; so each is compared with its own registered run's values."""
     out = []
@@ -115,10 +119,10 @@ def echo_departures(inputs: Inputs, spec: RunSpec, entry: dict, operators: list[
     if not isinstance(echoed, dict):
         out.append("inputs: no echo")
     else:
-        expected = registered_echo(inputs, spec)
+        expected = registered_echo(inputs, spec, rehearsal)
         allowed = set(inputs.echo["world_keys"][inputs.worlds[spec.world].kind]) | set(inputs.echo["run_keys"])
-        for k, v in echoed.items():
-            if k not in allowed and v is not None:
+        for k in echoed:
+            if k not in allowed:
                 out.append(f"inputs/{k}: not an echoed key")
         for k in allowed:
             if k not in echoed:

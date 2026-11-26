@@ -36,7 +36,7 @@ ROWS = [
     ("a bool is not a number", 1, True, "", False),
     ("read: null against absent", {"id": "x", "read": None}, {"id": "x"}, "", True),
     ("read: null against a value", {"id": "x", "read": None}, {"id": "x", "read": {"species": "S"}}, "", False),
-    ("an extra key that is null", {"a": 1}, {"a": 1, "b": None}, "", True),
+    ("ruling 3b: an extra key that is null departs", {"a": 1}, {"a": 1, "b": None}, "", False),
     ("an extra key with a value", {"a": 1}, {"a": 1, "b": 2}, "", False),
     ("reactions in another order", [{"id": "make", "k": 1.0}, {"id": "spend", "k": 2.0}],
      [{"id": "spend", "k": 2.0}, {"id": "make", "k": 1.0}], "reactions", True),
@@ -78,6 +78,7 @@ def test_echo_departures(inputs) -> None:
         lambda e: e.__setitem__("seed", e["seed"] + 1),
         lambda e: e["inputs"].__setitem__("step_s", 0.125),
         lambda e: e["inputs"]["population"]["channels"][0]["read"].__setitem__("at", "node"),
+        lambda e: e["inputs"].__setitem__("note", None),  # ruling 3b, at the top of the echo
     ]
     for mutate in cases:
         changed = copy.deepcopy(entry)
@@ -88,6 +89,16 @@ def test_echo_departures(inputs) -> None:
     assert echo_departures(inputs, inputs.runs[lie], entry, operators) == []
     entry["variant"] = None
     assert echo_departures(inputs, inputs.runs[lie], entry, operators)
+
+
+def test_ruling_8_a_declared_change_at_the_rehearsal_only() -> None:
+    invented = Inputs(os.path.join(JUDGE, "..", "references", "out", "inputs_invented.json"))
+    spec = [s for s in invented.run_list if s.variant == "stopped"][0]
+    entry, operators = _entry(invented, spec.name)
+    entry["inputs"] = copy.deepcopy(registered_echo(invented, spec, rehearsal=True))
+    assert entry["inputs"]["rows_fmol"]["Pi"] == spec.raw["change"]["rows_fmol.Pi"]
+    assert echo_departures(invented, spec, entry, operators, rehearsal=True) == []
+    assert echo_departures(invented, spec, entry, operators, rehearsal=False)
 
 
 def _read(raw: dict, kind: str = "reactions") -> Entry:

@@ -276,25 +276,13 @@ def read_entry(entry: Entry, world_kind: str | None) -> None:
             continue
         if not _type_ok(value, kind):
             entry.add(row, effect, key, f"not a {kind}")
-    for key in RECORDED_ONLY:
-        if key not in raw:
-            entry.add("recorded-only leaf", "flag", key, "missing")
-    if "steps" in raw and not sj.is_integer(raw["steps"]):
-        entry.add("recorded-only leaf", "flag", "steps", "not an integer")
-    if "samples_echo" in raw and not (isinstance(raw["samples_echo"], list) and all(
-            sj.is_number(x) for x in raw["samples_echo"])):
-        entry.add("recorded-only leaf", "flag", "samples_echo", "not a list of numbers")
-    if "pools_at_event" in raw and raw["pools_at_event"] is not None and not isinstance(raw["pools_at_event"],
-                                                                                          (dict, list)):
-        entry.add("recorded-only leaf", "flag", "pools_at_event", "neither an object, a list nor null")
     status = raw.get("status")
     if isinstance(status, str):
         if status not in ("completed", "refused"):
             entry.add("entry key", "refused", "status", f"{status!r} is neither completed nor refused")
         else:
             entry.status = status
-    if entry.status == "completed" and "definition" in raw and raw["definition"] is None:
-        entry.add("recorded-only leaf", "flag", "definition", "null in a completed run (TABLE.md §3: a fault)")
+    _read_recorded_only(entry, raw)
     _read_sub_objects(entry, raw)
     _read_source(entry, raw)
     _read_t(entry, raw)
@@ -309,6 +297,36 @@ def read_entry(entry: Entry, world_kind: str | None) -> None:
         entry.bad_leaves.add("events_total")
     if sj.is_integer(raw.get("trace_capacity")):
         entry.trace_capacity = int(raw["trace_capacity"])
+
+
+def _read_recorded_only(entry: Entry, raw: dict) -> None:
+    """The recorded-only keys (the lead's rulings 2a to 2c, 26 November 2026). The key itself missing or of another
+    type refuses the run by its key; a leaf inside one is flagged (CRITERIA.md §4). `pools_at_event` may be null.
+    `steps` holds one integer, so its value is its leaf: a mistyped or off-grid `steps` is flagged, and a missing
+    `steps` key refuses the run. A null `definition` is a key fault in a completed run (TABLE.md §3: "a null in a
+    completed run is a fault"); a run refused before its definition was parsed holds null there."""
+    for key in RECORDED_ONLY:
+        if key not in raw:
+            entry.add("entry key", "refused", key, "missing (a recorded-only key)")
+    if "definition" in raw:
+        value = raw["definition"]
+        if value is None:
+            if entry.status == "completed":
+                entry.add("entry key", "refused", "definition", "null in a completed run (TABLE.md §3: a fault)")
+        elif not isinstance(value, dict):
+            entry.add("entry key", "refused", "definition", "not an object")
+    if "checks" in raw and not isinstance(raw["checks"], (dict, list)):
+        entry.add("entry key", "refused", "checks", "neither an object nor a list")
+    if "pools_at_event" in raw and raw["pools_at_event"] is not None and not isinstance(raw["pools_at_event"],
+                                                                                          (dict, list)):
+        entry.add("entry key", "refused", "pools_at_event", "neither an object, a list nor null")
+    if "samples_echo" in raw:
+        if not isinstance(raw["samples_echo"], list):
+            entry.add("entry key", "refused", "samples_echo", "not a list")
+        elif not all(sj.is_number(x) for x in raw["samples_echo"]):
+            entry.add("recorded-only leaf", "flag", "samples_echo", "a member that is not a finite number")
+    if "steps" in raw and not sj.is_integer(raw["steps"]):
+        entry.add("recorded-only leaf", "flag", "steps", "not an integer")
 
 
 def _read_sub_objects(entry: Entry, raw: dict) -> None:
@@ -339,15 +357,14 @@ def _read_sub_objects(entry: Entry, raw: dict) -> None:
 def _read_source(entry: Entry, raw: dict) -> None:
     source = raw.get("source")
     if isinstance(source, dict):
+        # The lead's ruling 15: any key of `source` that is missing, null, of another type, or an empty string.
         for key in SOURCE_STRINGS:
             if key not in source or source[key] is None:
-                entry.add("provenance", "provenance", f"source/{key}", "missing")
+                entry.add("provenance", "provenance", f"source/{key}", "missing or null")
             elif not isinstance(source[key], str):
                 entry.add("provenance", "provenance", f"source/{key}", "not a string")
-            elif source[key] == "" and key in ("engine_revision", "snapshot"):
-                entry.add("provenance", "provenance", f"source/{key}", "empty")
             elif source[key] == "":
-                entry.add("provenance", "flag", f"source/{key}", "an empty string (recorded)")
+                entry.add("provenance", "provenance", f"source/{key}", "an empty string")
         if "checkout_dirty" not in source or not isinstance(source["checkout_dirty"], bool):
             entry.add("provenance", "provenance", "source/checkout_dirty", "missing or not a boolean")
         if "blas_threads" not in source or not sj.is_integer(source["blas_threads"]):
@@ -463,8 +480,6 @@ def structure_report(tables: list[TableFile], arms: dict[int, str], worlds_kind:
         for entry in table.entries:
             read_entry(entry, worlds_kind.get(table.world or ""))
             for issue in entry.issues:
-                if issue.row in ("provenance",) and issue.effect == "flag":
-                    continue
                 report["departures"].append({"table": table.name, "run": entry.name, **issue.as_dict()})
             raw = entry.raw if isinstance(entry.raw, dict) else {}
             label = [str(raw.get("status"))]
