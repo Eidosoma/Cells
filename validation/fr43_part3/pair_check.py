@@ -301,11 +301,19 @@ def _step_differences(base, head, out_json, form):
     return 0
 
 
-def divided(base, head, world, new_shapes):
+def divided(base, head, world, new_shapes, dtype="f64"):
     """The dividing world's eliminated step: remove the head's lines that and a finiteness test of
     a new leaf into the validity (x: a bool of the leaf's shape, broadcast True for an integer leaf
     or is_finite of it for a float one; y = reduce_and x; z = and w y), read w for z wherever z is
-    read, alpha-rename both programs, and compare."""
+    read, alpha-rename both programs, and compare (D400's form: its integer leaf left no variable
+    after elimination).
+
+    Then, for a float leaf the test reads (FR-52), also the leaf's own variables: every name the
+    head binds with the leaf's type (`name:f64[shape]`), as the program's input, a branch's binder
+    or a call's operand, is removed wherever it is written, and the two programs are compared as
+    name-free token streams (canonical; a list one name shorter wraps differently). The printer
+    names every variable of one program uniquely, so a name stands for one variable. Exit 0 when
+    either comparison is identical."""
     a = (Path(base) / f"{world}.checked_step.dce.txt").read_text()
     lines = (Path(head) / f"{world}.checked_step.dce.txt").read_text().splitlines()
     removed = []
@@ -323,8 +331,35 @@ def divided(base, head, world, new_shapes):
         lines = lines[:i] + [re.sub(r"\b" + z + r"\b", w, line) for line in lines[i + 3 :]]
         removed.append(dict(shape=shape, lines=[x, y, f"{z} = and {w} {y}"]))
     same = renamed(a) == renamed("\n".join(lines))
+    text = "\n".join(lines)
+    leaves = sorted(
+        {
+            name
+            for shape in new_shapes
+            for name in re.findall(
+                r"\b([a-z]+):" + re.escape(dtype) + r"\[" + re.escape(shape) + r"\]", text
+            )
+        }
+    )
+    for name in leaves:
+        typed = r"\b" + name + r"(?::" + re.escape(dtype) + r"\[[0-9,]*\])?"
+        text = re.sub(r",\s*" + typed + r"(?=[\s.,)]|$)", "", text)  # (..., name) or a, name.
+        text = re.sub(typed + r"\s*,", "", text)  # (name, ...)
+        text = re.sub(typed + r"(?=[\s.)]|$)", "", text)
+
+    def separated(t):
+        return re.sub(r"\.(\s)", r" .\1", t)  # A binder list's closing period as its own token.
+
+    # Name-free (canonical): the head's names shift after its extra input, and a name that spells
+    # a primitive would be renamed differently in the two programs.
+    streams = [" ".join(canonical(separated(t))).split() for t in (a, text)]
+    stream_same = streams[0] == streams[1]
     print(f"removed {removed}; identical after: {same}")
-    return 0 if same else 1
+    print(
+        f"the leaves' own variables removed {leaves}; identical as name-free token streams: "
+        f"{stream_same}"
+    )
+    return 0 if same or stream_same else 1
 
 
 def main(argv=None):
