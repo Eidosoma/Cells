@@ -37,7 +37,7 @@ from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import species_reactions_fixtures as rfx
 
-CALCIUM, TWO_IONS = cav1p2_m2h.LAW_ID, "tests.two_ion_channel@1"
+CALCIUM, TWO_IONS = cav1p2_m2h.LAW_ID, "tests.channel.two_ion_channel@1"
 TERM = tissue3.CHANNEL_MATERIAL_TERM
 STEP = 1e-3  # The differences' relative step: each flux is linear in its ion's own amounts.
 OPENINGS = ((0.9, 0.95), (0.35, 0.6))
