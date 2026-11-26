@@ -7,11 +7,15 @@ and switched-off elements; the exact two-state half-step; zero rates selecting t
 event map (crossing record, writes, switches, counter, a stale write refused); static idleness
 from the declaration alone; the summary's unrecorded final crossing; a non-finite factor refused;
 a cell's prior condition, by a per-cell initial value or by a write at time 0 (FR-6, D162);
-and the composition structure (every provider of volumes and closer of masks refused, §1.12).
-The compiled runs are in the _runs and _bitwise files.
+and the composition structure (every provider and closer of masks refused, §1.12). Version 1.1
+(FR-65's coupling step, docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §11): both versions beside water
+by name, each read site's volume in NumPy and through the composite, the end check's reference
+read, and the site source kept refused. The compiled runs are in the _runs and _bitwise files,
+and the water door's in test_shared_inventory_volume.py.
 """
 
 import copy
+import re
 from types import MappingProxyType, SimpleNamespace
 
 import jax
@@ -25,13 +29,14 @@ from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.operators import OPERATORS, species_common
 from cells.operators import species_regulated_availability as sra
-from cells.operators.contract import Read, check_declarations
+from cells.operators.contract import Read, check_declarations, factor_reads
 from cells.registry.inventory_species import add_inventory_species
 from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as crfx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import regulated_availability_fixtures as rf
 from validation.tissue import secreted_species_fixtures as sfx
+from validation.tissue import shared_inventory_fixtures as sif
 from validation.tissue import site_occupancy_fixtures as ofx
 
 LAW = sra.LAW_ID
@@ -427,7 +432,6 @@ REFUSALS = {
         _edit(lambda r: r["model"]["junctions"][1]["permeability_m_per_s"].update(R=1e-9)),
         "zero membrane, junction and channel permeability",
     ),
-    "volume provider": (_watered, "volume"),
 }
 
 # ------------------------------------------------------------------ version 2's operator target
@@ -770,25 +774,18 @@ def test_refusals(case, monkeypatch):
     assert message in str(error.value), str(error.value)
 
 
-REFUSED = {  # Operator lists with each provider or closer (requirements first) and the reason.
-    "water": (
-        ("cells.operator.ideal_osmosis_linear_compliance_water@1",),
-        "reads volume as declared",
-    ),
-    "replacement@2": (
-        (
-            "cells.operator.ideal_osmosis_linear_compliance_water@1",
-            "cells.operator.scheduled_cell_replacement@2",
-        ),
-        "reads volume as declared",
-    ),
+# Operator lists with each provider or closer of a field it reads as declared (requirements first)
+# and the reason. Since version 1.1 (FR-65's coupling step) it reads the cell volume current, so
+# water and replacement@2 are its order and definition rows (test_version_1_1_beside_water_by_name),
+# and the lumens meet it only through insertion's masks.
+REFUSED = {
     "lumen@1": (
         (
             "cells.operator.membrane_entity_state@1",
             "cells.operator.scheduled_membrane_insertion@1",
             "cells.operator.restricted_cleft_lumen@1",
         ),
-        "reads extracellular_volume as declared",
+        "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@1",
     ),
     "lumen@2": (
         (
@@ -796,7 +793,7 @@ REFUSED = {  # Operator lists with each provider or closer (requirements first) 
             "cells.operator.scheduled_membrane_insertion@2",
             "cells.operator.restricted_cleft_lumen@2",
         ),
-        "reads extracellular_volume as declared",
+        "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@2",
     ),
     "insertion@1": (
         ("cells.operator.membrane_entity_state@1", "cells.operator.scheduled_membrane_insertion@1"),
@@ -1121,25 +1118,32 @@ def _replacement_over_water():
     return _with_idle_operator(crfx.over_water(raw, [template], ((t, "cell_0", "h", "n1"),)))
 
 
-WATER_REASON = "reads volume as declared, but cells.operator.ideal_osmosis_linear_compliance_water@1 provides it"
-VOLUME_PROVIDERS = {  # A7: a conserved amount with a changing volume, refused with its reason.
-    "water": (_watered, WATER_REASON),
-    "replacement@2 over water": (_replacement_over_water, WATER_REASON),
+SHARED_RULE = (  # species_common.check_volume_changers, by name (FR-43 / D315).
+    "cells.operator.scheduled_cell_replacement@2 changes the volumes it reads; water is the one "
+    "volume changer admitted beside it"
+)
+# A7 (docs/INVENTORY_COUPLING_DESIGN.md §4.4), amended in place for version 1.1 (FR-65's coupling
+# step, docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §11; disclosed there and in §8.4): water is the one
+# volume changer admitted (its acceptance, the water door, is test_shared_inventory_volume.py's), so
+# its case moved to test_version_1_1_beside_water_by_name; replacement@2 over water is refused by
+# the shared rule, and the lumens by insertion's masks, each with its reason.
+VOLUME_PROVIDERS = {
+    "replacement@2 over water": (_replacement_over_water, SHARED_RULE),
     "lumen@1": (
         lambda: _lumen(1),
-        "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@1 "
+        "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@1 "
         "provides it",
     ),
     "lumen@2": (
         lambda: _lumen(2),
-        "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@2 "
-        "provides it",
+        "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@2 "
+        "closes it",
     ),
 }
 
 
 @pytest.mark.parametrize("name", sorted(VOLUME_PROVIDERS))
-def test_a7_a_changing_volume_is_refused_at_the_definition(name):
+def test_a7_volume_changers_but_water_are_refused_at_the_definition(name):
     make, reason = VOLUME_PROVIDERS[name]
     with pytest.raises(ConfigError) as error:
         parse_spec(make())
@@ -1603,59 +1607,86 @@ def test_version_2_holds_and_records_each_factor_where_it_is_applied(monkeypatch
 
 
 class _ControlViewReader(sra.SpeciesRegulatedAvailabilityV2):
-    """R2, planted: @2 with a current read of channel_abundance at the control view; each of its
-    control-view hooks keeps the view it is given."""
+    """R2′, planted: @2 with current reads of channel_abundance and volume at the control view
+    only (no split read, so it is no door S reader); each of its factor hooks keeps the view it is
+    given."""
 
-    SCOPED_READS = MappingProxyType({"channel_abundance": Read("current", "inner")})
-    VIEW_READS = ("channel_abundance",)
+    SCOPED_READS = MappingProxyType(
+        {"channel_abundance": Read("current", "inner"), "volume": Read("current", "inner")}
+    )
+    VIEW_READS = ("channel_abundance", "volume")
 
     def __init__(self):
         self.seen = []
 
-    def control_factors(self, state, p, *, xp, view=None):
-        self.seen.append(("control_factors", view(state)))
-        return super().control_factors(state, p, xp=xp)
+    def control_factors(self, state, p, *, xp, view=None, quantities=None):
+        self.seen.append(("control_factors", view))
+        return super().control_factors(state, p, xp=xp, view=view)
 
-    def factor_valid(self, state, p, *, xp, view=None):
-        self.seen.append(("factor_valid", view(state)))
-        return super().factor_valid(state, p, xp=xp)
+    def factor_valid(self, state, p, *, xp, view=None, quantities=None):
+        self.seen.append(("factor_valid", view))
+        return super().factor_valid(state, p, xp=xp, view=view)
 
-    def factor_record(self, state, p, target, field, *, xp, view=None):
-        self.seen.append(("factor_record", None if view is None else view(state)))
-        return super().factor_record(state, p, target, field, xp=xp)
+    def factor_record(self, state, p, target, field, *, xp, view=None, quantities=None):
+        self.seen.append(("factor_record", view))
+        return super().factor_record(state, p, target, field, xp=xp, view=view)
+
+    def rate_factors(self, state, p, target, field, *, xp, quantities=None, view=None):
+        self.seen.append(("rate_factors", view))
+        return super().rate_factors(state, p, target, field, xp=xp, view=view)
 
 
-def test_a_factor_operator_reads_the_control_view_only_where_it_declares_it():
-    """R2 (FR-7's request; development, not judged): a factor operator's current read at stage
-    inner gets view=, the reader view of its fields (C4) as a function of state, in its three
-    control-view hooks; a routed half-step's factor_record gets none. @2 itself declares the read
-    for its population source (FR-7's part (b)), and without a population route it never calls
-    the view (test_regulated_availability_population.py). Host only, about 3 s."""
-    spec = parse_spec(routed(inner=(0.0, 1.0)))
+def _planted_reading(raw):
+    """(spec, the composition with @2 replaced by the planted reader, the reader, state, control,
+    p): a composition built directly, so no definition check runs."""
+    spec = parse_spec(raw)
     model = get_model(spec.model)
-    assert {o.LAW_ID: f for o, f in model.factor_fields.items()} == {LAW_V2: ("channel_abundance",)}
-    check_declarations(_ControlViewReader)
     planted = _ControlViewReader()
     reading = pump_composite.Composition(
         model.inner, tuple(planted if o.LAW_ID == LAW_V2 else o for o in model.operators)
     )
-    assert reading.factor_fields == {planted: ("channel_abundance",)}
     state, p = reading.initial_values(spec)
     control = reading.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
-    full = reading.view(p, state, xp=np)
-    plain = model.control_view(control, state, p, xp=np)
-    viewed = reading.control_view(control, state, p, xp=np)
-    assert all(np.array_equal(a, b) for a, b in zip(viewed, plain, strict=True))
-    reading._control_factor_checks(state, p, xp=np)
-    turnover = next(o for o in reading.operators if o.LAW_ID == sfx.TURNOVER)
-    reading._half_step(turnover, state, 0.5 * spec.execution.dt, control, p, xp=np)
-    hooks = [name for name, _ in planted.seen]
-    assert hooks == ["control_factors", "factor_valid", "factor_record", "factor_record"]
-    *at_view, (_, routed_view) = planted.seen
-    assert routed_view is None  # The target's half-step passes no view.
-    for _, view in at_view:
-        assert type(view)._fields == ("channel_abundance",)
-        assert np.array_equal(view.channel_abundance, full.channel_abundance)
+    return spec, reading, planted, state, control, p
+
+
+def test_a_factor_operator_reads_the_control_view_per_field_where_it_changes():
+    """R2′ (FR-65's coupling step, docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §11.3; R2 is FR-7's
+    request): a factor operator's current reads at stage inner reach its three control-view hooks
+    as a ViewFunction that carries only the fields some operator changes (C1 per field), and no
+    view where none is changed; a routed half-step passes the source its reader view only where it
+    reads current at the split (the planted reader does not). Without a changer, the routed world
+    of turnover's production gives every hook view None; in A1's swelling cell, the hooks at the
+    control view get a view of the volume alone, whose volume is the full view's. Planted: the
+    declaration-based rule, which passes channel_abundance with no changer. Host only, about 3 s."""
+    spec = parse_spec(routed(inner=(0.0, 1.0)))
+    assert get_model(spec.model).factor_fields == {}  # channel_abundance: no changer here.
+    declared = {o: factor_reads(o) for o in get_model(spec.model).factors if factor_reads(o)}
+    assert {o.LAW_ID: f for o, f in declared.items()} == {LAW_V2: ("channel_abundance", "volume")}
+    swelling = sif.swelling_a1(coupling=True, dt=0.01, end=1.0, every=0.5)
+    unit = "cells.operator.templated_polymerisation@1"
+    for raw, carried, routed_law in (
+        (routed(inner=(0.0, 1.0)), None, sfx.TURNOVER),
+        (swelling, ("volume",), unit),
+    ):
+        spec, reading, planted, state, control, p = _planted_reading(raw)
+        assert reading.factor_fields == ({} if carried is None else {planted: carried})
+        reading.control_view(control, state, p, xp=np)
+        reading._control_factor_checks(state, p, xp=np)
+        target = next(o for o in reading.operators if o.LAW_ID == routed_law)
+        reading._half_step(target, state, 0.5 * spec.execution.dt, control, p, xp=np)
+        hooks = [name for name, _ in planted.seen]
+        assert hooks[:3] == ["control_factors", "factor_valid", "factor_record"], hooks
+        assert set(hooks[3:]) == {"rate_factors", "factor_record"}, hooks  # Its routed calls.
+        for name, view in planted.seen[3:]:
+            assert view is None, name  # Not a door S reader: the routed half-step passes none.
+        full = reading.view(p, state, xp=np)
+        for name, view in planted.seen[:3]:
+            if carried is None:
+                assert view is None, name
+            else:
+                assert view.fields == carried, name
+                assert np.array_equal(view(state).volume, full.volume), name
 
 
 def _site_model(raw):
@@ -2000,3 +2031,377 @@ def test_a_composites_clamped_kinds_are_the_steps_own_rates():
     flux, _ = model.clamped_kind(passive_routes.clamped_flux, state, control, p, volts)
     assert np.any(flux != 0)
     assert np.array_equal(flux, np.asarray(values.derivative.passive_transferred))
+
+
+# ------------------------------------------------------------------ version 1.1: beside water
+# FR-65's coupling step (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §11; D402): the cell volume is
+# read current wherever a factor or a state is evaluated, beside water declared first. Each read
+# site has its row here or in test_shared_inventory_volume.py (§11.8's table).
+
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"
+
+
+def _coupling_first(raw):
+    """raw with the coupling's block moved to the front, before water."""
+    ops = raw["model"]["operators"]
+    block = next(o for o in ops if o["law"] in (LAW, LAW_V2))
+    raw["model"]["operators"] = [block, *(o for o in ops if o is not block)]
+    return raw
+
+
+def _a5pp_swelling():
+    from validation.tissue import a5pp_acceptance_fixtures as a5pp
+
+    return sif.with_water_first(a5pp.registered_world())
+
+
+BESIDE_WATER = {  # (builder, the refusal's words, or None for an admission)
+    "@1: an instantaneous Hill on a junction (A7's water world)": (_watered, None),
+    "@1: a state on two cells' populations (A5'')": (_a5pp_swelling, None),
+    "@1: the pair world": (lambda: sif.with_water_first(rf.pair_world()), None),
+    "@1: the water door": (lambda: sif.water_door(version=1), None),
+    "@2: the water door, beside the network and turnover": (sif.water_door, None),
+    "@2: A1, beside turnover and the gene unit": (
+        lambda: sif.swelling_a1(coupling=True, end=60.0),
+        None,
+    ),
+    "@2: arm B, labelled": (lambda: sif.swelling_arm_b("p=0.55 returned"), None),
+    "@2: beside the symport": (lambda: sif.companion_world("symport", coupling=True), None),
+    "@2: beside the bath schedule": (
+        lambda: sif.companion_world("bath schedule", coupling=True),
+        None,
+    ),
+    "@1: declared before water": (
+        lambda: _coupling_first(_watered()),
+        f"{LAW} reads the view volume at stage split before {WATER} changes it there",
+    ),
+    "@2: declared before water": (
+        lambda: _coupling_first(sif.swelling_a1(coupling=True, end=60.0)),
+        f"{LAW_V2} reads the view volume at stage split before {WATER} changes it there",
+    ),
+    "@1: beside replacement@2 over water": (_replacement_over_water, SHARED_RULE),
+}
+
+
+@pytest.mark.parametrize("name", sorted(BESIDE_WATER))
+def test_version_1_1_beside_water_by_name(name, monkeypatch):
+    """FR-65's coupling step, §11.8 row 1, host side, about 0.1 to 3 s a world (parse only, nothing
+    compiled): both versions beside water declared first, alone and beside the network, turnover,
+    the gene unit, labels, the symport and the bath schedule; refused in the engine's words when
+    declared before water (C2's order rule) and beside replacement@2 (the shared volume rule).
+    Planted: version 1.0's declarations (the shared static-tissue list, no volume read) put back
+    on both versions, every admitted world is refused with "reads volume as declared"."""
+    build, words = BESIDE_WATER[name]
+    if words is not None:
+        with pytest.raises(ConfigError, match=re.escape(words)):
+            parse_spec(build())
+        return
+    parse_spec(build())
+    for cls, reads in (
+        (sra.SpeciesRegulatedAvailability, ()),
+        (sra.SpeciesRegulatedAvailabilityV2, ("channel_abundance",)),
+    ):
+        monkeypatch.setattr(cls, "CONFLICTS_VIEW", species_common.CONFLICTS_VIEW)
+        monkeypatch.setattr(cls, "VIEW_READS", reads)
+        monkeypatch.setattr(
+            cls, "SCOPED_READS", MappingProxyType({k: Read("current", "inner") for k in reads})
+        )
+    pump_composite._implementation.cache_clear()  # Compositions are cached per operator list.
+    try:
+        with pytest.raises(ConfigError, match=r"availability@[12] reads volume as declared"):
+            parse_spec(build())
+    finally:
+        monkeypatch.undo()
+        pump_composite._implementation.cache_clear()
+
+
+def _hill(x, k, n, law):
+    """x^n / (K^n + x^n) (activation) or K^n / (K^n + x^n) (inhibition), written plainly."""
+    a = (np.asarray(x, dtype=float) / k) ** n
+    return a / (1.0 + a) if law in ("hill_activation", 1) else 1.0 / (1.0 + a)
+
+
+def _closed_factors(state, p, volume):
+    """[route] F = b + (1 - b) f of every route at `volume` [cell], written plainly from the
+    layout: a species route's Hill law of n/V, a state route's s or 1 - s; 1 switched off."""
+    law = np.asarray(p.coupling_route_law)
+    rows, cells = np.asarray(p.coupling_route_row), np.asarray(p.coupling_route_cell)
+    amount = (
+        np.asarray(p.amount_reference)[rows, cells]
+        + np.asarray(state.amount_increment)[rows, cells]
+    )
+    x = amount / np.asarray(volume)[cells]
+    k, n = np.asarray(p.coupling_route_half_saturation_mM), np.asarray(p.coupling_route_coefficient)
+    states = np.asarray(state.regulatory_state)
+    s = states[np.asarray(p.coupling_route_slot)] if states.size else np.zeros(law.shape)
+    f = np.where(
+        law == 1,
+        _hill(x, k, n, 1),
+        np.where(law == 2, _hill(x, k, n, 2), np.where(law == 3, s, 1.0 - s)),
+    )
+    b = np.asarray(p.coupling_route_basal)
+    on = np.asarray(state.coupling_enabled)[np.asarray(p.coupling_route_coupling)] > 0
+    return np.where(on, b + (1.0 - b) * f, 1.0)
+
+
+def _swollen(state, p, scale):
+    """state with water's cell increment set by hand, V = scale V0 in every cell."""
+    return state._replace(volume_increment_pL=(scale - 1.0) * np.asarray(p.volume))
+
+
+def test_version_1_1_kernels_read_the_volume_they_are_given(bound):
+    """§11.8 row 2, NumPy (no compile), about 1 s: route_factors and state_inputs read a species
+    source's concentration at the volume they are given, here 1.3 V0, against the closed forms at
+    n/V; range_valid refuses a source inside its range at V0 and outside it at a shrunken V.
+    Planted: the declared volume (no volume given), which misses each."""
+    _, _, _, state, p = bound
+    volume = 1.3 * np.asarray(p.volume)
+    got = np.asarray(sra.route_factors(state, p, xp=np, volume=volume))
+    want = _closed_factors(state, p, volume)
+    assert np.allclose(got, want, rtol=1e-13, atol=0.0), (got, want)
+    declared = np.asarray(sra.route_factors(state, p, xp=np))
+    assert not np.allclose(declared, want, rtol=1e-6, atol=0.0)  # The plant misses.
+    rows = np.asarray(p.regulatory_input_row)
+    cells = np.asarray(p.regulatory_slot_cell)[:, None]
+    amount = (
+        np.asarray(p.amount_reference)[rows, cells]
+        + np.asarray(state.amount_increment)[rows, cells]
+    )
+    x = amount / volume[np.asarray(p.regulatory_slot_cell)][:, None]
+    kind = np.asarray(p.regulatory_input_kind)
+    factors = np.where(
+        kind == 1,
+        _hill(x, p.regulatory_input_half_saturation_mM, p.regulatory_input_coefficient, 1),
+        np.where(
+            kind == 2,
+            _hill(x, p.regulatory_input_half_saturation_mM, p.regulatory_input_coefficient, 2),
+            1.0,
+        ),
+    )
+    u = np.asarray(sra.state_inputs(state, p, xp=np, volume=volume))
+    assert np.allclose(u, factors.prod(axis=1), rtol=1e-13, atol=0.0)
+    assert not np.allclose(sra.state_inputs(state, p, xp=np), u, rtol=1e-6, atol=0.0)
+    spec = parse_spec(routed())
+    routed_state, routed_p = get_model(spec.model).initial_values(spec)
+    law, row, cell = (np.asarray(getattr(routed_p, k)) for k in (
+        "coupling_route_law", "coupling_route_row", "coupling_route_cell"))  # fmt: skip
+    c0 = (
+        np.asarray(routed_p.amount_reference)[row, cell]
+        + np.asarray(routed_state.amount_increment)[row, cell]
+    ) / np.asarray(routed_p.volume)[cell]
+    tight = routed_p._replace(coupling_route_high=1.05 * c0)  # V0 inside, V0 / 1.1 outside.
+    used = np.ones(law.shape[0], dtype=bool)
+    shrunk = np.asarray(routed_p.volume) / 1.1
+    assert bool(sra.range_valid(routed_state, tight, used, xp=np))
+    assert not bool(sra.range_valid(routed_state, tight, used, xp=np, volume=shrunk))
+
+
+def test_version_1_1_the_end_check_reads_the_declared_volume_with_the_same_outcome(bound):
+    """§11.8 row 3, NumPy, about 1 s: factors_valid, the end's validity check (rate_checks and
+    domain_valid), keeps the declared volume as a reference read (C3): a factor lies in [0, 1] at
+    every finite positive volume, so its outcome is the same at V and at V0 for the amounts 0,
+    1e-30, 1, 1e30, inf, NaN and -1. Planted: a volume-dependent check in its place (range_valid,
+    at a range that V0 keeps and V leaves) changes the outcome."""
+    _, _, _, state, p = bound
+    route = int(np.flatnonzero(np.asarray(p.coupling_route_law) == 2)[0])  # c_r: R's inhibition.
+    row, cell = int(p.coupling_route_row[route]), int(p.coupling_route_cell[route])
+    for scale in (0.7, 1.3):
+        volume = scale * np.asarray(p.volume)
+        for amount in (0.0, 1e-30, 1.0, 1e30, np.inf, np.nan, -1.0):
+            increment = np.asarray(state.amount_increment).copy()
+            increment[row, cell] = amount - float(np.asarray(p.amount_reference)[row, cell])
+            at = state._replace(amount_increment=increment)
+            with np.errstate(all="ignore"):
+                declared = bool(sra.factors_valid(at, p, xp=np))
+                f = np.asarray(sra.route_factors(at, p, xp=np, volume=volume))
+            current = bool(np.all(np.isfinite(f) & (f >= 0) & (f <= 1)))
+            assert declared == current, (scale, amount)
+    spec = parse_spec(routed())
+    routed_state, routed_p = get_model(spec.model).initial_values(spec)
+    row, cell = (np.asarray(getattr(routed_p, k)) for k in ("coupling_route_row",
+                                                           "coupling_route_cell"))  # fmt: skip
+    c0 = (
+        np.asarray(routed_p.amount_reference)[row, cell]
+        + np.asarray(routed_state.amount_increment)[row, cell]
+    ) / np.asarray(routed_p.volume)[cell]
+    tight = routed_p._replace(coupling_route_low=0.9 * c0)
+    used = np.ones(row.shape[0], dtype=bool)
+    at_v0 = bool(sra.range_valid(routed_state, tight, used, xp=np))
+    at_v = bool(sra.range_valid(routed_state, tight, used, xp=np, volume=1.3 * routed_p.volume))
+    assert at_v0 != at_v  # A volume-dependent check would change the outcome.
+
+
+def _door(raw, scale=1.3):
+    """(spec, model, the coupling, state at V = scale V0, control, p) of a bound world."""
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    coupling = next(o for o in model.operators if o.LAW_ID in (LAW, LAW_V2))
+    return spec, model, coupling, _swollen(state, p, scale), control, p
+
+
+def test_version_1_1_the_composite_passes_the_current_volume_to_every_read_site(monkeypatch):
+    """§11.8 row 4, NumPy through the composite (no compile), about 5 s. In the water door's world
+    (sif.water_door) at V = 1.3 V0, set by hand, each of these equals its closed form at n/V: the
+    control view's channel availability; factor_valid at a range that n/V leaves and n/V0 keeps;
+    the inner routes' record; the routed rates of turnover and of the network, with their validity
+    at such a range (no observation column holds a routed turnover or gene-unit rate, so this row
+    is their exact check), and the gene unit's in A1's world; the self-moved route's factor at the
+    midpoint's predictor; one state half-step; the observed coupling_factor. In A7's water world
+    (@1, a junction) with its two cells' volumes set apart, the junction's factor for each side.
+    Without a changer (A5''), the coupling receives no view of the volume, and beside membrane
+    state (a population world) the view carries channel_abundance alone. Planted, each missing
+    its identity: the view withheld at the control view, at the routed half-step and at the
+    split; and today's declaration-based R2, which A5'''s composition would answer with a view."""
+    spec, model, coupling, state, control, p = _door(sif.water_door())
+    v = np.asarray(p.volume) + np.asarray(state.volume_increment_pL)
+    want = _closed_factors(state, p, v)  # inst, gate, make, bind, self.
+    # The control view: the population's availability is its schedule times inst and gate.
+    effective = model.control_view(control, state, p, xp=np)
+    assert np.isclose(effective.channel[0], control.channel[0] * want[0] * want[1], rtol=1e-13)
+    # The inner routes' record, and factor_valid at a range V leaves and V0 keeps.
+    _, recorded = model._control_factor_checks(state, p, xp=np)
+    assert np.allclose(np.asarray(recorded.coupling_applied_factor)[:2], want[:2], rtol=1e-13)
+    row, cell = int(p.coupling_route_row[0]), int(p.coupling_route_cell[0])
+    n_r = float(np.asarray(p.amount_reference)[row, cell] + state.amount_increment[row, cell])
+    low = np.asarray(p.coupling_route_low).copy()
+    low[[0, 2]] = 0.9 * n_r / float(p.volume[cell])  # inst's and make's: V0 keeps, V leaves.
+    tight = p._replace(coupling_route_low=low)
+    checked, _ = model._control_factor_checks(state, tight, xp=np)
+    assert not bool(checked)
+    ops = {o.LAW_ID: o for o in model.operators}
+    turnover, network = ops[sfx.TURNOVER], ops["cells.operator.local_species_reactions@1"]
+    routed_control, valid, _ = model._routed_control(
+        turnover, model.rate_routes[turnover], state, control, p, xp=np
+    )
+    rates = np.asarray(routed_control.turnover_rate)
+    assert np.isclose(rates[0], control.turnover_rate[0] * want[2] * want[4], rtol=1e-13)
+    assert rates[1] == control.turnover_rate[1]  # clear_s: no route.
+    _, refused, _ = model._routed_control(
+        turnover, model.rate_routes[turnover], state, control, tight, xp=np
+    )
+    assert bool(valid) and not bool(refused)
+    multiplied, _, _ = model._routed_control(
+        network, model.rate_routes[network], state, control, p, xp=np
+    )
+    assert np.isclose(
+        multiplied.reaction_multiplier[0], control.reaction_multiplier[0] * want[3], rtol=1e-13
+    )
+    # The self-moved route at the midpoint: S after turnover's predictor over h / 4 of the step
+    # (half of a half-step), from the routed rate at the half-step's start.
+    h = 0.5 * spec.execution.dt
+    assert sfx.TURNOVER in model.midpoint
+    moved, _ = model._half_step(turnover, state, h, control, p, xp=np)
+    s_row = list(spec.model.species_ids).index(sif.fx.SPECIES)
+    n_s = float(p.amount_reference[s_row, 0] + state.amount_increment[s_row, 0])
+    make, clear = float(rates[0]), float(control.turnover_rate[1])
+    n_mid = n_s * np.exp(-clear * h / 2) - make * np.expm1(-clear * h / 2) / clear
+    b = float(p.coupling_route_basal[4])
+    k, n = float(p.coupling_route_half_saturation_mM[4]), float(p.coupling_route_coefficient[4])
+    self_mid = b + (1 - b) * _hill(n_mid / v[0], k, n, 2)
+    assert np.isclose(np.asarray(moved.coupling_applied_factor)[4], self_mid, rtol=1e-12)
+    # One state half-step: s' = s + (k_on u (1 - s) - k_off s) h phi(lambda h), u at n_R / V.
+    stepped, _ = model._half_step(coupling, state, h, control, p, xp=np)
+    s0 = float(state.regulatory_state[0])
+    u = float(_hill(n_r / v[0], p.regulatory_input_half_saturation_mM[0, 0],
+                    p.regulatory_input_coefficient[0, 0], 1))  # fmt: skip
+    k_on, k_off = float(p.regulatory_on_rate[0]), float(p.regulatory_off_rate[0])
+    lam = k_on * u + k_off
+    s1 = s0 + (k_on * u * (1 - s0) - k_off * s0) * h * (-np.expm1(-lam * h) / (lam * h))
+    assert np.isclose(float(stepped.regulatory_state[0]), s1, rtol=1e-13)
+    # The observed factors, at the row's view.
+    observed = coupling.observe(None, state, control, p, model.view(p, state, xp=np), model, spec)
+    assert np.allclose(observed["coupling_factor"], want, rtol=1e-13)
+    # The planted withheld views, each of which misses.
+    monkeypatch.setattr(model, "_factor_views", lambda p, *, xp: {})
+    plain = model.control_view(control, state, p, xp=np)
+    assert not np.isclose(plain.channel[0], effective.channel[0], rtol=1e-6)
+    monkeypatch.undo()
+    monkeypatch.setattr(model, "_routed_view", lambda source, p, *, xp: {})
+    lagged, _, _ = model._routed_control(
+        turnover, model.rate_routes[turnover], state, control, p, xp=np
+    )
+    assert not np.isclose(lagged.turnover_rate[0], rates[0], rtol=1e-6)
+    monkeypatch.undo()
+    monkeypatch.setattr(model, "_passes_view", lambda op: False)
+    stale, _ = model._half_step(coupling, state, h, control, p, xp=np)
+    assert not np.isclose(float(stale.regulatory_state[0]), s1, rtol=1e-9)
+    monkeypatch.undo()
+    # The gene unit's routed initiation in A1's world.
+    spec, model, coupling, state, control, p = _door(sif.swelling_a1(coupling=True, end=60.0))
+    v = np.asarray(p.volume) + np.asarray(state.volume_increment_pL)
+    want = _closed_factors(state, p, v)
+    unit = next(o for o in model.operators if o.LAW_ID == sif.gw.POLYMERISATION)
+    initiated, _, _ = model._routed_control(unit, model.rate_routes[unit], state, control, p, xp=np)
+    field = "polymerisation_initiation_rate"
+    declaration = next(d for o, d, _ in cs.entries(spec) if o is unit)
+    tx = [e for e, _ in unit.routable_elements(declaration, field)].index("tx")
+    ratio = np.asarray(getattr(initiated, field))[tx] / np.asarray(getattr(control, field))[tx]
+    assert np.isclose(ratio, want[0], rtol=1e-13)
+    # A7's water world (@1): the junction's factor for each side, its two cells set apart.
+    for side in ("first", "second", "both"):
+        raw = _watered()
+        block(raw)["couplings"][0]["target"]["side"] = side
+        spec, model, coupling, state, control, p = _door(raw, scale=1.0)
+        junction = next(j for j in spec.model.junctions if j.id == "junction_0")
+        ids = [c.id for c in spec.model.cells]
+        first, second = ids.index(junction.sender), ids.index(junction.receiver)
+        increment = np.zeros_like(np.asarray(p.volume))
+        increment[first], increment[second] = 0.3 * p.volume[first], -0.2 * p.volume[second]
+        state = state._replace(volume_increment_pL=increment)
+        v = np.asarray(p.volume) + increment
+        route = p.coupling_route_cell  # One route per cell the side names.
+        factors = _closed_factors(state, p, v)
+        expected = float(np.prod(factors))
+        assert [int(c) for c in route] == {"first": [first], "second": [second],
+                                           "both": [first, second]}[side]  # fmt: skip
+        got = model.control_view(control, state, p, xp=np).junction[0] / control.junction[0]
+        assert np.isclose(got, expected, rtol=1e-13), side
+        assert not np.isclose(got, float(np.prod(_closed_factors(state, p, p.volume))), rtol=1e-6)
+    # No view without a changer, and per field beside membrane state.
+    from tests.unit import test_regulated_availability_population as population
+
+    for raw, fields in ((_a5pp_swelling_free(), {}),
+                        (population.world(), {LAW_V2: ("channel_abundance",)})):  # fmt: skip
+        model = get_model(parse_spec(raw).model)
+        assert {o.LAW_ID: f for o, f in model.factor_fields.items()} == fields
+        assert not [o for o in model.view_readers if o.LAW_ID in (LAW, LAW_V2)]
+    declared = {o.LAW_ID: factor_reads(o) for o in model.factors if factor_reads(o)}
+    assert declared != {o.LAW_ID: f for o, f in model.factor_fields.items()}  # The plant.
+
+
+def _a5pp_swelling_free():
+    """A5''s registered world as judged: no water, so no changer of the volume."""
+    from validation.tissue import a5pp_acceptance_fixtures as a5pp
+
+    return a5pp.registered_world()
+
+
+def test_a_site_source_stays_refused_beside_water(monkeypatch):
+    """The lead's ruling 2 (D402): a site source in mM reads B / V at the declared volume (D244's
+    Q2, the user's answer), so beside water it stays refused: today by site occupancy's own fixed
+    volume read, and by name in the coupling (check_site_volume) should that read change. Planted:
+    site occupancy's volume reads lifted in process, the coupling's own refusal answers. Host only,
+    about 1 s."""
+    base = site_routed(source=("occupied_mM", "hill_activation"), half=(1e-3, 1.0), ranged=(0, 1e3))
+    species = tuple(entry["id"] for entry in base["model"]["species"])
+    raw = sif.with_water_first(base, keep=species)  # Its ligand undiluted, above its trace.
+    with pytest.raises(ConfigError, match=re.escape(sra.SITE_LAW) + " reads volume as declared"):
+        parse_spec(copy.deepcopy(raw))
+    site = type(OPERATORS[sra.SITE_LAW])
+    monkeypatch.setattr(
+        site,
+        "CONFLICTS_VIEW",
+        tuple(k for k in site.CONFLICTS_VIEW if k not in ("volume", "extracellular_volume")),
+    )
+    kept = {k: v for k, v in site.SCOPED_READS.items() if k != "extracellular_volume"}
+    monkeypatch.setattr(site, "SCOPED_READS", kept)
+    pump_composite._implementation.cache_clear()
+    try:
+        words = r"reads a site population's occupied_mM at the declared volume"
+        with pytest.raises(ConfigError, match=words):
+            parse_spec(copy.deepcopy(raw))
+    finally:
+        monkeypatch.undo()
+        pump_composite._implementation.cache_clear()

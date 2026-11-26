@@ -661,9 +661,9 @@ def _worlds():
             "it writes species amounts without reporting its one-way moves",
         ),
         "A1 without the coupling, beside water": (lambda: sif.swelling_a1(end=60.0), None),
-        "A1 with the coupling, beside water (its second step)": (
+        "A1 with the coupling, beside water": (
             lambda: sif.swelling_a1(coupling=True, end=60.0),
-            f"{sif.COUPLING_2} reads volume as declared",
+            None,
         ),
     }
 
@@ -678,12 +678,13 @@ def test_beside_the_changers_it_reads_by_name(name, monkeypatch):
     symport or the bath schedule beside it; the partition, daughters keyed by their carriers;
     insertion@2 with clearance at the cleft from its onset; insertion@1 with cell routes; a lumen
     at a node it does not read; S5's furrow world with its lumen, with an injection, and with a
-    bridge S does not cross; A1 without the coupling. Refused, in the engine's words: a changer
+    bridge S does not cross; A1 with and without the coupling (whose own reads are current since
+    FR-65's coupling step). Refused, in the engine's words: a changer
     declared after it (C2's order rule), replacement@2 and a lumen at a node it clears (the shared
     volume rule; P5), a daughter keyed by its slot (P4), a rate before its node's onset, insertion@1
-    at a node it clears (the anchor guard), S on a bridge, labels beside insertion or a lumen (the
-    label owner), and A1 with the coupling, whose reads are its second step. Planted: today's
-    declarations (the shared static-tissue list) put back, every admitted world is refused."""
+    at a node it clears (the anchor guard), S on a bridge, and labels beside insertion or a lumen
+    (the label owner). Planted: today's declarations (the shared static-tissue list) put back,
+    every admitted world is refused."""
     from cells.models import pump_composite as composite
     from cells.operators import species_common as common
 

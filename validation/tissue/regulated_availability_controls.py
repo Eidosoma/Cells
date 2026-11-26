@@ -70,10 +70,12 @@ class LaggedFactor(_Control):
             control_held_state=state.regulatory_state,
         ), ok
 
-    def control_factors(self, state, p, *, xp):
+    def control_factors(self, state, p, *, xp, view=None):
+        # view=: the contract's R2′ keyword, which version 1.1 declares (FR-65's coupling step);
+        # the protocol's worlds hold no changer of the volume, so it is always None there.
         if state is not None and p.regulatory_slot_cell.shape[0] > 0:
             state = state._replace(regulatory_state=state.control_lagged_state)
-        return super().control_factors(state, p, xp=xp)
+        return super().control_factors(state, p, xp=xp, view=view)
 
 
 CONTROLS = {"first_order_state": FirstOrderState, "lagged_factor": LaggedFactor}

@@ -64,10 +64,11 @@ SPECIES_LAWS = (
 )
 MAX_SPECIES = 1024  # FR-43 / D315 (from 16; FR-9 / D165 from 7): FR-43's probe; above it, another.
 EVIDENCE_KINDS = registry.EVIDENCE_KINDS
-# Version 1 is transport on a static tissue (§5.5): its readers (exchange, the coupling and the unit
-# producer) read the declared volumes and masks, so no other operator may provide them, and a
-# closer counts as a mask's provider (S5). This refuses water, the lumens, insertion, partition and
-# the bridge. Turnover reads its own since FR-65 (species_turnover.py).
+# Version 1 is transport on a static tissue (§5.5): its readers (exchange and the unit producer)
+# read the declared volumes and masks, so no other operator may provide them, and a closer counts as
+# a mask's provider (S5). This refuses water, the lumens, insertion, partition and the bridge.
+# Turnover reads its own since FR-65 (species_turnover.py), and the coupling since FR-65's coupling
+# step (species_regulated_availability.py).
 CONFLICTS_VIEW = ("volume", "extracellular_volume", "active", "outside_active", "membrane_active")
 # The docstring statement the design requires (§7, the lead's ruling 4), scoped to the IMEX solvers.
 GUARD_STATEMENT = (
