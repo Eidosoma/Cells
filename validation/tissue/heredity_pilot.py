@@ -7,12 +7,12 @@ and 8 (/mnt/workspaces/Cells/heredity-design-20261108-01) transfer; and what
 does a batched run with observers cost? It is also the first E07 experiment
 driver.
 
-Engine models run: resolved_pump_tissue@3 (IMEX ARS(2,2,2) with exponential
+Engine models run: cells.model.resolved_pump_tissue@3 (IMEX ARS(2,2,2) with exponential
 stage gates, dt 1 ms, float64) through execution/vector_windows.py, the
 world_batching="vmap" mapping with the model's device row checks (the
-ionic_worlds@1 task replicates one definition, so heterogeneous worlds use the
+cells.model.ionic_worlds@1 task replicates one definition, so heterogeneous worlds use the
 same runner directly), and through execution/runner.py for the single-cell check;
-stationary_continuation_analysis@1 (cells.analysis.stationary) for the start
+cells.analysis.stationary_continuation_analysis@1 (cells.analysis.stationary) for the start
 state. Nothing here adds physics.
 
 World: validation/tissue/surface_pump_v3_study.tissue_definition, the 825-node
@@ -38,7 +38,7 @@ Mapping onto E07-v1 (written to mapping.json by the map part):
   CV 20%). A cell's factors multiply every one of its patches' NaV1.2 and
   Kir2.1 permeabilities, Na leak permeability and pump capacity; a junction's
   factor multiplies all its permeabilities.
-* Cue: one naleak_always_open@1 population on every patch of the 37 disc
+* Cue: one cells.channel.naleak_always_open@1 population on every patch of the 37 disc
   cells with 9x the patch's own Na leak permeability (so the patch's Na leak
   is x10 while it is available), availability 0 except on [cue on, cue off)
   for the arm's disc cells (experiment.channel_controls, which @3 turns into
@@ -625,8 +625,8 @@ def long_sheet_definition(disc_cells, s, dt, end_s, backend, *, written=False):
 # ------------------------------------------------------- water arms (development)
 
 # --water selects the volume model for every sheet world this process builds:
-# "water1" is resolved_pump_water@1 (osmotic water, compliant cells, no
-# regulation), "water2" is resolved_pump_water@2 with one KCC-type route per
+# "water1" is cells.model.resolved_pump_water@1 (osmotic water, compliant cells, no
+# regulation), "water2" is cells.model.resolved_pump_water@2 with one KCC-type route per
 # membrane at the red-cell capacity 4 mmol/(L cells h) and steepness s = 1
 # (Lew et al. 1991). Both use the approved heredity water-arm parameters of
 # validation/tissue/pump_water_fixtures.with_water (Pf 3e-3 cm/s, K 60 Pa,
@@ -658,7 +658,7 @@ def water_cell_start(kind):
     """The engine's stationary H of one sheet cell under the volume model (cached).
 
     One heredity cell (held bath, ionic background as on the sheet) with the
-    volume model, solved by stationary_continuation_analysis@1 (dense Newton)
+    volume model, solved by cells.analysis.stationary_continuation_analysis@1 (dense Newton)
     from the frozen reference H state of that model (validation/tissue/
     pump_water_predictions.json, P2 approved branch 0; pump_water_kcc_
     predictions.json, arm red_cell_4-lew_s1 branch 0). A uniform held-bath sheet
@@ -1416,7 +1416,7 @@ def sheet_arm_summary(directory, disc, written_start=False):
             track[str(mark)] = compact(r)
     first_flag = next((r["t"] for r in rows if r["max_osmotic_excess"] > OSMOTIC_FLAG), None)
     return dict(
-        model=report.get("engine_model", "resolved_pump_tissue@3").split(" ")[0],
+        model=report.get("engine_model", "cells.model.resolved_pump_tissue@3").split(" ")[0],
         volume_model=report.get("volume_model"),
         water_availability=report.get("water_availability"),
         failure=(report.get("failure") or {}).get("error"),
@@ -2148,7 +2148,7 @@ HOLD_PREDICTIONS = dict(
     kind="cells.heredity_pilot_w1_full_tissue_hold_predictions@1",
     status="written before the full-tissue hold run; development analysis, not judged",
     world="825-node heterogeneous tissue (seed 2: 10% CV per cell, 20% per junction), finite "
-    "extracellular squares with the outer ring held, resolved_pump_tissue@3 with the "
+    "extracellular squares with the outer ring held, cells.model.resolved_pump_tissue@3 with the "
     "trapezoid junction-heat booking, dt 1 ms; 6 s preparation, 10 s baseline, Na leak x10 "
     "cue for 2 s, 70 min retention run in segments of at most 20 min",
     sources=[

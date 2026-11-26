@@ -24,7 +24,7 @@ Each timed checked_grid also counts the layout builds it makes
 wrapping those functions for the measurement only.
 
 Definitions: --definition PATH (a parse_spec JSON, such as a saved world
-definition), or --small CELLS: independent resolved_pump_tissue@3 heredity cells
+definition), or --small CELLS: independent cells.model.resolved_pump_tissue@3 heredity cells
 (validation/tissue/surface_pump_v3_fixtures.py) on a 4218 s clock at 1 ms with an
 observation every 0.48 s (8788 times), the clock of the W1 full-tissue probe.
 

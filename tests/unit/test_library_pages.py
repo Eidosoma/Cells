@@ -25,8 +25,8 @@ from cells.registry import declarations
 from cells.registry import laws as law_registry
 from scripts import library_pages as library
 
-KV1P5 = "docs/library/cells/laws/kv1p5_mh@1.md"
-TRANSPORTER = "docs/library/cells/kinds/transporter@1.md"
+KV1P5 = "docs/library/cells/laws/channel.kv1p5_mh@1.md"
+TRANSPORTER = "docs/library/cells/kinds/kind.transporter@1.md"
 
 
 @pytest.fixture(scope="module")
@@ -46,15 +46,15 @@ def test_c1_every_page_names_a_piece_and_every_piece_has_its_page_once_complete(
     assert len(todo) == len(library.paged(doc)) - len(library.pages(files)) > 0
     # Planted: a law registered for the test, in the tree as a built-in's would be, with no page.
     planted = law_registry.RouteLaw(
-        "tests.planted_library_route@1", ("membrane",), "planted", host="cells.passive_routes@1"
+        "tests.route.planted_library_route@1", ("membrane",), "planted", host="cells.kind.passive_routes@1"
     )
     with law_registry.scope(law_registry.BUILTIN.extended(planted)):
         registered = declarations.manifest()
-    (entry,) = (e for e in registered["pieces"] if e["id"] == "tests.planted_library_route@1")
+    (entry,) = (e for e in registered["pieces"] if e["id"] == "tests.route.planted_library_route@1")
     assert entry["module_path"] is None  # Registered from a test, outside the cells package.
     entry["module_path"] = "src/cells/models/inner_laws.py"
-    page = "docs/library/tests/laws/planted_library_route@1.md"
-    assert f"C1 {page}: law tests.planted_library_route@1 has no page" in library.check_pages(
+    page = "docs/library/tests/laws/route.planted_library_route@1.md"
+    assert f"C1 {page}: law tests.route.planted_library_route@1 has no page" in library.check_pages(
         registered, files, complete=True
     )
     assert library.check_pages(registered, files) == []  # Partial: pages are written in batches.
@@ -134,8 +134,8 @@ def test_c5_the_format_page_s_key_tables_are_the_manifest_s(files):
 
 
 def test_new_writes_a_page_with_its_blocks_filled_and_refuses_one_that_exists(doc, files):
-    path, text = library.new_page(doc, files, "law", "kir2p1_mh2@1")  # A bare ID is in cells.
-    assert path == "docs/library/cells/laws/kir2p1_mh2@1.md"
+    path, text = library.new_page(doc, files, "law", "cells.channel.kir2p1_mh2@1")  # A bare ID is in cells.
+    assert path == "docs/library/cells/laws/channel.kir2p1_mh2@1.md"
     names = [m.group("name") for m in library.MARKER.finditer(text)]
     assert sorted(names) == sorted(library.BLOCKS.values())
     assert [f for f in library.check_blocks(doc, dict(files, **{path: text})) if path in f] == []
@@ -143,4 +143,4 @@ def test_new_writes_a_page_with_its_blocks_filled_and_refuses_one_that_exists(do
     assert any("the plain name is not written" in f for f in unfinished)
     assert any("'In plain words' is not written" in f for f in unfinished)
     with pytest.raises(SystemExit, match="exists"):
-        library.new_page(doc, files, "law", "cells.kv1p5_mh@1")
+        library.new_page(doc, files, "law", "cells.channel.kv1p5_mh@1")

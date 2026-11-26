@@ -48,6 +48,6 @@ def test_an_operator_moving_a_two_form_row_is_refused_by_the_composite(monkeypat
 
     monkeypatch.setattr(k_anion_symport.KAnionSymport, "moves_in_step", planted)
     with pytest.raises(
-        ConfigError, match=r"species B has two forms .*k_anion_symport_mass_action@1"
+        ConfigError, match=r"species B has two forms .*cells.operator.k_anion_symport_mass_action@1"
     ):
         parse_spec(world())

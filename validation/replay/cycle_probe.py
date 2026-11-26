@@ -2,10 +2,10 @@
 
 Host only: nothing is stepped. It asks the engine which compositions the cycle's loop would need
 it admits, each answer in the engine's own words:
-- growth by production (scheduled_species_turnover@1), the volume following it
-  (ideal_osmosis_linear_compliance_water@1), the membrane area following it
-  (membrane_entity_state@1, or scheduled_membrane_insertion@2) and division
-  (isopotential_partition@1): every pair, and the four together, each in the order the cycle
+- growth by production (cells.operator.scheduled_species_turnover@1), the volume following it
+  (cells.operator.ideal_osmosis_linear_compliance_water@1), the membrane area following it
+  (cells.operator.membrane_entity_state@1, or cells.operator.scheduled_membrane_insertion@2) and division
+  (cells.operator.isopotential_partition@1): every pair, and the four together, each in the order the cycle
   would declare them with any prerequisite an operator requires (REQUIRES) placed before it and
   named, through the composite's structure check on the inner adapter
   (pump_composite.structure_errors: door S's whole-field rules; a pair whose change and read are
@@ -35,11 +35,11 @@ from cells.registry.models import get_model
 # The roles in the order the cycle would declare them: the area law (or insertion), water,
 # production, division.
 LAWS = {
-    "area": "membrane_entity_state@1",
-    "insertion": "scheduled_membrane_insertion@2",
-    "volume": "ideal_osmosis_linear_compliance_water@1",
-    "production": "scheduled_species_turnover@1",
-    "division": "isopotential_partition@1",
+    "area": "cells.operator.membrane_entity_state@1",
+    "insertion": "cells.operator.scheduled_membrane_insertion@2",
+    "volume": "cells.operator.ideal_osmosis_linear_compliance_water@1",
+    "production": "cells.operator.scheduled_species_turnover@1",
+    "division": "cells.operator.isopotential_partition@1",
 }
 CYCLES = (
     ("area", "volume", "production", "division"),

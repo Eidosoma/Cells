@@ -3,7 +3,7 @@
 Restart windows of H2, stage 0's harness world (worlds.h2: projective qual-01's F1 world at a
 3600 s horizon). Each window is a new run that imports a saved full state from stage 0's R3 (H2 at
 0.25 ms, from snapshot 24e516c7; its kept rows) into H2 at dt = 2^-k ms, from the window's start
-to its end. It claims no continuity with R3. The engine model is resolved_pump_tissue@3 alone.
+to its end. It claims no continuity with R3. The engine model is cells.model.resolved_pump_tissue@3 alone.
 Development, not judged.
 
 run WINDOW K OUT_DIR    one window at dt = 2^-K ms; rows.npz (the full state at every 1 ms row)
@@ -110,7 +110,7 @@ def run(window, k, out_dir):
         dt_s=dt_of(k),
         start_s=at_ms(w["start_ms"]),
         end_s=at_ms(w["end_ms"]),
-        engine_model="resolved_pump_tissue@3",
+        engine_model="cells.model.resolved_pump_tissue@3",
         registration=reg["registration"],
         judged=False,
         snapshot_revision=harness.snapshot_revision(),
@@ -335,7 +335,7 @@ def analyse(output, root):
     ks = list(range(reg["k_range"][0], reg["k_range"][1] + 1))
     second, first = reg["bands"]["second"], reg["bands"]["first"]
     out = dict(study="FR-8 rung 0", registration=reg["registration"], judged=False,
-               engine_model="resolved_pump_tissue@3", I1=synthetic(), windows={})  # fmt: skip
+               engine_model="cells.model.resolved_pump_tissue@3", I1=synthetic(), windows={})  # fmt: skip
     data = {}
     for window in ("WS", "WA", "WC", "WB"):
         arms, steps, records = {}, {}, {}

@@ -1,8 +1,8 @@
-"""Protocol G2-Q1 judged run for resolved_pump_replacement@1 (registered; run once).
+"""Protocol G2-Q1 judged run for cells.model.resolved_pump_replacement@1 (registered; run once).
 
-Engine model: resolved_pump_replacement@1 (inner resolved_pump_tissue@3), on the
+Engine model: cells.model.resolved_pump_replacement@1 (inner cells.model.resolved_pump_tissue@3), on the
 frozen definitions of validation/tissue/cell_replacement_q1_predictions.json, with
-junction_heat_booking trapezoid_nonnegative@1, IMEX ARS(2,2,2) at dt 1 ms unless an
+junction_heat_booking cells.heat.trapezoid_nonnegative@1, IMEX ARS(2,2,2) at dt 1 ms unless an
 item says otherwise. Every engine run goes through core/runner.run, which applies the
 host row checks to every accepted row. A refusal fails its item and is recorded.
 
@@ -14,7 +14,7 @@ Items (validation/tissue/cell_replacement_protocol.json):
   Q4  C9: Vm against R-fast (pinned, reduction term included) and the end states
   Q5  W7 and C9 isolated short-lag at dt 2, 1, 0.5, 0.25 ms: order in [1.8, 2.2] (A3)
   Q6  restart at t_e - dt, t_e, t_e + dt bitwise; vmap cohorts of 2 and 8 worlds
-  Q7  no events on the 825-node world: bitwise equal to resolved_pump_tissue@3
+  Q7  no events on the 825-node world: bitwise equal to cells.model.resolved_pump_tissue@3
 
 Usage: python -m validation.tissue.cell_replacement_judge --output DIR --items Q1,Q2,...
 (run from a clean snapshot of the registering commit; DIR must not exist)

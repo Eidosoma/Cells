@@ -1,4 +1,4 @@
-"""species_regulated_availability@1, A6: locality, with the criterion written before any run.
+"""cells.operator.species_regulated_availability@1, A6: locality, with the criterion written before any run.
 
 docs/INVENTORY_COUPLING_DESIGN.md §4.4 A6 (inventory-coupling-m2-20261114-01/HANDOFF.md). Two cells
 of the heredity sheet that no junction joins (regulated_availability_fixtures.apart: cell_0 and

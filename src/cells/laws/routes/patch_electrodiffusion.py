@@ -127,7 +127,7 @@ def step_heat_pJ(moved_in_fmol, mu_bar_in_RT, mu_bar_out_RT, valence, voltage_st
 
 # --- the per-compartment stage solve (§7.3): Newton on the compartment's own amounts -----------
 
-SOLVER_ID = "imex_ars222_face_patch_electromigration@1"  # the implicit set: faces + patches
+SOLVER_ID = "cells.solver.imex_ars222_face_patch_electromigration@1"  # the implicit set: faces + patches
 NEWTON_ITERATIONS = 6
 NEWTON_RTOL = 1e-13
 

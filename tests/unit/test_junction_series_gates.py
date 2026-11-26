@@ -12,7 +12,7 @@ Host arithmetic only (NumPy), with no world compiled. Each claim with a planted 
 - S3: the exact constant-voltage step is each gate's own exact step, and the junction's decay is
   the product of two exponential relaxations, against the four-state chain's master equation
   (planted: the slow gate stepped at the fast gate's rate; the product's cross term dropped);
-- S4: a threshold_relaxation gate is junction_voltage_relaxation@1 itself, bitwise, so today's
+- S4: a threshold_relaxation gate is cells.junction.junction_voltage_relaxation@1 itself, bitwise, so today's
   law is the one-gate case (planted: another residual moves the derivative);
 - S5: a route's factor through the gates is the conductance for ions and the open fractions'
   product for a tracer whose residual is 0, never the conductance (planted: a tracer given g);
@@ -260,7 +260,7 @@ def test_junction_law_s_two_defaulted_fields_and_the_domain():
 
     today = law_registry.active().lookup(relaxation.LAW_ID)
     assert (today.gate_count, today.conductance) == (1, None) and today.errors() == []
-    common = dict(host="cells.resolved_pump_tissue@3")
+    common = dict(host="cells.model.resolved_pump_tissue@3")
     good = JunctionLaw(series.LAW_ID, True, series.kinetics, series.rhs, series.domain_valid,
                        series.MAX_ABS_VOLTAGE_V, 2, series.conductance, **common)  # fmt: skip
     assert good.errors() == []
@@ -308,7 +308,7 @@ def series_world(block=SERIES_BLOCK):
 
     from validation.tissue import surface_pump_v3_fixtures as fixtures
 
-    raw = fixtures.definition("closed", solver="imex_ars222_face_electromigration@1")
+    raw = fixtures.definition("closed", solver="cells.solver.imex_ars222_face_electromigration@1")
     for junction in raw["model"]["junctions"]:
         junction["gate"] = copy.deepcopy(block)
     return raw
@@ -354,7 +354,7 @@ def test_at3_alone_admits_the_series_law_with_its_fields_and_round_trips():
         with pytest.raises(ConfigError, match="development"):
             parse_spec(series_world(block))
     assert first._ADMITTED_GATES.get() == ()  # The failed parses left nothing admitted.
-    raw = fixtures_v2.definition("closed", solver="imex_ars222_face_electromigration@1")
+    raw = fixtures_v2.definition("closed", solver="cells.solver.imex_ars222_face_electromigration@1")
     for j in raw["model"]["junctions"]:
         j["gate"] = copy.deepcopy(SERIES_BLOCK)
     with pytest.raises(ConfigError):  # @2, and @1 through it, refuse the law.
@@ -408,7 +408,7 @@ def test_the_series_law_runs_in_at3_alone_on_ions_only():
     )  # fmt: skip
     raw["model"]["junctions"][0]["gate"] = copy.deepcopy(SERIES_BLOCK)
     raw["model"]["passive_routes"] = [
-        dict(id="s_route", junction="j_0", law="passive_neutral_permeation@1", species="S",
+        dict(id="s_route", junction="j_0", law="cells.route.passive_neutral_permeation@1", species="S",
              permeability_m_per_s=1e-9)
     ]  # fmt: skip
     with pytest.raises(ConfigError, match="passive route"):
@@ -429,8 +429,8 @@ def host_steps(raw, steps, solver):
     from cells.registry.models import get_model
 
     raw["execution"]["solver"] = solver
-    if solver == "imex_ars222_implicit_conductances@1":
-        raw["execution"]["energy_check"] = {"check": "step_doubled_energy@1",
+    if solver == "cells.solver.imex_ars222_implicit_conductances@1":
+        raw["execution"]["energy_check"] = {"check": "cells.execution.step_doubled_energy@1",
                                             "integration_error_cap": 2e-3}  # fmt: skip
     spec = parse_spec(raw)
     impl = get_model(spec.model)
@@ -445,7 +445,7 @@ def host_steps(raw, steps, solver):
 
 
 @pytest.mark.parametrize(
-    "solver", ["imex_ars222_face_electromigration@1", "imex_ars222_implicit_conductances@1"]
+    "solver", ["cells.solver.imex_ars222_face_electromigration@1", "cells.solver.imex_ars222_implicit_conductances@1"]
 )
 def test_a_second_gate_pinned_open_reproduces_the_one_gate_law_bit_for_bit(solver):
     """S9 (D262): m = 2 whose second gate is pinned open (residual and initial 1) and whose first
@@ -456,7 +456,7 @@ def test_a_second_gate_pinned_open_reproduces_the_one_gate_law_bit_for_bit(solve
     from validation.tissue import surface_pump_v3_fixtures as fixtures
 
     def world(gates=None):
-        raw = fixtures.definition("closed", solver="imex_ars222_face_electromigration@1")
+        raw = fixtures.definition("closed", solver="cells.solver.imex_ars222_face_electromigration@1")
         if gates is not None:
             for junction in raw["model"]["junctions"]:
                 junction["gate"] = {"law": series.LAW_ID, "development": True, "gates": gates}

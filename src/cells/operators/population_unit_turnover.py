@@ -1,4 +1,4 @@
-"""Operator population_unit_turnover@1: a membrane population's units made from a precursor species
+"""Operator cells.operator.population_unit_turnover@1: a membrane population's units made from a precursor species
 through maturation pools, and removed at first order (FR-7's unit producer, F1).
 
 docs/ABUNDANCE_TO_FUNCTION_DESIGN.md §5 item 3 (the unit producer) and §4 item 1 (the unit's own
@@ -14,7 +14,7 @@ and the lead's rulings for F1 (19 November 2026):
   inserts (D232);
 * the assembly and trafficking delay is a chain of m first-order pools (the linear chain trick,
   MacDonald 1978, Time Lags in Biological Models: named from memory and not read);
-* the precursor is a declared pool, which D150's scheduled_species_turnover@1 may also supply.
+* the precursor is a declared pool, which D150's cells.operator.scheduled_species_turnover@1 may also supply.
   Two writers of one row are admitted (the lead, 19 November 2026), provided each is a split part
   with exact half-steps in declared order, books its own moved amounts and the exact ΔG of its own
   move from the state its half-step receives, and refuses a non-positive amount: Strang splitting,
@@ -40,7 +40,7 @@ state that half-step receives, so the scheduled rate is the maximum and the defi
 bounds hold. Its elements are the routes, each at its population's cell.
 
 Law, per route i in cell c with precursor P (n_P fmol in c), c_u = N_A 1e-15 / ν units per fmol,
-κ = m / τ, and the population's units N (membrane_entity_state@1's units: declared plus
+κ = m / τ, and the population's units N (cells.operator.membrane_entity_state@1's units: declared plus
 increment; every unit, the declared ones included, is removed at k_r):
     dn_P/dt = -A n_P,  with A the sum of k_a over the routes on (P, c);
     the route's share q_i = c_u n_P k_a,i / A (units), dq_i/dt = -A q_i;
@@ -90,7 +90,7 @@ removal of every unit, the declared ones included, at k_r); a precursor row that
 writes, another author of the precursor other than turnover, and an in-step mover of it; dt Λ > 1
 anywhere in the schedule; a schedule that does not start at 0, changes off the dt grid or
 outside 0 < t < end, or holds a negative or non-finite rate; and every provider of volumes and
-closer of masks (CONFLICTS_VIEW, D150's static-tissue list). membrane_entity_state@1 precedes it
+closer of masks (CONFLICTS_VIEW, D150's static-tissue list). cells.operator.membrane_entity_state@1 precedes it
 (REQUIRES). At run time: non-finite values, a negative pool, N or rate, and a precursor amount
 that would not stay positive.
 
@@ -122,7 +122,7 @@ from cells.operators import species_common as common
 from cells.operators.contract import Operator
 from cells.registry import species_registry
 
-LAW_ID = "population_unit_turnover@1"
+LAW_ID = "cells.operator.population_unit_turnover@1"
 STEP_ID = "exact_unit_chain_half_steps@1"
 EXPERIMENT_KEY = "unit_turnover_controls"
 ROUTE_AXIS, POOL_AXIS = "unit_route", "unit_pool"
@@ -382,8 +382,8 @@ def _population_cells(model):
     return {c.id: inside[c.membrane_id] for c in model.channels}
 
 
-TURNOVER_LAW = "scheduled_species_turnover@1"  # An admitted second writer of a precursor.
-GENE_UNIT_LAW = "templated_polymerisation@1"  # The other (FR-43 / D315), a bounded producer.
+TURNOVER_LAW = "cells.operator.scheduled_species_turnover@1"  # An admitted second writer of a precursor.
+GENE_UNIT_LAW = "cells.operator.templated_polymerisation@1"  # The other (FR-43 / D315), a bounded producer.
 
 
 def check_writers(spec, declaration):
@@ -391,7 +391,7 @@ def check_writers(spec, declaration):
     another author of a precursor other than D150's turnover and the gene unit, and an in-step
     mover of one (module docstring): every unit here, declared ones included, is removed at k_r,
     and a precursor's writers are this operator, turnover's supply and the gene unit
-    (templated_polymerisation@1, FR-43 / D315: the two-writer rule of 19 November 2026 extended,
+    (cells.operator.templated_polymerisation@1, FR-43 / D315: the two-writer rule of 19 November 2026 extended,
     with the shared row's potential from the species registry, species_registry
     .check_shared_rows). R5 reads every producer's largest rate (supply_bound), so a precursor
     the gene unit makes without a static bound (a degradation's monomers) is refused."""
@@ -494,7 +494,7 @@ def check_rate_bound(spec, declaration, schedule):
 
 
 def densities(spec):
-    """{channel id: reference density (units/m^2)}, from membrane_entity_state@1's declaration."""
+    """{channel id: reference density (units/m^2)}, from cells.operator.membrane_entity_state@1's declaration."""
     for op, block, _ in composite_spec.entries(spec):
         if op.LAW_ID == membrane_state.LAW_ID:
             return {p.channel_id: p.reference_density_per_m2 for p in block.populations}

@@ -1,4 +1,4 @@
-"""Worlds for resolved_pump_replacement@1 tests and studies (definitions only).
+"""Worlds for cells.model.resolved_pump_replacement@1 tests and studies (definitions only).
 
 Heredity sheets: validation/stationary/worlds.e07_sheet_definition (E07-v1 cells,
 own held baths, voltage-gated junctions), with every fixed background zero
@@ -14,7 +14,7 @@ from validation.stationary import worlds
 from validation.tissue import surface_pump_v3_fixtures as fx
 
 FORMATION = dict(
-    law="delayed_first_order_junction_formation@1",
+    law="cells.junction_formation.delayed_first_order_junction_formation@1",
     initial_abundance=0.0,
     lag_s=600.0,
     time_constant_s=1800.0,
@@ -67,16 +67,16 @@ def template_from_cell(raw, cell_id, template_id, *, routes=None):
 
 
 def with_replacement(raw, templates=(), events=(), *, formation=None, capacity=None):
-    """The raw definition as resolved_pump_replacement@1.
+    """The raw definition as cells.model.resolved_pump_replacement@1.
 
     events: (time, slot, template, carrier) for isolated templates, or (time, slot,
     template or None, carrier, donor) for donor copies.
     """
     raw = copy.deepcopy(raw)
-    raw["model"]["id"] = "resolved_pump_replacement@1"
+    raw["model"]["id"] = "cells.model.resolved_pump_replacement@1"
     raw["model"]["replacement"] = dict(
-        law="scheduled_cell_replacement@1",
-        inner_model="resolved_pump_tissue@3",
+        law="cells.operator.scheduled_cell_replacement@1",
+        inner_model="cells.model.resolved_pump_tissue@3",
         junction_formation=dict(FORMATION if formation is None else formation),
         templates=[copy.deepcopy(t) for t in templates],
         template_capacity=max(1, len(templates)) if capacity is None else capacity,
@@ -120,7 +120,7 @@ def over_water(
     impermeant_fmol=0.0,
     formation=None,
 ):
-    """[water, scheduled_cell_replacement@2] on a raw @3 definition (v2 design §2): water as
+    """[water, cells.operator.scheduled_cell_replacement@2] on a raw @3 definition (v2 design §2): water as
     pump_water_fixtures.with_water declares it, then the replacement block of with_replacement
     under law @2, with its impermeant species. Templates' volume_pL are arrival volumes."""
     from cells.definitions import pump_composite_spec as cs
@@ -132,7 +132,7 @@ def over_water(
         )
     )
     v1 = cs.frozen_definition(with_replacement(raw, templates, events, formation=formation))
-    block = dict(copy.deepcopy(v1["model"]["operators"][0]), law="scheduled_cell_replacement@2")
+    block = dict(copy.deepcopy(v1["model"]["operators"][0]), law="cells.operator.scheduled_cell_replacement@2")
     block["impermeant_species"] = list(impermeant)
     water["model"]["operators"].append(block)
     water["experiment"]["replacement_events"] = v1["experiment"]["replacement_events"]

@@ -1,9 +1,9 @@
 """Throughput of vectorized resolved-pump worlds (execution/vector_windows.py) on one GPU.
 
-Engine models: resolved_pump_tissue@1, @2 and @3, IMEX ARS(2,2,2) at dt = 1 ms
+Engine models: cells.model.resolved_pump_tissue@1, @2 and @3, IMEX ARS(2,2,2) at dt = 1 ms
 on the synthetic 825-node world of validation/tissue/resolved_scale_world.py
 (225 cells, 600 outside nodes). The @2 world adds Cl and Ca with BETSE's mammal
-concentrations (M rebalances charge) and a ca_atp_mass_action_positive@1 pump
+concentrations (M rebalances charge) and a cells.cycle.ca_atp_mass_action_positive@1 pump
 on every patch, with BETSE's default Ca-ATPase coefficients. The @3 world is the
 heredity tissue of validation/tissue/surface_pump_v3_study.tissue_definition:
 NaV1.2 and Kir2.1 populations on every patch (2580 populations, the heredity
@@ -65,10 +65,10 @@ CALCIUM = dict(
 
 
 def calcium_world(raw):
-    """resolved_pump_tissue@2 on the same geometry: Na K P M plus Cl and Ca."""
+    """cells.model.resolved_pump_tissue@2 on the same geometry: Na K P M plus Cl and Ca."""
     raw = copy.deepcopy(raw)
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
-    m["id"] = "resolved_pump_tissue@2"
+    m["id"] = "cells.model.resolved_pump_tissue@2"
     m["species"] += [dict(id="Cl", valence=-1), dict(id="Ca", valence=2)]
     for key, mM in (("cells", CALCIUM["cell_mM"]), ("extracellular", CALCIUM["env_mM"])):
         for owner in m[key]:
@@ -90,7 +90,7 @@ def calcium_world(raw):
             membrane["permeability_m_per_s"][ion] = d / world.MEMBRANE_THICKNESS_m
         membrane["calcium_pump"] = dict(
             id=f"calcium_pump_{i}",
-            law="ca_atp_mass_action_positive@1",
+            law="cells.cycle.ca_atp_mass_action_positive@1",
             roles=dict(calcium="Ca"),
             stoichiometry=dict(Ca=-1),
             capacity_fmol_per_s=CALCIUM["alpha_ca_mol_m2_s"] * membrane["area_m2"] * 1e15,
@@ -728,7 +728,7 @@ def main():
     parser.add_argument("--heterogeneous", action="store_true")
     parser.add_argument("--observe-every", type=int, help="observation spacing in steps")
     parser.add_argument(
-        "--junction-heat", help="model 3: junction_heat_booking (e.g. trapezoid_nonnegative@1)"
+        "--junction-heat", help="model 3: junction_heat_booking (e.g. cells.heat.trapezoid_nonnegative@1)"
     )
     args = parser.parse_args()
     Path(args.output).mkdir(parents=True, exist_ok=True)

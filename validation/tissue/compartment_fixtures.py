@@ -1,4 +1,4 @@
-"""Small worlds for cell_owned_compartments@1 (FR-1, docs/CLOSED_COMPARTMENT_DESIGN.md).
+"""Small worlds for cells.operator.cell_owned_compartments@1 (FR-1, docs/CLOSED_COMPARTMENT_DESIGN.md).
 
 All values are synthetic. The base worlds are secreted_species_fixtures' quiescent worlds (passive
 cells, zero ion permeability on every patch, no pump, every node at the bath's ion composition with
@@ -35,7 +35,7 @@ import numpy as np
 from validation.tissue import composite_crossrev as crossrev
 from validation.tissue import secreted_species_fixtures as fx
 
-LAW = "cell_owned_compartments@1"
+LAW = "cells.operator.cell_owned_compartments@1"
 NODE, PATCH, OWNER = "ecs_0", "contact_0", "cell_0"
 LOAD_ROUTE = "load"
 WALL = "wall_cell_0"

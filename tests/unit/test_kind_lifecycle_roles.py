@@ -225,7 +225,7 @@ def test_a_kind_whose_only_extra_axis_is_internal_needs_no_presence():
 
 
 def planted_transporter(presence=MappingProxyType({"membrane_slot": THREE_MASKS})):
-    """The built-in transporter (cells.transporter@1) with the seams' declarations the lift reads:
+    """The built-in transporter (cells.kind.transporter@1) with the seams' declarations the lift reads:
     a role for every field, the layout and control fields' axes, its fuel rows' axis internal to
     its law, and `presence` (by default its three masks)."""
     from cells.kinds import transporter
@@ -311,7 +311,7 @@ def own_axis_kind(host):
         planted_site_k=PartitionRole("intensive"),
     )
     return Kind(
-        kind_id="tests.planted_sites@1",
+        kind_id="tests.kind.planted_sites@1",
         model_key="test_planted_sites",
         layout_fields=fields,
         partition_roles=MappingProxyType(roles),
@@ -332,14 +332,14 @@ def test_own_entity_axes_wait_for_own_axis_maps_beside_a_dividing_closer():
     from types import SimpleNamespace
 
     retiring = (OPERATORS[partition.LAW_ID],)
-    closing = (OPERATORS["scheduled_membrane_insertion@2"],)
+    closing = (OPERATORS["cells.operator.scheduled_membrane_insertion@2"],)
     patches = own_axis_kind("patch")
     assert kind_registry.declaration_errors(patches) == []
     assert pump3.kind_lifecycle_errors(patches) == ()
     assert pump_composite.own_axes(patches) == ("planted_site",)
     inner = SimpleNamespace(BOUND_KINDS=(patches,))
     assert pump_composite.lifecycle_errors(inner, retiring) == [
-        "The kind tests.planted_sites@1's own entity axes ['planted_site'] are refused beside a "
+        "The kind tests.kind.planted_sites@1's own entity axes ['planted_site'] are refused beside a "
         "dividing closer until own-axis maps exist (B2): a division would neither split nor "
         "retire their entities (fails closed)"
     ]
@@ -779,7 +779,7 @@ def lifecycle_world(monkeypatch, request):
         pump_composite, "_kinds_lifecycle", lambda inner, kinds: dict.fromkeys(kinds, ())
     )
     raw = pfx.divided()
-    division = next(o for o in raw["model"]["operators"] if o["law"] == "isopotential_partition@1")
+    division = next(o for o in raw["model"]["operators"] if o["law"] == "cells.operator.isopotential_partition@1")
     parent = division["divisions"][0]["parent"]
     patch = next(m["id"] for m in raw["model"]["membranes"] if m["inside"] == parent)
     with kind_registry.scope(kf.registry(per_patch_carrier(request.param))):
@@ -930,7 +930,7 @@ def test_no_composition_admitted_today_gains_a_lifecycle_field():
     a retiring operator."""
     with kind_registry.scope(kf.registry(shared_carrier())):
         inner = get_model(composite(kf.declare_carrier(world(), species="K")).model).inner
-        partition_op = OPERATORS["isopotential_partition@1"]
+        partition_op = OPERATORS["cells.operator.isopotential_partition@1"]
         assert pump_composite.kind_lifecycle_table(inner, (partition_op,)) == {}
     assert pump_composite.kind_lifecycle_table(pump3, (partition_op,)) == {}
 
@@ -968,7 +968,7 @@ def test_an_extensive_kind_field_is_split_and_its_move_booked(lifecycle_world):
 # fraction 0.6, so a population's split shows that it takes its patch's fraction), beside the
 # partition under the accepted bypass. One plant per role, each refused with its field named.
 
-PLANTED_ID = "tests.planted_population@1"
+PLANTED_ID = "tests.kind.planted_population@1"
 PLANTED_KEY = "test_planted_population"
 PLANTED_FIELDS = {  # field: (layout or control, entity axis, role)
     "planted_capacity_fmol_s": ("layout", "membrane_slot", PartitionRole("extensive")),

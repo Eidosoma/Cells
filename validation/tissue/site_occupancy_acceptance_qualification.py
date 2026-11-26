@@ -851,8 +851,8 @@ CHECKS = (
     ("schedule route", "names no declared route"),
     ("unknown key", "unknown"),
     ("duplicate population", "lists a population twice"),
-    ("view conflict", "Invalid operator composition: site_occupancy@1 reads"),
-    ("stationary analysis", "not resolved_pump_composite@1"),
+    ("view conflict", "Invalid operator composition: cells.operator.site_occupancy@1 reads"),
+    ("stationary analysis", "not cells.model.resolved_pump_composite@1"),
     ("batch signature", "matching model array axes"),
 )
 
@@ -880,7 +880,7 @@ def _engine_edit(raw, edit):
 
 
 def _site_block(raw):
-    return next(op for op in raw["model"]["operators"] if op["law"] == "site_occupancy@1")
+    return next(op for op in raw["model"]["operators"] if op["law"] == "cells.operator.site_occupancy@1")
 
 
 def _first_pop(raw):
@@ -1023,9 +1023,9 @@ def refusal_classes():
         "unknown_key": ("definition", pop(colour="red"), same),
         "duplicate_population": ("definition", lambda: _engine_edit(W, lambda raw: _site_block(
             raw)["populations"].append(copy.deepcopy(_first_pop(raw)))), same),
-        "view_conflict_water": ("structure", ("ideal_osmosis_linear_compliance_water@1",
+        "view_conflict_water": ("structure", ("cells.operator.ideal_osmosis_linear_compliance_water@1",
                                               so.LAW_ID),
-                                ("scheduled_species_exchange@1", so.LAW_ID)),
+                                ("cells.operator.scheduled_species_exchange@1", so.LAW_ID)),
         "stationary_analysis": ("analysis", same, same),
         "stage_condition": ("runtime", pop(association_rate_per_mM_per_s=2e7), same),
     }

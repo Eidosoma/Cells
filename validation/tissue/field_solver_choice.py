@@ -1,16 +1,16 @@
 """The field solver a new definition declares (D147, docs/DECISIONS.md; D156 for composites).
 
-D147: a new definition of the resolved pump family (resolved_pump_tissue@1 to @3,
-resolved_pump_water@1 and @2, resolved_pump_replacement@1) with at least one free field
-offset declares capacitive_reduction_gauged_damped_newton@3; a definition with none keeps
+D147: a new definition of the resolved pump family (cells.model.resolved_pump_tissue@1 to @3,
+cells.model.resolved_pump_water@1 and @2, cells.model.resolved_pump_replacement@1) with at least one free field
+offset declares cells.solver.capacitive_reduction_gauged_damped_newton@3; a definition with none keeps
 the solver it declares. The count needs only the definition: the field_offset_free leaf of
 initialise(spec).layout, set by finite extracellular space with floating components
 (docs/FIELD_FLOOR_ACCEPTANCE_DESIGN.md).
 
-D156: a resolved_pump_composite@1 definition follows its inner model, whose field solve it
-runs. The composite admits resolved_pump_tissue@3 alone as its inner model, so a new composite
+D156: a cells.model.resolved_pump_composite@1 definition follows its inner model, whose field solve it
+runs. The composite admits cells.model.resolved_pump_tissue@3 alone as its inner model, so a new composite
 with a free offset declares version 3 too, and one with none keeps its own. No
-resolved_pump_composite@1 world of the repository's builders had a free offset when this was
+cells.model.resolved_pump_composite@1 world of the repository's builders had a free offset when this was
 added (D150's fixtures; the crossrev injection, volume, division and species sets; D152's
 reaction worlds; S5's egg), so none of their definitions changes. The free-offset worlds of the
 crossrev base and qualification sets carry the water and replacement IDs, already in the family,
@@ -41,11 +41,11 @@ def every_version(model_id):
 
 
 FAMILY = (
-    every_version("resolved_pump_tissue@1"),
-    every_version("resolved_pump_water@1"),
-    every_version("resolved_pump_replacement@1"),
+    every_version("cells.model.resolved_pump_tissue@1"),
+    every_version("cells.model.resolved_pump_water@1"),
+    every_version("cells.model.resolved_pump_replacement@1"),
 )
-COMPOSITE = every_version("resolved_pump_composite@1")  # D156: decided by its inner model.
+COMPOSITE = every_version("cells.model.resolved_pump_composite@1")  # D156: decided by its inner model.
 
 
 def in_family(raw):

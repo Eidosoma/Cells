@@ -1,4 +1,4 @@
-"""cells.stochastic_mass_action@1: a step's encounter on the event-pair contract (OL1; §2.1, §0.2a).
+"""cells.reaction.stochastic_mass_action@1: a step's encounter on the event-pair contract (OL1; §2.1, §0.2a).
 
 **The law.** For a step with forward rate constant k_f (`forward_rate_per_s`, D152's key, in the
 activity form), one direction's rate at its firing state n is
@@ -190,7 +190,7 @@ FORMULAS = {
 
 LAW = law_registry.BUILTIN.register(
     ReactionLaw(
-        "cells.stochastic_mass_action@1",
+        "cells.reaction.stochastic_mass_action@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

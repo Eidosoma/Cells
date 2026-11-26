@@ -19,10 +19,10 @@ from cells.definitions.specs import (
 )
 from cells.numerics.surface_field import LAW_ID, NODE_BOUNDS, SOLVER_ID
 
-MODEL_ID = "resolved_tissue@1"
-FACE_LAW_ID = "logmean_electrodiffusion@1"
-# The face laws a calling family's parse admits beyond FACE_LAW_ID (resolved_pump_tissue@3's
-# logmean_electrodiffusion_forms@1; FR-30's `admitting` pattern in surface_pump_spec): ((law ID,
+MODEL_ID = "cells.model.resolved_tissue@1"
+FACE_LAW_ID = "cells.route.logmean_electrodiffusion@1"
+# The face laws a calling family's parse admits beyond FACE_LAW_ID (cells.model.resolved_pump_tissue@3's
+# cells.route.logmean_electrodiffusion_forms@1; FR-30's `admitting` pattern in surface_pump_spec): ((law ID,
 # its face class), ...), each class a subclass of ExtracellularFaceSpec with the same fields. Such a
 # face is parsed here as its degenerate plain face, its rows as themselves, which every base family
 # checks as a face; the calling family then holds it apart, in its own entity set. Empty outside
@@ -136,7 +136,7 @@ def to_dict(spec):
                     row[name] = mapped(row[name])
             if key in ("membranes", "junctions", "faces"):
                 row["law"] = (
-                    getattr(type(p), "LAW", FACE_LAW_ID) if key == "faces" else "constant_field@1"
+                    getattr(type(p), "LAW", FACE_LAW_ID) if key == "faces" else "cells.route.constant_field@1"
                 )
             rows.append(row)
         raw[key] = rows
@@ -175,7 +175,7 @@ def parse(data, *, field_solver=SOLVER_ID):
         "resolved tissue model",
     )
     if m["id"] != MODEL_ID or type(m["species"]) is not list or not m["species"]:
-        raise ConfigError("Require resolved_tissue@1 and an ordered species list")
+        raise ConfigError("Require cells.model.resolved_tissue@1 and an ordered species list")
     species = [_fields(p, {"id", "valence"}, "species") for p in m["species"]]
     ids = tuple(identifier(p["id"]) for p in species)
     z = tuple(p["valence"] for p in species)
@@ -221,7 +221,7 @@ def parse(data, *, field_solver=SOLVER_ID):
         rows = []
         for p in m[key]:
             _fields(p, set(cls.__dataclass_fields__) | {"law"}, key)
-            law = FACE_LAW_ID if key == "faces" else "constant_field@1"
+            law = FACE_LAW_ID if key == "faces" else "cells.route.constant_field@1"
             row_cls = cls
             if key == "faces" and isinstance(p["law"], str) and p["law"] in admitted:
                 law, row_cls = p["law"], admitted[p["law"]]

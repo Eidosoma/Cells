@@ -8,8 +8,8 @@ built on `Law`, which holds what every law declares:
 - `law_id`, namespaced (`namespace.name@major`; a bare ID is in `cells`), named for its mechanism
   and its form, never for a protein; and its `interface`, a class constant of its type (an ID with
   its major);
-- `host`, the namespaced ID of what runs it: a kind (`cells.transporter@1`), or the inner model
-  for its own populations (`cells.resolved_pump_tissue@3`). This is version 1's restriction: each
+- `host`, the namespaced ID of what runs it: a kind (`cells.kind.transporter@1`), or the inner model
+  for its own populations (`cells.model.resolved_pump_tissue@3`). This is version 1's restriction: each
   law's kernel is written against its host's arrays, so a host finds its laws by (interface, host),
   never in a module tuple, and refuses by name any law of its own that its version-1 code has no
   kernel path for. The cycle kind's general layout is meant to relax it for cycle laws (§3.5).
@@ -448,7 +448,7 @@ class CycleLaw(Law):
     fuel_kinds: tuple[str, ...] = ()
     kinetics: Callable | None = None
     domain_valid: Callable | None = None
-    reads: tuple = ()  # Stage reads, such as rapid_proton_buffer@1's free h.
+    reads: tuple = ()  # Stage reads, such as cells.kind.rapid_proton_buffer@1's free h.
     stage_term: str | None = None  # Its charge slope in the stage rule, where its host takes one.
     # Its other step terms (module docstring), each its kernel's name or None.
     material_term: str | None = None  # Its material slope per stage.
@@ -508,7 +508,7 @@ class RouteLaw(Law):
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
     forms: str | None = None  # "base": it moves base forms (CORE_SEAMS §5.2), or None.
     # The stage reads it reads its rows through, as a cycle law's reads: () for every route law but
-    # one that reads a closure's free forms (MT-1b's leak @2 reads rapid_binding@1; host side).
+    # one that reads a closure's free forms (MT-1b's leak @2 reads cells.binding.rapid_binding@1; host side).
     reads: tuple = ()
 
     interface: ClassVar[str] = ROUTE_LAW

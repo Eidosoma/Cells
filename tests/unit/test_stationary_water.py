@@ -1,4 +1,4 @@
-"""stationary_continuation_analysis@1 on resolved_pump_water@1 (compliant volumes).
+"""cells.analysis.stationary_continuation_analysis@1 on cells.model.resolved_pump_water@1 (compliant volumes).
 
 The slow mode carries the volumes as dynamical coordinates (1e-3 of the
 declared volume): a cell facing a held bath has no volume law, a cell whose
@@ -11,7 +11,7 @@ distribution, electroneutrality and osmotic balance):
     V = (N_P + (I + q/F - X)/2) / ((c_b + dP/RT)/2 - M_b exp(F Vm / RT))
 
 and it is a fixed point of the split step map. Models without volume fields
-(resolved_pump_tissue@1-3) keep exactly their blocks and laws.
+(cells.model.resolved_pump_tissue@1-3) keep exactly their blocks and laws.
 """
 
 import math

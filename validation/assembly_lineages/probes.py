@@ -2,7 +2,7 @@
 
 GARD's G2 references (validation/gard/references/) are independent of the engine; their
 `make-probes` command writes the registered probe inputs, and their harness reads the engine's
-saved outputs by role. This driver runs the engine (cells.assembly_lineages@1) on those inputs and
+saved outputs by role. This driver runs the engine (cells.model.assembly_lineages@1) on those inputs and
 on the lineages the roles name, and saves the outputs in the engine's own format: run bundles
 (records.py) for lineages, and probe files for the probes. It reads only the inputs' files, never
 the references' code.
@@ -699,7 +699,7 @@ def rescale(out):
     return roles
 
 
-FORMAT_STATEMENT = """# The engine's output format for G2's roles (cells.assembly_lineages@1)
+FORMAT_STATEMENT = """# The engine's output format for G2's roles (cells.model.assembly_lineages@1)
 
 Frozen with the relationship keys (D202). Every file is described by the files themselves; this
 page says where to look. Nothing here needs the engine's code.

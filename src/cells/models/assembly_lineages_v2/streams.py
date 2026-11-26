@@ -73,7 +73,7 @@ def identity(seed, environment, lineage, branch):
     out["domains"] = dict(DOMAINS)
     out["reserved_domains"] = list(UNSCHEDULED_RESERVED)
     out["same_as"] = (
-        "cells.assembly_lineages@1's derivation and uniforms; domains 0-4 are @1's numbers "
+        "cells.model.assembly_lineages@1's derivation and uniforms; domains 0-4 are @1's numbers "
         "(1, events, is @1's exchange stream)"
     )
     return out

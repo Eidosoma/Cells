@@ -383,7 +383,7 @@ def connected_assemblies(bonds):
 
 
 def test_the_cycle_observable_is_the_cycle_rank_of_every_connected_assembly():
-    law = observables.resolve("root_component_has_cycle@1")
+    law = observables.resolve("cells.assembly_observable.root_component_has_cycle@1")
     assert law is observables.LAW and law.errors() == []
     assert law_registry.active().module(law.law_id) == "cells.assembly_pool.observables"
     # Moved, not calibrated; its Citation says that it is a readout with no number and no work.
@@ -400,7 +400,7 @@ def test_the_cycle_observable_is_the_cycle_rank_of_every_connected_assembly():
         assert not np.array_equal(planted, expected)
     # What the interface refuses of a declaration, and an ID that no registry holds.
     for field, value, reason in (
-        ("host", "cells.transporter@1", "hosted by finite_bond_assembly@1"),
+        ("host", "cells.kind.transporter@1", "hosted by cells.model.finite_bond_assembly@1"),
         ("reads", (), "its reads are at least 1 distinct names"),
         ("values", ("true", "true"), "its values are at least 2 distinct names"),
         ("evaluate", None, "its evaluate is callable"),

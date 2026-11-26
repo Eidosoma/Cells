@@ -2,7 +2,7 @@
 
 The emulator's general-network layer (validation/betse/emulator/network.py) against a hand
 computation of BETSE's run_loop_channels order, and network_world_adapter's world and
-resolved_pump_tissue@3 definition builder. The emulator runs in NumPy here (fast); its JAX
+cells.model.resolved_pump_tissue@3 definition builder. The emulator runs in NumPy here (fast); its JAX
 path is the same code, checked against plain BETSE to roundoff in parity-rung2-4-20261109-01.
 """
 
@@ -184,18 +184,18 @@ def test_resolved_definition_adds_one_population_per_patch_and_channel(network_c
 
     world = net.network_world(network_case, blind=True)
     backend = net.NETWORK_RESOLVED
-    assert backend.model_id(world) == "resolved_pump_tissue@3"
+    assert backend.model_id(world) == "cells.model.resolved_pump_tissue@3"
     assert set(adapter.EXECUTED) < set(backend.executed)
     raw = backend.definition(world, "init", adapter.phase_start(world, "init"), dt=1e-3)
     model, experiment = raw["model"], raw["experiment"]
-    assert model["id"] == "resolved_pump_tissue@3"
+    assert model["id"] == "cells.model.resolved_pump_tissue@3"
     m = len(model["membranes"])
     assert raw["execution"]["channel_capacity"] == len(model["channels"]) == 2 * m
     (m0, h0), _ = kv1p5_steady_and_tau(0.0)
     for c, row in zip(model["channels"], [*model["membranes"]] * 2, strict=True):
         kv = c["id"].startswith("chan-Kv-")
         assert c["membrane_id"] == row["id"]
-        assert c["kinetic_law"] == ("kv1p5_mh@1" if kv else "kleak_always_open@1")
+        assert c["kinetic_law"] == ("cells.channel.kv1p5_mh@1" if kv else "cells.channel.kleak_always_open@1")
         assert c["max_permeability_m_per_s"] == pytest.approx((KV if kv else KLEAK) / TM)
         assert c["abundance"] == 1.0
         assert c["permeant_ions"] == [{"species_id": "K", "relative_permeability": 1.0}]
@@ -375,9 +375,9 @@ def test_resolved_definition_maps_heredity_laws_ions_and_gates(heredity_case):
     raw = net.NETWORK_RESOLVED.definition(world, "init", start, dt=1e-3)
     m = len(raw["model"]["membranes"])
     expect = {
-        "Nav": ("nav1p2_m3h_regularized@1", NAV, "Na", nav1p2_steady_and_tau(0.0)[0]),
-        "Kir": ("kir2p1_mh2@1", KIR, "K", kir2p1_steady_and_tau(0.0)[0]),
-        "Na_Leak": ("naleak_always_open@1", NALEAK, "Na", None),
+        "Nav": ("cells.channel.nav1p2_m3h_regularized@1", NAV, "Na", nav1p2_steady_and_tau(0.0)[0]),
+        "Kir": ("cells.channel.kir2p1_mh2@1", KIR, "K", kir2p1_steady_and_tau(0.0)[0]),
+        "Na_Leak": ("cells.channel.naleak_always_open@1", NALEAK, "Na", None),
     }
     assert len(raw["model"]["channels"]) == 3 * m
     for c in raw["model"]["channels"]:

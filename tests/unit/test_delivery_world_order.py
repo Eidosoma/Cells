@@ -24,8 +24,8 @@ jax.config.update("jax_enable_x64", True)
 def test_the_bath_schedule_first_or_last_gives_the_same_bits():
     first = run(parse_spec(dfx.delivery_world()))
     last = run(parse_spec(dfx.delivery_world(bath_last=True)))
-    assert first.spec.model.operators[0].law == "scheduled_bath_composition@1"
-    assert last.spec.model.operators[-1].law == "scheduled_bath_composition@1"
+    assert first.spec.model.operators[0].law == "cells.operator.scheduled_bath_composition@1"
+    assert last.spec.model.operators[-1].law == "cells.operator.scheduled_bath_composition@1"
     assert set(first.history._fields) == set(last.history._fields)
     for name in first.history._fields:
         a, b = np.asarray(getattr(first.history, name)), np.asarray(getattr(last.history, name))

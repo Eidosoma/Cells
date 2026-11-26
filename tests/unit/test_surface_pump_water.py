@@ -1,4 +1,4 @@
-"""resolved_pump_water@1: osmotic water and compliant volumes on resolved_pump_tissue@3.
+"""cells.model.resolved_pump_water@1: osmotic water and compliant volumes on cells.model.resolved_pump_tissue@3.
 
 Definitions: round trip, dispatch and declaration errors. Law: edge_exchange is
 evaluate()'s pressures, flows and heat, bitwise; the layout binds conductance
@@ -72,7 +72,7 @@ def test_definition_round_trip_and_dispatch():
     spec = parse_spec(cell())
     assert get_model(spec.model).module is surface_pump_water  # I2: per structure.
     assert parse_spec(spec.to_dict()) == spec
-    assert spec.to_dict()["model"]["id"] == "resolved_pump_water@1"
+    assert spec.to_dict()["model"]["id"] == "cells.model.resolved_pump_water@1"
     raw = cell()
     assert [c["compartment_id"] for c in raw["model"]["water"]["compartments"]] == ["cell_0"]
     assert [c["compartment_id"] for c in raw["model"]["water"]["baths"]] == ["bath_0"]
@@ -81,9 +81,9 @@ def test_definition_round_trip_and_dispatch():
 def test_junction_heat_option_passes_through_to_resolved_pump_tissue_3():
     raw = fixtures.with_water(fixtures.gated_sheet(end_time=0.01))
     assert "junction_heat_booking" not in parse_spec(raw).to_dict()["model"]
-    raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+    raw["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
     spec = parse_spec(raw)
-    assert spec.model.junction_heat_booking == "trapezoid_nonnegative@1"
+    assert spec.model.junction_heat_booking == "cells.heat.trapezoid_nonnegative@1"
     assert parse_spec(spec.to_dict()) == spec
     _, p = surface_pump_water.initial_values(spec)
     assert p.junction_heat_trapezoid.shape == (1,)

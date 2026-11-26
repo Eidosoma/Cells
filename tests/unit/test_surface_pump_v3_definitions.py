@@ -1,4 +1,4 @@
-"""resolved_pump_tissue@3: the explicit-stage guard and the definition errors (a shard of the
+"""cells.model.resolved_pump_tissue@3: the explicit-stage guard and the definition errors (a shard of the
 former test_surface_pump_v3.py).
 """
 
@@ -24,7 +24,7 @@ CHANNEL_FIELDS = ("channel_gate", "channel_transferred", "channel_dissipated_ene
 ENERGY_CHECK_FAULTS = {
     "energy_check_unknown": (
         lambda x: x["energy_check"].update(check="step_doubled_energy@2"),
-        "requires check step_doubled_energy@1",
+        "requires check cells.execution.step_doubled_energy@1",
     ),
     "energy_check_no_cap": (
         lambda x: x["energy_check"].pop("integration_error_cap"),
@@ -188,14 +188,14 @@ def test_definition_errors_reject(fault):
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     channel = m["channels"][2]  # NaV1.2 on patch 2.
     if fault in ENERGY_CHECK_FAULTS:  # FR-18's X2 (D224): its block, then its own edit.
-        x["energy_check"] = dict(check="step_doubled_energy@1", integration_error_cap=1e-2)
+        x["energy_check"] = dict(check="cells.execution.step_doubled_energy@1", integration_error_cap=1e-2)
         ENERGY_CHECK_FAULTS[fault][0](x)
     elif fault in VALUE_FAULTS:
         VALUE_FAULTS[fault][0](m, e)
-    elif fault == "retired_law_id":  # Renamed to nav1p2_m3h_regularized@1 (stage B).
+    elif fault == "retired_law_id":  # Renamed to cells.channel.nav1p2_m3h_regularized@1 (stage B).
         channel["kinetic_law"] = "betse_nav1p2_m3h_regularized@1"
     elif fault == "unknown_law":
-        channel["kinetic_law"] = "nav1p3_m3h_regularized@1"
+        channel["kinetic_law"] = "cells.channel.nav1p3_m3h_regularized@1"
     elif fault == "ion":
         channel["permeant_ions"] = [dict(species_id="K", relative_permeability=1.0)]
     elif fault == "ion_ratio":
@@ -217,7 +217,7 @@ def test_definition_errors_reject(fault):
     elif fault == "missing_channels":
         del m["channels"]
     elif fault.startswith("sparse_field_"):  # FR-17 stage 1: the plain IMEX tableaux alone.
-        x["field_solver"] = "sparse_capacitive_reduction_gauged_damped_newton@1"
+        x["field_solver"] = "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
         x["solver"] = "rk4" if fault.endswith("rk4") else imex.IMPLICIT_CONDUCTANCES_ID
     else:
         m["temperature_K"] = 400.5

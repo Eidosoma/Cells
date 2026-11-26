@@ -1,4 +1,4 @@
-"""FR-20 in cells.assembly_lineages@2: cells.pool_replacement@1, a pulse and a washout
+"""FR-20 in cells.model.assembly_lineages@2: cells.operator.pool_replacement@1, a pulse and a washout
 (docs/ASSEMBLY_WASHOUT_DESIGN.md §7; D240; the lead's conditions of 20 November 2026).
 
 One three-phase world. Two vesicles carry a two-state gate (G <-> H: G speeds the tracer's
@@ -92,7 +92,7 @@ def raw_world():
         step("bind", {"S": 1, "Y": 1}, {"C": 1}, 30.0, phase="membrane"),
     ]  # fmt: skip
     w["rate_factor"] = {
-        "law": "cells.transition_state_factor@1",
+        "law": "cells.rate_factor.transition_state_factor@1",
         "catalysing_phase": "membrane",
         "entries": [{"catalyst": "G", "step": "entry", "ddG_kT": 2.0},
                     {"catalyst": "H", "step": "entry", "ddG_kT": -2.0}],
@@ -669,7 +669,7 @@ def test_a_withdrawal_keeps_every_slot_draws_each_molecule_and_closes_its_books(
 def test_a_withdrawal_books_its_mixing_heat_never_negative_and_its_limits_are_exact():
     """FR-35's booking (D261 item 4), through the operator's booking on the guarded table read:
     the heat is not negative and the books' identity holds in random realizations whose buffer
-    carries the species; at f = 1 the bookings are cells.pool_replacement@1's, with zero heat; the
+    carries the species; at f = 1 the bookings are cells.operator.pool_replacement@1's, with zero heat; the
     mean heat over k ~ Bin(n, f) is FR-27's continuum heat exactly for a tracer-free buffer, and
     exceeds it with a buffer at the pool's own concentration by less than the mixture's binomial
     entropy (the discrete surprisal of which side each molecule came from). Host arithmetic."""

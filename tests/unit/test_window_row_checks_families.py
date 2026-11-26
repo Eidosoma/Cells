@@ -1,4 +1,4 @@
-"""Device row checks on resolved_pump_tissue@2 and on @3 with a declared kind.
+"""Device row checks on cells.model.resolved_pump_tissue@2 and on @3 with a declared kind.
 
 docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9.6, conditions C1 and C2 beyond @1 and the composites:
 @2's calcium pump, and @3 with a declared kind (tests/kind_fixtures.py's exchange), whose

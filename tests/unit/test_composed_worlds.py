@@ -53,7 +53,7 @@ from validation.tissue import field_solver_choice
 from validation.tissue import membrane_trafficking_fixtures as trafficking
 from validation.tissue import surface_pump_v3_fixtures as tissue
 
-OBSERVABLE = "root_component_has_cycle@1"
+OBSERVABLE = "cells.assembly_observable.root_component_has_cycle@1"
 # configure_caches() sets these in os.environ; setting them through a MonkeyPatch restores them.
 CACHES = (
     "TMPDIR",
@@ -100,7 +100,7 @@ def composed_file(ionic=None, *, seeds=SEEDS, channels=DRIVEN, levels=LEVELS, **
                 "channels": list(given),
                 "observable": OBSERVABLE,
                 "levels": dict(levels),
-                "pool": DRIVING | {"model": "finite_bond_assembly@1", "seed": seed} | pool,
+                "pool": DRIVING | {"model": "cells.model.finite_bond_assembly@1", "seed": seed} | pool,
             }
             for given, seed in zip(channels, seeds, strict=True)
         ],
@@ -203,7 +203,7 @@ def declared_at(time, fine=False):
     raw["experiment"]["channel_controls"] = controls(BASE | {"nav_1": [(0.0, 1.0), (time, 0.5)]})
     if fine:
         raw["execution"]["fine_windows"] = {
-            "method": "fixed_fine_windows@1",
+            "method": "cells.execution.fixed_fine_windows@1",
             "dt": 2.5e-5,
             "windows": [{"start_time": 0.001, "end_time": 0.002}],
         }
@@ -502,7 +502,7 @@ REFUSALS = [
     (put(["schema_version"], 2), "Only schema_version 1"),
     (put(["schema_version"], True), "Only schema_version 1"),
     (put(["ionic"], []), "The ionic definition's model is one of .*, not None"),
-    (put(["ionic", "model", "id"], "resolved_pump_tissue@2"), "not 'resolved_pump_tissue@2'"),
+    (put(["ionic", "model", "id"], "cells.model.resolved_pump_tissue@2"), "not 'cells.model.resolved_pump_tissue@2'"),
     (put(["ionic", "experiment", "extra"], 1), "unknown"),
     (put(["pools"], []), "pools is a non-empty list"),
     (put(["pools"], {}), "pools is a non-empty list"),
@@ -514,7 +514,7 @@ REFUSALS = [
     (put(["pools", 1, "channels"], ["kv_9"]), "Pool 1: 'kv_9' is no channel of the ionic"),
     (put(["pools", 1, "channels"], ["nav_0"]), "Channel 'nav_0' is set by pools 0 and 1"),
     (put(["pools", 0, "observable"], "root_component_has_cycle"), "Pool 0: Unknown assembly obs"),
-    (put(["pools", 1, "observable"], "kv1p5_mh@1"), "Pool 1: Unknown .* observable 'kv1p5_mh@1'"),
+    (put(["pools", 1, "observable"], "cells.channel.kv1p5_mh@1"), "Pool 1: Unknown .* observable 'cells.channel.kv1p5_mh@1'"),
     (put(["ionic", "experiment", "end_time"], math.inf), "end time must be finite"),
     (drop("pools", 0, "levels", "true"), r"pool 0: levels: missing=\['true'\]"),
     (put(["pools", 0, "levels", "maybe"], 0.5), r"pool 0: levels: .*unknown=\['maybe'\]"),
@@ -584,25 +584,25 @@ def test_an_operator_that_ends_or_empties_a_driven_cell_is_refused():
         (
             pump_composite_spec.frozen_definition(replaced),
             "kir_0",
-            "scheduled_cell_replacement@1 replaces cell cell_0",
+            "cells.operator.scheduled_cell_replacement@1 replaces cell cell_0",
             "kir_1",
         ),
         (
             partition_fixtures.divided(),
             "kir_0",
-            "isopotential_partition@1 begins or ends cell cell_0",
+            "cells.operator.isopotential_partition@1 begins or ends cell cell_0",
             None,
         ),
         (
             partition_fixtures.divided(),
             "kir_0_d1",
-            "isopotential_partition@1 begins or ends cell d1",
+            "cells.operator.isopotential_partition@1 begins or ends cell d1",
             None,
         ),
         (
             trafficking.with_trafficking(pooled, [route], [plan]),
             "kir_0",
-            "scheduled_membrane_trafficking@1 moves channels out of cell cell_0",
+            "cells.operator.scheduled_membrane_trafficking@1 moves channels out of cell cell_0",
             "kir_1",
         ),
     ]
@@ -671,7 +671,7 @@ def near_far():
             area_m2=1e-10,
             capacitance_F=capacitance,
             permeability_m_per_s=dict(Na=2e-10, K=4e-10, Cl=1e-10),
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             pump=None,
             calcium_pump=None,
         )
@@ -689,15 +689,15 @@ def near_far():
         )
         for k in (0, 1)
         for name, law, permeability, gate in (
-            ("kv", "kv1p5_mh@1", 3e-8, (0.2, 0.7)),
-            ("leak", "kleak_always_open@1", 1e-8, ()),
+            ("kv", "cells.channel.kv1p5_mh@1", 3e-8, (0.2, 0.7)),
+            ("leak", "cells.channel.kleak_always_open@1", 1e-8, ()),
         )
     ]
     finite = dict(reservoir=False, boundary_potential_V=0.0)
     return dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=298.15,
             species=[dict(id=s, valence=z) for s, z in VALENCE.items()],
             cells=[owner("cell_0", 1.0, INSIDE, charge), owner("cell_1", 1.5, INSIDE, charge)],
@@ -714,9 +714,9 @@ def near_far():
                     receiver="cell_1",
                     area_m2=1e-12,
                     permeability_m_per_s=dict.fromkeys(VALENCE, 1e-9),
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     gate=dict(
-                        law="junction_voltage_relaxation@1",
+                        law="cells.junction.junction_voltage_relaxation@1",
                         threshold_voltage_V=0.015,
                         minimum_open_fraction=0.1,
                         initial_gate=0.6,
@@ -731,12 +731,12 @@ def near_far():
                     area_m2=1e-10,
                     length_m=1e-5,
                     diffusivity_m2_per_s=dict(Na=1e-11, K=2e-11, Cl=2e-11),
-                    law="logmean_electrodiffusion@1",
+                    law="cells.route.logmean_electrodiffusion@1",
                 )
                 for a, b in (("near", "far"), ("far", "bath"))
             ],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
             channels=channels,
         ),
@@ -760,8 +760,8 @@ def near_far():
             backend="cpu",
             jit=True,
             precision="float64",
-            solver="imex_ars222_face_electromigration@1",
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            solver="cells.solver.imex_ars222_face_electromigration@1",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=400,
             max_trace_bytes=2**30,
             material_balance_atol_fmol=dict.fromkeys(VALENCE, 1e-10),
@@ -798,7 +798,7 @@ def test_a_definition_with_free_field_offsets_declares_the_floor_solver():
     raw = near_far()
     assert field_solver_choice.free_field_offsets(raw) == 2
     sparse = copy.deepcopy(raw)
-    sparse["execution"]["field_solver"] = "sparse_capacitive_reduction_gauged_damped_newton@1"
+    sparse["execution"]["field_solver"] = "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
     for wrong in (raw, sparse):
         with pytest.raises(ConfigError, match=r"has 2 free field offsets and declares .* \(D147\)"):
             resolve.parse_composed(near_far_file(wrong))

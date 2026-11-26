@@ -114,7 +114,7 @@
     "gpu_memory_fraction": 0.25
   },
   "scope_exclusions": [
-    "Finite closed exterior only. Held-bath calcium input needs an independently bounded nonconserved chemical inventory and is deferred; the earlier resolved_tissue@2/@3 models retains its qualified reservoirs",
+    "Finite closed exterior only. Held-bath calcium input needs an independently bounded nonconserved chemical inventory and is deferred; the earlier cells.model.resolved_tissue@2/@3 models retains its qualified reservoirs",
     "Synthetic manufactured charge backgrounds and concentrations, including exterior Ca=0.02 mM for bounded conserved-pool verification; no measured tissue dataset or biological calibration",
     "Pinned process equations are reused; this does not establish native full BETSE tissue trajectory or screened/finite-difference field equivalence",
     "Maintained ATP/ADP/Pi sources, not a finite metabolic reaction network; synthetic NCX and buffer kinetics",

@@ -1,4 +1,4 @@
-"""na_k_2anion_symport_reversible_tanh@1: the electroneutral symport of one Na+, one K+ and two
+"""cells.cycle.na_k_2anion_symport_reversible_tanh@1: the electroneutral symport of one Na+, one K+ and two
 monovalent anions, in a manufactured rate form (the cycle kind's monomial form).
 
     Na+(P) + K+(P) + 2 A-(P) -> Na+(N) + K+(N) + 2 A-(N)
@@ -43,7 +43,7 @@ from cells.laws.cycles.forms import (
 )
 from cells.modules import Citation, CycleLaw, qualified
 
-LAW_ID = "na_k_2anion_symport_reversible_tanh@1"
+LAW_ID = "cells.cycle.na_k_2anion_symport_reversible_tanh@1"
 DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 COUNTS = (("Na", 1), ("K", 1), ("anion", 2))  # Per forward cycle, from P to N.
 ROWS = tuple((role, end) for role, _ in COUNTS for end in ("N", "P"))
@@ -65,12 +65,12 @@ CYCLE = CycleForm(
 )
 LAW = CycleLaw(
     DECLARED_ID,
-    reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    reads=("cells.binding.rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Three ions moved together: each move is a base row.
     material_term="material_term",  # The kind's: its rate over all the rows it moves.
     electroneutral=True,
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="parity",
     source=Citation(
         "manufactured: the rate form has no outside source. It moved from an older model family's "

@@ -1,4 +1,4 @@
-"""stationary_continuation_analysis@1: stationary states and their stability.
+"""cells.analysis.stationary_continuation_analysis@1: stationary states and their stability.
 
 An opt-in analysis of an ordinary configured world (a definition or a complete
 checkpoint) that answers "where does this world end up, and is a given state
@@ -12,7 +12,7 @@ gates and junction gates); every other field is an accumulating ledger
 (transfers, dissipation, work, electrode charge, pump cycles) that no rate
 reads. A candidate is a vector u of the active dynamical entries in units of
 1 mM (amount / node volume), gate fraction, or 10 mV (fast-mode charge offset /
-node capacitance); the ledgers are held at zero. resolved_pump_water@1 adds the
+node capacitance); the ledgers are held at zero. cells.model.resolved_pump_water@1 adds the
 compliant volumes (VOLUME_FIELDS: cells and finite extracellular nodes, in units
 of 1e-3 of the declared node volume) as dynamical fields of the slow mode; the
 fast mode freezes them with the composition. Models without these fields get
@@ -95,13 +95,13 @@ import scipy.sparse.linalg
 from cells.definitions.specs import ConfigError
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
-ANALYSIS_ID = "stationary_continuation_analysis@1"
+ANALYSIS_ID = "cells.analysis.stationary_continuation_analysis@1"
 MODEL_IDS = (
-    "resolved_pump_tissue@1",
-    "resolved_pump_tissue@2",
-    "resolved_pump_tissue@3",
-    "resolved_pump_water@1",
-    "resolved_pump_water@2",
+    "cells.model.resolved_pump_tissue@1",
+    "cells.model.resolved_pump_tissue@2",
+    "cells.model.resolved_pump_tissue@3",
+    "cells.model.resolved_pump_water@1",
+    "cells.model.resolved_pump_water@2",
 )
 DYNAMIC_FIELDS = (
     "amount_increment",
@@ -109,7 +109,7 @@ DYNAMIC_FIELDS = (
     "channel_gate",
     "junction_gate",
 )
-# Dynamical only in models that declare them (resolved_pump_water@1).
+# Dynamical only in models that declare them (cells.model.resolved_pump_water@1).
 VOLUME_FIELDS = ("volume_increment_pL", "extracellular_volume_increment_pL")
 MODES = ("slow", "fast")
 FORMULATIONS = ("rhs", "step_map")
@@ -163,7 +163,7 @@ PARAMETER_KINDS = {
     "channel_permeability_scale": ("layout", "channel_permeability"),
     "membrane_permeability_scale": ("layout", "membrane_permeability"),
     "junction_permeability_scale": ("layout", "junction_permeability"),
-    # resolved_pump_water@1: water route availability and hydraulic conductance.
+    # cells.model.resolved_pump_water@1: water route availability and hydraulic conductance.
     "water_availability": ("control", "water"),
     "hydraulic_permeability_scale": ("layout", "water_conductance_pL_per_Pa_s"),
 }
@@ -649,11 +649,11 @@ def _carries(p, control, k, m):
 
 
 BLOCK_REFUSAL = (
-    "A blocked channel population (open_channel_block_weighted_modes@1) is refused until a judge "
+    "A blocked channel population (cells.channel_block.open_channel_block_weighted_modes@1) is refused until a judge "
     "reads the block in the stationary analysis (FR-51, fail closed)"
 )
 FORMS_FACE_REFUSAL = (
-    "logmean_electrodiffusion_forms@1's faces join outside nodes outside the faces' arrays, and "
+    "cells.route.logmean_electrodiffusion_forms@1's faces join outside nodes outside the faces' arrays, and "
     "their movers carry several rows: the structural laws read neither (version 1)"
 )
 

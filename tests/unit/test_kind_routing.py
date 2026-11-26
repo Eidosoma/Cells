@@ -1,7 +1,7 @@
 """The routing door and its sink in the passive routes (docs/INNER_MODEL_V4_DESIGN.md §7.4 (n)).
 
-Planted kinds from tests/kind_fixtures.py: `tests.factor@1` exposes constant factors per source
-ID (from its layout), and `tests.sink@1` routes slots of its control `sink_gain` through named
+Planted kinds from tests/kind_fixtures.py: `tests.kind.factor@1` exposes constant factors per source
+ID (from its layout), and `tests.kind.sink@1` routes slots of its control `sink_gain` through named
 sources. On the host:
 - at a stage, a routed slot is its held value times its sources' factors, a left fold in
   declared order, and every kind's hooks receive it; `book` receives the held control;
@@ -116,7 +116,7 @@ def test_binding_refusals():
             parse_spec(heredity(routes=((0, ("f_a",)),), field="membrane"))
         with pytest.raises(ConfigError, match="outside"):
             parse_spec(heredity(routes=((5, ("f_a",)),)))
-    second = kf.factor_source("tests.factor_b@1", "test_factors_b")
+    second = kf.factor_source("tests.kind.factor_b@1", "test_factors_b")
     with kind_registry.scope(registry(second)):
         raw = kf.declare_routing(heredity(), factors={"f_a": 0.2}, key="test_factors_b")
         with pytest.raises(ConfigError, match="is exposed by"):

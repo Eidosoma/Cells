@@ -1,4 +1,4 @@
-"""cells.rate_equations@1, OL6's first slice (S1; docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md).
+"""cells.assembly_representation.rate_equations@1, OL6's first slice (S1; docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md).
 
 The deterministic representation of OL1's laws in a single lineage: its parse and refusals, the
 limit's check with two planted failures (P-D2, a power off by one; P-D7, a shifted μ° in F_cont
@@ -32,7 +32,7 @@ from tests.assembly_lineage_v2_fixtures import CONVENTIONS, definition, species,
 jax.config.update("jax_enable_x64", True)
 
 ENVELOPE = {"min_count": 100.0, "provenance": "a test envelope"}
-INTEGRATOR = {"id": "rosenbrock_rodas4_dense@1", "rtol": 1e-9, "atol_count": 1e-6,
+INTEGRATOR = {"id": "cells.solver.rosenbrock_rodas4_dense@1", "rtol": 1e-9, "atol_count": 1e-6,
               "step_limit": 100000}  # fmt: skip
 
 
@@ -41,7 +41,7 @@ def as_representation(raw, envelope=ENVELOPE, integrator=INTEGRATOR):
     x = out["execution"]
     for key in ("molecule_capacity", "chunk_events"):
         x.pop(key, None)
-    x["representation"] = {"id": "cells.rate_equations@1", "envelope": dict(envelope),
+    x["representation"] = {"id": "cells.assembly_representation.rate_equations@1", "envelope": dict(envelope),
                            "integrator": dict(integrator)}  # fmt: skip
     out["experiment"]["trace"] = False
     return out
@@ -179,7 +179,7 @@ def test_each_limit_tends_to_its_exact_form_as_one_over_the_counts():
     raw = balance.probe_world(rng, "multinomial_less_one", "kept", regular=True, catalysis=True)
     honest = law_registry.active().lookup(MASS_ACTION)
     planted = dataclasses.replace(
-        honest, law_id="tests.limit_off_by_a_constant@1",
+        honest, law_id="tests.reaction.limit_off_by_a_constant@1",
         limit=lambda view, *rest: honest.limit(view, *rest) + 0.1,
     )  # fmt: skip
     for step_ in raw["model"]["world"]["steps"]:
@@ -214,7 +214,7 @@ def test_a_linear_network_follows_its_matrix_exponential(tmp_path):
     records.write_run(tmp_path / "bundle", run)
     record = json.loads((tmp_path / "bundle" / "run.json").read_text())
     assert record["format"] == "cells.rate_equations_run@1" and record["status"] == "complete"
-    assert record["engine_models"]["representation"] == "cells.rate_equations@1"
+    assert record["engine_models"]["representation"] == "cells.assembly_representation.rate_equations@1"
     assert record["ledger"]["closes"] and record["moieties"]["closes"]
     assert all(law["limit_formulas"] for law in record["laws"])
     assert "qualification" not in record["representation"]  # FR-47's status: its paths only
@@ -368,7 +368,7 @@ def _gate_on_a_bilayer(raw):
         w["phases"]["pool"]["species"].append({"id": name, "kind": "finite"})
         w["geometry"]["area_per_leaflet"][name] = {"quanta": K_L, "provenance": "a test"}
         w["founder"] |= {f"{name}@membrane": 1, f"{name}@pool": 0}
-    w["rate_factor"] = {"law": "cells.gate_factor@1", "forms": ["G", "H"],
+    w["rate_factor"] = {"law": "cells.rate_factor.gate_factor@1", "forms": ["G", "H"],
                         "entries": [{"form": "G", "step": "entry", "ddG_kT": 1.0}]}  # fmt: skip
     return as_representation(definition(w), envelope={"min_count": 1.0, "provenance": "a test"})
 
@@ -445,9 +445,9 @@ def _wall_read(reads):
 @pytest.mark.parametrize(
     "raw, words",
     [
-        (_shell(lambda w: w), "site binding in a cells.prescribed_shell@1 world"),
+        (_shell(lambda w: w), "site binding in a cells.assembly_geometry.prescribed_shell@1 world"),
         (_shell(_driven), "a gate driven by bound states, or by anything but its own forms"),
-        (_gate_on_a_bilayer(None), "cells.gate_factor@1 is refused in version 1 outside"),
+        (_gate_on_a_bilayer(None), "cells.rate_factor.gate_factor@1 is refused in version 1 outside"),
         (_wall_read("gate"), "the founder's W@membrane holds 1, below the envelope"),
         (_wall_read("step"), "the founder's W@membrane holds 1, below the envelope"),
         (_inert_on_a_bilayer(None), "J@membrane holds 1, below the envelope"),

@@ -1,4 +1,4 @@
-"""Guard (a) of design §3.7: the empty composition equals resolved_pump_tissue@3, bitwise.
+"""Guard (a) of design §3.7: the empty composition equals cells.model.resolved_pump_tissue@3, bitwise.
 
 On the heredity cell (H and D) and the seven-cell gated held-bath sheet with IMEX
 Euler and ARS(2,2,2) at 1 ms over a horizon with a NaV1.2 and a Na/K pump
@@ -115,7 +115,7 @@ def test_empty_composition_vmap_batch_and_restart(tmp_path):
         assert np.array_equal(np.asarray(x), np.asarray(y)[checkpoint.step_index :])
     summary = write_run(tmp_path / "run", value)
     manifest = json.loads((tmp_path / "run" / "manifest.json").read_text())
-    identity = dict(model=cs.MODEL_ID, inner_model="resolved_pump_tissue@3", operators=[])
+    identity = dict(model=cs.MODEL_ID, inner_model="cells.model.resolved_pump_tissue@3", operators=[])
     assert manifest["composition"] == identity
     assert summary["composition"] == identity
     assert summary["composition_status"] == cs.DEVELOPMENT_STATUS

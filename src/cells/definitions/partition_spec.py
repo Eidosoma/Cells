@@ -1,4 +1,4 @@
-"""Definition helper for isopotential_partition@1 (docs/CELL_DIVISION_S5_DESIGN.md §3.2).
+"""Definition helper for cells.operator.isopotential_partition@1 (docs/CELL_DIVISION_S5_DESIGN.md §3.2).
 
 add_division writes one prescribed division's daughter slots into a raw composite definition
 and returns its division block for the partition declaration. Each daughter slot is declared
@@ -45,7 +45,7 @@ def cytoplasmic_diffusivities(sigma_S_per_m, cytosol_mM, free_diffusivity, valen
 
 def add_bridge(raw, *, junction_id, daughters, aperture_m, diffusivity):
     """Append a cytoplasmic bridge between two daughters (in place); return its bridge block
-    for cytoplasmic_bridge_closure@1 without the closure law (closure, closure_time_s).
+    for cells.operator.cytoplasmic_bridge_closure@1 without the closure law (closure, closure_time_s).
 
     The @3 junction has P_s A = 2 a_0 D_s^cyt (area 2 a_0 x 1 m, permeability D_s^cyt / 1 m)
     and a gate fixed open (minimum open fraction 1, initial gate 1); its availability is 1.
@@ -59,9 +59,9 @@ def add_bridge(raw, *, junction_id, daughters, aperture_m, diffusivity):
             receiver=daughters[1],
             area_m2=2.0 * aperture_m * BRIDGE_LENGTH_M,
             permeability_m_per_s={s: diffusivity.get(s, 0.0) / BRIDGE_LENGTH_M for s in species},
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             gate=dict(
-                law="junction_voltage_relaxation@1",
+                law="cells.junction.junction_voltage_relaxation@1",
                 threshold_voltage_V=0.0,
                 minimum_open_fraction=1.0,
                 initial_gate=1.0,

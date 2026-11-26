@@ -20,7 +20,7 @@ Usage (PYTHONPATH at an execution snapshot, JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
   python -m validation.tissue.sparse_field_qualification windows WORLD SOLVER WINDOWS OUTDIR
   python -m validation.tissue.sparse_field_qualification compare DIR_A DIR_B OUT.json
 WORLD: gj_field_d0, gj_field_d1e-13, gj_line_d0 or gj_line_d1e-13. SOLVER: 2 (version 2) or
-sparse (sparse_capacitive_reduction_gauged_damped_newton@1).
+sparse (cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1).
 """
 
 import json
@@ -32,8 +32,8 @@ from pathlib import Path
 import numpy as np
 
 SOLVERS = {
-    "2": "capacitive_reduction_gauged_damped_newton@2",
-    "sparse": "sparse_capacitive_reduction_gauged_damped_newton@1",
+    "2": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "sparse": "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1",
 }
 
 

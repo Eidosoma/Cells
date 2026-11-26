@@ -1,4 +1,4 @@
-"""Self-tests of the independent references for species_regulated_availability@1
+"""Self-tests of the independent references for cells.operator.species_regulated_availability@1
 (validation/coupling/): R-fac, R-state, R-cell and R-feedback.
 
 They are checked against analytic limits (closed forms, Hill identities, the quasi-steady limit),
@@ -38,7 +38,7 @@ BATH = (140.0, 5.0, 145.0)
 CYT_A, CYT_B = (12.0, 140.0, 30.0), (30.0, 120.0, 30.0)
 LEAK = (1e-10, 2e-9, 5e-10)  # m/s per unit area
 AREA, CAP, VOL = 4e-10, 4e-12, 2.0
-KLEAK = (0.0, 1.0, 0.0)  # kleak_always_open@1's relative permeabilities
+KLEAK = (0.0, 1.0, 0.0)  # cells.channel.kleak_always_open@1's relative permeabilities
 SMALL = dict(cell_charge=1e-15, cleft_charge=1e-17, cell_amount=1e-12, cleft_amount=1e-14,
              heat=1e-15)  # R-tissue's tissue-scale tolerances (its tests' values)
 

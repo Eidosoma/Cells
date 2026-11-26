@@ -52,16 +52,16 @@ def initial(raw=None, time=0.0):
 def test_identity_roundtrip_routes_and_ensemble_registration(backend):
     raw = fixtures.definition(backend=backend)
     model, spec, state, p, _ = initial(raw)
-    assert model.MODEL_ID == "resolved_tissue@8"
+    assert model.MODEL_ID == "cells.model.resolved_tissue@8"
     assert type(p) is model.LAYOUT_TYPE is kinetic.CATALOG_LAYOUT_TYPE
     assert spec == parse_spec(spec.to_dict())
-    assert spec.to_dict()["model"]["id"] == "resolved_tissue@8"
+    assert spec.to_dict()["model"]["id"] == "cells.model.resolved_tissue@8"
     assert len(state) == 19 and state.channel_gate.shape == (2, 40)
     assert state.channel_transferred.shape == state.channel_dissipated_energy_pJ.shape == (4, 40)
     assert set(p.channel_laws[p.channel_active]) == set(range(35))
     assert p.channel_laws[-1] == 0 and not p.channel_active[-1]
     assert (
-        ionic.parse_spec(dict(model="ionic_worlds@1", simulation=raw, worlds=2)).simulation == spec
+        ionic.parse_spec(dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=2)).simulation == spec
     )
     batch = BatchSpec((WorldSpec(11, spec), WorldSpec(71, spec)), 2, 2048, 2**32)
     assert parse_batch(batch.to_dict()) == batch
@@ -79,7 +79,7 @@ def test_declarations_reject_incompatible_catalogs(fault):
     raw = fixtures.definition()
     m, x = raw["model"], raw["execution"]
     if fault == "identity":
-        m["id"] = "resolved_tissue@2"  # An earlier family, whose channels carry one ion each.
+        m["id"] = "cells.model.resolved_tissue@2"  # An earlier family, whose channels carry one ion each.
     elif fault == "law":
         m["channels"][-1]["kinetic_law"] = "invented_leak@1"
     elif fault == "valence":

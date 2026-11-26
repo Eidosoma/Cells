@@ -1,7 +1,7 @@
-"""resolved_pump_tissue@1 and the factored field (surface_field solver version 2).
+"""cells.model.resolved_pump_tissue@1 and the factored field (surface_field solver version 2).
 
 Equivalence: the factored solver reproduces version 1 on every surface-field
-protocol case, and the RK4 identity reproduces resolved_tissue@2 with no
+protocol case, and the RK4 identity reproduces cells.model.resolved_tissue@2 with no
 channels. IMEX: exact explicit/implicit split, family ledgers, observed order,
 bitwise restart, step refusal and CPU/L4 agreement on the small fixtures.
 """
@@ -193,7 +193,7 @@ def test_definition_errors_reject(fault):
         m["temperature_K"] = 199.0
     elif fault == "hot":
         m["temperature_K"] = 400.5
-    elif fault == "retired_gate_law":  # Merged into junction_voltage_relaxation@1 (stage B).
+    elif fault == "retired_gate_law":  # Merged into cells.junction.junction_voltage_relaxation@1 (stage B).
         m["junctions"][0]["gate"]["law"] = "betse_rate_junction_relaxation@1"
     elif fault == "channels":
         m["channels"] = []
@@ -389,12 +389,12 @@ def test_ionic_ensemble_reproduces_the_imex_run(imex_runs):
 
     value = imex_runs["clamped", imex.ARS222_ID]
     raw = value.spec.to_dict()
-    spec = ionic.parse_spec(dict(model="ionic_worlds@1", simulation=raw, worlds=2, window_steps=7))
+    spec = ionic.parse_spec(dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=2, window_steps=7))
     checkpoints, report = ionic.run(spec, backend=BACKEND)
     for checkpoint in checkpoints.values():
         for a, b in zip(checkpoint.state, value.final.state, strict=True):
             np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
-    assert report["physical_model"] == "resolved_pump_tissue@1"
+    assert report["physical_model"] == "cells.model.resolved_pump_tissue@1"
     assert report["final_voltage_axis"] == "membrane_patch"
     np.testing.assert_array_equal(
         report["final_voltage_V"][0], value.observations.membrane_voltage_V[-1, :4]

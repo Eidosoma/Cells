@@ -1,7 +1,7 @@
-"""cell_owned_compartments@1: closed compartments owned by cells, on @3's layout (FR-1, D169).
+"""cells.operator.cell_owned_compartments@1: closed compartments owned by cells, on @3's layout (FR-1, D169).
 
 docs/CLOSED_COMPARTMENT_DESIGN.md. A compartment is a finite outside node of
-resolved_pump_tissue@3 that no face names, bounded by exactly one membrane patch whose inside is its
+cells.model.resolved_pump_tissue@3 that no face names, bounded by exactly one membrane patch whose inside is its
 owner cell (§1.1). Its volume, amounts, fixed charge and charge anchor are @3's own fields of that
 node, and its species are @3's rows there; the patch's area and capacitance are its membrane. The
 node is a free node of @3's capacitor solve, so the bounding patch's voltage is V_b = -q/C_b
@@ -36,7 +36,7 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    checkpoint: where refusal 4 admits charged routes (a world that declares kinds and steps with
    an IMEX tableau; version 1.1), and where an operator of the admitted list moves charge into
    that compartment (its routes, through the contract's charged_compartments: the pool of
-   scheduled_membrane_trafficking@1's routes; version 1.2). Elsewhere (the silent version, and
+   cells.operator.scheduled_membrane_trafficking@1's routes; version 1.2). Elsewhere (the silent version, and
    RK4 without such routes) the content is electroneutral, so q = 0 and V_b = 0. Version 1.2
    reads the composition, so it is checked at the definition with refusal 7, after it;
 6. a node that is the representative of its capacitor component (cells and outside nodes joined by
@@ -53,22 +53,22 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    reference reads (D217): the declaration reads the declared bounding patch as data, its
    identity, so a provider of them is no conflict. Membrane state, which provides them, is
    admitted only together with one of its admitted writers, and only where every writer of its
-   fields is one of them (the membrane-state wall's door): scheduled_membrane_trafficking@1
+   fields is one of them (the membrane-state wall's door): cells.operator.scheduled_membrane_trafficking@1
    (FR-2), whose routes write areas, capacitances and units, and FR-7's unit producer
-   population_unit_turnover@1, which writes units only, never an area or a capacitance (the
+   cells.operator.population_unit_turnover@1, which writes units only, never an area or a capacitance (the
    lead's ruling of 20 November 2026, amending that of 19 November on FR-2's question 11). The
-   producer acts in its populations' cells only, and species_regulated_availability@2 reads its
+   producer acts in its populations' cells only, and cells.operator.species_regulated_availability@2 reads its
    sources in its elements' cells and refuses an outside-node element (FR-7's U2 world with a
    releasing compartment, D217). FR-49 (D327; validation/fr49/REGISTRATION.md, Part H) admits two
    more laws, each with its own check:
-   - templated_polymerisation@1, whose own check refuses an export into a compartment's node and
+   - cells.operator.templated_polymerisation@1, whose own check refuses an export into a compartment's node and
      an outside degradation there (an export into a compartment is a later step, with its books
      at the compartment's node); its routes in the owner's cytosol never touch the compartment;
-   - neutral_arrival_labels@1, refused here beside membrane state (FR-49's ruling 4, World L's
+   - cells.operator.neutral_arrival_labels@1, refused here beside membrane state (FR-49's ruling 4, World L's
      scope): today the labels refuse membrane state's admitted writers anyway, and this check
      names the reason and stays fail closed if the labels' list widens. It runs before the
      membrane-state wall's rule, so its reason is the one given.
-   Site occupancy, the compartment wash and site_occupant_replacement@1 stay off the list until
+   Site occupancy, the compartment wash and cells.operator.site_occupant_replacement@1 stay off the list until
    their own FR-49 pieces land.
 The stationary analysis does not admit the composite (its own ID check).
 
@@ -99,7 +99,7 @@ from cells.operators.contract import Operator, Read
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
 
-LAW_ID = "cell_owned_compartments@1"
+LAW_ID = "cells.operator.cell_owned_compartments@1"
 # Refusal 4's step terms (version 1.3, §3.4.4; docs/CORE_SEAMS_DESIGN.md §4.4 and §18 as amended).
 # Each is a field the cycle and route law types declare (registry/laws.STEP_TERMS, §8.1: its
 # kernel's name, or None), held at the step by the kind hook it maps to: a charge slope in the
@@ -139,33 +139,33 @@ SOURCE_ABSENT = (
 # hold B7's and the kinds' definition-time terms (surface_pump_v3.StepChecks). Refusal 4 admits
 # routes beside a compartment only with an IMEX tableau (§3.4.1).
 RK4_SOLVER = "rk4"
-REPLACEMENT_LAW = "scheduled_cell_replacement@1"
-STATE_LAW = "membrane_entity_state@1"
+REPLACEMENT_LAW = "cells.operator.scheduled_cell_replacement@1"
+STATE_LAW = "cells.operator.membrane_entity_state@1"
 # FR-2's operator (docs/MEMBRANE_RETRIEVAL_DESIGN.md; D217): named here before its module lands,
 # so that the admission is on main for its builder (the lead's ruling of 19 November 2026).
-TRAFFICKING_LAW = "scheduled_membrane_trafficking@1"
+TRAFFICKING_LAW = "cells.operator.scheduled_membrane_trafficking@1"
 # FR-7's unit producer (docs/ABUNDANCE_TO_FUNCTION_DESIGN.md; D217, D232): it writes membrane
 # state's units only, in its populations' cells (the lead's ruling of 20 November 2026).
-PRODUCER_LAW = "population_unit_turnover@1"
+PRODUCER_LAW = "cells.operator.population_unit_turnover@1"
 # FR-49 (D327): expression, whose own check refuses exports and outside degradations at a
 # compartment's node (templated_polymerisation.check_compartments), and the labels, refused here
 # beside membrane state (refuse_labels_beside_membrane_state).
-EXPRESSION_LAW = "templated_polymerisation@1"
-LABELS_LAW = "neutral_arrival_labels@1"
+EXPRESSION_LAW = "cells.operator.templated_polymerisation@1"
+LABELS_LAW = "cells.operator.neutral_arrival_labels@1"
 # §4's admitted list (fails closed). @3 itself is the composite's inner model. Membrane state is
 # admitted only together with one of its admitted writers (check_definition).
 ADMITTED = (
     LAW_ID,
-    "electrode_current_injection@1",
-    "scheduled_species_exchange@1",
-    "scheduled_species_turnover@1",
-    "local_species_reactions@1",
-    "species_regulated_availability@1",
+    "cells.operator.electrode_current_injection@1",
+    "cells.operator.scheduled_species_exchange@1",
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.local_species_reactions@1",
+    "cells.operator.species_regulated_availability@1",
     REPLACEMENT_LAW,
-    "scheduled_bath_composition@1",
+    "cells.operator.scheduled_bath_composition@1",
     STATE_LAW,
     TRAFFICKING_LAW,
-    "species_regulated_availability@2",
+    "cells.operator.species_regulated_availability@2",
     PRODUCER_LAW,
     EXPRESSION_LAW,
     LABELS_LAW,
@@ -603,7 +603,7 @@ def refuse_unwritten_state(entries):
 
 
 def refuse_labels_beside_membrane_state(entries):
-    """7. FR-49's ruling 4 (D327): neutral_arrival_labels@1 is qualified beside a compartment
+    """7. FR-49's ruling 4 (D327): cells.operator.neutral_arrival_labels@1 is qualified beside a compartment
     without membrane state (fr49-compartment-compositions-v1, World L), so a compartment world
     that declares both is refused by name. Today the labels refuse membrane state's admitted
     writers beside a compartment (trafficking and the unit producer), and membrane state alone is

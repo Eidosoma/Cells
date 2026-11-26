@@ -241,8 +241,8 @@ def test_field_solver_is_declared_and_must_match_the_protocol(tmp_path):
     world = adapter.betse_world(case, blind=True)
     start = adapter.phase_start(world, "init")
     floor = adapter.RESOLVED_FLOOR_FIELD_SOLVER
-    assert adapter.RESOLVED_FIELD_SOLVER == "capacitive_reduction_gauged_damped_newton@2"
-    assert floor == "capacitive_reduction_gauged_damped_newton@3"
+    assert adapter.RESOLVED_FIELD_SOLVER == "cells.solver.capacitive_reduction_gauged_damped_newton@2"
+    assert floor == "cells.solver.capacitive_reduction_gauged_damped_newton@3"
     default = adapter.resolved_definition(world, "init", start, dt=1e-3)
     declared = adapter.resolved_definition(world, "init", start, dt=1e-3, field_solver=floor)
     assert default["execution"]["field_solver"] == adapter.RESOLVED_FIELD_SOLVER

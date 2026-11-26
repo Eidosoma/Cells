@@ -25,7 +25,7 @@ def definition(changes=()):
         dict(time=t, availability=1.0) for t in changes
     ]
     return dict(
-        model=dict(id="resolved_pump_tissue@3"),
+        model=dict(id="cells.model.resolved_pump_tissue@3"),
         experiment=dict(channel_controls=[dict(channel_id="cue_0", schedule=schedule)]),
         execution=dict(dt=1e-3, projective=dict(tolerance=dict(TOL))),
     )

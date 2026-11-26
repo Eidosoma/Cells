@@ -369,7 +369,7 @@ def test_the_booked_terms_meet_the_references(name):
 
 
 def test_the_registered_law_declares_the_general_form_and_its_free_energy_is_g_star():
-    """rapid_binding@1 as registered carries seam F's BindingLaw fields. Its forms are the
+    """cells.binding.rapid_binding@1 as registered carries seam F's BindingLaw fields. Its forms are the
     registry's, its envelope and P1's free amounts are the kernel's, and its free_energy is G*,
     bit for bit with booked_terms_pJ's at S3's states. Planted: G* and E_c differ there, so a
     free_energy that returned E_c would be caught."""

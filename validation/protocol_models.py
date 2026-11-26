@@ -4,7 +4,7 @@ Scans every protocol file under validation/ (JSON files whose name contains "pro
 parity protocols in validation/betse/protocols/) for the engine model IDs it names (any string
 equal to a model ID in cells.registry.models, or a composite or operator law ID that
 registry models declare), and reports each file's status line and the models. A protocol is
-affected by D172 when it names resolved_pump_tissue@3 or a model built on it (an operator
+affected by D172 when it names cells.model.resolved_pump_tissue@3 or a model built on it (an operator
 composition, water, replacement, division, species, reactions, coupling); the older families
 (@1, @2 and the rest) are out of scope (the core's summation scope). Read-only.
 Usage: PYTHONPATH=src:. python -m validation.protocol_models [--json OUT]
@@ -49,8 +49,8 @@ def engine_model_ids():
 
 
 def in_scope(model):
-    """D172's scope (the core's summation scope): resolved_pump_tissue@3 and the families built
-    on it (composite, water, replacement); resolved_pump_tissue@1 and @2 and the older families
+    """D172's scope (the core's summation scope): cells.model.resolved_pump_tissue@3 and the families built
+    on it (composite, water, replacement); cells.model.resolved_pump_tissue@1 and @2 and the older families
     are out."""
     name, major = model.split("@")
     if name == "resolved_pump_tissue":

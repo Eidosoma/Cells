@@ -38,7 +38,7 @@ from cells.ensemble.plan import plan
 from cells.registry import model_table
 
 ROOT = Path(cells.__file__).resolve().parents[2]
-MODEL = "tests.planted_ensemble@1"
+MODEL = "tests.model.planted_ensemble@1"
 KIND = "tests.planted_ensemble_kind@1"
 PLANTED = '''"""A planted ensemble family: pure Python, no device, for the protocol alone."""
 
@@ -48,7 +48,7 @@ from types import SimpleNamespace
 
 from cells.ensemble.families import EnsembleAdapter
 
-MODEL = "tests.planted_ensemble@1"
+MODEL = "tests.model.planted_ensemble@1"
 FORM = "{form}"  # How its definitions write the model: a string, or an object with an ID.
 FIELDS = ("worlds", "world_id_start", "seed", "end_time_s", "recording")
 
@@ -325,7 +325,7 @@ def test_the_summary_refuses_an_adapter_family_mixed_with_others(planted, monkey
             "tasks": 1,
         }
     }
-    theirs = {"arm": "arm-b", "worlds": 2, "model": "ionic_worlds@1"}
+    theirs = {"arm": "arm-b", "worlds": 2, "model": "cells.model.ionic_worlds@1"}
     with pytest.raises(ValueError, match="cannot mix an adapter family's results"):
         cli.aggregate([ours, theirs])
     # Planted: an aggregate that writes the controller's own keys, and one that drops an arm.
@@ -349,12 +349,12 @@ def test_today_s_three_keep_their_models_and_their_chains(capsys):
         "ionic_ensemble@1",
     ]
     assert all(families.adapter_of(model) is None for model in families.TODAY.values())
-    data = {"model": "capsid_graph@1", "worlds": 1, "world_id_start": 0, "seed": 1}
+    data = {"model": "cells.model.capsid_graph@1", "worlds": 1, "world_id_start": 0, "seed": 1}
     bound = families.bind_definition(data, worlds=3, world_id_start=5, seed=9)
-    assert bound == {"model": "capsid_graph@1", "worlds": 3, "world_id_start": 5, "seed": 9}
-    assert families.model_of({"id": "capsid_graph@1"}) == families.model_of("capsid_graph@1")
+    assert bound == {"model": "cells.model.capsid_graph@1", "worlds": 3, "world_id_start": 5, "seed": 9}
+    assert families.model_of({"id": "cells.model.capsid_graph@1"}) == families.model_of("cells.model.capsid_graph@1")
     for kind in ("assembly_cell_ensemble@1", "assembly_cluster_ensemble@1"):
-        with pytest.raises(ValueError, match=f"^{kind} is parked: .* resolved_pump_composite@1"):
+        with pytest.raises(ValueError, match=f"^{kind} is parked: .* cells.model.resolved_pump_composite@1"):
             plan(dict(plan_data(), kind=kind), 1)
     for command in ("assembly-cell", "assembly-cluster"):  # And so are their two command lines.
         assert main([command]) == 2

@@ -1,4 +1,4 @@
-"""Step checks bound to a definition (resolved_pump_tissue@1-@3) and clock validation.
+"""Step checks bound to a definition (cells.model.resolved_pump_tissue@1-@3) and clock validation.
 
 core.grid.checked_grid validates a definition's whole declared clock in chunks of
 at most 1024 steps. The pump family's step checks read each chunk's largest step
@@ -313,9 +313,9 @@ def entity(raw, key, name):
 
 
 def plain(**kwargs):
-    """A quiescent secreted-species world as a bare resolved_pump_tissue@3 definition."""
+    """A quiescent secreted-species world as a bare cells.model.resolved_pump_tissue@3 definition."""
     raw = secreted.world(**kwargs)
-    raw["model"]["id"] = "resolved_pump_tissue@3"
+    raw["model"]["id"] = "cells.model.resolved_pump_tissue@3"
     raw["model"].pop("inner_model")
     raw["model"].pop("operators")
     return raw
@@ -436,7 +436,7 @@ def test_a_floating_node_is_one_that_nothing_holds():
     )
     assert first.floating_nodes(model) == {"s"}
     raw = plain()  # ecs_0 is joined to the bath by one face.
-    raw["model"]["faces"][0]["law"] = "logmean_electrodiffusion_forms@1"
+    raw["model"]["faces"][0]["law"] = "cells.route.logmean_electrodiffusion_forms@1"
     contact = entity(raw, "membranes", "contact_0")
     conduct(raw, contact, 3.0 * contact["capacitance_F"] / STEP)
     spec = parse_spec(raw)

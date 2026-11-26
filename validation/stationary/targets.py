@@ -1,7 +1,7 @@
-"""Development driver: stationary_continuation_analysis@1 against its targets.
+"""Development driver: cells.analysis.stationary_continuation_analysis@1 against its targets.
 
 Engine models analysed (unmodified, through cells.analysis.stationary):
-resolved_pump_tissue@1 (default-world cell) and resolved_pump_tissue@3
+cells.model.resolved_pump_tissue@1 (default-world cell) and cells.model.resolved_pump_tissue@3
 (heredity cells, the MG0b cell and a small tissue). The analysis evaluates the
 models' own derivative (model.rhs) and checked IMEX step (model.checked_step).
 
@@ -14,7 +14,7 @@ Parts (each writes PART.json into --output, which must not exist):
             (protocols-draft/mg0b_reduced_predictions.json, dev-04 theory.json)
   tissue    a written D disc of 7 cells in a 61-cell hexagonal sheet
   default_run  the default-world cell run from its INIT end through the
-            qualified windowed runner (resolved_pump_tissue@1, IMEX ARS(2,2,2)),
+            qualified windowed runner (cells.model.resolved_pump_tissue@1, IMEX ARS(2,2,2)),
             to compare the trajectory's end and decay rate with the analysis
 
 References are saved records and independent reduced models; nothing here

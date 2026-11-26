@@ -1,4 +1,4 @@
-"""cells.pool_withdrawal@1: a fraction of a population's well-mixed pool drawn off at declared
+"""cells.operator.pool_withdrawal@1: a fraction of a population's well-mixed pool drawn off at declared
 times, the same volume of a declared buffer added (FR-35; D261; docs/ASSEMBLY_WITHDRAWAL_DESIGN.md).
 
 The experiment declares `{index, kind: withdrawal, times_s, fraction, buffer}`. `fraction` f is in
@@ -35,7 +35,7 @@ of counts c in volume gV, read through the guarded table at V and shifted by −
   (`mixing_heat_kT`), which is −ln of a binomial probability, so never negative;
 - F(after) − F(before) = work − sink − heat exactly, and F is additive over the pool and the
   vesicles, so the books close. Per-event booking is exact either way, since every term is a
-  function of the realized k and the physical f. At f = 1 these are cells.pool_replacement@1's
+  function of the realized k and the physical f. At f = 1 these are cells.operator.pool_replacement@1's
   bookings with zero heat; f = 1 itself is that operator's.
 - **The mean heat:** for n tracers and a tracer-free buffer it is exactly −n(1 − q) ln(1 − f).
   This is FR-27's −n(1 − f) ln(1 − f) where q = f. The extreme fraction shows the largest
@@ -69,7 +69,7 @@ from cells.models.assembly_lineages_v2.interfaces import AssemblyOperator
 from cells.modules import Citation
 from cells.registry import operators as operator_registry
 
-POOL_WITHDRAWAL = "cells.pool_withdrawal@1"
+POOL_WITHDRAWAL = "cells.operator.pool_withdrawal@1"
 KEYS = {"index", "kind", "times_s", "fraction", "buffer"}
 
 
@@ -97,7 +97,7 @@ def parse(entry, world):
     if not 0.0 < fraction < 1.0:
         raise ConfigError(
             f"experiment: a withdrawal's fraction is in (0, 1), not {fraction!r}: 0 withdraws "
-            "nothing, and a whole exchange (1) is cells.pool_replacement@1's"
+            "nothing, and a whole exchange (1) is cells.operator.pool_replacement@1's"
         )
     finite = finite_places(world)
     buffer = entry["buffer"]

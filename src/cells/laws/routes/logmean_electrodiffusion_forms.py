@@ -1,12 +1,12 @@
-"""logmean_electrodiffusion_forms@1: the face law that moves each row a face carries as its forms.
+"""cells.route.logmean_electrodiffusion_forms@1: the face law that moves each row a face carries as its forms.
 
 The face note of docs/MITOCHONDRIA_DESIGN.md ("MT-1b's outer membrane", tag
 mito-mt1b-face-design-2026-11-22, §2-4; its build plan, §7 item 1). A face declares this law in
-place of logmean_electrodiffusion@1, with the same fields (sender, receiver, area, length and one
+place of cells.route.logmean_electrodiffusion@1, with the same fields (sender, receiver, area, length and one
 diffusivity per species). Each row the face carries (a positive diffusivity) moves by Cells' own
 discrete electrodiffusion, the log-mean Nernst-Planck flux of numerics/surface_transport, applied
 to each of its movers:
-- a binder row that the general closure (rapid_binding@1) holds at both of the face's ends moves
+- a binder row that the general closure (cells.binding.rapid_binding@1) holds at both of the face's ends moves
   as its forms f, each at its own valence z_f and the row's diffusivity (one class per binder):
   J_f = (D A/L) logmean(c_f,s, c_f,r) [ln(c_f,s/c_f,r) + z_f F dphi/RT]; the binder row changes by
   sum_f J_f and each ligand row by sum_f n_f,l J_f, so a bound form carries its ligands;
@@ -22,11 +22,11 @@ through cells.modules); the kernels are numerics/surface_transport.forms_face_tr
 numerics/surface_imex's forms twins, which take the movers' end concentrations, valences, factors
 and row stoichiometry and know nothing of the closure.
 
-Provenance: parity with logmean_electrodiffusion@1, whose expression it applies to each mover; a
+Provenance: parity with cells.route.logmean_electrodiffusion@1, whose expression it applies to each mover; a
 face whose rows are all their own form steps as today's face, bitwise, which its test checks with
 a planted error. The forms, their valences and their classes' diffusivities are the definition's.
 
-Forms faces are their own entity set in resolved_pump_tissue@3 (models/surface_pump_v3), statically
+Forms faces are their own entity set in cells.model.resolved_pump_tissue@3 (models/surface_pump_v3), statically
 absent unless declared, so no plain face, layout or program of a world without one changes (D148
 case 2). Version 1 runs on the plain IMEX tableaux only: RK4, N2, the projective mode and the
 composite families refuse it, and so does FR-42 for a labelled row a forms face moves.
@@ -38,8 +38,8 @@ import numpy as np
 
 from cells.modules import RouteLaw
 
-LAW_ID = "logmean_electrodiffusion_forms@1"
-CLOSURE_READ_ID = "rapid_binding@1"  # The general closure whose forms a forms face moves.
+LAW_ID = "cells.route.logmean_electrodiffusion_forms@1"
+CLOSURE_READ_ID = "cells.binding.rapid_binding@1"  # The general closure whose forms a forms face moves.
 LAW = RouteLaw(
     LAW_ID,
     ("face",),
@@ -47,8 +47,8 @@ LAW = RouteLaw(
     "the rows a face carries: the Nernst-Planck flux at each form's logarithmic-mean "
     "concentration, a binder's bound forms carrying their ligands (docs/MITOCHONDRIA_DESIGN.md, "
     "MT-1b's outer membrane, a design, not a reproduction of a paper)",
-    host="cells.resolved_pump_tissue@3",
-    provenance="parity",  # logmean_electrodiffusion@1's expression per mover (module docstring).
+    host="cells.model.resolved_pump_tissue@3",
+    provenance="parity",  # cells.route.logmean_electrodiffusion@1's expression per mover (module docstring).
     test=(
         "tests/unit/test_rapid_binding_world.py::"
         "test_a_forms_face_of_rows_as_themselves_steps_as_todays_face"
@@ -78,7 +78,7 @@ class Movers(NamedTuple):
 
 
 def general_closure(model):
-    """The general closure's declaration (rapid_binding@1) among the model's kinds, or None."""
+    """The general closure's declaration (cells.binding.rapid_binding@1) among the model's kinds, or None."""
     for _, declaration in getattr(model, "kinds", ()):
         if getattr(declaration, "read_id", None) == CLOSURE_READ_ID and hasattr(
             declaration, "closure_rows"

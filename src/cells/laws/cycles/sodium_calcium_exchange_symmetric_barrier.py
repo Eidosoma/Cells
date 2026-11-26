@@ -1,4 +1,4 @@
-"""sodium_calcium_exchange_symmetric_barrier@1: the exchange of three Na+ for one Ca2+, a fuel-free
+"""cells.cycle.sodium_calcium_exchange_symmetric_barrier@1: the exchange of three Na+ for one Ca2+, a fuel-free
 electrogenic cycle in the cycle kind's monomial form. Its rate form is synthetic.
 
     3 Na+(P) + Ca2+(N) -> 3 Na+(N) + Ca2+(P)
@@ -52,7 +52,7 @@ from cells.laws.cycles.forms import (
 )
 from cells.modules import Citation, CitedWork, CycleLaw, qualified
 
-LAW_ID = "sodium_calcium_exchange_symmetric_barrier@1"
+LAW_ID = "cells.cycle.sodium_calcium_exchange_symmetric_barrier@1"
 DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 NA_N, NA_P = Reference("Na", "N"), Reference("Na", "P")
 CA_N, CA_P = Reference("Ca", "N"), Reference("Ca", "P")
@@ -101,12 +101,12 @@ CYCLE = CycleForm(
 # which of the two forms stays is decided when it lands (D210, D211).
 LAW = CycleLaw(
     DECLARED_ID,
-    reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    reads=("cells.binding.rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
     stage_term="stage_term",  # The kind's: its charge slope at both ends.
     material_term="material_term",  # The kind's: its rate over all the rows it moves.
     forms="base",  # Two ions exchanged: each move is a base row.
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="parity",
     source=Citation(
         "only the 3:1 coupling, so the reversal, is supported, by measured reversals of the "

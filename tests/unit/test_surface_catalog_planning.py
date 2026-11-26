@@ -35,7 +35,7 @@ def test_expanded_catalog_keeps_worlds_on_one_four_and_sixteen_gpu_plans():
     for task in baseline["tasks"]:
         definition = parse_definition(task["definition"])
         group = population(definition)
-        assert definition.simulation.to_dict()["model"]["id"] == "resolved_tissue@8"
+        assert definition.simulation.to_dict()["model"]["id"] == "cells.model.resolved_tissue@8"
         assert len(definition.simulation.model.channels) == 39
         assert group.seed == raw["seed"]
         counts[task["arm"]] += group.worlds

@@ -1,4 +1,4 @@
-"""The always-open chloride leak on @3, clleak_always_open@1 (D228 item 3, the H1 seam's Cl⁻ part;
+"""The always-open chloride leak on @3, cells.channel.clleak_always_open@1 (D228 item 3, the H1 seam's Cl⁻ part;
 seam F), each claim with a planted error it must catch (D187):
 
 - it is declared on the template: gate-free, its permeant ion Cl⁻ at valence -1, code 10, with
@@ -92,7 +92,7 @@ def one_step(raw):
 
 def test_the_chloride_leak_is_declared_and_registered_on_at3():
     law = clleak.LAW
-    assert law.errors() == [] and law.law_id == clleak.LAW_ID == "clleak_always_open@1"
+    assert law.errors() == [] and law.law_id == clleak.LAW_ID == "cells.channel.clleak_always_open@1"
     assert (law.code, law.gates, law.permeant) == (10, (), (("Cl", -1, 1.0),))
     assert (law.rk4_step_s, law.kinetics, law.opening, law.reads) == (None, None, None, ())
     assert law.voltage_domain_V == (-0.120, 0.060) and not law.gated
@@ -104,13 +104,13 @@ def test_the_chloride_leak_is_declared_and_registered_on_at3():
     assert callable(globals()[test_name])
     registry = law_registry.active()
     assert registry.lookup(law.law_id) is law and registry.module(law.law_id) == clleak.__name__
-    assert clleak.__name__ in MODELS["resolved_pump_tissue@3"].law_homes
+    assert clleak.__name__ in MODELS["cells.model.resolved_pump_tissue@3"].law_homes
     assert spec3.law_codes()[law.law_id] == 10 and spec3.gate_counts()[law.law_id] == 0
     assert spec3.law_permeabilities()[law.law_id] == (("Cl", 1.0),)
     assert law.law_id not in spec3.LAW_CODES
     assert {species: valence for species, valence, _ in law.permeant} == {"Cl": -1}
     with pytest.raises(ValueError, match="channel codes are distinct"):  # Planted: its code taken.
-        law_registry.BUILTIN.extended(dataclasses.replace(law, law_id="tests.cl_twin@1"))
+        law_registry.BUILTIN.extended(dataclasses.replace(law, law_id="tests.channel.cl_twin@1"))
 
 
 def test_a_chloride_population_parses_on_its_patch_at_valence_minus_one():

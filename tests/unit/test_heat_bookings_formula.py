@@ -6,7 +6,7 @@ non-negative, and the state is the tableau run's bit for bit. A declared kind's 
 planted conversion kind, declared heat and monotone and admitting the trapezoid) is booked by the
 same code; a kind that admits nothing is refused.
 
-The faces' exact booking (exact_free_energy_heat@1, D280; CORE_SEAMS_DESIGN §6.5), on the trace
+The faces' exact booking (cells.heat.exact_free_energy_heat@1, D280; CORE_SEAMS_DESIGN §6.5), on the trace
 start that the tableau's face heat refuses (SECRETED_SPECIES_TRANSPORT_DESIGN §11.4): the default
 refuses its energy ledger at row 1, the exact booking closes it to rounding at every row, and the
 state is the default's bit for bit, at the trace and at 0.1 mM; a share planted below its floor
@@ -85,7 +85,7 @@ def test_the_booked_heat_is_the_trapezoid_and_the_state_is_the_tableaus():
 
 
 def _booked_conversion():
-    """tests.conversion@1 with its heat declared heat and monotone, admitting the trapezoid."""
+    """tests.kind.conversion@1 with its heat declared heat and monotone, admitting the trapezoid."""
     base = kf.conversion()
     return dataclasses.replace(
         base,

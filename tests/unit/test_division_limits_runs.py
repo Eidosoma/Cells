@@ -63,7 +63,7 @@ def passive(raw):
     raw["experiment"]["channel_controls"] = []
     raw["execution"]["channel_capacity"] = 0
     for block in raw["model"]["operators"]:
-        if block["law"] == "membrane_entity_state@1":
+        if block["law"] == "cells.operator.membrane_entity_state@1":
             block["populations"] = []
         for division in block.get("divisions", []):
             division["populations"] = []

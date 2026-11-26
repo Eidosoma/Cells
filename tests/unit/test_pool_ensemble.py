@@ -16,7 +16,7 @@ def experiment():
             {
                 "id": name,
                 "definition": {
-                    "model": "finite_bond_assembly@1",
+                    "model": "cells.model.finite_bond_assembly@1",
                     "initial_nodes": nodes,
                     "end_time_s": 0.1,
                     "event_chunk_size": 16,
@@ -41,14 +41,14 @@ def test_finite_family_plan_and_kind_refusal():
     data = experiment()
     planned = plan(data, 1)
     assert planned["worlds"] == 32 and len(planned["tasks"]) == 4
-    assert {t["definition"]["model"] for t in planned["tasks"]} == {"finite_bond_assembly@1"}
+    assert {t["definition"]["model"] for t in planned["tasks"]} == {"cells.model.finite_bond_assembly@1"}
     data["kind"] = "assembly_ensemble@1"
     with pytest.raises(ValueError, match="kind"):
         plan(data, 1)
 
 
 def test_full_cage_completion_requires_all_bonds():
-    spec = parse_definition({"model": "finite_bond_assembly@1", "worlds": 2})
+    spec = parse_definition({"model": "cells.model.finite_bond_assembly@1", "worlds": 2})
     state = initial_state(spec)
     state.first_passage_s[:, 20] = 0.1
     assert (first_completion(spec, state) == -1).all()
@@ -57,7 +57,7 @@ def test_full_cage_completion_requires_all_bonds():
 
 
 def test_aggregation_keeps_finite_material_and_completion_semantics():
-    spec = parse_definition({"model": "finite_bond_assembly@1", "worlds": 2})
+    spec = parse_definition({"model": "cells.model.finite_bond_assembly@1", "worlds": 2})
     result = summary(spec, initial_state(spec)) | {
         "arm": "ring",
         "completed_shells": 0,

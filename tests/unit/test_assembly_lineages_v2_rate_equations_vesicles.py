@@ -1,4 +1,4 @@
-"""cells.rate_equations@1's vesicles (OL6 slice S2; the OL6 design note's §1.4, §3).
+"""cells.assembly_representation.rate_equations@1's vesicles (OL6 slice S2; the OL6 design note's §1.4, §3).
 
 Closed forms and identities only, never a comparison with exact events (D304: Protocol D is
 registered before any such reading). A deflating vesicle crosses the lumen's kink (a restart) and
@@ -36,7 +36,7 @@ jax.config.update("jax_enable_x64", True)
 Q, K_L, NA, C_EXT_MM, CLOSE = 1e-19, 60, 6.02214076e23, 1000.0, 25.0
 U = "unsourced; test"
 ENVELOPE = {"min_count": 100.0, "provenance": "a test envelope"}
-INTEGRATOR = {"id": "rosenbrock_rodas4_dense@1", "rtol": 1e-9, "atol_count": 1e-6,
+INTEGRATOR = {"id": "cells.solver.rosenbrock_rodas4_dense@1", "rtol": 1e-9, "atol_count": 1e-6,
               "step_limit": 100000}  # fmt: skip
 
 
@@ -87,7 +87,7 @@ def as_representation(raw):
     x = out["execution"]
     for key in ("molecule_capacity", "chunk_events"):
         x.pop(key, None)
-    x["representation"] = {"id": "cells.rate_equations@1", "envelope": dict(ENVELOPE),
+    x["representation"] = {"id": "cells.assembly_representation.rate_equations@1", "envelope": dict(ENVELOPE),
                            "integrator": dict(INTEGRATOR)}  # fmt: skip
     out["experiment"]["trace"] = False
     return out

@@ -1,12 +1,12 @@
-"""Engine worlds for the gap-junction cancer replication (resolved_pump_tissue@3 as it is).
+"""Engine worlds for the gap-junction cancer replication (cells.model.resolved_pump_tissue@3 as it is).
 
 Nothing here adds physics. The worlds use @3's own laws:
-* constant_field@1 on membranes and junctions, for one neutral species `mR` (valence 0, so the
+* cells.route.constant_field@1 on membranes and junctions, for one neutral species `mR` (valence 0, so the
   constant-field flux is Fick's flux P A (c_out - c_in));
-* held reservoirs (resolved_capacitor_components_current_continuity@1 closes the field; with no
+* held reservoirs (cells.field_closure.resolved_capacitor_components_current_continuity@1 closes the field; with no
   charged species every voltage is zero);
-* junction_voltage_relaxation@1 gates pinned open (minimum open fraction 1);
-* the IMEX solver imex_ars222_face_electromigration@1, whose explicit-rate bound covers neutral
+* cells.junction.junction_voltage_relaxation@1 gates pinned open (minimum open fraction 1);
+* the IMEX solver cells.solver.imex_ars222_face_electromigration@1, whose explicit-rate bound covers neutral
   species on membranes and junctions (surface_pump.neutral_material_rate).
 
 The linear communication network is the preprint's "intuitive model" (its equations 1-2 and
@@ -43,9 +43,9 @@ K_DEC_PER_S = 0.05
 G_EQ1_M3_S = K_DEC_PER_S * V_CELL_PL * 1e-15  # One cell's Norton (decay) conductance.
 JUNCTION_AREA_M2 = 1e-11
 SPECIFIC_CAPACITANCE_F_M2 = 0.05
-SOLVER = "imex_ars222_face_electromigration@1"
-FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
-GATE_LAW = "junction_voltage_relaxation@1"
+SOLVER = "cells.solver.imex_ars222_face_electromigration@1"
+FIELD_SOLVER = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
+GATE_LAW = "cells.junction.junction_voltage_relaxation@1"
 # dt times @3's explicit rate (its stability bound is 1) at most 0.04. The binding constraint is
 # @3's energy check (2e-3 of the booked flows under ARS(2,2,2)), not stability. Two dt studies
 # (gap-junction-20261117/runs/smoke-01/dt_fig5net100.json, runs/dev-01/dt_fig3g50.json):
@@ -114,7 +114,7 @@ def _membrane(membrane_id, cell_id, outside_id, conductance_m3_s, size):
         area_m2=area,
         capacitance_F=SPECIFIC_CAPACITANCE_F_M2 * area,
         permeability_m_per_s={SPECIES: conductance_m3_s / area},
-        law="constant_field@1",
+        law="cells.route.constant_field@1",
         pump=None,
         calcium_pump=None,
     )
@@ -142,7 +142,7 @@ def step(cells, edges, probes):
 
 
 def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S, dt=None):
-    """A resolved_pump_tissue@3 definition of linear cells joined by junctions.
+    """A cells.model.resolved_pump_tissue@3 definition of linear cells joined by junctions.
 
     cells: (id, unloaded mM, size), size scaling the volume and so G_eq = size G_EQ1;
     edges: (id, i, j, g) with G_GJ = g G_EQ1; probes: (id, i, held mM, g), an extra membrane of
@@ -170,7 +170,7 @@ def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S,
             receiver=cells[j][0],
             area_m2=JUNCTION_AREA_M2,
             permeability_m_per_s={SPECIES: junction_scale * g * G_EQ1_M3_S / JUNCTION_AREA_M2},
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             gate=dict(
                 law=GATE_LAW, threshold_voltage_V=0.0, minimum_open_fraction=1.0, initial_gate=1.0
             ),
@@ -186,7 +186,7 @@ def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S,
     return dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=310.0,
             species=[dict(id=SPECIES, valence=0)],
             cells=model_cells,
@@ -195,7 +195,7 @@ def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S,
             junctions=junctions,
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
             channels=[],
         ),
@@ -281,7 +281,7 @@ def chain(n, held, *, g=1.0, g_probe=1.0, unloaded=1.0):
 
 def junction_route_reaction(junction_permeability_m_s):
     """A two-cell composite world in which the neutral species S has a junction route (when the
-    permeability is positive) and local_species_reactions@1 makes S in both cells: the
+    permeability is positive) and cells.operator.local_species_reactions@1 makes S in both cells: the
     preprint's miRNA, which is made and destroyed in each cell and crosses junctions."""
     from validation.tissue import secreted_species_fixtures as sfx
     from validation.tissue import species_reactions_fixtures as rfx
@@ -306,7 +306,7 @@ def junction_route_reaction(junction_permeability_m_s):
 
 def junction_route_passive():
     """junction_route_reaction's world with no @3 junction route for S, carried instead by a
-    cells.passive_routes@1 route (passive_neutral_permeation@1) on the junction."""
+    cells.kind.passive_routes@1 route (cells.route.passive_neutral_permeation@1) on the junction."""
     raw = junction_route_reaction(0.0)
     raw["model"]["passive_routes"] = [
         dict(id="s_route", junction="j_0", law=PASSIVE_LAW, species="S", permeability_m_per_s=1e-9)
@@ -315,7 +315,7 @@ def junction_route_passive():
 
 
 def emt_switch_probe(cells=(("cell_0", 1.0),), junctions=()):
-    """One cell with the preprint's EMT switch written as local_species_reactions@1 reactions:
+    """One cell with the preprint's EMT switch written as cells.operator.local_species_reactions@1 reactions:
     the structure of its Figure 2 and Methods with synthetic values (the preprint prints none).
 
     miR200 (u) and Zeb mRNA (m) are made at rate g (1 + lambda x^n/K^n) / (1 + x^n/K^n) of ZEB (z),
@@ -376,15 +376,15 @@ def emt_switch_probe(cells=(("cell_0", 1.0),), junctions=()):
 
 AS_WRITTEN_SCALE_mM = 1e-3  # One unit of the preprint's [mR] is 1 uM here: a trace beside the ions.
 AS_WRITTEN_SPECIES = "S"  # The inventory species the fixtures declare (neutral, trace background).
-PASSIVE_LAW = "passive_neutral_permeation@1"
+PASSIVE_LAW = "cells.route.passive_neutral_permeation@1"
 
 
 def as_written(network, *, dt=None, end=END_S, junction_scale=1.0):
-    """The preprint's linear cells as it writes them, in resolved_pump_composite@1 over @3.
+    """The preprint's linear cells as it writes them, in cells.model.resolved_pump_composite@1 over @3.
 
-    Each cell: generation K_dec u and first-order decay K_dec (local_species_reactions@1: one
+    Each cell: generation K_dec u and first-order decay K_dec (cells.operator.local_species_reactions@1: one
     zeroth-order source per unloaded value at its cells, one decay at every cell). Each junction:
-    a cells.passive_routes@1 route of passive_neutral_permeation@1 for the species, P A = g G_eq1,
+    a cells.kind.passive_routes@1 route of cells.route.passive_neutral_permeation@1 for the species, P A = g G_eq1,
     its junction's gate pinned open. Each probe: the same law on a patch from the port cell to its
     own held bath. The ions sit at the bath's composition with zero permeability (the species-only
     world of the secreted-species fixtures), so nothing but the species moves. Volumes, G_eq and

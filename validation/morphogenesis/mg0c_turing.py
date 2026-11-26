@@ -1,11 +1,11 @@
-"""MG0c: Turing patterning at the predicted wavelength, local_species_reactions@1's first acceptance
+"""MG0c: Turing patterning at the predicted wavelength, cells.operator.local_species_reactions@1's first acceptance
 (D152 version 1; docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §6.4, with §11 and §11.2).
 
 Engine models run, unmodified (IMEX ARS(2,2,2), CPU, float64):
-  resolved_pump_composite@1 (src/cells/models/pump_composite.py) over resolved_pump_tissue@3
+  cells.model.resolved_pump_composite@1 (src/cells/models/pump_composite.py) over cells.model.resolved_pump_tissue@3
   (src/cells/definitions/surface_pump_v3_spec.py, src/cells/models/surface_pump_v3.py) with
-  local_species_reactions@1 (src/cells/operators/species_reactions.py): driven mass action
-  for Schnakenberg, and ideal_detailed_balance_mass_action@1 in a linear world. The network's
+  cells.operator.local_species_reactions@1 (src/cells/operators/species_reactions.py): driven mass action
+  for Schnakenberg, and cells.species_reaction.ideal_detailed_balance_mass_action@1 in a linear world. The network's
   species are declared by cells.registry.inventory_species (D150).
 
 The world (§6.4): a closed chain of N finite outside nodes of one volume V = 0.5 pL at spacing
@@ -106,7 +106,7 @@ AMPLITUDE = 1e-7  # Q1's single-mode starts, of c*.
 NOISE = 1e-3  # Q2, Q3 and Q6's seeded noise, of c*.
 ION_SPECIES = (("Na", 1), ("K", 1), ("Cl", -1))
 BATH_MM = dict(Na=145.0, K=5.0, Cl=150.0)
-IMEX = "imex_ars222_face_electromigration@1"
+IMEX = "cells.solver.imex_ars222_face_electromigration@1"
 DOMAINS = {6: 12, 8: 16, 11: 22, 16: 32}  # L/l: nodes at h = l/2.
 DTS = (0.05, 0.025, 0.0125)
 STAIRCASE = tuple(4.0 + 0.5 * i for i in range(53))  # 4 to 30 (amended at milestone 1, §11).
@@ -150,7 +150,7 @@ def _patch(name, inside, outside, area, capacitance):
         area_m2=area,
         capacitance_F=capacitance,
         permeability_m_per_s={s: 0.0 for s, _ in ION_SPECIES},
-        law="constant_field@1",
+        law="cells.route.constant_field@1",
         pump=None,
         calcium_pump=None,
     )
@@ -262,7 +262,7 @@ def chain_world(
             area_m2=AREA_M2,
             length_m=SPACING_M,
             diffusivity_m2_per_s={s: 0.0 for s, _ in ION_SPECIES},
-            law="logmean_electrodiffusion@1",
+            law="cells.route.logmean_electrodiffusion@1",
         )
         for i in range(n_nodes - 1 if faces else 0)
     ]
@@ -270,7 +270,7 @@ def chain_world(
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=310.0,
             species=[dict(id=s, valence=z) for s, z in ION_SPECIES],
             cells=[_node("cell", 1.0, outside=False)],
@@ -279,7 +279,7 @@ def chain_world(
             junctions=[],
             faces=face_list,
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
             channels=[],
         ),
@@ -306,7 +306,7 @@ def chain_world(
             jit=True,
             precision="float64",
             solver=solver,
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=int(math.ceil(end / dt)) + 8,
             max_trace_bytes=2**31,
             material_balance_atol_fmol={s: 1e-10 for s, _ in ION_SPECIES},

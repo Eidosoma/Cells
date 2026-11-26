@@ -165,7 +165,7 @@ def closed_patch(steps=200, dt=4.7e-5):
             outside=outside,
             area_m2=capacitance / 1e-2,
             capacitance_F=capacitance,
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             pump=None,
             permeability_m_per_s=dict(Na=0.0, K=permeability, M=permeability, P=0.0),
         )
@@ -179,7 +179,7 @@ def closed_patch(steps=200, dt=4.7e-5):
     return dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@1",
+            id="cells.model.resolved_pump_tissue@1",
             temperature_K=310.0,
             species=[dict(id=s, valence=v) for s, v in z.items()],
             cells=[node("cell_0")],
@@ -192,7 +192,7 @@ def closed_patch(steps=200, dt=4.7e-5):
             junctions=[],
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
         ),
         experiment=dict(
@@ -216,7 +216,7 @@ def closed_patch(steps=200, dt=4.7e-5):
             jit=True,
             precision="float64",
             solver=imex.ARS222_ID,
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=steps + 8,
             max_trace_bytes=2**30,
             material_balance_atol_fmol=dict.fromkeys(z, 1e-10),
@@ -363,14 +363,14 @@ def anchor_world(amounts, volume, background, anchor, dt=4.7e-5):
         outside="bath_0",
         area_m2=capacitance / 1e-2,
         capacitance_F=capacitance,
-        law="constant_field@1",
+        law="cells.route.constant_field@1",
         pump=None,
         permeability_m_per_s=dict.fromkeys(ANCHOR_Z, 0.0),
     )
     return dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@1",
+            id="cells.model.resolved_pump_tissue@1",
             temperature_K=291.15,
             species=[dict(id=s, valence=v) for s, v in ANCHOR_Z.items()],
             cells=[
@@ -399,7 +399,7 @@ def anchor_world(amounts, volume, background, anchor, dt=4.7e-5):
             junctions=[],
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
         ),
         experiment=dict(
@@ -422,7 +422,7 @@ def anchor_world(amounts, volume, background, anchor, dt=4.7e-5):
             jit=True,
             precision="float64",
             solver=imex.ARS222_ID,
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=8,
             max_trace_bytes=2**30,
             material_balance_atol_fmol=dict.fromkeys(ANCHOR_Z, 1e-10),

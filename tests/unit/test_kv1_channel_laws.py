@@ -20,9 +20,9 @@ safeguard).
   own declaration from its module, under its code, while today's five keep their rows and stay
   the full catalogue's (planted: a registry without one of the five).
 
-And the calcium channel law beside them, cav1p2_m2h@1 (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md
+And the calcium channel law beside them, cells.channel.cav1p2_m2h@1 (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md
 §5.2; code 11, Ca²⁺ at valence 2). The rows that plant another record of it (a valence, a term or an
-RK4 bound of their own) use a twin, its kernels under tests.calcium_twin@1 (code 99).
+RK4 bound of their own) use a twin, its kernels under tests.channel.calcium_twin@1 (code 99).
 - It is declared and registered on @3, its Citation kept as its source and its material term named
   for the kernel that the host runs (test_calcium_store.py), and a definition that names it is
   admitted (planted, each refused: a material term that is not a name, and a second law at its
@@ -79,7 +79,7 @@ BETSE_PYTHON = "/mnt/workspaces/Cells/venv-betse/bin/python"
 PROTOCOL = ROOT / "validation/tissue/surface_calcium_kv1_protocol.json"
 LAWS = {1: kv1p1_mh2, 2: kv1p2_mh, 3: kv1p3_mh, 4: kv1p4_mh, 6: kv1p6_mh}  # BETSE family -> law
 CODES = {kv1p1_mh2: 5, kv1p2_mh: 6, kv1p3_mh: 7, kv1p4_mh: 8, kv1p6_mh: 9}  # @3's channel codes
-HOST3 = "cells.resolved_pump_tissue@3"
+HOST3 = "cells.model.resolved_pump_tissue@3"
 TODAYS_CODES = {  # Today's five rows, codes 0-4, which the Kv1 laws leave as they were.
     spec3.KV1P5_LAW_ID: 0,
     spec3.KIR2P1_LAW_ID: 1,
@@ -257,7 +257,7 @@ def test_each_law_is_declared_on_the_template_and_held_until_at3_reads_the_regis
     Kv1 trigger), so the collected test IDs stay the base's: each law is now registered on @3."""
     hosted = law_registry.active().laws(law_registry.CHANNEL_LAW, HOST3)
     today = {law.code for law in hosted if law.law_id in TODAYS_CODES}
-    at3_homes = MODELS["resolved_pump_tissue@3"].law_homes
+    at3_homes = MODELS["cells.model.resolved_pump_tissue@3"].law_homes
     for law, code in CODES.items():
         declared = law.LAW
         assert declared.errors() == [] and declared.law_id == law.LAW_ID and declared.code == code
@@ -296,7 +296,7 @@ def test_each_law_is_declared_on_the_template_and_held_until_at3_reads_the_regis
 
 # ------------------------------------------------------------------ the calcium law
 
-TWIN = "tests.calcium_twin@1"
+TWIN = "tests.channel.calcium_twin@1"
 CALCIUM_GATES = (0.2, 0.7)
 NO_TERM = (
     "Channel ca_0: {law} carries Ca, which is not Na, K or Cl, and declares no material_term; the "
@@ -305,7 +305,7 @@ NO_TERM = (
 
 
 def twin(**changes):
-    """A planted law with cav1p2_m2h@1's record and kernels, its material term included (code 99,
+    """A planted law with cells.channel.cav1p2_m2h@1's record and kernels, its material term included (code 99,
     reserved for plants); `changes` plant the rest."""
     planted = dataclasses.replace(cav1p2_m2h.LAW, law_id=TWIN, code=99)
     return dataclasses.replace(planted, **changes)
@@ -356,7 +356,7 @@ def test_the_calcium_law_is_declared_and_registered_on_at3():
     assert callable(globals()[test_name])
     registry = law_registry.active()
     assert registry.lookup(law.law_id) is law and registry.module(law.law_id) == cav1p2_m2h.__name__
-    assert cav1p2_m2h.__name__ in MODELS["resolved_pump_tissue@3"].law_homes
+    assert cav1p2_m2h.__name__ in MODELS["cells.model.resolved_pump_tissue@3"].law_homes
     assert spec3.law_codes()[law.law_id] == 11 and spec3.gate_counts()[law.law_id] == 2
     assert spec3.law_permeabilities()[law.law_id] == (("Ca", 1.0),)
     assert law.law_id not in spec3.LAW_CODES

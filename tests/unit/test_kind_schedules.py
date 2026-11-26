@@ -1,6 +1,6 @@
 """Time-varying kind controls: schedules on the step grid (docs/INNER_MODEL_V4_DESIGN.md §7.4 (l)).
 
-tests/kind_fixtures.py's scheduled exchange (`tests.exchange@1` with its availability under the
+tests/kind_fixtures.py's scheduled exchange (`tests.kind.exchange@1` with its availability under the
 experiment key `test_exchange_controls`, registered from outside src/cells on a test-local
 registry) moves the neutral species B from a heredity cell to its outside node at the declared
 rate times its availability. At the definition, on the host (test_kind_schedules_runs.py runs it):
@@ -121,7 +121,7 @@ def test_refusals():
             parse_spec(world(((0.0, 1.0), (0.002, 0.5), (0.002, 0.25))))
     claimed = kf.registry(  # An operator may not take a kind's key.
         kind_registry.Kind(
-            kind_id="tests.claims_water@1",
+            kind_id="tests.kind.claims_water@1",
             model_key="test_claims_water",
             experiment_keys=("water_controls",),
             parse_schedule=lambda raw, base, declaration: kf.DEFAULT_SCHEDULE,
@@ -130,13 +130,13 @@ def test_refusals():
         exchange=kf.SCHEDULED_EXCHANGE,
     )
     with kind_registry.scope(claimed):
-        with pytest.raises(ConfigError, match="which kind tests.claims_water@1 owns"):
+        with pytest.raises(ConfigError, match="which kind tests.kind.claims_water@1 owns"):
             parse_spec(cs.frozen_definition(water_fixtures.with_water(world())))
     registry = kf.registry(exchange=kf.SCHEDULED_EXCHANGE)
-    with pytest.raises(ValueError, match="is tests.exchange@1's"):
+    with pytest.raises(ValueError, match="is tests.kind.exchange@1's"):
         registry.register(
             kind_registry.Kind(
-                kind_id="tests.other@1",
+                kind_id="tests.kind.other@1",
                 model_key="test_other",
                 experiment_keys=(kf.SCHEDULE_KEY,),
                 parse_schedule=lambda raw, base, declaration: kf.DEFAULT_SCHEDULE,
@@ -145,7 +145,7 @@ def test_refusals():
         )
     with pytest.raises(ValueError, match="supplies parse_schedule and schedule_to_dict"):
         registry.register(
-            kind_registry.Kind(kind_id="tests.bare@1", model_key="bare", experiment_keys=("x",))
+            kind_registry.Kind(kind_id="tests.kind.bare@1", model_key="bare", experiment_keys=("x",))
         )
 
 

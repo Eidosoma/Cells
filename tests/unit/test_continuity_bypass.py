@@ -71,7 +71,7 @@ EXEMPT = {
     + " (--state: version 3 on version-2 states, a deliberate case-3 diagnostic)",
     # Imports into a new definition, and driver-owned resumes.
     "validation/tissue/heredity_turnover_literature.py": IMPORT
-    + " (start_state: sheet70 states into resolved_pump_replacement@1, E07-v1's start; "
+    + " (start_state: sheet70 states into cells.model.resolved_pump_replacement@1, E07-v1's start; "
     "they predate the D148 ledger fix); also " + DRIVER + " (checkpoint.npz)",
     # A registered driver and a development tool (section 7's table).
     "validation/tissue/e07_v1_run.py": REGISTERED_DRIVER
@@ -80,7 +80,7 @@ EXEMPT = {
     "validation/division/static_cleft_egg_steps.py": DEVELOPMENT_TOOL
     + " (S0b step 3's step study: start_state takes R-full's J1 state from its record.json)",
     "validation/tissue/excitable_import.py": DEVELOPMENT_TOOL
-    + " (Track E M1, D170 ruling 5: start_state takes one world's resolved_pump_tissue@3 "
+    + " (Track E M1, D170 ruling 5: start_state takes one world's cells.model.resolved_pump_tissue@3 "
     "checkpoint into a conduction assay's definition; its import record names the source "
     "manifest's digest and identities)",
     "validation/long_duration/rung0.py": DEVELOPMENT_TOOL

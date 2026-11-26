@@ -1,6 +1,6 @@
 """Small live worlds for the shared run paths: scalar windows, batches, records and replay.
 
-They are reaction_transport@1 definitions (configs/reaction_transport_*.json): two species that
+They are cells.model.reaction_transport@1 definitions (configs/reaction_transport_*.json): two species that
 convert in each cell and pass through contacts, which a schedule opens and closes. They compile in
 under a second and have an independent reference (tests/reference_reaction_transport.py).
 

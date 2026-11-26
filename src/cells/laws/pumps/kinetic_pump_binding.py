@@ -1,7 +1,7 @@
 """The kinetic pump law's binding: declared pump parameters into layout arrays, and the
 law's inputs from them.
 
-Shared by the resolved tissues and the pump families (resolved_pump_tissue@1-@3), through
+Shared by the resolved tissues and the pump families (cells.model.resolved_pump_tissue@1-@3), through
 surface_kinetic and surface_pump*.
 """
 

@@ -1,6 +1,6 @@
 """FR-37 (D274): a draw from chosen parts of an unevenly mixed liquid, with existing operators.
 
-**The answer: yes, with declared regions and declared draws.** scheduled_compartment_wash@1 (FR-27)
+**The answer: yes, with declared regions and declared draws.** cells.operator.scheduled_compartment_wash@1 (FR-27)
 draws a fraction of a well-mixed finite node and refills it with buffer, so a liquid declared as
 two regions, A and B, each its own finite node, takes a draw of chosen volumes from each:
 one wash event per region at the same time, with fraction = drawn volume / region volume.

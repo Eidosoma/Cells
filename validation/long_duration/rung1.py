@@ -1,11 +1,11 @@
 """FR-8 rung 1: the arms of RUNG1_20261119.md, and first its control (D232, the entry §10.3).
 
-The control is today's integrator, imex_ars222_face_electromigration@1, with X2
-(step_doubled_energy@1) at the registered cap, on rung 1's registered arms for today's ID at
+The control is today's integrator, cells.solver.imex_ars222_face_electromigration@1, with X2
+(cells.execution.step_doubled_energy@1) at the registered cap, on rung 1's registered arms for today's ID at
 their full registered horizons (§3, §10.3, §10.4). Development, not judged.
 
-Engine models: resolved_pump_tissue@3 (H2); resolved_pump_composite@1 over
-resolved_pump_tissue@3 with scheduled_species_turnover@1 and species_regulated_availability@1
+Engine models: cells.model.resolved_pump_tissue@3 (H2); cells.model.resolved_pump_composite@1 over
+cells.model.resolved_pump_tissue@3 with cells.operator.scheduled_species_turnover@1 and cells.operator.species_regulated_availability@1
 (W0).
 
 **Rule (b) (docs/CHECKPOINT_CONTINUITY_DESIGN.md §7).** H2's windows WS, WA, WC and WB are new runs
@@ -65,7 +65,7 @@ from validation import id_table
 HERE = Path(__file__).resolve().parent
 REGISTRATION = HERE / "rung1_20261119.json"
 EPS = float(np.finfo(float).eps)
-TODAY = "imex_ars222_face_electromigration@1"
+TODAY = "cells.solver.imex_ars222_face_electromigration@1"
 FULL_MS = (1, 2, 5, 10, 20, 50, 100)
 SLOW_MS = (1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000)  # §10.4 adds 1-100 ms.
 W0_MS = ("0.125", "0.25", "0.5", "1", "2", "5", "10")
@@ -1705,7 +1705,7 @@ def step_switches(a, before=5, after=12):
 C_COARSE_MS, C_FINE = 20, 1e-3
 C_WINDOW = dict(start_time=1799.98, end_time=1802.0)
 C_END_MS, C_ALL_FINE_STEPS = 3_600_000, 3_600_000  # Today's dt*(I), 1 ms, over the arm's horizon.
-N2_FINAL = "imex_ars222_implicit_conductances@1"  # N2 with (a), the final ID (§10.20, §10.21).
+N2_FINAL = "cells.solver.imex_ars222_implicit_conductances@1"  # N2 with (a), the final ID (§10.20, §10.21).
 # The registered windowed arms: H2 from 0 to 3600 s on the fine-window clock, X2 on. H2-N2C's
 # window ends are the 100 ms grid's own products, 17999 x 0.1 and 18020 x 0.1, and its cue edges
 # are re-declared at their grid products: the off-edge at 18003 x 0.1 = 1800.3000000000002, not
@@ -1746,7 +1746,7 @@ def c_definition(arm="H2-C"):
             if g["channel_id"] == "cue_0":
                 for c in g["schedule"]:
                     c["time"] = round(c["time"] / dt) * dt
-    x["fine_windows"] = dict(method="fixed_fine_windows@1", dt=C_FINE, windows=[dict(a["window"])])
+    x["fine_windows"] = dict(method="cells.execution.fixed_fine_windows@1", dt=C_FINE, windows=[dict(a["window"])])
     grid = EventGrid(parse_spec(raw))
     points = {grid[i] for i in range(len(grid))}
     cue = [c["time"] for g in e["channel_controls"] if g["channel_id"] == "cue_0"

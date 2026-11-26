@@ -1,4 +1,4 @@
-"""apical_vertex_mechanics@1: definition of a periodic 2-D apical vertex tissue.
+"""cells.model.apical_vertex_mechanics@1: definition of a periodic 2-D apical vertex tissue.
 
 The model is a periodic tiling of polygonal cells: vertices with positions and
 friction, junctions (edges between two vertices, with the integer periodic image
@@ -32,7 +32,7 @@ from cells.definitions.specs import (
     _number,
 )
 
-MODEL_ID = "apical_vertex_mechanics@1"
+MODEL_ID = "cells.model.apical_vertex_mechanics@1"
 UNITS = "reduced"
 SOLVERS = ("rk4", "euler")
 MAX_IMAGE = 2**20
@@ -108,7 +108,7 @@ EXECUTION_FIELDS = {f.name for f in fields(Execution)} - {"edge_capacity", "memb
 def to_dict(spec):
     m, e, x = spec.model, spec.experiment, spec.execution
     if type(m) is not ApicalVertexModel or type(e) is not Experiment or type(x) is not Execution:
-        raise ConfigError("apical_vertex_mechanics@1 requires its own model/experiment/execution")
+        raise ConfigError("cells.model.apical_vertex_mechanics@1 requires its own model/experiment/execution")
     execution = asdict(x)
     del execution["edge_capacity"], execution["membrane_capacity"]
     return {
@@ -187,7 +187,7 @@ def parse_model(raw):
         raw, {"id", "units", "periods", "length_floor", "vertices", "junctions", "cells"}, "model"
     )
     if raw["id"] != MODEL_ID or raw["units"] != UNITS:
-        raise ConfigError("Require apical_vertex_mechanics@1 in reduced units")
+        raise ConfigError("Require cells.model.apical_vertex_mechanics@1 in reduced units")
     if type(raw["periods"]) is not list or len(raw["periods"]) != 2:
         raise ConfigError("periods must list two periodic vectors")
     periods = tuple(pair(p, "periodic vector") for p in raw["periods"])

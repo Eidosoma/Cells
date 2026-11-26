@@ -40,9 +40,9 @@ def test_the_development_world_runs_with_every_ledger_closing():
     spec = parse_spec(defs.development_world(short(defs.fr4_world())))
     model = get_model(spec.model)
     assert [k for k, _ in model.structure.kinds] == [
-        "cells.passive_routes@1",
-        "cells.rapid_proton_buffer@1",
-        "cells.transporter@1",
+        "cells.kind.passive_routes@1",
+        "cells.kind.rapid_proton_buffer@1",
+        "cells.kind.transporter@1",
     ]
     result = run(spec)  # Host checks on every accepted row: all ten ledgers.
     final, obs, ids = result.final.state, result.observations, list(spec.model.species_ids)
@@ -238,7 +238,7 @@ def test_a_pump_past_its_head_is_refused_at_the_face_free_lumens_row():
         p.amount_reference[k, cell] / p.volume[cell],
         p.extracellular_amount_reference[k, j] / p.extracellular_volume[j],
     )
-    (leak,) = dict(spec.model.kinds)["cells.passive_routes@1"]
+    (leak,) = dict(spec.model.kinds)["cells.kind.passive_routes@1"]
     permeance = membrane.permeability_m_per_s[k] * largest_k
     permeance += leak.permeability * max(float(c_in[b]), float(c_out[b]))
     slope = F * F / (R * spec.model.temperature_K) * membrane.area_m2 * permeance

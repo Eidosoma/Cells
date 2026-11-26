@@ -1,4 +1,4 @@
-"""cells.rate_equations@1: the deterministic representation of the family's laws (OL6, D304).
+"""cells.assembly_representation.rate_equations@1: the deterministic representation of the family's laws (OL6, D304).
 
 The design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag ol6-design-note-2026-11-22).
 A definition chooses it by `execution.representation`, over the same world as exact events: the
@@ -20,14 +20,14 @@ products' law (ii).
 
 **The state** (§1.6): y = [pool, vesicles, supplied, Q, W]. In a single lineage `pool` is the
 world's every place and there is no vesicle block (S1's layout); in a population
-(cells.shared_pool@1, at most 64 slots, §6.9) `pool` holds the pool's places and each slot holds
+(cells.population.shared_pool@1, at most 64 slots, §6.9) `pool` holds the pool's places and each slot holds
 its vesicle's membrane and lumen places. `supplied` is each held place's net supply, Q the heat
 and W the reservoir work (k_BT), all integrated by the same stages; the counts, Q and W under the
 step control, the supplies not (a linear quadrature, kept exactly). Every slot's flux is the
 single assembly's at its vesicle with the pool, the pool's own steps at the pool with an empty
 vesicle (as population.py's rates).
 
-**The integrator** is declared apart (rosenbrock_rodas4_dense@1, numerics/rosenbrock_dense.py),
+**The integrator** is declared apart (cells.solver.rosenbrock_rodas4_dense@1, numerics/rosenbrock_dense.py),
 with its Jacobian the forward derivative of this module's right-hand side, so linear invariants (the
 moieties) are kept to rounding.
 
@@ -61,7 +61,7 @@ at the located crossing). A step whose end state is below min_count/2 is rejecte
 the sinks), to the integrator's tolerance; every moiety to rounding; and the second law per step,
 −J_r ΔF_r ≥ 0, at every accepted state. A run whose books do not close is refused.
 
-**The pore clock** (§3.5, S3; cells.pore_nucleation@1 and cells.tension_hold@1). Each vesicle
+**The pore clock** (§3.5, S3; cells.assembly_hazard.pore_nucleation@1 and cells.operator.tension_hold@1). Each vesicle
 draws E_v = −ln u from domain 7 (its key, counter 0) when the run first holds it: a founder at the
 start, a daughter at its birth, with H_v = 0 then. H_v = ∫ k_v dt, k_v the law's rate at the
 vesicle's real area A = q·W/2 and tension: the hold's over [start_s, end_s) (whose edges are stops),
@@ -79,10 +79,10 @@ source:tension_hold/<i>, ΔF_open = 2σ_β/σ − ln(A·n_s); with σ from F w =
 place's count is refused (T2); with σ from F, σ_max ≤ σ_β/4 is required at parse.
 
 **FR-47 (D323, D327): the prescribed shell, its washes and E2.**
-- **The shell** (cells.prescribed_shell@1): each cells.shell_permeation@1 step's extent is the
+- **The shell** (cells.assembly_geometry.prescribed_shell@1): each cells.reaction.shell_permeation@1 step's extent is the
   shell's constant A_sh·ρ0, dispatched by the geometry kind as the exact kernel does; a shell has
   no bilayer quantities, closure cost, floor, tension or lysis. Its permeation's limit is its exact
-  form (one molecule a step), and cells.gate_factor@1's is g at m = n. A shell world's own check
+  form (one molecule a step), and cells.rate_factor.gate_factor@1's is g at m = n. A shell world's own check
   adds parity with the exact kernel's rates (the extent's dispatch).
 - **The washes** (in a shell's world, version 1), host operators beside the transfer: a
   replacement is the same map (the sink F_cont of the old pool, the schedule's work column F_cont
@@ -187,7 +187,7 @@ FORMULAS = {
     "dQ/dt = -sum_r J_r dF_r >= 0; dW/dt = sum_r J_r w_r",
     "closure": "F_cont(n_t) - F_cont(n_0) = W - Q - S at every row, to the integrator's tolerance",
     "envelope": "every finite place a rate reads holds at least min_count",
-    "geometry": "cells.bilayer_geometry@1 at real W = sum_i k_i n_i: the extents at W(n) (consumed "
+    "geometry": "cells.assembly_geometry.bilayer_geometry@1 at real W = sum_i k_i n_i: the extents at W(n) (consumed "
     "0, so W(m) = W(n)); the closure cost once per living vesicle, in F_cont's value; the floor "
     "refuses a fission with a daughter below W_floor, and a vesicle reaching W_floor stops the run "
     "outside_envelope",
@@ -213,11 +213,11 @@ PORE_LIMIT = {  # the pore law in this representation: the same law at real coun
     "state",
 }
 FR47_FORMULAS = {  # FR-47 (D323): written into a run's record only where its world uses them
-    "shell": "cells.prescribed_shell@1: each cells.shell_permeation@1 step's extent is the "
+    "shell": "cells.assembly_geometry.prescribed_shell@1: each cells.reaction.shell_permeation@1 step's extent is the "
     "constant A_sh rho0, as the exact kernel's; no bilayer quantities, closure cost, floor, "
     "tension or lysis",
-    "washes": "cells.pool_replacement@1: the same map, the sink F_cont(old pool), the work "
-    "F_cont(fresh pool); cells.pool_withdrawal@1's mean, n -> (1 - f) n + b on the pool's finite "
+    "washes": "cells.operator.pool_replacement@1: the same map, the sink F_cont(old pool), the work "
+    "F_cont(fresh pool); cells.operator.pool_withdrawal@1's mean, n -> (1 - f) n + b on the pool's finite "
     "places: the sink F(n; V) - F((1 - f) n; (1 - f) V), the work F(b; f V), the mixing heat "
     "F((1 - f) n; (1 - f) V) + F(b; f V) - F((1 - f) n + b; V), with F(c; g V) = F_cont(c) - "
     "F_cont(0) - (sum c) ln g",
@@ -617,7 +617,7 @@ def enveloped(world, exempt=None):
 
     **A prescribed shell reads no wall count.** Its extent is the constant A_sh·ρ0
     (kernel.shell_extent; prescribed_shell.py: the wall's counts set neither its area nor its
-    lumen), and cells.shell_permeation@1 moves no membrane molecule. So a wall species that no step,
+    lumen), and cells.reaction.shell_permeation@1 moves no membrane molecule. So a wall species that no step,
     factor or law reads (an inert marker) is outside the envelope (FR-47's inert-wall fix). Every
     other world's places are enveloped as before."""
     index = {p.name: i for i, p in enumerate(world.places)}
@@ -2073,7 +2073,7 @@ class _Run:
                     return
 
     def transfer(self, schedule):
-        """cells.serial_transfer@1 (transfer.py's draws on domain 6): the kept sample, the removed
+        """cells.operator.serial_transfer@1 (transfer.py's draws on domain 6): the kept sample, the removed
         vesicles to the sink with the old pool, the fresh pool paid by the schedule's work."""
         from cells.models.assembly_lineages_v2 import transfer
 
@@ -2148,7 +2148,7 @@ class _Run:
         self.envelope_after([int(s) for s in np.flatnonzero(self.alive)])
 
     def replacement(self, schedule):
-        """cells.pool_replacement@1 (replacement.py), the same deterministic map here: the pool's
+        """cells.operator.pool_replacement@1 (replacement.py), the same deterministic map here: the pool's
         finite places take the declared composition; the sink takes F_cont of the old pool, the
         schedule's work column F_cont of the fresh one."""
         from cells.models.assembly_lineages_v2 import transfer
@@ -2167,7 +2167,7 @@ class _Run:
         self._wash_done(y, new, removed, supplied, record, "replacement")
 
     def withdrawal(self, schedule):
-        """cells.pool_withdrawal@1's mean (withdrawal.py): each finite pool place n -> (1 − f)·n
+        """cells.operator.pool_withdrawal@1's mean (withdrawal.py): each finite pool place n -> (1 − f)·n
         + b, b the buffer's counts in the withdrawn volume; booked as the exact operator books,
         with F_cont and F(c; gV) = F_cont(c) − F_cont(0) − (Σc)·ln g: the sink F(n; V) −
         F(kept; (1 − f)V), the schedule's work column F(b; fV) and the heat the mixing heat

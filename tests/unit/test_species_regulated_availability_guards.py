@@ -1,4 +1,4 @@
-"""species_regulated_availability@1: compiled guards beyond the routine gate (tier 3).
+"""cells.operator.species_regulated_availability@1: compiled guards beyond the routine gate (tier 3).
 
 docs/INVENTORY_COUPLING_DESIGN.md §1.9, §1.10 and §4.4. Seven compiled programs, so this file is
 deliberately tier 3 (the lead's rulings, 14 November 2026; D152's compiled guards are too); the

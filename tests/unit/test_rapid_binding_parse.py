@@ -1,18 +1,18 @@
 """The general closure's parse and admission, before its solve (seam C; kinds/proton_buffer.py,
-rapid_binding@1, and registry/species_registry.py's check_closure_rows; docs/CORE_SEAMS_DESIGN.md
+cells.binding.rapid_binding@1, and registry/species_registry.py's check_closure_rows; docs/CORE_SEAMS_DESIGN.md
 §5 and §19 as amended on 18 November 2026: the general parse comes before the references'
 amendments, with no closure solve and no number from it).
 
 The world is FR-4's development world re-expressed for the general closure: its two buffers
-written as forms (one form holding one more H each), and the read declared as rapid_binding@1 on
+written as forms (one form holding one more H each), and the read declared as cells.binding.rapid_binding@1 on
 the ligand H at the cell and the lumen.
 - The declaration parses, writes back canonically, keeps version 1's entries and types apart, and
   names its closure rows; an admitted world parses (its solve is stage 1's kernel). Each stage row
-  names its read's law as a third item (P1's selector): rapid_binding@1 for the general closure,
-  rapid_proton_buffer@1 (not a registered law: today's predictor) for version 1.
+  names its read's law as a third item (P1's selector): cells.binding.rapid_binding@1 for the general closure,
+  cells.kind.rapid_proton_buffer@1 (not a registered law: today's predictor) for version 1.
 - At a closure row, @3's own routes and pumps are refused, and so is a kind's move whose law's
-  reads lack rapid_binding@1: FR-4's proton pump (its reads name version 1's read) and its proton
-  leak (a route law declares no reads). Planted control: the pump's reads with rapid_binding@1
+  reads lack cells.binding.rapid_binding@1: FR-4's proton pump (its reads name version 1's read) and its proton
+  leak (a route law declares no reads). Planted control: the pump's reads with cells.binding.rapid_binding@1
   admit it. An operator that names a held species is refused; one that names another species is
   admitted.
 - Each malformed or inadmissible declaration is refused with its reason.
@@ -35,7 +35,7 @@ KIND = proton_buffer.KIND_ID
 
 def general_entry(**overrides):
     entry = dict(
-        read_id="rapid_binding@1",
+        read_id="cells.binding.rapid_binding@1",
         ligand_rows=["H"],
         proton_row="H",
         binders={fr.CELL: ["B_c"], fr.LUMEN: ["B_L"]},
@@ -90,13 +90,13 @@ def test_the_general_declaration_parses_writes_back_and_is_admitted():
     )  # fmt: skip
     # P1's selector (the binding owner's ruling (a)): each stage row names its read's law.
     assert proton_buffer.stage_rows(declaration) == tuple(
-        (*row, "rapid_binding@1") for row in declaration.closure_rows
+        (*row, "cells.binding.rapid_binding@1") for row in declaration.closure_rows
     )
     # Version 1's declaration keeps its type and entry; the general one has its own.
     v1_declaration = dict(v1.model.kinds)[KIND]
     assert type(v1_declaration) is proton_buffer.Declaration
-    # Version 1's rows name rapid_proton_buffer@1, which is not a registered law: today's form.
-    assert {row[2] for row in proton_buffer.stage_rows(v1_declaration)} == {"rapid_proton_buffer@1"}
+    # Version 1's rows name cells.kind.rapid_proton_buffer@1, which is not a registered law: today's form.
+    assert {row[2] for row in proton_buffer.stage_rows(v1_declaration)} == {"cells.kind.rapid_proton_buffer@1"}
     assert all(len(row) == 3 for row in proton_buffer.stage_rows(v1_declaration))
     assert proton_buffer.structure_entry(v1_declaration) == (2,)
     assert proton_buffer.structure_entry(declaration) == proton_buffer.GeneralEntry(1, 2)
@@ -105,7 +105,7 @@ def test_the_general_declaration_parses_writes_back_and_is_admitted():
 
 def test_a_kind_move_at_a_closure_row_needs_the_closures_read(monkeypatch):
     """FR-4's proton pump moves H at both closure nodes, and its law's reads name version 1's read
-    only: refused, naming the law. Given rapid_binding@1 in its reads (planted), the move gets past
+    only: refused, naming the law. Given cells.binding.rapid_binding@1 in its reads (planted), the move gets past
     the read and meets §5.2's admission next, which refuses it for the first of its conditions the
     transporter does not meet. Which one follows the transporter's own state (since 3a882746 it
     declares role_species, and its law declares no base forms), so only the admission is asserted;
@@ -113,21 +113,21 @@ def test_a_kind_move_at_a_closure_row_needs_the_closures_read(monkeypatch):
     route law, declares no reads."""
     refused(
         general_world(pump=True),
-        r"species H at cell_0 is held by the closure rapid_binding@1: cells.transporter@1 moves "
-        r"it under .*proton_atp_mass_action_positive@1, whose reads \['rapid_proton_buffer@1'\] "
-        r"lack rapid_binding@1",
+        r"species H at cell_0 is held by the closure cells.binding.rapid_binding@1: cells.kind.transporter@1 moves "
+        r"it under .*cells.cycle.proton_atp_mass_action_positive@1, whose reads \['cells.kind.rapid_proton_buffer@1'\] "
+        r"lack cells.binding.rapid_binding@1",
     )
     reads = registry._law_reads
     monkeypatch.setattr(
-        registry, "_law_reads", lambda law: (*reads(law), "rapid_binding@1")
+        registry, "_law_reads", lambda law: (*reads(law), "cells.binding.rapid_binding@1")
     )
     refused(
         general_world(pump=True),
-        r"§5.2's admission refuses cells.transporter@1's move under "
-        r".*proton_atp_mass_action_positive@1: ",
+        r"§5.2's admission refuses cells.kind.transporter@1's move under "
+        r".*cells.cycle.proton_atp_mass_action_positive@1: ",
     )
     monkeypatch.undo()
-    refused(general_world(leak=True), r"cells.passive_routes@1 moves it under .*, whose reads \[\]")
+    refused(general_world(leak=True), r"cells.kind.passive_routes@1 moves it under .*, whose reads \[\]")
 
 
 def test_a_held_total_at_or_below_zero_is_refused_before_any_logarithm():
@@ -162,7 +162,7 @@ def _bounding_h_route(m):
 def test_at3s_own_routes_and_pumps_are_refused_at_a_closure_row(monkeypatch):
     refused(
         general_world(edit=_bounding_h_route),
-        rf"species H at cell_0 is held by the closure rapid_binding@1: the membrane {fr.BOUNDING} "
+        rf"species H at cell_0 is held by the closure cells.binding.rapid_binding@1: the membrane {fr.BOUNDING} "
         "moves it in the step",
     )
     from cells.models import surface_pump_v3
@@ -207,7 +207,7 @@ def test_an_operator_naming_a_held_species_is_refused(monkeypatch):
     def operator(species):
         item = SimpleNamespace(id=species, catalogue=None, evidence=None)
         return SimpleNamespace(
-            LAW_ID="planted_reaction@1", PROCESS=False, species_identities=lambda _: (item,)
+            LAW_ID="cells.operator.planted_reaction@1", PROCESS=False, species_identities=lambda _: (item,)
         )
 
     monkeypatch.setattr(registry, "_entries", lambda _: ((operator("Na"), None),))
@@ -215,8 +215,8 @@ def test_an_operator_naming_a_held_species_is_refused(monkeypatch):
     monkeypatch.setattr(registry, "_entries", lambda _: ((operator("H"), None),))
     with pytest.raises(
         ConfigError,
-        match=r"species H is held by the stage read of cells.rapid_proton_buffer@1 at cell_0: "
-        "planted_reaction@1 names or moves it",
+        match=r"species H is held by the stage read of cells.kind.rapid_proton_buffer@1 at cell_0: "
+        "cells.operator.planted_reaction@1 names or moves it",
     ):
         registry.check_stage_read_rows(spec)
 

@@ -1,4 +1,4 @@
-"""Qualification of resolved_pump_water@1 against the frozen predictions P1-P6 (W1e).
+"""Qualification of cells.model.resolved_pump_water@1 against the frozen predictions P1-P6 (W1e).
 
 The predictions (validation/tissue/pump_water_predictions.py, independent reduced
 reference) are frozen with their definitions before any engine run. Phases, each

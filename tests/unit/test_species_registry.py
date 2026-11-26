@@ -116,12 +116,12 @@ def test_without_entries_authors_come_before_users_in_either_order():
     for reverse in (False, True):
         spec = parse_spec(coupled(reverse=reverse))
         resolved = registry.identities(spec)
-        assert resolved["R"] == ("scheduled_species_turnover@1", registry.Identity(None, None))
+        assert resolved["R"] == ("cells.operator.scheduled_species_turnover@1", registry.Identity(None, None))
         with pytest.raises(ConfigError) as caught:
             parse_spec(coupled(reverse=reverse, coupling_tag=TAG))
         assert str(caught.value).endswith(
-            "species_regulated_availability@1 declares species 'R' with another identity than "
-            "scheduled_species_turnover@1 (catalogue reference and kind of evidence must agree)"
+            "cells.operator.species_regulated_availability@1 declares species 'R' with another identity than "
+            "cells.operator.scheduled_species_turnover@1 (catalogue reference and kind of evidence must agree)"
         )
 
 
@@ -132,7 +132,7 @@ def test_with_entries_the_model_is_the_authority():
         registry.MODEL_SOURCE,
         registry.Identity(("uniprot", "P00001"), "model"),
     )
-    turnover = "scheduled_species_turnover@1"
+    turnover = "cells.operator.scheduled_species_turnover@1"
     with pytest.raises(ConfigError, match="another identity than the model's species entries"):
         registry.check_identities(tagged, turnover, (_Item("R", None, None),))
     registry.check_identities(tagged, turnover, (_Item("R", ("uniprot", "P00001"), "model"),))
@@ -166,7 +166,7 @@ def test_moved_in_step_names_each_mover():
     assert any(m.startswith("the Na/K pump on membrane ") for m in moved["Na"]["cell"])
     assert any(m.startswith("the Na/K pump on membrane ") for m in moved["K"]["outside"])
     symport = parse_spec(symport_world())
-    process = "k_anion_symport_mass_action@1 (its in-step process)"
+    process = "cells.operator.k_anion_symport_mass_action@1 (its in-step process)"
     moved = registry.moved_in_step(symport)
     roles = next(d for d in symport.model.operators if d.law == k_anion_symport.LAW_ID)
     for species in (roles.potassium, roles.anion):

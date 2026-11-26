@@ -1,7 +1,7 @@
-"""R1: resolved_pump_replacement@1 against pre-screen 9's driver-based turnover (development).
+"""R1: cells.model.resolved_pump_replacement@1 against pre-screen 9's driver-based turnover (development).
 
 Regression of the engine operation against frozen evidence, not a qualification.
-Engine model: resolved_pump_replacement@1 (inner resolved_pump_tissue@3), its own
+Engine model: cells.model.resolved_pump_replacement@1 (inner cells.model.resolved_pump_tissue@3), its own
 checked_step in a plain jitted loop with no row checks, as the pre-screen's driver
 stepped @3 through the analysis step map. The design note (R1) explains why the
 analysis harness itself cannot run the wrapper.
@@ -58,7 +58,7 @@ PRESCREEN = ht.PRESCREEN_8.parent / "prescreen-09-turnover" / "stage2-turnover"
 DT, RECORD_S, HORIZON = ht.DT, ht.RECORD_S, ht.HORIZON_S
 VOLTAGE_TOL_MV = 1e-3
 RULE_A = dict(
-    law="delayed_first_order_junction_formation@1",
+    law="cells.junction_formation.delayed_first_order_junction_formation@1",
     initial_abundance=1.0,
     lag_s=0.0,
     time_constant_s=40.0,
@@ -66,7 +66,7 @@ RULE_A = dict(
 )
 CRITERIA = dict(
     kind="cells.cell_replacement_r1_criteria@1",
-    scope="R1 regression of resolved_pump_replacement@1 against pre-screen 9 (development)",
+    scope="R1 regression of cells.model.resolved_pump_replacement@1 against pre-screen 9 (development)",
     reference=str(PRESCREEN),
     rule="pre-screen 9 rule (a) 'open' as A0 1, lag 0, law_open",
     pass_if=[
@@ -356,7 +356,7 @@ def screen_compare(mine, theirs):
     )
 
 
-BOOKING = "trapezoid_nonnegative@1"
+BOOKING = "cells.heat.trapezoid_nonnegative@1"
 CRITERIA_R2 = dict(
     kind="cells.cell_replacement_r2_criteria@1",
     scope="R2: the R1 rule (a) cases through the row-checked windowed runner, with ledgers",

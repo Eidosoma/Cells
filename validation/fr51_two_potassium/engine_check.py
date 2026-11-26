@@ -1,9 +1,9 @@
 """FR-51's two-potassium engine check: section 2 of REGISTRATION.md (this folder), as tagged.
 
-**The worlds.** One cell on a held bath, on resolved_pump_tissue@3, per arm and external K level.
-Its one patch carries two kleak_always_open@1 populations, equal in permeability, abundance and
+**The worlds.** One cell on a held bath, on cells.model.resolved_pump_tissue@3, per arm and external K level.
+Its one patch carries two cells.channel.kleak_always_open@1 populations, equal in permeability, abundance and
 availability:
-- "blocked" carries open_channel_block_weighted_modes@1. The block is referenced to the K reversal,
+- "blocked" carries cells.channel_block.open_channel_block_weighted_modes@1. The block is referenced to the K reversal,
   {"reversal_of": "K"}, in the reversal arm and to the membrane voltage in the absolute arm;
 - "free" carries no block: the matched free population.
 
@@ -68,7 +68,7 @@ from cells.registry.models import get_model
 
 TAG = "fr51-two-potassium-registered-2026-11-25"
 REGISTRATION = "validation/fr51_two_potassium/REGISTRATION.md"
-MODEL, POPULATION = "resolved_pump_tissue@3", "kleak_always_open@1"
+MODEL, POPULATION = "cells.model.resolved_pump_tissue@3", "cells.channel.kleak_always_open@1"
 
 REFERENCE = {"reversal": {"reversal_of": "K"}, "absolute": "membrane_voltage"}
 LEVELS_mM = (5.4, 10.0, 20.0)
@@ -182,7 +182,7 @@ def definition(world, *, blocked=True):
                     area_m2=AREA_m2,
                     capacitance_F=CAPACITANCE_F_PER_m2 * AREA_m2,
                     permeability_m_per_s=dict.fromkeys(VALENCE, 0.0),
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=None,
                     calcium_pump=None,
                 )
@@ -190,7 +190,7 @@ def definition(world, *, blocked=True):
             junctions=[],
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
             channels=channels,
         ),
@@ -215,7 +215,7 @@ def definition(world, *, blocked=True):
             jit=True,
             precision="float64",
             solver="rk4",
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=18,
             max_trace_bytes=2**31,
             material_balance_atol_fmol=dict.fromkeys(VALENCE, 1e-10),

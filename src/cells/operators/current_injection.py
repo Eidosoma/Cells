@@ -51,7 +51,7 @@ from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators.contract import Operator
 from cells.registry.species_registry import NamedRow
 
-LAW_ID = "electrode_current_injection@1"
+LAW_ID = "cells.operator.electrode_current_injection@1"
 DEFAULT_CARRIERS = {"K": 0.4912, "Cl": 0.5088}  # 3 M KCl filling (dLB74 p530).
 FRACTION_TOLERANCE = 1e-9
 

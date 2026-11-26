@@ -1,4 +1,4 @@
-"""Tier-1 tests of local_species_reactions@1's half-step (D152 version 1, milestone 2), host side.
+"""Tier-1 tests of cells.operator.local_species_reactions@1's half-step (D152 version 1, milestone 2), host side.
 
 The closed forms and identities the note states (docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §3.1,
 §3.3, §4.2, §4.4 and Appendix A), in NumPy:

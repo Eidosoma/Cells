@@ -1,17 +1,17 @@
 """The calcium store's worlds (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md, sections 6 to 8 and 14).
 
 Every number is synthetic and these worlds' own: no captured world's, and no measurement's. Each
-world is a definition of resolved_pump_composite@1 over resolved_pump_tissue@3, closed (one
+world is a definition of cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, closed (one
 gauge, no held bath), with the registered laws alone:
 - a store per cell: a finite outside node that no face names, bounded by one patch of its cell,
-  declared by cell_owned_compartments@1;
+  declared by cells.operator.cell_owned_compartments@1;
 - on each plasma patch: @3's own permeabilities for Na, K and Cl; a calcium leak and a calcium
-  channel (cav1p2_m2h@1); a pump (atp_driven_transporter_mass_action_positive@2) and the
-  exchanger (sodium_calcium_exchange_symmetric_barrier@1);
+  channel (cells.channel.cav1p2_m2h@1); a pump (cells.cycle.atp_driven_transporter_mass_action_positive@2) and the
+  exchanger (cells.cycle.sodium_calcium_exchange_symmetric_barrier@1);
 - on each bounding patch: @3's own permeabilities for K and Cl; a calcium leak; a release, gated
-  by two species conditions at the cell (hill_product_factor@1: one reads IP3, one reads
+  by two species conditions at the cell (cells.transfer_factor.hill_product_factor@1: one reads IP3, one reads
   calcium); a pump;
-- in each cell and each store: calcium binding a buffer in two steps (local_species_reactions@1).
+- in each cell and each store: calcium binding a buffer in two steps (cells.operator.local_species_reactions@1).
 
 - store_world: one cell, one finite outside node, its numbers those of reference_spec/inputs.json
   (`store_world`), so the code-blind references and these definitions read one file.
@@ -36,16 +36,16 @@ VALENCE = dict(SPECIES)
 IONS = ("Na", "K", "Cl", "Ca")
 TRACE_mM, TRACE_FLOOR_FMOL = 1e-9, 1e-15  # An absent row's declared background, inert there.
 ION_FLOOR_FMOL = 1e-10
-IMEX = "imex_ars222_face_electromigration@1"
-VERSION_2 = "capacitive_reduction_gauged_damped_newton@2"
-VERSION_3 = "capacitive_reduction_gauged_damped_newton@3"  # Near and far: free offsets (D147).
-CONSTANT_FIELD = "passive_constant_field_permeation@1"
-PUMP = "cells.atp_driven_transporter_mass_action_positive@2"
-EXCHANGER = "cells.sodium_calcium_exchange_symmetric_barrier@1"
-CHANNEL = "cav1p2_m2h@1"
-CONDITION = "hill_product_factor@1"
-REACTIONS = "local_species_reactions@1"
-COMPARTMENTS = "cell_owned_compartments@1"
+IMEX = "cells.solver.imex_ars222_face_electromigration@1"
+VERSION_2 = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
+VERSION_3 = "cells.solver.capacitive_reduction_gauged_damped_newton@3"  # Near and far: free offsets (D147).
+CONSTANT_FIELD = "cells.route.passive_constant_field_permeation@1"
+PUMP = "cells.cycle.atp_driven_transporter_mass_action_positive@2"
+EXCHANGER = "cells.cycle.sodium_calcium_exchange_symmetric_barrier@1"
+CHANNEL = "cells.channel.cav1p2_m2h@1"
+CONDITION = "cells.transfer_factor.hill_product_factor@1"
+REACTIONS = "cells.operator.local_species_reactions@1"
+COMPARTMENTS = "cells.operator.cell_owned_compartments@1"
 HELD_FUEL = (("ATP", "N"), ("ADP", "N"), ("Pi", "N"))
 FORMS = dict(activation="hill_activation", inhibition="hill_inhibition")
 
@@ -78,7 +78,7 @@ def _patch(name, inside, outside, data):
         area_m2=data["area_m2"],
         capacitance_F=data["capacitance_F"],
         permeability_m_per_s={s: data["permeability_m_per_s"].get(s, 0.0) for s, _ in SPECIES},
-        law="constant_field@1",
+        law="cells.route.constant_field@1",
         pump=None,
         calcium_pump=None,
     )
@@ -222,7 +222,7 @@ def _buffer_operator(buffers, cells, stores):
                 sites=copy.deepcopy(sites),
                 reactants=r["reactants"],
                 products=r["products"],
-                law="ideal_detailed_balance_mass_action@1",
+                law="cells.species_reaction.ideal_detailed_balance_mass_action@1",
                 forward_rate_per_s=r["forward_rate_per_s"],
                 factors=[],
             )
@@ -252,8 +252,8 @@ def definition(blocks, outside, *, data, gauge, faces, junctions, junction_route
     if buffers:
         operators.append(_buffer_operator(data["buffers"], cells, stores))
     model = dict(
-        id="resolved_pump_composite@1",
-        inner_model="resolved_pump_tissue@3",
+        id="cells.model.resolved_pump_composite@1",
+        inner_model="cells.model.resolved_pump_tissue@3",
         temperature_K=data["temperature_K"],
         standard_concentration_mM=data["standard_concentration_mM"],
         species=entries,
@@ -264,7 +264,7 @@ def definition(blocks, outside, *, data, gauge, faces, junctions, junction_route
         faces=faces,
         channels=channels,
         closure=dict(
-            law="resolved_capacitor_components_current_continuity@1", gauge_reference=gauge
+            law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=gauge
         ),
         passive_routes=[r for b in blocks for r in b["routes"]] + junction_routes,
         transporters=[t for b in blocks for t in b["populations"]],
@@ -411,7 +411,7 @@ def two_cells(*, dt, steps, observe=None, edit=None):
             area_m2=FACE_AREA_M2,
             length_m=FACE_LENGTH_M,
             diffusivity_m2_per_s={s: DIFFUSIVITY.get(s, 0.0) for s, _ in SPECIES},
-            law="logmean_electrodiffusion@1",
+            law="cells.route.logmean_electrodiffusion@1",
         )
         for name, a, b in FACES
     ]
@@ -423,9 +423,9 @@ def two_cells(*, dt, steps, observe=None, edit=None):
             receiver="cell_1",
             area_m2=j["area_m2"],
             permeability_m_per_s={s: j["permeability_m_per_s"].get(s, 0.0) for s, _ in SPECIES},
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             gate=dict(
-                law="junction_voltage_relaxation@1",
+                law="cells.junction.junction_voltage_relaxation@1",
                 threshold_voltage_V=j["threshold_voltage_V"],
                 minimum_open_fraction=j["minimum_open_fraction"],
                 initial_gate=j["initial_gate"],

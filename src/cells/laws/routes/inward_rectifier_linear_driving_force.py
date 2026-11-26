@@ -1,5 +1,5 @@
-"""inward_rectifier_linear_driving_force@1: an instantaneous inward-rectifier route for a valence +1
-row, with no gate state, on cells.passive_routes@1 (D228 item 2; its first cited use is Kir4.1, the
+"""cells.route.inward_rectifier_linear_driving_force@1: an instantaneous inward-rectifier route for a valence +1
+row, with no gate state, on cells.kind.passive_routes@1 (D228 item 2; its first cited use is Kir4.1, the
 Xenopus lane's K+ route).
 
 For a route on a membrane patch of area A and opening m (the patch's availability, times any
@@ -60,7 +60,7 @@ import jax.numpy as jnp
 from cells.laws.electrochemistry import F, R
 from cells.modules import Citation, RouteLaw
 
-LAW_ID = "inward_rectifier_linear_driving_force@1"
+LAW_ID = "cells.route.inward_rectifier_linear_driving_force@1"
 VALENCE = 1
 COEFFICIENTS = ("g_ref_S_per_m2", "k_ref_mM", "v_half_V", "slope_V")  # The route's, in order.
 SUP_SLOPE = 1.25  # 1 + the bound 0.225 on |w| q (1 - q), rounded up: slope_bound_S.
@@ -164,7 +164,7 @@ LAW = RouteLaw(
     "V - E, rectified by a logistic of V - E, its conductance scaling as the square root of the "
     "outside concentration (laws/routes/inward_rectifier_linear_driving_force.py)",
     stage_term="slope_conductance_S",  # Its slope's magnitude in the stage rule: CORE_SEAMS §18.
-    host="cells.passive_routes@1",
+    host="cells.kind.passive_routes@1",
     provenance="cited",
     source=Citation(
         "the √[K]o dependence of inward-rectifier conductance and its rectification referred to "

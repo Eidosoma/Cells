@@ -1,4 +1,4 @@
-"""The NumPy dG test per law of record (§3.4, guard 4): local_species_reactions@1's half-step
+"""The NumPy dG test per law of record (§3.4, guard 4): cells.operator.local_species_reactions@1's half-step
 against the independent references (validation/reactions, used only through REFERENCES_USAGE.md).
 
 Tier 1, host side. Two worlds between them run every law, order and factor kind at a cell and at a

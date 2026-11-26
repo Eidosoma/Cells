@@ -123,14 +123,14 @@ LANES = (  # As the rehearsal ran them, each successor launched by hand when its
     "combine, which run nothing"
 )
 SCOPE = (
-    "MG0c's judged arms run local_species_reactions@1's driven mass action only, of orders 0, 1 "
+    "MG0c's judged arms run cells.operator.local_species_reactions@1's driven mass action only, of orders 0, 1 "
     "and 3 (Schnakenberg's four reactions; guard 2's open world and the sites world, orders 0 and "
-    "1), at outside nodes, with resolved_pump_tissue@3's species transport on faces in "
-    "resolved_pump_composite@1, with five species per world (three quiescent ions and the "
+    "1), at outside nodes, with cells.model.resolved_pump_tissue@3's species transport on faces in "
+    "cells.model.resolved_pump_composite@1, with five species per world (three quiescent ions and the "
     "network's two), within the 7 species the scope stays at: D150's cap of 16 since FR-9 / D165 "
     "is not exercised. One judged guard world departs from driven mass action, kept judged at "
     "the lead's answer (review.answers): guard 2's passive world runs "
-    "ideal_detailed_balance_mass_action@1 "
+    "cells.species_reaction.ideal_detailed_balance_mass_action@1 "
     "(A <-> B, linear) at outside nodes, judged against the engine order's exact map. Every other "
     "use of "
     "the passive law, Michaelis-Menten, Hill factors, cell routes, D150's writers and the "
@@ -930,15 +930,15 @@ def draft(output, paths, guards=None, basis=None):
         schema="cells.morphogenesis_protocol@1",
         id="mg0c-turing-v1",
         title=(
-            "MG0c: Turing patterning at the predicted wavelength, local_species_reactions@1's "
-            "first acceptance on resolved_pump_tissue@3's species transport"
+            "MG0c: Turing patterning at the predicted wavelength, cells.operator.local_species_reactions@1's "
+            "first acceptance on cells.model.resolved_pump_tissue@3's species transport"
         ),
         status=STATUS.format(
             source="the rehearsal's runs on main" if rehearsal else "the development runs"
         ),
         rung="MG0c",
         question=(
-            "Does local_species_reactions@1, composed with @3's species transport on a closed "
+            "Does cells.operator.local_species_reactions@1, composed with @3's species transport on a closed "
             "chain, run the declared discrete system: the engine order's own map for linear "
             "networks and for Schnakenberg linearised, exact mode propagation and the nonlinear "
             "pattern to the scheme's step terms, only admissible modes growing, the predicted "
@@ -949,11 +949,11 @@ def draft(output, paths, guards=None, basis=None):
         # lines word for word, so no move changes them (D188 move 2). Their paths and module names
         # are never resolved.
         engine_models=[
-            "resolved_pump_composite@1 (src/cells/models/pump_composite.py)",
-            "resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, "  # noqa: E501  source-moves: keep
+            "cells.model.resolved_pump_composite@1 (src/cells/models/pump_composite.py)",
+            "cells.model.resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, "  # noqa: E501  source-moves: keep
             "src/cells/models/surface_pump_v3.py), IMEX ARS(2,2,2), CPU, float64",
-            "local_species_reactions@1 (src/cells/models/operators/species_reactions.py): driven "  # noqa: E501  source-moves: keep
-            "mass action; ideal_detailed_balance_mass_action@1 in guard 2's passive world",
+            "cells.operator.local_species_reactions@1 (src/cells/models/operators/species_reactions.py): driven "  # noqa: E501  source-moves: keep
+            "mass action; cells.species_reaction.ideal_detailed_balance_mass_action@1 in guard 2's passive world",
             "cells.core.inventory_species (D150) declares the network's species",  # noqa: E501  source-moves: keep
         ],
         scope=SCOPE,

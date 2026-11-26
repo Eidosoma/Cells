@@ -33,7 +33,7 @@ def ionic():
     )
     return {
         name: dict(
-            model="ionic_worlds@1",
+            model="cells.model.ionic_worlds@1",
             simulation=family.definition(backend="gpu", solver=imex.ARS222_ID),
             window_steps=256,
         )
@@ -44,7 +44,7 @@ def ionic():
 def finite_bond():
     """Two arms of finite pools, from a ring of nodes and from an open chain."""
     return {
-        name: dict(model="finite_bond_assembly@1", initial_nodes=nodes, end_time_s=0.1)
+        name: dict(model="cells.model.finite_bond_assembly@1", initial_nodes=nodes, end_time_s=0.1)
         for name, nodes in (("ring", [10, 12, 14, 16, 18]), ("open", [10, 0, 1, 2, 3]))
     }
 

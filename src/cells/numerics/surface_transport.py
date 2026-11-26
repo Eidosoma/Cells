@@ -82,7 +82,7 @@ class ReservoirReset(NamedTuple):
 
 
 class FormsFaces(NamedTuple):
-    """The forms faces of logmean_electrodiffusion_forms@1 (laws/routes), their own entity set
+    """The forms faces of cells.route.logmean_electrodiffusion_forms@1 (laws/routes), their own entity set
     beside the faces above: each joins two outside nodes and moves movers (a row as itself, or a
     binder's form), each at its own valence, by the faces' log-mean expression. A mover's unit
     changes the stored rows by its stoichiometry. The kernels below know nothing of a closure:

@@ -1,9 +1,9 @@
-"""proton_constant_field_leak@1: passive proton permeation through free H+ (FR-4, FR-5).
+"""cells.route.proton_constant_field_leak@1: passive proton permeation through free H+ (FR-4, FR-5).
 
 docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §7.1 and §9; the passive law's sibling
 (laws/routes/passive_permeation.py). At a buffered node the proton row holds proton equivalents, not
 free H+, so @3's constant-field law must not read it; this law reads free h at both sides through
-their closures (rapid_proton_buffer@1, a stage read) and moves proton equivalents:
+their closures (cells.kind.rapid_proton_buffer@1, a stage read) and moves proton equivalents:
 
     J = A P m [h_out B(x) - h_in B(-x)] / 1e-15   (fmol/s, positive inward),   x = F V / (R T),
 
@@ -28,7 +28,7 @@ import jax.numpy as jnp
 from cells.laws.electrochemistry import F, R, electrochemical_potential, ghk_leak
 from cells.modules import Citation, RouteLaw
 
-LAW_ID = "proton_constant_field_leak@1"
+LAW_ID = "cells.route.proton_constant_field_leak@1"
 VALENCE = 1
 
 
@@ -65,7 +65,7 @@ LAW = RouteLaw(
     "the Goldman-Hodgkin-Katz constant-field flux at valence +1 of free h, read through each "
     "node's closure (laws/transport/proton_leak.py)",
     stage_term="conductance_S",  # Its max-side slope in the stage rule: CORE_SEAMS §18.
-    host="cells.passive_routes@1",
+    host="cells.kind.passive_routes@1",
     provenance="cited",
     source=Citation(
         "the Goldman-Hodgkin-Katz constant-field flux (D. E. Goldman, 1943; A. L. Hodgkin and "

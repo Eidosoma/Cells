@@ -73,7 +73,7 @@ def world_record(law: ExchangeLaw, founder: np.ndarray, *, fission_mass: int, pa
     if not isinstance(law.reservoir, HeldReservoir):
         raise ValueError("lineage worlds use a held supply")
     G = law.n_types
-    fission = {"operator": "cells.size_threshold_fission@1", "mass": int(fission_mass),
+    fission = {"operator": "cells.operator.size_threshold_fission@1", "mass": int(fission_mass),
                "partition": partition}
     if partition == "exact_fraction":
         fission["fraction"] = float(fraction)
@@ -90,7 +90,7 @@ def world_record(law: ExchangeLaw, founder: np.ndarray, *, fission_mass: int, pa
         "beta": [[float(v) for v in row] for row in law.beta],
         "founder": [int(v) for v in founder],
         "rules": {"fission": fission,
-                  "continuation": {"operator": "cells.daughter_continuation@1", "rule": continuation,
+                  "continuation": {"operator": "cells.operator.daughter_continuation@1", "rule": continuation,
                                    "empty_daughter": "fallback_nonempty"},
                   "sink": {"kind": "declared_sink"},
                   "boundary": law.boundary},
@@ -303,8 +303,8 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
         "schema": "cells.assembly_lineages.run@1",
         "world_id": world["id"],
         "founder": "world",
-        "law": {"id": ("cells.gard_catalysis_pair_consistent@1" if law.form == PAIR_CONSISTENT
-                       else "cells.gard_catalysis_single_event@1"),
+        "law": {"id": ("cells.rate_factor.gard_catalysis_pair_consistent@1" if law.form == PAIR_CONSISTENT
+                       else "cells.rate_factor.gard_catalysis_single_event@1"),
                 "form": law.form,
                 "energy_role": "passive" if law.form == PAIR_CONSISTENT else "driven",
                 "check_verdict": "passive" if law.form == PAIR_CONSISTENT else "refused_as_passive"},

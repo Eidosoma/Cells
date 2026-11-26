@@ -37,7 +37,7 @@ the face at setup.
 
 **FR-33's labels are FR-42's shares** (D289; D300 retired D1's label families, rows of their own
 with their own potentials). In each world below, one protein row `P` carries the labels as shares
-(neutral_arrival_labels@1), and two plain rows of the same material, `P_L` (labelled) and `P_U`
+(cells.operator.neutral_arrival_labels@1), and two plain rows of the same material, `P_L` (labelled) and `P_U`
 (unlabelled), each node's `P` their sum, ride beside it as the exact reference: every law that moves
 them is linear in each row, so each row's move is exact, while the shares follow at the label
 owner's second order. The record reads the label by its shares (readouts.label_nodes) and by `P_L`.
@@ -59,7 +59,7 @@ bidirectional face are sufficient for our first test"). Two named regions, `dono
 finite nodes of FIRST_TEST_VOLUME_pL each, joined by one bidirectional face. The label starts at
 1 mM in the donor (`P_L`), the rest of the protein at 1 mM in the receiver (`P_U`), each at the
 usual 1e-9 mM trace elsewhere, so the receiver starts with no label. The face books its heat exactly
-(heat_bookings: faces exact_free_energy_heat@1, F2), which keeps the energy ledger closed from a
+(heat_bookings: faces cells.heat.exact_free_energy_heat@1, F2), which keeps the energy ledger closed from a
 trace start. No labelled production is declared.
 - **Case "transfer":** the face open, and no turnover at all. The label total is conserved and the
   receiver's gain is the donor's loss.
@@ -97,7 +97,7 @@ R_SYNAPSE = 1.0  # 1/s: each synapse region's exchange rate through their face.
 K_DEGRADE = 0.5  # 1/s: the protein's clearance in syn_1, when degraded.
 SYNAPSES = ("syn_1", "syn_2")
 REFERENCE = ("P_L", "P_U")  # The label's exact reference rows: labelled, then unlabelled.
-LABELS_LAW = "neutral_arrival_labels@1"
+LABELS_LAW = "cells.operator.neutral_arrival_labels@1"
 
 
 def world():
@@ -263,7 +263,7 @@ def first_test_world(case, *, dt=1e-3, steps=200):
     homes = {donor: (1.0, trace), receiver: (trace, 1.0)}
     raw = _labelled_protein(raw, FIRST_TEST_REGIONS, homes, diffusivity, trace)
     m = raw["model"]
-    m["heat_bookings"] = {"faces": "exact_free_energy_heat@1"}  # F2: exact from a trace start.
+    m["heat_bookings"] = {"faces": "cells.heat.exact_free_energy_heat@1"}  # F2: exact from a trace start.
     if case == "transfer":
         return raw
     (face,) = m["faces"]  # The local-loss control: the face closed for the protein, alike.

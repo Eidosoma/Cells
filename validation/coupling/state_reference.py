@@ -1,4 +1,4 @@
-"""R-state: the two-state regulatory fraction (hill_regulated_two_state@1), an independent
+"""R-state: the two-state regulatory fraction (cells.regulation.hill_regulated_two_state@1), an independent
 reference.
 
 Written from docs/INVENTORY_COUPLING_DESIGN.md Appendix A.3 (with §1.5) and the turnover law of

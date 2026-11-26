@@ -370,7 +370,7 @@ class Bound:
 
 
 def declared_units(p, j):
-    """A population's declared abundance in units, as membrane_entity_state@1 counts it: @3's
+    """A population's declared abundance in units, as cells.operator.membrane_entity_state@1 counts it: @3's
     channel_abundance (per area, a0) x the patch's declared area A0 x the reference density."""
     patch = int(p.channel_membranes[j])
     return (

@@ -3,7 +3,7 @@
 FR-5's judged world runs through the composite (FR-1's compartment operator), and its start runs on
 the vector-window path. With test_kind_routing.py's closed pair, its route factored by a planted
 source (factor 0.3):
-- an empty composition of the factored world is its resolved_pump_tissue@3 run, bitwise;
+- an empty composition of the factored world is its cells.model.resolved_pump_tissue@3 run, bitwise;
 - the vector-window path gives the scalar run's transfer and heat, with every device check passed.
 """
 

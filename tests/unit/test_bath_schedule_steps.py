@@ -1,4 +1,4 @@
-"""Milestone 2 of scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §7, §8), NumPy.
+"""Milestone 2 of cells.operator.scheduled_bath_composition@1 (FR-10; docs/BATH_SCHEDULE_DESIGN.md §7, §8), NumPy.
 
 A step is admitted only if a measured passing point of its key and direction dominates it in both
 ratio and level, and only within the measured conditions: ARS(2,2,2) at dt <= 1 ms or RK4 at

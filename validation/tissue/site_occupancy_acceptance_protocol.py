@@ -36,11 +36,11 @@ WRITTEN = ("18 November 2026, by the FR owner, after the protocol's worlds were 
            "protocol world")
 ORDER_OBSERVABLES = ["amount_cell_0", "amount_ecs_0", "B_r0"]
 ENGINE_IDS = [
-    "resolved_pump_composite@1", "resolved_pump_tissue@3", "site_occupancy@1",
-    "langmuir_site_binding@1", "site_conserving_internalisation@1",
-    "ssprk33_unidirectional_stage_condition_site_bookings@1", "constant_field@1",
-    "resolved_capacitor_components_current_continuity@1",
-    "capacitive_reduction_gauged_damped_newton@2", "imex_ars222_face_electromigration@1"]
+    "cells.model.resolved_pump_composite@1", "cells.model.resolved_pump_tissue@3", "cells.operator.site_occupancy@1",
+    "cells.site_binding.langmuir_site_binding@1", "cells.site_internalisation.site_conserving_internalisation@1",
+    "ssprk33_unidirectional_stage_condition_site_bookings@1", "cells.route.constant_field@1",
+    "cells.field_closure.resolved_capacitor_components_current_continuity@1",
+    "cells.solver.capacitive_reduction_gauged_damped_newton@2", "cells.solver.imex_ars222_face_electromigration@1"]
 LEDGERS = ["local", "outside", "total", "charge", "electrode", "global_charge", "reservoir_work",
            "electrode_work", "metabolic_work", "site_bound_entity", "site_moiety_entity"]
 CONTROLS = {

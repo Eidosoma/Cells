@@ -1,4 +1,4 @@
-"""Field solver capacitive_reduction_gauged_damped_newton@3: version 2 plus the floor.
+"""Field solver cells.solver.capacitive_reduction_gauged_damped_newton@3: version 2 plus the floor.
 
 Version 3 iterates exactly as version 2, so on every fixture where version 2
 converges the trajectories are bitwise the same. Where version 2 cannot reach

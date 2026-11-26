@@ -1,6 +1,6 @@
-"""MG0b: a bistable voltage domain wall on resolved_pump_tissue@3.
+"""MG0b: a bistable voltage domain wall on cells.model.resolved_pump_tissue@3.
 
-Engine model run: resolved_pump_tissue@3 (src/cells/definitions/surface_pump_v3_spec.py,
+Engine model run: cells.model.resolved_pump_tissue@3 (src/cells/definitions/surface_pump_v3_spec.py,
 src/cells/models/surface_pump_v3.py), unmodified, IMEX ARS(2,2,2), CPU, float64.
 Each cell is a heredity cell (validation/tissue/surface_pump_v3_fixtures.py:
 heredity_cells) facing its own held bath: BETSE-default membrane coefficients
@@ -8,13 +8,13 @@ with the Na leak x0.2, Kir2.1 1e-8 m/s, NaV1.2 2.5e-7 m/s, the Na/K-ATPase,
 310 K, fixed volume. This rung adds, through @3's own interface only:
   - NaV1.2 availability held at NAV_AVAILABILITY, so that a cell without the
     control is monostable H and the hysteresis loop can close;
-  - a control population per cell (naleak_always_open@1, CONTROL_M_S at
+  - a control population per cell (cells.channel.naleak_always_open@1, CONTROL_M_S at
     availability 1): the ramped control u, a depolarising leak like the
     light-gated CheRiff conductance of McNamara et al. 2020;
   - a write population (naleak, WRITE_M_S) in written cells, pulsed on once;
-  - gap junctions between neighbours (constant_field@1 for Na, K and M; the
+  - gap junctions between neighbours (cells.route.constant_field@1 for Na, K and M; the
     impermeant P is blocked) with the voltage gate held open
-    (junction_voltage_relaxation@1, minimum open fraction 1, initial gate 1,
+    (cells.junction.junction_voltage_relaxation@1, minimum open fraction 1, initial gate 1,
     threshold 0), so coupling is the linear G of the theory. Self-insulating
     gated junctions are a later arm.
 Cut and restore use @3's junction availability schedule: a cut closes the
@@ -57,9 +57,9 @@ from validation.morphogenesis import mg0b_theory as theory
 from validation.morphogenesis.mg0a_gradient import _jsonable, evaluate
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
-MODEL_ID = "resolved_pump_tissue@3"
-SOLVER = "imex_ars222_face_electromigration@1"
-NALEAK_LAW_ID = "naleak_always_open@1"
+MODEL_ID = "cells.model.resolved_pump_tissue@3"
+SOLVER = "cells.solver.imex_ars222_face_electromigration@1"
+NALEAK_LAW_ID = "cells.channel.naleak_always_open@1"
 NAV_AVAILABILITY = 0.4
 CONTROL_M_S = 2.0e-10
 WRITE_M_S = 4 * 9 * fixtures.HEREDITY_PERMEABILITY["Na"]  # 4x the @3 write test's cue.
@@ -71,7 +71,7 @@ JUNCTION_SPECIES = ("Na", "K", "M")
 # the ledger rounding fix (5ba4426) a gate pinned open has zero rate and sets no
 # step bound, and the threshold is kept so the definitions are unchanged.
 GATE_OPEN = dict(
-    law="junction_voltage_relaxation@1",
+    law="cells.junction.junction_voltage_relaxation@1",
     threshold_voltage_V=0.0,
     minimum_open_fraction=1.0,
     initial_gate=1.0,
@@ -204,7 +204,7 @@ def chain_definition(
                 s: (junction_m_s if s in JUNCTION_SPECIES else 0.0)
                 for s, _ in fixtures.HEREDITY_SPECIES
             },
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             gate=dict(GATE_OPEN),
         )
         for i in range(n - 1)

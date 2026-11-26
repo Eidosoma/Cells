@@ -308,12 +308,12 @@ def lifecycle(base, population=False):
     )
     if population:
         statuses["lysed"] += (
-            "; a vesicle's rupture at its t* (cells.pore_nucleation@1, cause pore) is a lysis: it "
+            "; a vesicle's rupture at its t* (cells.assembly_hazard.pore_nucleation@1, cause pore) is a lysis: it "
             "frees its slot"
         )
     else:
         statuses["lysed"] = (
-            "the vesicle ruptured at its t* (cells.pore_nucleation@1, cause pore): its molecules "
+            "the vesicle ruptured at its t* (cells.assembly_hazard.pore_nucleation@1, cause pore): its molecules "
             "return to their pool places and its closure cost is released"
         )
     order = base["order"] + (

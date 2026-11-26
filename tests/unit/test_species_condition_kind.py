@@ -1,8 +1,8 @@
-"""cells.species_condition@1 through the engine (G-5;
+"""cells.kind.species_condition@1 through the engine (G-5;
 docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md, section 8).
 
 The release world, plain @3 under IMEX, is cell_0 (0.5 pL) and its finite node_0 (0.05 pL), joined
-by one patch that carries K and one charged Ca route (passive_constant_field_permeation@1). The
+by one patch that carries K and one charged Ca route (cells.route.passive_constant_field_permeation@1). The
 route names two conditions at the cell, a ligand's (L, valence -3, an impermeant row) and calcium's
 own (an activation and an inhibition), so the released calcium opens its own gate. On the host, no
 compile:
@@ -24,7 +24,7 @@ compile:
   beside any operator that changes slots, whatever its kinds declare;
 - a world that declares none keeps its definition, its structure and its program (D148).
 Compiled, the store world (a composite of this file's own numbers: the same release from a
-compartment, its ligand binding a buffer by local_species_reactions@1): ten steps in two windows, in
+compartment, its ligand binding a buffer by cells.operator.local_species_reactions@1): ten steps in two windows, in
 which the route's heat never falls and its factor is the closed form's, and a restart from a written
 checkpoint that repeats the second window bit for bit (planted: a changed half-saturation is
 refused).
@@ -66,7 +66,7 @@ from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import species_reactions_fixtures as rfx
 from validation.tissue import wash_schedule_fixtures as wfx
 
-ROUTE = "passive_constant_field_permeation@1"
+ROUTE = "cells.route.passive_constant_field_permeation@1"
 AREA, PERMEABILITY = 1e-9, 3e-5  # m^2, m/s.
 K_LIGAND, N_LIGAND = 1.5e-4, 2.0  # mM, 1.
 K_ACT, N_ACT, K_INH, N_INH = 4e-3, 3.0, 2e-2, 2.0
@@ -126,7 +126,7 @@ def floors(raw):
 def tissue(*, dt=1e-4, steps=10, **changes):
     """The release world as a plain @3 definition."""
     raw = release("node_0", dt=dt, steps=steps, **changes)
-    raw["model"]["id"] = "resolved_pump_tissue@3"
+    raw["model"]["id"] = "cells.model.resolved_pump_tissue@3"
     raw["model"].pop("inner_model")
     raw["model"].pop("operators")
     return floors(raw)
@@ -527,10 +527,10 @@ def test_the_kind_s_place_beside_operators_is_admitted_or_refused_by_name():
     # the structure check on the store's inner model refuses each, naming the kind.
     inner = get_model(parse_spec(stored).model).inner
     for changer, match in (
-        ("isopotential_partition@1", "opens, closes or retires slots"),
-        ("scheduled_membrane_insertion@2", "opens, closes or retires slots"),
-        ("scheduled_cell_replacement@2", "today's fixed fields"),
-        ("scheduled_membrane_trafficking@1", "today's fixed fields"),
+        ("cells.operator.isopotential_partition@1", "opens, closes or retires slots"),
+        ("cells.operator.scheduled_membrane_insertion@2", "opens, closes or retires slots"),
+        ("cells.operator.scheduled_cell_replacement@2", "today's fixed fields"),
+        ("cells.operator.scheduled_membrane_trafficking@1", "today's fixed fields"),
     ):
         errors = pump_composite.structure_errors(inner, (OPERATORS[changer],))
         assert any(match in e and species.KIND_ID in e for e in errors), (changer, errors)

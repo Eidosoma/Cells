@@ -1,4 +1,4 @@
-"""na2_anion_symport_diagram@1 (laws/cycles/na2_anion_symport_diagram.py; D228 item 1, version 2)
+"""cells.cycle.na2_anion_symport_diagram@1 (laws/cycles/na2_anion_symport_diagram.py; D228 item 1, version 2)
 on the cycle kind's general layout: two Na+ and one anion imported by an eight-state diagram whose
 rates each population declares (forms.resolved).
 

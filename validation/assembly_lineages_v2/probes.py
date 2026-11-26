@@ -1,4 +1,4 @@
-"""The probe driver of cells.assembly_lineages@2: the engine on OL1's registered inputs (OL5).
+"""The probe driver of cells.model.assembly_lineages@2: the engine on OL1's registered inputs (OL5).
 
 OL1's independent references register their inputs (format ool_references.*@1); their harness reads
 the engine's saved outputs by role. This driver runs the engine on those inputs and saves the
@@ -323,7 +323,7 @@ def _parsed_or_refusal(directory, definition, provenance):
         _json(directory / "refused.json",
               {"format": PROBE_FORMAT, "refused": True, "message": str(error),
                "conventions": definition["model"]["world"]["conventions"],
-               "rule": "the engine's parser (cells.assembly_lineages@2's spec)",
+               "rule": "the engine's parser (cells.model.assembly_lineages@2's spec)",
                **provenance})  # fmt: skip
         return None
 

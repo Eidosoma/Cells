@@ -263,7 +263,7 @@ def adapt_run(raw: dict, source: str = "run.json") -> RunView:
 
 # ------------------------------------------------------------- the engine's layout
 #
-# FORMAT.md of the engine's probe set (17 November 2026; cells.assembly_lineages@1). Only
+# FORMAT.md of the engine's probe set (17 November 2026; cells.model.assembly_lineages@1). Only
 # the interface ID strings change at the engine's freeze; they are not read here.
 
 ENGINE_SSA = {

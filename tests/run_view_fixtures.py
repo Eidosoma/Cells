@@ -1,8 +1,8 @@
 """Worlds and planted declarations for the run view's tests (cells/records/run_view.py).
 
 The worked example's world, short: one cell secreting S into a finite node that leaks to its held
-bath (validation/tissue/secreted_species_fixtures; scheduled_species_turnover@1 and
-scheduled_species_exchange@1). Declarations an operator does not carry yet are planted for a
+bath (validation/tissue/secreted_species_fixtures; cells.operator.scheduled_species_turnover@1 and
+cells.operator.scheduled_species_exchange@1). Declarations an operator does not carry yet are planted for a
 test's duration only (plant), never in a source file: the secretion world's (declare_secretion)
 and S5's partition world's (declare_division: the membrane state and the partition).
 """
@@ -18,11 +18,11 @@ from cells.records import run_view
 from validation.tissue import secreted_species_fixtures as fx
 
 DT = 1e-3
-TURNOVER = "scheduled_species_turnover@1"
-EXCHANGE = "scheduled_species_exchange@1"
-PARTITION = "isopotential_partition@1"
-STATE = "membrane_entity_state@1"
-INJECTION = "electrode_current_injection@1"
+TURNOVER = "cells.operator.scheduled_species_turnover@1"
+EXCHANGE = "cells.operator.scheduled_species_exchange@1"
+PARTITION = "cells.operator.isopotential_partition@1"
+STATE = "cells.operator.membrane_entity_state@1"
+INJECTION = "cells.operator.electrode_current_injection@1"
 # A 3 M KCl filling's proportion, with M as the heredity world's anion (as
 # tests/unit/test_current_injection_runs.py declares it).
 CARRIERS = {"K": 0.4912, "M": 0.5088}

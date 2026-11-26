@@ -15,11 +15,11 @@ their steady state for Vm = 0 in INIT (BETSE creates the network before the firs
 voltage update) and, in SIM, for the Vm of the SIM start state (BETSE re-reads the
 network at SIM start with the INIT-end Vm). Validation tooling; no Cells engine model.
 
-``run-resolved`` runs Cells' own physics, resolved_pump_tissue@3: default_world_adapter's
-resolved_pump_tissue@2 definition (``run_resolved``, blind) plus one channel population per
-membrane patch and network channel (RESOLVED_LAWS: Kv1p5 -> kv1p5_mh@1, Kir2p1 ->
-kir2p1_mh2@1, Nav1p2 -> nav1p2_m3h_regularized@1, KLeak -> kleak_always_open@1, NaLeak ->
-naleak_always_open@1), max_permeability = max Dm / tm, abundance 1, permeant ion the
+``run-resolved`` runs Cells' own physics, cells.model.resolved_pump_tissue@3: default_world_adapter's
+cells.model.resolved_pump_tissue@2 definition (``run_resolved``, blind) plus one channel population per
+membrane patch and network channel (RESOLVED_LAWS: Kv1p5 -> cells.channel.kv1p5_mh@1, Kir2p1 ->
+cells.channel.kir2p1_mh2@1, Nav1p2 -> cells.channel.nav1p2_m3h_regularized@1, KLeak -> cells.channel.kleak_always_open@1, NaLeak ->
+cells.channel.naleak_always_open@1), max_permeability = max Dm / tm, abundance 1, permeant ion the
 channel's own (K or Na, relative permeability 1). Its gates start as BETSE's do: the
 steady state at 0 V in INIT and, at the SIM handoff, the steady state at the membrane
 voltage of Cells' own INIT end. Channels with ``init active: false`` get availability 0 in
@@ -31,7 +31,7 @@ identity.
         --case CASE --protocol P.json --out DIR [--dt-factor F --sim-start chained]
     ... difference-budget --case CASE --pair NAME BASE OTHER ... --out FILE.json
     ... run-resolved --case CASE --device cpu --dt-init 1e-3 --out DIR [--protocol P.json]
-        [--field-solver capacitive_reduction_gauged_damped_newton@3]
+        [--field-solver cells.solver.capacitive_reduction_gauged_damped_newton@3]
 """
 
 import argparse
@@ -66,13 +66,13 @@ EXECUTED = (
     "validation/betse/network_world_adapter.py",
     "validation/betse/emulator/network.py",
 )
-RESOLVED_CHANNEL_MODEL_ID = "resolved_pump_tissue@3"
+RESOLVED_CHANNEL_MODEL_ID = "cells.model.resolved_pump_tissue@3"
 RESOLVED_LAWS = {
-    "kv1p5": "kv1p5_mh@1",
-    "kleak": "kleak_always_open@1",
-    "kir2p1": "kir2p1_mh2@1",
-    "nav1p2": "nav1p2_m3h_regularized@1",
-    "naleak": "naleak_always_open@1",
+    "kv1p5": "cells.channel.kv1p5_mh@1",
+    "kleak": "cells.channel.kleak_always_open@1",
+    "kir2p1": "cells.channel.kir2p1_mh2@1",
+    "nav1p2": "cells.channel.nav1p2_m3h_regularized@1",
+    "naleak": "cells.channel.naleak_always_open@1",
 }
 # default_world_adapter's requirements with the general network on (its only relaxation).
 NETWORK_REQUIRED = adapter.REQUIRED_PARAMS | {"molecules_enabled": True}
@@ -158,7 +158,7 @@ def resolved_channel_definition(world, phase, start, **kwargs):
     definition = adapter.resolved_definition(world, phase, start, **kwargs)
     model, experiment = definition["model"], definition["experiment"]
     if world["calcium_pump"] is None:
-        raise NetworkError("resolved_pump_tissue@3 extends @2: the world needs its Ca-ATPase")
+        raise NetworkError("cells.model.resolved_pump_tissue@3 extends @2: the world needs its Ca-ATPase")
     kinds = [kind for _, kind, _, _ in world["network_channels"]]
     gates = steady_gates(kinds, start.get("channel_vm_V", np.zeros(len(model["membranes"]))))
     channels, controls = [], []
@@ -487,7 +487,7 @@ def main(argv=None):
         "--pair", nargs=3, action="append", required=True, metavar=("NAME", "BASE", "OTHER")
     )
     budget.add_argument("--out", required=True, help="fresh JSON file")
-    blind = sub.add_parser("run-resolved", help="blind resolved_pump_tissue@3 INIT then SIM")
+    blind = sub.add_parser("run-resolved", help="blind cells.model.resolved_pump_tissue@3 INIT then SIM")
     blind.add_argument("--case", required=True)
     blind.add_argument("--device", choices=("cpu", "gpu"), default="cpu")
     blind.add_argument("--dt-init", type=float, default=1e-3)

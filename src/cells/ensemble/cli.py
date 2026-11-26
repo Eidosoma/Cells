@@ -130,8 +130,8 @@ def aggregate(rows):
             raise ValueError("An ensemble cannot mix an adapter family's results with others")
         (adapter,) = adapters.values()
         return aggregate_adapter(adapter, rows)
-    ionic = [row for row in rows if model_of(row) == "ionic_worlds@1"]
-    assembly = [row for row in rows if model_of(row) != "ionic_worlds@1"]
+    ionic = [row for row in rows if model_of(row) == "cells.model.ionic_worlds@1"]
+    assembly = [row for row in rows if model_of(row) != "cells.model.ionic_worlds@1"]
     if ionic and assembly:
         raise ValueError("An ensemble cannot mix ionic and assembly result families")
     if ionic:
@@ -169,7 +169,7 @@ def aggregate(rows):
             raise ValueError("An arm changed its registered observation grid")
         for key in ("not_completed_counts", "final_size_histogram", "dwell_by_size_total_s"):
             arm[key] = [a + b for a, b in zip(arm[key], row[key], strict=True)]
-        if model_of(row) == "finite_bond_assembly@1":
+        if model_of(row) == "cells.model.finite_bond_assembly@1":
             arm["model"] = row["model"]
             arm["completion_event"] = row["completion_event"]
             for key in (
@@ -219,7 +219,7 @@ def aggregate_ionic(rows):
         arm = groups.setdefault(
             row["arm"],
             {
-                "model": "ionic_worlds@1",
+                "model": "cells.model.ionic_worlds@1",
                 "physical_model": row["physical_model"],
                 "deterministic_replicas": True,
                 "worlds": 0,
@@ -491,7 +491,7 @@ def register(args):
     for task in planned["tasks"]:
         raw = task["definition"]
         if (
-            families.model_of(raw["model"]) == "ionic_worlds@1"
+            families.model_of(raw["model"]) == "cells.model.ionic_worlds@1"
             and raw["simulation"]["execution"]["backend"] != "gpu"
         ):
             raise ValueError("GPU ensembles require an explicit GPU ionic definition")

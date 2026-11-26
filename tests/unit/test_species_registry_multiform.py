@@ -58,7 +58,7 @@ def raw_model():
         dict(id="P", valence=-2, standard_mu_RT=-1.5, forms=copy.deepcopy(PHOS_FORMS)),
         dict(id="Na", valence=1),
     ]
-    return dict(id="resolved_pump_tissue@3", standard_concentration_mM=C0, species=species)
+    return dict(id="cells.model.resolved_pump_tissue@3", standard_concentration_mM=C0, species=species)
 
 
 def spec_of(declared):

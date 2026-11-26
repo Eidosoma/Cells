@@ -1,7 +1,7 @@
-"""cells.patch_damage@1: a membrane patch's damage, a source of the routing door (FR-5).
+"""cells.kind.patch_damage@1: a membrane patch's damage, a source of the routing door (FR-5).
 
 docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §9 and §16 (the lead's rulings of 16 November 2026) and
-INNER_MODEL_V4_DESIGN.md §7.4 (l) and (n); the law is `bounding_patch_damage@1`
+INNER_MODEL_V4_DESIGN.md §7.4 (l) and (n); the law is `cells.damage.bounding_patch_damage@1`
 (laws/transport/patch_damage.py), injury and resealing as a kind:
 
     dd/dt = a (1 - d) - b d,   a = k_inj u_inj(t),  b = k_res u_res(t),   d in [0, 1],
@@ -12,7 +12,7 @@ books nothing; it reaches routes only as a factor through the routing door (§7.
 
 The declaration (model key `patch_damage`), at most one damage entity per membrane patch:
 
-    [{"id": "damage_0", "patch": "bounding_0", "law": "bounding_patch_damage@1",
+    [{"id": "damage_0", "patch": "bounding_0", "law": "cells.damage.bounding_patch_damage@1",
       "initial_damage": 0.0, "injury_rate_per_s": 1.0, "resealing_rate_per_s": 0.05}]
 
 and its schedules (experiment key `damage_controls`, optional; the core's gap-6 schedules, §7.4
@@ -75,7 +75,7 @@ from cells.modules import (
 )
 from cells.registry.kind_registry import BUILTIN
 
-KIND_ID = "cells.patch_damage@1"
+KIND_ID = "cells.kind.patch_damage@1"
 MODEL_KEY = "patch_damage"
 SCHEDULE_KEY = "damage_controls"
 LAW_ID = qualified(law.LAW_ID)

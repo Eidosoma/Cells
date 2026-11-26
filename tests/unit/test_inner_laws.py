@@ -1,4 +1,4 @@
-"""Declared laws and one implementation per structure for resolved_pump_tissue@3 (D172, D176).
+"""Declared laws and one implementation per structure for cells.model.resolved_pump_tissue@3 (D172, D176).
 
 docs/INNER_MODEL_V4_DESIGN.md §7.4:
 * the law declarations agree with today's tables, and their kernels and openings with today's
@@ -34,13 +34,13 @@ from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
-ARS = "imex_ars222_face_electromigration@1"
-SERIES_LAW = spec3.SERIES_GATE_LAW_ID  # FR-30's junction_series_gates@1 (D262).
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
+SERIES_LAW = spec3.SERIES_GATE_LAW_ID  # FR-30's cells.junction.junction_series_gates@1 (D262).
 TODAYS = {law_id: inner_laws.CHANNEL_LAWS[law_id] for law_id in spec3.TODAYS_CHANNEL_LAWS}
 GATED = [law for law in TODAYS.values() if law.gated]  # The Kv1 laws': test_kv1_channel_laws.
-KV1_CODES = {"kv1p1_mh2@1": 5, "kv1p2_mh@1": 6, "kv1p3_mh@1": 7, "kv1p4_mh@1": 8, "kv1p6_mh@1": 9}
+KV1_CODES = {"cells.channel.kv1p1_mh2@1": 5, "cells.channel.kv1p2_mh@1": 6, "cells.channel.kv1p3_mh@1": 7, "cells.channel.kv1p4_mh@1": 8, "cells.channel.kv1p6_mh@1": 9}
 # Registered after today's five.
-LATER_CODES = {**KV1_CODES, "clleak_always_open@1": 10, "cav1p2_m2h@1": 11}
+LATER_CODES = {**KV1_CODES, "cells.channel.clleak_always_open@1": 10, "cells.channel.cav1p2_m2h@1": 11}
 INNER_PROTOCOL = (
     "MODEL_ID",
     "STATE_AXES",
@@ -200,7 +200,7 @@ def test_junction_and_pump_declarations():
     assert ca.moves == (("calcium", -1),)
     assert ca.kinetics is calcium_atpase.kinetics
     for law in (nak, ca):
-        assert law.fuel_kinds == ("maintained_chemical_reservoirs@1",)
+        assert law.fuel_kinds == ("cells.fuel_kind.maintained_chemical_reservoirs@1",)
 
 
 def test_structure_of_definitions():
@@ -320,16 +320,16 @@ def test_moved_rows():
     assert set(moved) == {"Na", "K", "M"}  # P, the fixed anion, is moved by nothing.
     kinds = {s: [(kind, law) for kind, law, _ in movers] for s, movers in moved.items()}
     assert kinds["Na"] == [
-        ("membrane", "constant_field@1"),
+        ("membrane", "cells.route.constant_field@1"),
         ("channel", spec3.NAV1P2_LAW_ID),
         ("pump", kinetic_pump.LAW_ID),
     ]
     assert kinds["K"] == [
-        ("membrane", "constant_field@1"),
+        ("membrane", "cells.route.constant_field@1"),
         ("channel", spec3.KIR2P1_LAW_ID),
         ("pump", kinetic_pump.LAW_ID),
     ]
-    assert kinds["M"] == [("membrane", "constant_field@1")]
+    assert kinds["M"] == [("membrane", "cells.route.constant_field@1")]
     release = parse_spec(fixtures.definition("release", solver=ARS)).model
     moved = surface_pump_v3.moved_rows(release)
     assert ("pump", calcium_atpase.LAW_ID) in [(k, law) for k, law, _ in moved["Ca"]]

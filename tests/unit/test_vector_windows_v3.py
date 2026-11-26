@@ -1,4 +1,4 @@
-"""Vectorized resolved_pump_tissue@3 worlds (execution/vector_windows.py) against single worlds.
+"""Vectorized cells.model.resolved_pump_tissue@3 worlds (execution/vector_windows.py) against single worlds.
 
 A batch of heterogeneous worlds with all five channel laws (the eight-population
 fixture, channels switched on mid-run) reproduces each world's own windowed run
@@ -7,7 +7,7 @@ algebraic rewrites and fusion disabled. Faults injected into one world's
 accepted rows (a channel-transfer booking, a channel gate leaving [0, 1]) or a
 refused step stop the vectorized and the sequential (lax.map, host-checked)
 paths at the same step with the same check, and the failing world refuses its
-window: no world's state from that window is accepted. ionic_worlds@1 admits
+window: no world's state from that window is accepted. cells.model.ionic_worlds@1 admits
 @3 with world_batching "vmap" as an explicit option.
 """
 
@@ -86,7 +86,7 @@ def reference():
 
 def test_batch_reproduces_independent_worlds_within_rounding(reference):
     spec, scalar, batch, windows = reference
-    assert batch.resources["mapping"] == "vmap_device_checks@1"
+    assert batch.resources["mapping"] == "cells.execution.vmap_device_checks@1"
     assert batch.worlds[1].final.state.channel_transferred.shape[-1] == 9  # Padded slot.
     for world in spec.worlds:
         own, seen = scalar[world.world_id]
@@ -249,7 +249,7 @@ def test_held_controls_are_the_per_slot_schedule_controls_read_once(monkeypatch)
 
 def ionic_definition(**extra):
     simulation = definition().to_dict()
-    return dict(model="ionic_worlds@1", simulation=simulation, worlds=2, window_steps=5) | extra
+    return dict(model="cells.model.ionic_worlds@1", simulation=simulation, worlds=2, window_steps=5) | extra
 
 
 def test_ionic_admits_resolved_pump_tissue_v3_with_an_explicit_vmap_option(reference):
@@ -267,7 +267,7 @@ def test_ionic_admits_resolved_pump_tissue_v3_with_an_explicit_vmap_option(refer
     assert vector.fingerprint != default.fingerprint
     complete, report = ionic.run(vector, backend="cpu")
     assert report["world_batching"] == "vmap"
-    assert report["physical_model"] == "resolved_pump_tissue@3"
+    assert report["physical_model"] == "cells.model.resolved_pump_tissue@3"
     steps = len(EventGrid(vector.simulation)) - 1
     assert report["integrated_world_steps"] == 2 * steps
     # Replicas of the reference's first world: its own windowed run, to rounding.

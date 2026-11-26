@@ -1,4 +1,4 @@
-"""The adapter for the engine's record layout (FORMAT.md, cells.assembly_lineages@1).
+"""The adapter for the engine's record layout (FORMAT.md, cells.model.assembly_lineages@1).
 
 Planted controls: a transfer constant that disagrees with k_join/k_leave, and SSA prose
 the oracle does not know. Both must be refused rather than read.
@@ -16,10 +16,10 @@ from validation.gard.references.records import RecordFormatError, adapt_run, ada
 def _world(K=100.0, with_beta=True):
     G = 3
     w = {"types": {"count": G, "prefix": "t", "transfer_constant": K}, "supply": 0.01,
-         "exchange": {"law": "cells.reservoir_exchange@1", "leave_rate": 1e-4}, "founder": [1, 0, 2],
-         "fission": {"operator": "cells.size_threshold_fission@1", "size": 80,
+         "exchange": {"law": "cells.exchange.reservoir_exchange@1", "leave_rate": 1e-4}, "founder": [1, 0, 2],
+         "fission": {"operator": "cells.operator.size_threshold_fission@1", "size": 80,
                      "partition": {"rule": "exact_fraction", "fraction": 0.5}},
-         "continuation": {"operator": "cells.daughter_continuation@1", "daughter": "first", "empty": "extinct",
+         "continuation": {"operator": "cells.operator.daughter_continuation@1", "daughter": "first", "empty": "extinct",
                           "sink": "discard"},
          "units": {"time": "nominal", "temperature_K": None}}
     if with_beta:
@@ -34,7 +34,7 @@ def _run(**ssa_over):
            "prefix": "serial left fold in channel order: c_0 = a_0, c_j = c_(j-1) + a_j; a0 = c_(2C-1)"}
     ssa.update(ssa_over)
     return {"world": "abc", "founder": "world", "mode": "single_lineage",
-            "law": {"id": "cells.gard_catalysis_pair_consistent@1", "form": "pair-consistent",
+            "law": {"id": "cells.rate_factor.gard_catalysis_pair_consistent@1", "form": "pair-consistent",
                     "energy_role": "passive", "check": {"admitted_as": "passive"}},
             "stream": {"seed": 1, "branch": 0,
                        "uniform": "u = (m + 1/2) * 2**-52, m the low 52 bits of one 64-bit Threefry word"},

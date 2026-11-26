@@ -4,7 +4,7 @@
   "status": "static_unexecuted_candidate",
   "family_matrix": [
     {
-      "target_model_id": "resolved_tissue@2",
+      "target_model_id": "cells.model.resolved_tissue@2",
       "public_parser": "cells.core.surface_kinetic_spec.parse",
       "model_module": "cells.models.surface_kinetic",
       "exact_model_type": "cells.core.surface_kinetic_spec.SurfaceKineticModel",
@@ -56,7 +56,7 @@
       "public_parser": "cells.core.surface_calcium_spec.parse",
       "model_module": "cells.models.surface_calcium",
       "exact_model_type": "cells.core.surface_calcium_spec.SurfaceCalciumModel",
-      "nested_ionic_identity": "resolved_tissue@2",
+      "nested_ionic_identity": "cells.model.resolved_tissue@2",
       "calcium": true,
       "finite_fuel": false,
       "actual_open_reservoirs": false,
@@ -152,7 +152,7 @@
       "public_parser": "cells.core.surface_calcium_energy_spec.parse",
       "model_module": "cells.models.surface_calcium_energy",
       "exact_model_type": "cells.core.surface_calcium_energy_spec.SurfaceCalciumEnergyModel",
-      "nested_ionic_identity": "resolved_tissue@8",
+      "nested_ionic_identity": "cells.model.resolved_tissue@8",
       "calcium": true,
       "finite_fuel": true,
       "actual_open_reservoirs": false,
@@ -245,7 +245,7 @@
     }
   ],
   "positive_cases": {
-    "ionic-basic": "resolved_tissue@2",
+    "ionic-basic": "cells.model.resolved_tissue@2",
     "ionic-full": "resolved_tissue@12",
     "calcium-basic": "resolved_calcium@1",
     "calcium-full": "resolved_calcium@11",
@@ -375,7 +375,7 @@
     "conversion": "Correctly rounded binary64 exact integer target; no tolerance widening",
     "source_geometry": "Frozen conservative polygon reference budgets unchanged",
     "instantaneous_energy_balance_pJ_per_s": {
-      "resolved_tissue@2": {
+      "cells.model.resolved_tissue@2": {
         "actual_absolute": 1e-10,
         "independent_absolute": null,
         "independent_identity_available": false
@@ -526,7 +526,7 @@
         "independent_limit_pJ_s": null,
         "scope_note": "The kinetic reference has no total-energy proof. Its complete derivative and node-charge/current checks do not establish an independent total-energy identity."
       },
-      "resolved_tissue@2": {
+      "cells.model.resolved_tissue@2": {
         "actual_evidence": [
           "tests/unit/test_surface_kinetic.py:92",
           "tests/unit/test_surface_kinetic.py:334"

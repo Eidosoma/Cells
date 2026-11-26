@@ -1,4 +1,4 @@
-"""Rounding in the resolved pump ledgers and the reaction_transport@1 guards (evidence runs).
+"""Rounding in the resolved pump ledgers and the cells.model.reaction_transport@1 guards (evidence runs).
 
 Parts (each writes <part>[-<label>].json in --output; failures are kept as results):
   trajectory  run a definition JSON (--definition, optionally --end) through the
@@ -15,7 +15,7 @@ Parts (each writes <part>[-<label>].json in --output; failures are kept as resul
   fine        the heredity write cell at 15.625 us over 1 s (64,000 steps) through
               the runner (the reference refused before the electrode fix).
   reaction    MG0a's a/4 strip (256 cells, 1e6 pL reservoir) to 40/k in runner
-              windows: the reaction_transport@1 guards over 3.2e5 RK4 steps.
+              windows: the cells.model.reaction_transport@1 guards over 3.2e5 RK4 steps.
   gauge       component net charge (capacitor-ledger representative rows) over
               --minutes at --dt in runner windows, for --world closed (the @1
               closed fixture: three components, one gauged) or w225 (the
@@ -256,7 +256,7 @@ def gauge_raw(world, *, dt, end_time, backend):
     if world == "closed":
         from validation.tissue import surface_pump_fixtures as fixtures
 
-        raw = fixtures.definition("closed", solver="imex_ars222_face_electromigration@1")
+        raw = fixtures.definition("closed", solver="cells.solver.imex_ars222_face_electromigration@1")
         raw["execution"].update(dt=dt, max_steps=int(math.ceil(end_time / dt)) + 8)
         raw["execution"]["backend"] = backend
         raw["experiment"].update(end_time=end_time, observation_times=[0.0, end_time])

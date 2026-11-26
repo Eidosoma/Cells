@@ -1,4 +1,4 @@
-"""The probe driver of cells.assembly_lineages@2 on OL5's registered OL2 and OL3 inputs.
+"""The probe driver of cells.model.assembly_lineages@2 on OL5's registered OL2 and OL3 inputs.
 
 OL5's references register OL2's and OL3's inputs: worlds (ool_references.world2@1), runs (run2@1),
 probe states (probe_states2@1), the partition parents (ol3_parents@1), 22 refusal declarations,
@@ -127,7 +127,7 @@ def refusals2(inputs, out):
     _json(
         directory / "refusals.json",
         {"format": probes.PROBE_FORMAT, "role": "refusals2", "source": _source(),
-         "rule": "the engine's parser (cells.assembly_lineages@2's spec), after the reader "
+         "rule": "the engine's parser (cells.model.assembly_lineages@2's spec), after the reader "
                  "(validation/assembly_lineages_v2/registered.py), which checks nothing",
          "results": results, "all_refused": not admitted},
     )  # fmt: skip

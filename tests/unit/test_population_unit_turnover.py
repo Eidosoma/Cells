@@ -1,4 +1,4 @@
-"""population_unit_turnover@1, FR-7's unit producer (F1): host rows, and one compiled world.
+"""cells.operator.population_unit_turnover@1, FR-7's unit producer (F1): host rows, and one compiled world.
 
 Host (NumPy, no compile), on the bound pump-free cell (unit_turnover_fixtures.leak_cell):
 * the half-step against an independent 50-digit matrix exponential of the chain with its sinks
@@ -505,11 +505,11 @@ class _Stub:
 
 WRITER_REFUSALS = {
     "trafficking": (
-        _Stub("scheduled_membrane_trafficking@1", writes=("population_abundance_increment",)),
+        _Stub("cells.operator.scheduled_membrane_trafficking@1", writes=("population_abundance_increment",)),
         "also writes population units",
     ),
     "another author": (
-        _Stub("planted_author@1", role="author", species=(fx.PRECURSOR,)),
+        _Stub("cells.operator.planted_author@1", role="author", species=(fx.PRECURSOR,)),
         "also declares the precursor",
     ),
     "turnover admitted": (
@@ -586,7 +586,7 @@ class _Planted(Operator):
     """A planted rate-route source (B1′): a declared factor on the producer's assembly rate and
     its validity, or no route (factor None)."""
 
-    LAW_ID = "tests.planted_unit_route@1"
+    LAW_ID = "tests.operator.planted_unit_route@1"
     SPLIT = True
     RK4 = "split"
     RATE_ROUTES = ((put.LAW_ID, "unit_assembly_rate"),)
@@ -642,7 +642,7 @@ def test_the_assembly_rate_is_routable_and_a_route_multiplies_it_in_the_half_ste
 
 
 def test_the_coupling_v2_routes_a_template_onto_the_assembly_rate():
-    """F3's code (B1′ on species_regulated_availability@2; development, not judged): a Hill
+    """F3's code (B1′ on cells.operator.species_regulated_availability@2; development, not judged): a Hill
     activation of a template species in the cell, F = b + (1 - b) c^n / (K^n + c^n), multiplies the
     producer's assembly rate in its half-steps. It parses, round trips and binds one route; the
     routed half-step is bitwise the half-step at the product rate, and records F; switched off

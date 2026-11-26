@@ -5,9 +5,9 @@ docs/CELL_DIVISION_S5_DESIGN.md §8.3 Q5. Each world runs at dt = 0.5, 0.25 and 
 condition: every step term decreases. Engine only; no reference is needed. This is a
 development study, not a judged run.
 
-Engine models: resolved_pump_composite@1 over resolved_pump_tissue@3, with
-membrane_entity_state@1, scheduled_membrane_insertion@2, restricted_cleft_lumen@2,
-isopotential_partition@1, cytoplasmic_bridge_closure@1 and electrode_current_injection@1.
+Engine models: cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, with
+cells.operator.membrane_entity_state@1, cells.operator.scheduled_membrane_insertion@2, cells.operator.restricted_cleft_lumen@2,
+cells.operator.isopotential_partition@1, cells.operator.cytoplasmic_bridge_closure@1 and cells.operator.electrode_current_injection@1.
 
 Worlds (tests/partition_fixtures; nominal, built from neither J1 input):
 * furrow 1->2: the asymmetric furrow world (f 0.75, a 0.6, mismatch carriers). Its bridge

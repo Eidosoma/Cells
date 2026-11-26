@@ -1,6 +1,6 @@
 """Guards (b)-(d) of design §3.7 for the scheduled replacement operator (D143).
 
-(c) Re-expressed through the composite, resolved_pump_replacement@1 equals the
+(c) Re-expressed through the composite, cells.model.resolved_pump_replacement@1 equals the
 frozen model bitwise on its own test worlds: every state field, observation
 column and max_ diagnostic (np.array_equal), compiled. Worlds: the heredity sheet
 with one, simultaneous, both-ends, second-generation and D-template events (IMEX
@@ -57,7 +57,7 @@ EVENTS = (
     (T3, "cell_0", "d", "n4"),
     (T3, "cell_3", "h", "n5"),
 )
-FAST_NAV = dict(fx.NO_ROUTES, channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3e-7})
+FAST_NAV = dict(fx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7})
 DONOR_EVENTS = (
     (T1, "cell_0", None, "c1", "cell_3"),
     (T2, "cell_4", "fast_nav", "c2", "cell_3"),
@@ -110,7 +110,7 @@ def drawn():
     raw = sheet()
     t = fx.template_from_cell(raw, "cell_1", "drawn")
     t["route_values"].update(
-        channel_permeability_m_per_s={"nav1p2_m3h_regularized@1": 3.0e-7},
+        channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3.0e-7},
         membrane_permeability_m_per_s={"Na": 8e-11},
         pump_capacity_fmol_per_s_m2=1.2e8,
     )
@@ -151,7 +151,7 @@ WORLDS = {
 
 
 def _booking(raw):
-    raw["model"]["junction_heat_booking"] = "trapezoid_nonnegative@1"
+    raw["model"]["junction_heat_booking"] = "cells.heat.trapezoid_nonnegative@1"
     return raw
 
 

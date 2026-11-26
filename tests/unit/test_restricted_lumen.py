@@ -1,4 +1,4 @@
-"""Tier-1 smoke test of restricted_cleft_lumen@1 (docs/CELL_DIVISION_S3_PLAN.md §1).
+"""Tier-1 smoke test of cells.operator.restricted_cleft_lumen@1 (docs/CELL_DIVISION_S3_PLAN.md §1).
 
 In NumPy on the S2 cleft cell (tests/membrane_insertion_fixtures.cleft_cell: a furrow patch of
 1e-11 m^2 on a 0.01 pL cleft, so w = 2 um), no compile:
@@ -299,8 +299,8 @@ def without_insertion(raw):
         (with_second_furrow, "more than one patch"),
         (charged_bath, "electroneutral"),
         (without_onset, "finite onset node of the insertion"),
-        (reordered, "requires scheduled_membrane_insertion@1 before it"),
-        (without_insertion, "requires scheduled_membrane_insertion@1"),
+        (reordered, "requires cells.operator.scheduled_membrane_insertion@1 before it"),
+        (without_insertion, "requires cells.operator.scheduled_membrane_insertion@1"),
         (lambda r: r["model"]["operators"][2].update(lumens=[]), "non-empty list"),
         (
             lambda r: r["model"]["operators"][2]["lumens"].append(
@@ -321,7 +321,7 @@ def test_another_provider_of_the_volume_is_refused():
     """Water also provides the cleft's volume: the composite refuses two providers."""
     from cells.models import pump_composite
 
-    laws = (fx.STATE, fx.INSERTION, lumen.LAW_ID, "ideal_osmosis_linear_compliance_water@1")
+    laws = (fx.STATE, fx.INSERTION, lumen.LAW_ID, "cells.operator.ideal_osmosis_linear_compliance_water@1")
     with pytest.raises(ConfigError, match="two providers of the view field extracellular_volume"):
         pump_composite.implementation(adapter.MODEL_ID, laws)
 
@@ -332,7 +332,7 @@ def test_insertions_onset_rule_admits_an_onset_anchored_volume():
     insertion.check_definition(spec, declaration, schedule, model)  # The lumen is admitted.
 
     class VolumeProvider(Operator):
-        LAW_ID = "volume_provider@1"
+        LAW_ID = "cells.operator.volume_provider@1"
         EVENT = True
         VIEW_FIELDS = ("extracellular_volume",)
 
@@ -342,7 +342,7 @@ def test_insertions_onset_rule_admits_an_onset_anchored_volume():
         )
 
     class Misdeclared(VolumeProvider):
-        LAW_ID = "misdeclared@1"
+        LAW_ID = "cells.operator.misdeclared@1"
         VIEW_FIELDS = ()
         ONSET_ANCHORED_VIEWS = ("extracellular_volume",)
 

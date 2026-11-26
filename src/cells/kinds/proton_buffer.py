@@ -1,4 +1,4 @@
-"""cells.rapid_proton_buffer@1: FR-4's rapid-buffer closure as the inner model's stage read (B4).
+"""cells.kind.rapid_proton_buffer@1: FR-4's rapid-buffer closure as the inner model's stage read (B4).
 
 docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 1 and (k); docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §4 (the
 closure, D176). The kernel is laws/reactions/rapid_proton_buffer.py (FR-4's owner); this module is
@@ -7,7 +7,7 @@ the kind the core calls at its seams.
 The declaration (model key `stage_reads`, FR-4's form in
 validation/compartment_ph_engine/definitions.py; version 1 admits this one read):
 
-    [{"read_id": "rapid_proton_buffer@1", "proton_row": "H",
+    [{"read_id": "cells.kind.rapid_proton_buffer@1", "proton_row": "H",
       "buffers": {"cell_0": ["B_c"], "lumen": ["B_L"]},
       "k_on_per_mM_s": {"B_c": 1e7, "B_L": 1e7}}]
 
@@ -36,12 +36,12 @@ Precision: the read writes h V into the proton row through the state's increment
 see h to about eps H_eq / h relative (about 1e-10 in a 50 mM buffer at pH 7.2).
 
 The general closure (seam C, docs/CORE_SEAMS_DESIGN.md §5 and §19 as amended): the same kind and
-model key host a second law and read, rapid_binding@1, for several ligands on binders whose forms
+model key host a second law and read, cells.binding.rapid_binding@1, for several ligands on binders whose forms
 the species registry declares (``forms``). Version 1's declaration above keeps its layout, fields
 and code, chosen statically by the declaration's form, so its programs are unchanged. The general
 declaration:
 
-    [{"read_id": "rapid_binding@1", "ligand_rows": ["H", "Mg"], "proton_row": "H",
+    [{"read_id": "cells.binding.rapid_binding@1", "ligand_rows": ["H", "Mg"], "proton_row": "H",
       "binders": {"matrix": ["ATP", "Pi"]},
       "k_on_per_mM_s": {"ATP": {"H": 1e7, "Mg": 1e5}, "Pi": {"H": 1e7, "Mg": 1e5}}}]
 
@@ -55,7 +55,7 @@ declaration:
   for each ligand the binder's forms bind, and every form is reachable from its base by unit steps.
 - Its admission: the registry's forms checks here, and the movers' rules in the species
   registry's check_closure_rows (@3's own routes and pumps refused on a closure row, a kind's move
-  admitted only when its law reads rapid_binding@1, operators naming a held species refused).
+  admitted only when its law reads cells.binding.rapid_binding@1, operators naming a held species refused).
 - Beside that read, §5.2's admission (its charge half, species_registry._closure_mover_errors):
   - the kind declares role_species (F's EntityBinding);
   - its law declares base forms;
@@ -118,11 +118,11 @@ from cells.registry import species_registry
 from cells.modules import KindFields, finite_number
 from cells.registry.kind_registry import BUILTIN, ConfigError, Kind, KindView
 
-KIND_ID = "cells.rapid_proton_buffer@1"
+KIND_ID = "cells.kind.rapid_proton_buffer@1"
 MODEL_KEY = "stage_reads"
 FIELDS = ("read_id", "proton_row", "buffers", "k_on_per_mM_s")
 COLUMNS = ("free_proton_mM", "pH")
-GENERAL_READ_ID = "rapid_binding@1"  # The general closure's law and read ID (CORE_SEAMS §19).
+GENERAL_READ_ID = "cells.binding.rapid_binding@1"  # The general closure's law and read ID (CORE_SEAMS §19).
 GENERAL_FIELDS = ("read_id", "ligand_rows", "binders", "k_on_per_mM_s")
 GENERAL_PROTON = "proton_row"  # Optional: the declared proton row (module docstring).
 
@@ -134,7 +134,7 @@ class Declaration(NamedTuple):
 
 
 class GeneralDeclaration(NamedTuple):
-    """rapid_binding@1's declaration (module docstring): the ligand rows, sorted; the binder rows at
+    """cells.binding.rapid_binding@1's declaration (module docstring): the ligand rows, sorted; the binder rows at
     each node, ((node ID, (binder row, ...)), ...), sorted; k_on per binding, ((binder row,
     ((ligand row, k_on in 1/(mM s)), ...)), ...), sorted; and proton, its declared proton_row (the
     row the release scope, the passive routes' leak and the pH condition check theirs against), or
@@ -410,8 +410,8 @@ def stage_rows(declaration):
     """(proton, node, law) and (buffer, node, law) at every declared node: the rows the read uses
     (the general declaration's: its closure rows), each naming its read's law as a third item (P1's
     selector, the binding owner's ruling (a) of 19 November 2026). The general closure's rows name
-    rapid_binding@1, a registered law that declares free_amounts, so @3's predictor takes P1's
-    form there. Version 1's rows name rapid_proton_buffer@1, which is not a registered law, so they
+    cells.binding.rapid_binding@1, a registered law that declares free_amounts, so @3's predictor takes P1's
+    form there. Version 1's rows name cells.kind.rapid_proton_buffer@1, which is not a registered law, so they
     keep today's form bit for bit (surface_pump_v3.reads_free_amounts)."""
     if isinstance(declaration, GeneralDeclaration):
         return tuple((row, node, GENERAL_READ_ID) for row, node in declaration.closure_rows)
@@ -671,7 +671,7 @@ def _check_general(spec, declaration):
         if entry is None or not entry.forms:
             raise ConfigError(
                 f"{where}: binder row {row} declares no forms; the general closure reads the "
-                "registry's forms (version 1's two-form spelling is rapid_proton_buffer@1's)"
+                "registry's forms (version 1's two-form spelling is cells.kind.rapid_proton_buffer@1's)"
             )
         forms = species_registry.forms_of(spec, row)
         binds = sorted({ligand for _, counts, _ in forms for ligand, _ in counts})
@@ -708,13 +708,13 @@ def _check_general(spec, declaration):
 
 
 # ---------------------------------------------------------------------------- the general closure
-# rapid_binding@1 on the general layout (module docstring; laws/reactions/rapid_binding.py). Each
+# cells.binding.rapid_binding@1 on the general layout (module docstring; laws/reactions/rapid_binding.py). Each
 # hook above dispatches here statically, on the layout type's fields (_is_general), so version 1's
 # traced operations are today's.
 
 
 def _is_general(p):
-    """Static: the layout of a world that declares rapid_binding@1 (its type holds binding_*)."""
+    """Static: the layout of a world that declares cells.binding.rapid_binding@1 (its type holds binding_*)."""
     return "binding_rows" in type(p)._fields
 
 
@@ -968,7 +968,7 @@ def check_definition(spec):
 
 # The fields of each layout (declared_fields, chosen statically by the structure entry, as the
 # passive routes' Factored is): version 1's, today's exactly; the general closure's, which exist
-# only in a world that declares rapid_binding@1.
+# only in a world that declares cells.binding.rapid_binding@1.
 V1_STATE_AXES = (
     ("proton_buffer_max_lag_pH", ("node",)),
     ("proton_buffer_min_pH", ("node",)),

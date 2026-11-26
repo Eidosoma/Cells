@@ -1,6 +1,6 @@
 """Track E's conduction probe on the engine as it is (D155 item 3): exploratory, not judged.
 
-Question. Can the channel laws resolved_pump_tissue@3 admits produce an action potential in one
+Question. Can the channel laws cells.model.resolved_pump_tissue@3 admits produce an action potential in one
 cell and propagate it along a short static chain of cells joined by @3's gap junctions, at a
 feasible step under @3's IMEX solvers and every host and device check? The verdict decides
 between proceeding with the existing mechanisms and naming the particular missing mechanism the
@@ -25,9 +25,9 @@ Order: the single cell with its controls first (part single); the chain only if 
 cell regenerates (part chain); then the verdict (part verdict), before any design note.
 
 Engine models run (nothing here adds physics):
-* resolved_pump_tissue@3: kv1p5_mh@1, kir2p1_mh2@1, nav1p2_m3h_regularized@1,
-  kleak_always_open@1 and naleak_always_open@1 populations; constant_field@1 leaks and
-  junctions; nak_atp_mass_action_positive@1 pumps; junction_voltage_relaxation@1 gates (pinned
+* cells.model.resolved_pump_tissue@3: cells.channel.kv1p5_mh@1, cells.channel.kir2p1_mh2@1, cells.channel.nav1p2_m3h_regularized@1,
+  cells.channel.kleak_always_open@1 and cells.channel.naleak_always_open@1 populations; cells.route.constant_field@1 leaks and
+  junctions; cells.cycle.nak_atp_mass_action_positive@1 pumps; cells.junction.junction_voltage_relaxation@1 gates (pinned
   open, or as declared); IMEX ARS(2,2,2) and Euler with exponential stage gates
   (exponential_mean_rate_linear_target_gates@1), and @3's own RK4 path as its step reference.
   Field solver: whatever validation/tissue/field_solver_choice.declare() gives (D147). Every
@@ -42,8 +42,8 @@ gap-junction permeabilities) multiplied by a coupling factor s. Parameters are s
 measured cell type.
 
 Stimuli. A kick (Na added so that Vm rises by the stated mV with gates at rest;
-surface_pump_v3_fixtures.kicked), or a 1 ms cation conductance: one kleak_always_open@1 and one
-naleak_always_open@1 population of equal permeability on each stimulated cell (reversal near
+surface_pump_v3_fixtures.kicked), or a 1 ms cation conductance: one cells.channel.kleak_always_open@1 and one
+cells.channel.naleak_always_open@1 population of equal permeability on each stimulated cell (reversal near
 0 mV), switched by @3's own channel_controls.
 
 Execution. cells.execution.windows.iter_windows (each step's own refusal, the host checks on every
@@ -90,8 +90,8 @@ from validation.stationary import worlds  # noqa: E402
 from validation.tissue import field_solver_choice  # noqa: E402
 from validation.tissue import surface_pump_v3_fixtures as fx  # noqa: E402
 
-ARS = "imex_ars222_face_electromigration@1"
-EULER = "imex_euler_face_electromigration@1"
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
+EULER = "cells.solver.imex_euler_face_electromigration@1"
 H = fx.HEREDITY_STATES["H"]  # (Vm, Na, K, M, fastest relaxation time)
 # The point every definition of a part uses: NaV1.2 and Kir2.1 permeabilities (m/s), specific
 # capacitance (F/m^2) and the rest (Vm, Na, K, M) its cells start from (gates at rest). The
@@ -153,7 +153,7 @@ PLAN = dict(
         "threshold; dt refinement (10, 5, 2.5 us); 40-cell length check; S1-S2 recovery; "
         "block bracket by bisection on s; the default junction-heat booking and gated "
         "junctions as arms",
-        "chain runs book junction heat with trapezoid_nonnegative@1 (E07-v1's registered "
+        "chain runs book junction heat with cells.heat.trapezoid_nonnegative@1 (E07-v1's registered "
         "booking; the default explicit_tableau can book a negative increment where a junction "
         "voltage crosses zero), and the default booking runs as an arm",
         "device row checks (vector windows) on the main cases",
@@ -399,7 +399,7 @@ def definition(
                 receiver=f"cell_{b}",
                 area_m2=j["area_m2"],
                 permeability_m_per_s={sp: s * v for sp, v in j["permeability_m_per_s"].items()},
-                law="constant_field@1",
+                law="cells.route.constant_field@1",
                 gate=dict(gate),
             )
             for k, (a, b) in enumerate(pairs)
@@ -2288,7 +2288,7 @@ def main(argv=None):
     a.add_argument("--reference-point", default="A")
     a.add_argument(
         "--booking",
-        default="trapezoid_nonnegative@1",
+        default="cells.heat.trapezoid_nonnegative@1",
         help="the chain's junction-heat booking (E07-v1's registered one by default)",
     )
     args = a.parse_args(argv)

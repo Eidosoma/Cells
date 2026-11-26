@@ -1,4 +1,4 @@
-"""The kind registry of resolved_pump_tissue@3 (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).
+"""The kind registry of cells.model.resolved_pump_tissue@3 (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).
 
 A kind is one module's contribution to the inner model: its fields (state, layout, control and
 observation columns) and optional hooks that the core calls at fixed seams. The core reaches
@@ -6,7 +6,7 @@ kinds only through the registry active for the model build: BUILTIN, unless a ca
 inside `scope(registry)`. It imports no kind module. Built-in kinds (the cells.kinds package)
 register on BUILTIN exactly as an external package would, with `registry.register(kind)`.
 
-IDs are namespaced ("cells.transporter@1"); a bare ID resolves in the `cells` namespace, so an
+IDs are namespaced ("cells.kind.transporter@1"); a bare ID resolves in the `cells` namespace, so an
 outside package cannot collide with a built-in. The canonical kind order, the order in which a
 structure's kinds append their fields, is the sorted namespaced ID: total, and independent of
 registration, import and declaration order.
@@ -224,7 +224,7 @@ class Kind:
     right after today's state fields; its material moves land in the shared inventory; its
     controls are availabilities in [0, 1] unless control_domain says otherwise.
 
-    The hooks, as resolved_pump_tissue@3 calls them (`p` is the world's layout, in the
+    The hooks, as cells.model.resolved_pump_tissue@3 calls them (`p` is the world's layout, in the
     structure's layout type; `state` and `control` are in the structure's state and control
     types; `declaration` is what `parse` returned):
     - definition: `parse(entries, base)` -> declaration, from the kind's model-key block and the

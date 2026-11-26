@@ -1,4 +1,4 @@
-"""cells.daughter_continuation@1: which daughter continues the lineage, and where the other goes.
+"""cells.operator.daughter_continuation@1: which daughter continues the lineage, and where the other goes.
 
 At each fission (fission.py) one daughter takes the lineage's slot; the slot keeps its place and
 changes its occupant (GARD_DESIGN §5.2, the replacement idiom), and the occupant's generation

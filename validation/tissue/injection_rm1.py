@@ -1,9 +1,9 @@
-"""First acceptance of electrode_current_injection@1: Rm1 on the uncleaved egg (registered).
+"""First acceptance of cells.operator.electrode_current_injection@1: Rm1 on the uncleaved egg (registered).
 
 docs/PUMP_COMPOSITE_V2_DESIGN.md §4.1. The engine egg is R-full's own uncleaved egg:
 cleft_egg_reference.build(declared inputs, default values, p_old = the record's p_old_m_s)
 from validation/division/j1_declared_inputs.json and j1_prediction_of_record.json, written
-as a resolved_pump_tissue@3 definition. Only egg_scale_smoke's skeleton is reused (cell, held
+as a cells.model.resolved_pump_tissue@3 definition. Only egg_scale_smoke's skeleton is reused (cell, held
 bath, one old membrane). The pulse Rm1 is a large-signal chord, so R-full calibrates P_old on
 it; egg_scale_smoke's small-signal P would put a perfect engine about 1 kOhm off.
 
@@ -38,8 +38,8 @@ if __name__ == "__main__":
         if str(entry) not in sys.path:
             sys.path.insert(0, str(entry))
 
-LAW = "electrode_current_injection@1"
-STATUS = "Development action of the first acceptance of electrode_current_injection@1; not judged."
+LAW = "cells.operator.electrode_current_injection@1"
+STATUS = "Development action of the first acceptance of cells.operator.electrode_current_injection@1; not judged."
 RECORD = ROOT / "validation/division/j1_prediction_of_record.json"
 PROTOCOL = ROOT / "validation/tissue/injection_rm1_protocol.json"
 

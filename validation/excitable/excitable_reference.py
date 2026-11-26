@@ -123,7 +123,7 @@ class Constants:
 
 @dataclass(frozen=True)
 class Pump:
-    """nak_atp_mass_action_positive@1 (appendix §5)."""
+    """cells.cycle.nak_atp_mass_action_positive@1 (appendix §5)."""
 
     nu_max_mol_per_m2_s: float
     dG0_J_per_mol: float

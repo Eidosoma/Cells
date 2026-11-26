@@ -36,10 +36,10 @@ def test_there_are_16_definitions_and_each_is_planned(built):
 def test_the_arms_differ_only_in_the_pulse_and_the_coupling_switch(built):
     base = built["regulated_no_pulse", me.FINEST]
     assert [o["law"] for o in base["model"]["operators"]] == [
-        "scheduled_species_turnover@1",
-        "species_regulated_availability@1",
+        "cells.operator.scheduled_species_turnover@1",
+        "cells.operator.species_regulated_availability@1",
     ]
-    assert base["model"]["id"] == "resolved_pump_composite@1"
+    assert base["model"]["id"] == "cells.model.resolved_pump_composite@1"
 
     def production(raw):
         controls = raw["experiment"]["turnover_controls"]

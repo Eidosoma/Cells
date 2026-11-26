@@ -1,9 +1,9 @@
-"""species_regulated_availability@2's population source (FR-7's part (b); development, not judged).
+"""cells.operator.species_regulated_availability@2's population source (FR-7's part (b); development, not judged).
 
 docs/ABUNDANCE_TO_FUNCTION_DESIGN.md §6.2 and D218: a coupling reads a channel population's density
 rho = a rho_ref (units per µm²). Here a is @3's current channel_abundance, read in the coupling's
 reader view at the control view (contract R2), and rho_ref is the population's reference density
-declared in membrane_entity_state@1. The world is FR-7's leak cell (validation/fr7/
+declared in cells.operator.membrane_entity_state@1. The world is FR-7's leak cell (validation/fr7/
 unit_turnover_fixtures.cell): one cell holding the gate-free K populations kir_0 and leak_1, each
 at 10 units per µm² of reference density. In it, c_pop reads kir_0 onto leak_1's availability.
 Every value is synthetic.
@@ -231,7 +231,7 @@ REFUSALS = {
     ),
     "no membrane state": (
         lambda: world(raw=_without_membrane_state(fx.cell(end=0.005))),
-        "a population source needs membrane_entity_state@1",
+        "a population source needs cells.operator.membrane_entity_state@1",
     ),
     "@1": (
         lambda: with_coupling(fx.cell(end=0.005), [_v1(coupling())], law=sra.LAW_ID),
@@ -272,13 +272,13 @@ def test_an_in_step_writer_of_units_or_area_is_refused(monkeypatch):
     spec, _, _, _, _, declaration, _ = bound(world())
     real = list(cs.entries(spec))
     for field in sra.UNIT_FIELDS:
-        stub = SimpleNamespace(LAW_ID="stub@1", PROCESS=True, ENTITY_WRITES={field: ("x",)})
+        stub = SimpleNamespace(LAW_ID="cells.operator.stub@1", PROCESS=True, ENTITY_WRITES={field: ("x",)})
         monkeypatch.setattr(
             sra.composite_spec, "entries", lambda s, stub=stub: [*real, (stub, 0, 0)]
         )
-        with pytest.raises(ConfigError, match=f"stub@1's in-step process writes {field}"):
+        with pytest.raises(ConfigError, match=f"cells.operator.stub@1's in-step process writes {field}"):
             sra.check_population_sources(spec, declaration)
-        quiet = SimpleNamespace(LAW_ID="stub@1", PROCESS=False, ENTITY_WRITES={field: ("x",)})
+        quiet = SimpleNamespace(LAW_ID="cells.operator.stub@1", PROCESS=False, ENTITY_WRITES={field: ("x",)})
         monkeypatch.setattr(sra.composite_spec, "entries", lambda s, q=quiet: [*real, (q, 0, 0)])
         sra.check_population_sources(spec, declaration)  # A half-step writer is admitted.
 

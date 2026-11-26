@@ -1,4 +1,4 @@
-"""B4: FR-4's rapid-buffer closure as the inner model's stage read (cells.rapid_proton_buffer@1).
+"""B4: FR-4's rapid-buffer closure as the inner model's stage read (cells.kind.rapid_proton_buffer@1).
 
 docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 1, (k); docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §4; the F3
 criterion of §15.6. A heredity cell D gains a proton row H and a buffer row B (base valence -1,
@@ -78,7 +78,7 @@ def read(buffers, k_on):
     """The stage_reads declaration in FR-4's form
     (validation/compartment_ph_engine/definitions.py)."""
     return [
-        dict(read_id="rapid_proton_buffer@1", proton_row="H", buffers=buffers, k_on_per_mM_s=k_on)
+        dict(read_id="cells.kind.rapid_proton_buffer@1", proton_row="H", buffers=buffers, k_on_per_mM_s=k_on)
     ]
 
 
@@ -243,7 +243,7 @@ def leak_route(**overrides):
     entry = dict(
         id="proton_leak_0",
         patch="membrane_0",
-        law="proton_constant_field_leak@1",
+        law="cells.route.proton_constant_field_leak@1",
         permeability_m_per_s=LEAK_M_S,
     )
     return entry | overrides
@@ -256,7 +256,7 @@ def leaky_world(**kwargs):
 
 
 def test_the_proton_leak_reads_free_h_and_joins_the_stage_rule():
-    """cells.passive_routes@1's charged law: its flux is the kernel's at the closure's free h (not
+    """cells.kind.passive_routes@1's charged law: its flux is the kernel's at the closure's free h (not
     H_eq / V) and the patch voltage, it is the patch's only H flux (gap 9), and its slope
     conductance joins membrane_rate (gap 5)."""
     from cells.kinds import passive_routes
@@ -302,7 +302,7 @@ def test_the_proton_leaks_admission():
         (dict(species="M"), "carries a valence \\+1 proton row"),
         (
             dict(species="B"),
-            "species B has two forms .*proton_constant_field_leak@1\\) at cell_0 moves its cell "
+            "species B has two forms .*cells.route.proton_constant_field_leak@1\\) at cell_0 moves its cell "
             "rows, and no law declares how it moves the forms",
         ),
         # The routing door (§7.4 (n), 207393ba): factors are factor-source IDs, and binding

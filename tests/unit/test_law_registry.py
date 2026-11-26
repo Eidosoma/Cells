@@ -82,7 +82,7 @@ from validation.tissue import composite_crossrev as crossrev
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 HOST = inner_laws.HOST
-KV1P5 = inner_laws.CHANNEL_LAWS["kv1p5_mh@1"]
+KV1P5 = inner_laws.CHANNEL_LAWS["cells.channel.kv1p5_mh@1"]
 
 
 def planted_laws():
@@ -95,7 +95,7 @@ def planted_laws():
 
     return (
         laws.ChannelLaw(
-            "tests.planted_channel@1",
+            "tests.channel.planted_channel@1",
             99,
             ("m", "h"),
             (("K", 1, 1.0),),
@@ -106,12 +106,12 @@ def planted_laws():
             host=HOST,
         ),
         laws.CycleLaw(
-            "tests.planted_cycle@1", (("role", -1),), (), kernel, kernel, host=transporter.KIND_ID
+            "tests.cycle.planted_cycle@1", (("role", -1),), (), kernel, kernel, host=transporter.KIND_ID
         ),
         laws.RouteLaw(
-            "tests.planted_route@1", ("membrane",), "a planted route", host=passive_routes.KIND_ID
+            "tests.route.planted_route@1", ("membrane",), "a planted route", host=passive_routes.KIND_ID
         ),
-        laws.BindingLaw("tests.planted_binding@1", ("proton",), kernel, host=proton_buffer.KIND_ID),
+        laws.BindingLaw("tests.binding.planted_binding@1", ("proton",), kernel, host=proton_buffer.KIND_ID),
     )
 
 
@@ -208,12 +208,12 @@ def test_the_template_refuses_a_malformed_declaration():
         interface = laws.CHANNEL_LAW
 
     with pytest.raises(ValueError, match="not a cells interface of its type"):
-        registry.register(Pretender("tests.pretender@1", ("membrane",), "x", host=HOST))
+        registry.register(Pretender("tests.route.pretender@1", ("membrane",), "x", host=HOST))
     with pytest.raises(ValueError, match="built on the template"):
         registry.register(object())
     cited = laws.Citation("a source", "its section", "no numbers taken")
     assert registry.register(dataclasses.replace(cycle, provenance="cited", source=cited))
-    assert not registry._laws.keys() - {"tests.planted_cycle@1"}  # Only the admitted one.
+    assert not registry._laws.keys() - {"tests.cycle.planted_cycle@1"}  # Only the admitted one.
 
 
 def test_cycle_and_route_laws_name_their_step_terms():
@@ -332,7 +332,7 @@ def test_the_id_grammar(value, expected):
 def test_a_duplicate_id_is_refused_whatever_its_spelling():
     registry = laws.BUILTIN
     assert registry.register(KV1P5) is KV1P5  # The same object again: a no-op.
-    for spelling in ("kv1p5_mh@1", "cells.kv1p5_mh@1"):  # Bare and namespaced: one ID.
+    for spelling in ("cells.channel.kv1p5_mh@1", "cells.channel.kv1p5_mh@1"):  # Bare and namespaced: one ID.
         with pytest.raises(ValueError, match="already registered"):
             registry.register(dataclasses.replace(KV1P5, law_id=spelling, code=9))
     planted = planted_laws()
@@ -344,11 +344,11 @@ def test_a_duplicate_id_is_refused_whatever_its_spelling():
     with pytest.raises(ValueError, match="only as BUILTIN's own declaration"):
         laws.LawRegistry().register(dataclasses.replace(KV1P5, rk4_step_s=1e-6))
     with pytest.raises(ValueError, match="only as BUILTIN's own declaration"):
-        laws.LawRegistry().register(dataclasses.replace(planted[2], law_id="cells.planted@1"))
-    with pytest.raises(ValueError, match="code 0 is cells.kv1p5_mh@1's"):  # Codes distinct.
-        extended.register(dataclasses.replace(planted[0], law_id="tests.second@1", code=0))
-    assert laws.qualified("tests.planted_channel@1") in extended._laws
-    assert "tests.planted_channel@1" not in laws.BUILTIN  # extended() leaves its source alone.
+        laws.LawRegistry().register(dataclasses.replace(planted[2], law_id="cells.route.planted@1"))
+    with pytest.raises(ValueError, match="code 0 is cells.channel.kv1p5_mh@1's"):  # Codes distinct.
+        extended.register(dataclasses.replace(planted[0], law_id="tests.channel.second@1", code=0))
+    assert laws.qualified("tests.channel.planted_channel@1") in extended._laws
+    assert "tests.channel.planted_channel@1" not in laws.BUILTIN  # extended() leaves its source alone.
 
 
 def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
@@ -385,19 +385,19 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     }
     builtin = list(transporter.hosted_laws())  # Before the planted scope.
     planted = planted_laws()
-    elsewhere = dataclasses.replace(planted[1], law_id="tests.elsewhere@1", host=HOST)
+    elsewhere = dataclasses.replace(planted[1], law_id="tests.cycle.elsewhere@1", host=HOST)
     with laws.scope(laws.BUILTIN.extended(*planted, elsewhere)):
         hosted = transporter.hosted_laws()  # Found with no edit to the kind: interface and host.
-        assert list(hosted) == sorted([*builtin, "tests.planted_cycle@1"])  # Canonical: sorted IDs.
-        assert "tests.planted_route@1" in passive_routes.hosted_laws()
+        assert list(hosted) == sorted([*builtin, "tests.cycle.planted_cycle@1"])  # Canonical: sorted IDs.
+        assert "tests.route.planted_route@1" in passive_routes.hosted_laws()
         # Version 1 dispatches its two laws by name: another law of its own is refused, never run
         # as the proton law.
         with pytest.raises(
-            ConfigError, match="version 1's layout runs .*, not tests.planted_cycle@1"
+            ConfigError, match="version 1's layout runs .*, not tests.cycle.planted_cycle@1"
         ):
-            parse_spec(held_world(population(law="tests.planted_cycle@1")))
-        with pytest.raises(ConfigError, match="version 1 runs .*, not tests.planted_route@1"):
-            parse_spec(closed_pair(routes=[dict(route("r", 1e-9), law="tests.planted_route@1")]))
+            parse_spec(held_world(population(law="tests.cycle.planted_cycle@1")))
+        with pytest.raises(ConfigError, match="version 1 runs .*, not tests.route.planted_route@1"):
+            parse_spec(closed_pair(routes=[dict(route("r", 1e-9), law="tests.route.planted_route@1")]))
     # The planted errors a module tuple would miss: each law is admitted only while registered.
     proton = population(law=transporter.PROTON_LAW, role="H")
     with laws.scope(without(transporter.PROTON_LAW)):
@@ -413,7 +413,7 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     assert structure.channel_laws == tuple(
         inner_laws.CHANNEL_LAWS[law] for law in structure.declared_channel_laws
     )
-    with laws.scope(without("nav1p2_m3h_regularized@1")):
+    with laws.scope(without("cells.channel.nav1p2_m3h_regularized@1")):
         with pytest.raises(ValueError, match="Undeclared laws in an inner structure"):
             dataclasses.replace(structure)
 
@@ -511,7 +511,7 @@ def test_forms_a_cycle_form_and_a_general_closure_are_declared_and_checked():
 def test_a_cycle_form_carries_its_law_and_version_1_keeps_its_checks():
     _, cycle, _, _ = planted_laws()
     host = transporter.KIND_ID
-    carried = laws.CycleLaw("tests.planted_carried_cycle@1", cycle=PlantedForm(), host=host)
+    carried = laws.CycleLaw("tests.cycle.planted_carried_cycle@1", cycle=PlantedForm(), host=host)
     assert (carried.moves, carried.kinetics, carried.domain_valid) == ((), None, None)
     assert carried.errors() == [] and laws.LawRegistry().register(carried) is carried
     # Planted, each refused: the carried law's form reporting, a non-callable kernel beside a form,
@@ -521,7 +521,7 @@ def test_a_cycle_form_carries_its_law_and_version_1_keeps_its_checks():
         (dataclasses.replace(carried, kinetics="kinetics"), "its kinetics is callable, or None"),
         (dataclasses.replace(cycle, moves=()), "its moves are (role, count) pairs"),
         (dataclasses.replace(cycle, kinetics=None), "its kinetics is callable"),
-        (laws.CycleLaw("tests.planted_bare_cycle@1", host=host), "its moves are"),
+        (laws.CycleLaw("tests.cycle.planted_bare_cycle@1", host=host), "its moves are"),
     ):
         with pytest.raises(ValueError, match=re.escape(words)):
             laws.LawRegistry().register(law)
@@ -550,7 +550,7 @@ def test_cycle_changes_reads_a_cycle_law_s_declared_rows_from_one_source():
     )
     host = transporter.KIND_ID
     carried = laws.CycleLaw(
-        "tests.planted_carried_cycle@1", cycle=PlantedForm(rows=rows), host=host
+        "tests.cycle.planted_carried_cycle@1", cycle=PlantedForm(rows=rows), host=host
     )
     assert laws.LawRegistry().register(carried) is carried
     read = laws.cycle_changes(carried)

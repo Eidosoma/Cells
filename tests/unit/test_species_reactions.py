@@ -1,4 +1,4 @@
-"""Tier-1 smoke of local_species_reactions@1: its contract (D152 version 1, milestones 1 and 2).
+"""Tier-1 smoke of cells.operator.local_species_reactions@1: its contract (D152 version 1, milestones 1 and 2).
 
 docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.4, §2.1-§2.5, §3.3, §4.5, §4.6, §10.4 (C1) and §11.
 Host side, no compile, on the canonical enzyme network (species_reactions_fixtures):
@@ -467,7 +467,7 @@ def test_the_domain_refuses_its_own_misbookings(bound):
 def test_the_stationary_analysis_does_not_admit_the_composite():
     from cells.analysis import stationary
 
-    with pytest.raises(ConfigError, match="not resolved_pump_composite@1"):
+    with pytest.raises(ConfigError, match="not cells.model.resolved_pump_composite@1"):
         stationary.problem(parse_spec(rfx.enzyme_network()))
 
 

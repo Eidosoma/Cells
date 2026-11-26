@@ -1,13 +1,13 @@
-"""resolved_pump_tissue@1: resolved patches, Na/K-ATPase and junction gates.
+"""cells.model.resolved_pump_tissue@1: resolved patches, Na/K-ATPase and junction gates.
 
-The rates and ledgers are those of resolved_tissue@2 with no channel
-population: passive constant-field patches, the nak_atp_mass_action_positive@1
-pump, the physical-time junction gate (junction_voltage_relaxation@1, the same
+The rates and ledgers are those of cells.model.resolved_tissue@2 with no channel
+population: passive constant-field patches, the cells.cycle.nak_atp_mass_action_positive@1
+pump, the physical-time junction gate (cells.junction.junction_voltage_relaxation@1, the same
 equations as the rate-based junction law), logmean extracellular faces
-and held reservoirs, closed by resolved_capacitor_components_current_continuity@1.
+and held reservoirs, closed by cells.field_closure.resolved_capacitor_components_current_continuity@1.
 Differences: temperature may lie anywhere in the pump's 200-400 K domain (the
 gate law has no temperature term), the field uses the Cholesky-factored solver
-(capacitive_reduction_gauged_damped_newton@2, up to 2048 cell+outside nodes),
+(cells.solver.capacitive_reduction_gauged_damped_newton@2, up to 2048 cell+outside nodes),
 and the solver may be RK4 or an IMEX scheme with implicit face
 electromigration (numerics/surface_imex.py).
 """
@@ -27,7 +27,7 @@ from cells.laws.pumps.kinetic_pump import TEMPERATURE_DOMAIN_K
 from cells.numerics import surface_imex as imex
 from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
 
-MODEL_ID = "resolved_pump_tissue@1"
+MODEL_ID = "cells.model.resolved_pump_tissue@1"
 GATE_LAW_ID = junction_gate.RELAXATION_LAW_ID
 SOLVERS = ("rk4", imex.EULER_ID, imex.ARS222_ID)
 GATE_FIELDS = ("law", "threshold_voltage_V", "minimum_open_fraction", "initial_gate")
@@ -36,7 +36,7 @@ EXECUTION_FIELDS = set(kinetic.Execution.__dataclass_fields__) - {"channel_capac
 # parse admits beyond this model's own, each by its law ID with its block's parser, block ->
 # (minimum, initial, junction class, its extra fields), the minimum and initial being the
 # junction's conductance. Empty outside such a parse, so @1 and @2 refuse every other law;
-# resolved_pump_tissue@3's parse admits junction_series_gates@1 (admitting).
+# cells.model.resolved_pump_tissue@3's parse admits cells.junction.junction_series_gates@1 (admitting).
 _ADMITTED_GATES = contextvars.ContextVar("admitted_gate_laws", default=())
 
 
@@ -50,7 +50,7 @@ def admitting(parsers):
         _ADMITTED_GATES.reset(token)
 
 
-# The field solvers a later family admits beyond versions 2 and 3: resolved_pump_tissue@3's parse
+# The field solvers a later family admits beyond versions 2 and 3: cells.model.resolved_pump_tissue@3's parse
 # admits surface_field.SPARSE_SOLVER_ID (FR-17 stage 1) within its block, so @3 and the models that
 # parse through it accept it, while this parse and @2's refuse it as any other declaration.
 _ADMITTED_FIELD_SOLVERS = contextvars.ContextVar("admitted_field_solvers", default=())
@@ -166,7 +166,7 @@ def parse(data):
     )
     _fields(x, EXECUTION_FIELDS, "resolved pump execution")
     if m["id"] != MODEL_ID or x["solver"] not in SOLVERS:
-        raise ConfigError("Require resolved_pump_tissue@1 with rk4 or a declared IMEX solver")
+        raise ConfigError("Require cells.model.resolved_pump_tissue@1 with rk4 or a declared IMEX solver")
     temperature = positive(m["temperature_K"], "temperature")
     if not TEMPERATURE_DOMAIN_K[0] <= temperature <= TEMPERATURE_DOMAIN_K[1]:
         raise ConfigError("Resolved pump tissue requires 200-400 K, the pump law's domain")
@@ -191,7 +191,7 @@ def parse(data):
             or initial < minimum
         ):
             raise ConfigError(
-                "Junction gate requires junction_voltage_relaxation@1, a threshold in "
+                "Junction gate requires cells.junction.junction_voltage_relaxation@1, a threshold in "
                 "[0, 0.120] V and an initial gate in [minimum, 1]"
             )
         gates[p["id"]] = (GATE_LAW_ID, threshold, minimum, initial)

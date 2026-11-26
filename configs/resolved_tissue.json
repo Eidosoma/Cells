@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "model": {
-    "id": "resolved_tissue@1",
+    "id": "cells.model.resolved_tissue@1",
     "temperature_K": 310.0,
     "species": [
       {
@@ -120,7 +120,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       },
       {
         "id": "membrane_1",
@@ -133,7 +133,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       },
       {
         "id": "membrane_2",
@@ -146,7 +146,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       },
       {
         "id": "membrane_3",
@@ -159,7 +159,7 @@
           "K": 2e-09,
           "Cl": 8e-10
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       }
     ],
     "junctions": [
@@ -173,7 +173,7 @@
           "K": 2e-09,
           "Cl": 1e-09
         },
-        "law": "constant_field@1"
+        "law": "cells.route.constant_field@1"
       }
     ],
     "faces": [
@@ -188,7 +188,7 @@
           "K": 2e-14,
           "Cl": 1.5000000000000002e-14
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       },
       {
         "id": "face_1",
@@ -201,7 +201,7 @@
           "K": 3.0000000000000005e-14,
           "Cl": 1e-14
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       },
       {
         "id": "face_2",
@@ -214,7 +214,7 @@
           "K": 2e-14,
           "Cl": 2e-14
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       },
       {
         "id": "face_3",
@@ -227,7 +227,7 @@
           "K": 1e-14,
           "Cl": 1e-14
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       },
       {
         "id": "face_4",
@@ -240,11 +240,11 @@
           "K": 3.0000000000000005e-14,
           "Cl": 2e-14
         },
-        "law": "logmean_electrodiffusion@1"
+        "law": "cells.route.logmean_electrodiffusion@1"
       }
     ],
     "closure": {
-      "law": "resolved_capacitor_components_current_continuity@1",
+      "law": "cells.field_closure.resolved_capacitor_components_current_continuity@1",
       "gauge_reference": null
     }
   },
@@ -316,7 +316,7 @@
     "jit": true,
     "precision": "float64",
     "solver": "rk4",
-    "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@1",
     "max_steps": 256,
     "max_trace_bytes": 536870912,
     "material_balance_atol_fmol": {

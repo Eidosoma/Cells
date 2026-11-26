@@ -1,7 +1,7 @@
-"""resolved_pump_tissue@2: resolved_pump_tissue@1 plus the plasma-membrane Ca-ATPase.
+"""cells.model.resolved_pump_tissue@2: cells.model.resolved_pump_tissue@1 plus the plasma-membrane Ca-ATPase.
 
-Equivalence: with no calcium pump the identity reproduces resolved_pump_tissue@1
-(RK4 and IMEX). Law: ca_atp_mass_action_positive@1 is the existing Cells PMCA
+Equivalence: with no calcium pump the identity reproduces cells.model.resolved_pump_tissue@1
+(RK4 and IMEX). Law: cells.cycle.ca_atp_mass_action_positive@1 is the existing Cells PMCA
 kernel with a 1 M standard state. With calcium: exact explicit/implicit split,
 material, charge, energy and metabolic ledgers, order of the IMEX schemes,
 bitwise restart, definition errors and CPU/L4 agreement on small fixtures.
@@ -139,7 +139,7 @@ def test_definition_errors_reject(fault):
     m, e = raw["model"], raw["experiment"]
     pump = m["membranes"][0]["calcium_pump"]
     if fault == "law":
-        pump["law"] = "nak_atp_mass_action_positive@1"
+        pump["law"] = "cells.cycle.nak_atp_mass_action_positive@1"
     elif fault == "role_valence":
         pump["roles"]["calcium"], pump["stoichiometry"] = "K", {"K": -1}
     elif fault == "stoichiometry":

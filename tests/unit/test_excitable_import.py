@@ -1,6 +1,6 @@
 """Track E's conduction-assay importer (validation/tissue/excitable_import.py; D153 rule (b), D170).
 
-A synthetic checkpoint of a small held-bath chain of resolved_pump_tissue@3 (the probe's own
+A synthetic checkpoint of a small held-bath chain of cells.model.resolved_pump_tissue@3 (the probe's own
 definition, no engine execution): amounts and charges are carried with the source's fixed
 background; gates are carried and the junction gates pinned open, each junction's effective
 availability frozen; the floor refuses a junction below s * r_gj = 20, closed ones included;
@@ -116,7 +116,7 @@ def test_water_and_composites_are_refused(tmp_path):
     with pytest.raises(imp.ImportRefused, match="water"):
         imp.assay_definition(world, dt=5e-6, end_time=0.05)
     composite = copy.deepcopy(raw)
-    composite["model"]["id"] = "resolved_pump_composite@1"
+    composite["model"]["id"] = "cells.model.resolved_pump_composite@1"
     world, _ = write_checkpoint(tmp_path / "composite", composite)
     with pytest.raises(imp.ImportRefused, match="composite"):
         imp.assay_definition(world, dt=5e-6, end_time=0.05)

@@ -3,10 +3,10 @@
 docs/INVENTORY_COUPLING_DESIGN.md §4.3 to §4.4 (A4, A5) and Appendix A.5. One declaration, a
 reference `World` built from validation/coupling/cells_reference's documented classes only
 (validation/coupling/REFERENCES_USAGE.md; their code is not read here), is translated into the
-engine's definition: resolved_pump_composite@1 over resolved_pump_tissue@3, with
-species_regulated_availability@1 and, for a regulator, D150's scheduled_species_turnover@1.
+engine's definition: cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, with
+cells.operator.species_regulated_availability@1 and, for a regulator, D150's cells.operator.scheduled_species_turnover@1.
 Both describe pump-free cells, each with one constant-field patch on a held bath at 0 V,
-gate-free K-leak populations (kleak_always_open@1), contacts with their gate held open (the
+gate-free K-leak populations (cells.channel.kleak_always_open@1), contacts with their gate held open (the
 junction gate at a minimum of 1), and the operator's states and couplings.
 
 * `feedback_world` (A4): two cells joined by a contact, a state of Na in both, its complement on
@@ -34,8 +34,8 @@ SPECIES, Z = ("Na", "K", "Cl"), (1, 1, -1)
 BATH_mM = (145.0, 5.0, 150.0)  # Held, 0 V.
 TEMPERATURE_K = 310.0
 CONSTANTS = rc.Constants(F, R, TEMPERATURE_K)
-IMEX = "imex_ars222_face_electromigration@1"
-FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
+IMEX = "cells.solver.imex_ars222_face_electromigration@1"
+FIELD_SOLVER = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
 GATE_THRESHOLD_V = 0.015  # Immaterial: the gate's minimum is 1, so it stays open.
 FLOOR_FMOL = 1e-20
 D_REGULATOR = 1e-10
@@ -238,7 +238,7 @@ def engine_definition(world, *, dt, end, times, initial):
             area_m2=p.area_m2,
             capacitance_F=p.capacitance_F,
             permeability_m_per_s=dict(zip(SPECIES, p.permeability_m_s, strict=True)),
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             pump=None,
             calcium_pump=None,
         )
@@ -247,12 +247,12 @@ def engine_definition(world, *, dt, end, times, initial):
     channels = []
     for name, q in world.populations.items():
         if tuple(q.relative) != (0.0, 1.0, 0.0) or q.opening != 1.0:
-            raise ValueError("The engine's gate-free K leak is kleak_always_open@1 (K only, open)")
+            raise ValueError("The engine's gate-free K leak is cells.channel.kleak_always_open@1 (K only, open)")
         channels.append(
             dict(
                 id=name,
                 membrane_id=q.patch,
-                kinetic_law="kleak_always_open@1",
+                kinetic_law="cells.channel.kleak_always_open@1",
                 max_permeability_m_per_s=q.permeability_m_s,
                 abundance=q.abundance,
                 initial_gate=[],
@@ -270,9 +270,9 @@ def engine_definition(world, *, dt, end, times, initial):
                 receiver=e.cells[1],
                 area_m2=e.area_m2,
                 permeability_m_per_s=dict(zip(SPECIES, e.permeability_m_s, strict=True)),
-                law="constant_field@1",
+                law="cells.route.constant_field@1",
                 gate=dict(
-                    law="junction_voltage_relaxation@1",
+                    law="cells.junction.junction_voltage_relaxation@1",
                     threshold_voltage_V=GATE_THRESHOLD_V,
                     minimum_open_fraction=1.0,
                     initial_gate=1.0,
@@ -282,7 +282,7 @@ def engine_definition(world, *, dt, end, times, initial):
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=world.constants.temperature_K,
             species=[dict(id=s, valence=z) for s, z in zip(SPECIES, Z, strict=True)],
             cells=model_cells,
@@ -291,7 +291,7 @@ def engine_definition(world, *, dt, end, times, initial):
             junctions=junctions,
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
             channels=channels,
         ),
@@ -409,7 +409,7 @@ def _with_turnover(raw, world):
     out["model"]["operators"].insert(
         0,
         dict(
-            law="scheduled_species_turnover@1",
+            law="cells.operator.scheduled_species_turnover@1",
             species=rf.identities(sorted(world.regulators)),
             routes=routes,
             templates=[],

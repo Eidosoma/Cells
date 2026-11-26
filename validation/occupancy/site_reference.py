@@ -1,4 +1,4 @@
-"""R-ode: the binding kinetics of site_occupancy@1 on finite site populations, an independent
+"""R-ode: the binding kinetics of cells.operator.site_occupancy@1 on finite site populations, an independent
 reference (FR-3).
 
 Written from docs/SITE_OCCUPANCY_DESIGN.md (Appendix A, with §2, §3.3, §4.3, §8 and §12's

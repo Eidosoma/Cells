@@ -1,9 +1,9 @@
 """FR-17 stage 1's probe (docs/FIELD_SOLVER_INTERFACE_DESIGN.md §8.4): the sparse field solver
 against version 2 on a world's own field, operation by operation, bit for bit. No step runs.
 
-For each world, built by its generator and parsed under capacitive_reduction_gauged_damped_newton@2,
+For each world, built by its generator and parsed under cells.solver.capacitive_reduction_gauged_damped_newton@2,
 the field layout is bound twice from the same topology: version 2's (the world's own) and
-sparse_capacitive_reduction_gauged_damped_newton@1's (surface_field.bind). Then, on the host (NumPy)
+cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1's (surface_field.bind). Then, on the host (NumPy)
 and on the CPU device (jitted, the layout a traced input as in a step):
 - capacitor_solve: surface_field._capacitor_solve at the world's initial charges and boundary, and
   at charges C v of random potentials v with random clamp voltages (a nonzero boundary, so the

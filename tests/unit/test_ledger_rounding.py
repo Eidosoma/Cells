@@ -1,4 +1,4 @@
-"""Rounding in the resolved pump ledgers and the reaction_transport@1 guards.
+"""Rounding in the resolved pump ledgers and the cells.model.reaction_transport@1 guards.
 
 Electrode ledger: each IMEX step books the change of the held nodes' plate charges
 that its start and end charge states determine, so the ledger telescopes onto the
@@ -9,7 +9,7 @@ device checks at the same row. Global charge allows its rounding per accepted st
 like the running ledgers: the seeded supply leaks now pass, and the stated
 persistent-leak and one-off floors are tested. Its allowance is the larger of the moved
 charge's and the grounded components' rounding (D305), so where the held baths keep exchanging
-charge the checked bound is the moved-charge bound bit for bit. reaction_transport@1: the allowance
+charge the checked bound is the moved-charge bound bit for bit. cells.model.reaction_transport@1: the allowance
 grows linearly with the step count at the derived worst-case rate, and the
 resulting detection limit is stated. A pinned junction gate sets no gate-rate step
 bound.
@@ -672,7 +672,7 @@ def test_closed_fixture_runs_past_the_fixed_bound_refusal():
     assert value.diagnostics["max_capacitor_charge_error_C"] > surface_field.CHARGE_ATOL_C
 
 
-# --- reaction_transport@1 -----------------------------------------------------------
+# --- cells.model.reaction_transport@1 -----------------------------------------------------------
 
 
 def strip_definition(cells=16, steps=2000):
@@ -744,9 +744,9 @@ def chain(minimum, *, dt):
             receiver="cell_1",
             area_m2=1e-11,
             permeability_m_per_s=dict(Na=1e-9, K=1e-9, M=1e-9, P=0.0),
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             gate=dict(
-                law="junction_voltage_relaxation@1",
+                law="cells.junction.junction_voltage_relaxation@1",
                 threshold_voltage_V=0.0,
                 minimum_open_fraction=minimum,
                 initial_gate=1.0,

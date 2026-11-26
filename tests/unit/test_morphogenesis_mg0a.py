@@ -1,4 +1,4 @@
-"""MG0a driver: references, graphs and a tiny engine run (reaction_transport@1).
+"""MG0a driver: references, graphs and a tiny engine run (cells.model.reaction_transport@1).
 
 The references are checked against closed forms (discrete cosh profile, the
 slowest eigenvalue); a small strip run through the windowed runner matches the

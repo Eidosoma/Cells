@@ -1,4 +1,4 @@
-"""Projective execution through cells.execution.runner.run on a one-cell resolved_pump_tissue@1 world.
+"""Projective execution through cells.execution.runner.run on a one-cell cells.model.resolved_pump_tissue@1 world.
 
 Rejected jumps leave the fine engine's rows bitwise; accepted jumps are checked,
 verified by the next burst and recorded; no jump crosses a scheduled input

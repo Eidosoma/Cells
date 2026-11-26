@@ -12,7 +12,7 @@ moves_in_step), so it is taken to move its species at every node of that kind.
   tableau-booked instead needs a core seam, queued after the landing.)
 - Without a declared kind, or without an in-step process, neither check is made.
 
-The planted operator `tests.writer@1` is an in-step process that moves nothing and declares the
+The planted operator `tests.operator.writer@1` is an in-step process that moves nothing and declares the
 rows it writes; it is registered for each test only.
 """
 
@@ -36,7 +36,7 @@ from tests import kind_fixtures as kf
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import secreted_species_fixtures as fx
 
-WRITER = "tests.writer@1"
+WRITER = "tests.operator.writer@1"
 HELD = "F"  # The planted kind's held species: moved by nothing in the inner step at a cell.
 P = 100.0 / (1e15 * fx.CONTACT_AREA_M2 * 2.0)  # The closed pair's route, k = 100/s.
 
@@ -80,7 +80,7 @@ class Writer(contract.Operator):
 class Event(contract.Operator):
     """Not an in-step process: its moves_in_step is never read."""
 
-    LAW_ID = "tests.event_writer@1"
+    LAW_ID = "tests.operator.event_writer@1"
     EVENT = True
 
     def moves_in_step(self, spec, declaration):

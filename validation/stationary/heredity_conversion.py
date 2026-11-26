@@ -7,8 +7,8 @@ Pre-screen 7 (heredity_prescreen) mapped the retention window, the couplings
 at which the written disc is a stable stationary state. This maps the
 conversion window next to it.
 
-Engine model analysed: resolved_pump_tissue@3, unmodified, through
-stationary_continuation_analysis@1 (cells.analysis.stationary) in slow mode,
+Engine model analysed: cells.model.resolved_pump_tissue@3, unmodified, through
+cells.analysis.stationary_continuation_analysis@1 (cells.analysis.stationary) in slow mode,
 and forward runs with the model's own checked IMEX step through the analysis
 step map. Worlds, units, the disc test and the sweep machinery are pre-screen
 7's (heredity_prescreen.Case, sweep, solve, classify, units): held-bath sheets

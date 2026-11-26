@@ -1,9 +1,9 @@
-"""G0 re-host probe: the two-task fixture and its schedules on resolved_tissue@2 (RK4).
+"""G0 re-host probe: the two-task fixture and its schedules on cells.model.resolved_tissue@2 (RK4).
 
 Validation-side adapter only (no engine change). It takes the raw definition dict that
 an assay builds (two_task / unstimulated_readout ``definition``), reads only geometry,
 kinetic constants, initial concentrations and the per-patch pump/channel/junction
-availability schedules, and builds a Cells resolved_tissue@2 definition: resolved
+availability schedules, and builds a Cells cells.model.resolved_tissue@2 definition: resolved
 capacitor field, Kv1.5 m/h channel per patch, kinetic Na/K pump, physical-time junction
 gate. Nothing of the BETSE update order is recreated.
 
@@ -28,7 +28,7 @@ MOBILE = ("Na", "K", "Cl")
 VM0_SOURCE = Path(
     "/mnt/workspaces/Cells/two-task-readout-20261012-01/evidence/cpu/assay-world-10000.npz"
 )
-CHANNEL_ID = "kv1p5_mh@1"
+CHANNEL_ID = "cells.channel.kv1p5_mh@1"
 
 
 def initial_patch_voltage(path=VM0_SOURCE):
@@ -48,7 +48,7 @@ def _schedule(times, values):
 
 
 def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
-    """resolved_tissue@2 definition from a two-task style raw definition dict."""
+    """cells.model.resolved_tissue@2 definition from a two-task style raw definition dict."""
     m, e = raw["model"], raw["experiment"]
     t = m["tissue"]
     species = m["species"]
@@ -120,10 +120,10 @@ def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
                 area_m2=float(area[p]),
                 capacitance_F=float(cap_density * area[p]),
                 permeability_m_per_s={s: float(perm[index[s], p]) for s in MOBILE},
-                law="constant_field@1",
+                law="cells.route.constant_field@1",
                 pump=dict(
                     id=f"pump_{p}",
-                    law="nak_atp_mass_action_positive@1",
+                    law="cells.cycle.nak_atp_mass_action_positive@1",
                     roles={"sodium": "Na", "potassium": "K"},
                     stoichiometry={"Na": -3, "K": 2},
                     capacity_fmol_per_s=float(pump["capacity_fmol_s"][p]),
@@ -131,7 +131,7 @@ def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
                     km_k_mM=float(pump["km_k_mM"][p]),
                     km_atp_mM=float(pump["km_atp_mM"][p]),
                     metabolism=dict(
-                        kind="maintained_chemical_reservoirs@1",
+                        kind="cells.fuel_kind.maintained_chemical_reservoirs@1",
                         atp_mM=float(pump["atp_mM"][p]),
                         adp_mM=float(pump["adp_mM"][p]),
                         pi_mM=float(pump["pi_mM"][p]),
@@ -161,9 +161,9 @@ def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
             receiver=f"cell_{owner[b]}",
             area_m2=float(0.5 * (area[a] + area[b])),
             permeability_m_per_s={s: float(jperm[index[s], a]) for s in MOBILE},
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
             gate=dict(
-                law="junction_voltage_relaxation@1",
+                law="cells.junction.junction_voltage_relaxation@1",
                 threshold_voltage_V=float(junction_gate["threshold_voltage_V"][a]),
                 minimum_open_fraction=float(junction_gate["minimum_open_fraction"][a]),
                 initial_gate=float(m["initial"]["junction_open"][a]),
@@ -190,7 +190,7 @@ def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
                     s: float(0.5 * (diff[index[s]].ravel()[a] + diff[index[s]].ravel()[b]))
                     for s in MOBILE
                 },
-                law="logmean_electrodiffusion@1",
+                law="cells.route.logmean_electrodiffusion@1",
             )
         )
     # Schedules: the assay's per-patch change arrays at their (physical) times.
@@ -222,7 +222,7 @@ def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
     return dict(
         schema_version=1,
         model=dict(
-            id="resolved_tissue@2",
+            id="cells.model.resolved_tissue@2",
             temperature_K=float(t["temperature"]),
             species=[dict(id=s, valence=int(z[s])) for s in MOBILE],
             cells=cells,
@@ -231,7 +231,7 @@ def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
             junctions=junctions,
             faces=faces,
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
             channels=channels,
         ),
@@ -255,7 +255,7 @@ def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
             jit=True,
             precision="float64",
             solver=solver,
-            field_solver="capacitive_reduction_gauged_damped_newton@1",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@1",
             max_steps=steps + extra_steps,
             max_trace_bytes=2**36,
             material_balance_atol_fmol={s: 2e-11 for s in MOBILE},

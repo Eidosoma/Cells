@@ -59,7 +59,7 @@ class Model(NamedTuple):
 
 MODELS = MappingProxyType(
     {
-        "resolved_pump_tissue@3": Model(
+        "cells.model.resolved_pump_tissue@3": Model(
             type="inner",
             module="cells.definitions.surface_pump_v3_spec",
             # Its own laws, each an inert law module (CORE_SEAMS §8.2), its passive kind's two,
@@ -118,7 +118,7 @@ MODELS = MappingProxyType(
                 # Two manufactured forms of electroneutral symport (no outside source).
                 "cells.laws.cycles.na_k_2anion_symport_reversible_tanh",
                 "cells.laws.cycles.electroneutral_symport_reversible_tanh",
-                # The general binding closure (rapid_binding@1), seam C's: the binding owner's
+                # The general binding closure (cells.binding.rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",
                 "cells.laws.reactions.hill_product_factor",  # G-5's factor.
@@ -133,30 +133,30 @@ MODELS = MappingProxyType(
                 "cells.transfer_factor_law@1",  # G-5's factor.
             ),
         ),
-        "resolved_pump_composite@1": Model(
+        "cells.model.resolved_pump_composite@1": Model(
             type="composite",
             module="cells.definitions.pump_composite_spec",
             operator_homes=("cells.operators",),
         ),
-        "resolved_pump_water@1": Model(
+        "cells.model.resolved_pump_water@1": Model(
             type="composition",
             module="cells.definitions.surface_pump_water_spec",
-            composition=("resolved_pump_tissue@3", ("ideal_osmosis_linear_compliance_water@1",)),
+            composition=("cells.model.resolved_pump_tissue@3", ("cells.operator.ideal_osmosis_linear_compliance_water@1",)),
         ),
-        "resolved_pump_water@2": Model(
+        "cells.model.resolved_pump_water@2": Model(
             type="composition",
             module="cells.definitions.surface_pump_water_v2_spec",
             composition=(
-                "resolved_pump_tissue@3",
-                ("ideal_osmosis_linear_compliance_water@1", "k_anion_symport_mass_action@1"),
+                "cells.model.resolved_pump_tissue@3",
+                ("cells.operator.ideal_osmosis_linear_compliance_water@1", "cells.operator.k_anion_symport_mass_action@1"),
             ),
         ),
-        "resolved_pump_replacement@1": Model(
+        "cells.model.resolved_pump_replacement@1": Model(
             type="composition",
             module="cells.definitions.cell_replacement_spec",
-            composition=("resolved_pump_tissue@3", ("scheduled_cell_replacement@1",)),
+            composition=("cells.model.resolved_pump_tissue@3", ("cells.operator.scheduled_cell_replacement@1",)),
         ),
-        "cells.assembly_lineages@1": Model(
+        "cells.model.assembly_lineages@1": Model(
             type="family",
             module="cells.models.assembly_lineages.spec",
             law_homes=(
@@ -174,7 +174,7 @@ MODELS = MappingProxyType(
             ),
             runner="cells.models.assembly_lineages.runner:run",
         ),
-        "cells.assembly_lineages@2": Model(
+        "cells.model.assembly_lineages@2": Model(
             type="family",
             module="cells.models.assembly_lineages_v2.spec",
             law_homes=(
@@ -215,12 +215,12 @@ MODELS = MappingProxyType(
         ),
         # The older active families (D189): their laws are tables inside them, and they declare
         # no piece.
-        "apical_vertex_mechanics@1": Model(type="family", module="cells.definitions.apical_vertex_spec"),  # noqa: E501
-        "reaction_transport@1": Model(type="family", module="cells.definitions.specs"),
-        "resolved_pump_tissue@1": Model(type="family", module="cells.definitions.surface_pump_spec"),  # noqa: E501
-        "resolved_pump_tissue@2": Model(type="family", module="cells.definitions.surface_pump_v2_spec"),  # noqa: E501
-        "resolved_tissue@1": Model(type="family", module="cells.definitions.surface_tissue_spec"),
-        "resolved_tissue@2": Model(type="family", module="cells.definitions.surface_kinetic_spec"),
-        "resolved_tissue@8": Model(type="family", module="cells.definitions.surface_kinetic_spec"),
+        "cells.model.apical_vertex_mechanics@1": Model(type="family", module="cells.definitions.apical_vertex_spec"),  # noqa: E501
+        "cells.model.reaction_transport@1": Model(type="family", module="cells.definitions.specs"),
+        "cells.model.resolved_pump_tissue@1": Model(type="family", module="cells.definitions.surface_pump_spec"),  # noqa: E501
+        "cells.model.resolved_pump_tissue@2": Model(type="family", module="cells.definitions.surface_pump_v2_spec"),  # noqa: E501
+        "cells.model.resolved_tissue@1": Model(type="family", module="cells.definitions.surface_tissue_spec"),
+        "cells.model.resolved_tissue@2": Model(type="family", module="cells.definitions.surface_kinetic_spec"),
+        "cells.model.resolved_tissue@8": Model(type="family", module="cells.definitions.surface_kinetic_spec"),
     }
 )

@@ -68,7 +68,7 @@ J1_FUNCTIONS = {
     for name in ("DECLARED", "load_declared", "build", "scalar_values", "band_members")
 }
 PARTITION_MODULES = {
-    "cells.operators.partition",  # isopotential_partition@1.
+    "cells.operators.partition",  # cells.operator.isopotential_partition@1.
     "cells.definitions.partition_spec",  # Its definition helper.
     "validation.division.partition_reference",  # R-ops.
     "tests.partition_fixtures",  # S5's compact worlds (the lead, 13 November).

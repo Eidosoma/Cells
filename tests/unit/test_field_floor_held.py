@@ -1,4 +1,4 @@
-"""Field solver version 3 on resolved_pump_tissue@3: the solve and the cap (guard 6).
+"""Field solver version 3 on cells.model.resolved_pump_tissue@3: the solve and the cap (guard 6).
 
 On an @3 fixture version 3 accepts a root at the rounding floor that version 2 cannot
 certify, with every value unchanged, and refuses a solve stopped above the floor.

@@ -61,7 +61,7 @@ SSA_CONVENTION = {
     "channels": "the forward of steps 0..R-1, then their reverses (R the step capacity; padding "
     "steps have zero rates, so the declared channel table lists the declared steps' channels in "
     "the same order and every partial total at them is the same)",
-    "forward_rate": "mass action (cells.stochastic_mass_action@1) at the firing state n, times the "
+    "forward_rate": "mass action (cells.reaction.stochastic_mass_action@1) at the firing state n, times the "
     "rate factor on the pair's common state m = min(n, n + nu)",
     "reverse_rate": "the same law applied to the products, with k- = k_f exp(sum nu mu°), the same "
     "factor on m, and exp(F_ex(n) - F_ex(n - nu)) for the excess terms",
@@ -342,7 +342,7 @@ def encounter_extent(footprint, layout, view, xp=jnp):
 
 
 def shell_extent(layout, xp=jnp):
-    """FR-21: ln(A_sh·ρ0) for each cells.shell_permeation@1 step (code 3), 0 for any other: a
+    """FR-21: ln(A_sh·ρ0) for each cells.reaction.shell_permeation@1 step (code 3), 0 for any other: a
     constant of the world, the same on every state and in both directions."""
     return xp.where(layout.geometry[3] == 3, layout.geometry[4], 0.0)
 

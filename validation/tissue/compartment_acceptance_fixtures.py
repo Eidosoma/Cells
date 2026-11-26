@@ -1,5 +1,5 @@
-"""FR-1's acceptance worlds: cell_owned_compartments@1 with exchange@1 (and turnover@1 or
-local_species_reactions@1 beside it), the worlds of the protocol's references
+"""FR-1's acceptance worlds: cells.operator.cell_owned_compartments@1 with exchange@1 (and turnover@1 or
+cells.operator.local_species_reactions@1 beside it), the worlds of the protocol's references
 (docs/CLOSED_COMPARTMENT_DESIGN.md §6.3 and Appendix A). All values are synthetic.
 
 Built on compartment_fixtures (the declaration) and secreted_species_fixtures (D150's quiescent

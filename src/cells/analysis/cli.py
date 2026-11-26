@@ -7,7 +7,7 @@ states.npz. Nothing is written elsewhere and the world is only read.
 Config (JSON; paths relative to the config file):
 
   {"schema_version": 1,
-   "analysis": "stationary_continuation_analysis@1",
+   "analysis": "cells.analysis.stationary_continuation_analysis@1",
    "world": {"definition": "world.json"} | {"snapshot": "run/checkpoint_dir"},
    "mode": "slow" | "fast",                 (default slow)
    "formulation": "rhs" | "step_map",        (default rhs)

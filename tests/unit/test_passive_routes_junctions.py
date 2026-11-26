@@ -1,8 +1,8 @@
-"""The charged constant-field law on junction hosts (FR-15 F2, D310; cells.passive_routes@1).
+"""The charged constant-field law on junction hosts (FR-15 F2, D310; cells.kind.passive_routes@1).
 
 docs/CHARGED_TRACE_SPECIES_DESIGN.md §3 (option A) and §8, ruled in D310. The junction pair: two
 1 pL cells of fx.world, each with its wall patch on the held bath, joined by one junction whose
-gate is pinned open, on which passive_constant_field_permeation@1 carries the anion X (z = -1).
+gate is pinned open, on which cells.route.passive_constant_field_permeation@1 carries the anion X (z = -1).
 - On each host kind (the junction, a patch on a finite node, a patch on the held bath), the
   route's rate, material term and stage term are the constant-field law written out: the two
   ends' slopes summed where both relax, 2G at each of a junction's cells. Planted on the law's
@@ -11,10 +11,10 @@ gate is pinned open, on which passive_constant_field_permeation@1 carries the an
 - A charged row drifts across a junction to its closed forms: at a trace, the held voltage's
   exponential to the Nernst ratio; with its own charge, the equilibrium in which the capacitor
   closure moves the voltage (an independent bisection), far from the closure-blind references.
-- A reacting charged trace row beside local_species_reactions@1 reaches its linear steady state
+- A reacting charged trace row beside cells.operator.local_species_reactions@1 reaches its linear steady state
   (the microRNA's shape).
 - The charged law refuses a neutral row on a junction, and a junction that crosses a floating
-  capacitor component in a composite beside local_species_reactions@1. The plain @3 crossing row is
+  capacitor component in a composite beside cells.operator.local_species_reactions@1. The plain @3 crossing row is
   the kind file's (test_passive_routes_kind.py), where the blanket junction refusal's row was
   (D310's sanctioned change).
 The kind file keeps its tier-2 cost (D224); these rows hold their own: two compiles, 61 s on the
@@ -76,7 +76,7 @@ def junction_pair(
     )
     m = raw["model"]
     if not composite:
-        m["id"] = "resolved_pump_tissue@3"
+        m["id"] = "cells.model.resolved_pump_tissue@3"
         m.pop("inner_model")
         m.pop("operators")
     if crossing:  # cell_b keeps only its contact patch: its component holds no reservoir.
@@ -306,7 +306,7 @@ def test_a_charged_row_drifts_across_a_junction_to_its_closed_form(row):
 
 
 def test_a_reacting_charged_trace_row_on_a_junction_reaches_its_linear_steady_state():
-    """D310's check 3, the microRNA's shape: a composite with local_species_reactions@1 on the
+    """D310's check 3, the microRNA's shape: a composite with cells.operator.local_species_reactions@1 on the
     junction pair, a source 0 -> X + K in cell_a (zeroth order, K the declared counter-ion), a
     first-order conversion X -> D in both cells (D an impermeant charged product sharing X's
     moiety N), the charged law carrying X on j_ab and K on @3's own junction route. K shorts the
@@ -359,7 +359,7 @@ def neutral_row_on_the_junction():
 
 
 def crossing_beside_reactions():
-    """The crossing junction pair as a composite with local_species_reactions@1 making X and K in
+    """The crossing junction pair as a composite with cells.operator.local_species_reactions@1 making X and K in
     cell_a: the microRNA's shape, where D310's refusal must hold as it does in plain @3."""
     raw = junction_pair(crossing=True, composite=True)
     species = [rfx.species("X", moieties={"N": 1}), dict(rfx.species("K"), counter_ion=True)]
@@ -380,7 +380,7 @@ def test_the_charged_law_on_a_junction_refuses_a_neutral_row_and_a_crossing_comp
     build, message
 ):
     """Host side: on a junction as on a patch, the charged law carries a charged row only; and the
-    crossing junction's refusal (D310) holds in a composite beside local_species_reactions@1, as
+    crossing junction's refusal (D310) holds in a composite beside cells.operator.local_species_reactions@1, as
     in plain @3 (the kind file's row): the kinds' definition checks run on the composite's path
     too (measured before this row: refused, and the same world without the crossing admitted)."""
     with pytest.raises(ConfigError, match=re.escape(message)):

@@ -6,7 +6,7 @@
 #
 #   /mnt/workspaces/Cells/venv-tyssue/bin/python -I run_tyssue.py REQUEST.json OUT_DIR
 #
-"""Run tyssue 1.1.0, unmodified, on an apical_vertex_mechanics@1 definition.
+"""Run tyssue 1.1.0, unmodified, on an cells.model.apical_vertex_mechanics@1 definition.
 
 MG1's out-of-process reference (docs/MORPHOGENESIS_PLAN.md; recipe and stage-0
 findings in /mnt/workspaces/Cells/morphogenesis-mg1-20261111-01/stage0-tyssue-smoke).

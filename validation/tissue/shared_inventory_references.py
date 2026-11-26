@@ -84,7 +84,7 @@ C28_PLANTS = {  # writer: (module, class, its books)
     ),
     "network": ("cells.operators.species_reactions", "LocalSpeciesReactions", "network_books_N"),
 }
-NETWORK = "local_species_reactions@1"
+NETWORK = "cells.operator.local_species_reactions@1"
 
 
 def reference(case):

@@ -39,13 +39,13 @@ from cells.registry import operators as operator_registry
 from validation import id_table
 
 PLANTED_LAW = law_registry.RouteLaw(
-    "tests.planted_route@1", ("membrane",), "a planted route", host="cells.passive_routes@1"
+    "tests.route.planted_route@1", ("membrane",), "a planted route", host="cells.kind.passive_routes@1"
 )
-PLANTED_KIND = kind_registry.Kind(kind_id="tests.planted_kind@1", model_key="planted_block")
+PLANTED_KIND = kind_registry.Kind(kind_id="tests.kind.planted_kind@1", model_key="planted_block")
 
 
 class PlantedOperator(contract.Operator):
-    LAW_ID = "tests.planted_operator@1"
+    LAW_ID = "tests.operator.planted_operator@1"
     EVENT = True
 
 
@@ -56,7 +56,7 @@ class PlantedLineageOperator(operator_registry.FamilyOperator):
 
 
 PLANTED_FAMILY_OPERATOR = PlantedLineageOperator(
-    "tests.planted_lineage_operator@1", host="cells.assembly_lineages@1"
+    "tests.operator.planted_lineage_operator@1", host="cells.model.assembly_lineages@1"
 )
 
 
@@ -76,10 +76,10 @@ def planted_scopes():
 
 PLANTED_PIECES = ("law", "kind", "operator")
 PLANTED = {
-    ("law", "tests.planted_route@1"),
-    ("kind", "tests.planted_kind@1"),
-    ("operator", "tests.planted_operator@1"),
-    ("operator", "tests.planted_lineage_operator@1"),
+    ("law", "tests.route.planted_route@1"),
+    ("kind", "tests.kind.planted_kind@1"),
+    ("operator", "tests.operator.planted_operator@1"),
+    ("operator", "tests.operator.planted_lineage_operator@1"),
 }
 
 
@@ -116,13 +116,13 @@ def test_every_registered_piece_has_its_entry_and_every_entry_is_registered():
         assert listed == registered and registered["operator"] == len(OPERATORS) + len(
             operator_registry.active().family_operators()
         )
-        entry = next(e for e in planted["pieces"] if e["id"] == "tests.planted_route@1")
+        entry = next(e for e in planted["pieces"] if e["id"] == "tests.route.planted_route@1")
         assert entry["module"] == __name__ and entry["family"] == declarations.INNER
         family = next(
             e for e in planted["pieces"] if e["id"] == PLANTED_FAMILY_OPERATOR.operator_id
         )
         assert family["interface"] == "cells.lineage_operator@1"
-        assert family["host"] == family["family"] == "cells.assembly_lineages@1"
+        assert family["host"] == family["family"] == "cells.model.assembly_lineages@1"
     stale = declarations.coverage_errors(planted)  # Unregistered again: entries without pieces.
     assert stale == [f"listed {p} {i} is not registered" for p, i in sorted(PLANTED)]
 
@@ -203,14 +203,14 @@ def test_it_joins_a_real_definition_and_states_lines_reads_and_units(tmp_path, m
     definition = id_table.load(DEFINITION)["definition"]
     found = joins(doc, definition)
     assert {path for (path, _), joined in found.items() if joined is None} == UNDECLARED
-    assert found[("/model/id", "resolved_pump_water@1")] == "model cells.resolved_pump_water@1"
-    law = found[("/model/water/law", "ideal_osmosis_linear_compliance_water@1")]
-    assert law == "operator cells.ideal_osmosis_linear_compliance_water@1"
+    assert found[("/model/id", "cells.model.resolved_pump_water@1")] == "model cells.model.resolved_pump_water@1"
+    law = found[("/model/water/law", "cells.operator.ideal_osmosis_linear_compliance_water@1")]
+    assert law == "operator cells.operator.ideal_osmosis_linear_compliance_water@1"
     # The host, as definitions write it: the composite's inner model, which frozen_definition gives
     # this definition, is the declared host of the inner model's laws.
     inner = composite_spec.frozen_definition(definition)["model"]["inner_model"]
     pieces = {e["id"]: e for e in doc["pieces"]}
-    kv1p5 = pieces["cells.kv1p5_mh@1"]
+    kv1p5 = pieces["cells.channel.kv1p5_mh@1"]
     assert kv1p5["declared_host"] == inner and kv1p5["host"] == declarations.qualified(inner)
     # Its file and its declaration's first line, and its kernels' lines.
     path = Path(cells.__file__).resolve().parents[1].parent / kv1p5["module_path"]
@@ -224,7 +224,7 @@ def test_it_joins_a_real_definition_and_states_lines_reads_and_units(tmp_path, m
         name = record["function"].rsplit(".", 1)[1]
         kernel_file = Path(cells.__file__).resolve().parents[1].parent / record["module_path"]
         assert f"def {name}(" in kernel_file.read_text().splitlines()[record["line"] - 1]
-    water = pieces["cells.ideal_osmosis_linear_compliance_water@1"]
+    water = pieces["cells.operator.ideal_osmosis_linear_compliance_water@1"]
     assert water["reads"] == [
         dict(name="membrane_area", mode="fixed", stage="split", scoped=False)
     ]  # The declared value, read as the physical one (CONFLICTS_VIEW).
@@ -245,19 +245,19 @@ def test_it_joins_a_real_definition_and_states_lines_reads_and_units(tmp_path, m
     # Planted: a module with two declarations of one ID, whose line the read refuses to guess.
     source = (
         "from cells.registry.laws import RouteLaw\n"
-        "A = RouteLaw('tests.twice@1', ('membrane',), 'a', host='cells.passive_routes@1')\n"
-        "B = RouteLaw('tests.twice@1', ('membrane',), 'b', host='cells.passive_routes@1')\n"
+        "A = RouteLaw('tests.route.twice@1', ('membrane',), 'a', host='cells.kind.passive_routes@1')\n"
+        "B = RouteLaw('tests.route.twice@1', ('membrane',), 'b', host='cells.kind.passive_routes@1')\n"
     )
     planted = (ast.parse(source), {"RouteLaw": law_registry.RouteLaw})
     monkeypatch.setattr(declarations, "_syntax", lambda module: planted)
-    with pytest.raises(ValueError, match="2 declarations of tests.twice@1 found"):
+    with pytest.raises(ValueError, match="2 declarations of tests.route.twice@1 found"):
         declarations.declaration_line(
-            "cells.planted", law_registry.RouteLaw, "tests.twice@1", "law_id"
+            "cells.planted", law_registry.RouteLaw, "tests.route.twice@1", "law_id"
         )
 
 
 def test_reads_are_one_per_stage_and_a_cycle_form_gives_its_change_rows(monkeypatch):
-    water = "cells.ideal_osmosis_linear_compliance_water@1"
+    water = "cells.operator.ideal_osmosis_linear_compliance_water@1"
     before = {e["id"]: e for e in declarations.manifest()["pieces"]}[water]["reads"]
     assert before == [dict(name="membrane_area", mode="fixed", stage="split", scoped=False)]
     # Planted: the field read at two stages, which the manifest must list as two reads.
@@ -284,18 +284,18 @@ def test_reads_are_one_per_stage_and_a_cycle_form_gives_its_change_rows(monkeypa
         raise AssertionError("never called")
 
     plain = law_registry.CycleLaw(
-        "tests.planted_formed_cycle@1",
+        "tests.cycle.planted_formed_cycle@1",
         (("role", -1),),
         (),
         kernel,
         kernel,
-        host="cells.transporter@1",
+        host="cells.kind.transporter@1",
     )
-    formed = dataclasses.replace(plain, law_id="tests.planted_formed_cycle@2", cycle=Form())
+    formed = dataclasses.replace(plain, law_id="tests.cycle.planted_formed_cycle@2", cycle=Form())
     with law_registry.scope(law_registry.BUILTIN.extended(plain, formed)):
         pieces = {e["id"]: e for e in declarations.manifest()["pieces"]}
-    assert pieces["tests.planted_formed_cycle@1"]["changes"] == [dict(role="role", per_cycle=-1)]
-    assert pieces["tests.planted_formed_cycle@2"]["changes"] == [
+    assert pieces["tests.cycle.planted_formed_cycle@1"]["changes"] == [dict(role="role", per_cycle=-1)]
+    assert pieces["tests.cycle.planted_formed_cycle@2"]["changes"] == [
         dict(role="role", per_cycle=-2, mode="coupled")
     ]
-    assert pieces["tests.planted_formed_cycle@2"]["fields"]["cycle"] == {"form": "planted"}
+    assert pieces["tests.cycle.planted_formed_cycle@2"]["fields"]["cycle"] == {"form": "planted"}

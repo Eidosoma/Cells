@@ -1,4 +1,4 @@
-"""electroneutral_symport_reversible_tanh@1: the symport of one cation and one anion in an
+"""cells.cycle.electroneutral_symport_reversible_tanh@1: the symport of one cation and one anion in an
 electroneutral ratio, in a manufactured rate form (the cycle kind's monomial form).
 
     n_cation C(P) + n_anion A(P) -> n_cation C(N) + n_anion A(N)
@@ -22,7 +22,7 @@ sum to zero.
 are a population's parameters, and the capacity and the availability are the kind's. J depends on
 the concentrations through x alone and never exceeds k v in size. It claims no transporter protein,
 no regulation and no water carried with the salt. It is not a second law of the potassium-chloride
-symport, whose own is k_anion_symport_mass_action@1, an operator beside water. A salt of three or
+symport, whose own is cells.operator.k_anion_symport_mass_action@1, an operator beside water. A salt of three or
 more ions is a law of its own.
 
 Its domain is the kind's for this form, x <= 80, one-sided. Its moves are base rows, so a closure
@@ -46,7 +46,7 @@ from cells.laws.cycles.forms import (
 )
 from cells.modules import Citation, CycleLaw, qualified
 
-LAW_ID = "electroneutral_symport_reversible_tanh@1"
+LAW_ID = "cells.cycle.electroneutral_symport_reversible_tanh@1"
 DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 COUNT_RANGE = (1, 2)  # n_cation and n_anion: integers.
 # e^x = (C_N/C_P)^n_cation (A_N/A_P)^n_anion: each row's own count as its order, plus at N and
@@ -73,12 +73,12 @@ CYCLE = CycleForm(
 )
 LAW = CycleLaw(
     DECLARED_ID,
-    reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    reads=("cells.binding.rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Two ions moved together: each move is a base row.
     material_term="material_term",  # The kind's: its rate over all the rows it moves.
     electroneutral=True,
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="parity",
     source=Citation(
         "manufactured: the rate form has no outside source. It moved from an older model family's "

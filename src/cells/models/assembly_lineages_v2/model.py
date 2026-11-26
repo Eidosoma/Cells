@@ -222,7 +222,7 @@ def geometry_layout(world, P, R, place):
 
 def shell_layout(world, P, R):
     """FR-21's prescribed shell in kernel.GEOMETRY_FIELDS' order: no quanta, no floor and no
-    lysis; each cells.shell_permeation@1 step takes the constant extent ln(A_sh·ρ0) (code 3, in
+    lysis; each cells.reaction.shell_permeation@1 step takes the constant extent ln(A_sh·ρ0) (code 3, in
     the log_area slot)."""
     from cells.models.assembly_lineages_v2 import SHELL_PERMEATION, prescribed_shell
 

@@ -1,8 +1,8 @@
-"""The general closure on @3's world (kinds/proton_buffer.py's general layout, rapid_binding@1;
+"""The general closure on @3's world (kinds/proton_buffer.py's general layout, cells.binding.rapid_binding@1;
 docs/CORE_SEAMS_DESIGN.md §5 and §19 as amended on 18 November 2026).
 
 In an admitted general world nothing changes a held total: every mover of a closure row is refused
-at the definition unless its law reads rapid_binding@1, and no built-in law does yet. So the moving
+at the definition unless its law reads cells.binding.rapid_binding@1, and no built-in law does yet. So the moving
 cases here run a test-namespace law whose reads name it, in a scoped registry. World-level power
 for a real mover waits for one.
 - The read: on B4's buffered cell re-expressed for the general closure, the free h equals version
@@ -56,19 +56,19 @@ from validation.tissue import pump_water_fixtures as water_fixtures
 
 EPS = np.finfo(float).eps
 REFS = Path(__file__).resolve().parents[2] / "validation" / "core_seams" / "references"
-READS_LAW = "tests.binding_reading_carrier@1"
+READS_LAW = "tests.cycle.binding_reading_carrier@1"
 
 
 def general(raw, *, kon=1e7):
     """raw (a world with version 1's read) re-expressed for the general closure: B's two-form
-    spelling as one form holding one more H, and the read rapid_binding@1 on H at the same nodes."""
+    spelling as one form holding one more H, and the read cells.binding.rapid_binding@1 on H at the same nodes."""
     raw = copy.deepcopy(raw)
     m = raw["model"]
     b = next(e for e in m["species"] if e["id"] == "B")
     b["forms"] = [dict(id="HB", counts={"H": 1}, standard_mu_RT=b.pop("protonated_standard_mu_RT"))]
     read = m[proton_buffer.MODEL_KEY][0]
     m[proton_buffer.MODEL_KEY] = [
-        dict(read_id="rapid_binding@1", ligand_rows=["H"], proton_row="H",
+        dict(read_id="cells.binding.rapid_binding@1", ligand_rows=["H"], proton_row="H",
              binders={node: list(rows) for node, rows in read["buffers"].items()},
              k_on_per_mM_s={"B": {"H": kon}})
     ]  # fmt: skip
@@ -136,12 +136,12 @@ def test_the_general_read_gives_version_1s_free_h_within_the_criterion():
 
 
 def reads_law(*, forms="base"):
-    """A test-namespace cycle law whose reads name rapid_binding@1, held by a scoped law registry,
+    """A test-namespace cycle law whose reads name cells.binding.rapid_binding@1, held by a scoped law registry,
     for the planted carrier's moves (never shipped). It declares its moves in base forms (§5.2's
     admission), unless `forms` says otherwise."""
     return CycleLaw(
         READS_LAW, (("carried", 1),), (), lambda *a, **k: None, lambda *a, **k: True,
-        reads=("rapid_binding@1",), host=kind_fixtures.CARRIER_ID, forms=forms,
+        reads=("cells.binding.rapid_binding@1",), host=kind_fixtures.CARRIER_ID, forms=forms,
     )  # fmt: skip
 
 
@@ -268,7 +268,7 @@ def reference_cell(system, k):
         for entry in raw["experiment"][group]:
             entry["schedule"] = [dict(time=0.0, availability=0.0)]
     m[proton_buffer.MODEL_KEY] = [
-        dict(read_id="rapid_binding@1", ligand_rows=list(s["ligands"]),
+        dict(read_id="cells.binding.rapid_binding@1", ligand_rows=list(s["ligands"]),
              **({"proton_row": "H"} if "H" in s["ligands"] else {}),
              binders={m["cells"][0]["id"]: list(s["binders"])},
              k_on_per_mM_s={b: dict.fromkeys(sorted({l for f in registry["binders"][b]["forms"]
@@ -425,7 +425,7 @@ def lumen_general():
         entry = next(e for e in m["species"] if e["id"] == row)
         entry["forms"] = [dict(id="H" + row, counts={"H": 1},
                                standard_mu_RT=entry.pop("protonated_standard_mu_RT"))]
-    m["stage_reads"] = [dict(read_id="rapid_binding@1", ligand_rows=["H"], proton_row="H",
+    m["stage_reads"] = [dict(read_id="cells.binding.rapid_binding@1", ligand_rows=["H"], proton_row="H",
                              binders={fr.CELL: ["B_c"], fr.LUMEN: ["B_L"]},
                              k_on_per_mM_s={"B_c": {"H": 1e7}, "B_L": {"H": 1e7}})]
     m.pop("transporters")
@@ -467,7 +467,7 @@ def test_p1s_predictor_reads_the_free_amount_at_the_predicted_totals():
 def test_an_h_carried_injection_into_a_general_closure_cell_is_refused():
     raw = cs.frozen_definition(lumen_general())
     raw["model"].setdefault("operators", []).append(
-        dict(law="electrode_current_injection@1",
+        dict(law="cells.operator.electrode_current_injection@1",
              electrodes=[dict(cell_id=fr.CELL, carriers={"H": 1.0})])
     )  # fmt: skip
     raw["experiment"]["injection_controls"] = [
@@ -505,10 +505,10 @@ def test_the_run_view_states_the_ligand_set_from_the_definition():
 
 
 # ----------------------------------------------------------------- the forms face (MT-1b's item 1)
-# logmean_electrodiffusion_forms@1 (laws/routes/logmean_electrodiffusion_forms.py), slice 1: its own
+# cells.route.logmean_electrodiffusion_forms@1 (laws/routes/logmean_electrodiffusion_forms.py), slice 1: its own
 # entity set in @3, statically absent unless declared, every row moving as itself. Host steps only
 # (numpy), so no row here compiles a world.
-FORMS = "logmean_electrodiffusion_forms@1"
+FORMS = "cells.route.logmean_electrodiffusion_forms@1"
 
 
 def face_world(law, *, floating=False, solver=None):
@@ -535,7 +535,7 @@ def face_world(law, *, floating=False, solver=None):
         e = raw["experiment"]
         e["membrane_controls"] = [c for c in e["membrane_controls"] if c["membrane_id"] in kept]
         x["membrane_capacity"] = len(kept)
-        x["field_solver"] = "capacitive_reduction_gauged_damped_newton@3"
+        x["field_solver"] = "cells.solver.capacitive_reduction_gauged_damped_newton@3"
         cell = m["cells"][0]
         lumen = next(n for n in m["extracellular"] if n["id"] == fr.LUMEN)
         z = {s["id"]: s["valence"] for s in m["species"]}
@@ -566,7 +566,7 @@ def test_a_forms_face_of_rows_as_themselves_steps_as_todays_face(floating):
     current balance fixes. Compiled, the same pair matched bitwise where the programs matched, and
     otherwise at rounding (the slice's evidence). Planted: the forms face at twice its factor
     differs."""
-    _, _, today = host_steps(face_world("logmean_electrodiffusion@1", floating=floating), 3)
+    _, _, today = host_steps(face_world("cells.route.logmean_electrodiffusion@1", floating=floating), 3)
     spec, impl, forms = host_steps(face_world(FORMS, floating=floating), 3)
     paired = {"face_transferred": "forms_face_transferred",
               "face_dissipated_energy_pJ": "forms_face_dissipated_energy_pJ"}  # fmt: skip
@@ -596,7 +596,7 @@ def test_the_forms_entity_set_is_absent_unless_declared_and_binds_its_return_pat
     from cells.models import surface_tissue as tissue
     from cells.numerics import surface_field
 
-    spec = parse_spec(face_world("logmean_electrodiffusion@1"))
+    spec = parse_spec(face_world("cells.route.logmean_electrodiffusion@1"))
     impl, state, p, _ = host(spec)
     assert impl.structure.forms_faces == () and impl.STATE_TYPE is inner.STATE_TYPE
     assert not any(k.startswith("forms_face") for k in (*type(state)._fields, *type(p)._fields))
@@ -628,7 +628,7 @@ def test_the_forms_entity_set_is_absent_unless_declared_and_binds_its_return_pat
         ("no structure", "through its structure's implementation"),
         ("composite", "runs in @3 alone in version 1"),
         ("stationary", "the structural laws read neither"),
-        ("run view", "No view declarations for logmean_electrodiffusion_forms@1"),
+        ("run view", "No view declarations for cells.route.logmean_electrodiffusion_forms@1"),
         ("exact booking", "books today's faces' neutral rows"),
         ("closure", "beside another stage read"),
         ("labels", "is moved by a forms face"),
@@ -638,7 +638,7 @@ def test_version_1_refuses_a_forms_face_where_its_paths_are_not_built(case, mess
     """Each path version 1 does not build for a forms face refuses it, naming why: RK4 and N2
     (the plain IMEX tableaux only), the projective mode, a caller without @3's structure, the
     composite's adapter, the stationary analysis, the run view, the faces' exact booking, and a
-    world with another stage read than the general closure's (version 1's rapid_proton_buffer@1
+    world with another stage read than the general closure's (version 1's cells.kind.rapid_proton_buffer@1
     here), and FR-42's labels on a row a forms face moves (label_errors, and the step itself), while
     a row it does not move gives no such reason. The control: the same forms world parses and
     steps (test_a_forms_face_of_rows_as_themselves_steps_as_todays_face)."""
@@ -647,10 +647,10 @@ def test_version_1_refuses_a_forms_face_where_its_paths_are_not_built(case, mess
     from cells.models import surface_pump_v3 as inner
 
     if case in ("rk4", "N2", "exact booking", "closure"):
-        raw = face_world(FORMS, solver={"rk4": "rk4", "N2": "imex_ars222_implicit_conductances@1"}
+        raw = face_world(FORMS, solver={"rk4": "rk4", "N2": "cells.solver.imex_ars222_implicit_conductances@1"}
                          .get(case))  # fmt: skip
         if case == "exact booking":
-            raw["model"]["heat_bookings"] = {"faces": "exact_free_energy_heat@1"}
+            raw["model"]["heat_bookings"] = {"faces": "cells.heat.exact_free_energy_heat@1"}
         if case == "closure":
             raw["model"]["stage_reads"] = fr.fr4_world()["model"]["stage_reads"]
         with pytest.raises(ConfigError, match=message):
@@ -719,7 +719,7 @@ def forms_world(*, law=FORMS, carry=("B_L", "H", "K", "Na", "Cl"), receiver_hold
                        length_m=1e-6, diffusivity_m2_per_s=diffusivity, law=law)]  # fmt: skip
     x["extracellular_capacity"] = len(m["extracellular"])
     x["face_capacity"] = int(law != FORMS)
-    x["field_solver"] = "capacitive_reduction_gauged_damped_newton@3"
+    x["field_solver"] = "cells.solver.capacitive_reduction_gauged_damped_newton@3"
     return raw
 
 
@@ -818,9 +818,9 @@ def test_the_forms_law_is_admitted_at_closure_rows_where_todays_face_is_refused(
     raw = {
         "forms law": lambda: forms_world(),
         "today's law at a ligand row": lambda: forms_world(
-            law="logmean_electrodiffusion@1", carry=("H", "K")
+            law="cells.route.logmean_electrodiffusion@1", carry=("H", "K")
         ),
-        "today's law at a binder row": lambda: forms_world(law="logmean_electrodiffusion@1"),
+        "today's law at a binder row": lambda: forms_world(law="cells.route.logmean_electrodiffusion@1"),
         "one end held": lambda: forms_world(receiver_holds=False),
         "binder held at neither end": lambda: forms_world(carry=("B_c", "K")),
     }[case]()
@@ -833,7 +833,7 @@ def test_the_forms_law_is_admitted_at_closure_rows_where_todays_face_is_refused(
 
 # ------------------------------------------- the leak reading the closure (MT-1b's item 3)
 
-LEAK_V1, LEAK_V2 = "proton_constant_field_leak@1", "proton_constant_field_leak@2"
+LEAK_V1, LEAK_V2 = "cells.route.proton_constant_field_leak@1", "cells.route.proton_constant_field_leak@2"
 
 
 def leak_general(law=LEAK_V2):
@@ -855,7 +855,7 @@ def test_the_leak_at_version_2_reads_the_general_closures_free_h_and_closes_ever
     from cells.kinds import passive_routes
     from cells.laws.electrochemistry import ghk_leak
 
-    with pytest.raises(ConfigError, match=r"proton_constant_field_leak@1, whose reads \[\] lack"):
+    with pytest.raises(ConfigError, match=r"cells.route.proton_constant_field_leak@1, whose reads \[\] lack"):
         parse_spec(leak_general(LEAK_V1))
     spec = parse_spec(leak_general())
     impl, state, p, control = host(spec)
@@ -926,8 +926,8 @@ def test_a_route_reading_the_closure_moves_a_ligand_across_two_ends_and_the_face
     refused = species_registry._route_mover_errors(closure, LEAK_V2, "B_c")
     assert "no ligand of the closure" in refused[0]
     face = laws.RouteLaw(
-        "tests.face_route@1", ("face",), "a planted route on a face",
-        host="cells.passive_routes@1", reads=("rapid_binding@1",),
+        "tests.route.face_route@1", ("face",), "a planted route on a face",
+        host="cells.kind.passive_routes@1", reads=("cells.binding.rapid_binding@1",),
     )  # fmt: skip
     with laws.scope(laws.BUILTIN.extended(face)):
         refused = species_registry._route_mover_errors(closure, face.law_id, "H")

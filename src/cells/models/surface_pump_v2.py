@@ -1,6 +1,6 @@
-"""resolved_pump_tissue@2: resolved_pump_tissue@1 with a plasma-membrane Ca-ATPase.
+"""cells.model.resolved_pump_tissue@2: cells.model.resolved_pump_tissue@1 with a plasma-membrane Ca-ATPase.
 
-The calcium pump (ca_atp_mass_action_positive@1) is one more explicit membrane
+The calcium pump (cells.cycle.ca_atp_mass_action_positive@1) is one more explicit membrane
 process, evaluated at the same stage potentials as every other membrane rate.
 Its cycles move Ca from the cell to the patch's outside node, so they charge
 both capacitor components; they have their own cycle, dissipation and
@@ -8,7 +8,7 @@ metabolic-work ledgers. The field law, the factored solver, the IMEX schemes
 (face electromigration implicit), the junction gate and every @1 rate and
 check are those of models/surface_pump.py. Each rate below is @1's sequence of
 operations with the calcium terms appended, so with no calcium pump this
-identity reproduces resolved_pump_tissue@1.
+identity reproduces cells.model.resolved_pump_tissue@1.
 """
 
 import sys
@@ -97,7 +97,7 @@ def working_size(spec):
 
 
 def _view(state):
-    """The resolved_pump_tissue@1 fields of a state, in @1's state type."""
+    """The cells.model.resolved_pump_tissue@1 fields of a state, in @1's state type."""
     return kinetic.STATE_TYPE(*(getattr(state, k) for k in kinetic.STATE_TYPE._fields))
 
 

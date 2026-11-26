@@ -1,4 +1,4 @@
-"""cells.osmotic_lumen@1: the lumen's volume and free energy from the counts (OL2; §2.2, §4.1).
+"""cells.free_energy.osmotic_lumen@1: the lumen's volume and free energy from the counts (OL2; §2.2, §4.1).
 
 The lead's rulings are §0.2b rules 2 and 3, §0.2c rules 6–8 and §0.2d item 3
 (docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1.2–§1.6).
@@ -14,7 +14,7 @@ outside's total osmolarity in mol/L, held, and A = q·W/2 (geometry.py).
 
     F_osm(n) = −N_L ln(N_A c0 V(n)) + N_A c_ext V(n),   and 0 at an empty lumen
 
-Together with cells.ideal_mixing@1's lumen part, Σ_s [n_s μ°_s + ln n_s!], it is §0.2d item 3's
+Together with cells.free_energy.ideal_mixing@1's lumen part, Σ_s [n_s μ°_s + ln n_s!], it is §0.2d item 3's
 F_lumen. As an excess term it enters each reverse as exp(F_osm(n′) − F_osm(n′ − ν)), so every pair
 keeps ln a⁺ − ln a⁻ = −ΔF + w exactly, whichever way V moves (the check note's §1.4).
 
@@ -342,7 +342,7 @@ FORMULAS = {
 
 TERM = law_registry.BUILTIN.register(
     FreeEnergyTerm(
-        "cells.osmotic_lumen@1",
+        "cells.free_energy.osmotic_lumen@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(

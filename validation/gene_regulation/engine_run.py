@@ -39,7 +39,7 @@ twin R1SU's, at R1's dt. All export the release's readouts: the hold H_<release>
 int_Q_<release>_<fate>, each fate's class total n_<release>_<fate>
 and its heat class H_rel_<release>_<fate>, and the hold's term in G_minus_G0 (the sheet's §9).
 
-A world that declares FR-42's labels (neutral_arrival_labels@1, D289) also exports each labelled
+A world that declares FR-42's labels (cells.operator.neutral_arrival_labels@1, D289) also exports each labelled
 row's amount carrying each of its labels at the exported cell, label_<row>_<label>: the row's
 amount times the label's share, keyed by the species' and label's IDs; and each release's hold by
 the labels of its durable fate row, label_H_<release>_<label>, the hold times its share in the
@@ -70,12 +70,12 @@ an export from the exported cell nothing here is read, and the record is unchang
 
 **Beside a second writer or water** (FR-43's parts 2A and 2B; FR-38's second comparison, families C
 and D, validation/gene_regulation/fr38_v2/spec/READOUTS.md):
-- **local_species_reactions@1** (D152) on the exported cell adds the rows of its own that the gene
+- **cells.operator.local_species_reactions@1** (D152) on the exported cell adds the rows of its own that the gene
   unit does not list (n_<row>, n_Mx in family C), its heat there, H_store
   (reaction_dissipated_energy_pJ), its work there (reaction_work_pJ: zero on a passive route such
   as family C's, not on a driven one), and its bookings' magnitude. G_minus_G0 adds those rows at
   the network's potentials, converted to the gene unit's c0.
-- **ideal_osmosis_linear_compliance_water@1** makes the cell's volume current, V (pL). It adds
+- **cells.operator.ideal_osmosis_linear_compliance_water@1** makes the cell's volume current, V (pL). It adds
   water's heat H_water (water_dissipated_energy_pJ, summed) and the held baths' water work W_bath
   (bath_water_work_pJ, summed). G_minus_G0 then reads every species row at the current V, K and Y
   included at mu° 0 (their amounts move by nothing, their terms by dilution; n_K and n_Y are
@@ -111,9 +111,9 @@ from validation.gene_regulation import worlds
 ROOT = Path(__file__).resolve().parents[2]
 SHEET_TAG = "gr1-sheet-2026-11-20b"
 RELEASE_SHEET_TAG = "gr1-sheet-fr38-erratum-c-2026-11-22"  # The sheet's §9, as amended (FR-38).
-LABELS = "neutral_arrival_labels@1"  # FR-42's label owner (D289).
-REACTIONS = "local_species_reactions@1"  # D152's network: family C's store (FR-43 part 2A).
-WATER = "ideal_osmosis_linear_compliance_water@1"  # Family D's swelling cell (FR-43 part 2B).
+LABELS = "cells.operator.neutral_arrival_labels@1"  # FR-42's label owner (D289).
+REACTIONS = "cells.operator.local_species_reactions@1"  # D152's network: family C's store (FR-43 part 2A).
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"  # Family D's swelling cell (FR-43 part 2B).
 POLICY = WindowPolicy(window_steps=10000, recording="observations")
 DIGITS = 60
 

@@ -1,4 +1,4 @@
-"""hill_product_factor@1: a product of Hill factors of concentrations, in log space (G-5).
+"""cells.transfer_factor.hill_product_factor@1: a product of Hill factors of concentrations, in log space (G-5).
 
 docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md, sections 4.2, 5.2 and 5.8. One factor has
 reads j = 1 to J, each a concentration x_j (mM) under a form, a half-saturation K_j (mM, > 0) and a
@@ -40,7 +40,7 @@ from typing import ClassVar
 from cells.laws.reactions import hill_factors
 from cells.modules import Citation, CitedWork, Law
 
-LAW_ID = "hill_product_factor@1"
+LAW_ID = "cells.transfer_factor.hill_product_factor@1"
 TRANSFER_FACTOR_LAW = "cells.transfer_factor_law@1"  # Declared in @3's row of the model table.
 FORMS = tuple(hill_factors.KINDS.items())  # ((form, code), ...): the codes are hill_factors'.
 PARAMETERS = ("half_saturation_mM", "hill_coefficient")  # Each read's.
@@ -147,7 +147,7 @@ LAW = TransferFactorLaw(
     log_factor,
     factor,
     log_slopes,
-    host="cells.species_condition@1",
+    host="cells.kind.species_condition@1",
     provenance="parity",
     source=Citation(
         "Hill's equation (A. V. Hill, 1910; reviewed by J. N. Weiss, 1997): one saturating factor "

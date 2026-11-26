@@ -28,13 +28,13 @@ import pytest
 
 from validation.tissue import composite_crossrev as crossrev
 
-PASSIVE = "passive_neutral_permeation@1"
-REACTIONS = "local_species_reactions@1"
-COMPOSITE = "resolved_pump_composite@1"
+PASSIVE = "cells.route.passive_neutral_permeation@1"
+REACTIONS = "cells.operator.local_species_reactions@1"
+COMPOSITE = "cells.model.resolved_pump_composite@1"
 STEPS = 5
 # (model, operators, passive routes as (host, species), cells, junctions, step in s)
 EXPECTED = {
-    "linear_norton": ("resolved_pump_tissue@3", set(), set(), 3, 2, 0.125),
+    "linear_norton": ("cells.model.resolved_pump_tissue@3", set(), set(), 3, 2, 0.125),
     "linear_as_written": (COMPOSITE, {REACTIONS}, {("junction", "S"), ("patch", "S")}, 3, 2, 0.125),
     "neither_line": (COMPOSITE, {REACTIONS}, {("junction", "u")}, 25, 24, 0.125),
     "neither_sheet": (COMPOSITE, {REACTIONS}, {("junction", "u")}, 81, 144, 0.0625),
@@ -92,14 +92,14 @@ def test_the_set_builds(honest, tmp_path):
         }
         assert hosts == routes and {r["law"] for r in m.get("passive_routes", [])} <= {PASSIVE}
         assert (len(m["cells"]), len(m["junctions"])) == (n_cells, n_junctions), name
-        assert {j["gate"]["law"] for j in m["junctions"]} == {"junction_voltage_relaxation@1"}
+        assert {j["gate"]["law"] for j in m["junctions"]} == {"cells.junction.junction_voltage_relaxation@1"}
         assert all(j["gate"]["minimum_open_fraction"] == 1.0 for j in m["junctions"]), name
         neutral = {s["id"] for s in m["species"] if s["valence"] == 0}
         assert {s for _, s in routes} <= neutral, name
-        if model_id == "resolved_pump_tissue@3":  # @3's own route for its neutral permeant species
+        if model_id == "cells.model.resolved_pump_tissue@3":  # @3's own route for its neutral permeant species
             assert {s["id"] for s in m["species"]} == {"mR"} <= neutral
-            assert {mb["law"] for mb in m["membranes"]} == {"constant_field@1"}
-            assert {j["law"] for j in m["junctions"]} == {"constant_field@1"}
+            assert {mb["law"] for mb in m["membranes"]} == {"cells.route.constant_field@1"}
+            assert {j["law"] for j in m["junctions"]} == {"cells.route.constant_field@1"}
         assert spec.execution.dt == dt, name
         changes = [c.time for c in spec.experiment.changes]
         assert spec.experiment.end_time == STEPS * dt and set(changes) <= {0.0}, name

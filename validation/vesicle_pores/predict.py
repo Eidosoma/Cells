@@ -2,7 +2,7 @@
 `pores-laws-sheet-registered-2026-11-22`; the lead's rulings D293, D294 and D295), computed from the
 recorded fit (fit_rows.py) at the sealed extractor's conditions, before any held-out value is read.
 
-**The prediction** at each held-out condition (σ, T) is the fitted law (cells.pore_nucleation@1):
+**The prediction** at each held-out condition (σ, T) is the fitted law (cells.assembly_hazard.pore_nucleation@1):
 
     ln k_pred = ln C + ½·ln σ − (3/2)·ln T − E_A/(R·T) − (π/(k_B·T·σ))·Γ²
 
@@ -166,7 +166,7 @@ def main(argv):
         "standing": "the blind test's stage-1 predictions, computed before any held-out value is "
         "read (the sheet's §8; D293, D294, D295)",
         "sheet": SHEET_TAG,
-        "law": "cells.pore_nucleation@1 (src/cells/models/assembly_lineages_v2/pore_nucleation.py)",
+        "law": "cells.assembly_hazard.pore_nucleation@1 (src/cells/models/assembly_lineages_v2/pore_nucleation.py)",
         "fit": {"path": str(fit_path), "sha256": _sha256(fit_path),
                 "estimates": fit["estimates"], "covariance_unscaled": fit["covariance_unscaled"],
                 "chi2": fit["chi2"], "dof": fit["dof"],

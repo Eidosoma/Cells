@@ -39,8 +39,8 @@ F = 6.02214076e23 * 1.602176634e-19
 R = 6.02214076e23 * 1.380649e-23
 FMOL_CHARGE = 1e-15 * F
 TOLERANCE = 2e-13  # Of the one-way rates, as test_cycle_kind.py's JUDGED_TOL.
-NKCC = "cells.na_k_2anion_symport_reversible_tanh@1"
-SALT = "cells.electroneutral_symport_reversible_tanh@1"
+NKCC = "cells.cycle.na_k_2anion_symport_reversible_tanh@1"
+SALT = "cells.cycle.electroneutral_symport_reversible_tanh@1"
 VALENCE = dict(Na=1, K=1, M=-1, Ca=2, S=-2, Y=0, ATP=0, Pi=0)
 PUMPED = {2: "Ca", 1: "K", -1: "M", 0: "Y"}  # The species a pump state moves, by its valence.
 SALTS = dict(salt_1_1=("K", "M"), salt_1_2=("Ca", "M"), salt_2_1=("Na", "S"))
@@ -115,12 +115,12 @@ def kernel_world(family, k_factor=1.0, temperature=310.0):
         area_m2=1e-10,
         capacitance_F=1e-12,
         permeability_m_per_s=dict.fromkeys(valence, 0.0),
-        law="constant_field@1",
+        law="cells.route.constant_field@1",
         pump=None,
         calcium_pump=None,
     )
     model = dict(
-        id="resolved_pump_tissue@3",
+        id="cells.model.resolved_pump_tissue@3",
         temperature_K=temperature,
         standard_concentration_mM=1.0,
         species=species,
@@ -131,7 +131,7 @@ def kernel_world(family, k_factor=1.0, temperature=310.0):
         faces=[],
         channels=[],
         closure=dict(
-            law="resolved_capacitor_components_current_continuity@1", gauge_reference="outside"
+            law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference="outside"
         ),
         transporters=[entry(family, i, s, k_factor) for i, s in enumerate(states(family))],
     )

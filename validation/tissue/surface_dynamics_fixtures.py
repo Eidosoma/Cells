@@ -21,7 +21,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
         return dict(zip(ids, v, strict=True))
 
     model = dict(
-        id="resolved_tissue@1",
+        id="cells.model.resolved_tissue@1",
         temperature_K=p["temperature"],
         species=[dict(id=s, valence=z) for s, z in zip(ids, valence, strict=True)],
     )
@@ -52,7 +52,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
             area_m2=p["membrane_area"][k],
             capacitance_F=p["membrane_capacitance"][k],
             permeability_m_per_s=mapped([r[k] for r in p["membrane_permeability"]]),
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
         )
         for k in range(4)
     ]
@@ -63,7 +63,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
             receiver="cell_1",
             area_m2=p["junction_area"][0],
             permeability_m_per_s=mapped([r[0] for r in p["junction_permeability"]]),
-            law="constant_field@1",
+            law="cells.route.constant_field@1",
         )
     ]
     model["faces"] = [
@@ -74,12 +74,12 @@ def definition(arm="open", *, backend="cpu", padded=True):
             area_m2=1e-10,
             length_m=1e-5,
             diffusivity_m2_per_s=mapped([r[k] * 1e-5 / 1e-10 for r in p["face_factor"]]),
-            law="logmean_electrodiffusion@1",
+            law="cells.route.logmean_electrodiffusion@1",
         )
         for k, (i, j) in enumerate(zip(p["face_sender"], p["face_receiver"], strict=True))
     ]
     model["closure"] = dict(
-        law="resolved_capacitor_components_current_continuity@1",
+        law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
         gauge_reference="outside_4" if arm == "closed" else None,
     )
     experiment = dict(
@@ -119,7 +119,7 @@ def definition(arm="open", *, backend="cpu", padded=True):
             jit=True,
             precision="float64",
             solver="rk4",
-            field_solver="capacitive_reduction_gauged_damped_newton@1",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@1",
             max_steps=256,
             max_trace_bytes=2**29,
             material_balance_atol_fmol=mapped([2e-11] * 3),

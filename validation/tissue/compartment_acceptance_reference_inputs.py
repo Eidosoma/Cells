@@ -1,4 +1,4 @@
-"""The registered input file of FR-1's code-blind references (cell_owned_compartments@1 with
+"""The registered input file of FR-1's code-blind references (cells.operator.cell_owned_compartments@1 with
 exchange@1: the closed-compartment acceptance, exchange's first judged acceptance).
 
 The FR references agent writes FR-1's references (docs/CLOSED_COMPARTMENT_DESIGN.md §6.2) from that
@@ -100,7 +100,7 @@ def _clearance(raw):
 
 
 def _reaction(raw):
-    block = next(op for op in raw["model"]["operators"] if op["law"] == "local_species_reactions@1")
+    block = next(op for op in raw["model"]["operators"] if op["law"] == "cells.operator.local_species_reactions@1")
     return {r["id"]: dict(rate_constant_per_s=r["rate_constant"], sites=r["sites"],
                           reactants=r["reactants"], products=r["products"])
             for r in block["reactions"]}

@@ -1,12 +1,12 @@
-"""cells.ph_condition@1: a node's pH condition, a source of the routing door (FR-5).
+"""cells.kind.ph_condition@1: a node's pH condition, a source of the routing door (FR-5).
 
 docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §8, §9 and §16 (the lead's rulings of 16 November 2026);
-the law is `ph_conditioned_factor@1` (laws/reactions/ph_condition.py):
+the law is `cells.transfer_factor.ph_conditioned_factor@1` (laws/reactions/ph_condition.py):
 
     f(pH) = 1 / (1 + 10^(m (pH - pH50))),   m > 0,
 
 open (f -> 1) below pH50 and closed above it. The pH is the node's free proton read on the stage's
-state: B4's closure read (rapid_proton_buffer@1) at a buffered node, the stored row at an
+state: B4's closure read (cells.kind.rapid_proton_buffer@1) at a buffered node, the stored row at an
 unbuffered one, as pH = -log10(h / 1 M) (B4's readout convention,
 rapid_proton_buffer.PH_REFERENCE_mM). It has no state, moves nothing and books nothing; it
 reaches routes only as a factor through the routing door (§16.2), which the core builds.
@@ -15,7 +15,7 @@ The declaration (model key `ph_conditions`), each condition at a node by its ID 
 sees the base model's nodes, not FR-1's identity map; in the declared world FR-1's operator gives
 the node its compartment's identity):
 
-    [{"id": "acid_0", "node": "lumen_0", "law": "ph_conditioned_factor@1", "ph50": 5.5,
+    [{"id": "acid_0", "node": "lumen_0", "law": "cells.transfer_factor.ph_conditioned_factor@1", "ph50": 5.5,
       "slope": 4.0}]
 
 with an optional `proton` row (default "H"), which must be B4's proton row where B4 is declared.
@@ -31,9 +31,9 @@ with an optional `proton` row (default "H"), which must be B4's proton row where
 - **Its limit:** it has no feedback hooks (factor_rows and factor_log_slopes; kind_registry.Kind),
   so the core's bound on a gated route's feedback does not cover a loop through it, such as a route
   that moves protons at its own condition's node. FR-5's worlds use it, so it is admitted.
-- **Its successor:** `cells.species_condition@1` with one hill_activation read of the proton row,
+- **Its successor:** `cells.kind.species_condition@1` with one hill_activation read of the proton row,
   K = 10^(3 - pH50) mM and n the slope, which has the hooks. The two factors differ by at most
-  2.3e-15 on 20,000 random points (hill_product_factor@1 against ph_conditioned_factor@1). A new
+  2.3e-15 on 20,000 random points (cells.transfer_factor.hill_product_factor@1 against cells.transfer_factor.ph_conditioned_factor@1). A new
   definition declares that kind; this one retires in a landing of its own, with the worlds that
   declare it.
 """
@@ -55,12 +55,12 @@ from cells.registry.kind_registry import (
     require_fields,
 )
 
-KIND_ID = "cells.ph_condition@1"
+KIND_ID = "cells.kind.ph_condition@1"
 MODEL_KEY = "ph_conditions"
 LAW_ID = qualified(law.LAW_ID)
 ENTRY_FIELDS = ("id", "node", "law", "ph50", "slope")
 DEFAULT_PROTON = "H"
-CLOSURE_KIND = "cells.rapid_proton_buffer@1"
+CLOSURE_KIND = "cells.kind.rapid_proton_buffer@1"
 LAYOUT_FIELDS = (
     "ph_condition_node",  # [condition] the node's index: cells, then outside nodes
     "ph_condition_proton_row",  # [condition] the proton row

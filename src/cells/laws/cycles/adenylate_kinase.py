@@ -8,7 +8,7 @@ Declared in base forms with the source's rate (D236), J = S (1 - e^x):
 - S = X (1 + [Mg2+]_P/K_MgATP) K_base [ADP3-]^2, with affinity share 1. The population's
   capacity carries X_AK.
 - [ADP3-] is the Mg-free base form at P, and [Mg2+] the free Mg2+ there, a read role.
-- x is the registry's, -ln K_base + ln([ATP4-][AMP2-]/[ADP3-]^2), from beard2005@2, whose AMP2-
+- x is the registry's, -ln K_base + ln([ATP4-][AMP2-]/[ADP3-]^2), from cells.potential_set.beard2005@2, whose AMP2-
   potential this constant fixes.
 - K_base is §7's match at full precision: Table 1's K_AK = 0.4331 on totals, converted at the
   state-3 buffer's free Mg2+, m = 3.808553529 mM. Its display, 0.388964538, is not the constant,
@@ -44,7 +44,7 @@ from cells.laws.cycles.forms import (
 from cells.laws.cycles.mitochondria_source import citation
 from cells.modules import CycleLaw, qualified
 
-LAW_ID = "adenylate_kinase@1"
+LAW_ID = "cells.cycle.adenylate_kinase@1"
 DECLARED_ID = qualified(LAW_ID)  # As definitions write it; a module-level name, for the manifest.
 K_BASE = 0.38896453805908730400  # §7's K_base at full precision (its match; D236).
 MG_P = Reference("Mg", "P")  # The free Mg2+ at P, read and never moved.
@@ -71,10 +71,10 @@ CYCLE = CycleForm(
 )
 LAW = CycleLaw(
     DECLARED_ID,
-    reads=("rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    reads=("cells.binding.rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Frame B: every move in base forms (D236).
     cycle=CYCLE,
-    host="cells.transporter@1",
+    host="cells.kind.transporter@1",
     provenance="cited",
     source=citation(
         "the appendix's §7 (Eqs. 17 and 18; Table 1's K_AK, X_AK and K_MgATP)",

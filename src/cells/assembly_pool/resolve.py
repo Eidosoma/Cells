@@ -2,13 +2,13 @@
 docs/IP3_RELEASE_AND_ASSEMBLY_AVAILABILITY_DESIGN.md Part II, docs/CAPSID_ASSEMBLY.md).
 
 **The composed file** is a strict JSON object with exactly the keys `schema_version` (1), `ionic`
-and `pools`. `ionic` is an ordinary definition (resolved_pump_tissue@3 or
-resolved_pump_composite@1). Each entry of `pools` has exactly these keys:
+and `pools`. `ionic` is an ordinary definition (cells.model.resolved_pump_tissue@3 or
+cells.model.resolved_pump_composite@1). Each entry of `pools` has exactly these keys:
 - `channels`: the channel populations it sets, by ID, each set by one pool at most;
 - `observable`: what is read from the pool's assembly, the ID of a registered law
   (assembly_pool/observables.py);
 - `levels`: one availability level in [0, 1] for each value of the observable;
-- `pool`: an ordinary finite_bond_assembly@1 definition. Every pool declares the same worlds,
+- `pool`: an ordinary cells.model.finite_bond_assembly@1 definition. Every pool declares the same worlds,
   `recording: "events"`, the ionic definition's horizon and its own effective seed.
 
 **What resolve does.** It runs each pool with the pool's own engine, unchanged, walks the events it

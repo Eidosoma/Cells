@@ -1,6 +1,6 @@
 """Scalar windows with their rows checked on the device: WindowPolicy row_checks="device".
 
-docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9, the lead's conditions C1–C3, on resolved_pump_tissue@1:
+docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9, the lead's conditions C1–C3, on cells.model.resolved_pump_tissue@1:
 - C1: in device mode every window's times, history, observations and final checkpoint are host
   mode's, bitwise, at windows of 4 and 7 steps (a partial last window included) and after a
   restart from a host-mode checkpoint;

@@ -1,4 +1,4 @@
-"""cells.reservoir_exchange@1: single molecules exchanged between a held phase and an assembly.
+"""cells.exchange.reservoir_exchange@1: single molecules exchanged between a held phase and an assembly.
 
 The law (GARD_DESIGN §1.4, 1; §2.1). A held phase (a reservoir) keeps the activity rho_i of each
 type fixed; the assembly is an ideal-mixing phase of N = sum_i n_i molecules. For type i:

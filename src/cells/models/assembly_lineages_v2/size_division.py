@@ -1,14 +1,14 @@
-"""cells.size_threshold_division@1: division when a join brings the membrane to a size (OL6 S7).
+"""cells.operator.size_threshold_division@1: division when a join brings the membrane to a size (OL6 S7).
 
 The design is the OL6 design note's §6.8 (G2; tag ol6-design-note-2026-11-22, D304), and its
 interface contract is Protocol G's §3 (tag ol6-protocol-g-registered-2026-11-23), fixed before this
-was written. It is @1's cells.size_threshold_fission@1 (assembly_lineages/fission.py) with the same
+was written. It is @1's cells.operator.size_threshold_fission@1 (assembly_lineages/fission.py) with the same
 draw layout, partition, continuation and keys, in version 2's worlds. Its first users are Protocol
 G's scope 2 (the GARD limit through 50 fissions), OL9's ladder from the GARD limit, and Syn3A's
 F14 (a state-triggered division with a stochastic partition).
 
 **The world** declares
-`division = {law: cells.size_threshold_division@1, size, partition: {rule: exact_fraction,
+`division = {law: cells.operator.size_threshold_division@1, size, partition: {rule: exact_fraction,
 fraction}, continuation: first}`, in a single lineage.
 
 **The trigger.** A committed event that moves one molecule into the membrane and brings the
@@ -51,14 +51,14 @@ A trigger that is also the event guard's last event divides, and the lineage the
 `event_limit`.
 
 **Version 1 refuses:**
-- a geometry (D2, cells.shear_fission@1, is the physical division);
+- a geometry (D2, cells.operator.shear_fission@1, is the physical division);
 - finite lumen places;
 - a step that changes N by more than one molecule;
 - a founder at or above the size;
 - floor(f size) < 1;
 - a size above the molecule capacity;
 - population mode, schedules and the diagnostic record;
-- the deterministic representation (cells.rate_equations@1).
+- the deterministic representation (cells.assembly_representation.rate_equations@1).
 """
 
 import functools
@@ -112,12 +112,12 @@ CONTRACT = {  # Protocol G §3's interface contract, in the operator's words (a 
 
 OPERATOR = operator_registry.BUILTIN.register(
     AssemblyOperator(
-        "cells.size_threshold_division@1",
+        "cells.operator.size_threshold_division@1",
         host=MODEL_ID,
         provenance="cited",
         source=Citation(
             "docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md §6.8 (G2); docs/OL6_PROTOCOL_G.md §3 "
-            "(its interface contract); @1's cells.size_threshold_fission@1 (Plastic Heredity "
+            "(its interface contract); @1's cells.operator.size_threshold_fission@1 (Plastic Heredity "
             "preprint v5.0, Appendix F, contract T2-02; Zenodo 10.5281/zenodo.22143269)",
             "size-triggered division with an exact random partition, floor(f N) to the first "
             "daughter, in version 2's worlds",
@@ -177,7 +177,7 @@ def parse_data(raw, world):
     if world.geometry is not None:
         raise ConfigError(
             f"{where}: refused with a geometry ({world.geometry[0]}) in version 1: a vesicle's "
-            "physical division is cells.shear_fission@1's (D2; the OL6 design note's §6.8)"
+            "physical division is cells.operator.shear_fission@1's (D2; the OL6 design note's §6.8)"
         )
     lumen = [p.name for p in world.places if p.phase == world_rules.LUMEN and not p.held]
     if lumen:

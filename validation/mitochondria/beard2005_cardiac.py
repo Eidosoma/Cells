@@ -227,7 +227,7 @@ RULED = dict(
 
 # Declared reactions beside Table 2's (pH-7 basis, kJ/mol, scalar protons produced).
 DECLARED_REACTIONS = {
-    # The supply's held neutral reductant pair (D236; the binding owner's set beard2005@1).
+    # The supply's held neutral reductant pair (D236; the binding owner's set cells.potential_set.beard2005@1).
     "S": Reaction(0.0, +1, "S_red + NAD -> S_ox + NADH + H+ (declared)"),
 }
 
@@ -301,7 +301,7 @@ ZERO_REFERENCES = ("H", "K", "Mg", "O2", "NAD", "Q", "cytc_ox", "ADP", "HPO4", "
 
 def standard_potentials_RT(temperature_K=None):
     """mu°/RT at 1 M of every species and form (the binding owner's convention for the named set
-    beard2005@1, extended with AMP for @2): ZERO_REFERENCES at 0, water never a row; then each
+    cells.potential_set.beard2005@1, extended with AMP for @2): ZERO_REFERENCES at 0, water never a row; then each
     reaction determines one species, in this order, from its pH-7 value moved to 1 M:
     complex IV per O2 -> cytc_red, III -> QH2, I -> NADH, synthesis (total Pi's term included)
     -> ATP, the supply's declared reaction -> S_red, adenylate kinase (K_base) -> AMP; the forms

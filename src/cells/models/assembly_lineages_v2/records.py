@@ -190,7 +190,7 @@ DIVISION_BASES = {
     "at its schedule time",
     "fission": DIVISION_BASE,
 }
-# OL6 S7's records, written only by a world that declares cells.size_threshold_division@1
+# OL6 S7's records, written only by a world that declares cells.operator.size_threshold_division@1
 # (size_division.py); every other bundle is unchanged.
 SIZE_DIVISION_BASE = (
     "one row per division, in order, at its trigger: the committed join that brought the "

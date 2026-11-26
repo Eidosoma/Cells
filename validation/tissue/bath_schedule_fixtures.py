@@ -1,4 +1,4 @@
-"""Small worlds for scheduled_bath_composition@1 (FR-10, docs/BATH_SCHEDULE_DESIGN.md).
+"""Small worlds for cells.operator.scheduled_bath_composition@1 (FR-10, docs/BATH_SCHEDULE_DESIGN.md).
 
 All values are synthetic. The worlds are secreted_species_fixtures' quiescent worlds (passive
 cells, zero membrane permeability, zero ion diffusivity on every face, every node at the bath's ion
@@ -24,7 +24,7 @@ import math
 
 from validation.tissue import secreted_species_fixtures as fx
 
-LAW = "scheduled_bath_composition@1"
+LAW = "cells.operator.scheduled_bath_composition@1"
 CARGO = {"cargo": {fx.SPECIES: 1}}  # S is neutral: its own formula unit.
 SALTS = {"NaCl": {"Na": 1, "Cl": 1}, "KCl": {"K": 1, "Cl": 1}}
 

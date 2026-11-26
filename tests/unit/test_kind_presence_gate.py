@@ -165,7 +165,7 @@ def test_a_presence_field_that_binds_no_bool_mask_is_refused():
 
 
 # ------------------------------------------------------------------ the channel and face hosts
-# `tests.channel_carrier@1`: one channel population carries a declared species outward across
+# `tests.kind.channel_carrier@1`: one channel population carries a declared species outward across
 # its patch at a declared rate while its presence mask holds (kind_fixtures' charged carrier, per
 # population). Its work is the carried species' electrochemical free-energy change. A kind parses
 # against @3's base definition, which holds patches but no populations, so the declaration names
@@ -248,7 +248,7 @@ def _channel_carrier_moved_rows(declaration):
 
 
 CHANNEL_CARRIER = kind_registry.Kind(
-    kind_id="tests.channel_carrier@1",
+    kind_id="tests.kind.channel_carrier@1",
     model_key=CHANNEL_CARRIER_KEY,
     state_axes=(
         ("channel_carried", ("species", "channel_slot")),

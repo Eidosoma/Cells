@@ -1,4 +1,4 @@
-"""cells.transporter@1: the inner model's transporter kind (B5), seam A's membrane-cycle kind.
+"""cells.kind.transporter@1: the inner model's transporter kind (B5), seam A's membrane-cycle kind.
 
 **Two layouts in one kind** (docs/CORE_SEAMS_DESIGN.md §3.5 and §14 ruling 1, A3; the kinds owner's
 design statement 1, confirmed 18 November 2026). A declaration whose every entry is in version 1's
@@ -100,15 +100,15 @@ docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 2 and (k); docs/COMPARTMENT_PH_TRANSFER_
 (FR-4's pump). The kind's hooks are the core's seams (`cells.registry.kind_registry.Kind`); its laws
 are the kernels of processes/: per cycle a population hydrolyses one ATP to ADP + Pi at its
 patch's inside cell and moves n of its role from the patch's inside to its outside.
-- `atp_driven_transporter_mass_action_positive@1` (laws/pumps/atp_transporter.py): a neutral role;
-- `proton_atp_mass_action_positive@1` (laws/pumps/proton_pump.py): FR-4's proton pump, a charged
+- `cells.cycle.atp_driven_transporter_mass_action_positive@1` (laws/pumps/atp_transporter.py): a neutral role;
+- `cells.cycle.proton_atp_mass_action_positive@1` (laws/pumps/proton_pump.py): FR-4's proton pump, a charged
   role (valence +1) on held fuel, read through the stage's read (free h at buffered nodes).
 
 The declaration (model key `transporters`, absent unless declared), one entry per population:
 
-    {"id": "pump_0", "patch": "bounding_0", "law": "cells.proton_atp_mass_action_positive@1",
+    {"id": "pump_0", "patch": "bounding_0", "law": "cells.cycle.proton_atp_mass_action_positive@1",
      "capacity_fmol_s": 8.3027e-3, "stoichiometry": 2, "km_role_mM": 1e-4, "km_atp_mM": 0.1,
-     "role": "H", "fuel": {"kind": "maintained_held_rows@1", "node": "cell_0",
+     "role": "H", "fuel": {"kind": "cells.fuel_kind.maintained_held_rows@1", "node": "cell_0",
                            "rows": ["ATP", "ADP", "Pi"], "ph_ref": 7.2, "ph_band": 0.05}}
 
 - **law:** a namespaced law ID (a bare ID resolves to `cells.`); stored namespaced. The kind finds
@@ -124,11 +124,11 @@ The declaration (model key `transporters`, absent unless declared), one entry pe
   at `node`, which version 1 fixes to the patch's inside cell. Δ_rG'° comes from the species
   registry's potentials only, μ°'(ADP) + μ°'(Pi) − μ°'(ATP) at its standard concentration c0;
   never from the declaration. `kind`:
-  - `maintained_held_rows@1`: the rows are read at every stage and never moved. The maintenance
+  - `cells.fuel_kind.maintained_held_rows@1`: the rows are read at every stage and never moved. The maintenance
     supplies the work −Δ_rG'_ATP per cycle, booked as the kind's work, and its material, +1 ATP,
     −1 ADP and −1 Pi per cycle, recorded in `transporter_fuel_supplied_fmol` (an observation:
     the held rows do not change, so no material ledger moves);
-  - `finite_fuel_rows@1`: the pump moves its fuel rows, and the kind books their standard term
+  - `cells.fuel_kind.finite_fuel_rows@1`: the pump moves its fuel rows, and the kind books their standard term
     Σ μ°' Δn as stored_pJ. Refused in this round: the stage energy-rate observation's
     standard-potential term waits for the landing (gap 2).
   `ph_ref` and `ph_band` are the fuel node's transformed-potential band (§5.2): required under the
@@ -219,14 +219,14 @@ from cells.modules import (
 from cells.registry import species_registry
 from cells.registry.kind_registry import BUILTIN
 
-KIND_ID = "cells.transporter@1"
+KIND_ID = "cells.kind.transporter@1"
 MODEL_KEY = "transporters"
 NEUTRAL_LAW = qualified(neutral.LAW_ID)
 PROTON_LAW = qualified(proton.LAW_ID)
 # The laws version 1's layout runs, each by name through its own slots' mask (the static dispatch).
 VERSION_1_LAWS = (NEUTRAL_LAW, PROTON_LAW)
-HELD = "maintained_held_rows@1"
-FINITE = "finite_fuel_rows@1"
+HELD = "cells.fuel_kind.maintained_held_rows@1"
+FINITE = "cells.fuel_kind.finite_fuel_rows@1"
 FUEL_KINDS = (HELD, FINITE)
 # The kind's two laws, each declared in its own module (CORE_SEAMS §8.2; the model table's law
 # homes), where the law registry's loader registers them for the kind to find by interface and host.
@@ -276,7 +276,7 @@ READOUT_COLUMNS = (
     "transporter_chemical_drive_J_mol",
 )
 GAP_FINITE_FUEL = (
-    "finite fuel (finite_fuel_rows@1) is refused in this round: the stage energy-rate "
+    "finite fuel (cells.fuel_kind.finite_fuel_rows@1) is refused in this round: the stage energy-rate "
     "observation's standard-potential term waits for the landing (gap 2)"
 )
 # FR-50's one-way records (the module docstring): a population asks with its optional key, and the
@@ -1021,7 +1021,7 @@ ENDS = ("a", "b")  # A host's ends: a patch's cell (a) and its outside node (b).
 FORM_CODES = MappingProxyType({"factored": 0, "diagram": 1, "net_flow": 2, "monomial": 3})
 # Seam D's non-negative heat booking (CORE_SEAMS §6.1), which the kind admits beyond the tableau
 # (K2): the core books a picked kind's heat fields as dt (q_start + q_end) / 2.
-TRAPEZOID_BOOKING = "trapezoid_nonnegative@1"
+TRAPEZOID_BOOKING = "cells.heat.trapezoid_nonnegative@1"
 MAX_ABS_AFFINITY_OVER_RT = 80.0  # Per mode, as version 1's laws (§3.2).
 # Version 1's keys read on the population axis (statement 1, §1): the role's name in each law's form.
 VERSION_1_ROLE = MappingProxyType({PROTON_LAW: "proton", NEUTRAL_LAW: "role"})
@@ -2489,7 +2489,7 @@ def _check_population_axis(spec, declaration):
 
     movers = moved_nodes(m)
     kinds = dict(m.kinds)
-    closure = kinds.get("cells.rapid_proton_buffer@1")
+    closure = kinds.get("cells.kind.rapid_proton_buffer@1")
     proton = getattr(closure, "proton", None)  # The closure's declared proton row, if any; else
     if proton is None:  # the row named H, as in a world with no closure (never skipped).
         proton = "H" if "H" in m.species_ids else None
@@ -2582,7 +2582,7 @@ def _check_population_axis(spec, declaration):
 
 
 def _general_closure_nodes(model, proton):
-    """The nodes where a general binding closure (rapid_binding@1) holds `proton` as its declared
+    """The nodes where a general binding closure (cells.binding.rapid_binding@1) holds `proton` as its declared
     proton row, among its closure_rows: §5.2's one exception (K1; CORE_SEAMS §3.4), where finite
     fuel may move while protons move, for a population whose law declares its moves in base forms
     (forms "base"; the check's caller asks it). There the closure's read gives free h and each
@@ -3382,7 +3382,7 @@ TRANSPORTER = BUILTIN.register(
         # (the static dispatch), which F's array-axes check admits for these alone.
         dispatch_masks=("transporter_neutral", "transporter_proton"),
         # Seam D (K2): the core's trapezoid books this kind's heat fields where a definition picks
-        # it ({"cells.transporter@1": "trapezoid_nonnegative@1"} under heat_bookings).
+        # it ({"cells.kind.transporter@1": "cells.heat.trapezoid_nonnegative@1"} under heat_bookings).
         heat_bookings=(TRAPEZOID_BOOKING,),
         # FR-42's hook (D303 item 6), both layouts: traced only where rows are labelled.
         label_refusals=label_refusals,

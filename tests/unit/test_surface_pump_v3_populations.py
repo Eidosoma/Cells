@@ -51,7 +51,7 @@ from validation.tissue import surface_pump_v3_fixtures as v3_fixtures
 
 FACTORS = {"f_a": 0.5, "f_b": 0.7, "f_c": 0.65}
 HELD = 0.9  # The first population's held availability: (0.9 x 0.7) x 0.65 != 0.9 x (0.7 x 0.65).
-ARS = "imex_ars222_face_electromigration@1"
+ARS = "cells.solver.imex_ars222_face_electromigration@1"
 
 
 def bound(spec):
@@ -645,11 +645,11 @@ def test_each_block_refusal_names_its_reason(name):
 
 
 FR51_SLOT_WRITERS = {
-    "isopotential_partition@1": lambda: partition_fixtures.divided(),
-    "scheduled_membrane_insertion@1": lambda: insertion_fixtures.with_operators(
+    "cells.operator.isopotential_partition@1": lambda: partition_fixtures.divided(),
+    "cells.operator.scheduled_membrane_insertion@1": lambda: insertion_fixtures.with_operators(
         insertion_fixtures.cleft_cell(), insertion=insertion_fixtures.furrow_insertion()
     ),
-    "scheduled_cell_replacement@1": lambda: composite_spec.frozen_definition(
+    "cells.operator.scheduled_cell_replacement@1": lambda: composite_spec.frozen_definition(
         replacement_fixtures.with_replacement(replacement_fixtures.heredity_sheet(radius=1))
     ),
 }

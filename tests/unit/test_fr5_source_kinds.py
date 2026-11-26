@@ -1,5 +1,5 @@
-"""FR-5's source kinds (the FR-4/FR-5 note's §16; INNER §7.4 (l), (n)): cells.patch_damage@1 and
-cells.ph_condition@1.
+"""FR-5's source kinds (the FR-4/FR-5 note's §16; INNER §7.4 (l), (n)): cells.kind.patch_damage@1 and
+cells.kind.ph_condition@1.
 
 Their declarations, the damage's schedules (`damage_controls`, the core's Schedule) and their
 refusals through the real parse (FR-4's development world with the kinds declared), and their
@@ -8,7 +8,7 @@ equilibrium, [0, 1] at any step), the derivative the tableau carries, and both k
 the routing door. The engine's runs are test_fr5_source_kinds_engine.py and
 test_fr5_world_engine.py.
 
-The third source kind, cells.species_condition@1 (G-5), is declared in the same world: its
+The third source kind, cells.kind.species_condition@1 (G-5), is declared in the same world: its
 declaration's refusals by name, its stateless layout, structure entry and view, its read of the free
 form at a buffered node, and its feedback hooks, whose planted errors are an inhibition's sign
 dropped, the derivative in n for the one in ln n, and a pair named twice. Its engine rows are
@@ -40,9 +40,9 @@ from cells.registry import laws as law_registry
 from cells.registry.kind_registry import declared_schedule
 from validation.compartment_ph_engine import definitions as defs
 
-DAMAGE = dict(id="damage_0", patch=defs.BOUNDING, law="bounding_patch_damage@1",
+DAMAGE = dict(id="damage_0", patch=defs.BOUNDING, law="cells.damage.bounding_patch_damage@1",
               initial_damage=0.25, injury_rate_per_s=1.0, resealing_rate_per_s=0.05)
-CONDITION = dict(id="acid_0", node=defs.LUMEN, law="ph_conditioned_factor@1", ph50=5.5,
+CONDITION = dict(id="acid_0", node=defs.LUMEN, law="cells.transfer_factor.ph_conditioned_factor@1", ph50=5.5,
                  slope=4.0)
 SCHEDULE = [dict(damage_id="damage_0",
                  injury=[dict(time=0.0, value=0.0), dict(time=0.25, value=1.0),
@@ -103,7 +103,7 @@ def test_both_kinds_parse_round_trip_and_append_their_fields():
 
 @pytest.mark.parametrize("change, match", [
     (dict(patch="nowhere"), "unknown membrane patch"),
-    (dict(law="tests.damage.other@1"), "law is cells.bounding_patch_damage@1"),
+    (dict(law="tests.damage.other@1"), "law is cells.damage.bounding_patch_damage@1"),
     (dict(initial_damage=1.5), r"lies in \[0, 1\]"),
     (dict(initial_damage=-0.1), "initial_damage must be finite and nonnegative"),
     (dict(resealing_rate_per_s=-1.0), "resealing_rate_per_s must be finite and nonnegative"),
@@ -123,7 +123,7 @@ def test_one_damage_per_patch_unique_ids_and_a_nonempty_list():
 
 @pytest.mark.parametrize("change, match", [
     (dict(node="nowhere"), "unknown node"),
-    (dict(law="ph_condition@1"), "law is cells.ph_conditioned_factor@1"),
+    (dict(law="cells.kind.ph_condition@1"), "law is cells.transfer_factor.ph_conditioned_factor@1"),
     (dict(slope=0.0), "slope"),
     (dict(slope=-4.0), "slope"),
     (dict(ph50=float("inf")), "ph50"),
@@ -324,7 +324,7 @@ def test_the_condition_reads_free_h_at_its_node_as_every_rate_does():
     assert list(column) == list(f)
 
 
-# ------------------------------------------------------------------ cells.species_condition@1 (G-5)
+# ------------------------------------------------------------------ cells.kind.species_condition@1 (G-5)
 
 
 def reading(row, form, half_saturation_mM, hill_coefficient):
@@ -490,10 +490,10 @@ def test_a_species_condition_s_list_ids_and_law_are_refused_by_name(gate_world):
     with pytest.raises(ConfigError, match="condition 'gate_0': unknown node 'nowhere'"):
         parse_spec(refused_world)
     # A law of its interface and host that version 1 has no kernel path for, and none at all.
-    other = dataclasses.replace(product.LAW, law_id="tests.planted_factor@1")
+    other = dataclasses.replace(product.LAW, law_id="tests.transfer_factor.planted_factor@1")
     with law_registry.scope(law_registry.BUILTIN.extended(other)):
         with pytest.raises(ConfigError, match=f"version 1 runs {species.LAW_ID}, not tests"):
-            species.parse([dict(GATE, law="tests.planted_factor@1")], spec)
+            species.parse([dict(GATE, law="tests.transfer_factor.planted_factor@1")], spec)
     with law_registry.scope(law_registry.LawRegistry()):
         with pytest.raises(ConfigError, match="'gate_0': law is one of $"):
             species.parse([GATE], spec)

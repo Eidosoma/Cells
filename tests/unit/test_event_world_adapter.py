@@ -2,7 +2,7 @@
 
 default_world_adapter.betse_world's opt-in ``events`` keyword, event_world_adapter's
 reading of BETSE's event parameters and target record, the emulator's event drive
-(emulator/events.py, BETSE's pulse and order), and the resolved_pump_tissue@3 event
+(emulator/events.py, BETSE's pulse and order), and the cells.model.resolved_pump_tissue@3 event
 definitions, including the leak-population equivalence the Na/K mem mapping rests on.
 """
 
@@ -247,9 +247,9 @@ def test_resolved_definition_maps_events_to_controls_and_leaks(cases):
         world, "sim", adapter.phase_start(world, "init"), dt=SIM_DT / 2
     )
     model, experiment = sim["model"], sim["experiment"]
-    assert model["id"] == "resolved_pump_tissue@3" and sim["execution"]["channel_capacity"] == 3
+    assert model["id"] == "cells.model.resolved_pump_tissue@3" and sim["execution"]["channel_capacity"] == 3
     for c, j in zip(model["channels"], [0, 1, 2], strict=True):
-        assert c["membrane_id"] == f"mem-{j}" and c["kinetic_law"] == "naleak_always_open@1"
+        assert c["membrane_id"] == f"mem-{j}" and c["kinetic_law"] == "cells.channel.naleak_always_open@1"
         assert c["max_permeability_m_per_s"] == 9.0 * MEM_PERMS["Na"] / TM
     change = 2 * (SIM_DT / 2)  # update 1 at integer * Cells dt
     for group in experiment["channel_controls"]:

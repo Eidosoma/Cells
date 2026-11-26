@@ -1,7 +1,7 @@
-"""Independent references for resolved_pump_replacement@1 (protocol G2-Q1); no Cells code.
+"""Independent references for cells.model.resolved_pump_replacement@1 (protocol G2-Q1); no Cells code.
 
 numpy/scipy only. Nothing in src/cells is imported. Each reference reads a plain
-resolved_pump_replacement@1 definition (the JSON dict) and transcribes the declared
+cells.model.resolved_pump_replacement@1 definition (the JSON dict) and transcribes the declared
 operation and laws from their documentation (docs/CELL_REPLACEMENT.md, the
 docstrings of cell_replacement_spec and processes/junction_formation):
 
@@ -45,15 +45,15 @@ GATED = water.GATED
 
 
 def closed_water(raw):
-    """A resolved_pump_water@1 copy of the inner definition with every water route closed."""
+    """A cells.model.resolved_pump_water@1 copy of the inner definition with every water route closed."""
     raw = copy.deepcopy(raw)
     m = raw["model"]
     m.pop("replacement", None)
     raw["experiment"].pop("replacement_events", None)
-    m["id"] = "resolved_pump_water@1"
+    m["id"] = "cells.model.resolved_pump_water@1"
     finite = [c for c in m["extracellular"] if not c.get("reservoir", False)]
     m["water"] = dict(
-        law="ideal_osmosis_linear_compliance_water@1",
+        law="cells.operator.ideal_osmosis_linear_compliance_water@1",
         compartments=[
             dict(
                 compartment_id=c["id"],
@@ -288,10 +288,10 @@ def cell_parameters(raw, cell_index=0):
         permeability_m_s={k: membrane["permeability_m_per_s"][k] for k in theory.MOBILE},
         bath_mM={k: bath["initial_amount_fmol"][k] / bath["volume_pL"] for k in theory.MOBILE},
         fixed_anion_mM=cell["initial_amount_fmol"]["P"] / volume,
-        kir_m_s=chans["kir2p1_mh2@1"]["max_permeability_m_per_s"]
-        * chans["kir2p1_mh2@1"]["abundance"],
-        nav_m_s=chans["nav1p2_m3h_regularized@1"]["max_permeability_m_per_s"]
-        * chans["nav1p2_m3h_regularized@1"]["abundance"],
+        kir_m_s=chans["cells.channel.kir2p1_mh2@1"]["max_permeability_m_per_s"]
+        * chans["cells.channel.kir2p1_mh2@1"]["abundance"],
+        nav_m_s=chans["cells.channel.nav1p2_m3h_regularized@1"]["max_permeability_m_per_s"]
+        * chans["cells.channel.nav1p2_m3h_regularized@1"]["abundance"],
         nav_availability=1.0,
         control_m_s=0.0,
         pump_capacity_mol_s=pump["capacity_fmol_per_s"] * MOL_PER_FMOL,

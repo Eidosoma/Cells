@@ -7,7 +7,7 @@ species_cap_probe.py, cell(1, charged=4)), rebuilt here from the validation fixt
 - four mobile charged species Q1 to Q4 (valences 1, -1, 2, -2) at cell-to-bath gradients,
   permeant through the membrane at 1e-10 m/s and immobile on faces and junctions, each node's
   fixed background absorbing their charge so every charge anchor is unchanged;
-- D150's neutral species S, produced and cleared in the cell by scheduled_species_turnover@1.
+- D150's neutral species S, produced and cleared in the cell by cells.operator.scheduled_species_turnover@1.
 
 That is 9 species (Na, K, M, P, Q1 to Q4, S), seven of them moving charged rows below slot 8. At 8
 or more terms NumPy's host sums over the species axis take the pairwise order, so the host
@@ -161,7 +161,7 @@ def chain_world(rows, *, dt, end, every=None, max_trace_bytes=None, k_fast=CHAIN
 
     D150's quiescent species-only world (secreted_species_fixtures.world) with one 1 pL cell on its
     held bath and no finite node, contact or face, so the cell is the one compartment. Every link
-    Xi <-> Xi+1 is a passive ideal_detailed_balance_mass_action@1 reaction in the cell, its forward
+    Xi <-> Xi+1 is a passive cells.species_reaction.ideal_detailed_balance_mass_action@1 reaction in the cell, its forward
     constant fast and slow in turn, its reverse constant set by mu°/RT; initial amounts unequal.
     Synthetic values. Observed every `every` s (default: the end only)."""
     k = rows - CHAIN_IONS

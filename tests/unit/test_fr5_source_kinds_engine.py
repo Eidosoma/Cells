@@ -47,12 +47,12 @@ def recorded(definition):
 
 def with_sources(definition):
     d = copy.deepcopy(definition)
-    entry = dict(law="bounding_patch_damage@1", injury_rate_per_s=K_INJ,
+    entry = dict(law="cells.damage.bounding_patch_damage@1", injury_rate_per_s=K_INJ,
                  resealing_rate_per_s=K_RES)
     d["model"]["patch_damage"] = [dict(entry, id="damage_0", patch=defs.BOUNDING,
                                        initial_damage=HELD_D),
                                   dict(entry, id="damage_1", patch=defs.PLASMA, initial_damage=D0)]
-    condition = dict(node=defs.LUMEN, law="ph_conditioned_factor@1", slope=SLOPE)
+    condition = dict(node=defs.LUMEN, law="cells.transfer_factor.ph_conditioned_factor@1", slope=SLOPE)
     d["model"]["ph_conditions"] = [dict(condition, id="acid_hi", ph50=30.0),
                                    dict(condition, id="acid_mid", ph50=PH50_MID)]
     (leak,) = d["model"]["passive_routes"]

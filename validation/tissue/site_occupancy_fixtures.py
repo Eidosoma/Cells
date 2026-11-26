@@ -1,4 +1,4 @@
-"""Small worlds for site_occupancy@1 (FR-3, docs/SITE_OCCUPANCY_DESIGN.md).
+"""Small worlds for cells.operator.site_occupancy@1 (FR-3, docs/SITE_OCCUPANCY_DESIGN.md).
 
 All values are synthetic. The worlds are secreted_species_fixtures' quiescent worlds (passive
 cells, zero ion permeability, every node at the bath's ion composition with a zero charge anchor),
@@ -15,7 +15,7 @@ import copy
 
 from validation.tissue import secreted_species_fixtures as fx
 
-LAW = "site_occupancy@1"
+LAW = "cells.operator.site_occupancy@1"
 LIGAND = fx.SPECIES
 TRACE_mM = 1e-12  # At most 1e-6 K_d for every population below (K_d >= 1e-6 mM).
 
@@ -119,11 +119,11 @@ def face_free_sites(
 
 # ------------------------------------------------------------------ FR-26: a replaced slot
 
-OCCUPANT_LAW = "site_occupant_replacement@1"
+OCCUPANT_LAW = "cells.operator.site_occupant_replacement@1"
 
 
 def with_occupant(raw, templates):
-    """site_occupant_replacement@1 (W) after the site operator. templates: {template id:
+    """cells.operator.site_occupant_replacement@1 (W) after the site operator. templates: {template id:
     {population id: (initial occupancy, binding multiplier, internalisation multiplier or
     None)}}."""
     out = copy.deepcopy(raw)

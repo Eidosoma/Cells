@@ -1,10 +1,10 @@
-"""cells.shell_permeation@1: one molecule enters a prescribed shell's lumen from the pool (FR-21).
+"""cells.reaction.shell_permeation@1: one molecule enters a prescribed shell's lumen from the pool (FR-21).
 
 The design is docs/ASSEMBLY_SHELL_DESIGN.md §4.2, and the rulings are D244 and D246.
 
 **The law.** A step of this law is an entry, in rule 2's form: one molecule of a pool place
 (finite or held) goes to the lumen place of the same species, with locus `membrane`, in a world
-whose geometry is cells.prescribed_shell@1. Its forward at the firing state n is
+whose geometry is cells.assembly_geometry.prescribed_shell@1. Its forward at the firing state n is
 
     a⁺(n) = P_s · A_sh · ρ0 · θ⁺(n)
 
@@ -14,13 +14,13 @@ this same law applied to the products, with the same extent, as every reverse of
 So the conductance G_s = P_s·A_sh is a constant of the world: it follows neither the wall's
 inventory nor the site count nor the lumen.
 
-**Why a law of its own (D147).** cells.membrane_permeation@1's registered formula reads
+**Why a law of its own (D147).** cells.reaction.membrane_permeation@1's registered formula reads
 A(m) = q·W(m)/2, the bilayer's area from its counts. A new law leaves that law's text as it is.
 
 Its kernel is the geometric direction (exchange.geometric_log_direction), with the shell's
 constant extent (kernel.py, dispatched by the geometry kind).
 
-**Its large-count limit** (cells.rate_equations@1; FR-47, D323) is the same kernel on real counts:
+**Its large-count limit** (cells.assembly_representation.rate_equations@1; FR-47, D323) is the same kernel on real counts:
 the step moves one molecule, so every falling factorial has one factor, ff(n, 1) = n, and the
 extent is a constant, so the limit is the exact form (the representation dispatches the shell's
 extent by the geometry kind, as the exact kernel does).

@@ -1,4 +1,4 @@
-"""resolved_pump_water@1 with closed water against resolved_pump_tissue@3 on the 825-node world.
+"""cells.model.resolved_pump_water@1 with closed water against cells.model.resolved_pump_tissue@3 on the 825-node world.
 
 tests/unit/test_surface_pump_water_equivalence.py covers the heredity single
 cell and the seven-cell gated sheet. This driver covers W225, the 825-node

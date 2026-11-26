@@ -1,4 +1,4 @@
-"""Tier-1 tests of local_species_reactions@1's definition refusals (D152 version 1, milestone 1).
+"""Tier-1 tests of cells.operator.local_species_reactions@1's definition refusals (D152 version 1, milestone 1).
 
 docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.1, §1.3, §1.4, §2.1, §2.2, §2.5, §3.1, §4.6, §5 and
 §7.2. Host side, no compile. Each refusal names its reason:
@@ -36,7 +36,7 @@ from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import species_reactions_fixtures as rfx
 
-LAW = "local_species_reactions@1"
+LAW = "cells.operator.local_species_reactions@1"
 
 
 def block(raw):
@@ -371,7 +371,7 @@ TERM = constant_field_permeation.material_slope_per_s.__name__
 def potassium_law(term):
     """A planted always-open law of K, the ion that needs no material term (code 99)."""
     return dataclasses.replace(
-        kleak_always_open.LAW, law_id="tests.door_channel@1", code=99, material_term=term
+        kleak_always_open.LAW, law_id="tests.channel.door_channel@1", code=99, material_term=term
     )
 
 
@@ -489,7 +489,7 @@ def test_more_species_than_the_cap_are_refused(monkeypatch):
     )
     with pytest.raises(ConfigError, match="at most 16 species per world") as error:
         parse_spec(raw)
-    assert "local_species_reactions@1 admits" in str(error.value)
+    assert "cells.operator.local_species_reactions@1 admits" in str(error.value)
 
 
 def with_turnover(raw, routes, *, first=False, species=None):
@@ -629,53 +629,53 @@ def test_cell_routes_on_replaced_slots_take_the_newcomers_template_multipliers()
 REFUSED = {
     "lumen@1": (
         (
-            "membrane_entity_state@1",
-            "scheduled_membrane_insertion@1",
-            "restricted_cleft_lumen@1",
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.scheduled_membrane_insertion@1",
+            "cells.operator.restricted_cleft_lumen@1",
         ),
         "reads outside_active as declared",
     ),
     "lumen@2": (
         (
-            "membrane_entity_state@1",
-            "scheduled_membrane_insertion@2",
-            "restricted_cleft_lumen@2",
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.scheduled_membrane_insertion@2",
+            "cells.operator.restricted_cleft_lumen@2",
         ),
         "reads outside_active as declared",
     ),
     "insertion@1": (
-        ("membrane_entity_state@1", "scheduled_membrane_insertion@1"),
+        ("cells.operator.membrane_entity_state@1", "cells.operator.scheduled_membrane_insertion@1"),
         "reads outside_active as declared",
     ),
     "insertion@1 anchors": (
-        ("membrane_entity_state@1", "scheduled_membrane_insertion@1"),
+        ("cells.operator.membrane_entity_state@1", "cells.operator.scheduled_membrane_insertion@1"),
         "reads extracellular_amount_reference as declared",
     ),
     "insertion@2": (
-        ("membrane_entity_state@1", "scheduled_membrane_insertion@2"),
-        "reads outside_active as declared, but scheduled_membrane_insertion@2 closes it",
+        ("cells.operator.membrane_entity_state@1", "cells.operator.scheduled_membrane_insertion@2"),
+        "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@2 closes it",
     ),
     "partition": (
-        ("membrane_entity_state@1", "isopotential_partition@1"),
-        "reads active as declared, but isopotential_partition@1 closes it",
+        ("cells.operator.membrane_entity_state@1", "cells.operator.isopotential_partition@1"),
+        "reads active as declared, but cells.operator.isopotential_partition@1 closes it",
     ),
     "bridge": (
         (
-            "membrane_entity_state@1",
-            "isopotential_partition@1",
-            "cytoplasmic_bridge_closure@1",
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.isopotential_partition@1",
+            "cells.operator.cytoplasmic_bridge_closure@1",
         ),
-        "reads active as declared, but isopotential_partition@1 closes it",
+        "reads active as declared, but cells.operator.isopotential_partition@1 closes it",
     ),
 }
 ADMITTED = (
     (),
-    ("electrode_current_injection@1",),
-    ("membrane_entity_state@1",),
-    ("scheduled_cell_replacement@1",),
-    ("scheduled_species_turnover@1",),
-    ("scheduled_species_exchange@1",),
-    ("scheduled_species_turnover@1", "scheduled_species_exchange@1"),
+    ("cells.operator.electrode_current_injection@1",),
+    ("cells.operator.membrane_entity_state@1",),
+    ("cells.operator.scheduled_cell_replacement@1",),
+    ("cells.operator.scheduled_species_turnover@1",),
+    ("cells.operator.scheduled_species_exchange@1",),
+    ("cells.operator.scheduled_species_turnover@1", "cells.operator.scheduled_species_exchange@1"),
 )
 
 
@@ -718,7 +718,7 @@ def test_water_is_admitted_before_the_network_and_refused_after():
     """FR-43 / D315: the network reads the volumes current at the split, so water, their changer,
     is admitted declared before it (its first half precedes the network's), and refused after it
     rather than giving the network a lagged volume (the composite's order rule, C2)."""
-    water = "ideal_osmosis_linear_compliance_water@1"
+    water = "cells.operator.ideal_osmosis_linear_compliance_water@1"
     before = pump_composite.structure_errors(adapter, (OPERATORS[water], OPERATORS[LAW]))
     assert not [e for e in before if LAW in e], before
     after = pump_composite.structure_errors(adapter, (OPERATORS[LAW], OPERATORS[water]))
@@ -731,12 +731,12 @@ def test_water_is_admitted_before_the_network_and_refused_after():
 
 @pytest.mark.parametrize(
     "changer",
-    ["scheduled_cell_replacement@2", "restricted_cleft_lumen@1", "restricted_cleft_lumen@2"],
+    ["cells.operator.scheduled_cell_replacement@2", "cells.operator.restricted_cleft_lumen@1", "cells.operator.restricted_cleft_lumen@2"],
 )
 def test_the_other_volume_changers_are_refused_by_name(changer, monkeypatch):
     """Water is the one volume changer admitted beside the network (FR-43 / D315); a lumen (its
     lumen volumes) and replacement@2 (a newcomer's volume into water's state) stay refused."""
-    water = "ideal_osmosis_linear_compliance_water@1"
+    water = "cells.operator.ideal_osmosis_linear_compliance_water@1"
 
     def entries(laws):
         return lambda spec: tuple((OPERATORS[k], None, None) for k in laws)

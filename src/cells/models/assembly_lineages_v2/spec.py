@@ -1,7 +1,7 @@
-"""The definition of a run of version 2 (cells.assembly_lineages@2).
+"""The definition of a run of version 2 (cells.model.assembly_lineages@2).
 
     {"schema_version": 1,
-     "model": {"id": "cells.assembly_lineages@2", "world": {...}},     world.py's record
+     "model": {"id": "cells.model.assembly_lineages@2", "world": {...}},     world.py's record
      "experiment": {"time_horizon_s", "event_limit", "row_every_events",
                     "observation_times_s", "trace", "uniforms"},
      "execution": {"backend", "precision", "mode", "stream": {seed, environment, lineage, branch},
@@ -11,8 +11,8 @@
 **The world** (world.py) holds everything two runs of it share; its id is the SHA-256 of its
 canonical JSON, computed here, never written as a literal. Beside world.py's parts it resolves the
 laws: every step's law is a reaction law of this family (`cells.reaction_law@1`, hosted by
-cells.assembly_lineages@2); `free_energy` lists the terms of F, `cells.ideal_mixing@1` first and
-exactly once, then the excess terms (`cells.regular_mixing@1`), each at most once; `rate_factor`
+cells.model.assembly_lineages@2); `free_energy` lists the terms of F, `cells.free_energy.ideal_mixing@1` first and
+exactly once, then the excess terms (`cells.free_energy.regular_mixing@1`), each at most once; `rate_factor`
 is optional, a `cells.rate_factor_law@2` of this family. A law of another family or interface is
 refused by name, so GARD's two forms (hosted by @1) cannot be named here.
 
@@ -316,7 +316,7 @@ def _lumen_potential_refusals(world):
 
 
 def _sized(block):
-    """Whether a division block names cells.size_threshold_division@1 (OL6 S7)."""
+    """Whether a division block names cells.operator.size_threshold_division@1 (OL6 S7)."""
     return isinstance(block, dict) and block.get("law") == SIZE_THRESHOLD_DIVISION
 
 
@@ -415,7 +415,7 @@ def _declares_shell(raw):
 
 def _declared_binding(step, world, by_name):
     """FR-21 (§0.2f) and FR-46 (D323): exactly one dilute molecule and one declared site forming
-    the site's declared complex, declared in that direction, under cells.stochastic_mass_action@1
+    the site's declared complex, declared in that direction, under cells.reaction.stochastic_mass_action@1
     with count_on_m, on the pair's own face: X@pool + site@membrane -> complex@membrane for an outer
     pair, and, in a prescribed shell, X@lumen + site@membrane -> complex@membrane for an inner pair.
     Its encounter is the site count: the law's membrane factor cancels to n_site, so
@@ -567,7 +567,7 @@ def _geometry_refusals(world):
 
 
 def _refuse_other_kind(step_id, law_id, geometry):
-    """FR-21: a shell world takes cells.shell_permeation@1 and refuses joins and the bilayer's
+    """FR-21: a shell world takes cells.reaction.shell_permeation@1 and refuses joins and the bilayer's
     permeation; a bilayer world refuses the shell's permeation."""
     if geometry == PRESCRIBED_SHELL and law_id in (PHASE_EXCHANGE, MEMBRANE_PERMEATION):
         reason = (

@@ -6,8 +6,8 @@ charged free nodes), so the electrode ledger's telescoping rests on how XLA asso
 sum of the bath's plate charge. This probe measures that before any S5 code exists, on a static
 world with no partition.
 
-Engine models: resolved_pump_composite@1 over resolved_pump_tissue@3 with
-electrode_current_injection@1 only (the Rm1 setting). There is no S5 operator, no partition and
+Engine models: cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3 with
+cells.operator.electrode_current_injection@1 only (the Rm1 setting). There is no S5 operator, no partition and
 no cleft.
 
 The world is built from the S0 egg smoke test's declared egg (validation/tissue/egg_scale_smoke:
@@ -127,7 +127,7 @@ def definition(cells=4, dt=DT, steps=STEPS):
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=egg.TEMPERATURE_K,
             species=[dict(id=s, valence=v) for s, v in egg.SPECIES],
             cells=[
@@ -159,7 +159,7 @@ def definition(cells=4, dt=DT, steps=STEPS):
                     area_m2=area,
                     capacitance_F=capacitance,
                     permeability_m_per_s=dict(permeability),
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=None,
                     calcium_pump=None,
                 )
@@ -168,7 +168,7 @@ def definition(cells=4, dt=DT, steps=STEPS):
             junctions=[],
             faces=[],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
             channels=[],
         ),
@@ -195,8 +195,8 @@ def definition(cells=4, dt=DT, steps=STEPS):
             backend="cpu",
             jit=True,
             precision="float64",
-            solver="imex_ars222_face_electromigration@1",
-            field_solver="capacitive_reduction_gauged_damped_newton@2",
+            solver="cells.solver.imex_ars222_face_electromigration@1",
+            field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
             max_steps=steps + 8,
             max_trace_bytes=2**33,
             material_balance_atol_fmol={s: 1e-10 for s in ids},
@@ -205,7 +205,7 @@ def definition(cells=4, dt=DT, steps=STEPS):
     out = cs.frozen_definition(raw)
     out["model"]["operators"] = [
         dict(
-            law="electrode_current_injection@1",
+            law="cells.operator.electrode_current_injection@1",
             electrodes=[dict(cell_id=name, carriers=dict(CARRIERS)) for name in names],
         )
     ]

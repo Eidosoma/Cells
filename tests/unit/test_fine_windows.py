@@ -11,7 +11,7 @@ execution/grid.py; docs/LONG_DURATION_MODE_DESIGN.md §4.2, §4.4 and §4.5).
   are declared (the gate's crossrev, G1 and FR's set hold runs and manifests bitwise). Every
   refusal, one row each, with a branch that changes the windows and the batch and vector paths.
 - One compiled @3 world with X2 on: X2's own test world (the gap-junction network at dt/16, a
-  resolved_pump_tissue@3 definition as FR-8's H2 is), a window at a quarter of its step, a
+  cells.model.resolved_pump_tissue@3 definition as FR-8's H2 is), a window at a quarter of its step, a
   membrane cue at a fine-only instant and a row observed at another. X2 passes across both
   switches; a restart from a checkpoint inside the window continues bit for bit (rows and X2's
   record) on the same compiled program; device row checks (WindowPolicy row_checks="device") give
@@ -19,7 +19,7 @@ execution/grid.py; docs/LONG_DURATION_MODE_DESIGN.md §4.2, §4.4 and §4.5).
   window. Its no-op twin (no block, no-op schedule entries at the fine points) feeds the compiled
   rollout the same inputs: the same clock, control table, initial checkpoint, parameters and X2
   event steps.
-- One compiled composite world with a dose inside a window (scheduled_bath_composition@1, FR-10's
+- One compiled composite world with a dose inside a window (cells.operator.scheduled_bath_composition@1, FR-10's
   dose leg under ARS(2,2,2) at its declared 1 ms, a fine step of 0.25 ms), without X2, which the
   block does not require: every check passes on every row, a row is observed at a fine-only
   instant, and the dose's step starts at its own time inside the window. Written through the
@@ -51,8 +51,8 @@ from tests.window_row_check_fixtures import assert_agreement, assert_same_window
 from validation.gap_junction_tissue import worlds
 from validation.tissue import bath_schedule_fixtures as bfx
 
-METHOD = "fixed_fine_windows@1"
-X2 = dict(check="step_doubled_energy@1", integration_error_cap=3e-2)  # X2's test's cap.
+METHOD = "cells.execution.fixed_fine_windows@1"
+X2 = dict(check="cells.execution.step_doubled_energy@1", integration_error_cap=3e-2)  # X2's test's cap.
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -66,7 +66,7 @@ def block(fine, *windows):
 
 
 def network(dt, end, *, schedule=(), noop=(), window=None, energy_check=False):
-    """X2's test world (Figure 5a's network at g = 100, a resolved_pump_tissue@3 definition): dt
+    """X2's test world (Figure 5a's network at g = 100, a cells.model.resolved_pump_tissue@3 definition): dt
     and end as given, A's Norton membrane on `schedule` ((time, availability), ...), B's carrying
     no-op entries at `noop`, a fine_windows block `window` (or none) and X2 if asked."""
     net = worlds.figure5_network(100.0)
@@ -195,11 +195,11 @@ def _windows(*pairs):
 
 
 def _reaction_transport():
-    """A model the block does not admit (reaction_transport@1, one cell without a contact)."""
+    """A model the block does not admit (cells.model.reaction_transport@1, one cell without a contact)."""
     return dict(
         schema_version=1,
         model=dict(
-            id="reaction_transport@1",
+            id="cells.model.reaction_transport@1",
             units=dict(amount="fmol", volume="pL", time="s"),
             species=["A", "B"],
             population=dict(count=1, cell_ids=[101]),
@@ -237,7 +237,7 @@ def _reaction_transport():
 
 
 def _counting_operator():
-    """species_regulated_availability@1 in the composite: its record counts steps."""
+    """cells.operator.species_regulated_availability@1 in the composite: its record counts steps."""
     from validation.tissue import regulated_availability_fixtures as rafx
 
     raw = rafx.shared_structure(end=0.02)
@@ -309,7 +309,7 @@ REFUSALS = {
     ),
     "an operator that counts steps": (
         _counting_operator,
-        "species_regulated_availability@1 is refused: its crossing record counts steps",
+        "cells.operator.species_regulated_availability@1 is refused: its crossing record counts steps",
     ),
     "a projective block beside it": (
         _changed(_projective),
@@ -439,7 +439,7 @@ DOSE_WINDOW = (0.01, 0.015)
 
 
 def test_a_dose_inside_a_window_on_the_composite_without_x2(tmp_path):
-    """scheduled_bath_composition@1's dose leg (bath_schedule_fixtures.dosed_world), the dose at a
+    """cells.operator.scheduled_bath_composition@1's dose leg (bath_schedule_fixtures.dosed_world), the dose at a
     coarse point inside the window. The block does not require X2: @3's own checks (every ledger,
     today's energy bound) pass on every row of the two-rate clock."""
     row = (4 * 10 + 1) * DOSE_FINE  # A fine-only instant, observed.
@@ -449,7 +449,7 @@ def test_a_dose_inside_a_window_on_the_composite_without_x2(tmp_path):
     raw["execution"]["max_steps"] = 64
     raw["execution"]["fine_windows"] = block(DOSE_FINE, DOSE_WINDOW)
     spec = parse_spec(raw)
-    assert [d.law for d in spec.model.operators] == ["scheduled_bath_composition@1"]
+    assert [d.law for d in spec.model.operators] == ["cells.operator.scheduled_bath_composition@1"]
     windows = []
     result = run_windowed(spec, WindowPolicy(64, "checkpoints"), sink=windows.append)
     (window,) = windows

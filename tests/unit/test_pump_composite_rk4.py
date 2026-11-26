@@ -39,29 +39,29 @@ T1 = exact_event_times((10,), fx.DT)[0]
 
 
 class Coupled(Operator):
-    LAW_ID = "dummy_coupled@1"
+    LAW_ID = "cells.operator.dummy_coupled@1"
     SPLIT = True
     RK4 = "coupled"
 
 
 class Process(Operator):
-    LAW_ID = "dummy_process@1"
+    LAW_ID = "cells.operator.dummy_process@1"
     PROCESS = True
 
 
 class Event(Operator):
-    LAW_ID = "dummy_event@1"
+    LAW_ID = "cells.operator.dummy_event@1"
     EVENT = True
 
 
 class Split(Operator):
-    LAW_ID = "dummy_split@1"
+    LAW_ID = "cells.operator.dummy_split@1"
     SPLIT = True
     RK4 = "split"
 
 
 class Counter(Operator):
-    LAW_ID = "dummy_counter@1"
+    LAW_ID = "cells.operator.dummy_counter@1"
     STATE_AXES = {"dummy_count": ("cell_slot",)}
     STATE_DTYPES = {"dummy_count": np.int64}
 
@@ -104,7 +104,7 @@ def test_coupled_compositions_without_the_three_and_split_events_are_admitted_un
     replacement = cs.frozen_definition(fx.replacement_v1(sheet.raw, sheet.templates, sheet.events))
     for raw, laws in (
         (water, [fx.WATER]),
-        (symport, [fx.WATER, "k_anion_symport_mass_action@1"]),
+        (symport, [fx.WATER, "cells.operator.k_anion_symport_mass_action@1"]),
         (replacement, [fx.V1]),
     ):
         spec = parse_spec(rk4(raw))

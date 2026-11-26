@@ -1,4 +1,4 @@
-"""The ledgers of cells.assembly_lineages@2 (OL1, §3.3), each claim with planted errors (D187).
+"""The ledgers of cells.model.assembly_lineages@2 (OL1, §3.3), each claim with planted errors (D187).
 
 - The ledger closes at every saved row: F(n_t) − F(n_0) = W − Q, to rounding, under both probed
   token pairs, with held exchange, a lumen, regular mixing and catalysis (planted: the heat's sign

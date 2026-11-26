@@ -1,4 +1,4 @@
-"""Compiled runs of local_species_reactions@1 (D152 version 1, milestone 2; design §4.5, §6.5, §11).
+"""Compiled runs of cells.operator.local_species_reactions@1 (D152 version 1, milestone 2; design §4.5, §6.5, §11).
 
 The species-only worlds of validation/tissue/species_reactions_fixtures, through the runner, the
 composite's compiled step and its host and device checks:

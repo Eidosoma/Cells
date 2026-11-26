@@ -29,7 +29,7 @@ from validation.tissue import surface_pump_v2_fixtures as fixtures_v2
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 N2 = imex.IMPLICIT_CONDUCTANCES_ID
-X2 = {"check": "step_doubled_energy@1", "integration_error_cap": 2e-3}
+X2 = {"check": "cells.execution.step_doubled_energy@1", "integration_error_cap": 2e-3}
 
 
 @pytest.fixture(scope="module", autouse=True)

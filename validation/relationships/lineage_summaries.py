@@ -10,12 +10,12 @@ RT1 replaces it with each mechanism's own ``descent`` (docs/RELATIONSHIPS_DESIGN
 a validation tool, and adds no physics.
 
 What the rows say, per mechanism:
-- **isopotential_partition@1.** Every founder (a cell that no division names as a daughter) and
+- **cells.operator.isopotential_partition@1.** Every founder (a cell that no division names as a daughter) and
   every daughter. Keys follow the s:c rule in the schedule's order: the founders first, in declared
   order; at each division the first daughter continues its parent's sub-lineage and the second
   opens a new one. A division is the event ``event:division/<division id>``, acting at the
   parent's carrier. A daughter's share is its volume fraction.
-- **scheduled_cell_replacement@1 and @2.** Every founder (each cell) and every newcomer, keyed in
+- **cells.operator.scheduled_cell_replacement@1 and @2.** Every founder (each cell) and every newcomer, keyed in
   the schedule's order, each newcomer opening a sub-lineage. A replacement is the event
   ``event:replacement/<newcomer>`` at its slot. Its material comes from its template
   (``source:template/<id>``) or from the copy of its donor (``source:copy/<donor carrier>``); a
@@ -32,8 +32,8 @@ from pathlib import Path
 
 from cells.records import relations as rel
 
-PARTITION = "isopotential_partition@1"
-REPLACEMENTS = ("scheduled_cell_replacement@1", "scheduled_cell_replacement@2")
+PARTITION = "cells.operator.isopotential_partition@1"
+REPLACEMENTS = ("cells.operator.scheduled_cell_replacement@1", "cells.operator.scheduled_cell_replacement@2")
 RECORD_FILE = "trajectory.npz"
 TIMES = "accepted_times"  # io.write_run's time base of the state's rows.
 SUPPLIED, REMOVED = "replacement_supplied_fmol", "replacement_removed_fmol"
@@ -62,7 +62,7 @@ def _end(record, run_end, reason, event):
 
 
 def partition_rows(summary, definition):
-    """The rows of a division world (isopotential_partition@1) from its summary's lineage."""
+    """The rows of a division world (cells.operator.isopotential_partition@1) from its summary's lineage."""
     law, inner = summary["partition_law"], summary["inner_model"]
     dt, run_end = definition["execution"]["dt"], summary["end_time"]
     lineage = summary["lineage"]
@@ -127,7 +127,7 @@ def partition_rows(summary, definition):
 
 
 def replacement_rows(summary, definition, directory):
-    """The rows of a replacement world (scheduled_cell_replacement@1 or @2) from its summary's
+    """The rows of a replacement world (cells.operator.scheduled_cell_replacement@1 or @2) from its summary's
     lineage, with supply and removal edges weighed by the operator's records in RECORD_FILE."""
     law, inner = summary["replacement_law"], summary["inner_model"]
     dt, run_end = definition["execution"]["dt"], summary["end_time"]

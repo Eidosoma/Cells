@@ -68,16 +68,16 @@ class Records:
         self.outside = [o.id for o in m.extracellular]
         self.bounding = [p.id for p in m.membranes].index(defs.BOUNDING)
         kinds = dict(m.kinds)
-        routes = kinds.get("cells.passive_routes@1", ())
+        routes = kinds.get("cells.kind.passive_routes@1", ())
         self.routes = [r.id for r in routes]  # The parsed (sorted) order: the route axis.
-        damages = [d.patch for d in kinds.get("cells.patch_damage@1", ())]
+        damages = [d.patch for d in kinds.get("cells.kind.patch_damage@1", ())]
         self.damage = defs.BOUNDING if defs.BOUNDING in damages else None
-        conditions = [c.id for c in kinds.get("cells.ph_condition@1", ())]
+        conditions = [c.id for c in kinds.get("cells.kind.ph_condition@1", ())]
         self.condition = conditions.index(defs.CONDITION) if defs.CONDITION in conditions else None
         _, self.p = model.initial_values(spec)
         from cells.registry import kind_registry
 
-        self.pump = kind_registry.active().lookup("cells.transporter@1")  # Planted or not.
+        self.pump = kind_registry.active().lookup("cells.kind.transporter@1")  # Planted or not.
         self.tol = np.asarray(spec.execution.material_balance_atol_fmol)
         self.rtol = surface_pump_v3.ENERGY_RTOL[spec.execution.solver]
         self.dt = spec.execution.dt

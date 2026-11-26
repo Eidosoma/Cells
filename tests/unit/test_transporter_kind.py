@@ -1,4 +1,4 @@
-"""cells.transporter@1 (B5) through the core's kind seams (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)).
+"""cells.kind.transporter@1 (B5) through the core's kind seams (docs/INNER_MODEL_V4_DESIGN.md §7.4 (k)).
 
 The world: heredity cell D facing its held bath, with a neutral role Y and held fuel rows ATP, ADP
 and Pi whose standard potentials the species registry declares (Δ_rG'° = -30.5 kJ/mol). The
@@ -319,7 +319,7 @@ def charged_world(*, ph_cell=PH_CELL, **over):
         raw["execution"]["material_balance_atol_fmol"][species] = 1e-15
     m["stage_reads"] = [
         dict(
-            read_id="rapid_proton_buffer@1",
+            read_id="cells.kind.rapid_proton_buffer@1",
             proton_row="H",
             buffers={"cell_0": ["B_c"]},
             k_on_per_mM_s={"B_c": 1e7},
@@ -359,7 +359,7 @@ def test_the_charged_pump_reads_free_h_and_closes_charge_field_and_ledgers():
         spec = parse_spec(charged_world())
         model = get_model(spec.model)
         assert [k for k, _ in model.structure.kinds] == [
-            "cells.rapid_proton_buffer@1",
+            "cells.kind.rapid_proton_buffer@1",
             transporter.KIND_ID,
         ]
         result = run(spec)
@@ -413,13 +413,13 @@ def test_a_held_fuel_row_has_one_writer():
         dict(
             id="atp_route_0",
             patch="membrane_0",
-            law="passive_neutral_permeation@1",
+            law="cells.route.passive_neutral_permeation@1",
             species="ATP",
             permeability_m_per_s=1e-9,
         )
     ]
     with scoped(transporter.TRANSPORTER, passive_routes.PASSIVE_ROUTES):
-        with pytest.raises(ConfigError, match=r"holds ATP at cell_0, which \S*passive_routes@1"):
+        with pytest.raises(ConfigError, match=r"holds ATP at cell_0, which \S*cells.kind.passive_routes@1"):
             parse_spec(raw)
         raw["model"]["passive_routes"][0]["species"] = "Y"  # The role: moved by both, admitted.
         parse_spec(raw)
@@ -602,7 +602,7 @@ def test_one_way_cycle_records_exist_only_where_a_population_asks():
     with ck.scoped():
         spec = parse_spec(ck.exchange_world(ck.exchanger(one_way=True)))
         entry = transporter.structure_entry(dict(spec.model.kinds)[transporter.KIND_ID])
-        axis = transporter.CycleAxis(("seamtest.slip_exchanger@1",))
+        axis = transporter.CycleAxis(("seamtest.cycle.slip_exchanger@1",))
         assert entry == transporter.OneWayEntry(axis)
         _, state, p, control = ck.start(spec)
         impl = get_model(spec.model)

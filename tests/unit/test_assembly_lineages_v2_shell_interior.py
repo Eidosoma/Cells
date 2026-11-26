@@ -144,9 +144,9 @@ def test_a_lumen_potential_sets_the_equilibrium_ratio_and_keeps_detailed_balance
     d = definition(lumen_shell(lumen=0.7 + delta, n_out=40, n_in=40), molecules=64, trace=False)
     d["execution"] = {"backend": "cpu", "precision": "float64", "mode": "single_lineage",
                       "stream": {"seed": 1, "environment": 0, "lineage": 0, "branch": 0},
-                      "representation": {"id": "cells.rate_equations@1",
+                      "representation": {"id": "cells.assembly_representation.rate_equations@1",
                                          "envelope": {"min_count": 1.0, "provenance": "test"},
-                                         "integrator": {"id": "rosenbrock_rodas4_dense@1",
+                                         "integrator": {"id": "cells.solver.rosenbrock_rodas4_dense@1",
                                                         "rtol": 1e-10, "atol_count": 1e-6,
                                                         "step_limit": 100000}}}  # fmt: skip
     problem = rate_equations.Problem(parse_spec(d))

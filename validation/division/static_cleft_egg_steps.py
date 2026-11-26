@@ -1,9 +1,9 @@
-"""Static cleft egg on resolved_pump_tissue@3: definition check and step study (S0b step 3).
+"""Static cleft egg on cells.model.resolved_pump_tissue@3: definition check and step study (S0b step 3).
 
-Engine model: resolved_pump_tissue@3, unmodified, as a plain definition. One egg-sized cell:
+Engine model: cells.model.resolved_pump_tissue@3, unmodified, as a plain definition. One egg-sized cell:
 its old membrane faces a held Steinberg reservoir; its new-membrane patch, at the J1 default
 area (1.39 mm2, fixed), faces a finite cleft node of volume w x one face, which has one
-logmean_electrodiffusion@1 face to the reservoir with A/L and free-solution diffusivities.
+cells.route.logmean_electrodiffusion@1 face to the reservoir with A/L and free-solution diffusivities.
 The parameters are the registered J1 defaults (validation/division/j1_declared_inputs.json)
 with P_old and A/L from R-full's prediction-of-record calibration (--record). There is no
 insertion and no current injection (the family has no injection control; not added here).
@@ -42,8 +42,8 @@ from cells.laws.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
 from validation.division import cleft_egg_reference as ref  # noqa: E402
 from validation.tissue import egg_scale_smoke as smoke  # noqa: E402
 
-SOLVERS = dict(imex="imex_ars222_face_electromigration@1", rk4="rk4")
-FIELD_SOLVER = "capacitive_reduction_gauged_damped_newton@2"
+SOLVERS = dict(imex="cells.solver.imex_ars222_face_electromigration@1", rk4="rk4")
+FIELD_SOLVER = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
 FACE_LENGTH_M = 1.0e-6  # only area/length enters the face law
 
 
@@ -82,7 +82,7 @@ def static_egg(record_path):
 
 
 def definition(egg, *, solver, dt, end, start=None):
-    """The raw resolved_pump_tissue@3 definition of the static cleft egg.
+    """The raw cells.model.resolved_pump_tissue@3 definition of the static cleft egg.
 
     start None: the cytosol at its declared composition and zero-current potential, the cleft at
     bath composition with an uncharged new patch (the activation transient). start a J1 state
@@ -116,7 +116,7 @@ def definition(egg, *, solver, dt, end, start=None):
     raw = dict(
         schema_version=1,
         model=dict(
-            id="resolved_pump_tissue@3",
+            id="cells.model.resolved_pump_tissue@3",
             temperature_K=egg.temperature_K,
             species=[dict(id=s, valence=z[s]) for s in ids],
             cells=[
@@ -158,7 +158,7 @@ def definition(egg, *, solver, dt, end, start=None):
                     permeability_m_per_s={
                         s: egg.p_old * w for s, w in zip(ids, egg.old_relative, strict=True)
                     },
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=None,
                     calcium_pump=None,
                 ),
@@ -169,7 +169,7 @@ def definition(egg, *, solver, dt, end, start=None):
                     area_m2=area,
                     capacitance_F=egg.new_specific_capacitance_F_m2 * area,
                     permeability_m_per_s=dict(zip(ids, egg.new_permeability, strict=True)),
-                    law="constant_field@1",
+                    law="cells.route.constant_field@1",
                     pump=None,
                     calcium_pump=None,
                 ),
@@ -183,11 +183,11 @@ def definition(egg, *, solver, dt, end, start=None):
                     area_m2=egg.a_over_l_m * FACE_LENGTH_M,
                     length_m=FACE_LENGTH_M,
                     diffusivity_m2_per_s=dict(zip(ids, egg.access_D, strict=True)),
-                    law="logmean_electrodiffusion@1",
+                    law="cells.route.logmean_electrodiffusion@1",
                 )
             ],
             closure=dict(
-                law="resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
             ),
             channels=[],
         ),

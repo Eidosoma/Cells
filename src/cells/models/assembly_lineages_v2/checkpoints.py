@@ -1,4 +1,4 @@
-"""Checkpoints of population worlds in cells.assembly_lineages@2 (FR-22, rung P): one world's
+"""Checkpoints of population worlds in cells.model.assembly_lineages@2 (FR-22, rung P): one world's
 state saved verbatim at an exact event count, restored to continue it.
 
 This is @1's format and rules (cells.models.assembly_lineages.checkpoints) for version 2's

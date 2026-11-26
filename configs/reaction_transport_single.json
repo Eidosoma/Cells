@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "model": {
-    "id": "reaction_transport@1",
+    "id": "cells.model.reaction_transport@1",
     "units": {"amount": "fmol", "volume": "pL", "time": "s"},
     "species": ["A", "B"],
     "population": {"count": 1, "cell_ids": [101]},
