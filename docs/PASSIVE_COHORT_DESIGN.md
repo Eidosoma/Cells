@@ -907,3 +907,73 @@ Both run on host traces, with no compile.
   citing D400 as their origin, and the round runs from that copy.
 - **The landing** waits for the co-writers' registered comparison (D402), and the D148 round runs
   when the lead assigns lanes.
+
+## 10. As built (26 November 2026)
+
+**The build** on `fr52-build`, from main 69d2a36a (main has since gained D402 alone, at 6f6547e7,
+with no code change):
+- 3ad0c9c2: the kernel (`numerics/unit_cohorts.py`), the operator widened in place at @1, its
+  readout `cohort_readout`, the reference `validation/fr52_cohorts/` (`exact.py`, `worlds.py`,
+  `twins.py`), the tests, A7's five entries and the library page;
+- c4393d94: crossrev's `qualification` set gains `FR52_cohorts` (§9.9);
+- ffdb4f12 and 470d0702: D400's pair check as `validation/fr43_part3/pair_check.py`, then its
+  `divided` extended for a float leaf (item 5).
+
+**What the build found against the note:**
+1. **Two populations compile in one declaration** (§3's item to verify). So the compiled program
+   runs a declared table (the hetero's join and cut) and open2's two-pair table, and neither §5.5's
+   first gap nor its fallback arises.
+2. **No state is padded in the qualification world.** Both populations hold four states, and only
+   the channel axis is padded (7 and 6 channels). So §9.2's sentence that the reader's test checks
+   the padded states on the two-population world does not hold. The reader checks their 0 wherever
+   a world has padding, and no compiled world here has any; the rule stays as read from the code.
+3. **The seed is 1,** chosen with a host replica of the event rule (`worlds.replay`). The replica
+   agrees with the engine's trace on every channel, and within 1e-14 s on every time. The ten
+   events and the cut's condition are asserted on the engine's own trace.
+4. **§9.3's expectation holds.** Where no cohort is declared the record stays out of the event
+   loop's carry, so the loops' text is unchanged. The development pair check (main 69d2a36a against
+   ffdb4f12, D400's nine worlds; `/mnt/workspaces/Cells/fr52-build-20261126/pair/`) finds:
+   - every field equal at every step in all nine worlds, and every common binding equal, the head's
+     extra bindings exactly the five new leaves, all zero-size;
+   - every eliminated program identical text for text in eight worlds, the checked step included
+     (D400's leaf, which the loop carried, changed the loops' annotations), and every constant
+     record identical in all nine.
+5. **The dividing world** reads the record, as §9.5 says. Its eliminated step adds is_finite,
+   reduce_and and and on the zero-size record, and the record threads as the program's input and as
+   one more operand and binder of a nested call in the division's branch. With those removed, the
+   step is identical to main's as a name-free token stream (the tool's `divided`, at 470d0702; the
+   alpha-renamed form cannot hold once names shift, and D400's own script reports False on its own
+   data for that reason).
+6. **Sum-to-flux's tolerance (§3) was mis-scaled.** Its second term, c ε |ΔQ|, misses that the
+   booked change is the difference of two cumulative books, whose rounding scales with the books,
+   and that u0 is the difference of two concentrations. Measured, the worst departure is 566 ε|ΔQ|.
+   The test's term is c ε (|Q_k| + |Q_k+1| + |ΔQ| (c_c + c_o)/|u0|), whose worst is 0.84 at c = 1,
+   and c = 4 is fixed. Its teeth hold: a drift of 1e-12 per event and the conductance put on the
+   closed state each fail it.
+7. **A merge carrying both identities** (§5.2) fails integrity, total 2 against 1, as a kernel that
+   adds no negative arrival. In the exact update's own form (p − Σm) its arrival goes to −1/3, and
+   the domain check (≥ 0) fails instead. The test checks both readings.
+8. **The update test runs 120 random channels,** not the desk's 1,313, to keep the host rows near
+   the note's +3 s. The legal tables are counted only by the reference, by brute force; the kernel
+   keeps the rule alone.
+9. **The fresh-process twins hold,** scalar and through `run_batch`
+   (`/mnt/workspaces/Cells/fr52-build-20261126/dev/twins/compare.json`). The observed run's scalar
+   and batch histories also agree on every field, so a trace with T > 0 runs through `run_batch`
+   (§5.3's item to verify).
+10. **Restart and checkpoints (§2.4).** The record travels through the generic snapshot files bit
+    for bit, and a resume from the loaded snapshot ends bitwise at the uninterrupted run's final
+    state. A snapshot written at main is refused at the head, by the source check ("Checkpoint
+    model/engine source differs from this installation").
+11. **Test cost,** one core each in one session: the existing file 63.66 s at main against
+    67.06 s here (70 tests to 140, +3.4 s), and the new file 58.4 s (8 tests). The tier runner's
+    measurement on CPU 6, at a load of 14 to 26, is not fit to fold: main's own file hit the 90 s
+    cap there. The fold's measurement is the round's, on a timed core.
+12. **The composition table is unchanged:** `composition_matrix --write` writes no difference, since
+    no pairwise rule changes.
+13. **The renewals beside the records,** for the lead's renewal at the landing, from the clean
+    snapshot of 470d0702:
+    - crossrev, `record-cda5dc82-renewal-fr52-cohorts-20261126/`: FR52_cohorts's nine files new; the
+      co-writer world's four program texts and its bindings renewed, its four constant records
+      identical, the bindings' 176 common arrays equal;
+    - G1, `c1-605331c2-renewal-fr52-cohorts-20261126/`: the co-writer world's 152 arrays equal and
+      two added, and FR52_cohorts new.
