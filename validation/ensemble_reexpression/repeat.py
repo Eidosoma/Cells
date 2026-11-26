@@ -21,7 +21,9 @@ spellings to its new ID), or a plain JSON object {old spelling: new ID}. `{}` is
   rest). The registered entry's string is read with every old spelling that the table names replaced
   by its new ID, as a whole token, the longest first: the move's own rule. A token here is not one
   that a letter, a digit, `_`, `@` or a `.` joins to more of an ID. An ID that the table does not
-  name is compared as it stands. `declared_strings` is compared as a set.
+  name is compared as it stands. `declared_strings` is compared as a set. The keys of `strings` are
+  the spec's labels, which do not move (`rk4` is both a label and a registered string), and are
+  compared as they stand; its values are IDs.
 - **Bit for bit:** every other leaf, by its JSON type and value, a double by its bits: `status`,
   `world`, `variant`, `seed_index`, `world_id`, `step_s`, `steps`, `t`, `rows`, `potential_t`,
   `potentials`, `pool`, `path`, `restart`, `host_patch`, `off_grid`, the refusal's kind and time,
@@ -72,6 +74,7 @@ NEVER = (
 )
 HEADS = {rule[0] for rule in NEVER}  # A path that begins elsewhere is compared.
 AS_A_SET = ("declared_strings",)  # The one leaf compared as a set.
+LABELLED = ("strings",)  # The one map whose keys are labels, which do not move.
 SHOWN = 200  # The paths shown for one run; the rest are counted.
 
 
@@ -172,7 +175,7 @@ def differences(registered, new, rename, path=()):
         moved = {rename(s) if isinstance(s, str) else s for s in registered}
         return [] if moved == set(new) else [path]
     if isinstance(registered, dict) and isinstance(new, dict):
-        moved = {rename(key): value for key, value in registered.items()}
+        moved = {(key if path == LABELLED else rename(key)): v for key, v in registered.items()}
         out = [path] if len(moved) != len(registered) else []  # Two old keys, one new.
         for key in sorted(set(moved) | set(new)):
             here = (*path, key)

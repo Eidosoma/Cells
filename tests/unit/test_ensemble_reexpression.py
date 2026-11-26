@@ -1353,6 +1353,9 @@ def test_the_repeat_reads_ids_through_the_move_and_shows_no_value(tmp_path, caps
         assert repeat.compare({"r": old}, {"r": planted}, ["r"], MOVED) == {
             "r": [repeat.shown(path)]
         }
+    labelled = {"r": {"strings": {"rk4": "rk4"}}}  # A label spelled as a moved ID stays a label.
+    moved = {"r": {"strings": {"rk4": "cells.integrator.rk4@1"}}}
+    assert repeat.compare(labelled, moved, ["r"], {"rk4": "cells.integrator.rk4@1"}) == {"r": []}
     collided = {"r": {"k": {"a@1": 1, "b@1": 1}}}  # Two old keys, one new: never quietly one.
     assert repeat.compare(collided, {"r": {"k": {"n@1": 1}}}, ["r"], {"a@1": "n@1", "b@1": "n@1"})[
         "r"
