@@ -214,4 +214,5 @@ def run_c0(spec_dir: str, references_out: str, hashes: dict[str, str] | None = N
     refused["reference_invented.json"] = out["invented"]["refused"] or out["invented_rules"]["refused"]
     out["refused"] = refused
     out["passes"] = (not any(refused.values()) and not out["hashes"]["faults"] and not registered_problems)
+    out["hashes_compared"] = hashes is not None  # C0 is complete only with the lead's record compared
     return out

@@ -31,7 +31,10 @@ def main(argv: list[str] | None = None) -> int:
     with open(path, "w", encoding="utf-8") as handle:
         json.dump(result, handle, indent=1, sort_keys=True, default=str)
         handle.write("\n")
-    print(f"C0: {'pass' if result['passes'] else 'FAULT'}  ({path})")
+    verdict = "no fault" if result["passes"] else "FAULT"
+    if result["passes"] and not result["hashes_compared"]:
+        verdict += " (the protocol's hashes not compared: no record supplied)"
+    print(f"C0: {verdict}  ({path})")
     for name, refused in sorted(result["refused"].items()):
         print(f"  {name}: {'refused' if refused else 'no fault'}")
     for block in [result["invented"], *result["files"].values()]:
