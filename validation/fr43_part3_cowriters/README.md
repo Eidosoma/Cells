@@ -63,9 +63,9 @@ From what the engine raised and where (`run.kind_of`):
 
 | Kind | What was raised |
 | --- | --- |
-| `domain` | A ConfigError while the definition is parsed, built or planned, before the first step, whose message states a bound or a range that a declared value left (`run.OUT_OF_RANGE`: a comparison with a number, "at least", "at most", "positive", "non-negative", "finite", "outside", "exceeds", "domain", "above", "below", a near miss). Also, at run time, a step the engine refused: a NumericalError raised outside the row checks, the runner's trial or endpoint domain failure, whose time is the refused step's start |
+| `domain` | A ConfigError while the definition is parsed, built or planned, before the first step, whose message states a bound or a range that a declared value left (`run.OUT_OF_RANGE`: a comparison with a number, "at least", "at most", "positive", "non-negative", "finite", "outside", "exceeds", "domain", "above", "below", a near miss). Also a NumericalError raised outside the row checks: at run time, a step the engine refused (the runner's trial or endpoint domain failure, whose time is the refused step's start) |
 | `definition` | Any other error while the definition is parsed, built or planned: a ConfigError, or the parser's KeyError, TypeError, ValueError, IndexError or AttributeError |
-| `check` | A NumericalError raised by the model's host checks of accepted rows (`check_values`: their domain, ledgers and dissipation), or a ConfigError of the windows' diagnostics |
+| `check` | A NumericalError raised by the model's host checks of rows (`check_values`: their domain, ledgers and dissipation), of an accepted row or of a checkpoint's at a resume, or a ConfigError of the windows' diagnostics |
 | `harness` | Anything else: the driver, the export, a truncated trace (`events_total` above `trace_capacity`), the counts' check. A crash leaves no record, and its run is listed in `missing` |
 
 ## The restart, the Lie plant and the windows

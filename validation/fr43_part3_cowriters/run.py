@@ -30,8 +30,9 @@ and where:
 - `domain`: a ConfigError there whose message states a bound or range that a declared value left
   (OUT_OF_RANGE), and at run time a step the engine refused (a NumericalError raised outside the
   row checks: the runner's trial/endpoint domain failure);
-- `check`: a NumericalError raised by the model's host checks of accepted rows (`check_values`:
-  its domain, ledgers and dissipation), and a ConfigError of the windows' diagnostics;
+- `check`: a NumericalError raised by the model's host checks of rows (`check_values`: their
+  domain, ledgers and dissipation), of an accepted row or of a checkpoint's at a resume, and a
+  ConfigError of the windows' diagnostics;
 - `harness`: everything else: this driver, the export, a truncated trace, the counts' check.
 
 **The restart** (`restart`): the uninterrupted run to the registered checkpoint, which ends a
@@ -218,17 +219,15 @@ def kind_of(error, stage):
         return HARNESS
     message = str(error)
     frames = [frame.name for frame in traceback.extract_tb(error.__traceback__)]
-    if stage == "run":
-        if isinstance(error, NumericalError):
-            return CHECK if "check_values" in frames else DOMAIN
-        if isinstance(error, ConfigError):
-            if "merge_diagnostics" in frames:
-                return CHECK
-            return DOMAIN if OUT_OF_RANGE.search(message) else DEFINITION
-        return HARNESS
+    if isinstance(error, NumericalError):  # A row check (of an accepted row or a checkpoint's).
+        return CHECK if "check_values" in frames else DOMAIN
     if isinstance(error, ConfigError):
+        if stage == "run" and "merge_diagnostics" in frames:
+            return CHECK
         return DOMAIN if OUT_OF_RANGE.search(message) else DEFINITION
-    if isinstance(error, (KeyError, TypeError, ValueError, IndexError, AttributeError)):
+    if stage in ("parse", "plan") and isinstance(
+        error, (KeyError, TypeError, ValueError, IndexError, AttributeError)
+    ):
         return DEFINITION  # The engine's parser could not read the declaration.
     return HARNESS
 
