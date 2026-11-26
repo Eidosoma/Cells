@@ -121,7 +121,7 @@ def test_named_roles_bind_their_species_and_move_the_protocols_counts_and_no_cha
 @pytest.mark.parametrize(
     "name,over,reason",
     [
-        ("nkcc", dict(law="unknown@1"), "law is one of"),
+        ("nkcc", dict(law="tests.cycle.unknown@1"), "law is one of"),
         ("nkcc", dict(roles=dict(Na="K", K="K", anion="M")), "a distinct species row"),
         ("nkcc", dict(roles=dict(Na="Na", K="K")), "roles binds each of Na, K, anion"),
         ("nkcc", dict(roles=dict(Na="Na", K="Cs", anion="M")), "a distinct species row"),
