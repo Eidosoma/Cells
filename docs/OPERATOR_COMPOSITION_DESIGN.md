@@ -292,7 +292,7 @@ which is option B. That is the ruling this note asks for.
 
 | # | Refinement | Where | Why |
 | --- | --- | --- | --- |
-| C1 | **The fallback.** A current read with no changer reads the declared value. Static: no `view=` is passed | `pump_composite.structure_errors`, `Composition.view_readers` | §2.4's third row. D150 §5.1 designed it |
+| C1 | **The fallback.** A current read with no changer reads the declared value. Static: no `view=` is passed. At the control view it applies per field (R2′, FR-65's coupling step, TURNOVER_CHANGING_VOLUME_DESIGN §11.3): the view carries only the fields some operator changes, and names them | `pump_composite.structure_errors`, `Composition.view_readers`, `Composition.factor_fields` | §2.4's third row. D150 §5.1 designed it |
 | C2 | **The stage-aware order rule.** A reader sees every change made at an earlier stage of the step whatever the declared order. Same-stage pairs keep door S's rule 3, and a writer of a provider's state counts as a changer at its stage | `structure_errors` (the "reads before a closer" and "no earlier operator provides it" rules) | §2.4's circular order (§5) |
 | C3 | **Per-stage read modes** | `contract._check_scopes` | §3's two-mode fields |
 | C4 | **Scoped views.** A current reader receives its read fields only, merged to its stage, without `refresh_field` or the padding of unread fields | `pump_composite_adapter` | Fast (§11) |

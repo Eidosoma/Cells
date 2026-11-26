@@ -1,8 +1,8 @@
 # FR-65: turnover beside a changing volume (design)
 
 **Status: built (26 November 2026, branch `fr65-build`): the first build, steps 1 to 4, as §10 records. The coupling's
-step (§3.8) is designed and decided in §11 (26 November 2026, branch `fr65-coupling`; D402) and not built; nor is the
-run view for water worlds (§9.2).** Decided on 24 November 2026 (D375, and the lead's
+step (§3.8) is designed and decided in §11 (26 November 2026, branch `fr65-coupling`; D402) and built there (§12),
+awaiting its D148 round; the run view for water worlds (§9.2) is not built.** Decided on 24 November 2026 (D375, and the lead's
 rulings on this revision, §8.2). Its IDs are written in the spelling of the move (D345), translated with
 `validation/id_table.py`; the step IDs keep theirs. The first version was proposed and decided that day. This
 revision, on branch `fr65-design` with main merged (the probes ran at 95559271, whose source is unchanged since):
@@ -51,9 +51,9 @@ the second step `cells.operator.species_regulated_availability@2` (§11 recommen
   step adds D375's 2–2.5, carried here, not re-derived.
 - **The lead's rulings on this revision** (§8.2): route B for the lumen; the symport and the bath schedule each get a
   parse row and one tier-3 run; the run view for water worlds is logged apart (§9.2).
-- **The coupling's step** (§11, designed 26 November). Both versions read the current cell volume wherever they are
-  evaluated, through one contract extension (R2′): C1's fallback per field at the control view, and the source's
-  reader view at a routed half-step. 30 more sequences parse, and every world admitted today keeps its program by
+- **The coupling's step** (§11, designed and decided 26 November; built, §12). Both versions read the current cell
+  volume wherever they are evaluated, through one contract extension (R2′): C1's fallback per field at the control
+  view, and the source's reader view at a routed half-step. 30 more sequences parse, and every world admitted today keeps its program by
   construction. 2.1–3.05 agent-days. The user left its two questions to the lead and the adviser, who decided them
   with conditions (D402; §11.12).
 
@@ -741,8 +741,8 @@ So every world without a changer of turnover's read fields keeps its program, as
 
 ## 11. The coupling's step: its design (26 November 2026)
 
-**Designed and decided, not built.** This section was written on branch `fr65-coupling`, from main 69d2a36a. It is docs
-only.
+**Designed and decided** (built since: §12). This section was written on branch `fr65-coupling`, from main 69d2a36a,
+as docs only.
 - The user approved the step "as you and adviser see fit" (D401). It is D375's Q1 (b), and §3.8 lists its inputs.
 - **Decided (D402):** the user left both of its questions to the lead and the adviser, who decided them with
   conditions. The lead also ruled on its form (§11.12). Every part below is written as decided.
@@ -1274,3 +1274,75 @@ They are not the user's choice.
 5. **Before A7 is amended in place,** the build greps that no registered protocol or judged set runs it. This
    section's grep found none (§11.8, row 6).
 6. **The price** is stated against D375's 2–2.5: 2.1–3.05 agent-days (§11.9).
+
+## 12. The coupling's step, as built (26 November 2026)
+
+**Built on `fr65-coupling`**, from main 10225759 merged at eb1c7d96, on the lead's word. FR-52's build left
+`contract.py` and the composition table unchanged (D402). It is fail-closed: each refusal lands with the admission it
+guards. Three commits:
+1. `380e3489`: the contract extension R2′, the coupling's version 1.1, their refusals and §11.8's tier-1 rows, the
+   regenerated composition matrix, A7 amended in place, and the protocol's planted control's keyword;
+2. `a2779941`: the tier-3 rows (T1 with @1's run, T2 with the coupling, and its labelled row);
+3. this section and the docs (INVENTORY_COUPLING_DESIGN §11 and its A7 rows, the composition design's C1 row).
+
+**What it is.**
+- **The contract and the composite (R2′, as ruled).**
+  - `contract.ViewFunction` is a function of state with its `fields`, and `contract.carried` reads a field from it
+    only where it is named.
+  - `Composition.factor_fields` is built per field, after `view_changes`.
+  - `Composition._routed_view` gives a door S reader's view to `rate_factors` and the routed `factor_record`. It is
+    used through `_routed_control`, so the half-steps, the midpoint's predictor and `observe_history` all get it.
+  - The base factor hooks take `view=None`. `check_declarations` requires it of a rate-route source that reads
+    current at the split.
+  - The composite's `_part_reads` moved, unchanged, into the contract as `part_reads`.
+- **The coupling.** §11.2's declarations in both versions. The kernels take `volume=None`; the site kernel keeps the
+  declared volume. Both versions call the shared volume rule, and `check_site_volume` refuses a site source in mM
+  beside a changer of the cell volume.
+
+**Where the build differs from §11:**
+- **`carried` treats a plain function of state as carrying no field.** FR-7's population tests pass plain functions
+  as views, and the composite always passes a ViewFunction.
+- **The event map takes `view=None`.** The composite passes a door S reader's view to its event map as well, which
+  does not read it.
+- **The protocol's planted control** `control_lagged_factor@1` gains the keyword `view=None`. It is always None in
+  the protocol's worlds (INVENTORY_COUPLING_DESIGN §11).
+- **The companions' world** moved from the first build's test into `shared_inventory_fixtures.companion_world`,
+  which the parse rows also use. The test's world is unchanged.
+- **Row 4 checks the self-moved route's applied factor** at the midpoint's predictor. T1's reference window covers
+  the routes of R and the state, whose records are evaluated half a step earlier.
+
+**What newly parses,** measured on the built code with nothing patched: 1,010 of 3,854 ordered sequences, against
+main's 978. They are the same 32 as §11.6, and none is lost (`/mnt/workspaces/Cells/fr65-coupling-20261126/probe/`).
+
+**The tests** ran on CPUs 6 and 7, cold, one BLAS thread:
+- **Tier 1:** the reached files pass (849 tests in about 145 s on one CPU). The coupling's file has 128 tests in 15 s
+  with its version 1.1 rows.
+- **Tier 2:** the coupling's 15 compiled files pass (239 tests).
+- **Tier 3:** `test_shared_inventory_volume.py` passes, 14 tests, in two halves:
+  - the first build's ten, with A1 now run with and without the coupling: 393 s on CPU 6;
+  - the coupling's four: 219 s on CPU 7.
+
+  Within them:
+
+  | Row | Seconds |
+  | --- | --- |
+  | T1's three rungs (the fixture) | about 125 |
+  | T1's reference rows | 10 |
+  | @1's run | 29 |
+  | T2's labelled pair | 91 |
+  | A1 with the coupling, with its resumes | 72 |
+
+  These are this build's seconds, cold. The tier record is refrozen after the round.
+- **The declared test IDs:**
+  - 10 are removed: the renamed or moved rows of A7, `REFUSED`, `REFUSALS`, the R2 row, the first build's A1 row and
+    its turnover parse row;
+  - 28 are added, in the four test files changed: 20 in the coupling's, 6 in the tier-3 file, 1 in the contract's
+    and 1 in turnover's.
+
+**A smoke pair check before the round** (`/mnt/workspaces/Cells/fr65-coupling-20261126/pair-smoke/`) took base
+10225759 against the head, host only.
+- **Its worlds:** A5″, crossrev's coupling set, FR-38 v2's arm B in four runs, FR-8 rung 1's W0, the gene lane's A1
+  and R2, a population world, and a routed and a site world.
+- **Its result:** 68 of 68 program texts and constants identical, and 17 of 17 bindings.
+- **It is not the round's evidence.** The D148 round comes after FR-52's, on lanes the lead assigns. It adds the A4
+  and A5 protocol worlds, crossrev, G1, FR's set, the derivative programs, and tiers 1 and 2.
