@@ -530,32 +530,12 @@
      "reason": "numerics/surface_transport.py VOLTAGE_ID: nothing reads it"
     },
     {
-     "id": "er_calcium_pump_positive@1",
-     "reason": "laws/reactions/er_calcium.py: live code calls the module's functions, and nothing reads its three IDs"
-    },
-    {
-     "id": "er_calcium_release@1",
-     "reason": "laws/reactions/er_calcium.py: live code calls the module's functions, and nothing reads its three IDs"
-    },
-    {
      "id": "exponential_mean_rate_linear_target_gates@1",
      "reason": "numerics/exponential_gates.py LAW_ID: nothing in src reads it, so it is left out of the move (D383)"
     },
     {
      "id": "gauged_damped_newton@1",
      "reason": "numerics/tissue_field.py SOLVER_ID: live code reads one function of the module"
-    },
-    {
-     "id": "maintained_mM_quotient@1",
-     "reason": "laws/reactions/er_calcium.py: live code calls the module's functions, and nothing reads its three IDs"
-    },
-    {
-     "id": "ncx_3na_1ca_symmetric_barrier@1",
-     "reason": "laws/reactions/plasma_calcium.py: live code calls the module's functions, and nothing reads its two IDs"
-    },
-    {
-     "id": "plasma_calcium_pump_positive@1",
-     "reason": "laws/reactions/plasma_calcium.py: live code calls the module's functions, and nothing reads its two IDs"
     },
     {
      "id": "resolved_surface_transport_explicit_reservoirs@1",
@@ -577,8 +557,7 @@
    "pinned_by": [
     "configs/reference/multispecies_trajectories_v1.json",
     "configs/reference/physical_ionic_graph_v1.json",
-    "configs/reference/voltage_gated_channel_v1.json",
-    "scripts/check_multispecies_contract.py"
+    "configs/reference/voltage_gated_channel_v1.json"
    ]
   },
   {
@@ -593,8 +572,7 @@
     "configs/reference/finite_extracellular_trajectories_v1.json",
     "configs/reference/finite_extracellular_trajectories_v2.json",
     "configs/reference/finite_extracellular_v1.json",
-    "configs/reference/physical_ionic_graph_trajectories_v1.json",
-    "scripts/check_physical_ionic_graph.py"
+    "configs/reference/physical_ionic_graph_trajectories_v1.json"
    ]
   },
   {
@@ -607,36 +585,8 @@
    ],
    "pinned_by": [
     "configs/reference/physical_ionic_graph_v1.json",
-    "configs/reference/voltage_gated_trajectories_v1.json",
-    "scripts/check_voltage_gated_channel.py"
+    "configs/reference/voltage_gated_trajectories_v1.json"
    ]
-  },
-  {
-   "path": "configs/resolved_hcn_extra_ionic.json",
-   "kind": "data",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "tests/tier3_record.json"
-   ],
-   "note": "live: its only quote is a logged assertion line of tests/tier3_record.json, and three protocols' pins of it are already stale (proposed by the lead, 25 November; it waits for the user's words)"
-  },
-  {
-   "path": "examples/tissue_geometry/irregular_native_radial.request.json",
-   "kind": "data",
-   "choice": "leave",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "tests/fixtures/tissue_geometry_cli/tissue_geometry_cli_contract.json",
-    "validation/geometry/geometry_profile_preparation_protocol.json"
-   ],
-   "note": "stays with the eight artifacts: left as it is, and its reader translates (proposed by the lead, 25 November; it waits for the user's words)"
   },
   {
    "path": "src/cells/assembly/__init__.py",
@@ -669,20 +619,6 @@
    ],
    "pinned_by": [
     "validation/topology/joint_water_profile_phase_handoff_protocol.json"
-   ]
-  },
-  {
-   "path": "tests/reference_finite_extracellular.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "configs/reference/finite_extracellular_trajectories_v1.json",
-    "configs/reference/finite_extracellular_trajectories_v2.json",
-    "validation/geometry/geometry_tissue_preparation_protocol.json"
    ]
   },
   {
@@ -782,19 +718,6 @@
    ]
   },
   {
-   "path": "validation/geometry/active_polygon_physiology_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/active_ecm_polygon_source_map.json",
-    "validation/geometry/active_polygon_physiology_source_map.json"
-   ]
-  },
-  {
    "path": "validation/geometry/conservative_polygon_geometry_protocol.json",
    "kind": "data",
    "choice": "leave",
@@ -804,28 +727,6 @@
    ],
    "pinned_by": [
     "validation/geometry/conservative_polygon_geometry_source_map.json"
-   ]
-  },
-  {
-   "path": "validation/geometry/conservative_polygon_geometry_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/active_ecm_polygon_source_map.json",
-    "validation/geometry/active_polygon_physiology_source_map.json",
-    "validation/geometry/conservative_polygon_geometry_source_map.json",
-    "validation/geometry/finite_ecm_polygon_source_map.json",
-    "validation/geometry/stable_seed_control_volume_environment_source_map.json",
-    "validation/geometry/stable_seed_control_volume_physical_bridge_source_map.json",
-    "validation/geometry/stable_seed_explicit_ecm_partition_source_map.json",
-    "validation/geometry/stable_seed_partition_advance_refinement_initial_source_map.json",
-    "validation/geometry/stable_seed_partition_advance_refinement_source_map.json",
-    "validation/geometry/stable_seed_partition_physiology_bridge_protocol.json",
-    "validation/geometry/stable_seed_partition_physiology_bridge_source_map.json"
    ]
   },
   {
@@ -853,35 +754,6 @@
     "validation/geometry/stable_seed_partition_physiology_bridge_protocol.json",
     "validation/geometry/stable_seed_partition_trajectory_callers.json",
     "validation/geometry/stable_seed_partition_trajectory_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/legacy_port/capture_worlds.py",
-   "kind": "python",
-   "choice": "leave",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/ensemble_reexpression/rehearsal/plants_manifest_rehearsal.json",
-    "validation/ensemble_reexpression/rehearsal_part2/plants_manifest_rehearsal_part2.json",
-    "validation/ensemble_reexpression/spec/plants_manifest.json",
-    "validation/ensemble_reexpression/spec/plants_manifest_part2.json"
-   ],
-   "note": "the captures' tool as the registered plants' manifests and both rehearsals' manifests name it (capture_tool_sha256); its four old spellings are comments that name the captured worlds, which it runs from a frozen snapshot that spells them so"
-  },
-  {
-   "path": "validation/tissue/active_excision_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
    ]
   },
   {
@@ -915,133 +787,6 @@
     "validation/geometry/stable_seed_partition_advance_refinement_protocol.json",
     "validation/geometry/stable_seed_partition_advance_refinement_source_map.json",
     "validation/geometry/stable_seed_partition_advance_source_map.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_energy_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/active_ecm_polygon_source_map.json",
-    "validation/geometry/active_polygon_physiology_source_map.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_excision_fixtures.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/membrane_profile_phase_handoff_protocol.json",
-    "validation/topology/surface_active_profile_interventions_protocol.json",
-    "validation/topology/surface_profile_interventions_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_excision_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_mobile_pump_fixtures.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_redistribution_fixtures.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_water_kinetic_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_water_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/tissue/joint_water_hcn_protocol.json",
-    "validation/topology/joint_water_profile_interventions_protocol.json",
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/test_morris_lecar_catalog_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/topology/surface_profile_interventions_reference.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/topology/joint_water_profile_interventions_protocol.json",
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json",
-    "validation/topology/membrane_profile_phase_handoff_protocol.json",
-    "validation/topology/owned_calcium_profile_interventions_protocol.json",
-    "validation/topology/owned_calcium_profile_phase_handoff_protocol.json",
-    "validation/topology/surface_active_profile_interventions_protocol.json"
    ]
   },
   {
@@ -1978,24 +1723,6 @@
     "computed",
     "cut"
    ],
-   "path": "scripts/check_source_graph_reference.py",
-   "text": "@",
-   "reason": "a label of a case, a time, a step or a node: no ID"
-  },
-  {
-   "cls": [
-    "computed",
-    "cut"
-   ],
-   "path": "tests/reference_source_graph.py",
-   "text": "@",
-   "reason": "a label of a case, a time, a step or a node: no ID"
-  },
-  {
-   "cls": [
-    "computed",
-    "cut"
-   ],
    "path": "src/cells/analysis/stationary.py",
    "text": "@",
    "reason": "a label of a case, a time, a step or a node: no ID"
@@ -2062,30 +1789,6 @@
    "path": "validation/tissue/resolved_scale_study.py",
    "text": "solver",
    "reason": "a report's key and a file's name, read by nothing else: the name carries the solver's full ID after the move"
-  },
-  {
-   "cls": [
-    "computed"
-   ],
-   "path": "tests/joint_water_hcn_fixtures.py",
-   "text": "resolved_",
-   "reason": "legacy's joint water models, which stay bare (D348)"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
-   "path": "tests/integration/test_joint_water_hcn_interfaces.py",
-   "text": "@2",
-   "reason": "legacy's joint water models, which stay bare (D348)"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
-   "path": "tests/unit/test_morris_lecar_energy_water.py",
-   "text": "@2",
-   "reason": "legacy's water models, which stay bare (D348)"
   },
   {
    "cls": [
@@ -2238,14 +1941,6 @@
    "cls": [
     "cut"
    ],
-   "path": "tests/betse_physiology/unit/*.py",
-   "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
-   "reason": "array keys"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
    "path": "tests/unit/test_assembly_lineages_population.py",
    "text": "\\.(split|rsplit|rpartition)\\(['\\\"]\\.['\\\"]",
    "reason": "column names"
@@ -2374,14 +2069,6 @@
    "cls": [
     "cut"
    ],
-   "path": "tests/reference_multispecies.py",
-   "text": "betse_kv1p5_mh@1",
-   "reason": "a saved reference's own name for the law, replaced whole; H3 reads the pinned file through the table"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
    "path": "src/cells/registry/declarations.py",
    "text": "split",
    "reason": "the page's path and the identity: after the namespace, and at the major (H1b reads the parts)"
@@ -2457,22 +2144,6 @@
    "path": "validation/tissue/shared_inventory_references.py",
    "text": "refusal",
    "reason": "a word of a refusal's message"
-  },
-  {
-   "cls": [
-    "partial"
-   ],
-   "path": "tests/integration/test_surface_open_calcium_bath_public.py",
-   "text": "MODEL_ID",
-   "reason": "legacy's model IDs, which stay bare (D348)"
-  },
-  {
-   "cls": [
-    "partial"
-   ],
-   "path": "validation/tissue/physiology_*_reference.py",
-   "text": "model_id",
-   "reason": "legacy's model IDs, which stay bare (D348)"
   },
   {
    "cls": [
@@ -2554,14 +2225,6 @@
    "path": "validation/tissue/field_solver_choice.py",
    "text": "model_id\\.index\\(\"@\"\\)",
    "reason": "the start of a whole ID, which the move re-spells, tested against whole IDs"
-  },
-  {
-   "cls": [
-    "cut"
-   ],
-   "path": "tests/reference_multispecies.py",
-   "text": "text\\.replace\\(first",
-   "reason": "the pinned panels' first spelling, kept by its marker, put in today's"
   },
   {
    "cls": [
