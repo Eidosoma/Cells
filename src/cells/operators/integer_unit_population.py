@@ -69,7 +69,9 @@ order in dt beside a co-writer (off by up to half its kick per step): they are r
 judged. The counts recorded at an event (integer_trace_counts, FR-43 part 3's co-writers
 registration) are the counts the event loop carries on after it, written as the loop forms them
 and never formed again from the channel's declared jump, so a trace whose counts break the
-declared jump shows an engine that applied another one. No rate, check or draw reads the trace.
+declared jump shows an engine that applied another one. No rate, draw or ledger reads it. The
+composite's finiteness check over the operator's owned fields covers it, and is always true for an
+integer field.
 
 **Co-writers** (FR-43 part 3; the species registry's rule, check_row_writers). The operator is a
 transfer (ROW_MOVES): a moved row may have any declared split writer beside it, a reaction or the

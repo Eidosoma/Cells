@@ -706,8 +706,9 @@ int64, -1 where no event is recorded, beside each recorded event's time, channel
 - **The plant.** `test_the_trace_records_the_counts_the_loop_carries` has two rows. The declared engine's record keeps
   the jumps and every row's counts. A planted one, assemble's change zeroed in the bound layout (a wrong jump that
   keeps the subunits), records the counts it carries, which break the declared jump.
-- **In place under @1** (the lead, after MODULE_SYSTEM §2.3): no declaration key and no meaning changes, and no rate,
-  check, ledger or draw reads the field. It is a write-only record sized by `trace_events`.
+- **In place under @1** (the lead, after MODULE_SYSTEM §2.3): no declaration key and no meaning changes. No rate, draw
+  or ledger reads it. The composite's finiteness check over the operator's owned fields covers it, and is always true
+  for an integer field. It is a record sized by `trace_events`.
 - **What changes.** The state layout gains one owned field, zero-size at `trace_events` = 0 but still a leaf. So the
   program text changes for every world of the operator, not only those with a trace. Checkpoints saved before it do
   not load.
