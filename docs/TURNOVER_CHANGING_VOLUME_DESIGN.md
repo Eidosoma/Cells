@@ -709,3 +709,26 @@ to three operators holding turnover or a lumen, the structure check admits 584 a
   while the cell swells.
 - **The cost.** The reader views cost nothing measurable: on the timed core 4, 1,000 steps of the swelling world took
   0.182 s with turnover's view against 0.188 s for its twin without it (median of seven; development, not a gate).
+
+**D327's check of the four-operator composition** (FR-43 part 3's co-writers note, §6.3): membrane state, the partition,
+the integer unit population and turnover newly parse together, in either order of the last two. FR-65 landed second,
+so it carries the check: W3_two_way_turnover's turnover in part 3's divided world, one tier-3 run in
+`test_partition_runs.py` (`d9ba0f4a`), with every host check on every row and turnover's production following the
+occupant rule.
+
+**D148, one round on the merged head** (`b4372df9`: main at 4be34f74, the co-writers' landing, and the lead's
+small-fixes at c574cc41, merged), against main at 4be34f74 (26 November 2026; the records in
+`/mnt/workspaces/Cells/fr65-build-20261126/round/`):
+- crossrev's eleven sets: identical, no differing file;
+- G1: 113 of 113 worlds equal to c1's at the base and at the head, and to each other;
+- FR's bitwise landing set of the head: passed (nine quick parts, both windowed arms bitwise);
+- the judges' derivative programs: 36 worlds traced on each side, 257 files, none differs;
+- the pair check of turnover's admitted worlds (turnover alone, and beside replacement@1, the bath schedule, exchange,
+  labels and W3's integer population): 24 of 24 jaxpr texts and constants identical, 6 of 6 bindings identical;
+- tiers 1+2 of the head (520 files, lane A, against main's record with this build's seven changed tier-1/2 files
+  measured cold and folded): every file's outcome as recorded, except small-fixes' four files, which now pass where the
+  record has failures (its own rows, measured at its landing);
+- the declared test IDs: 5 removed (the re-parametrized rows), and additions in this build's four test files and in
+  `test_cell_owned_compartments.py`, whose contract-wide row gains the two new hooks (`changed_volume_nodes`,
+  `slot_occupants`: a declaration that defines either is refused); small-fixes adds or removes none.
+So every world without a changer of turnover's read fields keeps its program, as §3.9 argued by construction.
