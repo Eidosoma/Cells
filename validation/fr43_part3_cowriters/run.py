@@ -51,8 +51,8 @@ host checks refuse; `harness`, a trace of TRACE_FAULT events.
 Run with /mnt/workspaces/Cells/venv-cpu/bin/python, PYTHONPATH=src:. and JAX_ENABLE_X64=1:
 - `python -m validation.fr43_part3_cowriters.run one --inputs FILE --run NAME --out DIR`;
 - `... run launch --inputs FILE --out DIR --cpus 6,7 [--runs NAME ...] [--retry]`;
-- `... run parse --inputs FILE --out DIR` (parse-only: every registered definition, its echo
-  against the inputs, nothing compiled).
+- `... run parse --inputs FILE --out DIR` (every registered and retry definition parsed, its echo
+  against the inputs, its window and the engine's windowed plan; nothing compiled).
 """
 
 import argparse
@@ -387,11 +387,12 @@ def readout(kind, lay, p, row):
     )
 
 
-def events_of(lay, last, first_index, start_counts, rows):
+def events_of(lay, last, first_index, start_counts, start_channels, rows):
     """(events, pools_at_event, events_total, the counts' check, faults): the trace's events from
     `first_index` at the last accepted row (as many as it holds), counts_after by the declared
-    jumps from `start_counts`, checked against the engine's counts at every sample row. A
-    truncated trace or a count that departs is a fault (kind harness), never raised here."""
+    jumps from `start_counts`, checked at every sample row against the engine's counts and its
+    per-channel event totals (from `start_channels`). A truncated trace or a count that departs is
+    a fault (kind harness), never raised here."""
     faults = []
     total = int(np.asarray(last.integer_events)[0])
     capacity = int(np.asarray(last.integer_trace_time_s).shape[1])
@@ -417,10 +418,16 @@ def events_of(lay, last, first_index, start_counts, rows):
         if fired - first_index > len(after) or fired < first_index:
             continue  # Past the trace, or before the first listed event: not comparable.
         derived = after[fired - first_index - 1] if fired > first_index else list(start_counts)
+        channels = list(start_channels)
+        for j in index[: fired - first_index]:
+            channels[j] += 1
         compared += 1
-        if derived != held:
-            faults.append(f"the counts after event {fired - 1} are {derived}; the engine holds "
-                          f"{held} at {t} s")  # fmt: skip
+        held_channels = [int(c) for c in np.asarray(row.integer_channel_events)[0]]
+        if derived != held or channels != held_channels:
+            faults.append(
+                f"after event {fired - 1}: counts {derived} and channel totals {channels}; the "
+                f"engine holds {held} and {held_channels} at {t} s"
+            )
             break
     channel_totals = [int(c) for c in np.asarray(last.integer_channel_events)[0]]
     cells = np.asarray(last.integer_trace_cell_fmol)[0, first_index : first_index + len(times), 0]
@@ -547,7 +554,7 @@ def echo(definition, kind):
         )
         out["gene"] = dict(
             template_copies=chain["template"]["copies"],
-            machines_copies=pool["machines"],
+            machines_copies=whole(pool["machines"]),
             product=chain["product"],
             residues=chain["residues"],
             stages=chain["stages"],
@@ -574,6 +581,12 @@ def echo(definition, kind):
         copy=int(copy_index.group(1)),
     )
     return out
+
+
+def whole(value):
+    """A count the engine holds as a float: its integer where it is a whole number (40.0 is 40),
+    else the float as parsed, which then departs from a registered integer."""
+    return int(value) if isinstance(value, float) and value.is_integer() else value
 
 
 def echo_keys(inputs, kind):
@@ -784,7 +797,7 @@ class Run:
         self.inputs, self.run, self.kind, self.raw, self.entry = inputs, run, kind, raw, entry
         self.snapshots, self.progress, self.extra, self.fault = snapshots, Progress(), {}, fault
         self.spec = self.model = self.p = self.lay = None
-        self.first_index, self.start = 0, None
+        self.first_index, self.start, self.start_channels = 0, None, None
 
     def execute(self):
         from cells.definitions.specs import parse_spec
@@ -830,7 +843,9 @@ class Run:
                 time_s=float(resumed.time), step_index=int(resumed.step_index), through=THROUGH
             )
             self.first_index = int(np.asarray(loaded.checkpoint.state.integer_events)[0])
-            self.start = [int(c) for c in np.asarray(loaded.checkpoint.state.integer_counts)[0]]
+            held = loaded.checkpoint.state
+            self.start = [int(c) for c in np.asarray(held.integer_counts)[0]]
+            self.start_channels = [int(c) for c in np.asarray(held.integer_channel_events)[0]]
             self.progress.rows = {}
             observe(loaded.spec, policy, self.progress, checkpoint=loaded.checkpoint)
         self.progress.stage = "export"
@@ -859,14 +874,15 @@ class Run:
             return []  # Refused before its first window: nothing accepted.
         steps = sorted(progress.rows)
         rows = [progress.rows[k] for k in steps]
-        start = self.start
+        start, channels = self.start, self.start_channels
         if start is None:
             if not steps or steps[0] != 0:
                 return ["the run holds no t = 0 row"]
             start = [int(c) for c in np.asarray(rows[0][1].integer_counts)[0]]
+            channels = [int(c) for c in np.asarray(rows[0][1].integer_channel_events)[0]]
         last = progress.final.state
         events, pools, total, checked, faults = events_of(
-            self.lay, last, self.first_index, start, rows
+            self.lay, last, self.first_index, start, channels, rows
         )
         values = [readout(self.kind, self.lay, self.p, row) for _, row in rows]
         entry["t"] = [t for t, _ in rows]
@@ -927,6 +943,28 @@ def registered_echo(inputs, run):
     return out
 
 
+def plan(inputs, run, spec):
+    """The run's window (policy_for: every sample, and a restart's checkpoint, on the grid) and
+    the engine's windowed plan (plan_windows: the clock, its checks and the storage estimate),
+    with nothing compiled; and each sample's largest relative offset from its grid instant."""
+    from cells.execution.grid import EventGrid
+    from cells.execution.windows import plan_windows
+
+    join = None
+    if run.get("variant") == RESTART:
+        join = float(inputs["restart"][run["world"]]["time_s"])
+    policy = policy_for(spec, join)
+    planned = plan_windows(spec, policy)
+    grid = EventGrid(spec)
+    offset = max(
+        abs(grid.instant(float(t)) - float(t)) / max(abs(float(t)), 1e-300)
+        for t in spec.experiment.observation_times
+        if float(t) != 0.0
+    )
+    return dict(planned=True, window_steps=policy.window_steps, windows=planned.window_count,
+                sample_offset_relative=offset)  # fmt: skip
+
+
 def parse_all(inputs_path, out):
     """Every registered and retry run's definition, parsed with nothing compiled: its refusal at
     the definition (the population's step bound among them), or its echo against the inputs."""
@@ -946,6 +984,12 @@ def parse_all(inputs_path, out):
                            keys_match=set(found) == echo_keys(inputs, kind))  # fmt: skip
             except Exception as error:
                 row.update(parsed=False, refusal=refusal(error, "parse", 0.0))
+                rows.append(row)
+                continue
+            try:
+                row.update(plan(inputs, run, spec))
+            except Exception as error:
+                row.update(planned=False, plan_refusal=refusal(error, "parse", 0.0))
             rows.append(row)
     summary = dict(
         inputs=str(inputs_path),
@@ -954,6 +998,10 @@ def parse_all(inputs_path, out):
         parsed=sum(r["parsed"] for r in rows),
         refused=[r for r in rows if not r["parsed"]],
         departing=[r for r in rows if r["parsed"] and (r["departs"] or not r["keys_match"])],
+        unplanned=[r for r in rows if r["parsed"] and not r["planned"]],
+        largest_sample_offset_relative=max(
+            (r["sample_offset_relative"] for r in rows if r.get("planned")), default=0.0
+        ),
     )
     Path(out).mkdir(parents=True, exist_ok=True)
     (Path(out) / "parse.json").write_text(dumps(plain(dict(summary, rows=rows))))
@@ -1042,7 +1090,7 @@ def main(argv=None):
         return 0 if all(d["exit"] == 0 for d in done) else 1
     summary = parse_all(args.inputs, args.out)
     print(json.dumps({k: (len(v) if isinstance(v, list) else v) for k, v in summary.items()}))
-    return 0 if not summary["departing"] else 1
+    return 0 if not summary["departing"] and not summary["unplanned"] else 1
 
 
 if __name__ == "__main__":

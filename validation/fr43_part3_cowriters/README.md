@@ -8,9 +8,9 @@ format sample. It reads `spec/` and its own code. It does not read the reference
 | File | What it does |
 | --- | --- |
 | `worlds.py` | Each run's composite definition from an inputs file of the spec's layout, with `check_world` for SPEC.md §1's structure: one cell, one finite node, one patch with one site, no face, junction, channel or pump, and every patch's permeability zero |
-| `run.py` | One run per process, cold: the windowed run with every host check, the restart through snapshot files, the Lie plant under its patch, the record (TABLE.md §3's entry); the launcher; `parse`, every definition parsed and its echo compared with the inputs, with nothing compiled |
+| `run.py` | One run per process, cold: the windowed run with every host check, the restart through snapshot files, the Lie plant under its patch, the record (TABLE.md §3's entry); the launcher; `parse`, every definition parsed, its echo compared with the inputs, and its windows planned by the engine, with nothing compiled |
 | `lie.py` | The Lie plant's host patch (P3): the composite's second halves in declared order |
-| `table.py` | The engine table from the records alone: `table/` and, for owed families, `table-retry/`, each with its SHA256SUMS |
+| `table.py` | The engine table from the records alone: `table/` after the first pass, and later `table-retry/` alone for the owed families (`--owed`), leaving `table/` as hashed; each folder with its SHA256SUMS |
 | `sample.py` | The format sample (TABLE.md §5): its runs, the scrub, and its README's key list |
 
 ## The operators, in declared order
@@ -40,12 +40,15 @@ The rehearsal compares `operators` with this list (CRITERIA.md §4.1), in place 
   event (`pools_at_event`).
 - **`integer_ledger`** is Σ_k w_k n_k from the engine's `integer_counts` at each sample.
 - **`counts_after`.** On this head the exporter forms it by applying each listed channel's declared jump to the
-  engine's own counts, starting at t = 0 or at the checkpoint. It checks the result against the engine's
-  `integer_counts` at every sample. A mismatch is a `harness` refusal.
+  engine's own counts, starting at t = 0 or at the checkpoint. At every sample it checks the result against the
+  engine's `integer_counts`, and the listed channels against its per-channel totals (`integer_channel_events`). A
+  mismatch is a `harness` refusal.
   - The user chose (1) instead: the engine records the counts (branch `fr43-trace-counts`, its own landing).
   - Once (1) lands, the exporter copies `integer_trace_counts` and derives nothing.
 - **`inputs`** is read back from the definition the engine parsed (its `to_dict`), with exactly `echo`'s keys:
   - `copy` comes from the site's ID (`site_c<copy>`);
+  - `machines_copies` is the pool's machines as the engine parsed them, a float, written as its integer when whole
+    (40.0 is 40);
   - `first` comes from the operators' declared order;
   - `rate_unit` comes from the reaction's order (mass action's k in mM^(1−q)/s);
   - the degradation's `monomers` is the declared count per residue times `residues`;
@@ -91,8 +94,11 @@ at the lead's word of 26 November 2026. Nothing else of `references/` is read.
 
 ## What the build checked (26 November 2026, development runs, nothing judged)
 
-- **`run.py parse`** on `spec/inputs.json`: all 250 registered runs and the 32 retry runs that CRITERIA.md §7's rule
-  names parse, none refused. Each echo equals the inputs by CRITERIA.md §4.1's comparison.
+- **`run.py parse`** on `spec/inputs.json` (35 s, nothing compiled) covers all 250 registered runs and the 32 retry
+  runs that CRITERIA.md §7's rule names.
+  - All parse, none refused, and each echo equals the inputs by CRITERIA.md §4.1's comparison.
+  - The engine plans every one's windows (`plan_windows`: the clock, its checks and the storage estimate).
+  - Every sample is exactly a grid point of its run (relative offset 0).
   - The engine's own dt a₀,max at the coarsest step is the placement's: W5-exact 0.082 and W6 0.703. W5's site is
     unchecked, since S has no static bound.
   - The same on the invented inputs: 131 of 132 parse, and the invented `refused` run is refused (kind `domain`).

@@ -169,7 +169,10 @@ def keys(folder, tables=None):
             if tables is not None and path.name not in tables:
                 continue
             made = json.loads(path.read_text())
-            for entry in made.pop("runs").values():
+            entries = made.pop("runs")
+            found.setdefault("table.runs", set()).add(names[type(entries)])
+            for entry in entries.values():
+                found.setdefault("table.runs.<run name>", set()).add(names[type(entry)])
                 for k, v in entry.items():
                     walk(f"entry.{k}", v, k)
             for k, v in made.items():
@@ -244,7 +247,8 @@ def readme(folder, listed):
         "## Keys and types, to the leaf",
         "",
         "`table.<key>` is a table's top level and `entry.<key>` a run's entry (every run's, of "
-        "every table). `[]` is an item of a list. A map keyed by an identifier shows its keys as "
+        "every table): `table.runs.<run name>` is an entry, whose keys are listed as "
+        "`entry.<key>`. `[]` is an item of a list. A map keyed by an identifier shows its keys as "
         "a placeholder: " + ", ".join(sorted(set(MAPS.values()))) + ". A path with several types "
         "holds one of them by the kind of run (a null `refusal` in a completed run, for "
         "instance). JSON's types: object, array, string, integer, number (with a fraction), "

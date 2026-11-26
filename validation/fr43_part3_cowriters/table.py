@@ -1,13 +1,16 @@
 """FR-43 part 3's co-writers registration: the engine table from the runs' records alone (the
 builder's exporter; spec/TABLE.md, the protocol's §6, step 6).
 
-    python -m validation.fr43_part3_cowriters.table --inputs FILE --out DIR [--owed retry_owed.json]
+    python -m validation.fr43_part3_cowriters.table --inputs FILE --out DIR
+    python -m validation.fr43_part3_cowriters.table --inputs FILE --out DIR --owed retry_owed.json
 
-Reads every record under DIR/records/ (run.py's, one per run) and writes:
+Reads every record under DIR/records/ (run.py's, one per run). The first form, the first pass's
+tables, writes DIR/table/; the second, after the judge's first pass and the retry runs, writes
+DIR/table-retry/ alone and leaves DIR/table/ as it was hashed:
 - DIR/table/table_<world>.json for each world of the inputs: `kind`, `arm`, `units`, `runs` (each
   record's entry under its run's name, with `record`, the record's path under DIR, and
   `record_sha256`, its file's sha256) and `missing` (the world's registered runs with no record);
-- DIR/table-retry/table_<world>-retry.json, only with --owed: the owed families' retry runs
+- DIR/table-retry/table_<world>-retry.json, with --owed: the owed families' retry runs
   (CRITERIA.md §7's names) in the same shape;
 - a SHA256SUMS in each folder: one line per table file, its sha256, two spaces, its name.
 
@@ -126,15 +129,12 @@ def main(argv=None):
     parser.add_argument("--owed", type=Path, help="retry_owed.json (CRITERIA.md §7)")
     args = parser.parse_args(argv)
     main_tables, retry_tables = tables(args.inputs, args.out, args.owed)
-    write(args.out / "table", main_tables)
-    if retry_tables:
-        write(args.out / "table-retry", retry_tables)
-    print(json.dumps({
-        "table": {n: dict(runs=len(t["runs"]), missing=len(t["missing"]))
-                  for n, t in main_tables.items()},
-        "table-retry": {n: dict(runs=len(t["runs"]), missing=len(t["missing"]))
-                        for n, t in retry_tables.items()},
-    }))  # fmt: skip
+    folder, files = ("table-retry", retry_tables) if args.owed else ("table", main_tables)
+    if not files:
+        parser.error("no owed family: the retry folder would be empty")
+    write(args.out / folder, files)
+    print(json.dumps({folder: {n: dict(runs=len(t["runs"]), missing=len(t["missing"]))
+                               for n, t in files.items()}}))  # fmt: skip
     return 0
 
 
