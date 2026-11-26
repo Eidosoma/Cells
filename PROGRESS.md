@@ -14,6 +14,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
+- **26 November, evening (D395): FR-43 part 3's co-writers engine build is landed** (4be34f74, tag
+  `fr43-part3-cowriters-landed-2026-11-26`): rules for which writers may share a row, with a clean D148 round. The registered
+  comparison is next (the judge's rulings are made, D394; the format sample comes first). FR-65 runs its round now, with
+  the small fixes stacked (D393). The BETSE file removal (D394) follows the test slimming's landing; FR-45's build starts next.
 - **26 November (D390): the legacy cleanup is landed** (805c48a4; records 67c0de27). One full gate, every difference attributed;
   tier 3 first failed on ID-move defects, fixed. Next: FR-43 part 3's co-writers (engine build, then the registered
   comparison as tagged), FR-65 alongside, the heavy tests slimmed, tier 3 weekly. The viewer is on hold today.
@@ -69,9 +73,11 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     external-potassium arm stays development-only, and FR-64's build is now free.
   - **FR-38's second comparison has passed and is landed** (D381, D382; 4039dcba), beside D313's failed verdict. The three
     uncovered readout controls go to a later registration, FR-38 v3 (D354).
-  - **FR-43 part 3's co-writers** (D328, D383): the note's four questions are accepted (`fr43-part3-cowriters`, c82d8d42). The spec
-    and the code-blind references are being written; the build waits for the cleanup.
-  - **FR-45's judge** (D375, D376): written after the rename; W2 and W7 stay on the wash or are pinned.
+  - **FR-43 part 3's co-writers** (D328, D383, D394, D395): the engine build is landed (4be34f74). The criteria and code-blind
+    references are tagged; the blind judge's scorer passes C0 under the lead's rulings (`fr43-cowriters-judge`, cd8137ed). Next:
+    the format sample, the judge's tag, then the registered comparison.
+  - **FR-45** (D327, D377, D394): its judge is the builder's own, written with its build; the build starts next, once the
+    lead has ruled which tag binds its registration. W2 and W7 stay on the wash or are pinned.
   - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;
     C4's four-way form by amendment once admission by species lands.
   - **GJ-N1** (D330, D337, D338, D388): judged on 25 November 2026, passed on the line and on the 2D field. The references land with the next landing; the 3D field is not run.

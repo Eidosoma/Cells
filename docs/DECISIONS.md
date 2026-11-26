@@ -13358,3 +13358,43 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - One open ruling takes the easier reading, and is disclosed: R compares numerically, so −0.0 is zero. The judge lists every −0.0 it accepts.
   - The rulings file is committed on the judge's branch, and the judge's tag follows the protocol's own order: the format sample, hashed by the
     lead, is read for structure only, then any dated change to the contract, then the tag.
+
+## D395: FR-43 part 3's co-writers engine build is landed; the lead's rulings on its three open items; crossrev's record gains one world
+
+2026-11-26, written at 17:29 UTC.
+
+- **Landed** at 4be34f74 (tag `fr43-part3-cowriters-landed-2026-11-26`), from the head d4da1931. Its last two commits change only the design note,
+  which no test reads; every gate result below ran on 34928328. The landing's trial merge ran the seven changed tier-1 and tier-2 files and the guard
+  set: 605 passed.
+- **What it builds** (155293d0):
+  - the contract's row moves, `written_rows`, `sole_rows` and `SHARED_ROW_POTENTIAL` (Q1 (a));
+  - `check_row_writers` in the three guards;
+  - the row moves of the eleven split writers;
+  - `production_bound` declared by turnover, the reactions, exchange, the population and the producer;
+  - the population's hazard bound summed over its conversions;
+  - the gene unit's rows claimed by `sole_rows`;
+  - one volume rule for the producers' bounds.
+
+  The co-writer worlds are newly admitted, and sites on a listed row are now refused (L1).
+- **The D148 round** at 34928328, against c52d0998:
+  - crossrev: 10 of 11 sets are identical. In reactions, the 8 existing worlds are identical, and the listing adds exactly the new world's nine files. The
+    lead checked that listing.
+  - G1: 113 of 113 identical.
+  - FR's set passes before and after.
+  - The judges' derivative programs: 257 files identical. The worlds outside crossrev: 56 files identical.
+  - The host sweep of 238 definitions and FR-49's worlds shows only the designed changes. R1 keeps its 65 keys.
+  - Tiers 1 and 2: 520 files, none changed. Tier 3's statistics file passes 12 of 12.
+  - The 21 new refusal rows each fail with their check planted away.
+  - Test IDs: 53 added in 8 files and 1 removed, all declared.
+- **Crossrev's record** (`record-cda5dc82`) gains the new world `reactions_integer_source`. Its nine files were copied byte for byte from the builder's
+  run, which was set beside the record (the lead's L4 (c)). The addition is dated in the record's `ADDED-20261126-reactions-cowriters.txt`. Changing the
+  gate's verdict to accept declared additions is a separate tooling item for later, never inside the landing it judges.
+- **The lead's rulings on the note's three open items (§10):**
+  1. A gene unit with no pool, chain, degradation, transfer or export no longer asks the shared-row question. Accepted: no definition has one.
+  2. The gene unit's and the producer's branches read rows, not species. An operator that declares a listed species or the precursor without writing
+     it is now admitted, where it was refused before. Accepted as designed: no swept definition has one.
+  3. The two new refusals by name are accepted: the producer refuses site occupancy on its precursor, and the gene unit refuses a transfer of a listed
+     row at a compartment's node.
+- **Process:** two of the builder's privacy scans ran just after their commits instead of before. All printed zeros.
+- **Next:** the registered comparison's second part, up to the format sample. The sample goes to the lead, then the judge reads it for structure only,
+  then the judge's tag and the registration tag. FR-65 runs its D148 round on main with the small fixes stacked.
