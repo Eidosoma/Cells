@@ -30,7 +30,7 @@ Water moves down the hydrostatic-minus-osmotic pressure difference. At frozen so
 - [CellsProofs.Transport.OsmoticWater.ideal_bath_stall](../CellsProofs/Transport/OsmoticWater.lean#L162)
 - [CellsProofs.Transport.OsmoticWater.symport_drive_change](../CellsProofs/Transport/OsmoticWater.lean#L176)
 
-Direct proof subject `cells.ideal_osmosis_linear_compliance_water@1`
+Direct proof subject `cells.operator.ideal_osmosis_linear_compliance_water@1`
 
 ## Numerical comparison
 

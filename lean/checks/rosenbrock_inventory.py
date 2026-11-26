@@ -27,7 +27,10 @@ def recorded_run(world, times, directory):
     records.write_run(directory, run)
     record = json.loads((directory / "run.json").read_text())
     assert record["status"] == "complete" and record["events"] == []
-    assert record["engine_models"]["representation"] == "cells.rate_equations@1"
+    assert (
+        record["engine_models"]["representation"]
+        == "cells.assembly_representation.rate_equations@1"
+    )
     assert record["ledger"]["closes"] and record["moieties"]["closes"]
     assert record["rows"]["places"][:3] == ["A@pool", "B@pool", "C@pool"]
     with np.load(directory / "rows.npz") as rows:

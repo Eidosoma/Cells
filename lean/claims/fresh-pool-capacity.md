@@ -15,7 +15,7 @@ For a dilute species with count M + 1, using the last log-factorial entry M in i
 
 - [CellsProofs.Chemistry.VesiclePopulation.replacement_capacity_gap](../CellsProofs/Chemistry/VesiclePopulation.lean#L153)
 
-Direct proof subject `cells.pool_replacement@1`, `cells.serial_transfer@1`
+Direct proof subject `cells.operator.pool_replacement@1`, `cells.operator.serial_transfer@1`
 
 Uses [A finite-pool wash preserves assembly cargo and books the two bath energies](pool-replacement.md) · [Whole-molecule counts set the ideal mixing cost of membrane entry](assembly-ideal-mixing.md)
 

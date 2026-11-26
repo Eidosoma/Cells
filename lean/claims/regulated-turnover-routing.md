@@ -21,7 +21,7 @@ A product of route factors in [0, 1] keeps the applied rate between zero and its
 - [CellsProofs.Transport.RegulatedAvailability.ramp_refinement_lower](../CellsProofs/Transport/RegulatedAvailability.lean#L160)
 - [CellsProofs.Transport.RegulatedAvailability.ramp_midpoint_difference](../CellsProofs/Transport/RegulatedAvailability.lean#L182)
 
-Direct proof subject `cells.species_regulated_availability@2`
+Direct proof subject `cells.operator.species_regulated_availability@2`
 
 Proof sources [Midpoint evaluation for a self-moved source](../../src/cells/models/pump_composite.py#L1641)
 

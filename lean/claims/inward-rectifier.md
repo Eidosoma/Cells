@@ -26,7 +26,7 @@ On an open route the outward current changes sign at the Nernst potential and di
 - [CellsProofs.Transport.InwardRectifier.negative_slope_iff](../CellsProofs/Transport/InwardRectifier.lean#L111)
 - [CellsProofs.Transport.InwardRectifier.slope_bound](../CellsProofs/Transport/InwardRectifier.lean#L140)
 
-Direct proof subject `cells.inward_rectifier_linear_driving_force@1`
+Direct proof subject `cells.route.inward_rectifier_linear_driving_force@1`
 
 Proof sources [Mathlib’s lower bound on the hyperbolic sine](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Trigonometric/Deriv.lean#L636)
 

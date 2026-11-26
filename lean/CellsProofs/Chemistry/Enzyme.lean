@@ -3,7 +3,7 @@ import Mathlib.Tactic.DeriveFintype
 
 /-! # Closed enzyme binding and catalysis
 
-The enzyme fixture of `local_species_reactions@1` has two reactions at one cell,
+The enzyme fixture of `cells.operator.local_species_reactions@1` has two reactions at one cell,
 `E + S ⇌ C` and `C → E + P`. The complex carries one enzyme unit and one
 substrate unit. The product retains the substrate unit.
 -/

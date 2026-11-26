@@ -1,5 +1,18 @@
 # Cells proof comparisons
 
+<a id="family-id-migration"></a>
+
+## 26 November 2026 · Proof coverage and replays after the engine cleanup
+
+At `805c48a4`, the declarations manifest lists 63 laws, 35 operators, six kinds and 14 models. All 55 laws and 35 operators in the previous catalog have current IDs. The existing weighted channel-block proof also matches a live declaration, bringing direct coverage to **56 of 63 laws and 35 of 35 operators**. The seven open laws are the assembly cycle observable, the CaV1.2 channel, ATP-driven transport version 2, two reversible symports, sodium–calcium exchange and the Hill product factor. The catalog places each in its scientific category. [Coverage](COVERAGE.md#registered-laws) · [Engine manifest](https://github.com/Eidosoma/Cells/blob/805c48a46cc21c54fb421391eae65278840b6325/src/cells/registry/declarations.py#L619)
+
+The 195 recorded comparisons retain their original IDs, revisions and inputs. The coverage table uses the engine's rename map when matching them to current declarations. The checksum audit from the cleanup's first parent, `11d6b953`, to the landed checkout flagged at least one changed input for 191 comparisons across 132 claims. The 74 paired wet-lab assessments retain their measurements and verdicts. [Source-audit command](README.md#checking-whether-the-engine-code-changed) · [Translation for frozen inputs](../validation/id_table.py) · [Paired measurements](WET_LAB_EVIDENCE.md)
+
+The migration covered 32 comparison drivers. All 109 top-level check modules imported. Of 35 CPU checks across the migrated drivers, 33 passed and two reproduced the existing numerical findings below. XC0 passed all 17 charge-admission and refusal cases. The ten Na/K channel declarations matched their Lean constructors, and the FR-38 reader recovered the producer balances from a pre-rename checkpoint. XC0, the paired law replays, the preparation controls and the FR-44 tracer wash reproduced their saved result files after translating ID metadata. Assembly mixing gave identical results before and after translation of the registered input. The Kir clamp used synthetic inputs for this check. The run bundle `lean-cleanup-parity-20261126` indexes the frozen sources and individual results in `verification.json`. [Charge admission](checks/charge_anchor.py) · [Channel declarations](checks/ion_channels.py) · [Checkpoint reader](checks/producer_replacement.py) · [Assembly mixing](checks/assembly_mixing.py)
+
+- Rapid binding retained five backend-specific feasibility discrepancies at float64 boundaries. Both backends admitted an exact zero margin and refused a positive margin of 2⁻⁵⁴ mM. NumPy also admitted the negative-margin control. [Binding feasibility](claims/binding-equilibrium-feasibility.md#numerical-comparison)
+- GARD pair catalysis version 1 again refused the two extreme-ratio steps. Their exact heat was zero and the computed residuals were 2.33 × 10⁻¹⁰ and 0.693147 kBT. Both ordinary controls passed. [Pair heat](claims/gard-pair-heat.md#numerical-comparison)
+
 <a id="fr51-concentration-bounds"></a>
 
 ## 24 November 2026 · How concentration changes the flux of a blocked channel
@@ -39,6 +52,8 @@ Two independent nodal sodium-channel studies found that extracellular protons bl
 <a id="fr51-panama-holdouts"></a>
 
 ### Panama external potassium · inputs for the lead’s D353 registration
+
+**26 November 2026, trace identification.** Two strokes are visible below the circled 10 in panel E. The figure legend discusses overlap between measurements and fits when describing panel D. It gives no stroke key for panel E. The printed markers and legend therefore leave the measured 10 mM trace unresolved. Section 3 of the tagged registration stops both readings when the sheet cannot identify the traces. D382 records why proceeding with 20 mM alone would remove one way to block a pass, and leaves that change to a prospective erratum. The label check used no held-out current values. [Figure and legend](https://pmc.ncbi.nlm.nih.gov/articles/PMC1796793/#fig03) · [Tagged registration, section 3](https://github.com/Eidosoma/Cells/blob/28e8e73473e59a1b9cf96a3a773446057c8ba56c/validation/fr51_two_potassium/REGISTRATION.md#L46-L56) · [D382](https://github.com/Eidosoma/Cells/blob/5cf41d7c5f3db35e19c5249e78ed9af303c6a5ae/docs/DECISIONS.md#L12883-L12890)
 
 The prospective comparison is pinned to the FR-51 landing `955765ef`, before the FR-64 change of declaration. Its composition is `kleak_always_open@1` with the internal spermine blocker referenced to K reversal, divided by the matched free population current wherever it is nonzero. The absolute-voltage control uses the same host and 5.4 mM training curve. The earlier exploratory fit used matched Kir gates. Its saved calibration supplied the two weights (one is the complement), two midpoint voltages and two effective valences. The half crossing for the registration comes from a fresh reading of the 5.4 mM trace. The two reserved normalized-current curves at 10 and 20 mM have never been scored. Search previously saw the full figure, the intermediate reversals and the published four-level fit. Both reserved responses come from one study. [Calibration-only file](checks/data/panama2006_external_k_anchor.json) · [D356 exposure and reservation](https://github.com/Eidosoma/Cells/blob/f8c6c32665c1ba8c0bcd8b687e4a7f961dc1cc5e/docs/DECISIONS.md#L11605-L11616) · [D361 revision ruling](https://github.com/Eidosoma/Cells/blob/f8c6c32665c1ba8c0bcd8b687e4a7f961dc1cc5e/docs/DECISIONS.md#L11841-L11843)
 

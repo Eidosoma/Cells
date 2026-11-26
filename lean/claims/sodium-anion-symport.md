@@ -24,7 +24,7 @@ A forward cycle imports n sodium ions and one monovalent anion. The two source-s
 - [CellsProofs.Transport.SodiumAnionSymport.capacity_scaling](../CellsProofs/Transport/SodiumAnionSymport.lean#L73)
 - [CellsProofs.Transport.SodiumAnionSymport.external_shift_ratio](../CellsProofs/Transport/SodiumAnionSymport.lean#L80)
 
-Direct proof subject `cells.na_anion_symport_factored@1`
+Direct proof subject `cells.cycle.na_anion_symport_factored@1`
 
 Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 

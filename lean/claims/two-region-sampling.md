@@ -19,7 +19,7 @@ A finite draw has the chamber’s mean concentration exactly when the starting c
 - [CellsProofs.Tissue.RegionalSampling.representative_iff](../CellsProofs/Tissue/RegionalSampling.lean#L52)
 - [CellsProofs.Tissue.RegionalSampling.enrichment_iff](../CellsProofs/Tissue/RegionalSampling.lean#L61)
 
-Direct proof subject `cells.scheduled_compartment_wash@1`
+Direct proof subject `cells.operator.scheduled_compartment_wash@1`
 
 Proof sources [Cells single-region wash inventory, summed across a finite set](../CellsProofs/Tissue/CompartmentWash.lean#L16) · [Mathlib fraction equality for nonzero denominators, imported for the two-region criterion](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L426-L427)
 

@@ -21,7 +21,7 @@ Each passive transfer changes one vesicle and the single bath by opposite intege
 - [CellsProofs.Chemistry.SharedPool.relabel_rate](../CellsProofs/Chemistry/SharedPool.lean#L53)
 - [CellsProofs.Chemistry.SharedPool.fractional_gain](../CellsProofs/Chemistry/SharedPool.lean#L58)
 
-Direct proof subject `cells.shared_pool@1`
+Direct proof subject `cells.population.shared_pool@1`
 
 Uses [Lipid insertion scales with membrane area and diffusion-limited capture scales with radius](vesicle-phase-exchange.md) · [Neutral solute entry scales with area and spherical washout with inverse radius](vesicle-permeation.md)
 

@@ -23,7 +23,7 @@ For an open route, inward flux is positive exactly when hOut exceeds hIn × B(�
 - [CellsProofs.Transport.ProtonLeak.outside_change](../CellsProofs/Transport/ProtonLeak.lean#L138)
 - [CellsProofs.Transport.ProtonLeak.strictMono_outside](../CellsProofs/Transport/ProtonLeak.lean#L145)
 
-Direct proof subject `cells.proton_constant_field_leak@1`
+Direct proof subject `cells.route.proton_constant_field_leak@1`
 
 Proof sources [Cells constant-field definitions](../CellsProofs/Transport/ConstantField.lean) · [Goldman’s constant-field model (1943)](https://doi.org/10.1085/jgp.27.1.37) · [Mathlib positive product, imported for strict outside sensitivity](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/GroupWithZero/Unbundled/Basic.lean#L34-L37)
 

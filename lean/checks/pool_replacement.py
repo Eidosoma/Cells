@@ -54,7 +54,10 @@ def pulse_and_wash(directory):
         edges = [e for e in tables["edges"] if e.event == stop["id"]]
         saved_edges = [(e.relation, e.from_, e.to, e.species, e.weight) for e in edges]
         assert sorted(saved_edges) == sorted(expected_edges)
-        assert all(e.mode == "event" and e.declared_by == "cells.pool_replacement@1" for e in edges)
+        assert all(
+            e.mode == "event" and e.declared_by == "cells.operator.pool_replacement@1"
+            for e in edges
+        )
 
         # This fixture has an ideal bath and zero standard solution potentials for every species.
         sink, work = (pool_energy(c.values(), world.volume("pool")) for c in (old, fresh))

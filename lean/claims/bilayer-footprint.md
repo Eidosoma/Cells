@@ -23,7 +23,7 @@ The integer footprint adds across lipid inventories. Refining the area unit pres
 - [CellsProofs.Chemistry.Vesicle.sphere_area](../CellsProofs/Chemistry/Vesicle.lean#L72)
 - [CellsProofs.Chemistry.Vesicle.equal_leaflet_footprint_iff](../CellsProofs/Chemistry/Vesicle.lean#L200)
 
-Direct proof subject `cells.bilayer_geometry@1`
+Direct proof subject `cells.assembly_geometry.bilayer_geometry@1`
 
 Proof sources [Mathlib cross-multiplication at nonzero denominators, imported for the leaflet area criterion](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L426-L427)
 

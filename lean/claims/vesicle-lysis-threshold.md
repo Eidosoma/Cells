@@ -18,7 +18,7 @@ When molecular areas and the physical floor are preserved, two choices of area q
 - [CellsProofs.Chemistry.Vesicle.no_new_rupture](../CellsProofs/Chemistry/Vesicle.lean#L184)
 - [CellsProofs.Chemistry.Vesicle.fixed_survival_error](../CellsProofs/Chemistry/Vesicle.lean#L190)
 
-Direct proof subject `cells.bilayer_geometry@1`, `cells.osmotic_lumen@1`
+Direct proof subject `cells.assembly_geometry.bilayer_geometry@1`, `cells.free_energy.osmotic_lumen@1`
 
 Uses [Bilayer area is half the sum of the molecular footprints in its two leaflets](bilayer-footprint.md) · [Membrane area caps the volume that minimizes a vesicle’s osmotic free energy](osmotic-vesicle-volume.md)
 

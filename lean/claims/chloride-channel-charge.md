@@ -19,7 +19,7 @@ For the gate-free Cl⁻ population, outward material flux J produces outward ele
 - [CellsProofs.Transport.IonChannels.other_flux](../CellsProofs/Transport/IonChannels.lean#L202)
 - [CellsProofs.Transport.IonChannels.patch_booking](../CellsProofs/Transport/IonChannels.lean#L211)
 
-Direct proof subject `cells.clleak_always_open@1`
+Direct proof subject `cells.channel.clleak_always_open@1`
 
 Uses [Voltage and free proton concentrations set the leak reversal](proton-leak.md) · [Only boundary transfers change a region’s inventory during transport](transfer-inventory.md)
 

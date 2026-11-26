@@ -22,7 +22,7 @@ At fixed free ligand activities, the fraction in each form equals its effective 
 - [CellsProofs.Chemistry.BindingEnsemble.binding_fraction_from_isomers](../CellsProofs/Chemistry/BindingEnsemble.lean#L68)
 - [CellsProofs.Chemistry.BindingEnsemble.equal_state_log_weight](../CellsProofs/Chemistry/BindingEnsemble.lean#L80)
 
-Direct proof subject `cells.rapid_binding@1`
+Direct proof subject `cells.binding.rapid_binding@1`
 
 Proof sources [Physlib finite partition, specialized on the optional v4.22.0 pin](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/Finite.lean#L119-L125) · [Physlib single-state probability](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/Basic.lean#L388-L394) · [Physlib Boltzmann-constant axiom](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L20-L30) · [Cells specialization compiled with Physlib](../checks/physlib/BindingEnsemble.lean)
 

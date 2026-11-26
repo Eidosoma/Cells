@@ -16,7 +16,7 @@ The enabled supply stalls exactly when free matrix NADH/NAD equals the held redu
 - [CellsProofs.Chemistry.MitochondrialReactions.supply_stall](../CellsProofs/Chemistry/MitochondrialReactions.lean#L73)
 - [CellsProofs.Chemistry.MitochondrialReactions.supply_work](../CellsProofs/Chemistry/MitochondrialReactions.lean#L89)
 
-Direct proof subject `cells.held_reductant_supply@1`
+Direct proof subject `cells.cycle.held_reductant_supply@1`
 
 Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 

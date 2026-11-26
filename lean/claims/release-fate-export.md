@@ -16,7 +16,7 @@ For a fate row filled by a single release, amount gain equals cumulative detachm
 - [CellsProofs.Chemistry.TerminalRelease.fate_balance_step](../CellsProofs/Chemistry/TerminalRelease.lean#L58)
 - [CellsProofs.Chemistry.TerminalRelease.lossless_gain](../CellsProofs/Chemistry/TerminalRelease.lean#L63)
 
-Direct proof subject `cells.templated_polymerisation@1`
+Direct proof subject `cells.operator.templated_polymerisation@1`
 
 Proof sources [Cells release updates, specialized locally as the exact single-fate balance](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1331-L1353) · [Public reader’s required loss series](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/cohort.py#L289-L306) · [Public zero-loss export for individual release fates](https://github.com/Eidosoma/Cells/blob/947ff262c7fba53b53b32a7c44394e84be3fa897/validation/gene_regulation/engine_run.py#L284)
 

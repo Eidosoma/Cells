@@ -16,7 +16,7 @@ At equilibrium the occupied fraction of sites is c / (Kd + c), where c is free l
 - [CellsProofs.Chemistry.SingleSite.occupancy_from_rates](../CellsProofs/Chemistry/SingleSiteBinding.lean#L19)
 - [CellsProofs.Chemistry.SingleSite.occupancy_from_log_weights](../CellsProofs/Chemistry/SingleSiteBinding.lean#L28)
 
-Direct proof subject `cells.rapid_binding@1`
+Direct proof subject `cells.binding.rapid_binding@1`
 
 Proof sources [Langmuir kinetic derivation, adapted from Lean 3](https://github.com/ATOMSLab/LeanChemicalTheories/blob/00841fedb86c0af282f515eda7e83a525a42e048/src/adsorption/langmuir_kinetics.lean) · [Bobbin et al., Digital Discovery](https://doi.org/10.1039/D3DD00077J)
 

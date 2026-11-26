@@ -454,7 +454,7 @@ def live_inventory(lane):
         manifest = declarations.manifest()
     finally:
         sys.path.pop(0)
-    if manifest["kind"] != "cells.declarations@2":
+    if manifest["kind"] != "cells.declarations@3":
         raise ValueError(f"unsupported engine declarations format {manifest['kind']!r}")
     return {
         kind: {
@@ -467,6 +467,12 @@ def live_inventory(lane):
 
 
 def coverage(inventory, claims, comparisons, repo, category_sections, wet_lab_summary):
+    # The comparison names its original declarations; join them to today's inventory.
+    sys.path.insert(0, str(LANE.parent))
+    try:
+        from validation.id_table import translate
+    finally:
+        sys.path.pop(0)
     direct, exercised = {}, {}
     for claim in claims.values():
         for piece in claim["formal"].get("about", []):
@@ -479,7 +485,7 @@ def coverage(inventory, claims, comparisons, repo, category_sections, wet_lab_su
             continue
         for kind in ("law", "operator"):
             for spelling in record.get(kind + "s", []):
-                piece = spelling if "." in spelling else "cells." + spelling
+                piece = translate(spelling if "." in spelling else "cells." + spelling)
                 if any(piece in rows for other, rows in inventory.items() if other != kind):
                     raise ValueError(f"{key}: {piece} is classified under the wrong registry type")
                 link = pinned_link(key, record["record"], record["record_revision"])

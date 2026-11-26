@@ -21,7 +21,7 @@ A well-mixed withdrawal of amount $r$ from a pool of amount $n$ collects $rs$ of
 - [CellsProofs.Tissue.CompartmentWash.unchanged_label_share](../CellsProofs/Tissue/CompartmentWash.lean#L116)
 - [CellsProofs.Tissue.CompartmentWash.dilution_of_nonbase](../CellsProofs/Tissue/CompartmentWash.lean#L124)
 
-Direct proof subject `cells.scheduled_compartment_wash@1`, `cells.neutral_arrival_labels@1`
+Direct proof subject `cells.operator.scheduled_compartment_wash@1`, `cells.operator.neutral_arrival_labels@1`
 
 Proof sources [Mathlib finite sum of scaled shares, imported and specialized](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Ring/Finset.lean#L51-L52) · [Mathlib single-index sum, imported to allocate the refill to the base](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Piecewise.lean#L150-L157) · [Mathlib sum of quotients, imported to normalize the shares](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Field.lean#L22-L24) · [Cells wash and label convention](https://github.com/Eidosoma/Cells/blob/3552e6cd19ddd1b3c12f709dd48df24b7a9aba6b/docs/library/cells/operators/neutral_arrival_labels@1.md#L84-L100)
 

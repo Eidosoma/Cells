@@ -21,7 +21,7 @@ Retrieval carries away source-specific capacitance and leaves each population pr
 - [CellsProofs.Tissue.MembraneTrafficking.round_trip_pool](../CellsProofs/Tissue/MembraneTrafficking.lean#L68)
 - [CellsProofs.Tissue.MembraneTrafficking.round_trip_pool_pos](../CellsProofs/Tissue/MembraneTrafficking.lean#L77)
 
-Direct proof subject `cells.scheduled_membrane_trafficking@1`
+Direct proof subject `cells.operator.scheduled_membrane_trafficking@1`
 
 Uses [Each compartment belongs to one cell and its charge sets its lumen voltage](owned-compartment-inventory.md) · [At fixed channel drive, whole-patch flow tracks the surface unit count](membrane-population-flow.md)
 

@@ -6,7 +6,7 @@ import Mathlib.Tactic.Linarith
 
 Bobbin et al., doi:10.1039/D3DD00077J, derive the Langmuir fraction from equal
 association and dissociation rates. This Lean 4 proof uses free ligand in mM
-and the dissociation constant of the one-step case of `rapid_binding@1`.
+and the dissociation constant of the one-step case of `cells.binding.rapid_binding@1`.
 Upstream theorem: `langmuir_single_site_kinetic_derivation`, ATOMS Lab,
 `LeanChemicalTheories` revision 00841fedb86c0af282f515eda7e83a525a42e048.
 -/

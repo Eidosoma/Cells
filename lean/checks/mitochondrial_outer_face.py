@@ -33,7 +33,7 @@ def world(moving, matched=False):
             receiver=fr.BATH,
             area_m2=1e-12,
             length_m=1e-6,
-            law="logmean_electrodiffusion@1",
+            law="cells.route.logmean_electrodiffusion@1",
             diffusivity_m2_per_s={
                 s["id"]: 1e-12 if s["id"] in moving else 0.0 for s in model["species"]
             },

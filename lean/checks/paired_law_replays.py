@@ -91,7 +91,7 @@ def bath_specimen(protocol, pH):
 
 
 def kv15_tail(protocol, pH, tail_mV, pulse_ms, select_peak, commands_mV):
-    law = laws.active().lookup("kv1p5_mh@1")
+    law = laws.active().lookup("cells.channel.kv1p5_mh@1")
     host, state, control, layout = bath_specimen(protocol, pH)
     voltage = np.asarray(commands_mV) / 1000
     lo, hi = law.voltage_domain_V
@@ -124,7 +124,7 @@ def boltzmann(voltage, maximum, midpoint, slope):
 def kv15(data):
     paired = read("paired_calibration_measurements.json")
     trapani = read("trapani2003_kv15_ph.json")["trapani2003_kv15_ph"]
-    native = laws.active().lookup("kv1p5_mh@1")
+    native = laws.active().lookup("cells.channel.kv1p5_mh@1")
     mids = trapani["panel_F"]["midpoint_mV"]
     measured = [
         mids["acid"] - mids["control"],

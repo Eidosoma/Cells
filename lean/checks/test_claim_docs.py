@@ -277,15 +277,20 @@ class ClaimDocsTests(unittest.TestCase):
             check_sources(self.lane)
 
     def test_direct_theorems_and_exercised_operators_are_counted_separately(self):
+        law = "cells.cycle.atp_driven_transporter_mass_action_positive@1"
+        operator = "cells.operator.neutral_arrival_labels@1"
         inventory = {
-            "law": {"cells.flux@1": "lean/README.md", "cells.other@1": "lean/README.md"},
-            "operator": {"cells.balance@1": "lean/README.md"},
+            "law": {
+                law: "lean/README.md",
+                "cells.cycle.atp_driven_transporter_mass_action_positive@2": "lean/README.md",
+            },
+            "operator": {operator: "lean/README.md"},
         }
-        self.claim["formal"] = {"status": "proved", "about": ["cells.flux@1"]}
+        self.claim["formal"] = {"status": "proved", "about": [law]}
         check = {
             "kind": "engine",
-            "laws": ["flux@1"],
-            "operators": ["balance@1"],
+            "laws": ["atp_driven_transporter_mass_action_positive@1"],
+            "operators": ["cells.neutral_arrival_labels@1"],
             "record": "lean/README.md",
             "record_revision": "1" * 40,
         }
@@ -304,7 +309,11 @@ class ClaimDocsTests(unittest.TestCase):
             self.claim["numerical"]["status"] = verdict
             page, _ = coverage(*inputs)
             self.assertEqual(target in page, verdict == "failed")
-        check["laws"].append("balance@1")
+        check["laws"] = [law]
+        check["operators"] = [operator]
+        current, _ = coverage(*inputs)
+        self.assertEqual(current, page)
+        check["laws"].append("cells.neutral_arrival_labels@1")
         with self.assertRaisesRegex(ValueError, "wrong registry type"):
             coverage(*inputs)
 

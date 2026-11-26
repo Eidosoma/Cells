@@ -19,7 +19,7 @@ For a positive parent, the fallback always retains a nonempty daughter. When one
 - [CellsProofs.Chemistry.LineageFission.zero_quota_at_threshold](../CellsProofs/Chemistry/LineageFission.lean#L155)
 - [CellsProofs.Chemistry.LineageFission.log_weight_jump](../CellsProofs/Chemistry/LineageFission.lean#L163)
 
-Direct proof subject `cells.daughter_continuation@1`
+Direct proof subject `cells.operator.daughter_continuation@1`
 
 Uses [Size-triggered fission conserves each species under fixed-quota and independent partitions](size-threshold-fission.md)
 

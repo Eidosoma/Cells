@@ -1,4 +1,4 @@
-"""Compare one-site occupancy in rapid_binding@1 with the independent S1 reference states."""
+"""Check cells.binding.rapid_binding@1 one-site occupancy against independent S1 states."""
 
 import json
 

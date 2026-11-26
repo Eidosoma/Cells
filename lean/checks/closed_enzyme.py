@@ -132,8 +132,8 @@ if __name__ == "__main__":
     raw = fixtures.enzyme_recipe(TRACE_MM)
     (block,) = raw["model"]["operators"]
     if (
-        raw["model"]["id"] != "resolved_pump_composite@1"
-        or block["law"] != "local_species_reactions@1"
+        raw["model"]["id"] != "cells.model.resolved_pump_composite@1"
+        or block["law"] != "cells.operator.local_species_reactions@1"
     ):
         raise AssertionError("Unexpected enzyme fixture model or operator")
     columns, weights = fixture_tables(block)

@@ -18,7 +18,7 @@ For chains sharing a machine pool, each update preserves free machines plus stag
 - [CellsProofs.Chemistry.Polymerisation.pool_step](../CellsProofs/Chemistry/Polymerisation.lean#L39)
 - [CellsProofs.Chemistry.TerminalRelease.pool_step](../CellsProofs/Chemistry/TerminalRelease.lean#L21)
 
-Direct proof subject `cells.templated_polymerisation@1`
+Direct proof subject `cells.operator.templated_polymerisation@1`
 
 Proof sources [Mathlib sum_range_succ, used to telescope stage movements](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505) · [Cells stage layout, cumulative exits and residue ledger](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387) · [Mathlib Finset.sum_add_distrib, imported for sums of machine occupancies](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269) · [Cells machine and terminal-hold ledgers](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012)
 

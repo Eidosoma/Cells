@@ -19,7 +19,7 @@ A pulse delivers the time-integrated current times the sum of the carrier fracti
 - [CellsProofs.Tissue.CurrentInjection.charge_error](../CellsProofs/Tissue/CurrentInjection.lean#L34)
 - [CellsProofs.Tissue.CurrentInjection.single_patch_work](../CellsProofs/Tissue/CurrentInjection.lean#L45)
 
-Direct proof subject `cells.electrode_current_injection@1`
+Direct proof subject `cells.operator.electrode_current_injection@1`
 
 Proof sources [ATOMS Lab base dimensions and energy, imported in the optional units check](https://github.com/ATOMSLab/LeanDimensionalAnalysis/blob/de263eed945693058ef2b8a1fa56c2ec5642ea7a/DimensionalAnalysis/Dimensions.lean#L10-L43) · [Cells specialization for charge times voltage](../checks/units/FacePower.lean)
 

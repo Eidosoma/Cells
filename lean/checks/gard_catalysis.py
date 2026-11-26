@@ -1,4 +1,4 @@
-"""Compare both registered GARD factors with exact edge and cycle rates in assembly_lineages@1."""
+"""Check both GARD factors against exact edge and cycle rates in cells.model.assembly_lineages@1."""
 
 import argparse
 import json

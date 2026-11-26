@@ -14,7 +14,7 @@ from validation.tissue import surface_reference as reference
 
 TOL = json.loads(surface_fixtures.PROTOCOL_PATH.read_text())["tolerances"]
 FLUX_ATOL = TOL["flux_atol_fmol_s"]
-LAW = "logmean_electrodiffusion@1"
+LAW = "cells.route.logmean_electrodiffusion@1"
 
 
 def check_direction(flux, reference_flux, reference_drop):

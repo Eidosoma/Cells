@@ -41,7 +41,7 @@ def specimen(protocol, *, external_pH=None):
             patch["permeability_m_per_s"]["H"] = 0.0
     model["membranes"][0]["pump"] = None
     raw["experiment"]["pump_controls"] = []
-    model["channels"] = [channel("kv15", 0, "kv1p5_mh@1", "K", 4e-9, 1.0, [0.5, 1.0])]
+    model["channels"] = [channel("kv15", 0, "cells.channel.kv1p5_mh@1", "K", 4e-9, 1.0, [0.5, 1.0])]
     raw["experiment"]["channel_controls"] = [
         dict(channel_id="kv15", schedule=[dict(time=0.0, availability=1.0)])
     ]
@@ -59,7 +59,7 @@ def run():
     data = json.loads((Path(__file__).parent / "data/trapani2003_kv15_ph.json").read_text())
     data = data["trapani2003_kv15_ph"]
     protocol, panel_f = data["protocol"], data["panel_F"]
-    law = laws.active().lookup("kv1p5_mh@1")
+    law = laws.active().lookup("cells.channel.kv1p5_mh@1")
     host, state, control, layout = specimen(protocol)
     hold, test, tail = [protocol[k] * 1e-3 for k in ("hold_mV", "test_mV", "tail_mV")]
     lower, upper = law.voltage_domain_V
@@ -121,7 +121,7 @@ def run():
     panel_b = data["panel_B"]
     e = panel_f["reading_precision"]
     return {
-        "model": "resolved_pump_tissue@3", "law": law.law_id,
+        "model": "cells.model.resolved_pump_tissue@3", "law": law.law_id,
         "panel_F_equal_maximum_prediction": prediction,
         "graph_reading_range": [(f["acid"] - e) / (f["control"] + e),
                                 (f["acid"] + e) / (f["control"] - e)],

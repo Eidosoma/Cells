@@ -23,7 +23,7 @@ At fixed solute count, area and bath osmolarity, the equilibrium volume is the s
 - [CellsProofs.Chemistry.Vesicle.tension_at_density](../CellsProofs/Chemistry/Vesicle.lean#L157)
 - [CellsProofs.Chemistry.Vesicle.capped_bath_change](../CellsProofs/Chemistry/Vesicle.lean#L162)
 
-Direct proof subject `cells.osmotic_lumen@1`
+Direct proof subject `cells.free_energy.osmotic_lumen@1`
 
 Uses [Bilayer area is half the sum of the molecular footprints in its two leaflets](bilayer-footprint.md) · [Water potential sets flow, heat and osmometric equilibrium](osmotic-water.md)
 

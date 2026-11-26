@@ -16,7 +16,7 @@ Each ion’s signed flux multiplied by its electrochemical potential drop is non
 - [CellsProofs.Transport.Face.power_in_pJ_per_s](../CellsProofs/Transport/LogMeanFace.lean#L111)
 - [CellsProofs.Transport.Face.face_power_nonneg](../CellsProofs/Transport/LogMeanFace.lean#L116)
 
-Direct proof subject `cells.logmean_electrodiffusion@1`
+Direct proof subject `cells.route.logmean_electrodiffusion@1`
 
 Proof sources [Dimensional algebra used by the optional check](https://github.com/ATOMSLab/LeanDimensionalAnalysis/tree/de263eed945693058ef2b8a1fa56c2ec5642ea7a/DimensionalAnalysis) · [Cells dimensional check](../checks/units/FacePower.lean) · [SI prefixes](https://www.bipm.org/en/measurement-units/si-prefixes)
 

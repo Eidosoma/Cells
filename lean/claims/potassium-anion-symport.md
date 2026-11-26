@@ -28,7 +28,7 @@ The active 1:1 route moves outward when the inside concentration product is larg
 - [CellsProofs.Transport.PotassiumAnionSymport.explicit_step](../CellsProofs/Transport/PotassiumAnionSymport.lean#L116)
 - [CellsProofs.Transport.PotassiumAnionSymport.step_points_inward](../CellsProofs/Transport/PotassiumAnionSymport.lean#L123)
 
-Direct proof subject `cells.k_anion_symport_mass_action@1`
+Direct proof subject `cells.operator.k_anion_symport_mass_action@1`
 
 ## Numerical comparison
 

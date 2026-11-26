@@ -17,7 +17,7 @@ For a positive measured count at window close, a proposed survival fraction can 
 - [CellsProofs.Chemistry.ArrivalWindow.ratio_residual_iff](../CellsProofs/Chemistry/ArrivalWindow.lean#L92)
 - [CellsProofs.Chemistry.ArrivalWindow.chase_ratio_error](../CellsProofs/Chemistry/ArrivalWindow.lean#L100)
 
-Direct proof subject `cells.templated_polymerisation@1`
+Direct proof subject `cells.operator.templated_polymerisation@1`
 
 Proof sources [Mathlib triangle inequality specialized to the two count errors](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Group/Abs.lean#L73-L78) · [Mathlib absolute value of a quotient](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Field/Basic.lean#L648-L652) · [Mathlib nonnegative product of chase factors](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Ring/Finset.lean#L30-L34) · [Cells count and ratio definitions](https://github.com/Eidosoma/Cells/blob/57c3cb909db5ebe9a24b90f3d78d7c6a182fd72b/validation/gene_regulation/cohort.py#L200-L216)
 

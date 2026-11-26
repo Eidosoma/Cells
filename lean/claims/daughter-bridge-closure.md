@@ -19,7 +19,7 @@ Successive intervals compose for capped linear and exponential aperture closure.
 - [CellsProofs.Tissue.DivisionBridge.exponential_positive](../CellsProofs/Tissue/DivisionBridge.lean#L73)
 - [CellsProofs.Tissue.DivisionBridge.aperture_factor](../CellsProofs/Tissue/DivisionBridge.lean#L78)
 
-Direct proof subject `cells.cytoplasmic_bridge_closure@1`
+Direct proof subject `cells.operator.cytoplasmic_bridge_closure@1`
 
 Uses [Charge carriers reconcile daughter volume and membrane shares at division](isopotential-division.md) · [Reversing a junction reverses its flux](junction-flux-reversal.md)
 

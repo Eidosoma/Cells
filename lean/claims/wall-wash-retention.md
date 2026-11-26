@@ -19,7 +19,7 @@ A finite-volume wash collects the draw fraction of the free stock and preserves 
 - [CellsProofs.Tissue.WallWash.rate_after_draw](../CellsProofs/Tissue/WallWash.lean#L43)
 - [CellsProofs.Tissue.WallWash.release_after_dilution](../CellsProofs/Tissue/WallWash.lean#L52)
 
-Direct proof subject `cells.scheduled_compartment_wash@1`, `cells.site_occupancy@1`
+Direct proof subject `cells.operator.scheduled_compartment_wash@1`, `cells.operator.site_occupancy@1`
 
 Proof sources [Finite compartment draw and refill](../CellsProofs/Tissue/CompartmentWash.lean)
 

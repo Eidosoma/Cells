@@ -20,7 +20,7 @@ At a neutral Fick face, the sum of label powers exceeds or equals the parent pow
 - [CellsProofs.Transport.LabelMixingPower.booking_zero_iff](../CellsProofs/Transport/LabelMixingPower.lean#L104)
 - [CellsProofs.Transport.LabelMixingPower.booking_difference_two](../CellsProofs/Transport/LabelMixingPower.lean#L115)
 
-Direct proof subject `cells.logmean_electrodiffusion@1`
+Direct proof subject `cells.route.logmean_electrodiffusion@1`
 
 Proof sources [Mathlib strict logarithmic inequality for the equality condition](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L242-L246) · [Mathlib non-strict logarithmic bound for each term](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L288-L292) · [Mathlib relative-entropy function, identified in the optional check](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L45-L51)
 

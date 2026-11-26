@@ -16,7 +16,7 @@ For a constant positive rate k and threshold E, the rupture time is at or before
 - [CellsProofs.Chemistry.VesiclePore.clock_by_cut](../CellsProofs/Chemistry/VesiclePore.lean#L87)
 - [CellsProofs.Chemistry.VesiclePore.recorded_cut_precedes_rupture](../CellsProofs/Chemistry/VesiclePore.lean#L93)
 
-Direct proof subject `cells.pore_nucleation@1`, `cells.tension_hold@1`
+Direct proof subject `cells.assembly_hazard.pore_nucleation@1`, `cells.operator.tension_hold@1`
 
 Proof sources [Mathlib div_le_iff₀, specialized to the positive hazard](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/GroupWithZero/Unbundled/Basic.lean#L1072) · [Cells inclusive threshold crossing](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/pore_clock.py#L82-L105)
 

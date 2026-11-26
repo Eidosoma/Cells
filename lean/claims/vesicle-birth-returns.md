@@ -17,7 +17,7 @@ Each retained daughter that ruptures returns its contents once. A single-lineage
 - [CellsProofs.Chemistry.VesicleRelease.birth_receipts](../CellsProofs/Chemistry/VesicleBirth.lean#L17)
 - [CellsProofs.Chemistry.VesicleRelease.birth_pool_reconstruction](../CellsProofs/Chemistry/VesicleBirth.lean#L32)
 
-Direct proof subject `cells.shear_fission@1`, `cells.osmotic_lumen@1`, `cells.shared_pool@1`
+Direct proof subject `cells.operator.shear_fission@1`, `cells.free_energy.osmotic_lumen@1`, `cells.population.shared_pool@1`
 
 Proof sources [The Cells R9 release theorem supplies the accounting at a single destination](https://github.com/Eidosoma/Cells/blob/7e126375842ef23f0eb29734847cfe1dffd5ac4c/lean/CellsProofs/Chemistry/VesicleRelease.lean#L29) · [Mathlib List.sum_append adds the receipts of consecutive daughters](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/List/Basic.lean#L43) · [Lean List.map_append preserves the source order within each daughter](https://github.com/leanprover/lean4/blob/v4.19.0/src/Init/Data/List/Lemmas.lean#L1805)
 

@@ -22,7 +22,7 @@ from validation.tissue.surface_reference import F, R
 
 
 POWERS = {law: (ion, powers) for law, (_, _, ion, powers) in REFERENCES.items()}
-POWERS["clleak_always_open@1"] = ("Cl", (0, 0))
+POWERS["cells.channel.clleak_always_open@1"] = ("Cl", (0, 0))
 VOLTAGES = np.array([
     [-0.120, 0.060], [-0.075, 0.018], [0.0, 0.0],
     [4e-7, -5e-7], [0.040, -0.100], [0.060, -0.120],
@@ -118,7 +118,7 @@ def run():
             "max_abs_current_error_A": float(np.max(abs(current - expected_current))),
             "max_abs_flux_error_fmol_s": float(np.max(abs(flux - expected_flux))),
         }
-    cl = list(POWERS).index("clleak_always_open@1")
+    cl = list(POWERS).index("cells.channel.clleak_always_open@1")
     measurement = json.loads((Path(__file__).parent / "data/maverick2022_kv_density.json").read_text())
     low, high = measurement["maverick2022_kv_density"]["kv15_density_series"]
     return {

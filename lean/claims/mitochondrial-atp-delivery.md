@@ -19,7 +19,7 @@ One ATP synthesis, nucleotide exchange and phosphate import restore the matrix A
 - [CellsProofs.Chemistry.MitochondrialCycles.potassium_proton_swap](../CellsProofs/Chemistry/MitochondrialCycles.lean#L102)
 - [CellsProofs.Chemistry.MitochondrialCycles.charge_balance_iff](../CellsProofs/Chemistry/MitochondrialCycles.lean#L108)
 
-Direct proof subject `cells.proton_coupled_atp_synthesis_cycle@1`, `cells.electrogenic_nucleotide_exchange@1`, `cells.phosphate_proton_symport@1`, `cells.potassium_proton_exchange@1`
+Direct proof subject `cells.cycle.proton_coupled_atp_synthesis_cycle@1`, `cells.cycle.electrogenic_nucleotide_exchange@1`, `cells.cycle.phosphate_proton_symport@1`, `cells.cycle.potassium_proton_exchange@1`
 
 Uses [Restoring both respiratory carriers fixes the turnover ratio and outward charge](mitochondrial-respiratory-balance.md) · [Stall voltages and net charge of the sodium–potassium and calcium pumps](electrogenic-pump-charge.md)
 

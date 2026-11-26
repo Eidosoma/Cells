@@ -22,7 +22,7 @@ For any finite partition of a neutral tracer, the sum of its label fluxes equals
 - [CellsProofs.Transport.LabelDiffusion.charged_opposing_ratio](../CellsProofs/Transport/LabelDiffusion.lean#L88)
 - [CellsProofs.Transport.LabelDiffusion.charged_ratio_bounds](../CellsProofs/Transport/LabelDiffusion.lean#L101)
 
-Direct proof subject `cells.logmean_electrodiffusion@1`, `cells.passive_neutral_permeation@1`
+Direct proof subject `cells.route.logmean_electrodiffusion@1`, `cells.route.passive_neutral_permeation@1`
 
 Proof sources [Mathlib finite-sum distributivity, imported for common Fick mobility](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Ring/Finset.lean#L50-L52) · [Mathlib lower bound for log(1+x), specialized to x = 8](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Deriv.lean#L333-L337) · [Cells logarithmic-mean face, specialized to separate label rows](../CellsProofs/Transport/LogMeanFace.lean)
 

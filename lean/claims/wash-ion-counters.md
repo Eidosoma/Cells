@@ -14,7 +14,7 @@ For an unchanged ion in a well of positive volume, replacing a fraction of liqui
 
 - [CellsProofs.Tissue.CompartmentWash.same_concentration_ion](../CellsProofs/Tissue/CompartmentWash.lean#L25)
 
-Direct proof subject `cells.scheduled_compartment_wash@1`
+Direct proof subject `cells.operator.scheduled_compartment_wash@1`
 
 Proof sources [Mathlib div_mul_cancel₀ specialized in the volume identity](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L291)
 
