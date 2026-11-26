@@ -30,8 +30,10 @@ def _world_result(coll: Collector, summary: dict | None) -> dict:
     }
 
 
-def c0_reference_file(path: str, inputs: Inputs, draws_path: str, invented: bool) -> dict:
-    """One reference file: the invented file holds world name to layout; a registered file is one world."""
+def c0_reference_file(path: str, inputs: Inputs, draws_path: str, invented: bool,
+                      keep: dict | None = None) -> dict:
+    """One reference file: the invented file holds world name to layout; a registered file is one world.
+    `keep`, where given, receives each world's ReferenceWorld that C0 passed (a refused one is None)."""
     result: dict[str, Any] = {"file": os.path.basename(path), "sha256": None, "refused": False, "file_faults": [],
                               "worlds": {}}
     try:
@@ -82,8 +84,13 @@ def c0_reference_file(path: str, inputs: Inputs, draws_path: str, invented: bool
             draws = load_draws(draws_path, inputs.worlds[name], coll, f"{where}/draws")
             summary = c0_world(coll, ref, inputs, draws, where)
         result["worlds"][name] = _world_result(coll, summary)
+        if keep is not None:
+            keep[name] = ref if (ref is not None and not coll.faults) else None
     if result["file_faults"] or any(w["refused"] for w in result["worlds"].values()):
         result["refused"] = True
+        if keep is not None and result["file_faults"]:
+            for name in keep:
+                keep[name] = None
     return result
 
 
