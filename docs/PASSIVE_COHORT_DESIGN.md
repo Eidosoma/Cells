@@ -792,8 +792,9 @@ the pools at it (`integer_trace_cell_fmol`, `integer_trace_node_fmol`) and the c
   `integer_cohort_pairs`, `integer_cohort_window_s`), each zero-size where no cohort is declared. There the values stay
   unchanged, not the text.
 - **The build's form (S).** Where no cohort is declared, a static branch keeps the record out of the event loop's
-  carry as well as out of the segment, so the loops' text and annotations stay as they are. The outer programs then
-  differ only by the zero-size leaves they pass through. Where a cohort is declared, the loop carries the record.
+  carry as well as out of the segment. The loops' text and annotations are then expected to stay as they are, and the
+  outer programs to differ only by the zero-size leaves they pass through: an expectation, which the pair check below
+  will show or refute. Where a cohort is declared, the loop carries the record.
 - **The proof where undeclared** is D400's pair check, rerun with FR-52's base and head over the operator's worlds
   (D400's nine, the co-writer world among them): every existing field equal at every step, every common binding
   equal, and the programs compared after dead-code elimination as D400 compared them. The landing's rerun of FR-43
