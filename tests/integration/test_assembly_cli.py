@@ -14,6 +14,12 @@ from cells.assembly.io import digest, runtime, source_identity
 from cells.assembly.spec import AssemblyError, parse_spec
 
 
+@pytest.fixture(autouse=True)
+def output_root(tmp_path, monkeypatch):
+    """Generated outputs are allowed only under the root; use the test's own folder."""
+    monkeypatch.setenv("CELLS_OUTPUT_ROOT", str(tmp_path))
+
+
 def command(*args):
     return subprocess.run(
         [sys.executable, "-B", "-m", "cells", "assembly", *map(str, args)],
@@ -67,7 +73,9 @@ def test_public_cpu_command_and_saved_restart(tmp_path):
 
 def test_bad_definition_and_output_refused(tmp_path):
     config, _ = definition(tmp_path)
-    assert command("run", config, "--output", "/tmp/cells-assembly-not-authorized").returncode == 2
+    refused = command("run", config, "--output", "/tmp/cells-assembly-not-authorized")
+    assert refused.returncode == 2
+    assert "must be under /mnt/workspaces or CELLS_OUTPUT_ROOT" in refused.stderr
     bad = json.loads(config.read_text()) | {"initial_nodes": [1, 10]}
     config.write_text(json.dumps(bad))
     output = tmp_path / "invalid"
