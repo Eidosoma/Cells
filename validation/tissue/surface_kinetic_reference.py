@@ -394,7 +394,7 @@ def evaluate(
                 "cells.channel.hcn2_m@1",
                 "cells.channel.hcn4_m@1",
             ):
-                family = int(ch["kinetic_law"].split(".")[-1][3])  # hcn1_m@1 -> 1
+                family = int(ch["kinetic_law"].split(".")[-1][3])  # N of the name hcnN_m
                 target, tau = hcn_reference.kinetics(float(voltage), family)
                 opened = float(hcn_reference.opening(d["channel_gate"][:, k]))
             elif ch["kinetic_law"] in kv1_reference.LAWS:
