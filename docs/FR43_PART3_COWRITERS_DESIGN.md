@@ -1,8 +1,9 @@
 # FR-43 part 3: sharing a moved row with local reactions and the gene unit (design)
 
-**Status: decided, 25 November 2026, on branch `fr43-part3-cowriters` from main 0e563668. Nothing is built.** It is
-the open item of FR-43 part 3. D328 keeps part 3 open "until D152 reactions and the gene unit can co-write a moved
-row". The build comes after the rename; the IDs below are today's (§6.1).
+**Status: decided 25 November 2026; built 26 November 2026 on branch `fr43-cowriters-build` (from main c52d0998,
+after the legacy cleanup and the ID move), as §10 says.** It is the open item of FR-43 part 3. D328 keeps part 3 open
+"until D152 reactions and the gene unit can co-write a moved row". The IDs below are the moved ones (D345); §9's
+evidence keeps the spellings it was written in.
 
 **The decisions (25 November 2026).**
 - **The user accepted all four recommendations of §7:** question 1 (a), split writers; question 2 (a), one judged run
@@ -12,9 +13,10 @@ row". The build comes after the rename; the IDs below are today's (§6.1).
 - **The build waits for the legacy cleanup:** the user put every other build on hold. The spec and the references may
   start now, since they name no engine ID. They are on branch `fr43-part3-spec`.
 
-**Engine models:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with `integer_unit_population@1`
-beside `local_species_reactions@1` (D152, "the reactions"), `templated_polymerisation@1` ("the gene unit"),
-`scheduled_species_turnover@1`, `scheduled_species_exchange@1` and `site_occupancy@1`.
+**Engine models:** `cells.model.resolved_pump_composite@1` over `cells.model.resolved_pump_tissue@3`, with
+`cells.operator.integer_unit_population@1` beside `cells.operator.local_species_reactions@1` (D152, "the reactions"),
+`cells.operator.templated_polymerisation@1` ("the gene unit"), `cells.operator.scheduled_species_turnover@1`,
+`cells.operator.scheduled_species_exchange@1` and `cells.operator.site_occupancy@1`.
 
 **S** marks this note's own reading or derivation. **Measured** names a probe of §9. The probes are development, on
 the host, with one small compiled world per pair. They are evidence for no claim of the engine.
@@ -34,18 +36,18 @@ the host, with one small compiled world per pair. They are evidence for no claim
   event times stay exact at every step (measured with constant rates: 4e-13 s).
 - **A correction to the question as put.** In this operator an event moves no material. It changes the units'
   states. Material moves between events, through the active units. So no event can empty a pool (§2.1).
-- **Five findings beside the question** (§1.3): the two refusals have no test; `site_occupancy@1` writes a moved row
-  today and nothing checks it; the definition's bound on event rates does not count what a co-writer makes; exchange
-  beside the population is admitted and was never run; and the pools recorded at an event are first order beside any
-  co-writer.
+- **Five findings beside the question** (§1.3): the two refusals have no test; `cells.operator.site_occupancy@1` writes
+  a moved row today and nothing checks it; the definition's bound on event rates does not count what a co-writer makes;
+  exchange beside the population is admitted and was never run; and the pools recorded at an event are first order
+  beside any co-writer.
 - **Price (S):** 2.5 to 3.5 agent-days for the build, and 1.25 to 1.75 for one judged comparison. One full gate and
   one no-src stack.
 
 ## 0. The words used
 
 - **A row** is one species' amount at one place: a cell, or a finite outside node.
-- **The population** is `integer_unit_population@1`. A **site** is a small cluster of its units in one membrane
-  patch, for example two free subunits that can form one active unit.
+- **The population** is `cells.operator.integer_unit_population@1`. A **site** is a small cluster of its units in one
+  membrane patch, for example two free subunits that can form one active unit.
 - **An event** changes a site's unit states at a random time. Its **propensity** is its rate, which may read one
   row's concentration: a **read row**. The site's **clock** adds up the propensities until an event fires.
 - **A transfer** moves a species through the active units between the patch's cell and its outside node,
@@ -56,7 +58,7 @@ the host, with one small compiled world per pair. They are evidence for no claim
   about 2^p when dt is halved.
 - **A conversion** changes how much of a species there is at a place (turnover, a reaction, the gene unit). **A
   transfer** changes only where it is (exchange, the population).
-- **@3** is the composite's inner model, `resolved_pump_tissue@3`. It owns every row.
+- **@3** is the composite's inner model, `cells.model.resolved_pump_tissue@3`. It owns every row.
 - **SSPRK(3,3)** is the third-order explicit method of the reactions' and the gene unit's half-steps. Its **stage
   condition** refuses a step whose rates would drain an amount.
 - **The gene unit's one-sided domain:** its laws hold only where each route runs well forward. Elsewhere its step is
@@ -74,13 +76,13 @@ between `cell_0` and `ecs_0`.
 
 | World | Today | Where, and the message |
 | --- | --- | --- |
-| A reaction that writes S in the cell (a sink or a source), or at the node | Refused, in either declared order | `integer_unit_population.py:1104–1113`: "a local_species_reactions@1 reaction writes S at cell_0, a row this operator moves: one local-kinetics writer per reacting row (D152)" |
-| The gene unit, the moved row being one it draws (N) or makes (R), the population declared first | Refused | `integer_unit_population.py:1114–1120`: "templated_polymerisation@1 lists 'N', which this operator moves; the gene unit is its listed rows' one writer" |
-| The same, the gene unit declared first | Refused | `templated_polymerisation.py:1484–1497`: "integer_unit_population@1 also declares 'N'; this operator is the one writer of its listed rows" |
+| A reaction that writes S in the cell (a sink or a source), or at the node | Refused, in either declared order | `integer_unit_population.py:1104–1113`: "a cells.operator.local_species_reactions@1 reaction writes S at cell_0, a row this operator moves: one local-kinetics writer per reacting row (D152)" |
+| The gene unit, the moved row being one it draws (N) or makes (R), the population declared first | Refused | `integer_unit_population.py:1114–1120`: "cells.operator.templated_polymerisation@1 lists 'N', which this operator moves; the gene unit is its listed rows' one writer" |
+| The same, the gene unit declared first | Refused | `templated_polymerisation.py:1484–1497`: "cells.operator.integer_unit_population@1 also declares 'N'; this operator is the one writer of its listed rows" |
 | A reaction that only reads S (a catalyst) | Admitted | |
 | A reaction, or the gene unit, that writes a row the clock only reads | Admitted | |
 | Turnover or exchange of S | Admitted | By the absence of a refusal. No check names them |
-| `site_occupancy@1` binding S at the node | Admitted | Nothing checks it (§1.3) |
+| `cells.operator.site_occupancy@1` binding S at the node | Admitted | Nothing checks it (§1.3) |
 
 - **The reactions refuse nothing here.** Their own `check_turnover_rows` refuses turnover on a row they write, and
   no other operator.
@@ -107,21 +109,21 @@ between `cell_0` and `ecs_0`.
 - **Beside the gene unit.** GENE_REGULATION_DESIGN §7.5 kept its rows to one writer, for one account of the
   nucleotide loop and for want of a two-writer ruling. D315 gave that ruling: one registry potential, separate
   accounts. Part 2A applied it to the reactions and the unit producer, and left other authors refused.
-- **The unit producer** (`population_unit_turnover@1`) also refuses the population on its precursor: only turnover
-  and the gene unit may supply it (measured). Its reason is different, and it stays (§3.4).
+- **The unit producer** (`cells.operator.population_unit_turnover@1`) also refuses the population on its precursor: only
+  turnover and the gene unit may supply it (measured). Its reason is different, and it stays (§3.4).
 
 ### 1.3 Five findings beside the question
 
 1. **Neither refusal has a test row,** and the composition matrix lists neither. `test_each_refused_neighbour`
    covers replacement, insertion, labels and the partition.
-2. **`site_occupancy@1` writes moved rows unchecked.** It binds and releases a ligand in its half-steps but declares
-   no species of its own (its identity role is "user"). The population's check names two laws, and the gene unit's
-   looks at "authors" only, so sites pass both: on a moved row, and on a row the gene unit lists (both measured). No
-   world found holds either pair. The search: files naming both operators, and files using both site and gene-unit
-   fixtures (`tests`, `validation`, `scripts`), and the registered texts of FR-49's worlds (L, B, C1, C2) and
-   FR-45's protocol. The one file that uses both fixtures binds its sites to S or to a regulator, in worlds without
-   the gene unit. FR-49's C4 is not registered yet and adds unlabelled sites to a world with expression (L1). The
-   build searches the saved definitions of G1 and crossrev too.
+2. **`cells.operator.site_occupancy@1` writes moved rows unchecked.** It binds and releases a ligand in its half-steps
+   but declares no species of its own (its identity role is "user"). The population's check names two laws, and the gene
+   unit's looks at "authors" only, so sites pass both: on a moved row, and on a row the gene unit lists (both measured).
+   No world found holds either pair. The search: files naming both operators, and files using both site and gene-unit
+   fixtures (`tests`, `validation`, `scripts`), and the registered texts of FR-49's worlds (L, B, C1, C2) and FR-45's
+   protocol. The one file that uses both fixtures binds its sites to S or to a regulator, in worlds without the gene
+   unit. FR-49's C4 is not registered yet and adds unlabelled sites to a world with expression (L1). The build searches
+   the saved definitions of G1 and crossrev too.
 3. **The bound on event rates does not count co-writers.** `check_hazard_bound` takes a moved row's largest
    concentration from its declared material and turnover's production, and refuses dt·a₀ above 1 (a₀ is a site's
    total propensity).
@@ -303,7 +305,7 @@ is refused by name. Every built-in writer declares, and a test holds that.
 - The population's `check_writers` loses its two branches. It keeps the label owner, replaced amounts, mask changers
   without the lifecycle, and in-step movers of a moved row.
 - The gene unit's branch on "authors" becomes one on **conversions** of a listed row other than the two admitted
-  (the reactions and the unit producer). So `site_occupancy@1` is refused there by name, since it is a conversion
+  (the reactions and the unit producer). So `cells.operator.site_occupancy@1` is refused there by name, since it is a conversion
   that its role hid (§1.3).
 - The unit producer's branch likewise. A transfer on its precursor stays refused with no new rule: a transfer's
   `production_bound` is infinite at both of its rows, since no static rate bounds it, and R5 already refuses a
@@ -339,7 +341,7 @@ check of W1's and W3's steps, which no crossrev set holds.
 | --- | --- |
 | A moved row that the gene unit exports, or whose monomers it returns at a node; exchange of a labelled row of it | The gene unit claims the row alone (amendment T; the same item 3) |
 | The unit producer's precursor as a moved row | R5: a transfer has no static supply rate |
-| The gene unit beside `site_occupancy@1` on a listed row (new) | A second conversion. It closes §1.3's hole |
+| The gene unit beside `cells.operator.site_occupancy@1` on a listed row (new) | A second conversion. It closes §1.3's hole |
 | An undeclared split writer beside the population, the gene unit or the unit producer (new) | Fails closed |
 | A label owner; replaced amounts; insertion; an in-step mover of a moved row | As today |
 | Water or a lumen beside the population | Its volumes are declared reads (§4.3) |
@@ -360,7 +362,7 @@ check of W1's and W3's steps, which no crossrev set holds.
 
 ## 4. D328's two version-1 refusals, and water
 
-### 4.1 Beside `scheduled_compartment_wash@1`: not reached
+### 4.1 Beside `cells.operator.scheduled_compartment_wash@1`: not reached
 
 - **Today** the wash refuses any world that holds the population, whatever the nodes (measured), because
   `surface_crossings` lists the law whole. A wash reads no transfer, with or without a co-writer, so this item
@@ -469,8 +471,9 @@ process. That would rest on this note's probes, which are development.
 
 ### 6.1 The rename
 
-The build comes after it. `integer_unit_population@1` becomes `cells.operator.integer_unit_population@1`, and its
-neighbours take the same form (the candidate table on `rename-design`, 2dd54f72). No ID or major is added. This
+The build came after it (D345's move, with the legacy cleanup). `integer_unit_population@1` became
+`cells.operator.integer_unit_population@1`, and its neighbours took the same form (the candidate table on
+`rename-design`, 2dd54f72). No ID or major is added. This
 build deletes the population's two law literals and turnover's in `check_hazard_bound`. Part 3's tagged
 `REGISTRATION.md` and `references/` are never rewritten. `validation/fr43_part3/worlds.py` is (the candidate lists
 it), so the new worlds come after the move.
@@ -552,7 +555,7 @@ no-src stack for the spec, the criteria and the references, tagged before the bu
 
 ### For the lead (ruled on 25 November 2026)
 
-- **L1. `site_occupancy@1`** (§1.3). (a) Refuse it beside the gene unit's listed rows, and cover it beside the
+- **L1. `cells.operator.site_occupancy@1`** (§1.3). (a) Refuse it beside the gene unit's listed rows, and cover it beside the
   population in the five-writer run. (b) Leave it. **Recommended: (a),** after a search of every saved definition
   for the pair. It newly refuses a composition that is admitted today. So if a registered world binds sites to a row
   the gene unit lists (none found; FR-49's C4 amendment is still to be written), L1 goes to the user. **Ruled: (a).**
@@ -626,3 +629,60 @@ part 3's divided world reads the declared values of `part3.json` in process; the
 matched its own shells and stopped its first order study and a waiting command. Whether it matched any other process
 was not checked. The study was rerun with one compile per declared order. **The advisor** read the draft once; its
 corrections are in this version.
+
+## 10. As built (26 November 2026)
+
+Branch `fr43-cowriters-build` from main c52d0998: this note merged (868a51fa), the engine rule (155293d0), the tests,
+worlds, matrix and page (34928328). Form A with §3.2's rule and §3.3's edits, and the lead's answers of 26 November.
+
+**Where the build departs from §3.**
+- **A fourth optional declaration, `SHARED_ROW_POTENTIAL`** (the lead's Q1 (a)), on the reactions, the gene unit and
+  the unit producer. `check_shared_rows` reads their `written_rows` by species, so it asks exactly the writers it asked
+  before. Asking every conversion would have refused, where the registry gives no potential, turnover beside the
+  reactions at another node, turnover beside the producer, sites beside the reactions, and §1.1's five-writer world.
+- **The unit producer refuses site occupancy on its precursor by name,** by §3.2's "likewise": a new refusal, beside the
+  gene unit's (L1). No saved or fixture definition holds the pair (the host sweep below).
+- **Turnover's `production_bound`** is R5's literal: each production route's largest rate over its schedules, summed
+  per row. `check_hazard_bound`'s literal summed per schedule. The two differ only with a replacement's newcomer
+  schedules, and the population refuses replacement, so both consumers read what they read before.
+- **Written rows:** a lumen's are every species at its node, since a scheduled bath may hold any. A gene unit with no
+  pool, chain, degradation, transfer or export writes no row, so it no longer asks for a registry potential; no saved
+  definition holds one.
+- **L4:** the gate's crossrev verdict requires identical file listings, so the co-writer world in crossrev's reactions
+  set (`reactions_integer_source`) is a listing difference until the record holds it. Its record files and its G1
+  save are in the evidence below, for the lead's renewal.
+
+**Tests** (no new file; measured on the timed cores with lane A idle, against the record's rows: the registry file
+2.3 s against 0.5, the shared-inventory file 5.3 against 3.6, the population file 63.9 against 35.5, so its compiled
+world stays in tier 2 under §5.2's 80 s rule; the producer's, the gene unit's and the matrix's within their rows):
+- tier 1, parses: the row rule on stub operators and the declarations' misuses (`test_species_registry_movers`); the
+  newly admitted pairs in both orders, the triple in all six, RK4 and §3.4's refusals by name
+  (`test_shared_inventory_writers`); the compartment's transfer row; the producer's stub rows; the matrix;
+- tier 2: the event-rate bound beside a co-writer, and one compiled world, the population beside a zero-order source
+  of S: the closed-form first event, each writer's books at every row, a restart between events
+  (`test_integer_unit_population`);
+- tier 3: the five-writer world and the gene unit's, books and ledgers by the composite's own checks with two plants,
+  and a restart (`test_integer_unit_population_statistics`);
+- every new refusal row fails with its check planted away (21 of 21).
+
+**D148** (the round's records: `/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148/`):
+- **crossrev** (11 sets, base c52d0998 against head 34928328, the pair runner under lane A's lock): 10 sets identical;
+  the reactions set's 8 worlds identical, and its listing adds exactly the co-writer world's 9 files (L4, by design).
+- **G1** (113 worlds): the base equals c1 (113 of 113), the head equals c1 (113 of 113), and base against head is 113
+  of 113 identical.
+- **The judges' derivative programs** (the stationary analysis's linearize and jvp programs over crossrev's
+  qualification, acceptances and kinds sets and W1's P2 world, 36 worlds a side): 257 files identical.
+- **The worlds no crossrev set holds,** traced the same way (part 3's W1 and W3, part 2's pairs and unit pair, FR-2's
+  trafficking, S3's lumen@1 egg): 56 files identical.
+- **FR's bitwise set** (through its own holder on lane B): passed before and after, its nine quick parts identical and
+  its windowed arms T and R bitwise.
+- **The host sweep** (238 definitions: crossrev's, G1's 113, parts 2 and 3, the co-writer worlds; then FR-49's World
+  L, B and its node-owned variant): every existing definition parses as before with the same shared-row askers. The
+  only changes are the co-writer worlds (admitted), the refused ones' messages, and site occupancy on a listed row
+  (refused, L1).
+- **Tiers 1 and 2** of the head on lane A: 520 files, none changed (8 hold more tests than their rows). Tier 3's
+  statistics file in full: 12 of 12.
+- **By construction:** no traced program, layout, state or control changed; every new hook runs on the host.
+
+**What stays for others:** §6.3's two items are FR-65's (the lead's order: this build lands first); §5.3's comparison
+is registered (`fr43-part3-cowriters-criteria-2026-11-25`) and follows the landing.
