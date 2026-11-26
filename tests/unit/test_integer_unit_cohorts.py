@@ -21,7 +21,7 @@ declared join and cut), compiled observed and unobserved, with one in-process re
   caught.
 
 Its reason: the record's only compiled path, the twins and the restart need runs (two compiles,
-about 50 s on one core, most of it the compiles); the existing file has no room for them under the
+about 60 s on one core, most of it the compiles); the existing file has no room for them under the
 90 s cap (D224).
 """
 

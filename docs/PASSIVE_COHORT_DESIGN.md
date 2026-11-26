@@ -977,3 +977,16 @@ with no code change):
       identical, the bindings' 176 common arrays equal;
     - G1, `c1-605331c2-renewal-fr52-cohorts-20261126/`: the co-writer world's 152 arrays equal and
       two added, and FR52_cohorts new.
+14. **What moves for a world that declares no cohort,** stated exactly (a correction of 3ad0c9c2's
+    message, which grouped the run view's two sets with what is written only where a cohort is
+    declared):
+    - **moves:** its state and layout gain the five zero-size leaves, so its program text and
+      bindings change (items 4 and 5) and its saved fields hold the record's empty history; the
+      run view gains two sets for the record's axes, `integer_cohort` (no ids) and
+      `integer_cohort_label` (the four labels), since the view declares a set for every axis of the
+      operator's state; the declarations manifest and the library page list the new field;
+    - **does not move:** any value of any field at any step, the declaration's `to_dict`, the
+      summary, the batch signature and the working sizes.
+    - **One more test ID** follows from the qualification set's new world:
+      `test_field_solver_enforcement.py` holds `[qualification/FR52_cohorts]`, which passes (78
+      IDs; main's record shows 76).
