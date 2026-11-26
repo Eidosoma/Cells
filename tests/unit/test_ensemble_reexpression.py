@@ -4,13 +4,16 @@ Parse only, and fabricated records: no row compiles or runs a world. The records
 driver's own code around numbered arrays, so that every slot of every array differs and a swapped
 index, a turned sign or a shifted clock changes a number that a row holds. Where a row makes a
 worker's record, the engine's run, writer, windows and pools are stood in for, and its parse is its
-own. The 59 rows take about 16 s on the shared CPUs, most of it the engine's parse of definitions.
+own. The repeat's rows compare fabricated tables, and sets 3 and 4 of Part 1's rehearsal where this
+machine holds them. The 61 rows take about 21 s on the shared CPUs, most of it the engine's parse of
+definitions and the reading of the two sets.
 """
 
 import ast
 import copy
 import dataclasses
 import json
+import math
 import re
 from pathlib import Path
 from types import SimpleNamespace
@@ -27,7 +30,15 @@ from cells.execution.errors import NumericalError
 from cells.models.surface_pump import DISSIPATION_MESSAGE, LEDGER_MESSAGE
 from cells.models.surface_pump_v3 import STATE_AXES
 from cells.registry.models import get_model
-from validation.ensemble_reexpression import blocks, definitions, labels, refusals, sample, worlds
+from validation.ensemble_reexpression import (
+    blocks,
+    definitions,
+    labels,
+    refusals,
+    repeat,
+    sample,
+    worlds,
+)
 from validation.ensemble_reexpression import run as driver
 from validation.ensemble_reexpression import table as exporter
 from validation.ensemble_reexpression.inputs import (
@@ -1257,3 +1268,173 @@ def test_the_committed_format_sample_is_the_contracts_and_no_number_is_a_runs():
     listed = (folder / "README.md").read_text().splitlines()
     for path, types in sample.keys(folder / "table").items():
         assert f"{path}: {', '.join(types)}" in listed
+
+
+# ------------------------------------------------------------------ the repeat after the ID move
+
+
+MOVED = {"old_law@1": "cells.gate.old_law@1", "old_kind@2": "cells.kind.old_kind@2"}
+
+
+def _entry(law, kind, *, clock=1.0, sha="a" * 64):
+    """A fabricated entry: an ID as a string, in a set, as a map's key and inside a message, the
+    leaves that are never compared, and numbers."""
+    return {
+        "status": "refused",
+        "steps": 2,
+        "t": [0.0, 2e-05],
+        "rows": {"n_cell_Na": {"cell_a": [0.0, 0.5]}},
+        "strings": {"junction_relaxation": law},
+        "declared_strings": [law, "rk4"],
+        "definition": {
+            "ionic": {
+                "model": {"junctions": [{"gate": {"law": law}}], "kinds": {kind: {"x": 1.0}}}
+            },
+            "made_from": {"composed_sha256": sha, "pools": [{"pool_sha256": sha, "seed": 3}]},
+        },
+        "checks": {
+            "c_a": {
+                "compile_seconds": clock,
+                "finished_utc": f"at {clock}",
+                "checkpoint_manifest_sha256": sha,
+                "committed_events": 12,
+                "model": law,
+            }
+        },
+        "inputs": {"assembly": {"composed_file_fingerprint": sha, "pool_seeds": {"c_a": 3}}},
+        "refusal": {
+            "kind": "definition",
+            "message": f"Gate requires {law}, a range.",
+            "time_s": None,
+        },
+        "source": {"engine_revision": sha[:40]},
+        "record": f"runs/{clock}/RUN.json",
+        "record_sha256": sha,
+    }
+
+
+def _tables(folder, runs):
+    """A folder of one table and its SHA256SUMS, as the exporter writes them."""
+    folder.mkdir()
+    (folder / "table_cell.json").write_text(exporter.text({"kind": "k", "runs": runs}))
+    exporter.write_sums(folder)
+    return folder
+
+
+def test_the_repeat_reads_ids_through_the_move_and_shows_no_value(tmp_path, capsys):
+    """The repeat after the ID move (repeat.py's classes): an ID through the move's table wherever
+    it stands, a number bit for bit, a fingerprint or a clock never. An unequal run shows paths
+    alone, and nothing is compared that cannot be read. Fabricated tables; well under a second."""
+    old = _entry("old_law@1", "old_kind@2")
+    new = _entry("cells.gate.old_law@1", "cells.kind.old_kind@2", clock=2.0, sha="b" * 64)
+    new["declared_strings"].reverse()
+    assert repeat.compare({"r": old}, {"r": new}, ["r"], MOVED) == {"r": []}
+    assert repeat.compare({"r": old}, {"r": new}, ["r"], {})["r"] == [
+        "checks.c_a.model",
+        "declared_strings",
+        "definition.ionic.model.junctions[0].gate.law",
+        'definition.ionic.model.kinds["cells.kind.old_kind@2"]',
+        'definition.ionic.model.kinds["old_kind@2"]',
+        "refusal.message",
+        "strings.junction_relaxation",
+    ]
+    for path, value in (
+        (("rows", "n_cell_Na", "cell_a", 1), math.nextafter(0.5, 1.0)),
+        (("rows", "n_cell_Na", "cell_a", 0), -0.0),
+        (("steps",), 2.0),
+        (("inputs", "assembly", "pool_seeds", "c_a"), 4),
+        (("checks", "c_a", "committed_events"), 13),
+    ):
+        planted = copy.deepcopy(new)
+        target = planted
+        for key in path[:-1]:
+            target = target[key]
+        target[path[-1]] = value
+        assert repeat.compare({"r": old}, {"r": planted}, ["r"], MOVED) == {
+            "r": [repeat.shown(path)]
+        }
+    collided = {"r": {"k": {"a@1": 1, "b@1": 1}}}  # Two old keys, one new: never quietly one.
+    assert repeat.compare(collided, {"r": {"k": {"n@1": 1}}}, ["r"], {"a@1": "n@1", "b@1": "n@1"})[
+        "r"
+    ] == ["k"]
+    rename = repeat.renamer(MOVED)
+    assert (
+        rename("old_law@1, then old_law@1.") == "cells.gate.old_law@1, then cells.gate.old_law@1."
+    )
+    for kept in ("x.old_law@1", "old_law@12", "old_law@1.x", "my_old_law@1", "old_law@1_b"):
+        assert rename(kept) == kept
+    assert repeat.renamer({"a@1": "n.a@1", "cells.a@1": "n.a@1"})("cells.a@1 a@1") == "n.a@1 n.a@1"
+    planted = copy.deepcopy(new)
+    planted["rows"]["n_cell_Na"]["cell_a"][1] = 0.25
+    registered = _tables(tmp_path / "registered", {"r": old, "s": old, "gone": old})
+    made = _tables(tmp_path / "new", {"r": new, "s": planted})
+    move = tmp_path / "move.json"
+    rows = [{"old": [key], "new": value} for key, value in MOVED.items()]
+    move.write_text(json.dumps({"kind": repeat.MAP_KIND, "final": True, "rows": rows}))
+    command = ["--registered", str(registered), "--new", str(made), "--move", str(move), "--runs"]
+    assert repeat.main([*command, "r", "s", "gone"]) == 1
+    shown = capsys.readouterr().out
+    assert shown.splitlines() == [
+        "r: equal",
+        "s: unequal",
+        "    rows.n_cell_Na.cell_a[1]",
+        "gone: unequal",
+        "    (no entry in --new)",
+    ]
+    assert "0.25" not in shown and "0.5" not in shown
+    assert repeat.main([*command, "r"]) == 0
+    move.write_text(json.dumps({"kind": repeat.MAP_KIND, "final": False, "rows": rows}))
+    assert repeat.main([*command, "r"]) == 2
+    move.write_text(json.dumps(MOVED))
+    assert repeat.main([*command, "r", "r"]) == 2
+    move.write_text(json.dumps({"kind": repeat.MAP_KIND, "final": True, "rows": 3}))
+    assert repeat.main([*command, "r"]) == 2
+    told = capsys.readouterr().err.splitlines()
+    assert told[-3:] == [
+        "refused: the move's map is not final",
+        "refused: a run is named twice",
+        "refused: a fault of the comparison's own, TypeError",
+    ]
+    move.write_text(json.dumps(MOVED))
+    (made / "table_cell.json").write_text((made / "table_cell.json").read_text() + " ")
+    assert repeat.main([*command, "r"]) == 2
+    assert "is not what its SHA256SUMS lists" in capsys.readouterr().err
+
+
+REHEARSALS = Path("/mnt/workspaces/Cells")
+SETS = [REHEARSALS / f"ensemble-rehearsal{k}-20261125/table-rehearsal" for k in (3, 4)]
+
+
+@pytest.mark.skipif(
+    not all(folder.is_dir() for folder in SETS),
+    reason="sets 3 and 4 of Part 1's rehearsal are not on this machine",
+)
+def test_the_repeat_finds_two_rehearsals_equal_and_a_planted_change_alone():
+    """Sets 3 and 4 of Part 1's rehearsal, made from two revisions: every run equal through an
+    identity move. A value planted in one run is found at its path alone. An ID that set 4 spells
+    anew (the one that the fewest runs declare) is equal through a move that maps it, and unequal
+    without it, in each run that holds it; every other run is set 4's own. About 4 s."""
+    registered, new = (repeat.entries(folder) for folder in SETS)
+    runs = sorted(registered)
+    declared = [s for entry in registered.values() for s in entry["declared_strings"]]
+    identity = {s: s for s in declared}
+    assert set(new) == set(runs) and len(runs) == 94 and len(identity) > 10
+    assert repeat.compare(registered, new, runs, identity) == dict.fromkeys(runs, [])
+    name = next(n for n in runs if new[n]["rows"])
+    planted = new | {name: copy.deepcopy(new[name])}
+    readout = sorted(planted[name]["rows"])[0]
+    entity = sorted(planted[name]["rows"][readout])[0]
+    values = planted[name]["rows"][readout][entity]
+    values[-1] = math.nextafter(values[-1], math.inf)
+    path = repeat.shown(("rows", readout, entity, len(values) - 1))
+    assert repeat.compare(registered, planted, [name], identity) == {name: [path]}
+    old = min(identity, key=lambda s: (declared.count(s) < 2, declared.count(s), s))
+    spelled = f"cells.some_family.{old}"
+    token = re.compile(rf"(?<![\w@.]){re.escape(old)}(?![\w@])")
+    holding = [n for n in runs if token.search(json.dumps(new[n]))]
+    moved = new | {n: json.loads(token.sub(spelled, json.dumps(new[n]))) for n in holding}
+    assert 2 <= len(holding) < len(runs) and all(moved[n] != new[n] for n in holding)
+    mapped = repeat.compare(registered, moved, holding, identity | {old: spelled})
+    assert mapped == dict.fromkeys(holding, [])
+    unmapped = repeat.compare(registered, moved, holding, identity)
+    assert all(unmapped[n] for n in holding)

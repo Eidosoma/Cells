@@ -24,6 +24,7 @@ Everything up to "Part 2" below is Part 1's, and holds for Part 2 unless that se
 | `refusals.py` | What the engine raised, as a kind of refusal. The rows that a refused run keeps |
 | `readouts.py` | The series and potentials of READOUTS §2, read from a run's own rows |
 | `table.py` | The exporter (`export`) and the contract's keys and types (`check`) |
+| `repeat.py` | The repeat after the ID move (protocol §5, step 13): named runs' entries made again against their registered tables, leaf by leaf by the classes in its docstring. It prints `equal` or `unequal` and the paths that differ, never a value |
 | `sample.py`, `format_sample/` | The invented worlds of the format sample, how it is made, and the sample itself |
 | `sample_part2.py` | The invented worlds of Part 2, which the rows use |
 
