@@ -31,7 +31,7 @@ Uses [Tracer returns to a finite exterior pool after a wash](fr47-shell-wash-rec
 
 ## Numerical comparison
 
-**Checked.** On development build 43763a36, all three synthetic intervals agreed within 6.60 × 10⁻⁸ kBT. After full replacement the engine booked 38.34719503 kBT against 38.34719500 predicted. The whole-term substitution gave 24.33882673 kBT. It also changed the empty-lumen interval and had zero effect on the interval with two occupied places. This comparison uses invented inputs.
+**Checked.** On development build 43763a36, all three synthetic intervals agreed within 6.60 × 10⁻⁸ kBT. After full replacement the engine booked 38.34719503 kBT against 38.34719500 predicted. The whole-term substitution gave 24.33882673 kBT. It also changed the empty-lumen interval and had zero effect on the interval with two occupied places. This comparison uses invented inputs. D373 records the independent FR-47 qualification and the separate schedule check. [Qualification decision](https://github.com/Eidosoma/Cells/blob/9b6191bdf0800d70dcae81107378401ab3c8b474/docs/DECISIONS.md#L12337-L12362)
 
 **Engine** `cells.assembly_lineages@2`, `cells.rate_equations@1`, `cells.ideal_mixing@1`, `cells.prescribed_shell@1`, `cells.shell_permeation@1`
 

@@ -310,7 +310,7 @@ class ObserverTests(unittest.TestCase):
 
 def main():
     """Standard unittest entry with saved per-case results and runtime hashes."""
-    from validation.betse import betse_normal_channel_join_runtime as runtime
+    from validation.betse import loaded_module_inventory as runtime
 
     output = Path(os.environ["CELLS_MAPPING_DIAGNOSTIC_EVIDENCE"])
     attempts, rows = [], []

@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from validation.betse import betse_normal_channel_join_runtime as runtime_inventory
+from validation.betse import loaded_module_inventory as runtime_inventory
 
 
 def test_evidence_inventory_hashes_full_files_without_read_bytes(tmp_path, monkeypatch):

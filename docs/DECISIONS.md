@@ -13398,3 +13398,122 @@ It is a port check: it shows that the live engine computes legacy's written equa
 - **Process:** two of the builder's privacy scans ran just after their commits instead of before. All printed zeros.
 - **Next:** the registered comparison's second part, up to the format sample. The sample goes to the lead, then the judge reads it for structure only,
   then the judge's tag and the registration tag. FR-65 runs its D148 round on main with the small fixes stacked.
+
+## D396: the test slimming is landed; the weekly tier 3 is installed; FR's baselines have a permanent folder
+
+2026-11-26, written at 17:39 UTC.
+
+- **Landed** at 033bde25 (tag `test-slimming-landed-2026-11-26`), merged from 62e63e69. It changes no src file.
+  - The tier record is merged three ways with `scripts/test_tiers.py merge` (base c52d0998, the branch's, main's), so main's six rows from the
+    co-writers' fold stay.
+  - `tests/tier3_record.json` is the branch's; main's is unchanged since the base.
+  - The scoped gate, run on a trial merge onto 663edb44, covered the guard set and the six files the change reaches: 294 passed.
+- **What it moves:**
+  - The thirteen parked assays' tests and the three reference regenerations go to tier 3. Their fast integrity checks stay in tier 1.
+  - The frozen=composite rows now check all 16 worlds at the definition (`validation/tissue/one_computation.py`), comparing execution blocks and
+    parameters bit for bit. Each of the seven replacement worlds compiles once, and the lineage is read through both summaries.
+  - On the 13 changed rows the plants catch everything the old rows caught, plus one they missed (rc1).
+  - `test_site_occupancy_idle_empty.py` is merged into `test_site_occupancy_idle.py`.
+- **The savings:**
+  - per gate, about 97 s in tiers 1 and 2 (the assays), 302 s in tier 2 (the regenerations) and 15 s (the merge);
+  - per weekly tier-3 run, about 527 s (the frozen=composite rows).
+- **Slimming found little elsewhere.**
+  - Most split pairs share no compiled program, so merging them saves only import time.
+  - The restart and identity families cost one compile per run length.
+  - An engine-side idea goes to the backlog: bucketed scan lengths with masked steps, so that resumes and horizons reuse one compile.
+- **The weekly tier 3** runs on Sundays at 04:00 UTC (`cells-weekly-tier3.timer`, installed by the lead today; first run 29 November). Its verdict
+  goes to `/mnt/workspaces/Cells/weekly/DATE/verdict.json`.
+- **FR's baselines** (D392) are copied byte for byte to `/mnt/workspaces/Cells/fr-baselines/805c48a4-20261126`. The three gate scripts that read
+  them now point there, and the old folder is left as it was.
+
+## D397: the BETSE file removal is landed; the user's answers on the rest of the cleanup; the per-event counts go into the engine
+
+2026-11-26, written at 18:06 UTC.
+
+- **Landed** at fc94f893 (tag `betse-cleanup-landed-2026-11-26`), from 3554c7eb. It changes no src file.
+  - Removed: 331 files, 322 of them validation files and 9 tests, and 132,008 lines. One module is renamed
+    (`betse_normal_channel_join_runtime.py` becomes `loaded_module_inventory.py`, for a test kept on 8 November).
+  - **Against D394's figures:**
+    - the files nothing runs are 302, not 307. One L3 module stays, because kept modules import it. Two protocol files moved to the
+      second commit. The geometry replay and its driver went, since nothing runs them;
+    - the ECM and material references are 20 files, not 18, with those two protocol files.
+    - The removal list's one "kept as a record" file was restored, and one orphaned geometry module was removed.
+  - Test IDs fall from 11,197 to 10,859 across all three tiers. Exactly the 338 declared IDs differ, all in tier 1.
+  - No `betse_normal_*` or `betse_native_*` file remains, so AGENTS.md's sentence holds as written. Nothing imports BETSE outside
+    `validation/betse/`.
+  - The rename tool's check gives 69 problems before and after. Those 69 predate the batch: the ID move's record lags the tree, and that is
+    a cleanup item of its own.
+  - The scoped gate ran on a trial merge onto a4646968: 102 passed.
+- **The user's answers on the rest of the cleanup** (verbatim "1. yes 2. as you suggest 3. yes 4. as you suggest 5. as you suggest"):
+  1. A list of branches and worktrees is prepared first, read-only. Anything a record cites stays, and nothing is deleted before the user
+     sees the list.
+  2. The re-hosting of the short decodability assays on Cells physics stays planned, so their nine switched-off tests stay. That is the
+     lead's reading of "as you suggest".
+  3. The docs are refreshed after FR-65 lands: the README, FR-55's retitle, the feature index, and D380's two owed labels. The README diff
+     is shown to the user before it is pushed.
+  4. After FR-65, the lead checks what uses the older major of each of the seven pieces that have two. Only what nothing uses is retired.
+  5. AGENTS.md's gate sentence now says that tier 3 runs weekly (Sundays 04:00 UTC, D396), and deliberately when a change needs it.
+- **FR-43 part 3's event counts** (the user, "1. sounds good"; the adviser agrees). The engine's trace records each event's time and channel
+  but not its counts, so an exporter would have had to derive them, and the registered check of counts against channel would hold by
+  construction. `integer_unit_population@1` gains a write-only trace field, `integer_trace_counts`.
+  - It stays in place under @1 (MODULE_SYSTEM §2.3).
+  - The field is written from the counts the loop carries after each event, never as counts before plus the jump.
+  - A plant row proves that a wrong but balanced jump breaks the channel rule.
+  - It gets its own round after FR-65, and every existing field must stay bit for bit. Crossrev's and G1's records for the co-writer world
+    are renewed.
+  - The rehearsal and the registration tag wait for it.
+
+## D398: FR-65 is landed, with the small fixes stacked; tier 3's record refrozen for four files
+
+2026-11-26, written at 19:14 UTC.
+
+- **Landed** at ae349721 (tag `fr65-landed-2026-11-26`), from e69b618f.
+  - e69b618f adds only the design note's section 10 to the gated head b4372df9, which is main 4be34f74 merged with `small-fixes-20261126`
+    (c574cc41).
+  - The landing's trial ran the twelve changed tier-1 and tier-2 files with the guard set: 649 passed, 1 skipped.
+- **FR-65** (D375): turnover reads the current volume and its masks beside water, partition and insertion.
+  - The occupant hook, its tables and the founder rule move to the definition.
+  - `scheduled_cell_replacement@2` gives no hook, so the volume rule refuses it beside turnover.
+  - Exactly the design note's 19 of 5,559 sequences newly parse, and nothing that parsed before is lost.
+- **The small fixes** (D393, D394):
+  - FR-47's and Protocol D v2's run-record status follows D373 and D393, and the GPU refusal message follows D380.
+  - The assembly command-line and pool tests run under `CELLS_OUTPUT_ROOT`, with the guard still tested.
+  - The native environment test checks its import in a fresh process.
+  - The unstimulated diagnostic compares at a stated tolerance.
+  - Of the ten failures D393 found, these settle the last seven. The other three left with the BETSE references (D397).
+- **The D148 round** on b4372df9, against 4be34f74:
+  - crossrev: 11 of 11 sets identical;
+  - G1: 113 of 113, identical for base and head;
+  - FR's set passes (quick 9, windowed T and R);
+  - the judges' derivative programs: 257 files identical;
+  - turnover's pair check: 24 of 24 program texts, constants and bindings identical;
+  - tiers 1 and 2: 516 of 520 files as recorded. The other four are the small fixes' files, which now pass.
+  - The small fixes' text changes surfaced in none of the compared sets.
+- **Tier 3, run on a trial merge onto 4f4a4c34** (frozen as `snap-trial-67e96e21`; its worktree is kept because the record cites it):
+  - FR-65's three files pass: shared inventory, 9 tests in 380.0 s; partition, 16 in 493.7 s; insertion, 13 in 448.9 s;
+  - the two slimmed frozen=composite files pass on this code: 258.5 and 538.5 s;
+  - `test_unstimulated_diagnostic.py`, which the slimming moved to tier 3, passes, 7 of 7.
+- **`tests/tier3_record.json` is refrozen for those four files** (D398 in its `refrozen` header). It was built from main's runs plus the two new run
+  folders under `/mnt/workspaces/Cells/tier3-records/fr65-20261126/`, and changes nothing else.
+- **Next:** the per-event counts fix's D148 round starts on main ae349721.
+
+## D399: FR-63 is checked by a calibration report, not a registered comparison (the user); FR-64's new design note
+
+2026-11-26, written at 19:44 UTC. The user: "sounds good as you suggest".
+
+- **FR-64's new design note.** It is `docs/FR64_VOLTAGE_SHIFT_DESIGN.md`, on branch `fr64-design-20261126`.
+  - It builds on the note D361 decided (`docs/VOLTAGE_SHIFT_DESIGN.md` on `fr64-design`, 377a1b34) and on the lead's rulings at fc899d3d, and
+    changes none of them.
+  - The lead's brief for it was written from a stale index row and missed the earlier note; the error is the lead's.
+  - **Its three gaps are not live defects.** In the stage path, the stored against free amounts, and the domain check, the new note found
+    places the shift must reach. No world on main reaches them today, FR-51's landed block included. The earlier note had already listed all
+    three.
+  - The designer did not open FR-51's reserved material (D391).
+- **FR-63, the user's decision.** FR-63 becomes a declared pH shift on Kv1.5's activation gate. Each preparation's shift per pH unit is a two-point
+  secant through that preparation's own points, so judging the engine against those points would be circular.
+  - FR-63 gets a calibration report: the shift each study implies, with its sources. There is no registered comparison.
+  - A registered comparison follows only if a held-out quantity exists. The lead asks the Lean track whether any of the three studies holds an
+    unscored third pH level, or another unscored readout.
+  - D361 labelled the pH gate pair "claimed". It stays an indication, unjudged, until such a quantity is found.
+- **Still the lead's to rule, before FR-64's build is briefed:** the new note's questions 1, 4 and 5, its options O1 to O4, and the retired 20-row
+  fallback. FR-64's build keeps its place in the queue (D393).

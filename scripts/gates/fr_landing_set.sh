@@ -32,7 +32,7 @@ PY=${PY:-/mnt/workspaces/Cells/venv-cpu/bin/python}
 LOCK=${LANE_LOCK:-/mnt/workspaces/Cells/locks/gate-cores-8-11.lock}
 FR=/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45
 START=$FR/rehearsal-20261117/run-e79b4232/fr5/start/start.json
-BEFORE=/mnt/workspaces/Cells/final-gate-20261126/fr-baselines-805c48a4/windowed  # Renewed for D307, then for the ID move's definition hashes (D345): RENEWAL.json beside it.
+BEFORE=/mnt/workspaces/Cells/fr-baselines/805c48a4-20261126/windowed  # Renewed for D307, then for the ID move's definition hashes (D345): RENEWAL.json beside it; D392's permanent copy.
 [ -e "$OUT" ] && { echo "Refused: $OUT exists" >&2; exit 1; }
 mkdir -p "$OUT/fr-landing"
 log() { echo "$(date -u +%FT%TZ) $*" >> "$OUT/fr-landing-set.log"; }

@@ -13,7 +13,9 @@ validation/fr43_part3/references/spec/part3.json):
   node, disassembly returns both, S + 2A = 2 on every row, the pools' total and every ledger hold;
 * C3.4's premise: the first event at E0/a0 in closed form, each next threshold -ln u1 of the spec's
   table, and the channels alternating;
-* C3.6: a same-seed restart cut between events is bitwise the uninterrupted run.
+* C3.6: a same-seed restart cut between events is bitwise the uninterrupted run;
+* the trace's counts are those the event loop carries (FR-43 part 3's co-writers registration):
+  the declared jumps on every recorded event, and a planted wrong jump recorded as carried.
 
 The compiled world runs once per module (about 30 s on one core, most of it the compile): the
 restart and the closed forms need a run, and the run's rows serve every compiled check here.
@@ -467,6 +469,48 @@ def test_a_same_seed_restart_between_events_is_bitwise(w1):
     for k in range(cut, len(rows)):
         for a, b in zip(resumed[k], rows[k], strict=True):
             assert np.asarray(a).tobytes() == np.asarray(b).tobytes(), k
+
+
+# A wrong but balanced jump: assemble's change lost, so the subunits are kept and no count moves.
+JUMPS = {"declared": None, "assemble's jump lost (planted)": 0}
+
+
+@pytest.mark.parametrize("jump", sorted(JUMPS))
+def test_the_trace_records_the_counts_the_loop_carries(w1, jump):
+    """integer_trace_counts (FR-43 part 3's co-writers registration) holds the counts the event
+    loop carries on after each event. Honest run: each recorded event's counts are the counts
+    before it changed by its channel's declared jump, each row's counts are its last event's, and
+    the unused slots hold -1. Plant: one eager half-step to just past the first event, with
+    assemble's change zeroed in the bound layout (a wrong jump that keeps the subunits), records
+    the counts the loop carries, which are not the declared jump's: the record is the loop's, never
+    formed again from the declaration. It compiles only the half-step's loops (about 5 s)."""
+    _, _, p, _, rows = w1
+    last, start = rows[max(rows)], rows[0]
+    declared = np.asarray(p.integer_change)[0]
+    first = np.asarray(start.integer_counts[0])
+    if JUMPS[jump] is None:
+        fired = int(last.integer_events[0])
+        counts = np.asarray(last.integer_trace_counts[0])
+        channels = np.asarray(last.integer_trace_channel[0, :fired])
+        before = first
+        for k in range(fired):
+            assert np.array_equal(counts[k], before + declared[channels[k]]), k
+            before = counts[k]
+        for row in rows.values():
+            n = int(row.integer_events[0])
+            held = counts[n - 1] if n else first
+            assert np.array_equal(np.asarray(row.integer_counts[0]), held)
+        assert np.all(counts[fired:] == -1)
+        return
+    planted = np.array(p.integer_change, copy=True)
+    planted[0, 0, :] = JUMPS[jump]
+    h = float(last.integer_trace_time_s[0, 0]) * (1 + 1e-6)  # Just past the first event.
+    state = type(start)(*(jnp.asarray(v) for v in start))
+    new, _ = iup.half_step(state, h, p._replace(integer_change=jnp.asarray(planted)))
+    assert int(new.integer_events[0]) == 1 and int(new.integer_trace_channel[0, 0]) == 0
+    recorded = np.asarray(new.integer_trace_counts[0, 0])
+    assert np.array_equal(recorded, np.asarray(new.integer_counts[0]))  # What the loop carries.
+    assert not np.array_equal(recorded, first + declared[0])  # It breaks the declared jump.
 
 
 # ------------------------------------------------------------------ co-writers (FR-43 part 3)

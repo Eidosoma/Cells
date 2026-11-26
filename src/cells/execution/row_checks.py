@@ -71,8 +71,8 @@ def admit(spec):
         raise ConfigError("row_checks device requires a compiled run (execution.jit true)")
     if spec.execution.backend != "cpu":
         raise ConfigError(
-            "row_checks device is qualified on the CPU only; a GPU backend is refused until a "
-            "GPU measurement exists"
+            "row_checks device is qualified on the CPU only; a GPU backend is refused: D336's "
+            "measurement did not qualify the device's own row checks"
         )
     model = get_model(spec.model)
     missing = [name for name in HOOKS if not hasattr(model, name)]

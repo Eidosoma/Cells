@@ -1,0 +1,28 @@
+# The weekly tier 3 (D390). Definitions only: the lead installs them (copy both files to
+# ~/.config/systemd/user/, then `systemctl --user daemon-reload` and
+# `systemctl --user enable --now cells-weekly-tier3.timer`).
+# A run on demand: `systemctl --user start --no-block cells-weekly-tier3.service`.
+# Stop it only with `systemctl --user stop cells-weekly-tier3.service`, which stops the whole unit.
+# The verdict: /mnt/workspaces/Cells/weekly/DATE/verdict.json (done: 0 passed, 1 failed, 2 not run).
+[Unit]
+Description=Cells weekly tier 3 against its record (scripts/gates/weekly_tier3.sh)
+
+[Service]
+Type=oneshot
+Slice=cells.slice
+WorkingDirectory=/mnt/workspaces/Cells
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/bin/bash %h/Cells/scripts/gates/weekly_tier3.sh
+# Memory: the final gate's tier-3 run of 26 November (cells-fg-tier3, the same four files at a time)
+# peaked at 13.7G, page cache included; no swap, and a file killed for memory fails alone (its diff
+# entry is "no verdict"). The two lanes and the light CPUs only: never the timed lane (4, 5, 20, 21)
+# or the visualizer's (12-15, 28-31). The script stays on CPU 23 until it holds a lane's lock, then
+# runs one file per physical core of that lane, its siblings idle.
+MemoryMax=20G
+MemorySwapMax=0
+OOMPolicy=continue
+OOMScoreAdjust=200
+CPUAffinity=0-3 8-11 16-19 22-27
+# About 80 minutes of tier 3 (19,042 file seconds over four cores on 26 November) after up to three
+# hours' wait for a lane.
+TimeoutStartSec=16h

@@ -879,6 +879,21 @@ zero bookings. The species is never a mismatch carrier, because those are charge
 | Insertion@1/@2, partition, bridge (closers) | Refused (masks) | Version 1.1, under the living-interval rule (§5.3) |
 | replacement@2 | Waits | It requires water |
 
+**Turnover's version 1.1, built by FR-65** (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md; D375 and the
+lead's rulings of 24 November 2026). `cells.operator.scheduled_species_turnover@1` keeps its law ID
+and takes its own reads, so the table above stays version 1 for exchange, the coupling and the unit
+producer, which share `species_common.CONFLICTS_VIEW`:
+- the volumes and both masks are current reads at its split, with the masks also read as references
+  at the end, and the outside anchors are a guarded reference read;
+- admitted, each changer declared before it: water (with the symport or the bath schedule beside
+  it), the partition with daughters keyed by their carriers (§5.2's rule through the contract's
+  `slot_occupants`; §5.3's living intervals follow), insertion@2, insertion@1 with cell routes only,
+  and a lumen at a node it does not read (route B: `changed_volume_nodes`);
+- refused by name: replacement@2 and a lumen at a node it clears (`check_volume_changers`),
+  insertion@1 where it clears at a node (its anchor guard), a daughter keyed by its slot, and an
+  outside rate before its node's onset (§5.3).
+The coupling's current-volume reads are FR-65's second step.
+
 ## 6. Calibration targets
 
 Every record was fetched by DOI from Europe PMC (title, authors, journal, volume, issue, pages,

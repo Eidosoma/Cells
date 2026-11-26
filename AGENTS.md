@@ -78,7 +78,8 @@ as BETSE, BITSEY, tyssue, Chaste, Morpheus, CompuCell3D, PhysiCell and cellGPU.
   run in full nightly. Queued heads may be gated together as a stack.
 - The routine test gate is `scripts/test_tiers.py run --tiers tests/test_tiers.json
   --tier 1` (about 6 minutes on four cores). Add tier 2 (about 11 more minutes)
-  before landing engine changes; run tier 3 deliberately. A gate passes when
+  before landing engine changes; tier 3 runs weekly (Sundays 04:00 UTC, D396), and deliberately when a
+  change needs it. A gate passes when
   outcomes match the recorded tier baseline. Re-measure tiers after adding or
   fixing tests.
 

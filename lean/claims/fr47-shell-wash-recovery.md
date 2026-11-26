@@ -31,7 +31,7 @@ Uses [Shell entry and exit depend on conductance and the gate’s own forms](pre
 
 ## Numerical comparison
 
-**Checked.** On cf5ddcff replacement removed five exterior tracers and left seven in the lumen. The eight-state host rate matrix gave exterior means of 1.3607043414 at 0.75 s and 2.8910229384 at 2 s. The native half-withdrawal averaged 1.4455114692 removed. All agreed within 10⁻¹² molecules. On the separate deterministic development build 43763a36, all six compartment reads and both removed amounts met a 0.00024-molecule tolerance on an invented 240-tracer shell.
+**Checked.** On cf5ddcff replacement removed five exterior tracers and left seven in the lumen. The eight-state host rate matrix gave exterior means of 1.3607043414 at 0.75 s and 2.8910229384 at 2 s. The native half-withdrawal averaged 1.4455114692 removed. All agreed within 10⁻¹² molecules. On the separate deterministic development build 43763a36, all six compartment reads and both removed amounts met a 0.00024-molecule tolerance on an invented 240-tracer shell. FR-47 subsequently passed its registered qualification. [D373](https://github.com/Eidosoma/Cells/blob/9b6191bdf0800d70dcae81107378401ab3c8b474/docs/DECISIONS.md#L12337-L12362)
 
 **Engine** `cells.assembly_lineages@2`, `cells.prescribed_shell@1`, `cells.shell_permeation@1`
 

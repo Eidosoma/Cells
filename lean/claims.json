@@ -9983,6 +9983,7 @@
       "biology": {
         "status": "open",
         "observable": "Absolute SK2 open probability at fixed free calcium and its relaxation time after calcium addition or removal.",
+        "finding": "In one rat SK2 patch at 0.4 and 1.0 µM calcium, the short open lifetime was 1.1 ms at both levels. Long lifetimes were 13.5 and 11.9 ms, and long openings rose from 49% to 66%. [Hirschberg et al., Figs. 4–5](https://doi.org/10.1085/jgp.111.4.565)",
         "unit": "open probability",
         "pairs": [
           {
@@ -10012,7 +10013,7 @@
             "comparison": "Hirschberg’s plateau and washout give a 10.63 ms activation time constant versus 4.1 ± 0.6 ms measured. Oliver measured a 6.18 ± 1.91 ms 20–80% rise and 34.7 ± 6.5 ms washout time constant at 10 µM Ca²⁺. Reusing that mean closing rate at 0.5 µM gives an upper bound of ln(4) × 34.7 = 48.1 ms, below the reported rise of about 80 ms. These are two different tests of transferring one rate across recordings. A matched-patch statistical test remains open.",
             "replay": {
               "status": "missed",
-              "assessment": "One native closing rate gives 10.63 ms in Hirschberg’s activation test and bounds Oliver’s low-dose 20–80% rise by 48.1 ms using the high-dose washout mean. The experiments give 4.1 ms and about 80 ms. FR-55 covers dose-dependent closing."
+              "assessment": "One native closing rate gives 10.63 ms in Hirschberg’s activation test and bounds Oliver’s low-dose 20–80% rise by 48.1 ms using the high-dose washout mean. The experiments give 4.1 ms and about 80 ms. D351 classifies these as indications in opposite directions. D390 leaves FR-55 closed pending a within-preparation comparison of closing rates at two calcium levels. [Paired measurements sought](PROGRESS.md#fr55-sk2-closing)"
             }
           }
         ],
@@ -10038,6 +10039,18 @@
             "uncertainty": "Fig. 8C gives a fitted midpoint and slope with no uncertainty or replication count. The drug series was recorded on the same patch; Fig. 8B’s n = 7 concerns another experiment.",
             "assessment": "An independent steady dose response supports cooperative activation near 0.7 µM. At the independent fitted midpoint, the Cells curve calibrated on Hirschberg predicts about 0.475 of its own ceiling. Unknown channel count prevents comparison of absolute Pₒ. Rise and washout require calcium-jump measurements.",
             "report": "lean/PROGRESS.md#paired-transport-and-membrane-measurements"
+          },
+          {
+            "dataset_id": "pedarzani2001_sk2_washout",
+            "manifest": "lean/checks/data/fr55_sk2_closing.json",
+            "citation": "Pedarzani et al. (2001), Fig. 2A",
+            "doi": "10.1074/jbc.M010001200",
+            "locator": "Figure 2A shows untreated washouts after 0.5 and 10 µM calcium pulses. Results pp. 9764–9765 give the high-pulse control mean.",
+            "context": "Excised oocyte patches expressing rat SK2. Each pulse ended in nominally calcium-free solution. The study leaves patch identity across the two pulse levels unspecified.",
+            "role": "descriptive",
+            "uncertainty": "Illustrative traces give about 40 and 32 ms by 1/e interpolation (approximately ±5 ms graph-reading precision). The reported high-pulse mean was 39.4 ± 4.1 ms (SD, seven experiments). The low-pulse group uncertainty and the final free calcium are unreported.",
+            "assessment": "Washout took tens of milliseconds after both pulse levels. The common final bath leaves the calcium dependence of closing during decay unresolved. The study shares investigators with the earlier work.",
+            "report": "lean/PROGRESS.md#fr55-sk2-closing"
           },
           {
             "dataset_id": "oliver2000_rsk2_calcium_jumps@1",
@@ -11219,7 +11232,7 @@
             "comparison": "Half the total normalized conductance shifted +51.6 mV for a +53.2 mV reversal shift in Panama, and −26.1 and −48.1 mV for −26.9 and −48.9 mV shifts in Ishihara. The latter two share the 150 mM curve. Exact slope and absolute current remain unresolved.",
             "replay": {
               "status": "partial",
-              "assessment": "In the development @3 clamp, RMS fraction errors with measured shifts were 0.044, 0.010 and 0.015. Concentration-based reversals gave 0.226, 0.026 and 0.043. True absolute-voltage blocks gave 0.397, 0.479 and 0.533. Internal K has one separate contrary series. The post-landing registration remains open. [Two-arm replay](PROGRESS.md#fr51-two-potassium)"
+              "assessment": "In the development @3 clamp, RMS fraction errors with measured shifts were 0.044, 0.010 and 0.015. Concentration-based reversals gave 0.226, 0.026 and 0.043. True absolute-voltage blocks gave 0.397, 0.479 and 0.533. Internal K has one separate contrary series. D391 stopped the post-landing registration under §3 because the 10 mM trace could not be identified. Both held-out levels (10 and 20 mM) remain unread and unscored. [Exploratory replay](PROGRESS.md#fr51-two-potassium) · [Registration stop](PROGRESS.md#fr51-panama-holdouts)"
             }
           }
         ]
@@ -14032,7 +14045,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": ["fr47-shell-interval-heat-cpu"],
-        "result": "On development build 43763a36, all three synthetic intervals agreed within 6.60 × 10⁻⁸ kBT. After full replacement the engine booked 38.34719503 kBT against 38.34719500 predicted. The whole-term substitution gave 24.33882673 kBT. It also changed the empty-lumen interval and had zero effect on the interval with two occupied places. This comparison uses invented inputs."
+        "result": "On development build 43763a36, all three synthetic intervals agreed within 6.60 × 10⁻⁸ kBT. After full replacement the engine booked 38.34719503 kBT against 38.34719500 predicted. The whole-term substitution gave 24.33882673 kBT. It also changed the empty-lumen interval and had zero effect on the interval with two occupied places. This comparison uses invented inputs. D373 records the independent FR-47 qualification and the separate schedule check. [Qualification decision](https://github.com/Eidosoma/Cells/blob/9b6191bdf0800d70dcae81107378401ab3c8b474/docs/DECISIONS.md#L12337-L12362)"
       },
       "biology": {
         "status": "open",
@@ -14076,7 +14089,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": ["fr47-shell-wash-recovery-host", "fr47-shell-interval-heat-cpu"],
-        "result": "On cf5ddcff replacement removed five exterior tracers and left seven in the lumen. The eight-state host rate matrix gave exterior means of 1.3607043414 at 0.75 s and 2.8910229384 at 2 s. The native half-withdrawal averaged 1.4455114692 removed. All agreed within 10⁻¹² molecules. On the separate deterministic development build 43763a36, all six compartment reads and both removed amounts met a 0.00024-molecule tolerance on an invented 240-tracer shell."
+        "result": "On cf5ddcff replacement removed five exterior tracers and left seven in the lumen. The eight-state host rate matrix gave exterior means of 1.3607043414 at 0.75 s and 2.8910229384 at 2 s. The native half-withdrawal averaged 1.4455114692 removed. All agreed within 10⁻¹² molecules. On the separate deterministic development build 43763a36, all six compartment reads and both removed amounts met a 0.00024-molecule tolerance on an invented 240-tracer shell. FR-47 subsequently passed its registered qualification. [D373](https://github.com/Eidosoma/Cells/blob/9b6191bdf0800d70dcae81107378401ab3c8b474/docs/DECISIONS.md#L12337-L12362)"
       },
       "biology": {
         "status": "open",
