@@ -174,7 +174,9 @@ EPS = float(np.finfo(np.float64).eps)
 MAX_SLOTS = 64  # §6.9: a population's linear algebra is dense in version 1
 WASHES = ("replacement", "withdrawal")  # FR-47: admitted in a prescribed shell's world only
 BELOW_ZERO = 10.0  # FR-47's E2: a step result below −BELOW_ZERO·atol_count is retried at h/4
-FR47_STATUS = "qualified: FR-47's independent check passed at its registered tag (D373)"  # the lead's words
+FR47_STATUS = (
+    "qualified: FR-47's independent check passed at its registered tag (D373)"  # the lead's words
+)
 FR47_PROTOCOL = "fr47-shell-exchange-registered-2026-11-24"  # FR-47's registered tag (D323)
 H_ERROR = 1e-10  # §3.5: the pore clock's bound per accepted step, its absolute part
 H_RELATIVE = 2e-3  # D309: its relative part, |U^H| <= H_ERROR + H_RELATIVE |dH| per vesicle
@@ -272,7 +274,8 @@ REPRESENTATION = law_registry.BUILTIN.register(
             "envelope": "execution.representation.envelope.min_count, declared with provenance",
             "error_budget": "Protocol D's criterion B: b = 2 on the mean, c_r = 5 per replica "
             "(docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md §5.1)",
-            "record": "Protocol D v2 passed its independent check at its registered tag ol6-protocol-d-v2-registered-2026-11-24 (D368)",
+            "record": "Protocol D v2 passed its independent check at its registered tag "
+            "ol6-protocol-d-v2-registered-2026-11-24 (D368)",
             "fr47": FR47_STATUS + ": the prescribed shell, its washes, E2 and autonomous gates, "
             "in a prescribed shell's world only, registered for FR-47's protocol (tag "
             "fr47-shell-exchange-registered-2026-11-24); its independent check passed (D373), "
@@ -2397,9 +2400,9 @@ def fr47_paths(spec):
 
 
 def qualification_of(spec):
-    """FR-47's status for one run's record, or None: the newly admitted deterministic shell paths
-    stay unqualified until the registered protocol's verdict (the lead's ruling at the landing).
-    Written only where a world uses them, so no other run's record moves."""
+    """FR-47's status for one run's record, or None: the deterministic shell paths are qualified:
+    FR-47's independent check passed at its registered tag (D373), and each run that uses them
+    records that status. Written only where a world uses them, so no other run's record moves."""
     paths = fr47_paths(spec)
     if not paths:
         return None
