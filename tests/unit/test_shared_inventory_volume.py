@@ -413,7 +413,6 @@ def test_fr65_a_saved_run_holds_amounts_and_volumes_apart_and_resumes_bitwise(ru
 
 WINDOW = (2.0, 4.0)  # s: the labelled rung's production window, its cohort.
 A1_DT, A1_END = 0.01, 10.0  # s: A1 in a swelling cell, within water's relaxation bound.
-COMPANION_MAKE, COMPANION_CLEAR = 1e-6, 0.5  # fmol/s and 1/s: S moves a hundredfold in 0.1 s.
 
 
 def test_fr65_labels_beside_water_leave_the_physics_bitwise_and_follow_a_cohort(rungs):
@@ -451,17 +450,27 @@ def test_fr65_labels_beside_water_leave_the_physics_bitwise_and_follow_a_cohort(
     assert not follows(closed * (1 + 1e-6) + (closed == 0) * 1e-6)
 
 
-def test_fr65_a1_without_the_coupling_runs_in_a_swelling_cell():
-    """FR-65 §3.6: A1 (the gene unit and turnover of X) in a swelling cell, without the coupling,
-    whose current-volume reads are the second step (§3.8). Every host check on every row, and X,
+@pytest.mark.parametrize("coupling", [False, True], ids=["without the coupling", "with it"])
+def test_fr65_a1_runs_in_a_swelling_cell(coupling, tmp_path):
+    """FR-65 §3.6, and its coupling step's T2 (§11.8): A1 (the gene unit and turnover of X) in a
+    swelling cell, and with the coupling's Hill factor of X routed onto transcription's
+    initiation, the composed check of its readers (§3.8). Every host check on every row, and X,
     turnover's alone, follows its closed form at the bookings' rounding while V moves. The sheet's
     A1 starts X at its steady state P/k, so the closed form is that constant: the swelling, which
-    dilutes X's concentration, leaves its amount there. Planted: the closed form at k x 1.001 drifts
-    off it and misses. Seconds and reason (D224): about 40 s, one compile of the gene unit beside
-    water and turnover, newly admitted together."""
+    dilutes X's concentration, leaves its amount there. With the coupling:
+    - transcription's route has coupling_factor b + (1 - b) f(n_X/V) at every observed row (the gene
+      unit observes only its own state, so its routed rate has no column: tier-1's row 4 checks it);
+    - the saved records, against one saved file (this test is that check): write_run's
+      trajectory.npz holds X's amounts and V, from which its coupling_factor follows to rounding;
+    - a resume mid-run, in process and from a written snapshot, is bitwise the unbroken run's.
+    Planted: the closed form at k x 1.001 drifts off X and misses; the factor at V0 misses.
+    Seconds and reason (D224): about 40 s without the coupling and 80 s with it (one compile each,
+    and two resumed halves), the gene unit beside water and turnover, and then the coupling, newly
+    admitted together."""
+    from cells.records.io import load_snapshot, write_run, write_snapshot
     from validation.gene_regulation import sheet_check as sheet
 
-    raw = sif.swelling_a1(dt=A1_DT, end=A1_END, every=A1_END / 4)
+    raw = sif.swelling_a1(coupling=coupling, dt=A1_DT, end=A1_END, every=A1_END / 4)
     spec = parse_spec(raw)
     result = run(spec)  # Every host check on every accepted row.
     _, p = get_model(spec.model).initial_values(spec)
@@ -479,6 +488,38 @@ def test_fr65_a1_without_the_coupling_runs_in_a_swelling_cell():
     assert np.max(np.abs(x - closed)) <= bound, float(np.max(np.abs(x - closed)))
     planted = s_closed(np.asarray(result.times), x[0], make, clear * 1.001)
     assert np.max(np.abs(x - planted)) > bound
+    if not coupling:
+        return
+    names = ("half_saturation_mM", "coefficient", "basal")
+    k, n, b = (float(np.asarray(getattr(p, "coupling_route_" + f))[0]) for f in names)
+
+    def factor(amount, volume):
+        a = (np.asarray(amount) / np.asarray(volume) / k) ** n
+        return b + (1 - b) * a / (1 + a)
+
+    at = [int(np.flatnonzero(np.asarray(result.times) == t)[0]) for t in
+          spec.experiment.observation_times]  # fmt: skip
+    observed = np.asarray(result.observations.coupling_factor)[:, 0]
+    assert np.allclose(observed, factor(x[at], v[at]), rtol=1e-13, atol=0.0)
+    assert not np.allclose(observed, factor(x[at], v[0]), rtol=1e-6, atol=0.0)  # At V0.
+    write_run(tmp_path / "run", result)
+    saved = np.load(tmp_path / "run" / "trajectory.npz")
+    rows = [int(np.flatnonzero(np.isclose(saved["accepted_times"], t, rtol=0, atol=1e-12))[0])
+            for t in saved["observation_times"]]  # fmt: skip
+    k_x = ids.index("X")
+    amount = saved["amount_reference"][k_x, 0] + saved["amount_increment"][rows, k_x, 0]
+    volume = saved["volume"][0] + saved["volume_increment_pL"][rows, 0]
+    replayed = saved["observed_coupling_factor"][:, 0]
+    assert np.allclose(replayed, factor(amount, volume), rtol=1e-13, atol=0.0)
+    middle = result.checkpoint_at(A1_END / 2)
+    resumed = run(spec, middle)
+    for a_, b_ in zip(resumed.history, result.history, strict=True):
+        assert np.array_equal(np.asarray(a_), np.asarray(b_)[middle.step_index :])
+    write_snapshot(tmp_path / "middle", result.spec, middle)
+    loaded = load_snapshot(tmp_path / "middle")
+    again = run(loaded.spec, loaded.checkpoint)
+    for a_, b_ in zip(again.history, result.history, strict=True):
+        assert np.array_equal(np.asarray(a_), np.asarray(b_)[middle.step_index :])
 
 
 @pytest.mark.parametrize("companion", ["symport", "bath schedule"])
@@ -491,32 +532,9 @@ def test_fr65_a_companion_beside_water_and_turnover(companion):
     every row of 100 steps of 1 ms, and S's amount against its closed form at the bookings'
     rounding. Planted: S nudged by 1e-9 of itself at one row misses it.
     Seconds and reason (D224): about 25 s each, one compile and 100 steps."""
-    from cells.definitions import pump_composite_spec as cs
-    from cells.registry.inventory_species import add_inventory_species
-    from validation.tissue import bath_schedule_fixtures as bfx
-    from validation.tissue import pump_water_fixtures as wfx
-
-    if companion == "symport":
-        world = cs.frozen_definition(
-            wfx.with_symport(
-                wfx.with_water(wfx.heredity_cell("D", end_time=0.1), pf_m_s=5e-4), steepness=0.12
-            )
-        )
-    else:
-        world = bfx.water_world({"NaM": -10.0, "KM": 10.0})
     fx = sif.fx
-    world = add_inventory_species(
-        world, fx.SPECIES, trace_mM=fx.TRACE_mM, diffusivity_m2_per_s=fx.D_S,
-        floor_fmol=fx.FLOOR_FMOL,
-    )  # fmt: skip
-    cell = world["model"]["cells"][0]["id"]
-    make, clear = COMPANION_MAKE, COMPANION_CLEAR
-    world = fx.with_turnover(
-        world,
-        [("make_s", cell, "production"), ("clear_s", cell, "clearance")],
-        [("make_s", cell, [(0.0, make)]), ("clear_s", cell, [(0.0, clear)])],
-    )
-    spec = parse_spec(world)
+    make, clear = sif.COMPANION_MAKE, sif.COMPANION_CLEAR
+    spec = parse_spec(sif.companion_world(companion))  # The fixture module's, since §11.
     result = run(spec)  # Every host check on every accepted row.
     _, p = get_model(spec.model).initial_values(spec)
     row = list(spec.model.species_ids).index(fx.SPECIES)
@@ -530,3 +548,278 @@ def test_fr65_a_companion_beside_water_and_turnover(companion):
     nudged = s.copy()
     nudged[len(s) // 2] *= 1 + 1e-9
     assert np.max(np.abs(nudged - closed)) > bound
+
+
+# ------------------------------------------------------------------ the coupling beside water
+# FR-65's coupling step (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §11.8): T1, the water door, at
+# every place the coupling is evaluated; T2's labelled row. Tier 1's rows are in
+# test_species_regulated_availability.py.
+
+
+def _hill(x, k, n, law):
+    """x^n / (K^n + x^n) (activation, law 1) or K^n / (K^n + x^n) (inhibition, law 2), plainly."""
+    a = (np.asarray(x, dtype=float) / k) ** n
+    return a / (1.0 + a) if law == 1 else 1.0 / (1.0 + a)
+
+
+@pytest.fixture(scope="module")
+def door_rungs():
+    """T1 (sif.water_door, version 2) at h, 2h and 4h: three compiled runs, every host check on
+    every row."""
+    out = {}
+    for dt in (H, 2 * H, 4 * H):
+        spec = parse_spec(sif.water_door(dt=dt, end=HORIZON, every=EVERY))
+        out[dt] = spec, run(spec)
+    return out
+
+
+def door_rows(spec, result):
+    """{name: [accepted row] array} of one door run: times, V, R's and S's amounts, s, and every
+    route's applied factor [row, route]."""
+    _, p = get_model(spec.model).initial_values(spec)
+    ids = list(spec.model.species_ids)
+    h = result.history
+
+    def amount(name):
+        k = ids.index(name)
+        return np.asarray(p.amount_reference)[k, 0] + np.asarray(h.amount_increment)[:, k, 0]
+
+    return dict(
+        times=np.asarray(result.times),
+        V=np.asarray(p.volume)[0] + np.asarray(h.volume_increment_pL)[:, 0],
+        R=amount(sif.REGULATOR),
+        S=amount(sif.fx.SPECIES),
+        s=np.asarray(h.regulatory_state)[:, 0],
+        **({"applied": np.asarray(h.coupling_applied_factor)}  # Version 2's record only.
+           if hasattr(h, "coupling_applied_factor") else {}),  # fmt: skip
+    )
+
+
+def door_factors(p, c_r, c_s, s):
+    """[..., route] each route's factor, written plainly: inst and make (R's activations), gate
+    (s), bind (R's inhibition), self (S's inhibition); routes in the declaration's order."""
+    k, n = np.asarray(p.coupling_route_half_saturation_mM), np.asarray(p.coupling_route_coefficient)
+    b = np.asarray(p.coupling_route_basal)
+
+    def f(i, x, law):
+        return b[i] + (1 - b[i]) * _hill(x, k[i], n[i], law)
+
+    routes = [lambda: f(0, c_r, 1), lambda: np.asarray(s, float), lambda: f(2, c_r, 1),
+              lambda: f(3, c_r, 2), lambda: f(4, c_s, 2)]  # fmt: skip
+    return np.stack([route() for route in routes[: k.shape[0]]], axis=-1)  # @1 has the first two.
+
+
+def door_reference(spec, *, v0=False):
+    """T1's in-test reference (development evidence, not code-blind), dense in time: the cell's
+    volume, the network's amounts, S and the state s as one ODE, by SciPy's Radau at rtol 1e-12.
+    Water's rate and the network's rates are the engine's own functions at the bound layout, as
+    reference() above; the coupling's factors, the two-state law and S's turnover are written
+    plainly from the declaration. R is conserved, so its concentration is n_R / V. v0: the
+    coupling's factors read V0 (a planted reference). Returns (solution, the layout p, n_R)."""
+    from scipy.integrate import solve_ivp
+
+    from cells.definitions import pump_composite_spec as cs
+    from cells.operators import osmotic_water as water
+
+    state0, p = get_model(spec.model).initial_values(spec)
+    ids = list(spec.model.species_ids)
+    rows = np.asarray(p.reaction_rows)
+    s_row, r_row = ids.index(sif.fx.SPECIES), ids.index(sif.REGULATOR)
+    controls = cs.control_values(spec, [0.0])
+    availability = np.asarray(controls.water)[0]
+    multiplier = np.asarray(controls.reaction_multiplier)[0]
+    make, clear = (float(v) for v in np.asarray(controls.turnover_rate)[0][:2])
+    nu = np.asarray(p.reaction_products) - np.asarray(p.reaction_reactants)
+    anchor = np.asarray(p.amount_reference)
+    v0_ = float(np.asarray(p.volume)[0])
+    n_r = float(anchor[r_row, 0] + np.asarray(state0.amount_increment)[r_row, 0])
+    k_in = float(np.asarray(p.regulatory_input_half_saturation_mM)[0, 0])
+    n_in = float(np.asarray(p.regulatory_input_coefficient)[0, 0])
+    k_on, k_off = float(p.regulatory_on_rate[0]), float(p.regulatory_off_rate[0])
+
+    def state_at(y):
+        increment = np.asarray(state0.amount_increment).copy()
+        increment[rows, 0] = y[1 : 1 + rows.size] - anchor[rows, 0]
+        increment[s_row, 0] = y[1 + rows.size] - anchor[s_row, 0]
+        volume = np.asarray(state0.volume_increment_pL).copy()
+        volume[0] = y[0] - v0_
+        return state0._replace(amount_increment=increment, volume_increment_pL=volume)
+
+    def rhs(t, y):
+        state = state_at(y)
+        at = v0_ if v0 else y[0]
+        c_r, c_s = n_r / at, y[1 + rows.size] / at
+        f = door_factors(p, c_r, c_s, y[2 + rows.size])
+        w = water.water_rates(state, availability, p, xp=np)
+        volumes = (
+            np.asarray(p.volume) + state.volume_increment_pL,
+            np.asarray(p.extracellular_volume) + state.extracellular_volume_increment_pL,
+        )
+        net = sr.network(p, multiplier * f[3], xp=np, volumes=volumes)
+        rates = sr.route_rates(sr.node_amounts(state, p, xp=np), net, p, xp=np)
+        d_s = make * f[2] * f[4] - clear * y[1 + rows.size]
+        u = _hill(c_r, k_in, n_in, 1)
+        d_state = k_on * u * (1 - y[2 + rows.size]) - k_off * y[2 + rows.size]
+        return np.concatenate(([w.cell[0]], nu @ rates.rate, [d_s, d_state]))
+
+    y0 = np.concatenate(([v0_], anchor[rows, 0], [anchor[s_row, 0]],
+                         [float(state0.regulatory_state[0])]))  # fmt: skip
+    out = solve_ivp(rhs, (0.0, float(spec.experiment.end_time)), y0, method="Radau",
+                    dense_output=True, rtol=1e-12, atol=1e-14)  # fmt: skip
+    assert out.success, out.message
+    return out.sol, p, n_r
+
+
+def test_fr65_coupling_the_water_door_holds_its_identities_at_every_row(door_rungs):
+    """FR-65's coupling step, T1 (§11.8; A7's acceptance for version 1.1, "concentration following
+    n/V(t) at conserved n"), on the h rung's observed rows: R's amount bitwise constant while V
+    grows by 5% or more; the inner model's channel_availability of the population equal to its
+    schedule times inst's factor at n_R/V and the row's s; every route's coupling_factor equal to
+    its factor at n/V (s for the state route); and the network's reaction_rate_fmol_per_s for bind
+    equal to its rate at the row's state with the routed multiplier, from the network's own rate
+    functions. Planted: each expected value taken at V0, which the observed one misses. Seconds
+    and reason (D224): the rungs' (shared with the next rows): about 150 s for three compiles and
+    1,750 steps, the one composed check of every place the coupling is evaluated."""
+    from cells.definitions import pump_composite_spec as cs
+
+    spec, result = door_rungs[H]
+    rows = door_rows(spec, result)
+    _, p = get_model(spec.model).initial_values(spec)
+    assert np.all(rows["R"] == rows["R"][0])  # Conserved: nothing moves R.
+    assert rows["V"][-1] > 1.05 * rows["V"][0]  # The cell swells.
+    model = get_model(spec.model)
+    at = [int(np.flatnonzero(rows["times"] == t)[0]) for t in spec.experiment.observation_times]
+    obs = result.observations
+    for volume, honest in ((rows["V"][at], True), (rows["V"][0], False)):
+        want = door_factors(p, rows["R"][at] / volume, rows["S"][at] / volume, rows["s"][at])
+        schedule = np.asarray(cs.control_values(spec, [0.0]).channel)[0][0]
+        availability = np.asarray(obs.channel_availability)[:, 0]
+        checks = (
+            np.allclose(availability, schedule * want[:, 0] * want[:, 1], rtol=1e-13, atol=0.0),
+            np.allclose(np.asarray(obs.coupling_factor), want, rtol=1e-13, atol=0.0),
+        )
+        assert all(checks) if honest else not any(checks), (honest, checks)
+    multiplier = np.asarray(cs.control_values(spec, [0.0]).reaction_multiplier)[0]
+    for j, i in enumerate(at):
+        state = model.STATE_TYPE(*(np.asarray(v[i]) for v in result.history))
+        volumes = (
+            np.asarray(p.volume) + state.volume_increment_pL,
+            np.asarray(p.extracellular_volume) + state.extracellular_volume_increment_pL,
+        )
+        f = door_factors(p, rows["R"][i] / rows["V"][i], rows["S"][i] / rows["V"][i], rows["s"][i])
+        net = sr.network(p, multiplier * f[3], xp=np, volumes=volumes)
+        rate = sr.route_rates(sr.node_amounts(state, p, xp=np), net, p, xp=np).rate
+        observed = np.asarray(obs.reaction_rate_fmol_per_s)[j]
+        assert np.allclose(observed, rate, rtol=1e-12, atol=0.0), j
+        f0 = door_factors(p, rows["R"][i] / rows["V"][0], 0.0, rows["s"][i])  # At V0's c_R.
+        stale = sr.network(p, multiplier * f0[3], xp=np, volumes=volumes)
+        at_v0 = sr.route_rates(sr.node_amounts(state, p, xp=np), stale, p, xp=np).rate
+        if j > 0:
+            assert not np.allclose(observed, at_v0, rtol=1e-9, atol=0.0), j
+
+
+def test_fr65_coupling_the_water_door_follows_its_reference_at_second_order(door_rungs):
+    """T1: V, S and s converge to the in-test reference (door_reference) at second order,
+    e(2h) / e(h) in [3.6, 4.4] (C2.6's form with its floor), and so do the applied factors of the
+    routes of R and of the state (coupling_applied_factor at each step's end) against their
+    factors at the reference's state half a step earlier, where they were evaluated: water's
+    first half sets the volume they read. The self-moved route's applied factor is evaluated at
+    the midpoint's predictor and is tier 1's row 4 (exact). The energy identity is amendment 3's
+    stepped entry, as the first build's swelling cell's. Planted: the reference's coupling factors
+    read at V0, which takes V, S or s out of the band. Seconds and reason (D224): the rungs', and
+    two reference integrations of about 5 s."""
+    engine = {dt: common(door_rows(*door_rungs[dt]), dt) for dt in (H, 2 * H)}
+    times = engine[H]["times"]
+    spec = door_rungs[H][0]
+    solution, p, n_r = door_reference(spec)
+    n_rows = int(np.asarray(p.reaction_rows).size)
+    ref_at = solution(times)
+    ref = dict(V=ref_at[0], S=ref_at[1 + n_rows], s=ref_at[2 + n_rows])
+    errors = ratio_errors(engine, ref, ("V", "S", "s"))
+    for q, (coarse, fine) in errors.items():
+        assert in_band(coarse, fine), (q, coarse, fine, coarse / fine)
+    applied = {}
+    for dt in (H, 2 * H):
+        rows = engine[dt]
+        half = solution(rows["times"][1:] - dt / 2)
+        f = door_factors(p, n_r / half[0], half[1 + n_rows] / half[0], half[2 + n_rows])
+        applied[dt] = rows["applied"][1:, :4] - f[:, :4]
+    scale = np.max(np.abs(engine[H]["applied"][:, :4]))
+    coarse = float(np.max(np.abs(applied[2 * H]))) / scale
+    fine = float(np.max(np.abs(applied[H]))) / scale
+    assert in_band(coarse, fine), (coarse, fine, coarse / fine)
+    worst, allowed, d1, d2, e_round = stepped(door_rungs)
+    assert worst <= allowed, (worst, allowed, d1, d2, e_round)
+    if d1 > 10 * e_round and d2 > 10 * e_round:
+        assert 1.5 <= math.log2(d2 / d1) <= 3.5, (d1, d2)
+    planted, _, _ = door_reference(spec, v0=True)
+    at = planted(times)
+    stale = dict(V=at[0], S=at[1 + n_rows], s=at[2 + n_rows])
+    missed = ratio_errors(engine, stale, ("V", "S", "s"))
+    assert not all(in_band(c, f_) for c, f_ in missed.values()), missed
+
+
+def test_fr65_coupling_version_1_beside_water():
+    """T1's @1 run (the lead's ruling 3: @1 beside water is a newly admitted combination): the
+    water door without the routed routes, which @1 does not have, at h. Every host check on every
+    row; the inner model's channel_availability and every route's coupling_factor at n_R/V and s
+    at every observed row. The state's integration is the code @2 inherits, so its order is shown
+    by @2's rungs. Planted: the expected values taken at V0, which the observed ones miss. Seconds
+    and reason (D224): about 40 s, one compile and 1,000 steps."""
+    from cells.definitions import pump_composite_spec as cs
+
+    spec = parse_spec(sif.water_door(version=1, dt=H, end=HORIZON, every=EVERY))
+    result = run(spec)
+    rows = door_rows(spec, result)
+    _, p = get_model(spec.model).initial_values(spec)
+    assert rows["V"][-1] > 1.05 * rows["V"][0]
+    at = [int(np.flatnonzero(rows["times"] == t)[0]) for t in spec.experiment.observation_times]
+    schedule = np.asarray(cs.control_values(spec, [0.0]).channel)[0][0]
+    for volume, honest in ((rows["V"][at], True), (rows["V"][0], False)):
+        want = door_factors(p, rows["R"][at] / volume, 0.0, rows["s"][at])[:, :2]
+        checks = (
+            np.allclose(
+                np.asarray(result.observations.channel_availability)[:, 0],
+                schedule * want[:, 0] * want[:, 1],
+                rtol=1e-13,
+                atol=0.0,
+            ),
+            np.allclose(
+                np.asarray(result.observations.coupling_factor), want, rtol=1e-13, atol=0.0
+            ),
+        )
+        assert all(checks) if honest else not any(checks), (honest, checks)
+
+
+def test_fr65_coupling_arm_b_labels_beside_water_leave_the_physics_bitwise():
+    """T2's labelled row (§11.8): FR-38 v2's arm B (A1 with transcription's release), labelled and
+    unlabelled, in a swelling cell (sif.swelling_arm_b: a short made-up B, water first), with the
+    coupling's Hill factor of X routed onto transcription's initiation. Every host check on every
+    row; every physical field bitwise the unlabelled run's; transcription's route has
+    coupling_factor at n_X/V at every observed row. Planted: the factor at V0, which misses.
+    Seconds and reason (D224): about 40 s each, two compiles and 1,000 steps each; labels beside
+    the coupling and water are newly admitted."""
+    labelled = run(parse_spec(sif.swelling_arm_b("p=0.55 returned")))
+    spec = parse_spec(sif.swelling_arm_b("p=0.55 returned unlabelled"))
+    plain = run(spec)
+    fields = dict(zip(plain.history._fields, plain.history, strict=True))
+    for name, value in zip(labelled.history._fields, labelled.history, strict=True):
+        if not name.startswith("label_"):
+            assert np.array_equal(np.asarray(value), np.asarray(fields[name])), name
+    _, p = get_model(spec.model).initial_values(spec)
+    ids = list(spec.model.species_ids)
+    k_x = ids.index("X")
+    at = [int(np.flatnonzero(np.asarray(plain.times) == t)[0]) for t in
+          spec.experiment.observation_times]  # fmt: skip
+    x = np.asarray(p.amount_reference)[k_x, 0] + np.asarray(plain.history.amount_increment)[
+        at, k_x, 0
+    ]
+    v = np.asarray(p.volume)[0] + np.asarray(plain.history.volume_increment_pL)[at, 0]
+    assert v[-1] > 1.01 * v[0]
+    names = ("half_saturation_mM", "coefficient", "basal")
+    k, n, b = (float(np.asarray(getattr(p, "coupling_route_" + f))[0]) for f in names)
+    observed = np.asarray(plain.observations.coupling_factor)[:, 0]
+    for volume, honest in ((v, True), (v[0], False)):
+        a = (x / volume / k) ** n
+        close = np.allclose(observed, b + (1 - b) * a / (1 + a), rtol=1e-13, atol=0.0)
+        assert close == honest, honest
