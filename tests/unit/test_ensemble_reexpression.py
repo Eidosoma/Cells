@@ -1104,8 +1104,10 @@ def test_a_registered_run_is_made_from_a_clean_snapshot_of_the_named_tag_alone(
 ):
     run = registered.run("integrated h=0.0001")
     driver.guard(invented, invented.run("inv_sample_sheet h=4e-05"), None)
-    with pytest.raises(driver.Guarded, match="not here"):
-        driver.one(registered, run, tmp_path / "runs", tag="some-tag")
+    with monkeypatch.context() as checkout:  # ROOT as a checkout: a gate runs tests in a snapshot.
+        checkout.setattr(driver, "SNAPSHOT", "SNAPSHOT.json.absent")
+        with pytest.raises(driver.Guarded, match="not here"):
+            driver.one(registered, run, tmp_path / "runs", tag="some-tag")
     assert not (tmp_path / "runs").exists()
     value = {
         "selected_status_porcelain_v1_z": "",
