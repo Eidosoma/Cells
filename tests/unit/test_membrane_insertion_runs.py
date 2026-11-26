@@ -13,7 +13,10 @@ Through the runner and its host checks:
 * the vmapped batch (vector windows, device checks) is bitwise against the same worlds in
   reversed order (one compiled program) and reproduces each world's own run to
   1e-12 of each field's scale (it compiles differently, so not bitwise);
-* a catalogue reference changes neither the step's jaxpr nor the trajectory.
+* a catalogue reference changes neither the step's jaxpr nor the trajectory;
+* FR-65 (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §6.1): the cleft cell under insertion@2 with
+  cells.operator.scheduled_species_turnover@1 clearing S at the cleft (turnover_cleft_run, through
+  the closure and restart tests): idle at the closed node before its onset, its closed form after.
 About 7 minutes on one core (each run compiles); the tier-1 smoke tests are
 test_membrane_state.py and test_membrane_insertion.py.
 """
@@ -55,6 +58,28 @@ def cleft(rate=1e-11, **kw):
 @pytest.fixture(scope="module")
 def cleft_run():
     spec = parse_spec(cleft())
+    return spec, run(spec)
+
+
+CLEAR = 50.0  # 1/s: turnover's clearance of S at the cleft from its onset (k h = 0.025).
+TRANSPORT_D = 1e-30  # m^2/s: S's face diffusivity, positive and below rounding over the run.
+
+
+def turnover_cleft():
+    routes = [("c", "cleft", "clearance", [(0.0, 0.0), (ONSET, CLEAR)])]
+    raw = fx.cleft_turnover(
+        2, routes=routes, onset=ONSET, end=END, diffusivity_m2_per_s=TRANSPORT_D
+    )
+    raw["experiment"]["observation_times"] = TIMES
+    return raw
+
+
+@pytest.fixture(scope="module")
+def turnover_cleft_run():
+    """FR-65: the cleft cell under insertion@2, turnover clearing S at the cleft from its onset.
+    Seconds and reason (D224): about 30 s, one compile and 6 steps; turnover at a node insertion@2
+    opens is newly admitted."""
+    spec = parse_spec(turnover_cleft())
     return spec, run(spec)
 
 
@@ -101,8 +126,9 @@ def test_zero_rate_insertion_equals_the_idle_membrane_state():
         assert not np.any(np.asarray(getattr(zero.history, name))), name
 
 
-def test_onset_and_insertion_close_their_checks(cleft_run):
-    spec, result = cleft_run  # The runner's host checks raise on any ledger or domain failure.
+@pytest.mark.parametrize("which", ["cleft_run", "turnover_cleft_run"])
+def test_onset_and_insertion_close_their_checks(which, request):
+    spec, result = request.getfixturevalue(which)  # Host checks raise on any failure.
     h, times = result.history, np.asarray(result.times)
     before = times <= ONSET + 1e-12  # Rows up to the step that leaves the onset.
     opened = np.asarray(h.insertion_opened)[:, 1]
@@ -175,13 +201,18 @@ def run_view_voltage(model, state, p):
     return adapter.patch_voltages(adapter.node_potentials(state, q, xp=np), q, xp=np)
 
 
-def test_restart_across_onset_and_insertion_is_bitwise(cleft_run, tmp_path):
-    spec, value = cleft_run
-    for time in (0.001, ONSET, 0.003):  # Before, at and after the onset.
+@pytest.mark.parametrize("which", ["cleft_run", "turnover_cleft_run"])
+def test_restart_across_onset_and_insertion_is_bitwise(which, request, tmp_path):
+    spec, value = request.getfixturevalue(which)
+    # Before, at and after the onset; turnover's world resumes once, before the onset (across it:
+    # each resume compiles its own rollout, about 35 s).
+    for time in (0.001, ONSET, 0.003) if which == "cleft_run" else (0.001,):
         checkpoint = value.checkpoint_at(time)
         resumed = run(spec, checkpoint)
         for a, b in zip(resumed.history, value.history, strict=True):
             assert np.array_equal(np.asarray(a), np.asarray(b)[checkpoint.step_index :]), time
+    if which == "turnover_cleft_run":  # The snapshot and manifest rows are insertion@1's own.
+        return
     checkpoint = value.checkpoint_at(0.003)
     write_snapshot(tmp_path / "checkpoint", value.spec, checkpoint)
     loaded = load_snapshot(tmp_path / "checkpoint")
@@ -198,6 +229,29 @@ def test_restart_across_onset_and_insertion_is_bitwise(cleft_run, tmp_path):
     assert owners["views"]["membrane_active"] == {"provider": fx.INSERTION, "readers": []}
     assert owners["views"]["membrane_capacitance"]["readers"] == [fx.INSERTION]
     assert summary["insertion_patches"]["furrow"]["onset_time"] == ONSET
+
+
+def test_turnover_is_idle_at_the_closed_node_and_clears_it_from_its_onset(turnover_cleft_run):
+    """FR-65 §4.1 on turnover_cleft_run: before the onset the cleft is closed, so S's increment
+    there and turnover's outside fields stay zero bit for bit (a positive rate there is refused at
+    the definition); from the onset S at the cleft follows n_on e^{-k(t - onset)} from its declared
+    content, to the bookings' rounding (its face transport below that). Planted: the decay from
+    time 0 misses it."""
+    spec, result = turnover_cleft_run
+    h, times = result.history, np.asarray(result.times)
+    _, p = get_model(spec.model).initial_values(spec)
+    row = list(spec.model.species_ids).index("S")
+    anchor = float(np.asarray(p.extracellular_amount_reference)[row, 1])
+    n = anchor + np.asarray(h.extracellular_amount_increment)[:, row, 1]
+    opened = times > ONSET + 1e-12  # Rows after the step that leaves the onset.
+    assert not np.asarray(h.extracellular_amount_increment)[~opened, row, 1].any()
+    for name in ("turnover_outside_cleared_fmol", "turnover_outside_work_pJ"):
+        value = np.asarray(getattr(h, name))
+        assert not (value[~opened, row, 1] if value.ndim == 3 else value[~opened, 1]).any(), name
+    bound = 8 * np.finfo(float).eps * 2 * len(times) * anchor
+    decay = anchor * np.exp(-CLEAR * (times[opened] - ONSET))
+    assert np.max(np.abs(n[opened] - decay)) <= bound
+    assert np.max(np.abs(n[opened] - anchor * np.exp(-CLEAR * times[opened]))) > bound
 
 
 def vector_batch(specs):
