@@ -13547,3 +13547,47 @@ It is a port check: it shows that the live engine computes legacy's written equa
   The renewal is dated in `RENEWAL-20261126-reactions-trace-counts.txt`. The renewed G1 save of that world stays beside G1's record.
 - **Next:** the co-writers' exporter copies the field, and the final format sample is made from it. Then come the judge's structure read and its
   tag, the registration tag, the rehearsal and the registered comparison.
+
+## D401: the docs refresh and two record tidy-ups are landed; FR-43 part 3's judge is tagged; the two-version check; FR-52 and FR-65's coupling start
+
+2026-11-26, written at 20:50 UTC. The user: "1. push 2. yes and as you and adviser see fit".
+
+- **Landed, with no src change:**
+  - **The docs refresh** (4b2ee019, tag `docs-refresh-landed-2026-11-26`):
+    - The README's status sections are brought up to 26 November from PROGRESS and DECISIONS only. They keep every failure and caveat, so
+      they are about a quarter longer, as the user saw in the diff.
+    - FR-55 is retitled as closed until a same-patch record exists.
+    - Seven feature-index rows are brought up to date, with a dated correction of D347's GPU label in D380's words.
+    - `docs/README.md`'s regulation entry is updated.
+  - **The rename record's tidy-up** (8b93b968, tag `id-record-tidy-landed-2026-11-26`). The move's records lagged the tree, so `id_moves.py check` had
+    69 problems; it now has 0.
+    - Removed: the 59 plant rows that the move rewrote, and the four re-spell pin rows whose pins went stale by decision.
+    - `verify` still holds, and the landing's trial passed (76).
+    - The tool's `choices_problems` lacks a guard for a completed move. That is a tooling note for later.
+  - **The tier records' run folders** (d5ec298f, tag `tier3-folders-landed-2026-11-26`):
+    - They are copied byte for byte to `/mnt/workspaces/Cells/tier3-records/slimming-20261126/`, and both records are repointed by exact string
+      replacement.
+    - The landing's trial passed (109).
+    - Four `measured_provenance` roots still name the slimming's snapshots, as records of where the measurements ran.
+- **FR-43 part 3's judge is tagged:** `fr43-part3-cowriters-judge-2026-11-26`, on 995e6222. The tag covers:
+  - the rulings of D394;
+  - the scorer that implements them;
+  - the lead's three dated notes of the format samples;
+  - the final sample's structure read, with no departure;
+  - the rehearsal's planter (53 of CRITERIA §4's faults) and its perturbed coarsest rung, which the protocol makes the judge's;
+  - 152 self-tests;
+  - C0 with no fault.
+
+  No contract change was needed. No criterion reads a refusal's message, only its kind. The rehearsal's engine runs have started.
+- **The two-version check** (D397 item 4): all seven older majors are still live, so none is retired. Their uses include judged worlds, G1 and
+  crossrev, FR's set, the replacement model and the GARD default. Retiring any of them waits on a move the user would decide:
+  - FR-50's held-fuel worlds to the transporter's @2;
+  - S3's egg after S5's Q7(b);
+  - the availability law's judged worlds requalified on @2;
+  - GARD's default to @2.
+
+  The check's agent was refused writing its report as a file. The lead did not write it on its behalf.
+- **FR-52's build starts** (the user's yes). A fresh builder first amends its note for D400, then builds on its own branch. It lands only after the
+  co-writers' registration tag, because it changes the operator that comparison runs.
+- **FR-65's coupling step** (D375 Q1 (b)) shares `contract.py` and the composition table with FR-52, so for now it is a design section only. Its code
+  starts once FR-52 lands.
