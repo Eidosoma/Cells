@@ -13250,3 +13250,19 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - AGENTS.md's gate sentence gains D358's map refresh.
   - FR-47's ledger limit stays and its alternative is not built; FR-55 is not built, and is reopened on one lab's paired low-dose record (its retitle and a request to the Lean track follow).
   - The scratch trees of the cleanup are deleted; the JUPITER check's rebuild waits.
+
+## D391: FR-51's two-potassium registration stops by its own §3; FR-64's build is free
+
+2026-11-26, written at 15:48 UTC. The user's choice (verbatim "a"), between stopping as registered and a tagged erratum that would read 20 mM alone.
+
+- **Why it stops.** The registration (`validation/fr51_two_potassium/REGISTRATION.md`, tag `fr51-two-potassium-registered-2026-11-25`) says in §3: "If it cannot say which traces are which, the
+  registration stops." The reader's sheet (831ed099, branch `fr51-reader-sheet`) found that the panel's legend does not settle which of two lines at the circled 10 in Panama and Lopatin (2006), Fig. 3E, is
+  the 10 mM trace. The Lean track and its search, reading the original figure, found the same: two strokes below the circled 10 and no key in the legend (relayed by the user, 26 November).
+- **What was read:** nothing of the held-out curves. Neither reader was started; neither the 10 nor the 20 mM curve was read or scored. The lead has not opened the figure, and
+  `kir_spermine_potassium.json` stays unopened, so both levels stay reserved for any later registration.
+- **What it leaves:** the composition keeps its development-only label for changes of external potassium; no law changes; the stop is recorded under D351. The engine check of §2 passed
+  (09b718d3) and stands. The internal arm (§6) was never a test and is unchanged. The drafted erratum (`fr51-two-k-erratum-1`, bdfc9e3e) stays untagged and is not used.
+- **Not chosen:** an erratum to read 20 mM alone. The 10 mM level could only block a pass, so dropping it would make a pass easier, in a registration whose rule was written knowing the study's 60 mM
+  result (D382).
+- **FR-64:** its build was to follow FR-51's follow-up and the rename (D361). Both are now done, so FR-64 (a declared voltage shift on a channel population, with FR-63 re-formed as a pH shift) is free to
+  build at normal priority.
