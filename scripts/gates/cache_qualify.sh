@@ -77,7 +77,7 @@ PLANTED_REF=${PLANTED_REF:-$T3/g3/c1/merged}
 C2P_ORIGIN=${C2P_ORIGIN:-$T3/g3/c2prime-origin}
 C2P_REF=${C2P_REF:-$T3/g3/c2prime-part}
 FR=$D172/fr45
-FRR=/mnt/workspaces/Cells/global-charge-bound-20261122/fr-baselines-605331c2  # FR's baselines renewed for D307, as fr_landing_holder.sh's.
+FRR=/mnt/workspaces/Cells/final-gate-20261126/fr-baselines-805c48a4  # FR's baselines renewed for D307 and the ID move (D345), as fr_landing_holder.sh's.
 F4=${F4:-$FRR/fr4-quick} F5=${F5:-$FRR/fr5}
 FR_START=${FR_START:-$FR/rehearsal-20261117/run-e79b4232/fr5/start/start.json}
 FR_BEFORE=${FR_BEFORE:-$FRR/windowed}
