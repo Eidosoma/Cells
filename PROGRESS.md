@@ -79,9 +79,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     external-potassium arm stays development-only, and FR-64's build is now free.
   - **FR-38's second comparison has passed and is landed** (D381, D382; 4039dcba), beside D313's failed verdict. The three
     uncovered readout controls go to a later registration, FR-38 v3 (D354).
-  - **FR-43 part 3's co-writers** (D328, D383, D394, D395): the engine build is landed (4be34f74). The criteria and code-blind
-    references are tagged; the blind judge's scorer passes C0 under the lead's rulings (`fr43-cowriters-judge`, cd8137ed). Next:
-    the format sample, the judge's tag, then the registered comparison.
+  - **FR-43 part 3's co-writers** (D328, D383, D394, D395, D402, D403): the engine build is landed (4be34f74), and the
+    registered comparison **passes**: 3 arms, 6 families, 20 of 20 plants, 5,230 entries; the independent checker agrees.
   - **FR-45** (D327, D377, D394): its judge is the builder's own, written with its build; the build starts next, once the
     lead has ruled which tag binds its registration. W2 and W7 stay on the wash or are pinned.
   - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;

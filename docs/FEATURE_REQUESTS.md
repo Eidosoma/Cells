@@ -74,6 +74,7 @@ and a general feature, never one built for one study (D144).
 | [FR-66](#fr-66--a-passive-fluorescence-reader-over-regional-amount-exports) | A passive fluorescence reader over regional amount exports: several masks over one trajectory, against a prebleach state | Medium (logged by the user, 24 November 2026; D372) | **Logged:** nothing on main reads fluorescence or a prebleach state | A short design note |
 | [FR-67](#fr-67--pressure-driven-flow-on-a-network-of-compliant-tubes) | Pressure-driven flow on a network of compliant tubes: Poiseuille edges, compliant nodes, advection and shear remodelling | Normal (logged by the user, 26 November 2026; D393) | **Logged:** no tube network on main | A design note, after FR-57's tagged spec is read for overlap |
 | [FR-68](#fr-68--a-consistency-check-on-standard-potentials) | A consistency check on standard potentials: each potential's source and conditions, and cited reaction values, at check time | Normal (logged by the user, 26 November 2026; D393) | **Logged:** cycles close by construction; no check ties a potential to its source | A design note |
+| [FR-69](#fr-69--conservative-exchange-between-a-volume-and-a-connected-surface) | Conservative bulk–surface binding and lateral membrane diffusion on unequal areas | Normal (logged by the user, 26 November 2026) | **Logged** | Design and a closed analytical fixture |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -3009,6 +3010,16 @@ species' potentials, so this check's value is in tying each potential to its sou
 decides whether a failure refuses or warns.
 
 **Status (26 November):** logged. A design note comes first.
+
+## FR-69 — Conservative exchange between a volume and a connected surface
+
+Logged by the user on 26 November 2026. A cell with a fixed surface area per volume can already be modelled with node-local reactions. A rounded rim joins face and side patches with different areas and adjacent finite volumes. Such a connected reactive geometry can today be integrated only outside the engine. The same geometry also arises for membrane polarity and cortical proteins.
+
+**Request.** A membrane patch owns an areal amount and declares its adjacent finite liquid region. For binding flux J = k_on c − k_off σ (amount per area per second), transfer area × J from the bulk inventory to the patch with equal and opposite increments. Here c is the local amount per volume and σ is the amount per area. Lateral diffusion uses a shared edge and the distance between neighboring patch centers, including face-to-rim joins. Retain the physical areas and volumes in exports and account for each species or declared moiety over both dimensions.
+
+**First acceptance example.** Close a volume of 2 µm³ containing 12 amount units against patches of 1 and 3 µm². Use k_on = 0.1 µm/s and k_off = 0.2/s. At equilibrium the volume contains 6 units and the patches contain 1.5 and 4.5. The one-patch reduction for the 1 µm² patch relaxes at 0.25/s. For lateral transport alone, an unequal-density pulse crosses a face-to-rim edge, the area-weighted amount closes and a uniform surface density stays uniform. Exercise unequal bulk volumes, nonnegative amounts and step refinement before transferring to a cell mesh.
+
+FR-28 and FR-46 cover site populations on compartment boundaries. FR-54 covers transport between finite liquid volumes. FR-66 supplies the separate regional fluorescence request.
 
 ## Backlog: external tools to look at (logged by the user, 23 November 2026)
 
