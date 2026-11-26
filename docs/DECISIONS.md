@@ -13209,3 +13209,44 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - The checker found the third rehearsal set's folder before the lead's message, after its tables were hashed.
 - **Next:** the user's yes on the 193 retirements and the deletion; the deletion and the retirements; the ID move with a third trial; the step-13 repeats on the final head (Part 1's by the protocol, Part 2's by its amendment, equal
   or not by program); the review's removals; the one full gate; the landing.
+
+## D390: the legacy cleanup is landed; what the one gate found first; the user's answers of 26 November
+
+2026-11-26, written at 15:16 UTC. Main 805c48a4 (tag `legacy-cleanup-landed-2026-11-26`), then the post-landing records 67c0de27 (tag `post-landing-records-2026-11-26`).
+
+- **The user's yes** (26 November, verbatim "yes") to retiring the 193 test rows and the deletion: 1,704 files removed and 48 edited; 11,131 tests collect, none fails to import. The deletion, the retirements, the
+  removal list, the user's page, the step-13 comparator, the ID move (M, strict, W, D) and the test review's last commit were merged on `legacy-cleanup` in that order.
+- **The ID move** needed one line of engine code beyond its textual conflicts: the declarations manifest spells a host that no model table names as its laws spell it (the assembly pool's observable law). Metadata
+  only; the labels of every registered run are identical before the move and after strict.
+- **Step 13** (the protocol's §5, and Part 2's Amendment 1): on the landing tree 66970801, Part 1's six named runs equal their registered tables and Part 2's twelve equal their sealed tables, compared by program
+  through the move's map (repeat.py). The same held at 9bab3698. The two snapshots' tags (`ensemble-reexpression-step13-2026-11-26`, `-step13-final-2026-11-26`) are local and not pushed.
+- **The one full gate** ran on 2e3a0bfc against main 11d6b953 (scratch `/mnt/workspaces/Cells/final-gate-20261126`):
+  - gate.sh passed: crossrev 8 sets identical and 3 as declared; tiers 1 and 2, 520 files, none changed; G1 113 of 113 identical to c1.
+  - **What failed first:** tier 3, in two files (23 rows), defects of the ID move that only tier 3 reaches (code that read a law ID by character position, and a test that looked for a planted kind's old name);
+    a third of the same kind and a comment in an old spelling were fixed with them, tests and validation only. Before the gate, the measurement found three more test rows that the move's grammar or a frozen
+    snapshot broke, fixed the same way.
+  - FR's bitwise set failed on its definitions' hashes alone (the move re-spelled them); every record was bitwise identical. Its frozen baselines were renewed (each definition built at main, read through the
+    move's table, equals the landed one); they live in `/mnt/workspaces/Cells/final-gate-20261126/fr-baselines-805c48a4`, which is load-bearing and is not to be deleted.
+  - R1 differed in nine host-side worlds, attributed to the cleanup's commits (empty ExperimentSpec fields, a module out of legacy, refusal texts), and is equal with them declared.
+  - The D148 rounds of step 0 and of steps 2 and 6 were clean but for step 0's by-design programs.
+  - Tiers 1 and 2 ran again in full on the landing tree (none changed), with the corrected tier-3 files. tests/tier3_record.json was frozen anew (74 files, 1,105 tests).
+- **Corrections, dated:**
+  - **D387's count:** step 0's charge rule changes eight checked_step programs, not seven: `reactions_face_free` (a face-free node of the reactions set, which step 0's builder did not trace) is the eighth. Its
+    runs are physically identical before and after; the vector and batch programs of the eight were not rerun.
+  - **D276:** its first condition ("no tier verdict depends on the moved values") did not hold for two tier-3 rows that no gate ran (the gates-equivalence identity of ARS(2,2,2) and the dispatch comparison
+    of the release world); its second ("existing test bodies stay as they are") is lifted for those two rows, which now compare with fix (A)'s switch off on the one crossing world and assert that it is on by
+    default.
+  - **D172 and D176:** the bitwise equality of the declared dispatch and of @3 with @2 now holds with fix (A)'s switch off on worlds where a junction crosses a floating capacitor component. The structure-free
+    module step cannot take fix (A); `validation/tissue/excitable_probe.py` uses it, and is not known to have run since 22 November.
+  - A third tier-3 row was a stale pin: the sparse field solver's node bound (D317).
+- **The test review** (the user, 25 November: before the full suite): 594 files reviewed; 5 rows removed by the plant rule with one 0.5 s row added (about 107 s a full run); the slow time is in the science checks
+  (identities, restarts, references, ledgers), and slimming them after the landing would save about 2 CPU-hours a full run.
+- **The user's answers, 26 November** (verbatim "1. agreed 2. agreed 3. agreed 4. agreed 5. on hold for today 6. sounds good 7. yes", and "yes, and no lets wait on jupiter"):
+  - FR-43 part 3's co-writers are qualified as tagged (judge, rehearsal and an independent checker), after their engine build.
+  - FR-65 is built alongside, and one agent slims the heavy tests after the landing.
+  - The parked decodability and re-hosting assays' tests move to tier 3.
+  - Tier 3 runs weekly on idle cores.
+  - The viewer stays on hold today; CPUs 12 to 15 and 28 to 31 return to it when it resumes.
+  - AGENTS.md's gate sentence gains D358's map refresh.
+  - FR-47's ledger limit stays and its alternative is not built; FR-55 is not built, and is reopened on one lab's paired low-dose record (its retitle and a request to the Lean track follow).
+  - The scratch trees of the cleanup are deleted; the JUPITER check's rebuild waits.
