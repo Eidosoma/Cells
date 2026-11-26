@@ -2049,6 +2049,14 @@ def _coupling_first(raw):
     return raw
 
 
+def _as_v2(raw):
+    """raw with its idle coupling block under version 2's law (its definition check is its own)."""
+    for entry in raw["model"]["operators"]:
+        if entry["law"] == LAW:
+            entry["law"] = LAW_V2
+    return raw
+
+
 def _a5pp_swelling():
     from validation.tissue import a5pp_acceptance_fixtures as a5pp
 
@@ -2080,6 +2088,7 @@ BESIDE_WATER = {  # (builder, the refusal's words, or None for an admission)
         f"{LAW_V2} reads the view volume at stage split before {WATER} changes it there",
     ),
     "@1: beside replacement@2 over water": (_replacement_over_water, SHARED_RULE),
+    "@2: beside replacement@2 over water": (lambda: _as_v2(_replacement_over_water()), SHARED_RULE),
 }
 
 
