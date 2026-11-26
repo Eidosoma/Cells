@@ -76,6 +76,8 @@ Uses [Production and first-order clearance preserve a positive pool and account 
 - [In excised patches expressing rat SK2, free cytoplasmic calcium activates the steady current cooperatively with half-activation near 0.7 µM.](../WET_LAB_EVIDENCE.md#pair-rsk2-calcium-midpoint) · Supported by both studies
 - [A single two-state SK2 gate with a calcium-independent closing rate transfers between the reported calcium step and washout recordings.](../WET_LAB_EVIDENCE.md#pair-rsk2-single-closing-rate) · Challenged by both studies
 
+In one rat SK2 patch at 0.4 and 1.0 µM calcium, the short open lifetime was 1.1 ms at both levels. Long lifetimes were 13.5 and 11.9 ms, and long openings rose from 49% to 66%. [Hirschberg et al., Figs. 4–5](https://doi.org/10.1085/jgp.111.4.565)
+
 **Unit** open probability
 
 ### syme2000_rsk2_calcium@1
@@ -90,6 +92,16 @@ Excised inside-out patch from a Xenopus oocyte expressing rat SK2. The readout i
 Fig. 8C gives a fitted midpoint and slope with no uncertainty or replication count. The drug series was recorded on the same patch; Fig. 8B’s n = 7 concerns another experiment.
 
 An independent steady dose response supports cooperative activation near 0.7 µM. At the independent fitted midpoint, the Cells curve calibrated on Hirschberg predicts about 0.475 of its own ceiling. Unknown channel count prevents comparison of absolute Pₒ. Rise and washout require calcium-jump measurements. [Dataset manifest](../checks/data/paired_transport_responses.json) · [Comparison verdict](../PROGRESS.md#paired-transport-and-membrane-measurements)
+
+### pedarzani2001_sk2_washout
+
+Excised oocyte patches expressing rat SK2. Each pulse ended in nominally calcium-free solution. The study leaves patch identity across the two pulse levels unspecified. Figure 2A shows untreated washouts after 0.5 and 10 µM calcium pulses. Results pp. 9764–9765 give the high-pulse control mean. [Pedarzani et al. (2001), Fig. 2A](https://doi.org/10.1074/jbc.M010001200)
+
+- **Evidence role** descriptive
+
+Illustrative traces give about 40 and 32 ms by 1/e interpolation (approximately ±5 ms graph-reading precision). The reported high-pulse mean was 39.4 ± 4.1 ms (SD, seven experiments). The low-pulse group uncertainty and the final free calcium are unreported.
+
+Washout took tens of milliseconds after both pulse levels. The common final bath leaves the calcium dependence of closing during decay unresolved. The study shares investigators with the earlier work. [Dataset manifest](../checks/data/fr55_sk2_closing.json) · [Comparison verdict](../PROGRESS.md#fr55-sk2-closing)
 
 ### oliver2000_rsk2_calcium_jumps@1
 

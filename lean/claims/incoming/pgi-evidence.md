@@ -4,7 +4,7 @@ Eicher et al. (2012) used ³¹P NMR to follow glucose-6-phosphate (G6P) and fruc
 
 ## Worksheet measurements
 
-Open `metabolites-22454-supplementary/supp_data.ods` inside the publisher's ZIP and select the `PGI` sheet. Row 1 labels the upper block “Raw integral data.” Its G6P and F6P entries are already processed concentration estimates in mM. The first time is 1.33 min and subsequent times are spreadsheet formulas that add 1.33 min. Use the concentration columns as stored and view the time column as a nominal grid. Row 40 starts the spline block and row 43 is its first numeric row. [Downloaded publisher supplement](eicher-2012-supplement.zip) · [Publisher download](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
+Open `metabolites-22454-supplementary/supp_data.ods` inside the publisher's ZIP and select the `PGI` sheet. Row 1 labels the upper block “Raw integral data.” Its G6P and F6P entries are already processed concentration estimates in mM. The first time is 1.33 min and subsequent times are spreadsheet formulas that add 1.33 min. Use the concentration columns as stored and view the time column as a nominal grid. Row 40 starts the spline block and row 43 is its first numeric row. [Publisher download](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
 The table sums only the first and last rows of each measured concentration series. The within-course range is the minimum and maximum sum over all the measured rows. These ranges describe variation across time and cannot give replicate measurement uncertainty.
 
@@ -20,7 +20,7 @@ For example, `(B30 + C30) − (B4 + C4) = −0.61335674989819 mM` from the store
 
 ## Mapping the five courses to acquisition records
 
-The order in `metabolites-22454-supplementary/pgi_fids.zip` → `list.txt` corresponds to the order used for kinetic fits. The direction of the measured substrate and product changes is consistent with that order. The two similarly named F6P directories in the second entry are consecutive acquisitions within one course. The names indicate nominal sample labels and cannot establish concentrations measured in the tube. [Publisher supplement](eicher-2012-supplement.zip)
+The order in `metabolites-22454-supplementary/pgi_fids.zip` → `list.txt` corresponds to the order used for kinetic fits. The direction of the measured substrate and product changes is consistent with that order. The two similarly named F6P directories in the second entry are consecutive acquisitions within one course. The names indicate nominal sample labels and cannot establish concentrations measured in the tube. [Publisher supplement](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
 | Dataset | `list.txt` assignment, in order | Contents in the archived directory |
 | --- | --- | --- |
@@ -33,7 +33,7 @@ The order in `metabolites-22454-supplementary/pgi_fids.zip` → `list.txt` corre
 
 **Published protocol.** Figure 5 and §3.3 describe 25 °C, a Varian 600 MHz instrument with ³¹P at 242.87 MHz, a 90° pulse and 80 transients per FID at 1.0 s acquisition and no added relaxation delay. The standard preparation fills a 5-mm NMR tube to 1.00 mL with pH 7.2 PIPES and includes cell extract, an internal triethyl phosphate (TEP) standard, D₂O and Mg²⁺. The reaction starts before the tube is reinserted and acquisition waits for a lock. The nominal first workbook time cannot establish exactly how far the reaction advanced before the first recorded spectrum. [Article, Figure 5 and §3.3](https://www.mdpi.com/2218-1989/2/4/818)
 
-**First listed acquisition.** `procpar` records `temp = 25`, `tn = P31`, `sfrq = 242.8754193`, `at = 0.4960256`, `d1 = 0.5`, and `arraydim = 30` with 100 transients per element. The `text` file gives a final volume of 950 μL, 20 μL of extract, 0.5 mM TEP and 1.40 min per FID. These metadata differ from the article’s standard 1.00 mL assay, its Figure 5 80-transient protocol and the workbook cadence of 1.33 min. The mapping is supported by list order. The exact relationship between the 30-element FID, the 27 imported worksheet rows and their timestamps is unresolved, so a new re-integration or timing reconstruction is premature. Taking the 950 μL volume provisionally for dataset 1 would give about −0.583 μmol (−5.83 × 10⁸ fmol) of measured soluble pool change. Per-course volumes for datasets 2–5 are unverified. [Publisher supplement, first listed `procpar` and `text`](eicher-2012-supplement.zip)
+**First listed acquisition.** `procpar` records `temp = 25`, `tn = P31`, `sfrq = 242.8754193`, `at = 0.4960256`, `d1 = 0.5`, and `arraydim = 30` with 100 transients per element. The `text` file gives a final volume of 950 μL, 20 μL of extract, 0.5 mM TEP and 1.40 min per FID. These metadata differ from the article’s standard 1.00 mL assay, its Figure 5 80-transient protocol and the workbook cadence of 1.33 min. The mapping is supported by list order. The exact relationship between the 30-element FID, the 27 imported worksheet rows and their timestamps is unresolved, so a new re-integration or timing reconstruction is premature. Taking the 950 μL volume provisionally for dataset 1 would give about −0.583 μmol (−5.83 × 10⁸ fmol) of measured soluble pool change. Per-course volumes for datasets 2–5 are unverified. [Publisher supplement, first listed `procpar` and `text`](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
 ## Calibration and scope of the balance
 
@@ -43,6 +43,8 @@ The order in `metabolites-22454-supplementary/pgi_fids.zip` → `list.txt` corre
 - The study reports no observed exit reactions in these PGI assays. The worksheet sums the assigned soluble G6P and F6P signals. It does not independently quantify enzyme-bound species, unresolved resonances, assay losses or possible low-abundance products in the extract. These are candidate gaps in the inventory, with their magnitudes and effects unknown. The conservation claim is therefore not adjudicated by the endpoint drift.
 
 ## Source identity
+
+Eicher, Snoep and Rohwer’s 2012 article lists the original workbook and both NMR archives. The publisher identifies the article licence as CC BY 3.0. Use the publisher download above and the checksums below to identify the files used here. [Article and supplement listing](https://www.mdpi.com/2218-1989/2/4/818) · [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
 
 | Object | SHA-256 |
 | --- | --- |
