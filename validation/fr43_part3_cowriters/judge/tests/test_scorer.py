@@ -864,3 +864,46 @@ def test_ruling_7_the_judge_stops_on_a_c0_finding(base, tmp_path) -> None:
     assert not (tmp_path / "stopped" / "record.json").exists()
     assert run_judge.main(argv + ["--out", str(tmp_path / "go"), "--proceed-after-findings"]) == 0
     assert json.load(open(tmp_path / "go" / "record.json"))["claim"] == "pass"
+
+
+# ---- the rehearsal's tools (CRITERIA.md §10, SPEC.md §8): the planter, and the perturbed coarsest rung ----
+
+def test_rehearsal_planter_every_fault_is_flagged_as_section_4_says(base, tmp_path) -> None:
+    import re
+
+    from cowriter_judge.rehearsal import catalog, check, write_planted
+
+    sc = Scenario(base)
+    honest = sc.run(str(tmp_path / "honest"))
+    planted = catalog(sc.inputs, sc.tables, sc.retry_tables, lambda w, c: sc.refs[w].copies[c].K)
+    misses, lines = {}, set()
+    for item in planted:
+        folder = tmp_path / re.sub(r"[^A-Za-z0-9]+", "_", item.id)
+        driver = write_planted(item, str(folder))
+        retry_dir = str(folder / "table-retry") if item.retry_tables else None
+        record = judge_pass(sc.inputs, sc.refs, str(folder / "table"), sc.operators, None, True,
+                            driver["lead_record"], set(driver["sample_hashes"]), retry_dir)
+        found = check(record, honest, item.expect)
+        if found:
+            misses[item.id] = found
+        if not check(honest, honest, item.expect):  # the expectation is not met by the honest record itself
+            misses[item.id] = ["the expectation does not tell the planted record from the honest one"]
+        lines |= {int(x) for x in re.findall(r"\d{3}", item.lines)}
+    assert not misses, misses
+    assert len(planted) == 53
+    assert set(range(180, 203)) <= lines, sorted(set(range(180, 203)) - lines)
+
+
+def test_rehearsal_perturbed_coarsest_rung_owes_the_retry(base, tmp_path) -> None:
+    from cowriter_judge.rehearsal import perturb_coarsest_rung
+
+    sc = Scenario(base)
+    perturbed, info = perturb_coarsest_rung(sc.inputs, sc.refs, sc.tables)
+    assert info["family"] == "W5 reactions-first" and 1.5 <= info["honest_q"] <= 2.5
+    assert not 1.5 <= info["perturbed_q"] <= 2.5
+    sc.tables = perturbed
+    first = sc.run(str(tmp_path / "first"))
+    owed = retry_owed_file(first)
+    assert owed["families"] == ["W5 reactions-first"] and owed["runs"] == sorted(info["retry_runs"])
+    second = sc.run(str(tmp_path / "retry"), retry_owed=owed, with_retry_tables=True)
+    assert s_outcome(second, "W5 reactions-first", "t_events")["outcome"] == "pass" and second["claim"] == "pass"
