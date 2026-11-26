@@ -41,7 +41,7 @@ POPULATIONS = (
     ),
     *(
         (
-            f"kv1_{law[4]}",
+            f"kv1_{law.split('.')[-1][4]}",  # The name's fifth character: kv1_1, ..., kv1_6.
             i % 4,
             law,
             K,
