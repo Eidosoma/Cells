@@ -248,13 +248,22 @@ def test_the_effective_availability_is_recorded_where_the_door_routes_into_chann
 
 
 def test_the_model_gains_no_field_so_the_families_that_copy_it_still_parse():
-    """The water families build their models from @3's model fields by name, so the door adds
-    none (the factors ride on the population); a planted model field would break their parse."""
+    """The water families build their models from @3's model fields by name, so a model field
+    they do not carry would break their parse. The door adds none (the factors ride on the
+    population). FR-50 phase 2 adds one, one_way_records, which @3's model gains only where it is
+    declared: empty by default, written by to_dict only where declared, and carried empty by the
+    water model (which refuses a declared one), so the water world parses and writes as before."""
+    from cells.definitions import surface_pump_water_spec as water_spec
+
     raw = water_fixtures.with_water(
         water_fixtures.heredity_cell("D", end_time=0.004), pf_m_s=5e-4, bath_pressure_Pa=12.5
     )
-    assert parse_spec(raw).model.water is not None
+    spec = parse_spec(raw)
+    assert spec.model.water is not None
     assert "channel_factors" not in spec_v3.SurfacePumpChannelModel.__dataclass_fields__
+    assert spec_v3.SurfacePumpChannelModel.__dataclass_fields__["one_way_records"].default == ()
+    assert spec.model.one_way_records == ()
+    assert spec_v3.ONE_WAY_RECORDS_KEY not in water_spec.to_dict(spec)["model"]
 
 
 # ------------------------------------------------------------------ the gate
