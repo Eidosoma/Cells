@@ -46,7 +46,10 @@ def test_c1_every_page_names_a_piece_and_every_piece_has_its_page_once_complete(
     assert len(todo) == len(library.paged(doc)) - len(library.pages(files)) > 0
     # Planted: a law registered for the test, in the tree as a built-in's would be, with no page.
     planted = law_registry.RouteLaw(
-        "tests.route.planted_library_route@1", ("membrane",), "planted", host="cells.kind.passive_routes@1"
+        "tests.route.planted_library_route@1",
+        ("membrane",),
+        "planted",
+        host="cells.kind.passive_routes@1",
     )
     with law_registry.scope(law_registry.BUILTIN.extended(planted)):
         registered = declarations.manifest()
@@ -134,7 +137,9 @@ def test_c5_the_format_page_s_key_tables_are_the_manifest_s(files):
 
 
 def test_new_writes_a_page_with_its_blocks_filled_and_refuses_one_that_exists(doc, files):
-    path, text = library.new_page(doc, files, "law", "cells.channel.kir2p1_mh2@1")  # A bare ID is in cells.
+    path, text = library.new_page(
+        doc, files, "law", "cells.channel.kir2p1_mh2@1"
+    )  # A bare ID is in cells.
     assert path == "docs/library/cells/laws/channel.kir2p1_mh2@1.md"
     names = [m.group("name") for m in library.MARKER.finditer(text)]
     assert sorted(names) == sorted(library.BLOCKS.values())

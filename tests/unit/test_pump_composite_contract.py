@@ -89,7 +89,9 @@ def test_frozen_definitions_rewrite_with_the_frozen_fields(kind):
     assert parse_spec(spec.to_dict()) == spec
     model = get_model(spec.model)
     structure = pump3.inner_structure(spec.model)  # I2: one composition per inner structure.
-    assert model is pump_composite.implementation("cells.model.resolved_pump_tissue@3", laws, structure)
+    assert model is pump_composite.implementation(
+        "cells.model.resolved_pump_tissue@3", laws, structure
+    )
     assert model.inner is pump3.for_structure(structure)
     assert model.STATE_TYPE._fields == frozen.STATE_TYPE._fields
     state, layout = model.initial_values(spec)
@@ -267,7 +269,10 @@ def test_operator_declarations_are_checked():
         (dict(PROCESS=True), "read in exact half-steps only"),
         (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=[(TURNOVER, "turnover_rate")]), "distinct"),
         (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "x"),) * 2), "distinct"),
-        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=(("cells.operator.routed@1", "rate_x"),)), "its own controls"),
+        (
+            dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=(("cells.operator.routed@1", "rate_x"),)),
+            "its own controls",
+        ),
         (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "turnover_rate"),)), "rate_factors"),
         (dict(FACTOR_RECORD="nowhere"), "FACTOR_RECORD is an owned state field"),
         (dict(STATE_AXES={"rec": ["one"]}, FACTOR_RECORD="rec"), "with factor_record"),
@@ -364,10 +369,15 @@ def test_rate_routes_are_checked_when_a_composition_is_built():
     assert pump_composite.rate_routes((turnover,)) == {}
     assert pump_composite.structure_errors(pump3, (source,)) == []  # No target: idle.
     assert pump_composite.structure_errors(pump3, (turnover, source)) == []  # Nothing declared.
-    stray = type("Stray", (RateSource,), dict(LAW_ID="cells.operator.stray@1", RATE_ROUTES=((TURNOVER, "x"),)))
+    stray = type(
+        "Stray",
+        (RateSource,),
+        dict(LAW_ID="cells.operator.stray@1", RATE_ROUTES=((TURNOVER, "x"),)),
+    )
     (error,) = pump_composite.structure_errors(pump3, (stray(), turnover))
     assert error == (
-        f"cells.operator.stray@1 routes a rate factor to {TURNOVER}'s x, which is not one of its routable "
+        f"cells.operator.stray@1 routes a rate factor to {TURNOVER}'s x, which is not one of its "
+        f"routable "
         "controls (ROUTABLE_CONTROLS)"
     )
     route = ((TURNOVER, "turnover_rate"),)
@@ -375,11 +385,13 @@ def test_rate_routes_are_checked_when_a_composition_is_built():
     assert check([(source, route), (turnover, None)]) == []
     assert check([(turnover, None), (source, ())]) == []
     assert check([(turnover, None), (source, route)]) == [
-        f"cells.operator.rate_source@1 routes a rate factor to {TURNOVER}, which precedes it: a route's source "
+        f"cells.operator.rate_source@1 routes a rate factor to {TURNOVER}, which precedes it: a "
+        f"route's source "
         "runs before its target, so the split's halves are symmetric about it"
     ]
     assert check([(source, route)]) == [
-        f"cells.operator.rate_source@1 routes a rate factor to {TURNOVER}, which the composition does not hold"
+        f"cells.operator.rate_source@1 routes a rate factor to {TURNOVER}, which the composition "
+        f"does not hold"
     ]
     assert check([(source, ((TURNOVER, "x"),)), (turnover, None)]) == [
         f"cells.operator.rate_source@1 declares a route to {TURNOVER}'s x, not one it routes"
@@ -462,15 +474,25 @@ def test_quantity_reads_are_checked_recorded_and_passed_to_readers_only():
     for attributes, message in malformed:
         with pytest.raises(ValueError, match=message):
             check_declarations(type("M", (QuantityReader,), attributes))
-    bare = dict(LAW_ID="cells.operator.bare@1", SPLIT=True, RK4="split", QUANTITIES={"x": ("cell_slot", "1")})
+    bare = dict(
+        LAW_ID="cells.operator.bare@1",
+        SPLIT=True,
+        RK4="split",
+        QUANTITIES={"x": ("cell_slot", "1")},
+    )
     with pytest.raises(ValueError, match="defines quantities"):
         check_declarations(type("B", (Operator,), bare))
     assert pump_composite.structure_errors(pump3, (owner, reader)) == []
     assert pump_composite.structure_errors(pump3, (reader,)) == []  # No owner: nothing to read.
     reads = {"cells.operator.quantity_owner@1": ("level", "depth")}
-    stray = type("Stray", (QuantityReader,), dict(LAW_ID="cells.operator.stray_reader@1", QUANTITY_READS=reads))
+    stray = type(
+        "Stray",
+        (QuantityReader,),
+        dict(LAW_ID="cells.operator.stray_reader@1", QUANTITY_READS=reads),
+    )
     assert pump_composite.structure_errors(pump3, (owner, stray())) == [
-        "cells.operator.stray_reader@1 reads cells.operator.quantity_owner@1's depth, which it does not declare among its "
+        "cells.operator.stray_reader@1 reads cells.operator.quantity_owner@1's depth, which it "
+        "does not declare among its "
         "quantities"
     ]
     assert pump_composite.quantity_readers((owner, reader, plain)) == {reader: (owner,)}
@@ -478,17 +500,28 @@ def test_quantity_reads_are_checked_recorded_and_passed_to_readers_only():
     level, target = ("cells.operator.quantity_owner@1", "level"), Routed()
     assert check([(owner, None), (reader, ((*level, None),))]) == []
     assert check([(reader, ((*level, None),)), (owner, None)]) == []  # Control view: any order.
-    assert check([(owner, None), (target, None), (reader, ((*level, "cells.operator.routed@1"),))]) == []
-    assert check([(target, None), (owner, None), (reader, ((*level, "cells.operator.routed@1"),))]) == [
-        "cells.operator.quantity_reader@1 reads cells.operator.quantity_owner@1's level in cells.operator.routed@1's half-steps, but "
-        "cells.operator.quantity_owner@1 follows cells.operator.routed@1: an owner whose quantity a route reads precedes the "
+    assert (
+        check([(owner, None), (target, None), (reader, ((*level, "cells.operator.routed@1"),))])
+        == []
+    )
+    assert check(
+        [(target, None), (owner, None), (reader, ((*level, "cells.operator.routed@1"),))]
+    ) == [
+        "cells.operator.quantity_reader@1 reads cells.operator.quantity_owner@1's level in "
+        "cells.operator.routed@1's half-steps, but "
+        "cells.operator.quantity_owner@1 follows cells.operator.routed@1: an owner whose quantity "
+        "a route reads precedes the "
         "route's target, so both of its halves read the quantity after the owner's first half"
     ]
     assert check([(reader, ((*level, None),))]) == [
-        "cells.operator.quantity_reader@1 reads cells.operator.quantity_owner@1's level, which the composition does not hold"
+        "cells.operator.quantity_reader@1 reads cells.operator.quantity_owner@1's level, which the "
+        "composition does not hold"
     ]
-    assert check([(owner, None), (reader, (("cells.operator.quantity_owner@1", "depth", None),))]) == [
-        "cells.operator.quantity_reader@1 declares a read of cells.operator.quantity_owner@1's depth, not one it reads"
+    assert check(
+        [(owner, None), (reader, (("cells.operator.quantity_owner@1", "depth", None),))]
+    ) == [
+        "cells.operator.quantity_reader@1 declares a read of cells.operator.quantity_owner@1's "
+        "depth, not one it reads"
     ]
     assert pump_composite.field_map(pump3, (owner, reader))["quantities"] == {
         "cells.operator.quantity_owner@1": {
@@ -787,7 +820,8 @@ def test_ownership_refusals_when_a_composition_is_built():
     assert pump_composite.structure_errors(pump3, (EarlyReader(),)) == []
     errors = pump_composite.structure_errors(pump3, (EarlyReader(), OPERATORS[WATER]))
     assert errors == [
-        f"cells.operator.early_reader@1 reads the view volume at stage split before {WATER} changes it there"
+        f"cells.operator.early_reader@1 reads the view volume at stage split before {WATER} "
+        f"changes it there"
     ]
     assert pump_composite.structure_errors(pump3, (OPERATORS[WATER], EarlyReader())) == []
     errors = pump_composite.structure_errors(pump3, (OwnerWriter(), Owner()))  # Writer first.

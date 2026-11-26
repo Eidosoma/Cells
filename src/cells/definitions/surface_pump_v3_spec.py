@@ -324,7 +324,9 @@ def parse_channel(raw, ids, z, membranes):
     _fields(raw, CHANNEL_FIELDS, "channel")
     law_id, laws = raw["kinetic_law"], channel_laws()  # The registry's (§8.3).
     if type(law_id) is not str or law_id not in laws or type(raw["permeant_ions"]) is not list:
-        raise ConfigError("Channel requires a cells.model.resolved_pump_tissue@3 law and permeant ions")
+        raise ConfigError(
+            "Channel requires a cells.model.resolved_pump_tissue@3 law and permeant ions"
+        )
     law = laws[law_id]
     valence = {species: own for species, own, _ in law.permeant}
     ions = []
@@ -907,7 +909,9 @@ def parse(data):
     if forms_faces:
         plain = tuple(f for f in base.model.faces if type(f) is not FormsFace)
         if declared_faces < len(plain):
-            raise ConfigError("face_capacity must hold every face of cells.route.logmean_electrodiffusion@1")
+            raise ConfigError(
+                "face_capacity must hold every face of cells.route.logmean_electrodiffusion@1"
+            )
         if solver not in FORMS_FACE_SOLVERS:
             raise ConfigError(FORMS_FACE_SOLVER_REFUSAL)
         base = replace(

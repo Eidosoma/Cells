@@ -200,7 +200,9 @@ def test_version_1_refuses_volume_providers_area_providers_and_mask_providers():
     with_writer = fx.with_exchange(
         cleft, [("sec", "furrow", "export", "first_order")], [("sec", cell, [(0.0, 0.1)])]
     )
-    with pytest.raises(ConfigError, match=r"cells.operator.scheduled_species_exchange@1 reads \w+_active as"):
+    with pytest.raises(
+        ConfigError, match=r"cells.operator.scheduled_species_exchange@1 reads \w+_active as"
+    ):
         parse_spec(with_writer)
 
 

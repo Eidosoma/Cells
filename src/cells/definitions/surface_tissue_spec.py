@@ -136,7 +136,9 @@ def to_dict(spec):
                     row[name] = mapped(row[name])
             if key in ("membranes", "junctions", "faces"):
                 row["law"] = (
-                    getattr(type(p), "LAW", FACE_LAW_ID) if key == "faces" else "cells.route.constant_field@1"
+                    getattr(type(p), "LAW", FACE_LAW_ID)
+                    if key == "faces"
+                    else "cells.route.constant_field@1"
                 )
             rows.append(row)
         raw[key] = rows

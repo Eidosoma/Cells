@@ -113,7 +113,9 @@ def definition(inp, name, *, dt=None, end=None, rows=None):
     area = cell["patch_area_m2"]
     units = w["units"]
     if list(pop["relative_permeability"]) != [0.0, 1.0, 0.0]:
-        raise ValueError("The engine's gate-free population here is cells.channel.kleak_always_open@1 (K only)")
+        raise ValueError(
+            "The engine's gate-free population here is cells.channel.kleak_always_open@1 (K only)"
+        )
     raw = dict(
         schema_version=1,
         model=dict(

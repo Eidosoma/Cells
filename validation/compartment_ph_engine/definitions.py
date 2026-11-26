@@ -46,7 +46,9 @@ from validation.compartment_ph_engine.parameters import CHARGE_PER_FMOL, R, Worl
 SPECIES = (("Na", 1), ("K", 1), ("Cl", -1), ("H", 1), ("B_c", -1), ("B_L", -1),
            ("ATP", 0), ("ADP", 0), ("Pi", 0))
 PENDING_MODEL_KEYS = ("operators", "patch_damage", "ph_conditions")
-COMPOSITE_MODEL = "cells.model.resolved_pump_composite@1"  # declared_world's: @3 inner, FR-1's operator
+COMPOSITE_MODEL = (
+    "cells.model.resolved_pump_composite@1"  # declared_world's: @3 inner, FR-1's operator
+)
 BACKGROUND_ROWS = ("B_c", "B_L", "ATP", "ADP", "Pi")
 PENDING_EXPERIMENT_KEYS = ("damage_controls",)
 FUEL_ROWS = ("ATP", "ADP", "Pi")
@@ -171,13 +173,24 @@ def fr4_world(world=None, *, dt_s=None):
         observation_times=[k * dt for k in range(0, steps + 1, stride)],
     )
     execution = dict(
-        dt=dt, capacity=1, extracellular_capacity=2, membrane_capacity=2, edge_capacity=0,
-        face_capacity=0, channel_capacity=0, backend="cpu", jit=True, precision="float64",
+        dt=dt,
+        capacity=1,
+        extracellular_capacity=2,
+        membrane_capacity=2,
+        edge_capacity=0,
+        face_capacity=0,
+        channel_capacity=0,
+        backend="cpu",
+        jit=True,
+        precision="float64",
         solver="cells.solver.imex_ars222_face_electromigration@1",
-        field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2", max_steps=steps + 8,
+        field_solver="cells.solver.capacitive_reduction_gauged_damped_newton@2",
+        max_steps=steps + 8,
         max_trace_bytes=2**31,
-        material_balance_atol_fmol=dict(Na=1e-10, K=1e-10, Cl=1e-10, H=1e-16,
-                                        **{s: w.trace_floor_fmol for s in BACKGROUND_ROWS}))
+        material_balance_atol_fmol=dict(
+            Na=1e-10, K=1e-10, Cl=1e-10, H=1e-16, **{s: w.trace_floor_fmol for s in BACKGROUND_ROWS}
+        ),
+    )
     return dict(schema_version=1, model=model, experiment=experiment, execution=execution)
 
 
@@ -224,8 +237,15 @@ def fr5_world(damage_world, *, dt_s=None, start=None, control=None):
     m["patch_damage"] = [dict(id=DAMAGE, patch=BOUNDING, law="cells.damage.bounding_patch_damage@1",
                               initial_damage=0.0, injury_rate_per_s=dw.injury_rate_per_s,
                               resealing_rate_per_s=dw.resealing_rate_per_s)]
-    m["ph_conditions"] = [dict(id=CONDITION, node=LUMEN, law="cells.transfer_factor.ph_conditioned_factor@1",
-                               ph50=dw.ph50, slope=dw.ph_slope)]
+    m["ph_conditions"] = [
+        dict(
+            id=CONDITION,
+            node=LUMEN,
+            law="cells.transfer_factor.ph_conditioned_factor@1",
+            ph50=dw.ph50,
+            slope=dw.ph_slope,
+        )
+    ]
     m["passive_routes"].append(
         dict(id="cargo_transfer_0", patch=BOUNDING, law="cells.route.passive_neutral_permeation@1",
              species="X", permeability_m_per_s=dw.cargo_transfer_m_s,

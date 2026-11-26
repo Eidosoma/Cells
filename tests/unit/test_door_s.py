@@ -37,8 +37,14 @@ from validation.tissue import secreted_species_fixtures as fx
 jax.config.update("jax_enable_x64", True)
 
 FIELD = "extracellular_volume"  # [outside]: the bath, ecs_0 and comp_0 in the delivery world.
-BATH, D152 = "cells.operator.scheduled_bath_composition@1", "cells.operator.local_species_reactions@1"
-INSERTION_1, STATE = "cells.operator.scheduled_membrane_insertion@1", "cells.operator.membrane_entity_state@1"
+BATH, D152 = (
+    "cells.operator.scheduled_bath_composition@1",
+    "cells.operator.local_species_reactions@1",
+)
+INSERTION_1, STATE = (
+    "cells.operator.scheduled_membrane_insertion@1",
+    "cells.operator.membrane_entity_state@1",
+)
 SITES = "cells.operator.site_occupancy@1"
 
 
@@ -105,7 +111,10 @@ def merged(operators, p, state, *, xp=np):
 
 def test_disjoint_changers_merge_to_the_same_bits_in_either_order(world):
     _, state, p = world
-    a, b = changer("cells.operator.test_a@1", [0], 2.0), changer("cells.operator.test_b@1", [2], 3.0)
+    a, b = (
+        changer("cells.operator.test_a@1", [0], 2.0),
+        changer("cells.operator.test_b@1", [2], 3.0),
+    )
     forward, backward = merged((a, b), p, state), merged((b, a), p, state)
     assert forward.tobytes() == backward.tobytes()
     declared = np.asarray(p.extracellular_volume)
@@ -135,7 +144,10 @@ def scope(world, *operators):
 
 
 def test_overlaps_on_every_slot_are_refused_at_the_structure_check_unless_they_commute():
-    replace = [changer(law, [0], 1.0, scoped=False) for law in ("cells.operator.test_r0@1", "cells.operator.test_r1@1")]
+    replace = [
+        changer(law, [0], 1.0, scoped=False)
+        for law in ("cells.operator.test_r0@1", "cells.operator.test_r1@1")
+    ]
     assert structure(*replace) == [f"two providers of the view field {FIELD}"]
     for kind, pair_ids in (
         ("add", ("cells.operator.test_add0@1", "cells.operator.test_add1@1")),
@@ -155,13 +167,25 @@ def test_overlaps_on_every_slot_are_refused_at_the_structure_check_unless_they_c
 
 
 def test_scoped_overlaps_are_refused_at_the_definition_naming_the_slots(world):
-    a, b = changer("cells.operator.test_a@1", [0, 1], 2.0), changer("cells.operator.test_b@1", [1, 2], 3.0)
+    a, b = (
+        changer("cells.operator.test_a@1", [0, 1], 2.0),
+        changer("cells.operator.test_b@1", [1, 2], 3.0),
+    )
     assert structure(a, b) == []
     (error,) = scope(world, a, b)
-    assert "cells.operator.test_a@1 and cells.operator.test_b@1 both change extracellular_volume" in error and error.endswith(
-        "at ecs_0"
+    assert (
+        "cells.operator.test_a@1 and cells.operator.test_b@1 both change extracellular_volume"
+        in error
+        and error.endswith("at ecs_0")
     )
-    assert scope(world, changer("cells.operator.test_a@1", [0], 2.0), changer("cells.operator.test_b@1", [1, 2], 3.0)) == []
+    assert (
+        scope(
+            world,
+            changer("cells.operator.test_a@1", [0], 2.0),
+            changer("cells.operator.test_b@1", [1, 2], 3.0),
+        )
+        == []
+    )
 
 
 def test_a_commuting_chain_applies_in_declared_order_and_is_recorded(world):
@@ -175,7 +199,10 @@ def test_a_commuting_chain_applies_in_declared_order_and_is_recorded(world):
     (error,) = scope(world, a, b)
     assert "(multiply and add) at ecs_0" in error
     views = pump_composite.field_map(adapter, (b, c))["views"]
-    assert views[FIELD]["changes"] == [["cells.operator.test_b@1", "add", True], ["cells.operator.test_c@1", "add", True]]
+    assert views[FIELD]["changes"] == [
+        ["cells.operator.test_b@1", "add", True],
+        ["cells.operator.test_c@1", "add", True],
+    ]
     assert "changes" not in pump_composite.field_map(adapter, (b,))["views"][FIELD]
 
 
@@ -193,7 +220,8 @@ def test_a_fixed_reader_is_refused_where_a_changer_meets_its_slots(world):
     )
     # Unscoped on either side: refused at the structure check, as before door S.
     assert structure(dose, reader("cells.operator.test_fixed@1", [1], "fixed", scoped=False)) == [
-        "cells.operator.test_fixed@1 reads extracellular_volume as declared, but cells.operator.test_dose@1 provides it"
+        "cells.operator.test_fixed@1 reads extracellular_volume as declared, but "
+        "cells.operator.test_dose@1 provides it"
     ]
 
 
@@ -213,16 +241,21 @@ def test_a_current_reader_follows_the_changers_of_its_slots(world):
     assert scope(world, dose, late) == []
     early = (changer("cells.operator.test_first@1", [2], 1.0), late, dose)
     assert structure(*early) == [] and scope(world, *early) == []  # The event runs first.
-    split_dose = changer("cells.operator.test_split_dose@1", [0], 2.0, stage="split")  # The same-stage twin.
+    split_dose = changer(
+        "cells.operator.test_split_dose@1", [0], 2.0, stage="split"
+    )  # The same-stage twin.
     assert scope(world, split_dose, late) == []
     before = (changer("cells.operator.test_first@1", [2], 1.0), late, split_dose)
     assert structure(*before) == []
     (error,) = scope(world, *before)
     assert error == (
-        "cells.operator.test_current@1 reads the view extracellular_volume at bath at stage split before "
+        "cells.operator.test_current@1 reads the view extracellular_volume at bath at stage split "
+        "before "
         "cells.operator.test_split_dose@1 changes it there"
     )
-    assert structure(reader("cells.operator.test_alone@1", [0], "current")) == []  # Nothing changes it.
+    assert (
+        structure(reader("cells.operator.test_alone@1", [0], "current")) == []
+    )  # Nothing changes it.
 
 
 def test_a_current_split_reader_receives_the_merged_view(world):
@@ -250,7 +283,10 @@ def test_a_changer_off_its_slots_changes_nothing_there(world):
 
 def test_a_slot_mask_that_differs_from_the_declared_slots_is_refused(world):
     spec, _, p = world
-    honest, wrong = changer("cells.operator.test_h@1", [0], 1.0), changer("cells.operator.test_w@1", [0], 1.0)
+    honest, wrong = (
+        changer("cells.operator.test_h@1", [0], 1.0),
+        changer("cells.operator.test_w@1", [0], 1.0),
+    )
     wrong.changed_slots = lambda spec, declaration: {FIELD: (1,)}
     assert pump_composite.slot_mask_errors([(honest, None)], spec, p) == []
     assert pump_composite.slot_mask_errors([(wrong, None)], spec, p) == [
@@ -329,15 +365,17 @@ def test_the_bath_schedule_and_d152_compose_in_either_order_and_the_other_pairs_
     assert laws(STATE, INSERTION_1, BATH) == [
         "two providers of the view field extracellular_amount_reference"
     ]
-    assert "cells.operator.local_species_reactions@1 reads extracellular_amount_reference as declared, but " in (
-        " ".join(laws(STATE, INSERTION_1, D152))
+    assert (
+        "cells.operator.local_species_reactions@1 reads extracellular_amount_reference as declared, but "
+        in (" ".join(laws(STATE, INSERTION_1, D152)))
     )
     # FR-23 (D244): site occupancy's anchor reads are scoped to its facing finite nodes, so it
     # composes beside the bath schedule in either order; beside insertion@1, whose anchors are
     # unscoped, it stays refused.
     assert laws(BATH, SITES) == [] and laws(SITES, BATH) == []
-    assert "cells.operator.site_occupancy@1 reads extracellular_amount_reference as declared, but " in (
-        " ".join(laws(STATE, INSERTION_1, SITES))
+    assert (
+        "cells.operator.site_occupancy@1 reads extracellular_amount_reference as declared, but "
+        in (" ".join(laws(STATE, INSERTION_1, SITES)))
     )
 
 

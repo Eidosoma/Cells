@@ -208,7 +208,8 @@ def test_requires_kinds_is_refused_without_its_kind():
         today, declared = adapters()
         errors = pump_composite.structure_errors(today, (KindReader(),))
         assert errors == [
-            f"tests.operator.kind_reader@1 requires the kind {kf.KIND_ID}, which the definition does not "
+            f"tests.operator.kind_reader@1 requires the kind {kf.KIND_ID}, which the definition "
+            f"does not "
             "declare"
         ]
         with pytest.raises(ConfigError, match="requires the kind tests.kind.exchange@1"):
@@ -255,7 +256,9 @@ def test_fixed_inner_fields_declarations_are_checked():
         contract.check_declarations(type("Odd", (loose,), {"FIXED_INNER_FIELDS": 1}))
     assert OPERATORS["cells.operator.scheduled_cell_replacement@1"].FIXED_INNER_FIELDS
     assert OPERATORS["cells.operator.scheduled_cell_replacement@2"].FIXED_INNER_FIELDS
-    assert not OPERATORS["cells.operator.ideal_osmosis_linear_compliance_water@1"].FIXED_INNER_FIELDS
+    assert not OPERATORS[
+        "cells.operator.ideal_osmosis_linear_compliance_water@1"
+    ].FIXED_INNER_FIELDS
 
 
 @pytest.mark.parametrize(
@@ -339,7 +342,8 @@ def test_a_division_is_refused_beside_a_kind_with_per_patch_state():
     with kind_registry.scope(kf.registry(kf.carrier())):
         raw = kf.declare_carrier(pfx.divided(), species="K")
         with pytest.raises(
-            ConfigError, match=r"cells.operator.isopotential_partition@1 opens, closes or retires slots"
+            ConfigError,
+            match=r"cells.operator.isopotential_partition@1 opens, closes or retires slots",
         ):
             parse_spec(raw)
 

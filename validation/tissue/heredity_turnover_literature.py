@@ -472,7 +472,10 @@ def predictions():
     return dict(
         kind="cells.heredity_turnover_literature_predictions@1",
         status="written before any turnover run; development pre-screen, not judged",
-        engine_models=["cells.model.resolved_pump_replacement@1", "cells.model.resolved_pump_tissue@3"],
+        engine_models=[
+            "cells.model.resolved_pump_replacement@1",
+            "cells.model.resolved_pump_tissue@3",
+        ],
         stop_rules=STOP_RULES,
         brackets=BRACKETS,
         general=GENERAL,
@@ -965,7 +968,9 @@ def part_arm(args):
         out / "result.json",
         dict(
             arm=name,
-            engine_models=["cells.model.resolved_pump_replacement@1 (inner cells.model.resolved_pump_tissue@3)"],
+            engine_models=[
+                "cells.model.resolved_pump_replacement@1 (inner cells.model.resolved_pump_tissue@3)"
+            ],
             dt=dt,
             end_step=k_end,
             end_s=k_end * dt,

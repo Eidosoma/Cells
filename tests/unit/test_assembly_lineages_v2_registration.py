@@ -115,8 +115,16 @@ HOMES = {
 OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
     SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
     "cells.operator.serial_transfer@1": (transfer, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
-    "cells.operator.pool_replacement@1": (replacement, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
-    "cells.operator.pool_withdrawal@1": (withdrawal, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.operator.pool_replacement@1": (
+        replacement,
+        interfaces.AssemblyOperator,
+        OPERATOR_INTERFACE,
+    ),
+    "cells.operator.pool_withdrawal@1": (
+        withdrawal,
+        interfaces.AssemblyOperator,
+        OPERATOR_INTERFACE,
+    ),
     TENSION_HOLD: (tension_hold, interfaces.AssemblyOperator, OPERATOR_INTERFACE),  # FR-31
     # OL6 S7 (D304): the size-threshold division.
     SIZE_THRESHOLD_DIVISION: (size_division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
@@ -191,24 +199,34 @@ def test_u2_holds_structurally_in_version_2():
     law_registry.active()
     reaction = mass_action.LAW
     _refused(
-        dataclasses.replace(reaction, law_id="tests.reaction.driven_reaction@1", energy_role="driven"),
+        dataclasses.replace(
+            reaction, law_id="tests.reaction.driven_reaction@1", energy_role="driven"
+        ),
         "U2",
     )
     _refused(
-        dataclasses.replace(reaction, law_id="tests.reaction.sourced_reaction@1", energy_source="fuel"),
+        dataclasses.replace(
+            reaction, law_id="tests.reaction.sourced_reaction@1", energy_source="fuel"
+        ),
         "U2",
     )
     _refused(
-        dataclasses.replace(reaction, law_id="tests.reaction.v1_host@1", host="cells.model.assembly_lineages@1"),
+        dataclasses.replace(
+            reaction, law_id="tests.reaction.v1_host@1", host="cells.model.assembly_lineages@1"
+        ),
         "is hosted by cells.model.assembly_lineages@2",
     )
     factor = transition_state.LAW
     _refused(
-        dataclasses.replace(factor, law_id="tests.rate_factor.each_direction@1", evaluated_on="each_direction"),
+        dataclasses.replace(
+            factor, law_id="tests.rate_factor.each_direction@1", evaluated_on="each_direction"
+        ),
         "common state m only",
     )
     _refused(
-        dataclasses.replace(factor, law_id="tests.rate_factor.dilute@1", catalysing_phases=("lumen",)),
+        dataclasses.replace(
+            factor, law_id="tests.rate_factor.dilute@1", catalysing_phases=("lumen",)
+        ),
         "condensed phase only",
     )
     _refused(
@@ -217,7 +235,10 @@ def test_u2_holds_structurally_in_version_2():
     )
     # Control: a passive declaration under its own namespace is admitted.
     admitted = dataclasses.replace(reaction, law_id="tests.reaction.passive_reaction@1")
-    assert law_registry.BUILTIN.extended(admitted).lookup("tests.reaction.passive_reaction@1") is admitted
+    assert (
+        law_registry.BUILTIN.extended(admitted).lookup("tests.reaction.passive_reaction@1")
+        is admitted
+    )
 
 
 def test_d215_s_guard_on_1_admits_only_d192_s_labelled_exception():
@@ -229,7 +250,9 @@ def test_d215_s_guard_on_1_admits_only_d192_s_labelled_exception():
         planted = dataclasses.replace(single, law_id="tests.rate_factor.second_driven@1", **change)
         _refused(planted, "U2, D199; D215")
     # @1's own kernel test plants a variant that keeps the label: still admitted.
-    kept = dataclasses.replace(single, law_id="tests.rate_factor.row_update@1", update=lambda *a: None)
+    kept = dataclasses.replace(
+        single, law_id="tests.rate_factor.row_update@1", update=lambda *a: None
+    )
     assert kept.errors() == []
     # A passive law needs no label.
     passive = dataclasses.replace(gard.PAIR_CONSISTENT, law_id="tests.rate_factor.renamed_factor@1")

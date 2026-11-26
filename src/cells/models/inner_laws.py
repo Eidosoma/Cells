@@ -57,7 +57,9 @@ from cells.registry.kind_registry import qualified
 from cells.registry.laws import ChannelLaw, JunctionLaw, PumpLaw, RouteLaw  # noqa: F401
 
 HOST = qualified(MODEL_ID)  # @3 runs its own populations' laws (registry/laws.py: `host`).
-MAINTAINED_FUEL_ID = METABOLISM_ID  # cells.fuel_kind.maintained_chemical_reservoirs@1, today's pumps' fuel kind.
+MAINTAINED_FUEL_ID = (
+    METABOLISM_ID  # cells.fuel_kind.maintained_chemical_reservoirs@1, today's pumps' fuel kind.
+)
 MEMBRANE_ROUTE_LAW_ID = constant_field.LAW_ID  # The passive membrane and junction route law.
 FACE_ROUTE_LAW_ID = logmean_electrodiffusion.LAW_ID
 # The forms law (the face note's §2-4, MITOCHONDRIA_DESIGN; its build plan's item 1): a face that
@@ -406,7 +408,8 @@ class InnerStructure:
             )
         ):
             raise ValueError(
-                "Series gate kinds name one kind per gate of cells.junction.junction_series_gates@1, the "
+                "Series gate kinds name one kind per gate of "
+                "cells.junction.junction_series_gates@1, the "
                 "structure's only junction law"
             )
         # Validated against the active law registry (§8.3): each declared law is one @3 runs.

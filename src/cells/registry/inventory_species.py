@@ -20,7 +20,10 @@ by the template volume, unless an amount is given. Route-only templates are left
 import copy
 import math
 
-REPLACEMENT_LAWS = ("cells.operator.scheduled_cell_replacement@1", "cells.operator.scheduled_cell_replacement@2")
+REPLACEMENT_LAWS = (
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+)
 
 
 def _positive(value, name):

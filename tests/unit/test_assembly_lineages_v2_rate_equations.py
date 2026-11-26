@@ -214,7 +214,10 @@ def test_a_linear_network_follows_its_matrix_exponential(tmp_path):
     records.write_run(tmp_path / "bundle", run)
     record = json.loads((tmp_path / "bundle" / "run.json").read_text())
     assert record["format"] == "cells.rate_equations_run@1" and record["status"] == "complete"
-    assert record["engine_models"]["representation"] == "cells.assembly_representation.rate_equations@1"
+    assert (
+        record["engine_models"]["representation"]
+        == "cells.assembly_representation.rate_equations@1"
+    )
     assert record["ledger"]["closes"] and record["moieties"]["closes"]
     assert all(law["limit_formulas"] for law in record["laws"])
     assert "qualification" not in record["representation"]  # FR-47's status: its paths only

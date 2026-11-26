@@ -231,7 +231,8 @@ def resolved_definition(raw, *, dt, vm0, solver="rk4", extra_steps=8):
             junctions=junctions,
             faces=faces,
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=channels,
         ),

@@ -305,7 +305,9 @@ def test_populations_on_a_replaced_slot_are_refused_and_elsewhere_admitted():
     cells.operator.site_occupant_replacement@1 and refused without it, naming it; a contact population incident
     to a replaced slot stays refused."""
     inward = sfx.population("w1", patch="wall_cell_1", face="inside")
-    with pytest.raises(ConfigError, match="its occupants need cells.operator.site_occupant_replacement@1"):
+    with pytest.raises(
+        ConfigError, match="its occupants need cells.operator.site_occupant_replacement@1"
+    ):
         parse_spec(two_cells([inward], replaced=True))
     parse_spec(sfx.with_occupant(two_cells([inward], replaced=True), {"T": {"w1": (0.2, 1, None)}}))
     on_contact = sfx.population("k0", contact="j0", side="first")
@@ -445,7 +447,9 @@ def test_identities_must_agree_with_d152_in_either_order():
         if first:
             for spec in (refused, admitted):
                 spec["model"]["operators"].reverse()
-        with pytest.raises(ConfigError, match="another identity than cells.operator.local_species_reactions@1"):
+        with pytest.raises(
+            ConfigError, match="another identity than cells.operator.local_species_reactions@1"
+        ):
             parse_spec(refused)
         parse_spec(admitted)
 
@@ -473,14 +477,25 @@ def test_the_species_cap_is_checked(monkeypatch):
         parse_spec(raw)
 
 
-STATE, WATER = "cells.operator.membrane_entity_state@1", "cells.operator.ideal_osmosis_linear_compliance_water@1"
+STATE, WATER = (
+    "cells.operator.membrane_entity_state@1",
+    "cells.operator.ideal_osmosis_linear_compliance_water@1",
+)
 VIEW_REFUSED = {
     "water": (WATER,),
     "insertion@1": (STATE, "cells.operator.scheduled_membrane_insertion@1"),
     "insertion@2": (STATE, "cells.operator.scheduled_membrane_insertion@2"),
     "the partition": (STATE, "cells.operator.isopotential_partition@1"),
-    "lumen@1": (STATE, "cells.operator.scheduled_membrane_insertion@1", "cells.operator.restricted_cleft_lumen@1"),
-    "lumen@2": (STATE, "cells.operator.scheduled_membrane_insertion@2", "cells.operator.restricted_cleft_lumen@2"),
+    "lumen@1": (
+        STATE,
+        "cells.operator.scheduled_membrane_insertion@1",
+        "cells.operator.restricted_cleft_lumen@1",
+    ),
+    "lumen@2": (
+        STATE,
+        "cells.operator.scheduled_membrane_insertion@2",
+        "cells.operator.restricted_cleft_lumen@2",
+    ),
 }
 
 
@@ -504,7 +519,9 @@ def test_the_structure_check_admits_its_neighbours():
         ("cells.operator.species_regulated_availability@1",),
         ("cells.operator.electrode_current_injection@1",),
         ("cells.operator.scheduled_cell_replacement@1",),
-        ("cells.operator.scheduled_bath_composition@1",),  # FR-23 (D244): both declare their slots (door S).
+        (
+            "cells.operator.scheduled_bath_composition@1",
+        ),  # FR-23 (D244): both declare their slots (door S).
         (STATE,),
     ):
         for order in ((*laws, so.LAW_ID), (so.LAW_ID, *laws)):

@@ -1746,7 +1746,9 @@ def c_definition(arm="H2-C"):
             if g["channel_id"] == "cue_0":
                 for c in g["schedule"]:
                     c["time"] = round(c["time"] / dt) * dt
-    x["fine_windows"] = dict(method="cells.execution.fixed_fine_windows@1", dt=C_FINE, windows=[dict(a["window"])])
+    x["fine_windows"] = dict(
+        method="cells.execution.fixed_fine_windows@1", dt=C_FINE, windows=[dict(a["window"])]
+    )
     grid = EventGrid(parse_spec(raw))
     points = {grid[i] for i in range(len(grid))}
     cue = [c["time"] for g in e["channel_controls"] if g["channel_id"] == "cue_0"

@@ -92,11 +92,15 @@ def test_the_set_builds(honest, tmp_path):
         }
         assert hosts == routes and {r["law"] for r in m.get("passive_routes", [])} <= {PASSIVE}
         assert (len(m["cells"]), len(m["junctions"])) == (n_cells, n_junctions), name
-        assert {j["gate"]["law"] for j in m["junctions"]} == {"cells.junction.junction_voltage_relaxation@1"}
+        assert {j["gate"]["law"] for j in m["junctions"]} == {
+            "cells.junction.junction_voltage_relaxation@1"
+        }
         assert all(j["gate"]["minimum_open_fraction"] == 1.0 for j in m["junctions"]), name
         neutral = {s["id"] for s in m["species"] if s["valence"] == 0}
         assert {s for _, s in routes} <= neutral, name
-        if model_id == "cells.model.resolved_pump_tissue@3":  # @3's own route for its neutral permeant species
+        if (
+            model_id == "cells.model.resolved_pump_tissue@3"
+        ):  # @3's own route for its neutral permeant species
             assert {s["id"] for s in m["species"]} == {"mR"} <= neutral
             assert {mb["law"] for mb in m["membranes"]} == {"cells.route.constant_field@1"}
             assert {j["law"] for j in m["junctions"]} == {"cells.route.constant_field@1"}

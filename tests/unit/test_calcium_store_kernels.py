@@ -131,7 +131,8 @@ def kernel_world(family, k_factor=1.0, temperature=310.0):
         faces=[],
         channels=[],
         closure=dict(
-            law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference="outside"
+            law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+            gauge_reference="outside",
         ),
         transporters=[entry(family, i, s, k_factor) for i, s in enumerate(states(family))],
     )

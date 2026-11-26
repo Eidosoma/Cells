@@ -31,7 +31,13 @@ POPULATIONS = (
     ),
     *(
         (f"hcn_{n}", i, law, HCN, 3e-10, 0.12 + 0.08 * i, [0.35 + 0.1 * i, 0.7])
-        for i, (n, law) in enumerate(((1, "cells.channel.hcn1_m@1"), (2, "cells.channel.hcn2_m@1"), (4, "cells.channel.hcn4_m@1")))
+        for i, (n, law) in enumerate(
+            (
+                (1, "cells.channel.hcn1_m@1"),
+                (2, "cells.channel.hcn2_m@1"),
+                (4, "cells.channel.hcn4_m@1"),
+            )
+        )
     ),
     *(
         (
@@ -44,7 +50,13 @@ POPULATIONS = (
             [0.25 + 0.1 * i, 0.65 - 0.05 * i],
         )
         for i, law in enumerate(
-            ("cells.channel.kv1p1_mh2@1", "cells.channel.kv1p2_mh@1", "cells.channel.kv1p3_mh@1", "cells.channel.kv1p4_mh@1", "cells.channel.kv1p6_mh@1")
+            (
+                "cells.channel.kv1p1_mh2@1",
+                "cells.channel.kv1p2_mh@1",
+                "cells.channel.kv1p3_mh@1",
+                "cells.channel.kv1p4_mh@1",
+                "cells.channel.kv1p6_mh@1",
+            )
         )
     ),
     *(

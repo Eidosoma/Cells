@@ -223,7 +223,9 @@ def test_definition_errors_reject(fault):
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     channel = m["channels"][2]  # NaV1.2 on patch 2.
     if fault in ENERGY_CHECK_FAULTS:  # FR-18's X2 (D224): its block, then its own edit.
-        x["energy_check"] = dict(check="cells.execution.step_doubled_energy@1", integration_error_cap=1e-2)
+        x["energy_check"] = dict(
+            check="cells.execution.step_doubled_energy@1", integration_error_cap=1e-2
+        )
         ENERGY_CHECK_FAULTS[fault][0](x)
     elif fault in VALUE_FAULTS:
         VALUE_FAULTS[fault][0](m, e)

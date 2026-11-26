@@ -132,7 +132,10 @@ def over_water(
         )
     )
     v1 = cs.frozen_definition(with_replacement(raw, templates, events, formation=formation))
-    block = dict(copy.deepcopy(v1["model"]["operators"][0]), law="cells.operator.scheduled_cell_replacement@2")
+    block = dict(
+        copy.deepcopy(v1["model"]["operators"][0]),
+        law="cells.operator.scheduled_cell_replacement@2",
+    )
     block["impermeant_species"] = list(impermeant)
     water["model"]["operators"].append(block)
     water["experiment"]["replacement_events"] = v1["experiment"]["replacement_events"]

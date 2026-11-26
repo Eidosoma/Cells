@@ -192,7 +192,8 @@ def definition(
         junctions=junctions,
         faces=faces,
         closure=dict(
-            law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+            law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+            gauge_reference=None,
         ),
     )
     times = [0.0, end_time] if observation_times is None else list(observation_times)

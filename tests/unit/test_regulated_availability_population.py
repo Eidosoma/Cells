@@ -272,13 +272,19 @@ def test_an_in_step_writer_of_units_or_area_is_refused(monkeypatch):
     spec, _, _, _, _, declaration, _ = bound(world())
     real = list(cs.entries(spec))
     for field in sra.UNIT_FIELDS:
-        stub = SimpleNamespace(LAW_ID="cells.operator.stub@1", PROCESS=True, ENTITY_WRITES={field: ("x",)})
+        stub = SimpleNamespace(
+            LAW_ID="cells.operator.stub@1", PROCESS=True, ENTITY_WRITES={field: ("x",)}
+        )
         monkeypatch.setattr(
             sra.composite_spec, "entries", lambda s, stub=stub: [*real, (stub, 0, 0)]
         )
-        with pytest.raises(ConfigError, match=f"cells.operator.stub@1's in-step process writes {field}"):
+        with pytest.raises(
+            ConfigError, match=f"cells.operator.stub@1's in-step process writes {field}"
+        ):
             sra.check_population_sources(spec, declaration)
-        quiet = SimpleNamespace(LAW_ID="cells.operator.stub@1", PROCESS=False, ENTITY_WRITES={field: ("x",)})
+        quiet = SimpleNamespace(
+            LAW_ID="cells.operator.stub@1", PROCESS=False, ENTITY_WRITES={field: ("x",)}
+        )
         monkeypatch.setattr(sra.composite_spec, "entries", lambda s, q=quiet: [*real, (q, 0, 0)])
         sra.check_population_sources(spec, declaration)  # A half-step writer is admitted.
 

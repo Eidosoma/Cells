@@ -1848,7 +1848,9 @@ def main(argv=None):
     )
     run.add_argument("--out", required=True, help="fresh layout directory")
     run.set_defaults(func=cmd_run)
-    blind = sub.add_parser("run-resolved", help="blind cells.model.resolved_pump_tissue@1/@2 INIT then SIM")
+    blind = sub.add_parser(
+        "run-resolved", help="blind cells.model.resolved_pump_tissue@1/@2 INIT then SIM"
+    )
     blind.add_argument("--case", required=True)
     blind.add_argument("--device", choices=("cpu", "gpu"), default="cpu")
     blind.add_argument("--dt-init", type=float, default=1e-3)
@@ -1886,7 +1888,9 @@ def main(argv=None):
     pair.add_argument("--protocol", required=True)
     pair.add_argument("--out", required=True)
     pair.set_defaults(func=cmd_compare_layouts)
-    resolved = sub.add_parser("resolved-definition", help="cells.model.resolved_pump_tissue@1/@2 inputs")
+    resolved = sub.add_parser(
+        "resolved-definition", help="cells.model.resolved_pump_tissue@1/@2 inputs"
+    )
     resolved.add_argument("--case", required=True)
     resolved.add_argument("--phase", choices=PHASES, default="init")
     resolved.add_argument("--dt", type=float, required=True)

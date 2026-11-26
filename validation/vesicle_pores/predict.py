@@ -167,13 +167,22 @@ def main(argv):
         "read (the sheet's §8; D293, D294, D295)",
         "sheet": SHEET_TAG,
         "law": "cells.assembly_hazard.pore_nucleation@1 (src/cells/models/assembly_lineages_v2/pore_nucleation.py)",
-        "fit": {"path": str(fit_path), "sha256": _sha256(fit_path),
-                "estimates": fit["estimates"], "covariance_unscaled": fit["covariance_unscaled"],
-                "chi2": fit["chi2"], "dof": fit["dof"],
-                "birge_factor_unscored": fit["birge_view"]["factor"]},  # fmt: skip
+        "fit": {
+            "path": str(fit_path),
+            "sha256": _sha256(fit_path),
+            "estimates": fit["estimates"],
+            "covariance_unscaled": fit["covariance_unscaled"],
+            "chi2": fit["chi2"],
+            "dof": fit["dof"],
+            "birge_factor_unscored": fit["birge_view"]["factor"],
+        },  # fmt: skip
         "conditions": {p.name: _sha256(p) for p in (s1, s1b, s1c)},
-        "inputs": {"E_A_J_per_mol": E_A_J_PER_MOL, "R_J_per_mol_K": law.R, "k_B_J_per_K": law.K_B,
-                   "in_range_K": list(IN_RANGE_K)},  # fmt: skip
+        "inputs": {
+            "E_A_J_per_mol": E_A_J_PER_MOL,
+            "R_J_per_mol_K": law.R,
+            "k_B_J_per_K": law.K_B,
+            "in_range_K": list(IN_RANGE_K),
+        },  # fmt: skip
         "rule": {
             "tau": "t (s_read^2 + s_dig^2 + s_T^2 + s_pred^2 [+ s_area^2, set 2])^(1/2), t = 4.303",
             "two_sided": "passes when |ln k_pred - ln k_read| <= tau",

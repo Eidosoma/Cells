@@ -217,7 +217,8 @@ FR47_FORMULAS = {  # FR-47 (D323): written into a run's record only where its wo
     "constant A_sh rho0, as the exact kernel's; no bilayer quantities, closure cost, floor, "
     "tension or lysis",
     "washes": "cells.operator.pool_replacement@1: the same map, the sink F_cont(old pool), the work "
-    "F_cont(fresh pool); cells.operator.pool_withdrawal@1's mean, n -> (1 - f) n + b on the pool's finite "
+    "F_cont(fresh pool); cells.operator.pool_withdrawal@1's mean, n -> (1 - f) n + b on the pool's "
+    "finite "
     "places: the sink F(n; V) - F((1 - f) n; (1 - f) V), the work F(b; f V), the mixing heat "
     "F((1 - f) n; (1 - f) V) + F(b; f V) - F((1 - f) n + b; V), with F(c; g V) = F_cont(c) - "
     "F_cont(0) - (sum c) ln g",

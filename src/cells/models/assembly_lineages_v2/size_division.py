@@ -117,7 +117,8 @@ OPERATOR = operator_registry.BUILTIN.register(
         provenance="cited",
         source=Citation(
             "docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md §6.8 (G2); docs/OL6_PROTOCOL_G.md §3 "
-            "(its interface contract); @1's cells.operator.size_threshold_fission@1 (Plastic Heredity "
+            "(its interface contract); @1's cells.operator.size_threshold_fission@1 (Plastic "
+            "Heredity "
             "preprint v5.0, Appendix F, contract T2-02; Zenodo 10.5281/zenodo.22143269)",
             "size-triggered division with an exact random partition, floor(f N) to the first "
             "daughter, in version 2's worlds",

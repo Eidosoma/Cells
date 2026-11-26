@@ -649,11 +649,13 @@ def _carries(p, control, k, m):
 
 
 BLOCK_REFUSAL = (
-    "A blocked channel population (cells.channel_block.open_channel_block_weighted_modes@1) is refused until a judge "
+    "A blocked channel population (cells.channel_block.open_channel_block_weighted_modes@1) is "
+    "refused until a judge "
     "reads the block in the stationary analysis (FR-51, fail closed)"
 )
 FORMS_FACE_REFUSAL = (
-    "cells.route.logmean_electrodiffusion_forms@1's faces join outside nodes outside the faces' arrays, and "
+    "cells.route.logmean_electrodiffusion_forms@1's faces join outside nodes outside the faces' "
+    "arrays, and "
     "their movers carry several rows: the structural laws read neither (version 1)"
 )
 

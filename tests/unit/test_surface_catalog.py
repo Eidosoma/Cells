@@ -61,7 +61,10 @@ def test_identity_roundtrip_routes_and_ensemble_registration(backend):
     assert set(p.channel_laws[p.channel_active]) == set(range(35))
     assert p.channel_laws[-1] == 0 and not p.channel_active[-1]
     assert (
-        ionic.parse_spec(dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=2)).simulation == spec
+        ionic.parse_spec(
+            dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=2)
+        ).simulation
+        == spec
     )
     batch = BatchSpec((WorldSpec(11, spec), WorldSpec(71, spec)), 2, 2048, 2**32)
     assert parse_batch(batch.to_dict()) == batch
@@ -79,7 +82,9 @@ def test_declarations_reject_incompatible_catalogs(fault):
     raw = fixtures.definition()
     m, x = raw["model"], raw["execution"]
     if fault == "identity":
-        m["id"] = "cells.model.resolved_tissue@2"  # An earlier family, whose channels carry one ion each.
+        m["id"] = (
+            "cells.model.resolved_tissue@2"  # An earlier family, whose channels carry one ion each.
+        )
     elif fault == "law":
         m["channels"][-1]["kinetic_law"] = "invented_leak@1"
     elif fault == "valence":

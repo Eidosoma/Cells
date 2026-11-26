@@ -101,7 +101,10 @@ def part_overhead(args):
     base = parse_spec(raw)
     wrapped = parse_spec(fx.with_replacement(raw))
     out = dict(nodes=len(base.model.cells) + len(base.model.extracellular), steps=args.steps)
-    for label, spec in (("cells.model.resolved_pump_tissue@3", base), ("cells.model.resolved_pump_replacement@1", wrapped)):
+    for label, spec in (
+        ("cells.model.resolved_pump_tissue@3", base),
+        ("cells.model.resolved_pump_replacement@1", wrapped),
+    ):
         model = get_model(spec.model)
         out[label] = dict(
             single=[rollout(model, spec, args.steps) for _ in range(args.repeats)],
@@ -355,7 +358,10 @@ def part_inheritance(args):
         threshold_mV=1e3 * threshold,
         arms=[],
     )
-    bookings = ("explicit_tableau", "cells.heat.trapezoid_nonnegative@1")  # @3's junction heat options.
+    bookings = (
+        "explicit_tableau",
+        "cells.heat.trapezoid_nonnegative@1",
+    )  # @3's junction heat options.
     for booking in bookings:
         for rule, formation in rules.items():
             for kind, event in newcomers.items():

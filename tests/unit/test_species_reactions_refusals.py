@@ -653,7 +653,8 @@ REFUSED = {
     ),
     "insertion@2": (
         ("cells.operator.membrane_entity_state@1", "cells.operator.scheduled_membrane_insertion@2"),
-        "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@2 closes it",
+        "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@2 "
+        "closes it",
     ),
     "partition": (
         ("cells.operator.membrane_entity_state@1", "cells.operator.isopotential_partition@1"),
@@ -731,7 +732,11 @@ def test_water_is_admitted_before_the_network_and_refused_after():
 
 @pytest.mark.parametrize(
     "changer",
-    ["cells.operator.scheduled_cell_replacement@2", "cells.operator.restricted_cleft_lumen@1", "cells.operator.restricted_cleft_lumen@2"],
+    [
+        "cells.operator.scheduled_cell_replacement@2",
+        "cells.operator.restricted_cleft_lumen@1",
+        "cells.operator.restricted_cleft_lumen@2",
+    ],
 )
 def test_the_other_volume_changers_are_refused_by_name(changer, monkeypatch):
     """Water is the one volume changer admitted beside the network (FR-43 / D315); a lumen (its

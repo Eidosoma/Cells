@@ -470,7 +470,10 @@ def test_a_provider_beside_a_closer_is_refused():
 
 @pytest.mark.parametrize(
     "closer, mask",
-    ((partition.LAW_ID, "active"), ("cells.operator.scheduled_membrane_insertion@2", "membrane_active")),
+    (
+        (partition.LAW_ID, "active"),
+        ("cells.operator.scheduled_membrane_insertion@2", "membrane_active"),
+    ),
 )
 def test_replacement_over_water_is_refused_beside_a_closer(closer, mask):
     """§5.5, against replacement@2 as landed: it reads the masks on the declared layout

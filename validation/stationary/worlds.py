@@ -146,7 +146,8 @@ def default_world_cell(
             junctions=[],
             faces=[],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
         ),
         experiment=dict(

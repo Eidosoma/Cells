@@ -42,7 +42,8 @@ LAW = RouteLaw(
     LAW_ID,
     ("membrane",),
     "the Goldman-Hodgkin-Katz constant-field flux at valence +1 of free h, read through the "
-    "general binding closure (cells.binding.rapid_binding@1) at each node it holds the proton at (@1's "
+    "general binding closure (cells.binding.rapid_binding@1) at each node it holds the proton at "
+    "(@1's "
     "kernel, laws/transport/proton_leak.py)",
     stage_term="conductance_S",  # Its max-side slope in the stage rule, as @1's.
     host="cells.kind.passive_routes@1",

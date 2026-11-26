@@ -100,7 +100,11 @@ def _clearance(raw):
 
 
 def _reaction(raw):
-    block = next(op for op in raw["model"]["operators"] if op["law"] == "cells.operator.local_species_reactions@1")
+    block = next(
+        op
+        for op in raw["model"]["operators"]
+        if op["law"] == "cells.operator.local_species_reactions@1"
+    )
     return {r["id"]: dict(rate_constant_per_s=r["rate_constant"], sites=r["sites"],
                           reactants=r["reactants"], products=r["products"])
             for r in block["reactions"]}

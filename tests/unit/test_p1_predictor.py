@@ -58,7 +58,8 @@ def test_stage_rows_are_shared_by_species_and_node_whatever_law_each_names():
     )
     with kind_registry.scope(shared):
         with pytest.raises(
-            ConfigError, match=r"tests.kind.alpha@1 and tests.kind.beta@1 both read row \('K', 'cell_0'\)"
+            ConfigError,
+            match=r"tests.kind.alpha@1 and tests.kind.beta@1 both read row \('K', 'cell_0'\)",
         ):
             parse_spec(declaring("alpha_block", "beta_block"))
     apart = registry(
@@ -202,7 +203,9 @@ def test_a_read_mixing_the_two_forms_and_a_free_amount_read_beside_todays_are_re
         reader("beta", "beta_block", (("Na", "cell_0"),)),
     )
     with kind_registry.scope(beside):
-        with pytest.raises(ConfigError, match="reads tests.kind.alpha@1's stage read at the predicted"):
+        with pytest.raises(
+            ConfigError, match="reads tests.kind.alpha@1's stage read at the predicted"
+        ):
             parse_spec(declaring("alpha_block", "beta_block"))
     both = registry(
         reader("alpha", "alpha_block", (("K", "cell_0", GENERAL),)),

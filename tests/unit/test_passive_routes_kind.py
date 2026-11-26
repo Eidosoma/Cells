@@ -388,7 +388,8 @@ def test_the_charged_law_refuses_a_row_a_closure_holds():
     routes.append(dict(id="charged_h", patch=fr.BOUNDING, law=CHARGED, species="H",
                        permeability_m_per_s=1e-9))  # fmt: skip
     with pytest.raises(
-        ConfigError, match=r"species H at .* is held by .*cells.kind.rapid_proton_buffer@1.*reads amounts"
+        ConfigError,
+        match=r"species H at .* is held by .*cells.kind.rapid_proton_buffer@1.*reads amounts",
     ):
         parse_spec(raw)
 

@@ -354,7 +354,9 @@ def test_at3_alone_admits_the_series_law_with_its_fields_and_round_trips():
         with pytest.raises(ConfigError, match="development"):
             parse_spec(series_world(block))
     assert first._ADMITTED_GATES.get() == ()  # The failed parses left nothing admitted.
-    raw = fixtures_v2.definition("closed", solver="cells.solver.imex_ars222_face_electromigration@1")
+    raw = fixtures_v2.definition(
+        "closed", solver="cells.solver.imex_ars222_face_electromigration@1"
+    )
     for j in raw["model"]["junctions"]:
         j["gate"] = copy.deepcopy(SERIES_BLOCK)
     with pytest.raises(ConfigError):  # @2, and @1 through it, refuse the law.
@@ -445,7 +447,11 @@ def host_steps(raw, steps, solver):
 
 
 @pytest.mark.parametrize(
-    "solver", ["cells.solver.imex_ars222_face_electromigration@1", "cells.solver.imex_ars222_implicit_conductances@1"]
+    "solver",
+    [
+        "cells.solver.imex_ars222_face_electromigration@1",
+        "cells.solver.imex_ars222_implicit_conductances@1",
+    ],
 )
 def test_a_second_gate_pinned_open_reproduces_the_one_gate_law_bit_for_bit(solver):
     """S9 (D262): m = 2 whose second gate is pinned open (residual and initial 1) and whose first
@@ -456,7 +462,9 @@ def test_a_second_gate_pinned_open_reproduces_the_one_gate_law_bit_for_bit(solve
     from validation.tissue import surface_pump_v3_fixtures as fixtures
 
     def world(gates=None):
-        raw = fixtures.definition("closed", solver="cells.solver.imex_ars222_face_electromigration@1")
+        raw = fixtures.definition(
+            "closed", solver="cells.solver.imex_ars222_face_electromigration@1"
+        )
         if gates is not None:
             for junction in raw["model"]["junctions"]:
                 junction["gate"] = {"law": series.LAW_ID, "development": True, "gates": gates}

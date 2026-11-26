@@ -107,12 +107,22 @@ def planted_laws():
             host=HOST,
         ),
         laws.CycleLaw(
-            "tests.cycle.planted_cycle@1", (("role", -1),), (), kernel, kernel, host=transporter.KIND_ID
+            "tests.cycle.planted_cycle@1",
+            (("role", -1),),
+            (),
+            kernel,
+            kernel,
+            host=transporter.KIND_ID,
         ),
         laws.RouteLaw(
-            "tests.route.planted_route@1", ("membrane",), "a planted route", host=passive_routes.KIND_ID
+            "tests.route.planted_route@1",
+            ("membrane",),
+            "a planted route",
+            host=passive_routes.KIND_ID,
         ),
-        laws.BindingLaw("tests.binding.planted_binding@1", ("proton",), kernel, host=proton_buffer.KIND_ID),
+        laws.BindingLaw(
+            "tests.binding.planted_binding@1", ("proton",), kernel, host=proton_buffer.KIND_ID
+        ),
     )
 
 
@@ -373,7 +383,10 @@ def test_an_old_spelling_is_refused_by_naming_its_new_id(monkeypatch):
 def test_a_duplicate_id_is_refused_whatever_its_spelling():
     registry = laws.BUILTIN
     assert registry.register(KV1P5) is KV1P5  # The same object again: a no-op.
-    for spelling in ("cells.channel.kv1p5_mh@1", "cells.channel.kv1p5_mh@1"):  # Bare and namespaced: one ID.
+    for spelling in (
+        "cells.channel.kv1p5_mh@1",
+        "cells.channel.kv1p5_mh@1",
+    ):  # Bare and namespaced: one ID.
         with pytest.raises(ValueError, match="already registered"):
             registry.register(dataclasses.replace(KV1P5, law_id=spelling, code=9))
     planted = planted_laws()
@@ -389,7 +402,9 @@ def test_a_duplicate_id_is_refused_whatever_its_spelling():
     with pytest.raises(ValueError, match="code 0 is cells.channel.kv1p5_mh@1's"):  # Codes distinct.
         extended.register(dataclasses.replace(planted[0], law_id="tests.channel.second@1", code=0))
     assert laws.qualified("tests.channel.planted_channel@1") in extended._laws
-    assert "tests.channel.planted_channel@1" not in laws.BUILTIN  # extended() leaves its source alone.
+    assert (
+        "tests.channel.planted_channel@1" not in laws.BUILTIN
+    )  # extended() leaves its source alone.
 
 
 def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
@@ -429,7 +444,9 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     elsewhere = dataclasses.replace(planted[1], law_id="tests.cycle.elsewhere@1", host=HOST)
     with laws.scope(laws.BUILTIN.extended(*planted, elsewhere)):
         hosted = transporter.hosted_laws()  # Found with no edit to the kind: interface and host.
-        assert list(hosted) == sorted([*builtin, "tests.cycle.planted_cycle@1"])  # Canonical: sorted IDs.
+        assert list(hosted) == sorted(
+            [*builtin, "tests.cycle.planted_cycle@1"]
+        )  # Canonical: sorted IDs.
         assert "tests.route.planted_route@1" in passive_routes.hosted_laws()
         # Version 1 dispatches its two laws by name: another law of its own is refused, never run
         # as the proton law.
@@ -438,7 +455,9 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
         ):
             parse_spec(held_world(population(law="tests.cycle.planted_cycle@1")))
         with pytest.raises(ConfigError, match="version 1 runs .*, not tests.route.planted_route@1"):
-            parse_spec(closed_pair(routes=[dict(route("r", 1e-9), law="tests.route.planted_route@1")]))
+            parse_spec(
+                closed_pair(routes=[dict(route("r", 1e-9), law="tests.route.planted_route@1")])
+            )
     # The planted errors a module tuple would miss: each law is admitted only while registered.
     proton = population(law=transporter.PROTON_LAW, role="H")
     with laws.scope(without(transporter.PROTON_LAW)):

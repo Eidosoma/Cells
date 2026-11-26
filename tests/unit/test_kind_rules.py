@@ -85,7 +85,9 @@ def test_stage_reads_on_a_shared_row_are_refused_at_binding():
     shared = (("K", "cell_0"),)
     kinds = registry(reader("alpha", "alpha_block", shared), reader("beta", "beta_block", shared))
     with kind_registry.scope(kinds):
-        with pytest.raises(ConfigError, match=r"tests.kind.alpha@1 and tests.kind.beta@1 both read row"):
+        with pytest.raises(
+            ConfigError, match=r"tests.kind.alpha@1 and tests.kind.beta@1 both read row"
+        ):
             parse_spec(declaring("alpha_block", "beta_block"))
     apart = registry(
         reader("alpha", "alpha_block", (("K", "cell_0"),)),

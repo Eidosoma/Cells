@@ -46,7 +46,9 @@ def test_a_free_offset_composite_declares_version_3_and_is_admitted(name):
     built = FREE[name]()
     assert built["model"]["id"] == cs.MODEL_ID and choice.in_family(built)
     laws = [op.get("law") or op.get("id") for op in built["model"]["operators"]]
-    assert laws == (["cells.operator.scheduled_cell_replacement@1"] if name == "replacement" else [])
+    assert laws == (
+        ["cells.operator.scheduled_cell_replacement@1"] if name == "replacement" else []
+    )
     assert choice.free_field_offsets(built) == 1
     assert built["execution"]["field_solver"] == FACTORED_SOLVER_ID
     auto = choice.declare(built)

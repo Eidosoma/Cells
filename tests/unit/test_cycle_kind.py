@@ -2366,24 +2366,34 @@ def na_ca_planted(law_id, *, counts=NA_CA_NU, standard_mM=1.0, power=-3, off=1.0
 # the counts' and the kind's, whatever the synthetic form is: a plant of the form alone keeps the
 # reversal, the detailed balance and the heat's sign, and only a plant of the counts misses them.
 NA_CA_PLANTS = {
-    "split reversed": (na_ca_planted("seamtest.cycle.na_ca_split_reversed@1", zeta=0.5), OF_THE_FORM),
+    "split reversed": (
+        na_ca_planted("seamtest.cycle.na_ca_split_reversed@1", zeta=0.5),
+        OF_THE_FORM,
+    ),
     "no split": (na_ca_planted("seamtest.cycle.na_ca_no_split@1", zeta=0.0), OF_THE_FORM),
     "K_Na once": (na_ca_planted("seamtest.cycle.na_ca_linear_k_na@1", power=-1), OF_THE_FORM),
     "against 1 M": (na_ca_planted("seamtest.cycle.na_ca_molar@1", standard_mM=1e3), OF_THE_FORM),
     "off by 1e-9": (na_ca_planted("seamtest.cycle.na_ca_off@1", off=1 + 1e-9), OF_THE_FORM),
     "orders exchanged": (
-        na_ca_planted("seamtest.cycle.na_ca_orders@1", orders=((na_ca.NA_P, 1.0), (na_ca.CA_N, 3.0))),
+        na_ca_planted(
+            "seamtest.cycle.na_ca_orders@1", orders=((na_ca.NA_P, 1.0), (na_ca.CA_N, 3.0))
+        ),
         OF_THE_FORM,
     ),
     "reverse term": (
         na_ca_planted(
-            "seamtest.cycle.na_ca_reverse@1", orders=((na_ca.NA_N, 3.0), (na_ca.CA_P, 1.0)), zeta=0.5
+            "seamtest.cycle.na_ca_reverse@1",
+            orders=((na_ca.NA_N, 3.0), (na_ca.CA_P, 1.0)),
+            zeta=0.5,
         ),
         OF_THE_FORM,
     ),
     "one end in D": (na_ca_planted("seamtest.cycle.na_ca_one_end@1", ends=1), OF_THE_FORM),
     "four Na": (na_ca_planted("seamtest.cycle.na_ca_four@1", counts=(4, -4, -1, 1)), OF_THE_COUNTS),
-    "backward": (na_ca_planted("seamtest.cycle.na_ca_backward@1", counts=(-3, 3, 1, -1)), OF_THE_COUNTS),
+    "backward": (
+        na_ca_planted("seamtest.cycle.na_ca_backward@1", counts=(-3, 3, 1, -1)),
+        OF_THE_COUNTS,
+    ),
 }
 NA_CA_RUN_MISSES = {  # The registered law besides: under jit, and under plants of the evaluation.
     "compiled": set(),
@@ -2493,7 +2503,9 @@ def test_the_exchanges_charge_slope_holds_the_step_at_both_its_ends():
         assert bool(impl.imex_step(state, 1.01 / rate, control, p, xp=np)[1])
 
 
-UNEVEN = na_ca_planted("seamtest.cycle.na_ca_uneven@1", counts=(3, -2, -1, 1))  # It creates a charge.
+UNEVEN = na_ca_planted(
+    "seamtest.cycle.na_ca_uneven@1", counts=(3, -2, -1, 1)
+)  # It creates a charge.
 NA_CA_REFUSALS = {  # name: (the entry's changes, the world's, the reason, None where admitted)
     "the twin of the rows below": ({}, {}, None),
     "a stoichiometry": (
@@ -3099,7 +3111,8 @@ CORE_REFUSALS = {  # name: (the entries, the world's change, the reason, None wh
     "@3's own pump of the same ion": (
         [THE_PUMP.entry],
         functools.partial(own_calcium_pump, species="Ca"),
-        r"moves Ca on membrane_0 beside 'calcium_pump_0' \(cells.cycle.ca_atp_mass_action_positive@1\): "
+        r"moves Ca on membrane_0 beside 'calcium_pump_0' "
+        r"\(cells.cycle.ca_atp_mass_action_positive@1\): "
         "one law moves a species by ATP",
     ),
     "@3's own pump of another ion": (
@@ -3344,7 +3357,9 @@ def test_a_row_that_version_1s_proton_buffer_holds_is_refused_to_a_law_with_the_
     same uniport without the term is admitted there, and with it where no buffer holds the row. (The
     general closure's derivative is in the row of the closure's free rows.)"""
     buffered = dataclasses.replace(
-        UNIPORT, law_id="seamtest.cycle.buffered_uniport@1", reads=("cells.kind.rapid_proton_buffer@1",)
+        UNIPORT,
+        law_id="seamtest.cycle.buffered_uniport@1",
+        reads=("cells.kind.rapid_proton_buffer@1",),
     )
     termed = dataclasses.replace(
         UNIPORT,

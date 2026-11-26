@@ -227,10 +227,19 @@ LAW_ID_V2 = "cells.operator.species_regulated_availability@2"
 EVALUATIONS = MappingProxyType({"inner": "step_view", "operator": "target_half_steps"})
 OPERATOR_TABLES = MappingProxyType(
     {
-        ("cells.operator.scheduled_species_turnover@1", "turnover_rate"): "coupling_turnover_rate_routes",
-        ("cells.operator.local_species_reactions@1", "reaction_multiplier"): "coupling_reaction_multiplier_routes",
+        (
+            "cells.operator.scheduled_species_turnover@1",
+            "turnover_rate",
+        ): "coupling_turnover_rate_routes",
+        (
+            "cells.operator.local_species_reactions@1",
+            "reaction_multiplier",
+        ): "coupling_reaction_multiplier_routes",
         # FR-7's unit producer (F3), a recorded exception naming the operators owner.
-        ("cells.operator.population_unit_turnover@1", "unit_assembly_rate"): "coupling_unit_assembly_rate_routes",
+        (
+            "cells.operator.population_unit_turnover@1",
+            "unit_assembly_rate",
+        ): "coupling_unit_assembly_rate_routes",
         # Gene regulation's option A (G4, D235): a chain's initiation rate constant, a recorded
         # exception naming the operators owner.
         ("cells.operator.templated_polymerisation@1", "polymerisation_initiation_rate"): (

@@ -252,7 +252,10 @@ def test_a_part_less_owner_of_accepted_writes_only_is_admitted():
 
 def test_the_declaration_parses_round_trips_and_names_its_compartments():
     spec = parse_spec(w())
-    assert [d.law for d in spec.model.operators] == ["cells.operator.scheduled_species_exchange@1", LAW]
+    assert [d.law for d in spec.model.operators] == [
+        "cells.operator.scheduled_species_exchange@1",
+        LAW,
+    ]
     declaration = spec.model.operators[-1]
     assert declaration.compartments == (
         comp.Compartment(
@@ -656,7 +659,10 @@ def moves_at(spec, node):
 
 PROTON_PUMP = "cells.cycle.proton_atp_mass_action_positive@1"
 NEUTRAL_PUMP = "cells.cycle.atp_driven_transporter_mass_action_positive@1"
-LEAK, NEUTRAL_ROUTE = "cells.route.proton_constant_field_leak@1", "cells.route.passive_neutral_permeation@1"
+LEAK, NEUTRAL_ROUTE = (
+    "cells.route.proton_constant_field_leak@1",
+    "cells.route.passive_neutral_permeation@1",
+)
 
 
 def test_refusal_4_admits_fr4s_declared_world_move_by_move():
@@ -688,11 +694,25 @@ def fr5_sources(definition):
     patch's damage and the lumen's pH condition."""
     from validation.compartment_ph_engine import definitions as defs
 
-    definition["model"]["patch_damage"] = [dict(
-        id="damage_0", patch=defs.BOUNDING, law="cells.damage.bounding_patch_damage@1", initial_damage=0.0,
-        injury_rate_per_s=1.0, resealing_rate_per_s=0.05)]
-    definition["model"]["ph_conditions"] = [dict(
-        id="acid_0", node=defs.LUMEN, law="cells.transfer_factor.ph_conditioned_factor@1", ph50=5.5, slope=4.0)]
+    definition["model"]["patch_damage"] = [
+        dict(
+            id="damage_0",
+            patch=defs.BOUNDING,
+            law="cells.damage.bounding_patch_damage@1",
+            initial_damage=0.0,
+            injury_rate_per_s=1.0,
+            resealing_rate_per_s=0.05,
+        )
+    ]
+    definition["model"]["ph_conditions"] = [
+        dict(
+            id="acid_0",
+            node=defs.LUMEN,
+            law="cells.transfer_factor.ph_conditioned_factor@1",
+            ph50=5.5,
+            slope=4.0,
+        )
+    ]
     return definition
 
 
@@ -846,44 +866,63 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
     laws = law_registry.active()
     kinds = kind_registry.active()
     assert tuple(comp.TERM_HOOKS) == law_registry.STEP_TERMS
-    pump, routes = kinds.lookup("cells.kind.transporter@1"), kinds.lookup("cells.kind.passive_routes@1")
+    pump, routes = (
+        kinds.lookup("cells.kind.transporter@1"),
+        kinds.lookup("cells.kind.passive_routes@1"),
+    )
     held = {
         law.law_id: comp.held_terms(kind, law.law_id)[0]
         for kind, interface in ((pump, law_registry.CYCLE_LAW), (routes, law_registry.ROUTE_LAW))
         for law in laws.laws(interface, kind.kind_id)
     }
-    assert held == {
-        PROTON_PUMP: ("stage_term",),
-        NEUTRAL_PUMP: (),
-        LEAK: ("stage_term",),
-        "cells.route.proton_constant_field_leak@2": ("stage_term",),  # MT-1b's leak reading the closure: @1's.
-        NEUTRAL_ROUTE: ("material_bound",),
-        "cells.route.inward_rectifier_linear_driving_force@1": ("stage_term",),  # The rectifier (RECTIFIER).
-        "cells.route.passive_constant_field_permeation@1": ("stage_term", "material_term"),  # FR-15 P2.
-        # Declares no step term: refused at a compartment's node (fail-closed).
-        "cells.cycle.na_anion_symport_factored@1": (),
-        "cells.cycle.na2_anion_symport_diagram@1": (),  # Version 2: likewise, no step term.
-        "cells.cycle.held_reductant_supply@1": (),  # The matrix's NADH supply: likewise.
-        "cells.cycle.adenylate_kinase@1": (),  # The intermembrane space's kinase: likewise.
-        # The population axis's two terms (calcium step 5): admitted at a compartment's node.
-        "cells.cycle.sodium_calcium_exchange_symmetric_barrier@1": ("stage_term", "material_term"),
-        "cells.cycle.atp_driven_transporter_mass_action_positive@2": ("stage_term", "material_term"),
-        # Its material term alone, which holds no charged row: refused at a compartment's node.
-        **dict.fromkeys(
-            (
-                "cells.cycle.na_k_2anion_symport_reversible_tanh@1",
-                "cells.cycle.electroneutral_symport_reversible_tanh@1",
-                "cells.cycle.nadh_ubiquinone_proton_cycle@1",  # The mitochondrion's inner membrane's.
-                "cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1",
-                "cells.cycle.cytochrome_c_oxygen_proton_cycle@1",
-                "cells.cycle.proton_coupled_atp_synthesis_cycle@1",
-                "cells.cycle.electrogenic_nucleotide_exchange@1",
-                "cells.cycle.phosphate_proton_symport@1",
-                "cells.cycle.potassium_proton_exchange@1",
+    assert (
+        held
+        == {
+            PROTON_PUMP: ("stage_term",),
+            NEUTRAL_PUMP: (),
+            LEAK: ("stage_term",),
+            "cells.route.proton_constant_field_leak@2": (
+                "stage_term",
+            ),  # MT-1b's leak reading the closure: @1's.
+            NEUTRAL_ROUTE: ("material_bound",),
+            "cells.route.inward_rectifier_linear_driving_force@1": (
+                "stage_term",
+            ),  # The rectifier (RECTIFIER).
+            "cells.route.passive_constant_field_permeation@1": (
+                "stage_term",
+                "material_term",
+            ),  # FR-15 P2.
+            # Declares no step term: refused at a compartment's node (fail-closed).
+            "cells.cycle.na_anion_symport_factored@1": (),
+            "cells.cycle.na2_anion_symport_diagram@1": (),  # Version 2: likewise, no step term.
+            "cells.cycle.held_reductant_supply@1": (),  # The matrix's NADH supply: likewise.
+            "cells.cycle.adenylate_kinase@1": (),  # The intermembrane space's kinase: likewise.
+            # The population axis's two terms (calcium step 5): admitted at a compartment's node.
+            "cells.cycle.sodium_calcium_exchange_symmetric_barrier@1": (
+                "stage_term",
+                "material_term",
             ),
-            ("material_term",),
-        ),
-    }
+            "cells.cycle.atp_driven_transporter_mass_action_positive@2": (
+                "stage_term",
+                "material_term",
+            ),
+            # Its material term alone, which holds no charged row: refused at a compartment's node.
+            **dict.fromkeys(
+                (
+                    "cells.cycle.na_k_2anion_symport_reversible_tanh@1",
+                    "cells.cycle.electroneutral_symport_reversible_tanh@1",
+                    "cells.cycle.nadh_ubiquinone_proton_cycle@1",  # The mitochondrion's inner membrane's.
+                    "cells.cycle.ubiquinol_cytochrome_c_proton_cycle@1",
+                    "cells.cycle.cytochrome_c_oxygen_proton_cycle@1",
+                    "cells.cycle.proton_coupled_atp_synthesis_cycle@1",
+                    "cells.cycle.electrogenic_nucleotide_exchange@1",
+                    "cells.cycle.phosphate_proton_symport@1",
+                    "cells.cycle.potassium_proton_exchange@1",
+                ),
+                ("material_term",),
+            ),
+        }
+    )
     assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
     from validation.compartment_ph_engine import definitions as defs
 
@@ -1053,7 +1092,10 @@ def moves_at_planted(spec, kind, node):
 STORE_FUEL = dict(ATP=(1.5, 0.0), ADP=(0.1, -14.0), Pi=(0.1, 0.0))  # mM in the cell, mu/RT.
 PUMP = atp_transporter_v2.LAW
 TERMLESS = dataclasses.replace(
-    atp_transporter_v2.LAW, law_id="tests.cycle.termless_pump@1", stage_term=None, material_term=None
+    atp_transporter_v2.LAW,
+    law_id="tests.cycle.termless_pump@1",
+    stage_term=None,
+    material_term=None,
 )
 UNSLOPED = dataclasses.replace(
     atp_transporter_v2.LAW, law_id="tests.cycle.unsloped_pump@1", stage_term=None
@@ -1409,7 +1451,9 @@ def test_the_admitted_list_fails_closed(monkeypatch):
     model = SimpleNamespace(operators=(*spec.model.operators, SimpleNamespace(law=Newcomer.LAW_ID)))
     experiment = SimpleNamespace(operators=(*spec.experiment.operators, SimpleNamespace(data=())))
     fake = SimpleNamespace(model=model, experiment=experiment)
-    with pytest.raises(ConfigError, match="cells.operator.a_future_operator@1 is not on its admitted list"):
+    with pytest.raises(
+        ConfigError, match="cells.operator.a_future_operator@1 is not on its admitted list"
+    ):
         comp.check_definition(fake, spec.model.operators[-1])
     assert comp.TRAFFICKING_LAW in OPERATORS  # FR-2's law, registered with its module.
     assert set(comp.ADMITTED) - set(OPERATORS) == PENDING_ADMITTED, "a pending law registered"
@@ -1487,7 +1531,9 @@ def test_membrane_state_beside_a_compartment_only_with_trafficking(trafficking):
     refusal = rf"admits {comp.STATE_LAW} only together with {STAND_IN}"
     with pytest.raises(ConfigError, match=refusal):
         parse_spec(stateful())
-    assert {comp.STATE_LAW, "cells.operator.scheduled_membrane_trafficking@1"} <= set(ADMITTED_AT_IMPORT)
+    assert {comp.STATE_LAW, "cells.operator.scheduled_membrane_trafficking@1"} <= set(
+        ADMITTED_AT_IMPORT
+    )
 
 
 # ------------------------------------------------------------------ FR-49: the labels beside it
@@ -1544,7 +1590,10 @@ def test_labels_beside_membrane_state_the_explicit_check_names_the_reason(monkey
 
 # ------------------------------------------------------------------ FR-7's releasing compartment
 
-PRODUCER, EXCHANGE = "cells.operator.population_unit_turnover@1", "cells.operator.scheduled_species_exchange@1"
+PRODUCER, EXCHANGE = (
+    "cells.operator.population_unit_turnover@1",
+    "cells.operator.scheduled_species_exchange@1",
+)
 KAPPA = 0.5  # 1/s: the release's rate constant out of the compartment, synthetic.
 
 
@@ -1576,7 +1625,12 @@ def test_the_unit_producer_and_coupling_v2_compose_beside_a_compartment():
     for release in (False, True):
         spec = parse_spec(producing(release=release))
         laws = [d.law for d in spec.model.operators]
-        assert laws[:4] == [comp.STATE_LAW, "cells.operator.species_regulated_availability@2", PRODUCER, LAW]
+        assert laws[:4] == [
+            comp.STATE_LAW,
+            "cells.operator.species_regulated_availability@2",
+            PRODUCER,
+            LAW,
+        ]
         assert (EXCHANGE in laws) is release
     assert {PRODUCER, "cells.operator.species_regulated_availability@2"} <= set(ADMITTED_AT_IMPORT)
     units = "population_abundance_increment"
@@ -1643,7 +1697,8 @@ def test_exchange_reads_the_current_area_beside_membrane_state():
 
 # Version 1.1's message, as FR-1's judged refusal record (run-05a8d193, C1_refusals) holds it.
 V1_1_ANCHOR = (
-    "cells.operator.cell_owned_compartments@1: compartment 'ecs_0' declares a nonzero charge anchor (1e-17 C); "
+    "cells.operator.cell_owned_compartments@1: compartment 'ecs_0' declares a nonzero charge "
+    "anchor (1e-17 C); "
     "version 1.1 admits one only where charged routes are admitted on its bounding patch (a world "
     "that declares kinds and steps with an IMEX tableau); elsewhere the content is "
     "electroneutral, so V_b = 0"
@@ -1723,7 +1778,8 @@ def test_fr1s_judged_refusal_class_holds_refusal_5_from_the_definition_check():
 
 
 V1_HELD_BATH = (  # Refusal 6's message in version 1, as FR-1's saved records hold it.
-    "cells.operator.cell_owned_compartments@1: the owner 'cell_0' of compartment 'ecs_0' lies in a capacitor "
+    "cells.operator.cell_owned_compartments@1: the owner 'cell_0' of compartment 'ecs_0' lies in a "
+    "capacitor "
     "component with no held bath; version 1 requires one, so that the compartment is a free node "
     "of the capacitor solve, never a representative"
 )
@@ -1763,18 +1819,38 @@ def test_the_scope_names_refusal_5_version_1_2_and_no_operator_charges_by_defaul
 
 # ------------------------------------------------------------------ the structure check
 
-STATE, WATER = "cells.operator.membrane_entity_state@1", "cells.operator.ideal_osmosis_linear_compliance_water@1"
+STATE, WATER = (
+    "cells.operator.membrane_entity_state@1",
+    "cells.operator.ideal_osmosis_linear_compliance_water@1",
+)
 STRUCTURE_REFUSED = {
     "water": ((WATER,), WATER),
-    "insertion@1": ((STATE, "cells.operator.scheduled_membrane_insertion@1"), "cells.operator.scheduled_membrane_insertion@1"),
-    "insertion@2": ((STATE, "cells.operator.scheduled_membrane_insertion@2"), "cells.operator.scheduled_membrane_insertion@2"),
-    "the partition": ((STATE, "cells.operator.isopotential_partition@1"), "cells.operator.isopotential_partition@1"),
+    "insertion@1": (
+        (STATE, "cells.operator.scheduled_membrane_insertion@1"),
+        "cells.operator.scheduled_membrane_insertion@1",
+    ),
+    "insertion@2": (
+        (STATE, "cells.operator.scheduled_membrane_insertion@2"),
+        "cells.operator.scheduled_membrane_insertion@2",
+    ),
+    "the partition": (
+        (STATE, "cells.operator.isopotential_partition@1"),
+        "cells.operator.isopotential_partition@1",
+    ),
     "lumen@1": (
-        (STATE, "cells.operator.scheduled_membrane_insertion@1", "cells.operator.restricted_cleft_lumen@1"),
+        (
+            STATE,
+            "cells.operator.scheduled_membrane_insertion@1",
+            "cells.operator.restricted_cleft_lumen@1",
+        ),
         "cells.operator.restricted_cleft_lumen@1",
     ),
     "lumen@2": (
-        (STATE, "cells.operator.scheduled_membrane_insertion@2", "cells.operator.restricted_cleft_lumen@2"),
+        (
+            STATE,
+            "cells.operator.scheduled_membrane_insertion@2",
+            "cells.operator.restricted_cleft_lumen@2",
+        ),
         "cells.operator.restricted_cleft_lumen@2",
     ),
     "replacement@2, over water": ((WATER, "cells.operator.scheduled_cell_replacement@2"), WATER),
@@ -1795,7 +1871,11 @@ STRUCTURE_ADMITTED = (
     ("cells.operator.species_regulated_availability@2",),
     (STATE, "cells.operator.population_unit_turnover@1"),
     (STATE, "cells.operator.scheduled_species_exchange@1"),
-    (STATE, "cells.operator.population_unit_turnover@1", "cells.operator.scheduled_species_exchange@1"),
+    (
+        STATE,
+        "cells.operator.population_unit_turnover@1",
+        "cells.operator.scheduled_species_exchange@1",
+    ),
 )
 
 

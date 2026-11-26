@@ -57,7 +57,9 @@ EVENTS = (
     (T3, "cell_0", "d", "n4"),
     (T3, "cell_3", "h", "n5"),
 )
-FAST_NAV = dict(fx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7})
+FAST_NAV = dict(
+    fx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+)
 DONOR_EVENTS = (
     (T1, "cell_0", None, "c1", "cell_3"),
     (T2, "cell_4", "fast_nav", "c2", "cell_3"),

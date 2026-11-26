@@ -192,7 +192,8 @@ def closed_patch(steps=200, dt=4.7e-5):
             junctions=[],
             faces=[],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
         ),
         experiment=dict(
@@ -399,7 +400,8 @@ def anchor_world(amounts, volume, background, anchor, dt=4.7e-5):
             junctions=[],
             faces=[],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
         ),
         experiment=dict(

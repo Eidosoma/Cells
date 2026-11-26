@@ -181,7 +181,9 @@ def test_seam_declarations_are_checked_at_registration():
             kind_registry.KindRegistry().register(kind)
     # Today's built-in kinds declare none, but the transporter, which admits the trapezoid booking
     # (K2), and register on BUILTIN as before.
-    bookings = {"cells.kind.transporter@1": ("cells.heat.trapezoid_nonnegative@1",)}  # K2, D234's Option 2.
+    bookings = {
+        "cells.kind.transporter@1": ("cells.heat.trapezoid_nonnegative@1",)
+    }  # K2, D234's Option 2.
     for kind in kind_registry.active().model_keys().values():
         assert kind_registry.declaration_errors(kind) == [], kind.kind_id
         assert kind.heat_bookings == bookings.get(kind.kind_id, ()), kind.kind_id
@@ -483,8 +485,14 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
             ((plain._replace(c0=-1.0),), "its c0 is finite and positive"),
             ((plain, coupled._replace(mode=None)), "entry 1: it names its law and its mode"),
             ((plain._replace(mode="coupled"),), "it names its law and its mode together"),
-            ((coupled._replace(law_id="tests.cycle.elsewhere_cycle@1"),), "is not a cycle law it hosts"),
-            ((coupled._replace(law_id="tests.cycle.unregistered@1"),), "is not a cycle law it hosts"),
+            (
+                (coupled._replace(law_id="tests.cycle.elsewhere_cycle@1"),),
+                "is not a cycle law it hosts",
+            ),
+            (
+                (coupled._replace(law_id="tests.cycle.unregistered@1"),),
+                "is not a cycle law it hosts",
+            ),
             ((coupled._replace(law_id="tests.cycle.booked_cycle@1"),), "is a version-1 law"),
             ((coupled._replace(mode="uncoupled"),), "form has no mode 'uncoupled'"),
             # Exactly one form: both, neither, and each form's own refusals.
@@ -768,8 +776,14 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
         plants = (  # Each refused when read, naming the entity.
             (list(entities), "returns a tuple of EntityBinding"),
             ((tuple(first), second, third), "returns a tuple of EntityBinding"),
-            ((first._replace(law_id="tests.cycle.elsewhere_cycle@1"), second, third), "its law is not"),
-            ((first._replace(law_id="tests.cycle.unregistered@1"), second, third), "its law is not"),
+            (
+                (first._replace(law_id="tests.cycle.elsewhere_cycle@1"), second, third),
+                "its law is not",
+            ),
+            (
+                (first._replace(law_id="tests.cycle.unregistered@1"), second, third),
+                "its law is not",
+            ),
             ((first._replace(roles={"substrate": "glucose"}), second, third), "lacks ['product']"),
             (
                 (first._replace(roles={**first.roles, "cofactor": "ATP"}), second, third),
@@ -779,7 +793,8 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
             ((first._replace(roles={**first.roles, "": "Na"}), second, third), "its roles map"),
             (
                 (first, second._replace(ends={"N": "cell_a"}), third),
-                "entity 1 ('tests.cycle.booked_formed_cycle@1'): it places no node at the ends ['P']",
+                "entity 1 ('tests.cycle.booked_formed_cycle@1'): it places no node at the ends "
+                "['P']",
             ),
             (
                 (first._replace(ends={"outside": "bath"}), second, third),
@@ -787,12 +802,14 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
             ),
             (  # A moves-only law's outside, where its counts land with the opposite sign.
                 (first._replace(ends={inside: "cell_a"}), second, third),
-                "entity 0 ('tests.cycle.booked_cycle@1'): it places no node at the ends ['outside']",
+                "entity 0 ('tests.cycle.booked_cycle@1'): it places no node at the ends "
+                "['outside']",
             ),
             ((first._replace(ends={inside: 7}), second, third), "its ends map names to a name"),
             (
                 (first, second, third._replace(parameters={"spare": 0.5})),
-                "entity 2 ('tests.cycle.booked_cycle@1'): it gives no value for the counts ['n_coupled']",
+                "entity 2 ('tests.cycle.booked_cycle@1'): it gives no value for the counts "
+                "['n_coupled']",
             ),
             ((first._replace(parameters={"n_coupled": "2"}), second, third), "its parameters map"),
             ((first._replace(parameters={"n_coupled": True}), second, third), "its parameters map"),

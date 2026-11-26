@@ -133,7 +133,9 @@ def test_block_errors_reject(edit):
         parse_spec(raw)
 
 
-@pytest.mark.parametrize("model", ["cells.model.reaction_transport@1", "cells.model.apical_vertex_mechanics@1"])
+@pytest.mark.parametrize(
+    "model", ["cells.model.reaction_transport@1", "cells.model.apical_vertex_mechanics@1"]
+)
 def test_unsupported_model_rejects(model):
     """A live model the mode does not support, without a module-level ID and with one."""
     if model == "cells.model.reaction_transport@1":

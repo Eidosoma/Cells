@@ -45,7 +45,9 @@ SHEAR_FISSION = "cells.operator.shear_fission@1"  # OL3 milestone 1: division at
 # declared size, by Protocol G §3's contract (size_division.py). A world declares it in its
 # division block, by law; every other world is unchanged.
 SIZE_THRESHOLD_DIVISION = "cells.operator.size_threshold_division@1"
-SHARED_POOL = "cells.population.shared_pool@1"  # OL2 milestone 3: K slots on one pool (population.py).
+SHARED_POOL = (
+    "cells.population.shared_pool@1"  # OL2 milestone 3: K slots on one pool (population.py).
+)
 
 # FR-21's shell (D244, D246; docs/ASSEMBLY_SHELL_DESIGN.md §4.2-§4.3): a prescribed wall with a
 # declared area and lumen, its own entry law, and a gate factor over the gate's own forms.

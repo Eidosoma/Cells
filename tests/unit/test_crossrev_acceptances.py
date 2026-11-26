@@ -18,10 +18,17 @@ import pytest
 
 from validation.tissue import composite_crossrev as crossrev
 
-EXCHANGE, TURNOVER = "cells.operator.scheduled_species_exchange@1", "cells.operator.scheduled_species_turnover@1"
+EXCHANGE, TURNOVER = (
+    "cells.operator.scheduled_species_exchange@1",
+    "cells.operator.scheduled_species_turnover@1",
+)
 OPERATORS = {
     "fr1_load_and_degrade": {"cells.operator.cell_owned_compartments@1", EXCHANGE, TURNOVER},
-    "fr1_load_and_react": {"cells.operator.cell_owned_compartments@1", EXCHANGE, "cells.operator.local_species_reactions@1"},
+    "fr1_load_and_react": {
+        "cells.operator.cell_owned_compartments@1",
+        EXCHANGE,
+        "cells.operator.local_species_reactions@1",
+    },
     "fr3_q5_inward": {"cells.operator.site_occupancy@1"},
     "fr3_q5_class_switch": {"cells.operator.site_occupancy@1"},
     "fr10_ion": {"cells.operator.scheduled_bath_composition@1"},

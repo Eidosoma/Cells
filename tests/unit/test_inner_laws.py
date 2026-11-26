@@ -38,9 +38,19 @@ ARS = "cells.solver.imex_ars222_face_electromigration@1"
 SERIES_LAW = spec3.SERIES_GATE_LAW_ID  # FR-30's cells.junction.junction_series_gates@1 (D262).
 TODAYS = {law_id: inner_laws.CHANNEL_LAWS[law_id] for law_id in spec3.TODAYS_CHANNEL_LAWS}
 GATED = [law for law in TODAYS.values() if law.gated]  # The Kv1 laws': test_kv1_channel_laws.
-KV1_CODES = {"cells.channel.kv1p1_mh2@1": 5, "cells.channel.kv1p2_mh@1": 6, "cells.channel.kv1p3_mh@1": 7, "cells.channel.kv1p4_mh@1": 8, "cells.channel.kv1p6_mh@1": 9}
+KV1_CODES = {
+    "cells.channel.kv1p1_mh2@1": 5,
+    "cells.channel.kv1p2_mh@1": 6,
+    "cells.channel.kv1p3_mh@1": 7,
+    "cells.channel.kv1p4_mh@1": 8,
+    "cells.channel.kv1p6_mh@1": 9,
+}
 # Registered after today's five.
-LATER_CODES = {**KV1_CODES, "cells.channel.clleak_always_open@1": 10, "cells.channel.cav1p2_m2h@1": 11}
+LATER_CODES = {
+    **KV1_CODES,
+    "cells.channel.clleak_always_open@1": 10,
+    "cells.channel.cav1p2_m2h@1": 11,
+}
 INNER_PROTOCOL = (
     "MODEL_ID",
     "STATE_AXES",

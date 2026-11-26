@@ -80,7 +80,9 @@ def _kind_route(raw):
 
 
 def _internalising(raw):
-    sites = next(o for o in raw["model"]["operators"] if o["law"] == "cells.operator.site_occupancy@1")
+    sites = next(
+        o for o in raw["model"]["operators"] if o["law"] == "cells.operator.site_occupancy@1"
+    )
     population = next(q for q in sites["populations"] if q["id"] == "specimen_sites")
     population["internalisation"] = dict(rate_per_s=0.01, destination="cell")
     raw["experiment"]["site_controls"].append(
@@ -217,7 +219,8 @@ REFUSALS = {
     # D263 finding 2 (a second review): the same crossing by a registered route was admitted.
     "a neutral species across the surface by an exchange route": (
         lambda: washed(_route(wfx.well(sites=False))),
-        "S may cross node well's surface by cells.operator.scheduled_species_exchange@1's route uptake",
+        "S may cross node well's surface by cells.operator.scheduled_species_exchange@1's route "
+        "uptake",
     ),
     "a neutral species across the surface by a kind's route": (
         lambda: washed(changed(wfx.well(sites=False), _kind_route)),
@@ -230,7 +233,8 @@ REFUSALS = {
     # D327, the fail-open fix: amendment T's export and outside degradation, each by name.
     "a gene unit's export into the node": (
         lambda: _washed_at(_gene_unit(outside=False), "space_0"),
-        "R may cross node space_0's surface by cells.operator.templated_polymerisation@1's export export_R",
+        "R may cross node space_0's surface by cells.operator.templated_polymerisation@1's export "
+        "export_R",
     ),
     "a gene unit's outside degradation at the node": (
         lambda: _washed_at(_gene_unit(), "space_0"),
@@ -250,11 +254,13 @@ REFUSALS = {
     # FR-44 (D327): the paths that FR-44's labels would follow unmeasured stay refused by name.
     "a labelled gene unit's export into the node": (
         lambda: _washed_at(_labelled(_gene_unit(outside=False), ["R", "R_s"]), "space_0"),
-        "R may cross node space_0's surface by cells.operator.templated_polymerisation@1's export export_R",
+        "R may cross node space_0's surface by cells.operator.templated_polymerisation@1's export "
+        "export_R",
     ),
     "a labelled exchange route through a patch facing the node": (
         lambda: washed(_labelled(_route(wfx.well(sites=False)), [S])),
-        "S may cross node well's surface by cells.operator.scheduled_species_exchange@1's route uptake",
+        "S may cross node well's surface by cells.operator.scheduled_species_exchange@1's route "
+        "uptake",
     ),
     # D327, FR-44 landing second (FR-49's parts H and L first): FR-49's C1 world, also the
     # inherited three-way composition, is refused by name until FR-49's wash narrowing and its C1
@@ -296,9 +302,15 @@ def test_every_path_across_a_washed_surface_is_classified(monkeypatch):
         [("make", "specimen", [(0.0, 1e-6)])],
     )
     parse_spec(washed(raw))
-    shown = {k: v for k, v in wash.SHOWN_LOCAL.items() if k != "cells.operator.scheduled_species_turnover@1"}
+    shown = {
+        k: v
+        for k, v in wash.SHOWN_LOCAL.items()
+        if k != "cells.operator.scheduled_species_turnover@1"
+    }
     monkeypatch.setattr(wash, "SHOWN_LOCAL", shown)
-    with pytest.raises(ConfigError, match="cells.operator.scheduled_species_turnover@1, which is not classified"):
+    with pytest.raises(
+        ConfigError, match="cells.operator.scheduled_species_turnover@1, which is not classified"
+    ):
         parse_spec(washed(raw))
 
 
@@ -332,7 +344,9 @@ def test_admitted_beside_the_label_owner_in_either_order(owner_first):
     raw["experiment"]["label_arrivals"] = []
     spec = parse_spec(raw)
     laws = [op.LAW_ID for op, _, _ in cs.entries(spec)]
-    assert (laws.index("cells.operator.neutral_arrival_labels@1") < laws.index(ws.LAW_ID)) == owner_first
+    assert (
+        laws.index("cells.operator.neutral_arrival_labels@1") < laws.index(ws.LAW_ID)
+    ) == owner_first
     state, _ = get_model(spec.model).initial_values(spec)
     shape = (1, 2, spec.execution.extracellular_capacity)
     assert np.shape(state.label_outside_removed_fmol) == shape

@@ -70,7 +70,9 @@ def worlds():
     ]
     events = ((t1, "cell_0", "h", "n1"), (t2, "cell_2", "h", "n2"), (t3, "cell_0", "d", "n4"))
     out["replacement"] = rfx.with_replacement(cells, templates, events)
-    fast = dict(rfx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7})
+    fast = dict(
+        rfx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+    )
     donor_events = (
         (t1, "cell_0", None, "c1", "cell_3"),
         (t2, "cell_4", "fast_nav", "c2", "cell_3"),
@@ -145,7 +147,9 @@ def replacement_checks(definition, tables, directory):
     model, experiment = definition["model"], definition["experiment"]
     cells = [c["id"] for c in model["cells"]]
     species = [s["id"] for s in model["species"]]
-    if "replacement" in model:  # cells.model.resolved_pump_replacement@1's own block, or the operator's.
+    if (
+        "replacement" in model
+    ):  # cells.model.resolved_pump_replacement@1's own block, or the operator's.
         declared = model["replacement"]
     else:
         (declared,) = [op for op in model["operators"] if op["law"] in adapter.REPLACEMENTS]

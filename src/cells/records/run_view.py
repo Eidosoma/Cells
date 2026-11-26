@@ -502,13 +502,15 @@ def _family(spec):
             )
         if getattr(spec.model, "forms_faces", ()):
             raise ViewRefused(  # The forms law, version 1: its movers' axis has no view set yet.
-                "No view declarations for cells.route.logmean_electrodiffusion_forms@1's faces yet: their "
+                "No view declarations for cells.route.logmean_electrodiffusion_forms@1's faces "
+                "yet: their "
                 "movers' axis has no view set (version 1)"
             )
         return get_model(spec.model), tissue3.MODEL_ID, ()
     raise ViewRefused(
         f"No view declarations for {type(spec.model).__name__}: version 1 covers "
-        "cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, and cells.model.resolved_pump_tissue@3"
+        "cells.model.resolved_pump_composite@1 over cells.model.resolved_pump_tissue@3, and "
+        "cells.model.resolved_pump_tissue@3"
     )
 
 

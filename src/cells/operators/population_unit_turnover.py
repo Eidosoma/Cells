@@ -382,8 +382,12 @@ def _population_cells(model):
     return {c.id: inside[c.membrane_id] for c in model.channels}
 
 
-TURNOVER_LAW = "cells.operator.scheduled_species_turnover@1"  # An admitted second writer of a precursor.
-GENE_UNIT_LAW = "cells.operator.templated_polymerisation@1"  # The other (FR-43 / D315), a bounded producer.
+TURNOVER_LAW = (
+    "cells.operator.scheduled_species_turnover@1"  # An admitted second writer of a precursor.
+)
+GENE_UNIT_LAW = (
+    "cells.operator.templated_polymerisation@1"  # The other (FR-43 / D315), a bounded producer.
+)
 
 
 def check_writers(spec, declaration):

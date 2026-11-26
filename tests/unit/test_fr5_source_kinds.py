@@ -42,8 +42,13 @@ from validation.compartment_ph_engine import definitions as defs
 
 DAMAGE = dict(id="damage_0", patch=defs.BOUNDING, law="cells.damage.bounding_patch_damage@1",
               initial_damage=0.25, injury_rate_per_s=1.0, resealing_rate_per_s=0.05)
-CONDITION = dict(id="acid_0", node=defs.LUMEN, law="cells.transfer_factor.ph_conditioned_factor@1", ph50=5.5,
-                 slope=4.0)
+CONDITION = dict(
+    id="acid_0",
+    node=defs.LUMEN,
+    law="cells.transfer_factor.ph_conditioned_factor@1",
+    ph50=5.5,
+    slope=4.0,
+)
 SCHEDULE = [dict(damage_id="damage_0",
                  injury=[dict(time=0.0, value=0.0), dict(time=0.25, value=1.0),
                          dict(time=0.5, value=0.0)],

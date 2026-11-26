@@ -145,7 +145,9 @@ def test_refusals():
         )
     with pytest.raises(ValueError, match="supplies parse_schedule and schedule_to_dict"):
         registry.register(
-            kind_registry.Kind(kind_id="tests.kind.bare@1", model_key="bare", experiment_keys=("x",))
+            kind_registry.Kind(
+                kind_id="tests.kind.bare@1", model_key="bare", experiment_keys=("x",)
+            )
         )
 
 

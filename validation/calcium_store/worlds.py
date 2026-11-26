@@ -38,7 +38,9 @@ TRACE_mM, TRACE_FLOOR_FMOL = 1e-9, 1e-15  # An absent row's declared background,
 ION_FLOOR_FMOL = 1e-10
 IMEX = "cells.solver.imex_ars222_face_electromigration@1"
 VERSION_2 = "cells.solver.capacitive_reduction_gauged_damped_newton@2"
-VERSION_3 = "cells.solver.capacitive_reduction_gauged_damped_newton@3"  # Near and far: free offsets (D147).
+VERSION_3 = (
+    "cells.solver.capacitive_reduction_gauged_damped_newton@3"  # Near and far: free offsets (D147).
+)
 CONSTANT_FIELD = "cells.route.passive_constant_field_permeation@1"
 PUMP = "cells.cycle.atp_driven_transporter_mass_action_positive@2"
 EXCHANGER = "cells.cycle.sodium_calcium_exchange_symmetric_barrier@1"
@@ -264,7 +266,8 @@ def definition(blocks, outside, *, data, gauge, faces, junctions, junction_route
         faces=faces,
         channels=channels,
         closure=dict(
-            law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=gauge
+            law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+            gauge_reference=gauge,
         ),
         passive_routes=[r for b in blocks for r in b["routes"]] + junction_routes,
         transporters=[t for b in blocks for t in b["populations"]],

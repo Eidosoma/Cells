@@ -118,15 +118,21 @@ def test_a_new_rate_factor_law_joins_by_registration_alone():
     law_registry.active()
     renamed = dataclasses.replace(gard.PAIR_CONSISTENT, law_id="tests.rate_factor.renamed_factor@1")
     elsewhere = dataclasses.replace(
-        gard.PAIR_CONSISTENT, law_id="tests.rate_factor.elsewhere_factor@1", host="cells.kind.transporter@1"
+        gard.PAIR_CONSISTENT,
+        law_id="tests.rate_factor.elsewhere_factor@1",
+        host="cells.kind.transporter@1",
     )
     with pytest.raises(ValueError, match="a rate-factor law is hosted by"):
         law_registry.BUILTIN.extended(elsewhere)
-    other = law_registry.RouteLaw("tests.route.not_a_factor@1", ("assembly",), "planted", host=MODEL_ID)
+    other = law_registry.RouteLaw(
+        "tests.route.not_a_factor@1", ("assembly",), "planted", host=MODEL_ID
+    )
     the_world = world(seed=4)
     with law_registry.scope(law_registry.BUILTIN.extended(renamed, other)):
         assert factors.resolve("tests.rate_factor.renamed_factor@1") is renamed
-        new = runner.run(parse_spec(definition(the_world, "tests.rate_factor.renamed_factor@1", fissions=2)))
+        new = runner.run(
+            parse_spec(definition(the_world, "tests.rate_factor.renamed_factor@1", fissions=2))
+        )
         with pytest.raises(ConfigError, match="Unknown rate-factor law"):
             parse_spec(definition(the_world, "tests.route.not_a_factor@1", fissions=2))
     with pytest.raises(ConfigError, match="Unknown rate-factor law"):

@@ -303,24 +303,42 @@ def simulate_lineage(law: ExchangeLaw, founder, *, fission_mass: int = 80, n_fis
         "schema": "cells.assembly_lineages.run@1",
         "world_id": world["id"],
         "founder": "world",
-        "law": {"id": ("cells.rate_factor.gard_catalysis_pair_consistent@1" if law.form == PAIR_CONSISTENT
-                       else "cells.rate_factor.gard_catalysis_single_event@1"),
-                "form": law.form,
-                "energy_role": "passive" if law.form == PAIR_CONSISTENT else "driven",
-                "check_verdict": "passive" if law.form == PAIR_CONSISTENT else "refused_as_passive"},
+        "law": {
+            "id": (
+                "cells.rate_factor.gard_catalysis_pair_consistent@1"
+                if law.form == PAIR_CONSISTENT
+                else "cells.rate_factor.gard_catalysis_single_event@1"
+            ),
+            "form": law.form,
+            "energy_role": "passive" if law.form == PAIR_CONSISTENT else "driven",
+            "check_verdict": "passive" if law.form == PAIR_CONSISTENT else "refused_as_passive",
+        },
         "revision": "host-oracle",
         "mode": "single_lineage",
-        "stream": {"seed": int(seed), "branch": int(branch),
-                   "domains": {"events": DOMAIN_EVENTS, "partition": DOMAIN_PARTITION,
-                               "continuation": DOMAIN_CONTINUATION}},
+        "stream": {
+            "seed": int(seed),
+            "branch": int(branch),
+            "domains": {
+                "events": DOMAIN_EVENTS,
+                "partition": DOMAIN_PARTITION,
+                "continuation": DOMAIN_CONTINUATION,
+            },
+        },
         "ssa_convention": dict(DECLARED_BY_ENGINE),
-        "ledger_conventions": {"event_heat": "ln_forward_over_reverse_propensity",
-                               "fission_work": "ln_pi_parent_minus_ln_pi_daughters",
-                               "sink": "minus_ln_pi_unfollowed", "log_weight_constant": 0.0},
+        "ledger_conventions": {
+            "event_heat": "ln_forward_over_reverse_propensity",
+            "fission_work": "ln_pi_parent_minus_ln_pi_daughters",
+            "sink": "minus_ln_pi_unfollowed",
+            "log_weight_constant": 0.0,
+        },
         "end_status": status,
         "channels": table.to_declared(world["types"]),
-        "time": {"unit": world["units"]["time"], "temperature_K": world["units"]["temperature_K"],
-                 "rates": "per " + world["units"]["time"] + " time unit", "bases": ["fission"]},
+        "time": {
+            "unit": world["units"]["time"],
+            "temperature_K": world["units"]["temperature_K"],
+            "rates": "per " + world["units"]["time"] + " time unit",
+            "bases": ["fission"],
+        },
     }
     if t_max is not None:
         run["t_end"] = float(t_max) if status == "t_max" else float(t)

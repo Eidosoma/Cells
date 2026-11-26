@@ -33,7 +33,10 @@ from pathlib import Path
 from cells.records import relations as rel
 
 PARTITION = "cells.operator.isopotential_partition@1"
-REPLACEMENTS = ("cells.operator.scheduled_cell_replacement@1", "cells.operator.scheduled_cell_replacement@2")
+REPLACEMENTS = (
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+)
 RECORD_FILE = "trajectory.npz"
 TIMES = "accepted_times"  # io.write_run's time base of the state's rows.
 SUPPLIED, REMOVED = "replacement_supplied_fmol", "replacement_removed_fmol"

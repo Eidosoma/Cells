@@ -88,7 +88,9 @@ def as_control(raw, kind):
     out = copy.deepcopy(raw)
     blocks = [b for b in out["model"]["operators"] if b["law"] == sra.LAW_ID]
     if len(blocks) != 1:
-        raise ValueError("A control replaces exactly one cells.operator.species_regulated_availability@1 block")
+        raise ValueError(
+            "A control replaces exactly one cells.operator.species_regulated_availability@1 block"
+        )
     blocks[0]["law"] = law_of(kind)
     return out
 

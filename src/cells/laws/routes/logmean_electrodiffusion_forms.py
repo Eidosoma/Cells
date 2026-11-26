@@ -39,7 +39,9 @@ import numpy as np
 from cells.modules import RouteLaw
 
 LAW_ID = "cells.route.logmean_electrodiffusion_forms@1"
-CLOSURE_READ_ID = "cells.binding.rapid_binding@1"  # The general closure whose forms a forms face moves.
+CLOSURE_READ_ID = (
+    "cells.binding.rapid_binding@1"  # The general closure whose forms a forms face moves.
+)
 LAW = RouteLaw(
     LAW_ID,
     ("face",),

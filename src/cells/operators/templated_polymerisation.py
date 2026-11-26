@@ -339,7 +339,9 @@ OUTSIDE_NODE_AXIS, EXPORT_PART_AXIS = "poly_outside_node", "poly_export_part"
 REPLACED_EXPORT_AXIS = "poly_replaced_export"
 EXPORT_PARTS = ("forward", "backward")  # c to o with c's shares, o to c with o's (erratum H).
 CHAIN_COUNTERS = ("poly_initiated_fmol", "poly_stage_exits_fmol", "poly_released_fmol")
-REPLACEMENT_LAW = common.REPLACEMENT_LAW  # cells.operator.scheduled_cell_replacement@1, the one admitted.
+REPLACEMENT_LAW = (
+    common.REPLACEMENT_LAW
+)  # cells.operator.scheduled_cell_replacement@1, the one admitted.
 REPLACEMENT_FAMILY = REPLACEMENT_LAW.partition("@")[0]  # Its other versions are refused.
 MACHINE_OPTIONS = ("returned", "held")
 LABEL_TRANSITIONS = ("completion", "release")
@@ -1351,7 +1353,9 @@ def value_at(changes, time):
 # ------------------------------------------------------------------ definition checks
 
 
-UNIT_PRODUCER = "cells.operator.population_unit_turnover@1"  # FR-43: the unit producer, a precursor's consumer.
+UNIT_PRODUCER = (
+    "cells.operator.population_unit_turnover@1"  # FR-43: the unit producer, a precursor's consumer.
+)
 WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"
 
 

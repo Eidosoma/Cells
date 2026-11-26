@@ -339,7 +339,8 @@ def test_own_entity_axes_wait_for_own_axis_maps_beside_a_dividing_closer():
     assert pump_composite.own_axes(patches) == ("planted_site",)
     inner = SimpleNamespace(BOUND_KINDS=(patches,))
     assert pump_composite.lifecycle_errors(inner, retiring) == [
-        "The kind tests.kind.planted_sites@1's own entity axes ['planted_site'] are refused beside a "
+        "The kind tests.kind.planted_sites@1's own entity axes ['planted_site'] are refused beside "
+        "a "
         "dividing closer until own-axis maps exist (B2): a division would neither split nor "
         "retire their entities (fails closed)"
     ]
@@ -779,7 +780,11 @@ def lifecycle_world(monkeypatch, request):
         pump_composite, "_kinds_lifecycle", lambda inner, kinds: dict.fromkeys(kinds, ())
     )
     raw = pfx.divided()
-    division = next(o for o in raw["model"]["operators"] if o["law"] == "cells.operator.isopotential_partition@1")
+    division = next(
+        o
+        for o in raw["model"]["operators"]
+        if o["law"] == "cells.operator.isopotential_partition@1"
+    )
     parent = division["divisions"][0]["parent"]
     patch = next(m["id"] for m in raw["model"]["membranes"] if m["inside"] == parent)
     with kind_registry.scope(kf.registry(per_patch_carrier(request.param))):

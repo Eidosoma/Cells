@@ -143,7 +143,10 @@ def test_operators_that_read_the_declared_area_refuse_the_membrane_state():
     pumps by them: both hold membrane_area as declared (CONFLICTS_VIEW)."""
     from cells.models import pump_composite
 
-    for law in ("cells.operator.ideal_osmosis_linear_compliance_water@1", "cells.operator.scheduled_cell_replacement@1"):
+    for law in (
+        "cells.operator.ideal_osmosis_linear_compliance_water@1",
+        "cells.operator.scheduled_cell_replacement@1",
+    ):
         errors = pump_composite.structure_errors(adapter, (OPERATORS[law], OPERATORS[fx.STATE]))
         assert any(f"{law} reads membrane_area as declared" in e for e in errors), law
 

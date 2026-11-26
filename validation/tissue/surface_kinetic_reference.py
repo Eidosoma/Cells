@@ -389,7 +389,11 @@ def evaluate(
             elif ch["kinetic_law"] == "cells.channel.nav1p2_m3h_regularized@1":
                 target, tau = sodium_reference.kinetics(float(voltage))
                 opened = float(sodium_reference.opening(d["channel_gate"][:, k]))
-            elif ch["kinetic_law"] in ("cells.channel.hcn1_m@1", "cells.channel.hcn2_m@1", "cells.channel.hcn4_m@1"):
+            elif ch["kinetic_law"] in (
+                "cells.channel.hcn1_m@1",
+                "cells.channel.hcn2_m@1",
+                "cells.channel.hcn4_m@1",
+            ):
                 family = int(ch["kinetic_law"][3])
                 target, tau = hcn_reference.kinetics(float(voltage), family)
                 opened = float(hcn_reference.opening(d["channel_gate"][:, k]))

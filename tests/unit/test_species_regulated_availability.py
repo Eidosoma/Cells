@@ -207,7 +207,11 @@ REFUSALS = {
     ),
     "unlisted source": (_edit(lambda r: block(r)["species"].pop(0)), "not a listed species"),
     "other operator's control": (
-        _edit(lambda r: _coupling(r)["target"].update(operator="cells.operator.scheduled_species_turnover@1")),
+        _edit(
+            lambda r: _coupling(r)["target"].update(
+                operator="cells.operator.scheduled_species_turnover@1"
+            )
+        ),
         "inner model's controls only",
     ),
     "leak control": (
@@ -510,7 +514,11 @@ def _from_state(raw):
 REFUSALS.update(
     {
         "v2 unroutable target": (
-            _edit_v2(lambda r: _target_v2(r).update(operator="cells.operator.scheduled_species_exchange@1")),
+            _edit_v2(
+                lambda r: _target_v2(r).update(
+                    operator="cells.operator.scheduled_species_exchange@1"
+                )
+            ),
             "routable targets",
         ),
         "v2 operator target's evaluation": (
@@ -763,17 +771,31 @@ def test_refusals(case, monkeypatch):
 
 
 REFUSED = {  # Operator lists with each provider or closer (requirements first) and the reason.
-    "water": (("cells.operator.ideal_osmosis_linear_compliance_water@1",), "reads volume as declared"),
+    "water": (
+        ("cells.operator.ideal_osmosis_linear_compliance_water@1",),
+        "reads volume as declared",
+    ),
     "replacement@2": (
-        ("cells.operator.ideal_osmosis_linear_compliance_water@1", "cells.operator.scheduled_cell_replacement@2"),
+        (
+            "cells.operator.ideal_osmosis_linear_compliance_water@1",
+            "cells.operator.scheduled_cell_replacement@2",
+        ),
         "reads volume as declared",
     ),
     "lumen@1": (
-        ("cells.operator.membrane_entity_state@1", "cells.operator.scheduled_membrane_insertion@1", "cells.operator.restricted_cleft_lumen@1"),
+        (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.scheduled_membrane_insertion@1",
+            "cells.operator.restricted_cleft_lumen@1",
+        ),
         "reads extracellular_volume as declared",
     ),
     "lumen@2": (
-        ("cells.operator.membrane_entity_state@1", "cells.operator.scheduled_membrane_insertion@2", "cells.operator.restricted_cleft_lumen@2"),
+        (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.scheduled_membrane_insertion@2",
+            "cells.operator.restricted_cleft_lumen@2",
+        ),
         "reads extracellular_volume as declared",
     ),
     "insertion@1": (
@@ -789,7 +811,11 @@ REFUSED = {  # Operator lists with each provider or closer (requirements first) 
         "reads active as declared, but cells.operator.isopotential_partition@1 closes it",
     ),
     "bridge": (
-        ("cells.operator.membrane_entity_state@1", "cells.operator.isopotential_partition@1", "cells.operator.cytoplasmic_bridge_closure@1"),
+        (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.isopotential_partition@1",
+            "cells.operator.cytoplasmic_bridge_closure@1",
+        ),
         "reads active as declared, but cells.operator.isopotential_partition@1 closes it",
     ),
 }
@@ -1101,11 +1127,13 @@ VOLUME_PROVIDERS = {  # A7: a conserved amount with a changing volume, refused w
     "replacement@2 over water": (_replacement_over_water, WATER_REASON),
     "lumen@1": (
         lambda: _lumen(1),
-        "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@1 provides it",
+        "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@1 "
+        "provides it",
     ),
     "lumen@2": (
         lambda: _lumen(2),
-        "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@2 provides it",
+        "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@2 "
+        "provides it",
     ),
 }
 
@@ -1153,7 +1181,10 @@ def test_the_field_map_records_each_factored_controls_chain_and_only_then():
     """Ruling 6, with the lead's rule of 14 November 2026: the `factors` entry appears only with a
     factor operator, so every other composition's field map (and its manifests) is unchanged."""
     inner = "cells.model.resolved_pump_tissue@3"
-    replacement, bridge = "cells.operator.scheduled_cell_replacement@1", "cells.operator.cytoplasmic_bridge_closure@1"
+    replacement, bridge = (
+        "cells.operator.scheduled_cell_replacement@1",
+        "cells.operator.cytoplasmic_bridge_closure@1",
+    )
     keys = {"state", "layout", "control", "views", "observations"}
     for laws in (
         (),
@@ -1166,7 +1197,11 @@ def test_the_field_map_records_each_factored_controls_chain_and_only_then():
         (replacement, LAW): {"junction": [replacement, LAW], "channel": [LAW]},
         (LAW, replacement): {"junction": [LAW, replacement], "channel": [LAW]},
         (replacement,): {"junction": [replacement]},
-        ("cells.operator.membrane_entity_state@1", "cells.operator.isopotential_partition@1", bridge): {"junction": [bridge]},
+        (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.isopotential_partition@1",
+            bridge,
+        ): {"junction": [bridge]},
     }
     for laws, chain in chains.items():
         field_map = pump_composite.implementation(inner, laws).FIELD_MAP
@@ -1861,7 +1896,9 @@ def test_a_routed_targets_exported_rate_is_the_rate_its_step_runs_at(monkeypatch
         observed = model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
         exported = float(np.asarray(observed.reaction_rate_fmol_per_s)[0, 0])
         assert exported == pytest.approx(k * n * factor, rel=1e-12, abs=1e-30), theta0
-        reactions = next(o for o in model.operators if o.LAW_ID == "cells.operator.local_species_reactions@1")
+        reactions = next(
+            o for o in model.operators if o.LAW_ID == "cells.operator.local_species_reactions@1"
+        )
         control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
         stepped, ok = model._half_step(reactions, state, h, control, p, xp=np)
         row = list(spec.model.species_ids).index("P")

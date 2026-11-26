@@ -71,8 +71,12 @@ CYCLE = CycleForm(
 )
 LAW = CycleLaw(
     DECLARED_ID,
-    fuel_kinds=("cells.fuel_kind.maintained_held_rows@1",),  # A world that moves the pair is refused.
-    reads=("cells.binding.rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    fuel_kinds=(
+        "cells.fuel_kind.maintained_held_rows@1",
+    ),  # A world that moves the pair is refused.
+    reads=(
+        "cells.binding.rapid_binding@1",
+    ),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Frame B: every move in base forms, every proton counted (D236).
     cycle=CYCLE,
     host="cells.kind.transporter@1",

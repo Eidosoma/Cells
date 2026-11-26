@@ -39,7 +39,10 @@ from cells.operators import templated_polymerisation as tp
 from validation.gene_regulation import engine_run, worlds
 
 FUEL = ("ATP", "ADP", "Pi")
-COUPLING_LAWS = ("cells.operator.species_regulated_availability@1", "cells.operator.species_regulated_availability@2")
+COUPLING_LAWS = (
+    "cells.operator.species_regulated_availability@1",
+    "cells.operator.species_regulated_availability@2",
+)
 
 
 def _block(raw):

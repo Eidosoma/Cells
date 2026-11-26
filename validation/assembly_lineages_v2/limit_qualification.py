@@ -691,7 +691,9 @@ def d0_stationary():
 # -------------------------------------------------------------------------------- the plants
 
 PLANTS = ("P-D1", "P-D2", "P-D3", "P-D4", "P-D5", "P-D6", "P-D7")
-PLANTED_LAW = "validation.reaction.ol6_plant_power_off_by_one@1"  # P-D2's law, in a scoped registry only
+PLANTED_LAW = (
+    "validation.reaction.ol6_plant_power_off_by_one@1"  # P-D2's law, in a scoped registry only
+)
 
 
 def plant_definition(plant, name, rung, seed):
@@ -882,7 +884,8 @@ def header():
     return {
         "kind": "cells.ol6.protocol_d@1",
         "status": "proposed for registration: tag ol6-protocol-d-registered-2026-11-23, before any "
-        "comparison of cells.assembly_representation.rate_equations@1 with exact events; D7 held for the lead's choice "
+        "comparison of cells.assembly_representation.rate_equations@1 with exact events; D7 held "
+        "for the lead's choice "
         "(the protocol's §7), by an amendment tagged before it runs",
         "document": "docs/OL6_PROTOCOL_D.md",
         "engine_models": {
@@ -898,7 +901,8 @@ def header():
         "stationary mean against the rate-equation fixed point, closed form, 2.0% at T = 12) were "
         "read; the parity item of the limit's check (the builders' tests) compares each limit with "
         "its exact kernel at scaled states; S3's clock table (STATE.md); the author ran "
-        "cells.assembly_representation.rate_equations@1 alone at snapshot 8df9b012 to size every world (seed 1; D7 also "
+        "cells.assembly_representation.rate_equations@1 alone at snapshot 8df9b012 to size every "
+        "world (seed 1; D7 also "
         "seeds 1-12) and to compute the plants' effects; no exact-event run of any registered "
         "world was made, and exact definitions were parsed only",
     }

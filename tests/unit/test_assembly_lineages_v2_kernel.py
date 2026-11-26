@@ -208,7 +208,11 @@ def test_planted_kinetics_fail_the_identity_by_far_more_than_rounding():
         planted["rate_factor"]["law"] = "tests.rate_factor.at_state_factor@1"
         assert worst(spec_of(planted)) > 1e-3
         assert (
-            worst(spec_of(with_law(paired(world(catalysis=False)), "tests.reaction.power_propensity@1")))
+            worst(
+                spec_of(
+                    with_law(paired(world(catalysis=False)), "tests.reaction.power_propensity@1")
+                )
+            )
             > 1e-3
         )
         assert worst(spec_of(with_law(world(catalysis=False), "tests.reaction.one_sided@1"))) > 1e-3

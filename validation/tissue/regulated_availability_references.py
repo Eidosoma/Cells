@@ -247,7 +247,9 @@ def engine_definition(world, *, dt, end, times, initial):
     channels = []
     for name, q in world.populations.items():
         if tuple(q.relative) != (0.0, 1.0, 0.0) or q.opening != 1.0:
-            raise ValueError("The engine's gate-free K leak is cells.channel.kleak_always_open@1 (K only, open)")
+            raise ValueError(
+                "The engine's gate-free K leak is cells.channel.kleak_always_open@1 (K only, open)"
+            )
         channels.append(
             dict(
                 id=name,
@@ -291,7 +293,8 @@ def engine_definition(world, *, dt, end, times, initial):
             junctions=junctions,
             faces=[],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=channels,
         ),

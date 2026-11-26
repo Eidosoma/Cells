@@ -39,7 +39,10 @@ from cells.registry import operators as operator_registry
 from validation import id_table
 
 PLANTED_LAW = law_registry.RouteLaw(
-    "tests.route.planted_route@1", ("membrane",), "a planted route", host="cells.kind.passive_routes@1"
+    "tests.route.planted_route@1",
+    ("membrane",),
+    "a planted route",
+    host="cells.kind.passive_routes@1",
 )
 PLANTED_KIND = kind_registry.Kind(kind_id="tests.kind.planted_kind@1", model_key="planted_block")
 
@@ -220,7 +223,10 @@ def test_it_joins_a_real_definition_and_states_lines_reads_and_units(tmp_path, m
     definition = id_table.load(DEFINITION)["definition"]
     found = joins(doc, definition)
     assert {path for (path, _), joined in found.items() if joined is None} == UNDECLARED
-    assert found[("/model/id", "cells.model.resolved_pump_water@1")] == "model cells.model.resolved_pump_water@1"
+    assert (
+        found[("/model/id", "cells.model.resolved_pump_water@1")]
+        == "model cells.model.resolved_pump_water@1"
+    )
     law = found[("/model/water/law", "cells.operator.ideal_osmosis_linear_compliance_water@1")]
     assert law == "operator cells.operator.ideal_osmosis_linear_compliance_water@1"
     # The host, as definitions write it: the composite's inner model, which frozen_definition gives
@@ -262,8 +268,10 @@ def test_it_joins_a_real_definition_and_states_lines_reads_and_units(tmp_path, m
     # Planted: a module with two declarations of one ID, whose line the read refuses to guess.
     source = (
         "from cells.registry.laws import RouteLaw\n"
-        "A = RouteLaw('tests.route.twice@1', ('membrane',), 'a', host='cells.kind.passive_routes@1')\n"
-        "B = RouteLaw('tests.route.twice@1', ('membrane',), 'b', host='cells.kind.passive_routes@1')\n"
+        "A = RouteLaw('tests.route.twice@1', ('membrane',), 'a', "
+        "host='cells.kind.passive_routes@1')\n"
+        "B = RouteLaw('tests.route.twice@1', ('membrane',), 'b', "
+        "host='cells.kind.passive_routes@1')\n"
     )
     planted = (ast.parse(source), {"RouteLaw": law_registry.RouteLaw})
     monkeypatch.setattr(declarations, "_syntax", lambda module: planted)
@@ -311,7 +319,9 @@ def test_reads_are_one_per_stage_and_a_cycle_form_gives_its_change_rows(monkeypa
     formed = dataclasses.replace(plain, law_id="tests.cycle.planted_formed_cycle@2", cycle=Form())
     with law_registry.scope(law_registry.BUILTIN.extended(plain, formed)):
         pieces = {e["id"]: e for e in declarations.manifest()["pieces"]}
-    assert pieces["tests.cycle.planted_formed_cycle@1"]["changes"] == [dict(role="role", per_cycle=-1)]
+    assert pieces["tests.cycle.planted_formed_cycle@1"]["changes"] == [
+        dict(role="role", per_cycle=-1)
+    ]
     assert pieces["tests.cycle.planted_formed_cycle@2"]["changes"] == [
         dict(role="role", per_cycle=-2, mode="coupled")
     ]

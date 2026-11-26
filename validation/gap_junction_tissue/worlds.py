@@ -195,7 +195,8 @@ def linear_network(cells, edges=(), probes=(), *, junction_scale=1.0, end=END_S,
             junctions=junctions,
             faces=[],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=[],
         ),

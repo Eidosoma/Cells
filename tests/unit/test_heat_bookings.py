@@ -158,7 +158,10 @@ def test_the_default_is_omitted_and_the_key_round_trips():
         ),
         ({"walls": TRAPEZOID}, "neither one of @3's own mover classes"),
         ({"channels": 1}, "maps mover classes to booking IDs"),
-        ({"faces": TRAPEZOID}, "faces admit cells.heat.exact_free_energy_heat@1 beyond the tableau"),
+        (
+            {"faces": TRAPEZOID},
+            "faces admit cells.heat.exact_free_energy_heat@1 beyond the tableau",
+        ),
     ],
 )
 def test_heat_bookings_refusals(bookings, message):
@@ -184,7 +187,10 @@ def _face_to_the_bath(raw):
 @pytest.mark.parametrize(
     "edit,message",
     [
-        (_charged_face_row, "carries the charged row Na; cells.heat.exact_free_energy_heat@1 books neutral"),
+        (
+            _charged_face_row,
+            "carries the charged row Na; cells.heat.exact_free_energy_heat@1 books neutral",
+        ),
         (_membrane_also_moves, "which membrane contact_2 also moves in the step"),
         (_face_to_the_bath, "carries S to the held bath bath; .* between finite nodes"),
     ],

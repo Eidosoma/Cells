@@ -351,10 +351,19 @@ def test_today_s_three_keep_their_models_and_their_chains(capsys):
     assert all(families.adapter_of(model) is None for model in families.TODAY.values())
     data = {"model": "cells.model.capsid_graph@1", "worlds": 1, "world_id_start": 0, "seed": 1}
     bound = families.bind_definition(data, worlds=3, world_id_start=5, seed=9)
-    assert bound == {"model": "cells.model.capsid_graph@1", "worlds": 3, "world_id_start": 5, "seed": 9}
-    assert families.model_of({"id": "cells.model.capsid_graph@1"}) == families.model_of("cells.model.capsid_graph@1")
+    assert bound == {
+        "model": "cells.model.capsid_graph@1",
+        "worlds": 3,
+        "world_id_start": 5,
+        "seed": 9,
+    }
+    assert families.model_of({"id": "cells.model.capsid_graph@1"}) == families.model_of(
+        "cells.model.capsid_graph@1"
+    )
     for kind in ("assembly_cell_ensemble@1", "assembly_cluster_ensemble@1"):
-        with pytest.raises(ValueError, match=f"^{kind} is parked: .* cells.model.resolved_pump_composite@1"):
+        with pytest.raises(
+            ValueError, match=f"^{kind} is parked: .* cells.model.resolved_pump_composite@1"
+        ):
             plan(dict(plan_data(), kind=kind), 1)
     for command in ("assembly-cell", "assembly-cluster"):  # And so are their two command lines.
         assert main([command]) == 2

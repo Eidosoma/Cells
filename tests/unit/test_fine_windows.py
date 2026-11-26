@@ -52,7 +52,9 @@ from validation.gap_junction_tissue import worlds
 from validation.tissue import bath_schedule_fixtures as bfx
 
 METHOD = "cells.execution.fixed_fine_windows@1"
-X2 = dict(check="cells.execution.step_doubled_energy@1", integration_error_cap=3e-2)  # X2's test's cap.
+X2 = dict(
+    check="cells.execution.step_doubled_energy@1", integration_error_cap=3e-2
+)  # X2's test's cap.
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -309,7 +311,8 @@ REFUSALS = {
     ),
     "an operator that counts steps": (
         _counting_operator,
-        "cells.operator.species_regulated_availability@1 is refused: its crossing record counts steps",
+        "cells.operator.species_regulated_availability@1 is refused: its crossing record counts "
+        "steps",
     ),
     "a projective block beside it": (
         _changed(_projective),

@@ -81,7 +81,9 @@ CYCLE = CycleForm(
 LAW = CycleLaw(
     DECLARED_ID,
     fuel_kinds=("cells.fuel_kind.maintained_held_rows@1",),
-    reads=("cells.binding.rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    reads=(
+        "cells.binding.rapid_binding@1",
+    ),  # Its rows at a closure node are read free (§5.2's admission).
     stage_term="stage_term",  # The kind's: its charge slope at both ends.
     material_term="material_term",  # The kind's: its rate over all the rows it moves.
     forms="base",  # One species moved: each move is a base row.

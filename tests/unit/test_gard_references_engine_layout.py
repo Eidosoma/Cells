@@ -33,13 +33,27 @@ def _run(**ssa_over):
     ssa = {"tau": "tau = -ln(u1) / a0", "channel": "the first j with c_j > min(u2 * a0, nextafter(a0, 0))",
            "prefix": "serial left fold in channel order: c_0 = a_0, c_j = c_(j-1) + a_j; a0 = c_(2C-1)"}
     ssa.update(ssa_over)
-    return {"world": "abc", "founder": "world", "mode": "single_lineage",
-            "law": {"id": "cells.rate_factor.gard_catalysis_pair_consistent@1", "form": "pair-consistent",
-                    "energy_role": "passive", "check": {"admitted_as": "passive"}},
-            "stream": {"seed": 1, "branch": 0,
-                       "uniform": "u = (m + 1/2) * 2**-52, m the low 52 bits of one 64-bit Threefry word"},
-            "ssa": ssa, "ledger": {"event_heat": "q = ..."}, "channels": {"rows": []},
-            "end": {"status": "complete", "time": 1.0}, "time": {"unit": "nominal"}}
+    return {
+        "world": "abc",
+        "founder": "world",
+        "mode": "single_lineage",
+        "law": {
+            "id": "cells.rate_factor.gard_catalysis_pair_consistent@1",
+            "form": "pair-consistent",
+            "energy_role": "passive",
+            "check": {"admitted_as": "passive"},
+        },
+        "stream": {
+            "seed": 1,
+            "branch": 0,
+            "uniform": "u = (m + 1/2) * 2**-52, m the low 52 bits of one 64-bit Threefry word",
+        },
+        "ssa": ssa,
+        "ledger": {"event_heat": "q = ..."},
+        "channels": {"rows": []},
+        "end": {"status": "complete", "time": 1.0},
+        "time": {"unit": "nominal"},
+    }
 
 
 def test_engine_world_maps_onto_the_canonical_view():

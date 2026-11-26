@@ -71,7 +71,9 @@ CYCLE = CycleForm(
 )
 LAW = CycleLaw(
     DECLARED_ID,
-    reads=("cells.binding.rapid_binding@1",),  # Its rows at a closure node are read free (§5.2's admission).
+    reads=(
+        "cells.binding.rapid_binding@1",
+    ),  # Its rows at a closure node are read free (§5.2's admission).
     forms="base",  # Frame B: every move in base forms (D236).
     cycle=CYCLE,
     host="cells.kind.transporter@1",

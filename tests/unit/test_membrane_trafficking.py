@@ -166,7 +166,9 @@ INJECTION = dict(
 )
 INJECTION_CONTROLS = [dict(cell_id="cell_0", schedule=[dict(time=0.0, current_A=0.0)])]
 BATH = dict(
-    law="cells.operator.scheduled_bath_composition@1", baths=["bath_0"], formula_units={"KM": {"K": 1, "M": 1}}
+    law="cells.operator.scheduled_bath_composition@1",
+    baths=["bath_0"],
+    formula_units={"KM": {"K": 1, "M": 1}},
 )
 
 
@@ -328,12 +330,14 @@ def refusal_cases():
     yield (
         "injection beside it",
         edited(with_operator(INJECTION, "injection_controls", INJECTION_CONTROLS)),
-        "cells.operator.electrode_current_injection@1 is refused: it is not qualified beside membrane trafficking",
+        "cells.operator.electrode_current_injection@1 is refused: it is not qualified beside "
+        "membrane trafficking",
     )
     yield (  # The compartments' admitted list, which runs first, refuses it before this one does.
         "site occupancy beside it",
         sites_beside(),
-        f"{fx.COMPARTMENTS} composes only with .*; cells.operator.site_occupancy@1 is not on its admitted list",
+        f"{fx.COMPARTMENTS} composes only with .*; cells.operator.site_occupancy@1 is not on its "
+        f"admitted list",
     )
     yield (
         "the bath schedule beside it",
@@ -400,14 +404,21 @@ def test_insertion_and_declared_kinds_are_refused_beside_it():
     ]
     with pytest.raises(ConfigError, match="cells.operator.scheduled_membrane_insertion@1"):
         parse_spec(edited(with_operator(insertion, "insertion_controls", controls)))
-    assert trafficking.REFUSED["cells.operator.scheduled_membrane_insertion@1"] == trafficking.INSERTION_REASON
+    assert (
+        trafficking.REFUSED["cells.operator.scheduled_membrane_insertion@1"]
+        == trafficking.INSERTION_REASON
+    )
     # The declared inner structure, from the world with membrane state alone (the compartments
     # admit membrane state only with trafficking, and trafficking is refused beside the kind).
     plain = fx.pooled_cells(1)
     plain["model"]["operators"] = plain["model"]["operators"][:1]
     with kind_registry.scope(kf.registry(kf.carrier())):
         declared = get_model(parse_spec(kf.declare_carrier(plain)).model).inner
-        laws = ("cells.operator.membrane_entity_state@1", "cells.operator.cell_owned_compartments@1", LAW)
+        laws = (
+            "cells.operator.membrane_entity_state@1",
+            "cells.operator.cell_owned_compartments@1",
+            LAW,
+        )
         errors = pump_composite.structure_errors(declared, tuple(OPERATORS[k] for k in laws))
     assert errors == [
         f"{LAW} builds the inner model's state, layout or control with today's fixed fields, so "

@@ -92,7 +92,9 @@ def one_step(raw):
 
 def test_the_chloride_leak_is_declared_and_registered_on_at3():
     law = clleak.LAW
-    assert law.errors() == [] and law.law_id == clleak.LAW_ID == "cells.channel.clleak_always_open@1"
+    assert (
+        law.errors() == [] and law.law_id == clleak.LAW_ID == "cells.channel.clleak_always_open@1"
+    )
     assert (law.code, law.gates, law.permeant) == (10, (), (("Cl", -1, 1.0),))
     assert (law.rk4_step_s, law.kinetics, law.opening, law.reads) == (None, None, None, ())
     assert law.voltage_domain_V == (-0.120, 0.060) and not law.gated

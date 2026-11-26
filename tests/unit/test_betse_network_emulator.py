@@ -195,7 +195,9 @@ def test_resolved_definition_adds_one_population_per_patch_and_channel(network_c
     for c, row in zip(model["channels"], [*model["membranes"]] * 2, strict=True):
         kv = c["id"].startswith("chan-Kv-")
         assert c["membrane_id"] == row["id"]
-        assert c["kinetic_law"] == ("cells.channel.kv1p5_mh@1" if kv else "cells.channel.kleak_always_open@1")
+        assert c["kinetic_law"] == (
+            "cells.channel.kv1p5_mh@1" if kv else "cells.channel.kleak_always_open@1"
+        )
         assert c["max_permeability_m_per_s"] == pytest.approx((KV if kv else KLEAK) / TM)
         assert c["abundance"] == 1.0
         assert c["permeant_ions"] == [{"species_id": "K", "relative_permeability": 1.0}]

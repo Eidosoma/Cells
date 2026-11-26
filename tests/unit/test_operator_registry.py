@@ -40,7 +40,8 @@ TODAY = (  # The built-in package's registration order: today's dictionary's ord
 )
 HEADER = "from cells.operators.contract import Operator\n\n\n"
 EXISTING = HEADER + (
-    "class Existing(Operator):\n    LAW_ID = 'tests.operator.existing_operator@1'\n    EVENT = True\n"
+    "class Existing(Operator):\n    LAW_ID = 'tests.operator.existing_operator@1'\n    EVENT = "
+    "True\n"
 )
 NEW = HEADER + (
     "from cells.operators.osmotic_water import OsmoticWater  # Imported from another package.\n"
@@ -54,7 +55,8 @@ NEWER = HEADER + (
     "class Newer(Operator):\n    LAW_ID = 'tests.operator.newer_operator@1'\n    EVENT = True\n"
 )
 UNBOOKED = HEADER + (  # The contract's planted error below, in a module of its own.
-    "class Unbooked(Operator):\n    LAW_ID = 'tests.operator.unbooked_operator@1'\n    EVENT = True\n"
+    "class Unbooked(Operator):\n    LAW_ID = 'tests.operator.unbooked_operator@1'\n    EVENT = "
+    "True\n"
     "    STATE_AXES = {'unbooked_dissipated_energy_pJ': ('cell_slot',)}\n"
 )
 

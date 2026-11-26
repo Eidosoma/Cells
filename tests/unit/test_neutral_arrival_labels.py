@@ -585,7 +585,9 @@ def test_clearance_at_a_washed_node_keeps_the_shares_the_wash_diluted():
     expected = ls.exchange(state.label_outside_share, n0, removed, supplied, p.label_present, xp=np)
     assert bits(washed.label_outside_share) == bits(expected)
     assert washed.label_outside_share[0, 1, w] < 1 / 3  # Diluted: the buffer joined the base.
-    turnover = next(op for op in model.splits if op.LAW_ID == "cells.operator.scheduled_species_turnover@1")
+    turnover = next(
+        op for op in model.splits if op.LAW_ID == "cells.operator.scheduled_species_turnover@1"
+    )
     cleared, ok = model._half_step(turnover, washed, 0.5 * spec.execution.dt, control, p, xp=np)
     assert ok is None or bool(ok)
     assert bits(cleared.label_outside_share) == bits(washed.label_outside_share)
@@ -921,7 +923,9 @@ def kinds_case(case):
         raw["model"][passive_routes.MODEL_KEY].append(nk.RECTIFIER_NA)
         return with_labels(raw, [("Na", ["base"], {})]), contextlib.nullcontext()
     if case in ("net flow", "unequal"):
-        entry = ck.exchanger(law="seamtest.cycle.net_exchange@1") if case == "net flow" else nk.UNEQUAL
+        entry = (
+            ck.exchanger(law="seamtest.cycle.net_exchange@1") if case == "net flow" else nk.UNEQUAL
+        )
         raw = cs.frozen_definition(ck.exchange_world(entry))
         return with_labels(raw, [("W", ["base"], {})]), nk.cycle_scope()
     if case == "fail-closed":
@@ -972,22 +976,26 @@ REFUSED = {
     ),
     "a transporter changes its finite fuel at one end only (the kinds' hook)": (
         lambda: mover("fuel"),
-        r"cells.kind.transporter@1: transporter_0's mode cycle changes the labelled ATP at its N end "
+        r"cells.kind.transporter@1: transporter_0's mode cycle changes the labelled ATP at its N "
+        r"end "
         r"only \(chemistry there, not a crossing\)",
     ),
     "a transporter changes its held fuel (the kinds' hook)": (
         lambda: mover("fuel", finite=False),
-        r"cells.kind.transporter@1: transporter_0's law changes the labelled ATP at its N end, a held "
+        r"cells.kind.transporter@1: transporter_0's law changes the labelled ATP at its N end, a "
+        r"held "
         r"row \(its maintenance's new material is not reported\)",
     ),
     "an inward rectifier moves its row (the kinds' hook)": (
         lambda: kinds_case("rectifier"),
-        r"cells.kind.passive_routes@1: rectifier_Na runs cells.route.inward_rectifier_linear_driving_force@1, "
+        r"cells.kind.passive_routes@1: rectifier_Na runs "
+        r"cells.route.inward_rectifier_linear_driving_force@1, "
         r"whose flux has no one-way form",
     ),
     "a net-flow population changes its row (the kinds' hook)": (
         lambda: kinds_case("net flow"),
-        r"exchanger_0 runs seamtest.cycle.net_exchange@1, a net-flow form with no one-way cycle rates, "
+        r"exchanger_0 runs seamtest.cycle.net_exchange@1, a net-flow form with no one-way cycle "
+        r"rates, "
         "and changes the labelled W",
     ),
     "a crossing's counts differ at its two ends (the kinds' hook)": (
@@ -996,7 +1004,8 @@ REFUSED = {
     ),
     "a kind with a rates hook and no label_refusals (the kinds' hook, fail-closed)": (
         lambda: kinds_case("fail-closed"),
-        r"cells.kind.passive_routes@1 has a rates hook and no label_refusals, so it is refused while "
+        r"cells.kind.passive_routes@1 has a rates hook and no label_refusals, so it is refused "
+        r"while "
         r"any row is labelled \(fail-closed\)",
     ),
     "a closure holds the labelled row (the kinds' hook)": (
@@ -1073,7 +1082,12 @@ def test_a_pool_reporter_whose_event_reports_nothing_is_refused_beside_a_replace
     for declared, refused in (
         ((swap, pools), True),
         (
-            (swap, _part("tests.operator.pools@1", LABEL_POOLS=True, EVENT=True, event=_labelled_event)),
+            (
+                swap,
+                _part(
+                    "tests.operator.pools@1", LABEL_POOLS=True, EVENT=True, event=_labelled_event
+                ),
+            ),
             False,
         ),
         ((pools,), False),

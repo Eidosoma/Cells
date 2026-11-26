@@ -184,7 +184,9 @@ def test_a_current_read_of_a_field_no_operator_changes_reads_the_declared_value(
     assert alone.received == [None]  # No view: its call is unchanged, and it reads p.
     # Its refused twin: the same reader before a changer at its own stage.
     split = provider("cells.operator.test_split@1", "volume", 2.0, stage="split")
-    assert structure(alone, split) == [late("cells.operator.test_alone@1", "volume", "split", "cells.operator.test_split@1")]
+    assert structure(alone, split) == [
+        late("cells.operator.test_alone@1", "volume", "split", "cells.operator.test_split@1")
+    ]
     typo = reader("cells.operator.test_typo@1", "volume_pl", Read("current", "split"))
     assert structure(typo) == [
         "cells.operator.test_typo@1 reads the view volume_pl, which is not an inner view field"
@@ -204,10 +206,16 @@ def test_a_current_read_of_a_field_no_operator_changes_reads_the_declared_value(
     ],
 )
 def test_a_later_change_is_refused_only_at_the_readers_own_stage(read_stage, change_stage, refused):
-    current = reader("cells.operator.test_reader@1", VOLUME, Read("current", read_stage), parts=(read_stage,))
+    current = reader(
+        "cells.operator.test_reader@1", VOLUME, Read("current", read_stage), parts=(read_stage,)
+    )
     change = provider("cells.operator.test_change@1", VOLUME, 2.0, stage=change_stage)
     assert structure(change, current) == []  # An earlier change: admitted at every stage.
-    expected = [late("cells.operator.test_reader@1", VOLUME, read_stage, "cells.operator.test_change@1")] if refused else []
+    expected = (
+        [late("cells.operator.test_reader@1", VOLUME, read_stage, "cells.operator.test_change@1")]
+        if refused
+        else []
+    )
     assert structure(current, change) == expected
 
 
@@ -217,15 +225,22 @@ def test_scoped_pairs_are_ordered_per_slot_and_per_stage(two_cells):
     def scope(*operators):
         return pump_composite.scope_errors(adapter, [(op, None) for op in operators], spec)
 
-    current = reader("cells.operator.test_reader@1", VOLUME, Read("current", "split", scoped=True), slots=[0])
+    current = reader(
+        "cells.operator.test_reader@1", VOLUME, Read("current", "split", scoped=True), slots=[0]
+    )
     event = provider("cells.operator.test_event@1", VOLUME, 2.0, scoped=True, slots=[0])
-    split = provider("cells.operator.test_split@1", VOLUME, 2.0, stage="split", scoped=True, slots=[0])
-    elsewhere = provider("cells.operator.test_split@1", VOLUME, 2.0, stage="split", scoped=True, slots=[1])
+    split = provider(
+        "cells.operator.test_split@1", VOLUME, 2.0, stage="split", scoped=True, slots=[0]
+    )
+    elsewhere = provider(
+        "cells.operator.test_split@1", VOLUME, 2.0, stage="split", scoped=True, slots=[1]
+    )
     for pair in ((current, event), (event, current), (split, current), (current, elsewhere)):
         assert structure(*pair) == [] and scope(*pair) == []
     assert structure(current, split) == []
     assert scope(current, split) == [
-        "cells.operator.test_reader@1 reads the view extracellular_volume at bath at stage split before "
+        "cells.operator.test_reader@1 reads the view extracellular_volume at bath at stage split "
+        "before "
         "cells.operator.test_split@1 changes it there"
     ]
 
@@ -258,7 +273,9 @@ def test_a_closer_changes_every_mask_and_padded_field_and_a_writer_what_its_owne
         assert stages.get(name, []) == (expected if name in reach else []), name
     # A provider changes at the stages of the earlier changes of what it reads current; only its
     # own declared stage is its own.
-    lumen = OPERATORS["cells.operator.restricted_cleft_lumen@2"]  # Reads membrane_area, provides VOLUME.
+    lumen = OPERATORS[
+        "cells.operator.restricted_cleft_lumen@2"
+    ]  # Reads membrane_area, provides VOLUME.
     stages = listed(pump_composite.view_changes(adapter, (state, insertion, lumen)))
     assert stages[VOLUME] == [(2, lumen.LAW_ID, "event", False), (2, lumen.LAW_ID, "split", True)]
 
@@ -268,7 +285,10 @@ def test_an_undeclared_change_of_a_two_part_operator_counts_at_its_event_too():
     change the field too (insertion@2 opens an onset there): an event reader of a mask placed
     before insertion@2 is refused, not given the mask before this step's onset."""
     masks = reader(
-        "cells.operator.test_event_masks@1", "membrane_active", Read("current", "event"), parts=("event",)
+        "cells.operator.test_event_masks@1",
+        "membrane_active",
+        Read("current", "event"),
+        parts=("event",),
     )
     state, insertion = OPERATORS[STATE], OPERATORS[INSERTION]
     assert structure(state, insertion, masks) == []
@@ -284,7 +304,9 @@ def test_a_scoped_providers_inherited_stage_is_ordered_at_the_structure_check():
     split = Read("current", "split", scoped=True)
     current = reader("cells.operator.test_reader@1", VOLUME, split, slots=[0])
     kwargs = dict(stage="event", scoped=True, slots=[0])
-    inherits = provider("cells.operator.test_inherits@1", VOLUME, 2.0, VIEW_READS=("membrane_area",), **kwargs)
+    inherits = provider(
+        "cells.operator.test_inherits@1", VOLUME, 2.0, VIEW_READS=("membrane_area",), **kwargs
+    )
     plain = provider("cells.operator.test_plain@1", VOLUME, 2.0, **kwargs)
     state = OPERATORS[STATE]
     assert structure(state, current, plain) == []  # Its own stage is event: decided per slot.
@@ -307,7 +329,9 @@ def test_a_reader_of_a_patch_mask_sees_a_closed_cells_patches_closed(two_cells):
     view reader (close() propagates), so it receives the propagated mask, never the declared one;
     a split closer after the split reader is refused."""
     _, state, p = two_cells
-    patches = reader("cells.operator.test_patch_reader@1", "membrane_active", Read("current", "split"))
+    patches = reader(
+        "cells.operator.test_patch_reader@1", "membrane_active", Read("current", "split")
+    )
     cell_0 = closer("cells.operator.test_closer@1", [0])
     composition = pump_composite.Composition(adapter, (patches, cell_0))
     assert patches in composition.view_readers
@@ -317,7 +341,12 @@ def test_a_reader_of_a_patch_mask_sees_a_closed_cells_patches_closed(two_cells):
     assert seen.tolist() == [not k == 0 for k in np.asarray(p.membrane_cell)]
     split_closer = closer("cells.operator.test_closer@1", [0], stage="split")
     assert structure(patches, split_closer) == [
-        late("cells.operator.test_patch_reader@1", "membrane_active", "split", "cells.operator.test_closer@1")
+        late(
+            "cells.operator.test_patch_reader@1",
+            "membrane_active",
+            "split",
+            "cells.operator.test_closer@1",
+        )
     ]
 
 
@@ -369,7 +398,9 @@ def test_the_closure_reach_covers_everything_close_changes(mask):
             closed[first] = False
             return {mask: xp.asarray(closed)}
 
-        body = dict(LAW_ID="cells.operator.test_reach@1", EVENT=True, CLOSES=(mask,), closures=closures)
+        body = dict(
+            LAW_ID="cells.operator.test_reach@1", EVENT=True, CLOSES=(mask,), closures=closures
+        )
         return check_declarations(type("Reach", (Operator,), body))()
 
     fields = (*adapter.MASK_FIELDS, *adapter.PADDED_FIELDS)
@@ -391,7 +422,8 @@ def test_a_fixed_read_of_a_mask_a_closure_reaches_is_refused():
     fixed = reader("cells.operator.test_fixed_patches@1", "membrane_active", Read("fixed", "split"))
     cell_closer = closer("cells.operator.test_closer@1", [0])  # Closes active; its patches follow.
     assert structure(cell_closer, fixed) == [
-        "cells.operator.test_fixed_patches@1 reads membrane_active as declared, but cells.operator.test_closer@1 closes it"
+        "cells.operator.test_fixed_patches@1 reads membrane_active as declared, but "
+        "cells.operator.test_closer@1 closes it"
     ]
     faces = reader("cells.operator.test_fixed_faces@1", "face_active", Read("fixed", "split"))
     assert structure(cell_closer, faces) == []  # Closing a cell closes no face.
@@ -412,7 +444,9 @@ def test_one_field_is_read_current_at_one_stage_and_as_a_reference_at_another(tw
     assert reads_of(single, VOLUME) == (type(single).scoped_read(VOLUME),)
     change = provider("cells.operator.test_change@1", VOLUME, 2.0, stage="split")
     assert structure(change, both) == []
-    assert structure(both, change) == [late("cells.operator.test_two_modes@1", VOLUME, "split", "cells.operator.test_change@1")]
+    assert structure(both, change) == [
+        late("cells.operator.test_two_modes@1", VOLUME, "split", "cells.operator.test_change@1")
+    ]
     composition = pump_composite.Composition(adapter, (change, both))
     composition._half_step(both, state, 0.5e-3, None, p, xp=np)
     assert np.asarray(both.received[-1].extracellular_volume).tolist() == [2.0, 2.0]
@@ -430,7 +464,12 @@ def test_one_field_is_read_current_at_one_stage_and_as_a_reference_at_another(tw
 )
 def test_the_contract_refuses_malformed_per_stage_reads(declared, attributes, message):
     def build():
-        body = dict(LAW_ID="cells.operator.test_bad@1", SPLIT=True, RK4="split", SCOPED_READS={VOLUME: declared})
+        body = dict(
+            LAW_ID="cells.operator.test_bad@1",
+            SPLIT=True,
+            RK4="split",
+            SCOPED_READS={VOLUME: declared},
+        )
         if any(isinstance(r, Read) and r.mode == "current" for r in declared):
             body["VIEW_READS"] = (VOLUME,)
         return check_declarations(type("Bad", (Operator,), body | attributes))
@@ -465,7 +504,9 @@ def test_a_reader_receives_its_read_fields_bitwise_without_the_field_refresh(
 ):
     _, state, p = two_cells
     masks = reader("cells.operator.test_masks@1", "active", Read("current", "split"))
-    composition = pump_composite.Composition(adapter, (closer("cells.operator.test_closer@1", [1]), masks))
+    composition = pump_composite.Composition(
+        adapter, (closer("cells.operator.test_closer@1", [1]), masks)
+    )
     full = composition.view(p, state, xp=np)  # Masks are field inputs: the full view refreshes.
     view = composition.reader_view(masks, p, state, xp=np)
     assert type(view)._fields == ("active",)
@@ -479,8 +520,12 @@ def test_a_reader_receives_its_read_fields_bitwise_without_the_field_refresh(
 
 def test_an_operator_that_books_at_the_view_keeps_the_full_view(two_cells):
     _, state, p = two_cells
-    books = reader("cells.operator.test_books@1", "active", Read("current", "split"), BOOKS_AT_VIEW=True)
-    composition = pump_composite.Composition(adapter, (closer("cells.operator.test_closer@1", [1]), books))
+    books = reader(
+        "cells.operator.test_books@1", "active", Read("current", "split"), BOOKS_AT_VIEW=True
+    )
+    composition = pump_composite.Composition(
+        adapter, (closer("cells.operator.test_closer@1", [1]), books)
+    )
     assert composition.field_inputs and composition._passes_view(books)
     composition._half_step(books, state, 0.5e-3, None, p, xp=np)
     assert type(books.received[-1]) is type(composition.view(p, state, xp=np))
@@ -494,7 +539,9 @@ def test_e1_a_volume_reader_joins_water_and_sees_its_merged_volume(water_cell):
     water = OPERATORS[WATER]
     stub = reader("cells.operator.stub_volume_reader@1", "volume", Read("current", "split"))
     assert structure(water, stub) == []
-    assert structure(stub, water) == [late("cells.operator.stub_volume_reader@1", "volume", "split", WATER)]
+    assert structure(stub, water) == [
+        late("cells.operator.stub_volume_reader@1", "volume", "split", WATER)
+    ]
     composition = pump_composite.Composition(model.inner, (water, stub))
     moved = state._replace(volume_increment_pL=state.volume_increment_pL + 0.125)
     composition._half_step(stub, moved, 0.5e-3, None, p, xp=np)

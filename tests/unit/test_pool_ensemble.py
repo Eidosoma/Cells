@@ -41,7 +41,9 @@ def test_finite_family_plan_and_kind_refusal():
     data = experiment()
     planned = plan(data, 1)
     assert planned["worlds"] == 32 and len(planned["tasks"]) == 4
-    assert {t["definition"]["model"] for t in planned["tasks"]} == {"cells.model.finite_bond_assembly@1"}
+    assert {t["definition"]["model"] for t in planned["tasks"]} == {
+        "cells.model.finite_bond_assembly@1"
+    }
     data["kind"] = "assembly_ensemble@1"
     with pytest.raises(ValueError, match="kind"):
         plan(data, 1)

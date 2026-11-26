@@ -190,7 +190,8 @@ def definition(world, *, blocked=True):
             junctions=[],
             faces=[],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=channels,
         ),

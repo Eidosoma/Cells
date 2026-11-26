@@ -425,9 +425,15 @@ def lumen_general():
         entry = next(e for e in m["species"] if e["id"] == row)
         entry["forms"] = [dict(id="H" + row, counts={"H": 1},
                                standard_mu_RT=entry.pop("protonated_standard_mu_RT"))]
-    m["stage_reads"] = [dict(read_id="cells.binding.rapid_binding@1", ligand_rows=["H"], proton_row="H",
-                             binders={fr.CELL: ["B_c"], fr.LUMEN: ["B_L"]},
-                             k_on_per_mM_s={"B_c": {"H": 1e7}, "B_L": {"H": 1e7}})]
+    m["stage_reads"] = [
+        dict(
+            read_id="cells.binding.rapid_binding@1",
+            ligand_rows=["H"],
+            proton_row="H",
+            binders={fr.CELL: ["B_c"], fr.LUMEN: ["B_L"]},
+            k_on_per_mM_s={"B_c": {"H": 1e7}, "B_L": {"H": 1e7}},
+        )
+    ]
     m.pop("transporters")
     m.pop("passive_routes")
     return raw
@@ -566,7 +572,9 @@ def test_a_forms_face_of_rows_as_themselves_steps_as_todays_face(floating):
     current balance fixes. Compiled, the same pair matched bitwise where the programs matched, and
     otherwise at rounding (the slice's evidence). Planted: the forms face at twice its factor
     differs."""
-    _, _, today = host_steps(face_world("cells.route.logmean_electrodiffusion@1", floating=floating), 3)
+    _, _, today = host_steps(
+        face_world("cells.route.logmean_electrodiffusion@1", floating=floating), 3
+    )
     spec, impl, forms = host_steps(face_world(FORMS, floating=floating), 3)
     paired = {"face_transferred": "forms_face_transferred",
               "face_dissipated_energy_pJ": "forms_face_dissipated_energy_pJ"}  # fmt: skip
@@ -820,7 +828,9 @@ def test_the_forms_law_is_admitted_at_closure_rows_where_todays_face_is_refused(
         "today's law at a ligand row": lambda: forms_world(
             law="cells.route.logmean_electrodiffusion@1", carry=("H", "K")
         ),
-        "today's law at a binder row": lambda: forms_world(law="cells.route.logmean_electrodiffusion@1"),
+        "today's law at a binder row": lambda: forms_world(
+            law="cells.route.logmean_electrodiffusion@1"
+        ),
         "one end held": lambda: forms_world(receiver_holds=False),
         "binder held at neither end": lambda: forms_world(carry=("B_c", "K")),
     }[case]()
@@ -833,7 +843,10 @@ def test_the_forms_law_is_admitted_at_closure_rows_where_todays_face_is_refused(
 
 # ------------------------------------------- the leak reading the closure (MT-1b's item 3)
 
-LEAK_V1, LEAK_V2 = "cells.route.proton_constant_field_leak@1", "cells.route.proton_constant_field_leak@2"
+LEAK_V1, LEAK_V2 = (
+    "cells.route.proton_constant_field_leak@1",
+    "cells.route.proton_constant_field_leak@2",
+)
 
 
 def leak_general(law=LEAK_V2):
@@ -855,7 +868,9 @@ def test_the_leak_at_version_2_reads_the_general_closures_free_h_and_closes_ever
     from cells.kinds import passive_routes
     from cells.laws.electrochemistry import ghk_leak
 
-    with pytest.raises(ConfigError, match=r"cells.route.proton_constant_field_leak@1, whose reads \[\] lack"):
+    with pytest.raises(
+        ConfigError, match=r"cells.route.proton_constant_field_leak@1, whose reads \[\] lack"
+    ):
         parse_spec(leak_general(LEAK_V1))
     spec = parse_spec(leak_general())
     impl, state, p, control = host(spec)

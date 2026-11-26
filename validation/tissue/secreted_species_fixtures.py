@@ -33,7 +33,10 @@ FLOOR_FMOL = 1e-20
 D_S = 1e-10  # m^2/s, an effective (FRAP-kind) diffusivity, synthetic.
 WALL_AREA_M2, WALL_C_F = 1e-10, 1e-12
 CONTACT_AREA_M2, CONTACT_C_F = 1e-11, 1e-13
-TURNOVER, EXCHANGE = "cells.operator.scheduled_species_turnover@1", "cells.operator.scheduled_species_exchange@1"
+TURNOVER, EXCHANGE = (
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.scheduled_species_exchange@1",
+)
 IMEX = "cells.solver.imex_ars222_face_electromigration@1"
 JUNCTION_AREA_M2, JUNCTION_THRESHOLD_V, JUNCTION_MINIMUM = 1e-11, 0.015, 0.1
 REPLACEMENT = "cells.operator.scheduled_cell_replacement@1"
@@ -164,7 +167,8 @@ def world(
             junctions=junction_list,
             faces=face_list,
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=[],
         ),

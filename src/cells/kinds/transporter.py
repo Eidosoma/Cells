@@ -275,7 +275,8 @@ READOUT_COLUMNS = (
     "transporter_chemical_drive_J_mol",
 )
 GAP_FINITE_FUEL = (
-    "finite fuel (cells.fuel_kind.finite_fuel_rows@1) is refused in this round: the stage energy-rate "
+    "finite fuel (cells.fuel_kind.finite_fuel_rows@1) is refused in this round: the stage "
+    "energy-rate "
     "observation's standard-potential term waits for the landing (gap 2)"
 )
 # FR-50's one-way records (the module docstring): a population asks with its optional key, and the

@@ -45,7 +45,9 @@ FAMILY = (
     every_version("cells.model.resolved_pump_water@1"),
     every_version("cells.model.resolved_pump_replacement@1"),
 )
-COMPOSITE = every_version("cells.model.resolved_pump_composite@1")  # D156: decided by its inner model.
+COMPOSITE = every_version(
+    "cells.model.resolved_pump_composite@1"
+)  # D156: decided by its inner model.
 
 
 def in_family(raw):

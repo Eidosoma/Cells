@@ -202,7 +202,8 @@ def definition(dt=JUDGED_DT, *, end=None):
                 )
             ],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=[],
         ),
@@ -368,7 +369,10 @@ def compare(raw):
             [face["diffusivity_m2_per_s"][s] * face["area_m2"] / face["length_m"] for s in ids],
             [egg.a_over_l_m * D for D in egg.access_D],
         ),
-        access_law=(face["law"], {"logmean": "cells.route.logmean_electrodiffusion@1"}[egg.access_law]),
+        access_law=(
+            face["law"],
+            {"logmean": "cells.route.logmean_electrodiffusion@1"}[egg.access_law],
+        ),
         gap_width_m=(lumen_entry["gap_width_m"], egg.gap_width_m),
         lumen_onset_volume_m3=(cleft_volume * 1e-15, vc),
         onset_s=(onset, egg.onset_s),
@@ -407,7 +411,8 @@ DECLARED_DIFFERENCES = dict(
     ),
     lumen_energy=(
         "R-full books only the insertion heat; the engine also books the fill's supply work, the "
-        "fluid's volume work and the mixing heat (cells.operator.restricted_cleft_lumen@1), which change no state."
+        "fluid's volume work and the mixing heat (cells.operator.restricted_cleft_lumen@1), which "
+        "change no state."
     ),
     units=(
         "The engine holds volumes in pL and amounts in fmol (m^3 x 1e15); relative conversion "

@@ -112,7 +112,9 @@ ROOT = Path(__file__).resolve().parents[2]
 SHEET_TAG = "gr1-sheet-2026-11-20b"
 RELEASE_SHEET_TAG = "gr1-sheet-fr38-erratum-c-2026-11-22"  # The sheet's §9, as amended (FR-38).
 LABELS = "cells.operator.neutral_arrival_labels@1"  # FR-42's label owner (D289).
-REACTIONS = "cells.operator.local_species_reactions@1"  # D152's network: family C's store (FR-43 part 2A).
+REACTIONS = (
+    "cells.operator.local_species_reactions@1"  # D152's network: family C's store (FR-43 part 2A).
+)
 WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"  # Family D's swelling cell (FR-43 part 2B).
 POLICY = WindowPolicy(window_steps=10000, recording="observations")
 DIGITS = 60

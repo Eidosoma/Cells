@@ -41,7 +41,9 @@ def world():
 def test_the_compiled_import_reads_the_area_through_the_view():
     spec = parse_spec(world())
     model = get_model(spec.model)
-    assert [op.LAW_ID for op in model.view_readers] == ["cells.operator.scheduled_species_exchange@1"]
+    assert [op.LAW_ID for op in model.view_readers] == [
+        "cells.operator.scheduled_species_exchange@1"
+    ]
     _, p = model.initial_values(spec)
     species = list(spec.model.species_ids).index(ufx.TEMPLATE)
     node = [o.id for o in spec.model.extracellular].index(ufx.NODE)

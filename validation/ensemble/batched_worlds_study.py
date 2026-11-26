@@ -728,7 +728,8 @@ def main():
     parser.add_argument("--heterogeneous", action="store_true")
     parser.add_argument("--observe-every", type=int, help="observation spacing in steps")
     parser.add_argument(
-        "--junction-heat", help="model 3: junction_heat_booking (e.g. cells.heat.trapezoid_nonnegative@1)"
+        "--junction-heat",
+        help="model 3: junction_heat_booking (e.g. cells.heat.trapezoid_nonnegative@1)",
     )
     args = parser.parse_args()
     Path(args.output).mkdir(parents=True, exist_ok=True)

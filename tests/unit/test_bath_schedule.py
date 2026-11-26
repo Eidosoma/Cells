@@ -276,11 +276,19 @@ STRUCTURE_REFUSED = {
         "extracellular_amount_reference has closers or a provider, never both",
     ),
     "lumen@1, over insertion@1": (
-        (STATE, "cells.operator.scheduled_membrane_insertion@1", "cells.operator.restricted_cleft_lumen@1"),
+        (
+            STATE,
+            "cells.operator.scheduled_membrane_insertion@1",
+            "cells.operator.restricted_cleft_lumen@1",
+        ),
         "two providers of the view field extracellular_amount_reference",
     ),
     "lumen@2, over insertion@2": (
-        (STATE, "cells.operator.scheduled_membrane_insertion@2", "cells.operator.restricted_cleft_lumen@2"),
+        (
+            STATE,
+            "cells.operator.scheduled_membrane_insertion@2",
+            "cells.operator.restricted_cleft_lumen@2",
+        ),
         "extracellular_amount_reference has closers or a provider, never both",
     ),
 }
@@ -291,7 +299,9 @@ STRUCTURE_ADMITTED = (
     ("cells.operator.scheduled_species_turnover@1",),
     ("cells.operator.scheduled_species_exchange@1",),
     ("cells.operator.scheduled_species_turnover@1", "cells.operator.scheduled_species_exchange@1"),
-    ("cells.operator.ideal_osmosis_linear_compliance_water@1",),  # Isosmotic steps only, at the definition.
+    (
+        "cells.operator.ideal_osmosis_linear_compliance_water@1",
+    ),  # Isosmotic steps only, at the definition.
     ("cells.operator.local_species_reactions@1",),  # Door S: disjoint slots (D176).
 )
 

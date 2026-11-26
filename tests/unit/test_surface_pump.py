@@ -193,7 +193,9 @@ def test_definition_errors_reject(fault):
         m["temperature_K"] = 199.0
     elif fault == "hot":
         m["temperature_K"] = 400.5
-    elif fault == "retired_gate_law":  # Merged into cells.junction.junction_voltage_relaxation@1 (stage B).
+    elif (
+        fault == "retired_gate_law"
+    ):  # Merged into cells.junction.junction_voltage_relaxation@1 (stage B).
         m["junctions"][0]["gate"]["law"] = "betse_rate_junction_relaxation@1"
     elif fault == "channels":
         m["channels"] = []
@@ -389,7 +391,9 @@ def test_ionic_ensemble_reproduces_the_imex_run(imex_runs):
 
     value = imex_runs["clamped", imex.ARS222_ID]
     raw = value.spec.to_dict()
-    spec = ionic.parse_spec(dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=2, window_steps=7))
+    spec = ionic.parse_spec(
+        dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=2, window_steps=7)
+    )
     checkpoints, report = ionic.run(spec, backend=BACKEND)
     for checkpoint in checkpoints.values():
         for a, b in zip(checkpoint.state, value.final.state, strict=True):

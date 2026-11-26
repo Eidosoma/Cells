@@ -505,7 +505,10 @@ class _Stub:
 
 WRITER_REFUSALS = {
     "trafficking": (
-        _Stub("cells.operator.scheduled_membrane_trafficking@1", writes=("population_abundance_increment",)),
+        _Stub(
+            "cells.operator.scheduled_membrane_trafficking@1",
+            writes=("population_abundance_increment",),
+        ),
         "also writes population units",
     ),
     "another author": (

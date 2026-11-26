@@ -52,7 +52,10 @@ from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one pre
 from cells.registry import species_registry as registry
 
 REPLACEMENT_LAW = "cells.operator.scheduled_cell_replacement@1"
-SPECIES_LAWS = ("cells.operator.scheduled_species_turnover@1", "cells.operator.scheduled_species_exchange@1")
+SPECIES_LAWS = (
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.scheduled_species_exchange@1",
+)
 MAX_SPECIES = 1024  # FR-43 / D315 (from 16; FR-9 / D165 from 7): FR-43's probe; above it, another.
 EVIDENCE_KINDS = registry.EVIDENCE_KINDS
 # Version 1 is transport on a static tissue (§5.5): both operators read the declared volumes and

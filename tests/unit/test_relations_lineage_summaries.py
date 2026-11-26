@@ -78,7 +78,9 @@ def replacement_worlds():
         rfx.template_from_cell(cells, "cell_3", "d"),
     ]
     events = ((t1, "cell_0", "h", "n1"), (t2, "cell_2", "h", "n2"), (t3, "cell_0", "d", "n4"))
-    fast = dict(rfx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7})
+    fast = dict(
+        rfx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+    )
     donors = ((t1, "cell_0", None, "c1", "cell_3"), (t2, "cell_4", "fast_nav", "c2", "cell_3"))
     route = rfx.route_template("fast_nav", fast)
     return {
@@ -362,7 +364,9 @@ def deep_lineage(directory, fissions):
             )
         )
         events.append(
-            rel.Event(event, time, "fission", "cells.operator.size_threshold_fission@1", False, at=name)
+            rel.Event(
+                event, time, "fission", "cells.operator.size_threshold_fission@1", False, at=name
+            )
         )
         parent, name, key, own, born, generation = (
             name,

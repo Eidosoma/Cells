@@ -249,7 +249,10 @@ def test_held_controls_are_the_per_slot_schedule_controls_read_once(monkeypatch)
 
 def ionic_definition(**extra):
     simulation = definition().to_dict()
-    return dict(model="cells.model.ionic_worlds@1", simulation=simulation, worlds=2, window_steps=5) | extra
+    return (
+        dict(model="cells.model.ionic_worlds@1", simulation=simulation, worlds=2, window_steps=5)
+        | extra
+    )
 
 
 def test_ionic_admits_resolved_pump_tissue_v3_with_an_explicit_vmap_option(reference):

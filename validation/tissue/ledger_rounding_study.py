@@ -256,7 +256,9 @@ def gauge_raw(world, *, dt, end_time, backend):
     if world == "closed":
         from validation.tissue import surface_pump_fixtures as fixtures
 
-        raw = fixtures.definition("closed", solver="cells.solver.imex_ars222_face_electromigration@1")
+        raw = fixtures.definition(
+            "closed", solver="cells.solver.imex_ars222_face_electromigration@1"
+        )
         raw["execution"].update(dt=dt, max_steps=int(math.ceil(end_time / dt)) + 8)
         raw["execution"]["backend"] = backend
         raw["experiment"].update(end_time=end_time, observation_times=[0.0, end_time])

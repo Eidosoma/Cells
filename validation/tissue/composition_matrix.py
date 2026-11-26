@@ -65,15 +65,30 @@ LAWS = tuple(OPERATORS)
 
 WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"
 SYMPORT = "cells.operator.k_anion_symport_mass_action@1"
-REPLACEMENT_1, REPLACEMENT_2 = "cells.operator.scheduled_cell_replacement@1", "cells.operator.scheduled_cell_replacement@2"
+REPLACEMENT_1, REPLACEMENT_2 = (
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+)
 INJECTION = "cells.operator.electrode_current_injection@1"
 STATE = "cells.operator.membrane_entity_state@1"
-INSERTION_1, INSERTION_2 = "cells.operator.scheduled_membrane_insertion@1", "cells.operator.scheduled_membrane_insertion@2"
-LUMEN_1, LUMEN_2 = "cells.operator.restricted_cleft_lumen@1", "cells.operator.restricted_cleft_lumen@2"
+INSERTION_1, INSERTION_2 = (
+    "cells.operator.scheduled_membrane_insertion@1",
+    "cells.operator.scheduled_membrane_insertion@2",
+)
+LUMEN_1, LUMEN_2 = (
+    "cells.operator.restricted_cleft_lumen@1",
+    "cells.operator.restricted_cleft_lumen@2",
+)
 PARTITION = partition_operator.LAW_ID
 BRIDGE = "cells.operator.cytoplasmic_bridge_closure@1"
-TURNOVER, EXCHANGE = "cells.operator.scheduled_species_turnover@1", "cells.operator.scheduled_species_exchange@1"
-REACTIONS, COUPLING = "cells.operator.local_species_reactions@1", "cells.operator.species_regulated_availability@1"
+TURNOVER, EXCHANGE = (
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.scheduled_species_exchange@1",
+)
+REACTIONS, COUPLING = (
+    "cells.operator.local_species_reactions@1",
+    "cells.operator.species_regulated_availability@1",
+)
 COUPLING_2 = "cells.operator.species_regulated_availability@2"  # @1 plus operator targets (B1′).
 BATH = "cells.operator.scheduled_bath_composition@1"
 WASH = "cells.operator.scheduled_compartment_wash@1"
@@ -1365,7 +1380,8 @@ RULES = (
         test=TESTS + "test_site_occupancy.py::test_definition_refusals",
         tag=REAL,
         why="A newcomer's site state is its template's (FR-26, D244). A pool goes to its trace, "
-        "never exactly empty (the engine's trace convention): cells.operator.site_occupancy@1's stable "
+        "never exactly empty (the engine's trace convention): cells.operator.site_occupancy@1's "
+        "stable "
         "increment form reads an exactly empty pool reached from a positive anchor as NaN",
     ),
     dict(
@@ -1436,7 +1452,13 @@ RULES = (
     ),
     dict(
         rule="beside D152's network or the gene unit, water is the one volume changer admitted",
-        laws=(REACTIONS, "cells.operator.templated_polymerisation@1", LUMEN_1, LUMEN_2, REPLACEMENT_2),
+        laws=(
+            REACTIONS,
+            "cells.operator.templated_polymerisation@1",
+            LUMEN_1,
+            LUMEN_2,
+            REPLACEMENT_2,
+        ),
         level="data",
         check=OPS + "species_reactions.py::check_volume_changers",
         test=TESTS
@@ -1480,6 +1502,7 @@ RULES = (
         "it, §4; the compartment wash and cells.operator.site_occupant_replacement@1, off the list until FR-49's "
         "later pieces admit them; expression and the labels have been on it, each with its own "
         "check, since FR-49's first pieces, D327) and stands behind the declarations' refusals of "
+        ""
         "the rest",
         marks=_off_list(True),
         behind=_off_list(False),
@@ -1496,6 +1519,7 @@ RULES = (
         "and the coupling only (FR-2's design statement §6; D217). It marks the off-list pairs "
         "the declarations admit and the compartments' list passes (injection, not qualified "
         "beside it) and stands behind the declarations' refusals of the rest. A pair with a law "
+        ""
         "off the compartments' list too is that list's first (the next rule)",
         marks=_TRAFFICKING_FIRST,
         behind=_off_list(False, TRAFFICKING, trafficking_operator.ADMITTED),
@@ -1510,7 +1534,8 @@ RULES = (
         tag=REAL,
         why="Trafficking requires the compartments, whose check runs first, and each law named "
         "is on neither admitted list, so the compartments' message is the one given: the case "
-        "'site occupancy beside it' asserts it for cells.operator.site_occupancy@1. Trafficking's own reasons "
+        "'site occupancy beside it' asserts it for cells.operator.site_occupancy@1. Trafficking's "
+        "own reasons "
         "(for sites, that they move with their membrane only from version 1.1) are a second wall "
         "these compositions never reach",
         marks=_COMPARTMENTS_FIRST,

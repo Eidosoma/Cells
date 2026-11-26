@@ -418,55 +418,94 @@ def parse_spec(data: dict) -> SimulationSpec:
         from cells.definitions.projective_spec import parse_definition
 
         return parse_definition(data, parse_spec)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.apical_vertex_mechanics@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.apical_vertex_mechanics@1"
+    ):
         from cells.definitions.apical_vertex_spec import parse as parse_apical_vertex
 
         return parse_apical_vertex(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_pump_tissue@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_tissue@1"
+    ):
         from cells.definitions.surface_pump_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_pump_tissue@2":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_tissue@2"
+    ):
         from cells.definitions.surface_pump_v2_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_pump_tissue@3":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_tissue@3"
+    ):
         from cells.definitions.surface_pump_v3_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_tissue@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_tissue@1"
+    ):
         from cells.definitions.surface_tissue_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_tissue@2":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_tissue@2"
+    ):
         from cells.definitions.surface_kinetic_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_tissue@8":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_tissue@8"
+    ):
         from cells.definitions.surface_kinetic_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_pump_water@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_water@1"
+    ):
         from cells.definitions.surface_pump_water_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_pump_water@2":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_water@2"
+    ):
         from cells.definitions.surface_pump_water_v2_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_pump_replacement@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_replacement@1"
+    ):
         from cells.definitions.cell_replacement_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.resolved_pump_composite@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.resolved_pump_composite@1"
+    ):
         from cells.definitions.pump_composite_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.assembly_lineages@1":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.assembly_lineages@1"
+    ):
         from cells.models.assembly_lineages.spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "cells.model.assembly_lineages@2":
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "cells.model.assembly_lineages@2"
+    ):
         from cells.models.assembly_lineages_v2.spec import parse
 
         return parse(data)

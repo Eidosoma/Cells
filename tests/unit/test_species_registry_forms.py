@@ -206,7 +206,8 @@ def test_a_route_or_a_reaction_naming_a_two_form_row_is_refused(monkeypatch):
     monkeypatch.setattr(registry, "moved_in_step", lambda _: movers)
     tagged = registry.build([dict(id="R", **two)], 1000.0)
     with pytest.raises(
-        ConfigError, match="species R has two forms .* cells.operator.scheduled_species_turnover@1 names it"
+        ConfigError,
+        match="species R has two forms .* cells.operator.scheduled_species_turnover@1 names it",
     ):
         registry.check_two_form_rows(_Spec(coupled, tagged))
 

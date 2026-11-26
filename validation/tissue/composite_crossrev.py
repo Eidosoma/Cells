@@ -93,7 +93,9 @@ def worlds():
     ]
     events = ((t1, "cell_0", "h", "n1"), (t2, "cell_2", "h", "n2"), (t3, "cell_0", "d", "n4"))
     out["replacement"] = rfx.with_replacement(cells, templates, events)
-    fast = dict(rfx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7})
+    fast = dict(
+        rfx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+    )
     donor_events = (
         (t1, "cell_0", None, "c1", "cell_3"),
         (t2, "cell_4", "fast_nav", "c2", "cell_3"),
@@ -208,7 +210,8 @@ def injection_worlds():
     carriers = {"K": 0.4912, "M": 0.5088}
     raw["model"]["operators"] = [
         dict(
-            law="cells.operator.electrode_current_injection@1", electrodes=[dict(cell_id=cell, carriers=carriers)]
+            law="cells.operator.electrode_current_injection@1",
+            electrodes=[dict(cell_id=cell, carriers=carriers)],
         )
     ]
     schedule = [dict(time=0.0, current_A=1e-12), dict(time=0.002, current_A=-1e-12)]

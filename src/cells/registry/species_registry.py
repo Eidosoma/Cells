@@ -1634,7 +1634,10 @@ INNER_MOVERS = ("membrane", "junction", "channel", "face", "pump")
 # admission): at a general closure's rows it moves each binder's forms and each ligand's free
 # amount from the closure's own read, so check_closure_rows admits it there, as it admits a kind
 # whose law reads the closure; today's face law stays refused. Names, so this module imports no law.
-FORMS_FACE_LAW, FORMS_FACE_READ = "cells.route.logmean_electrodiffusion_forms@1", "cells.binding.rapid_binding@1"
+FORMS_FACE_LAW, FORMS_FACE_READ = (
+    "cells.route.logmean_electrodiffusion_forms@1",
+    "cells.binding.rapid_binding@1",
+)
 
 
 def _deferred_to_closure(spec):

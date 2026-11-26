@@ -136,7 +136,10 @@ STANDARD_mM = 1.0  # A read's concentration unit: phi = c / (1 mM).
 Q_SERIES = 20  # Terms of q(x) below x = 1.
 PHI_SERIES = 40  # Terms of x - log1p(x) below |x| = 1/4.
 PHI_SWITCH = 0.25
-REPLACEMENT_LAWS = ("cells.operator.scheduled_cell_replacement@1", "cells.operator.scheduled_cell_replacement@2")
+REPLACEMENT_LAWS = (
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+)
 GENE_UNIT_LAW = "cells.operator.templated_polymerisation@1"
 REACTIONS_LAW = "cells.operator.local_species_reactions@1"
 LEDGER_FLOOR_UNITS = 0.0  # The subunit ledger is exact, in integers.

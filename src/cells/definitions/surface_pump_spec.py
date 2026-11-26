@@ -166,7 +166,9 @@ def parse(data):
     )
     _fields(x, EXECUTION_FIELDS, "resolved pump execution")
     if m["id"] != MODEL_ID or x["solver"] not in SOLVERS:
-        raise ConfigError("Require cells.model.resolved_pump_tissue@1 with rk4 or a declared IMEX solver")
+        raise ConfigError(
+            "Require cells.model.resolved_pump_tissue@1 with rk4 or a declared IMEX solver"
+        )
     temperature = positive(m["temperature_K"], "temperature")
     if not TEMPERATURE_DOMAIN_K[0] <= temperature <= TEMPERATURE_DOMAIN_K[1]:
         raise ConfigError("Resolved pump tissue requires 200-400 K, the pump law's domain")
@@ -191,7 +193,8 @@ def parse(data):
             or initial < minimum
         ):
             raise ConfigError(
-                "Junction gate requires cells.junction.junction_voltage_relaxation@1, a threshold in "
+                "Junction gate requires cells.junction.junction_voltage_relaxation@1, a threshold "
+                "in "
                 "[0, 0.120] V and an initial gate in [minimum, 1]"
             )
         gates[p["id"]] = (GATE_LAW_ID, threshold, minimum, initial)

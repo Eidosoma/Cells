@@ -215,7 +215,8 @@ def test_the_lumen_fill_beside_a_buffered_outside_node_is_refused(monkeypatch):
     registry.check_stage_read_rows(spec)
     monkeypatch.setattr(registry, "_inner_model", lambda _: both)
     with pytest.raises(
-        ConfigError, match=rf"cells.operator.restricted_cleft_lumen@1's fill .* outside node {fr.LUMEN}"
+        ConfigError,
+        match=rf"cells.operator.restricted_cleft_lumen@1's fill .* outside node {fr.LUMEN}",
     ):
         registry.check_stage_read_rows(spec)
 
@@ -291,6 +292,7 @@ def test_the_injections_named_carriers_change_no_identity_and_meet_the_two_form_
             for item in registry.operator_identities(op, d)
         )
     with pytest.raises(
-        ConfigError, match=r"species B_c has two forms .*: cells.operator.electrode_current_injection@1 names it"
+        ConfigError,
+        match=r"species B_c has two forms .*: cells.operator.electrode_current_injection@1 names it",
     ):
         parse_spec(injected_fr4("B_c"))

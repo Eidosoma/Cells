@@ -184,7 +184,10 @@ def with_events(raw):
     return fx.with_replacement(raw, templates(raw), EVENTS)
 
 
-V1, V2 = "cells.operator.scheduled_cell_replacement@1", "cells.operator.scheduled_cell_replacement@2"
+V1, V2 = (
+    "cells.operator.scheduled_cell_replacement@1",
+    "cells.operator.scheduled_cell_replacement@2",
+)
 FORMS = {  # The operation's ID, and a definition of it on a raw @3 definition.
     "the frozen family": (V1, with_events),
     "its composition": (V1, lambda raw: composite_spec.frozen_definition(with_events(raw))),
@@ -211,7 +214,9 @@ def test_replacement_beside_another_channel_law_is_refused_by_name(form):
 def test_template_route_values_select_the_occupant_parameters():
     raw = sheet()
     t = fx.template_from_cell(raw, "cell_1", "h")
-    t["route_values"]["channel_permeability_m_per_s"] = {"cells.channel.nav1p2_m3h_regularized@1": 2e-7}
+    t["route_values"]["channel_permeability_m_per_s"] = {
+        "cells.channel.nav1p2_m3h_regularized@1": 2e-7
+    }
     t["route_values"]["membrane_permeability_m_per_s"] = {"Na": 4e-11}
     t["route_values"]["pump_capacity_fmol_per_s_m2"] = 9e7
     spec = parse_spec(fx.with_replacement(raw, [t], [(T1, "cell_0", "h", "n1")]))
@@ -586,7 +591,9 @@ def test_law_steady_compiled_with_an_inner_schedule_change_between_events():
 
 # ------------------------------------------------------------------ donor copies (D139)
 
-FAST_NAV = dict(fx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7})
+FAST_NAV = dict(
+    fx.NO_ROUTES, channel_permeability_m_per_s={"cells.channel.nav1p2_m3h_regularized@1": 3e-7}
+)
 DONOR_EVENTS = (
     (T1, "cell_0", None, "c1", "cell_3"),  # Copy of the D centre; the slot's own routes.
     (T2, "cell_4", "fast_nav", "c2", "cell_3"),  # Copy with a route-only template...

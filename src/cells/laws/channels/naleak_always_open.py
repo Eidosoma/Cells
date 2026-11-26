@@ -11,5 +11,11 @@ from cells.modules import ChannelLaw
 
 LAW_ID = "cells.channel.naleak_always_open@1"
 LAW = ChannelLaw(
-    LAW_ID, 4, (), (("Na", 1, 1.0),), VOLTAGE_DOMAIN_V, None, host="cells.model.resolved_pump_tissue@3"
+    LAW_ID,
+    4,
+    (),
+    (("Na", 1, 1.0),),
+    VOLTAGE_DOMAIN_V,
+    None,
+    host="cells.model.resolved_pump_tissue@3",
 )

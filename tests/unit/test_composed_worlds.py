@@ -100,7 +100,9 @@ def composed_file(ionic=None, *, seeds=SEEDS, channels=DRIVEN, levels=LEVELS, **
                 "channels": list(given),
                 "observable": OBSERVABLE,
                 "levels": dict(levels),
-                "pool": DRIVING | {"model": "cells.model.finite_bond_assembly@1", "seed": seed} | pool,
+                "pool": DRIVING
+                | {"model": "cells.model.finite_bond_assembly@1", "seed": seed}
+                | pool,
             }
             for given, seed in zip(channels, seeds, strict=True)
         ],
@@ -502,7 +504,10 @@ REFUSALS = [
     (put(["schema_version"], 2), "Only schema_version 1"),
     (put(["schema_version"], True), "Only schema_version 1"),
     (put(["ionic"], []), "The ionic definition's model is one of .*, not None"),
-    (put(["ionic", "model", "id"], "cells.model.resolved_pump_tissue@2"), "not 'cells.model.resolved_pump_tissue@2'"),
+    (
+        put(["ionic", "model", "id"], "cells.model.resolved_pump_tissue@2"),
+        "not 'cells.model.resolved_pump_tissue@2'",
+    ),
     (put(["ionic", "experiment", "extra"], 1), "unknown"),
     (put(["pools"], []), "pools is a non-empty list"),
     (put(["pools"], {}), "pools is a non-empty list"),
@@ -514,7 +519,10 @@ REFUSALS = [
     (put(["pools", 1, "channels"], ["kv_9"]), "Pool 1: 'kv_9' is no channel of the ionic"),
     (put(["pools", 1, "channels"], ["nav_0"]), "Channel 'nav_0' is set by pools 0 and 1"),
     (put(["pools", 0, "observable"], "root_component_has_cycle"), "Pool 0: Unknown assembly obs"),
-    (put(["pools", 1, "observable"], "cells.channel.kv1p5_mh@1"), "Pool 1: Unknown .* observable 'cells.channel.kv1p5_mh@1'"),
+    (
+        put(["pools", 1, "observable"], "cells.channel.kv1p5_mh@1"),
+        "Pool 1: Unknown .* observable 'cells.channel.kv1p5_mh@1'",
+    ),
     (put(["ionic", "experiment", "end_time"], math.inf), "end time must be finite"),
     (drop("pools", 0, "levels", "true"), r"pool 0: levels: missing=\['true'\]"),
     (put(["pools", 0, "levels", "maybe"], 0.5), r"pool 0: levels: .*unknown=\['maybe'\]"),
@@ -736,7 +744,8 @@ def near_far():
                 for a, b in (("near", "far"), ("far", "bath"))
             ],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=channels,
         ),
@@ -798,7 +807,9 @@ def test_a_definition_with_free_field_offsets_declares_the_floor_solver():
     raw = near_far()
     assert field_solver_choice.free_field_offsets(raw) == 2
     sparse = copy.deepcopy(raw)
-    sparse["execution"]["field_solver"] = "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
+    sparse["execution"]["field_solver"] = (
+        "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
+    )
     for wrong in (raw, sparse):
         with pytest.raises(ConfigError, match=r"has 2 free field offsets and declares .* \(D147\)"):
             resolve.parse_composed(near_far_file(wrong))

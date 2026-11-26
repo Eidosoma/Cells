@@ -96,7 +96,9 @@ def test_the_general_declaration_parses_writes_back_and_is_admitted():
     v1_declaration = dict(v1.model.kinds)[KIND]
     assert type(v1_declaration) is proton_buffer.Declaration
     # Version 1's rows name cells.kind.rapid_proton_buffer@1, which is not a registered law: today's form.
-    assert {row[2] for row in proton_buffer.stage_rows(v1_declaration)} == {"cells.kind.rapid_proton_buffer@1"}
+    assert {row[2] for row in proton_buffer.stage_rows(v1_declaration)} == {
+        "cells.kind.rapid_proton_buffer@1"
+    }
     assert all(len(row) == 3 for row in proton_buffer.stage_rows(v1_declaration))
     assert proton_buffer.structure_entry(v1_declaration) == (2,)
     assert proton_buffer.structure_entry(declaration) == proton_buffer.GeneralEntry(1, 2)
@@ -113,8 +115,10 @@ def test_a_kind_move_at_a_closure_row_needs_the_closures_read(monkeypatch):
     route law, declares no reads."""
     refused(
         general_world(pump=True),
-        r"species H at cell_0 is held by the closure cells.binding.rapid_binding@1: cells.kind.transporter@1 moves "
-        r"it under .*cells.cycle.proton_atp_mass_action_positive@1, whose reads \['cells.kind.rapid_proton_buffer@1'\] "
+        r"species H at cell_0 is held by the closure cells.binding.rapid_binding@1: "
+        r"cells.kind.transporter@1 moves "
+        r"it under .*cells.cycle.proton_atp_mass_action_positive@1, whose reads "
+        r"\['cells.kind.rapid_proton_buffer@1'\] "
         r"lack cells.binding.rapid_binding@1",
     )
     reads = registry._law_reads
@@ -127,7 +131,9 @@ def test_a_kind_move_at_a_closure_row_needs_the_closures_read(monkeypatch):
         r".*cells.cycle.proton_atp_mass_action_positive@1: ",
     )
     monkeypatch.undo()
-    refused(general_world(leak=True), r"cells.kind.passive_routes@1 moves it under .*, whose reads \[\]")
+    refused(
+        general_world(leak=True), r"cells.kind.passive_routes@1 moves it under .*, whose reads \[\]"
+    )
 
 
 def test_a_held_total_at_or_below_zero_is_refused_before_any_logarithm():
@@ -162,7 +168,8 @@ def _bounding_h_route(m):
 def test_at3s_own_routes_and_pumps_are_refused_at_a_closure_row(monkeypatch):
     refused(
         general_world(edit=_bounding_h_route),
-        rf"species H at cell_0 is held by the closure cells.binding.rapid_binding@1: the membrane {fr.BOUNDING} "
+        rf"species H at cell_0 is held by the closure cells.binding.rapid_binding@1: the membrane "
+        rf"{fr.BOUNDING} "
         "moves it in the step",
     )
     from cells.models import surface_pump_v3
@@ -207,7 +214,9 @@ def test_an_operator_naming_a_held_species_is_refused(monkeypatch):
     def operator(species):
         item = SimpleNamespace(id=species, catalogue=None, evidence=None)
         return SimpleNamespace(
-            LAW_ID="cells.operator.planted_reaction@1", PROCESS=False, species_identities=lambda _: (item,)
+            LAW_ID="cells.operator.planted_reaction@1",
+            PROCESS=False,
+            species_identities=lambda _: (item,),
         )
 
     monkeypatch.setattr(registry, "_entries", lambda _: ((operator("Na"), None),))

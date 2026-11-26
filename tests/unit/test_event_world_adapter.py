@@ -247,9 +247,15 @@ def test_resolved_definition_maps_events_to_controls_and_leaks(cases):
         world, "sim", adapter.phase_start(world, "init"), dt=SIM_DT / 2
     )
     model, experiment = sim["model"], sim["experiment"]
-    assert model["id"] == "cells.model.resolved_pump_tissue@3" and sim["execution"]["channel_capacity"] == 3
+    assert (
+        model["id"] == "cells.model.resolved_pump_tissue@3"
+        and sim["execution"]["channel_capacity"] == 3
+    )
     for c, j in zip(model["channels"], [0, 1, 2], strict=True):
-        assert c["membrane_id"] == f"mem-{j}" and c["kinetic_law"] == "cells.channel.naleak_always_open@1"
+        assert (
+            c["membrane_id"] == f"mem-{j}"
+            and c["kinetic_law"] == "cells.channel.naleak_always_open@1"
+        )
         assert c["max_permeability_m_per_s"] == 9.0 * MEM_PERMS["Na"] / TM
     change = 2 * (SIM_DT / 2)  # update 1 at integer * Cells dt
     for group in experiment["channel_controls"]:

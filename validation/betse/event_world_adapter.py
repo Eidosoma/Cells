@@ -82,7 +82,10 @@ TARGETS_FILE = "event_targets.json"
 TARGETS_KIND = "cells.betse_event_targets@1"
 GLOBAL_MAPPED = {"NaKATP_block": "pump_block", "gj_block": "junction_block"}
 MEMBRANE_EVENTS = {"Na_mem": "Na", "K_mem": "K", "Cl_mem": "Cl", "Ca_mem": "Ca"}
-RESOLVED_LEAKS = {"Na": "cells.channel.naleak_always_open@1", "K": "cells.channel.kleak_always_open@1"}
+RESOLVED_LEAKS = {
+    "Na": "cells.channel.naleak_always_open@1",
+    "K": "cells.channel.kleak_always_open@1",
+}
 RESOLVED_MODEL_ID = "cells.model.resolved_pump_tissue@3"
 CLOCKS = ("betse", "nominal")
 
@@ -605,7 +608,9 @@ def control_times(world, phase, dt):
 def resolved_event_definition(world, phase, start, *, dt, **kwargs):
     """default_world_adapter's @2 definition as cells.model.resolved_pump_tissue@3 with the events."""
     if world["calcium_pump"] is None:
-        raise EventError("cells.model.resolved_pump_tissue@3 extends @2: the world needs its Ca-ATPase")
+        raise EventError(
+            "cells.model.resolved_pump_tissue@3 extends @2: the world needs its Ca-ATPase"
+        )
     definition = adapter.resolved_definition(world, phase, start, dt=dt, **kwargs)
     model, experiment = definition["model"], definition["experiment"]
     values = event_values(world, phase)

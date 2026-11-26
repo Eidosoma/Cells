@@ -115,7 +115,9 @@ def test_empty_composition_vmap_batch_and_restart(tmp_path):
         assert np.array_equal(np.asarray(x), np.asarray(y)[checkpoint.step_index :])
     summary = write_run(tmp_path / "run", value)
     manifest = json.loads((tmp_path / "run" / "manifest.json").read_text())
-    identity = dict(model=cs.MODEL_ID, inner_model="cells.model.resolved_pump_tissue@3", operators=[])
+    identity = dict(
+        model=cs.MODEL_ID, inner_model="cells.model.resolved_pump_tissue@3", operators=[]
+    )
     assert manifest["composition"] == identity
     assert summary["composition"] == identity
     assert summary["composition_status"] == cs.DEVELOPMENT_STATUS

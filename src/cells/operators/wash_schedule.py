@@ -750,7 +750,8 @@ class ScheduledCompartmentWash(Operator):
             "compartment_wash_events": events_to_dict(schedule)[EVENTS_KEY],
             "compartment_wash_records": records,
             "compartment_wash_mechanism": (
-                "a liquid exchange of a compartment, shared with cells.operator.pool_replacement@1 (FR-20), "
+                "a liquid exchange of a compartment, shared with cells.operator.pool_replacement@1 "
+                "(FR-20), "
                 "its whole-exchange execution in exact counts; this is its deterministic execution "
                 "(docs/COMPARTMENT_WASH_DESIGN.md; D175, D210, D246)"
             ),

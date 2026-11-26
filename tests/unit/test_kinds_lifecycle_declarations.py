@@ -307,7 +307,9 @@ def test_each_population_binds_its_laws_roles_ends_and_counts_for_the_admission(
     pump = EntityBinding(transporter.NEUTRAL_LAW, {"role": "Y", **fuel}, ends, {"stoichiometry": 1})
     assert read["version_1"] == (pump,) and read["general"] == (pump,)  # The one-to-one map.
     exchanger, fuel_pump = read["composed"]
-    assert exchanger == EntityBinding("seamtest.cycle.slip_exchanger@1", {"X": "X", "Y": "W"}, ends, {})
+    assert exchanger == EntityBinding(
+        "seamtest.cycle.slip_exchanger@1", {"X": "X", "Y": "W"}, ends, {}
+    )
     assert fuel_pump == pump
     # An N = b population's ends turn with it: N at the outside node.
     turned = ck.general(tk.population(id="t_b"), n_end="b")

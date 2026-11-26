@@ -214,7 +214,8 @@ def egg_definition(*, end_time=60.0, dt=1e-3, anchor="consistent", observe_every
             junctions=[],
             faces=[],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=[],
         ),

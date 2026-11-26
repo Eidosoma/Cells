@@ -263,7 +263,9 @@ def first_test_world(case, *, dt=1e-3, steps=200):
     homes = {donor: (1.0, trace), receiver: (trace, 1.0)}
     raw = _labelled_protein(raw, FIRST_TEST_REGIONS, homes, diffusivity, trace)
     m = raw["model"]
-    m["heat_bookings"] = {"faces": "cells.heat.exact_free_energy_heat@1"}  # F2: exact from a trace start.
+    m["heat_bookings"] = {
+        "faces": "cells.heat.exact_free_energy_heat@1"
+    }  # F2: exact from a trace start.
     if case == "transfer":
         return raw
     (face,) = m["faces"]  # The local-loss control: the face closed for the protein, alike.

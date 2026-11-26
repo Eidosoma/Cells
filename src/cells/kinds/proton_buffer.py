@@ -122,7 +122,9 @@ KIND_ID = "cells.kind.rapid_proton_buffer@1"
 MODEL_KEY = "stage_reads"
 FIELDS = ("read_id", "proton_row", "buffers", "k_on_per_mM_s")
 COLUMNS = ("free_proton_mM", "pH")
-GENERAL_READ_ID = "cells.binding.rapid_binding@1"  # The general closure's law and read ID (CORE_SEAMS §19).
+GENERAL_READ_ID = (
+    "cells.binding.rapid_binding@1"  # The general closure's law and read ID (CORE_SEAMS §19).
+)
 GENERAL_FIELDS = ("read_id", "ligand_rows", "binders", "k_on_per_mM_s")
 GENERAL_PROTON = "proton_row"  # Optional: the declared proton row (module docstring).
 
@@ -671,7 +673,8 @@ def _check_general(spec, declaration):
         if entry is None or not entry.forms:
             raise ConfigError(
                 f"{where}: binder row {row} declares no forms; the general closure reads the "
-                "registry's forms (version 1's two-form spelling is cells.kind.rapid_proton_buffer@1's)"
+                "registry's forms (version 1's two-form spelling is "
+                "cells.kind.rapid_proton_buffer@1's)"
             )
         forms = species_registry.forms_of(spec, row)
         binds = sorted({ligand for _, counts, _ in forms for ligand, _ in counts})

@@ -158,7 +158,9 @@ def resolved_channel_definition(world, phase, start, **kwargs):
     definition = adapter.resolved_definition(world, phase, start, **kwargs)
     model, experiment = definition["model"], definition["experiment"]
     if world["calcium_pump"] is None:
-        raise NetworkError("cells.model.resolved_pump_tissue@3 extends @2: the world needs its Ca-ATPase")
+        raise NetworkError(
+            "cells.model.resolved_pump_tissue@3 extends @2: the world needs its Ca-ATPase"
+        )
     kinds = [kind for _, kind, _, _ in world["network_channels"]]
     gates = steady_gates(kinds, start.get("channel_vm_V", np.zeros(len(model["membranes"]))))
     channels, controls = [], []
@@ -487,7 +489,9 @@ def main(argv=None):
         "--pair", nargs=3, action="append", required=True, metavar=("NAME", "BASE", "OTHER")
     )
     budget.add_argument("--out", required=True, help="fresh JSON file")
-    blind = sub.add_parser("run-resolved", help="blind cells.model.resolved_pump_tissue@3 INIT then SIM")
+    blind = sub.add_parser(
+        "run-resolved", help="blind cells.model.resolved_pump_tissue@3 INIT then SIM"
+    )
     blind.add_argument("--case", required=True)
     blind.add_argument("--device", choices=("cpu", "gpu"), default="cpu")
     blind.add_argument("--dt-init", type=float, default=1e-3)

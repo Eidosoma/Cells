@@ -78,7 +78,12 @@ def read(buffers, k_on):
     """The stage_reads declaration in FR-4's form
     (validation/compartment_ph_engine/definitions.py)."""
     return [
-        dict(read_id="cells.kind.rapid_proton_buffer@1", proton_row="H", buffers=buffers, k_on_per_mM_s=k_on)
+        dict(
+            read_id="cells.kind.rapid_proton_buffer@1",
+            proton_row="H",
+            buffers=buffers,
+            k_on_per_mM_s=k_on,
+        )
     ]
 
 
@@ -302,7 +307,8 @@ def test_the_proton_leaks_admission():
         (dict(species="M"), "carries a valence \\+1 proton row"),
         (
             dict(species="B"),
-            "species B has two forms .*cells.route.proton_constant_field_leak@1\\) at cell_0 moves its cell "
+            "species B has two forms .*cells.route.proton_constant_field_leak@1\\) at cell_0 moves "
+            "its cell "
             "rows, and no law declares how it moves the forms",
         ),
         # The routing door (§7.4 (n), 207393ba): factors are factor-source IDs, and binding

@@ -1349,7 +1349,8 @@ def test_part_2s_literal_blocks_are_read_as_its_text_prints_them(tmp_path):
         ("transporter 'p': law is one of a, b", "definition"),
         ("passive_routes: route IDs must be unique", "definition"),
         (
-            "cells.operator.cell_owned_compartments@1: the patch 'x' of compartment 'y' is not declared",
+            "cells.operator.cell_owned_compartments@1: the patch 'x' of compartment 'y' is not "
+            "declared",
             "definition",
         ),
     ],

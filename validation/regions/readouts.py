@@ -420,12 +420,18 @@ def label_nodes(spec, times, states, species, label, *, samples=None):
     the states (cells.operator.neutral_arrival_labels@1's label_share and label_outside_share). A species or label
     the world does not label is refused."""
     owner = next(
-        (d for d in getattr(spec.model, "operators", ()) if d.law == "cells.operator.neutral_arrival_labels@1"),
+        (
+            d
+            for d in getattr(spec.model, "operators", ())
+            if d.law == "cells.operator.neutral_arrival_labels@1"
+        ),
         None,
     )
     labelled = [] if owner is None else [s.id for s in owner.species]
     if species not in labelled:
-        raise ValueError(f"{species} is not labelled (cells.operator.neutral_arrival_labels@1 names {labelled})")
+        raise ValueError(
+            f"{species} is not labelled (cells.operator.neutral_arrival_labels@1 names {labelled})"
+        )
     entry = owner.species[labelled.index(species)]
     if label not in entry.labels:
         raise ValueError(f"{species} has no label {label!r} (its labels: {list(entry.labels)})")

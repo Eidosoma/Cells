@@ -153,7 +153,8 @@ PLAN = dict(
         "threshold; dt refinement (10, 5, 2.5 us); 40-cell length check; S1-S2 recovery; "
         "block bracket by bisection on s; the default junction-heat booking and gated "
         "junctions as arms",
-        "chain runs book junction heat with cells.heat.trapezoid_nonnegative@1 (E07-v1's registered "
+        "chain runs book junction heat with cells.heat.trapezoid_nonnegative@1 (E07-v1's "
+        "registered "
         "booking; the default explicit_tableau can book a negative increment where a junction "
         "voltage crosses zero), and the default booking runs as an arm",
         "device row checks (vector windows) on the main cases",

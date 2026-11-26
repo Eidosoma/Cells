@@ -263,7 +263,8 @@ def heredity_cells(cells, *, dt=1e-3, end_time=1.0, solver="cells.solver.imex_ar
             junctions=[],
             faces=[],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
             channels=channels,
         ),
@@ -358,7 +359,9 @@ def as_pump_tissue(raw, version):
     if m.pop("channels") or e.pop("channel_controls"):
         raise ValueError("Only channel-free worlds have an @1/@2 counterpart")
     x.pop("channel_capacity")
-    m["id"] = {1: "cells.model.resolved_pump_tissue@1", 2: "cells.model.resolved_pump_tissue@2"}[version]
+    m["id"] = {1: "cells.model.resolved_pump_tissue@1", 2: "cells.model.resolved_pump_tissue@2"}[
+        version
+    ]
     if version == 1:
         for p in m["membranes"]:
             if p.pop("calcium_pump") is not None:

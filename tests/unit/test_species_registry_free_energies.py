@@ -628,7 +628,8 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     "a named set applied whole": (a_named_set, None),
     "a named set's row edited": (
         a_set_row_edited,
-        r"species ATP \(potential set cells.potential_set.beard2005@1\): its potentials .* are not the set's",
+        r"species ATP \(potential set cells.potential_set.beard2005@1\): its potentials .* are not "
+        r"the set's",
     ),
     "a named set at another temperature": (
         a_set_re_tempered,
@@ -636,17 +637,20 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "a named set's moiety dropped": (
         a_set_moiety_dropped,
-        r"potential set cells.potential_set.beard2005@1: its moiety phosphorus over the rows present, .* is declared "
+        r"potential set cells.potential_set.beard2005@1: its moiety phosphorus over the rows "
+        r"present, .* is declared "
         "as None: a named set's moieties are required",
     ),
     "a named set's moiety edited": (
         a_set_moiety_edited,
-        r"potential set cells.potential_set.beard2005@1: its moiety adenine over the rows present, .* is declared as "
+        r"potential set cells.potential_set.beard2005@1: its moiety adenine over the rows present, "
+        r".* is declared as "
         r"\{'ATP': 2, 'ADP': 1\}",
     ),
     "a named set's proton buffer edited": (
         a_buffer_edited,
-        r"proton buffer Buf \(potential set cells.potential_set.beard2005@1, pK 7\.4\): its potentials .* are not",
+        r"proton buffer Buf \(potential set cells.potential_set.beard2005@1, pK 7\.4\): its "
+        r"potentials .* are not",
     ),
     "the second version applied whole, with AMP": (a_second_version, None),
     "the second version as the lane's appendix prints it": (
@@ -655,7 +659,8 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     ),
     "the second version's AMP at 2 in phosphorus": (
         a_second_version_amp_at_two_phosphorus,
-        r"potential set cells.potential_set.beard2005@2: its moiety phosphorus over the rows present, .* is declared "
+        r"potential set cells.potential_set.beard2005@2: its moiety phosphorus over the rows "
+        r"present, .* is declared "
         r"as \{.*'AMP': 2\}",
     ),
     "adenylate kinase in base forms beside the second version": (

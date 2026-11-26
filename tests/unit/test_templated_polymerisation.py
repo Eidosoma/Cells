@@ -280,7 +280,11 @@ def _another_version(raw):
     from validation.tissue import shared_inventory_fixtures as inventories
 
     raw.update(inventories.with_water_first(_replaced(raw)))
-    (block,) = [o for o in raw["model"]["operators"] if o["law"] == "cells.operator.scheduled_cell_replacement@1"]
+    (block,) = [
+        o
+        for o in raw["model"]["operators"]
+        if o["law"] == "cells.operator.scheduled_cell_replacement@1"
+    ]
     block.update(law="cells.operator.scheduled_cell_replacement@2", impermeant_species=[])
 
 
@@ -316,7 +320,8 @@ RELEASE_REFUSALS = [
     (_unused_template, "template U's value for deg_R applies to no schedule"),
     (
         _another_version,
-        "composes with cells.operator.scheduled_cell_replacement@1 only, not cells.operator.scheduled_cell_replacement@2",
+        "composes with cells.operator.scheduled_cell_replacement@1 only, not "
+        "cells.operator.scheduled_cell_replacement@2",
     ),
     (
         lambda raw: _control(_replaced(raw), "deg_R")["schedule"].append(
@@ -350,7 +355,9 @@ def test_the_release_refuses(edit, words, monkeypatch):
     raw = worlds.r1(0.75)
     edit(raw)
     if edit is _another_version:  # Refused first as a second volume changer; that planted away:
-        with pytest.raises(ConfigError, match="cells.operator.scheduled_cell_replacement@2 changes the volumes"):
+        with pytest.raises(
+            ConfigError, match="cells.operator.scheduled_cell_replacement@2 changes the volumes"
+        ):
             parse_spec(raw)
         monkeypatch.setattr(polymerisation.species_reactions, "check_volume_changers", lambda *_: 0)
     with pytest.raises(ConfigError, match=words):

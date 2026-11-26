@@ -119,7 +119,8 @@ def pump_cells(cells, *, dt=1e-3, end_time=1.0, observation_times=None, solver=A
             junctions=[],
             faces=[],
             closure=dict(
-                law="cells.field_closure.resolved_capacitor_components_current_continuity@1", gauge_reference=None
+                law="cells.field_closure.resolved_capacitor_components_current_continuity@1",
+                gauge_reference=None,
             ),
         ),
         experiment=dict(

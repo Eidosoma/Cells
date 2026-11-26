@@ -321,7 +321,12 @@ def test_another_provider_of_the_volume_is_refused():
     """Water also provides the cleft's volume: the composite refuses two providers."""
     from cells.models import pump_composite
 
-    laws = (fx.STATE, fx.INSERTION, lumen.LAW_ID, "cells.operator.ideal_osmosis_linear_compliance_water@1")
+    laws = (
+        fx.STATE,
+        fx.INSERTION,
+        lumen.LAW_ID,
+        "cells.operator.ideal_osmosis_linear_compliance_water@1",
+    )
     with pytest.raises(ConfigError, match="two providers of the view field extracellular_volume"):
         pump_composite.implementation(adapter.MODEL_ID, laws)
 

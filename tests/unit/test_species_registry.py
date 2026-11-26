@@ -116,12 +116,17 @@ def test_without_entries_authors_come_before_users_in_either_order():
     for reverse in (False, True):
         spec = parse_spec(coupled(reverse=reverse))
         resolved = registry.identities(spec)
-        assert resolved["R"] == ("cells.operator.scheduled_species_turnover@1", registry.Identity(None, None))
+        assert resolved["R"] == (
+            "cells.operator.scheduled_species_turnover@1",
+            registry.Identity(None, None),
+        )
         with pytest.raises(ConfigError) as caught:
             parse_spec(coupled(reverse=reverse, coupling_tag=TAG))
         assert str(caught.value).endswith(
-            "cells.operator.species_regulated_availability@1 declares species 'R' with another identity than "
-            "cells.operator.scheduled_species_turnover@1 (catalogue reference and kind of evidence must agree)"
+            "cells.operator.species_regulated_availability@1 declares species 'R' with another "
+            "identity than "
+            "cells.operator.scheduled_species_turnover@1 (catalogue reference and kind of evidence "
+            "must agree)"
         )
 
 

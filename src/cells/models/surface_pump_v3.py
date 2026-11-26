@@ -210,7 +210,8 @@ UNBLOCKED_FRACTION = "channel_unblocked_fraction"  # FR-51's readout column, onl
 UNBLOCKED_FRACTION_NOTE = (
     "the unblocked fraction u of each channel population at the row's read state: (sum_k w_k "
     "K_k/(c_B + K_k)) / (sum_k w_k) at the row's patch voltage V (or V - E of the reversal ion), "
-    "which multiplies its flux (FR-51, cells.channel_block.open_channel_block_weighted_modes@1); 1 for a population "
+    "which multiplies its flux (FR-51, cells.channel_block.open_channel_block_weighted_modes@1); 1 "
+    "for a population "
     "without a block. Recorded only where a population declares a block. It is separate from "
     "channel_availability and channel_effective_availability, which carry the controls and the "
     "routing door's factors"

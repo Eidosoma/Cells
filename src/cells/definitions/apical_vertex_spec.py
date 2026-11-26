@@ -108,7 +108,9 @@ EXECUTION_FIELDS = {f.name for f in fields(Execution)} - {"edge_capacity", "memb
 def to_dict(spec):
     m, e, x = spec.model, spec.experiment, spec.execution
     if type(m) is not ApicalVertexModel or type(e) is not Experiment or type(x) is not Execution:
-        raise ConfigError("cells.model.apical_vertex_mechanics@1 requires its own model/experiment/execution")
+        raise ConfigError(
+            "cells.model.apical_vertex_mechanics@1 requires its own model/experiment/execution"
+        )
     execution = asdict(x)
     del execution["edge_capacity"], execution["membrane_capacity"]
     return {

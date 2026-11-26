@@ -67,7 +67,10 @@ def test_registered_roundtrip_and_ensemble(backend):
     assert parse_spec(spec.to_dict()) == spec
     assert get_model(spec.model) is model
     assert (
-        ionic.parse_spec(dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=2)).simulation == spec
+        ionic.parse_spec(
+            dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=2)
+        ).simulation
+        == spec
     )
 
 
@@ -412,7 +415,9 @@ def test_mismatched_reduced_topology_is_rejected():
 
 def test_ensemble_endpoint_reports_real_patch_voltages_and_complete_state(trajectories):
     raw = trajectories["clamped"].spec.to_dict()
-    spec = ionic.parse_spec(dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=1, window_steps=7))
+    spec = ionic.parse_spec(
+        dict(model="cells.model.ionic_worlds@1", simulation=raw, worlds=1, window_steps=7)
+    )
     checkpoints, report = ionic.run(spec, backend=BACKEND)
     exact(checkpoints[1].state, trajectories["clamped"].final.state)
     assert report["final_voltage_axis"] == "membrane_patch"

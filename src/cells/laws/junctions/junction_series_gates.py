@@ -238,7 +238,8 @@ LAW = JunctionLaw(
         "no numbers taken: the law is a form, and its gates' parameters are a definition's values; "
         "the article is CC BY",
         (
-            "threshold_relaxation's rates are cells.junction.junction_voltage_relaxation@1's own, cited there",
+            "threshold_relaxation's rates are cells.junction.junction_voltage_relaxation@1's own, "
+            "cited there",
             "the boltzmann_eyring gate is one Boltzmann in |V|, symmetric in polarity, where the "
             "paper fits each polarity",
             "A is a fitted slope, with no gating charge derived from it",

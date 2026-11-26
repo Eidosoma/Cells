@@ -111,7 +111,9 @@ def test_a_row_for_column_update_is_caught():
         return x + sign * data.matrix[i, :]
 
     law_registry.active()
-    law = dataclasses.replace(gard.SINGLE_EVENT, law_id="tests.rate_factor.row_update@1", update=planted)
+    law = dataclasses.replace(
+        gard.SINGLE_EVENT, law_id="tests.rate_factor.row_update@1", update=planted
+    )
     with law_registry.scope(law_registry.BUILTIN.extended(law)):
         options, _ = CASES["single-event"]
         the_world = world(**options)

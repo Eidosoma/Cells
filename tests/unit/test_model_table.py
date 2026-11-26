@@ -167,8 +167,12 @@ def test_every_module_that_registers_a_piece_is_a_home_of_the_table(tmp_path):
     # Inert law modules: each is a home. Planted: an unlisted one; a registering module that also
     # binds LAW is the registering scan's, not this one's.
     assert unlisted_inert(SRC, HOMES) == []
-    (tree / "family" / "inert.py").write_text("LAW = RouteLaw('tests.route.x@1', ('membrane',), 'x')\n")
-    (tree / "family" / "both.py").write_text("LAW = BUILTIN.register(RouteLaw('tests.route.y@1'))\n")
+    (tree / "family" / "inert.py").write_text(
+        "LAW = RouteLaw('tests.route.x@1', ('membrane',), 'x')\n"
+    )
+    (tree / "family" / "both.py").write_text(
+        "LAW = BUILTIN.register(RouteLaw('tests.route.y@1'))\n"
+    )
     assert unlisted_inert(tree, {"planted.family"}) == ["planted.family.inert"]
     assert unlisted_inert(tree, {"planted.family", "planted.family.inert"}) == []
 
@@ -269,7 +273,8 @@ def _manifest_bytes(tmp_path, name, *, first=(), extra_home=None):
 def test_a_fresh_process_lists_every_home_s_pieces_whatever_was_imported_first(tmp_path):
     (tmp_path / "planted_family_home.py").write_text(
         "from cells.registry import laws\n"
-        "LAW = laws.BUILTIN.register(laws.RouteLaw('tests.route.planted_home_route@1', ('membrane',),\n"
+        "LAW = laws.BUILTIN.register(laws.RouteLaw('tests.route.planted_home_route@1', "
+        "('membrane',),\n"
         "    'a planted family law', host='cells.kind.passive_routes@1'))\n"
     )
     home = "planted_family_home"
@@ -301,7 +306,8 @@ def test_a_fresh_process_lists_every_home_s_pieces_whatever_was_imported_first(t
 def test_the_loader_registers_an_inert_law_module_with_it_as_its_declarer(tmp_path):
     (tmp_path / "planted_inert_home.py").write_text(
         "from cells.modules import RouteLaw\n"
-        "LAW = RouteLaw('tests.route.planted_inert_route@1', ('membrane',), 'a planted inert law',\n"
+        "LAW = RouteLaw('tests.route.planted_inert_route@1', ('membrane',), 'a planted inert "
+        "law',\n"
         "    host='cells.kind.passive_routes@1')\n"
     )
     home = "planted_inert_home"
@@ -352,8 +358,12 @@ def test_the_cells_interface_set_is_the_five_and_the_families_declared_ones():
         with pytest.raises(ValueError, match="is not a family's interface"):
             section.register(claimant("tests.operator.claimant@1", host=LINEAGES))
     with pytest.raises(ValueError, match="a cited operator gives its source as a Citation"):
-        section.register(LineageOperator("tests.operator.uncited@1", host=LINEAGES, provenance="cited"))
-    assert [d.operator_id for d in section.family_operators()] == ["tests.operator.planted_fission@1"]
+        section.register(
+            LineageOperator("tests.operator.uncited@1", host=LINEAGES, provenance="cited")
+        )
+    assert [d.operator_id for d in section.family_operators()] == [
+        "tests.operator.planted_fission@1"
+    ]
 
 
 def wordless(interfaces):
@@ -425,7 +435,9 @@ def test_no_old_spelling_is_left_in_scope(tmp_path):
 def test_a_family_s_operators_are_a_section_apart_from_the_composite_s():
     keys, values = tuple(OPERATORS), tuple(OPERATORS.values())
     cache = pump_composite._implementation.cache_info()
-    planted = LineageOperator("tests.operator.planted_fission@1", host=LINEAGES, test="tests/unit/x.py::y")
+    planted = LineageOperator(
+        "tests.operator.planted_fission@1", host=LINEAGES, test="tests/unit/x.py::y"
+    )
     operator_registry.BUILTIN.register(planted)
     try:
         assert tuple(OPERATORS) == keys and tuple(OPERATORS.values()) == values
@@ -507,7 +519,9 @@ def test_the_table_s_runners_and_compositions_are_the_code_s():
         MODELS,
         **{
             LINEAGES: lineages._replace(runner="cells.models.assembly_lineages.runner:other"),
-            "cells.model.resolved_pump_water@2": water._replace(composition=(inner, operators[::-1])),
+            "cells.model.resolved_pump_water@2": water._replace(
+                composition=(inner, operators[::-1])
+            ),
         },
     )
     assert table_errors(planted, worlds) == [

@@ -52,7 +52,8 @@ PENDING_LAYERS = frozenset(
 # Those with an event map or a schedule: the default view_events until each declares its own
 # (D150's two schedules declare their layers already, on the run view's branch).
 PENDING_EVENTS = (
-    PENDING_LAYERS | {"cells.operator.scheduled_species_exchange@1", "cells.operator.scheduled_species_turnover@1"}
+    PENDING_LAYERS
+    | {"cells.operator.scheduled_species_exchange@1", "cells.operator.scheduled_species_turnover@1"}
 ) - {
     "cells.operator.cell_owned_compartments@1",
     "cells.operator.membrane_entity_state@1",
@@ -62,7 +63,9 @@ PENDING_EVENTS = (
 
 
 def operator(**attributes):
-    return type("Test", (Operator,), dict(LAW_ID="cells.operator.test_op@1", EVENT=True) | attributes)
+    return type(
+        "Test", (Operator,), dict(LAW_ID="cells.operator.test_op@1", EVENT=True) | attributes
+    )
 
 
 def test_an_in_step_process_declares_the_rows_it_moves():
@@ -260,11 +263,16 @@ def test_uses_inner_passes_the_inner_object_only_to_declaring_operators():
     user = check_declarations(
         type("U", (Operator,), dict(LAW_ID="cells.operator.test_user@1", USES_INNER=True) | parts)
     )()
-    plain = check_declarations(type("P", (Operator,), dict(LAW_ID="cells.operator.test_plain@1") | parts))()
+    plain = check_declarations(
+        type("P", (Operator,), dict(LAW_ID="cells.operator.test_plain@1") | parts)
+    )()
     composition = pump_composite.Composition(adapter, (user, plain))
     spec = parse_spec(fx.world())
     state, p = get_model(spec.model).initial_values(spec)
     for op in (user, plain):
         composition._half_step(op, state, 0.5e-3, None, p, xp=np)
-    assert seen == {"cells.operator.test_user@1": composition.inner, "cells.operator.test_plain@1": None}
+    assert seen == {
+        "cells.operator.test_user@1": composition.inner,
+        "cells.operator.test_plain@1": None,
+    }
     assert composition.inner is adapter

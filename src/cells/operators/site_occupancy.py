@@ -1570,7 +1570,9 @@ REPLACEMENT_LAW = common.REPLACEMENT_LAW
 # A newcomer's bound and free sites each lie at least this many ulps of the capacity from empty:
 # the event writes anchor + (amount - anchor), within about 1.5 ulps of the amount (check_occupant).
 ARRIVAL_ULPS = 4
-SITES_LAW = LAW_ID  # cells.operator.site_occupancy@1, the owner W writes (named apart from W's own LAW_ID).
+SITES_LAW = (
+    LAW_ID  # cells.operator.site_occupancy@1, the owner W writes (named apart from W's own LAW_ID).
+)
 OCCUPANT_LAW = "cells.operator.site_occupant_replacement@1"
 OCCUPANT_STATE_AXES = {
     "site_departed_fmol": ["site_population"],  # Bound material leaving with occupants.
@@ -1633,7 +1635,8 @@ def parse_occupant(raw, base):
                     f"{OCCUPANT_LAW}: {tid}'s occupancy of {pid} lies in (0, 1) in version 1: as "
                     "everywhere in the engine, a pool goes to its trace and is never exactly empty "
                     "(FR-23's dose rule), so a template gives a fresh cell's occupancy at a trace "
-                    "level (cells.operator.site_occupancy@1's site free energy reads an exactly empty pool, "
+                    "level (cells.operator.site_occupancy@1's site free energy reads an exactly "
+                    "empty pool, "
                     "reached from a positive anchor, as 0 x log1p(-1))"
                 )
             binding = _number(values["binding_multiplier"], f"{tid}'s binding of {pid}", low=0.0)
@@ -1894,7 +1897,9 @@ class SiteOccupantReplacement(Operator):
         "site_bound_increment_fmol": ("site_departed_fmol", "site_arrived_fmol"),
         "site_free_increment_fmol": ("site_departed_fmol", "site_arrived_fmol"),
     }
-    IDENTITY_ROLE = "user"  # It names cells.operator.site_occupancy@1's populations; it declares no species.
+    IDENTITY_ROLE = (
+        "user"  # It names cells.operator.site_occupancy@1's populations; it declares no species.
+    )
     VIEW_LAYERS = (
         {
             "id": "site_replacement",

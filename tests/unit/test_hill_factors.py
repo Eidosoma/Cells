@@ -256,7 +256,9 @@ def test_the_hill_product_s_record_keeps_its_interface_s_contract():
         "a cited record with no source": dict(provenance="cited", source=None),
     }
     for name, change in plants.items():
-        planted = dataclasses.replace(law, law_id="tests.transfer_factor.planted_factor@1", **change)
+        planted = dataclasses.replace(
+            law, law_id="tests.transfer_factor.planted_factor@1", **change
+        )
         assert planted.errors(), name
         with pytest.raises(ValueError, match="tests.transfer_factor.planted_factor@1"):
             law_registry.LawRegistry().register(planted)
