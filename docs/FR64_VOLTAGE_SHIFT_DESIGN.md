@@ -4,7 +4,8 @@
 no `src` or test file changes (D142).**
 - **It supersedes** `docs/VOLTAGE_SHIFT_DESIGN.md` on branch `fr64-design` (377a1b34). That note was written at main
   28756b2b, was never merged, and is the note D361 decides on.
-- **Its decisions are carried here unchanged,** each marked with its D-number (§14).
+- **Its decisions are carried here unchanged,** each marked with its D-number (§15). §14 names what this note builds on
+  and sorts its items.
 - **Every statement about the code is read again at 4f4a4c34.** The rename, the block law's registration, the calcium
   store's channel material term, FR-51's slot refusal and D391 have all landed since 28756b2b.
 - Integration grants no acceptance (D143). **S** marks this note's own derivation, done by hand and not run.
@@ -153,9 +154,12 @@ its control and its acid.
     B4's `check_definition` for the proton row, and by `species_registry.check_closure_rows` for the general closure.
     So the read and the store agree for that ion.
   - **The parse does admit a reversal of a permeant ion at relative permeability 0,** since `parse_block` checks
-    membership only. No registered law has such an ion, but an external or test law could. Such an ion is not moved, so
-    a closure could hold it. The material rule's part through E would then use that ion's own zero flux, although the
-    other ions' fluxes depend on it (§5; question 4).
+    membership only. No registered law and no test law has such an ion, but a law registered at run time could.
+  - **What is specific to a zero ratio:** such an ion is not moved, so a closure could hold it. The rules, which read
+    stored amounts, and the rates, which read free ones, would then form different reversals (§5; question 4).
+  - **What is not specific to it:** FR-51's part through E uses the named ion's own flux only, while u scales every
+    permeant ion's flux. That is equally true of a law with several ions and no material term, which FR-51 admits
+    (`tests/unit/test_calcium_store.py`, its fourth parametrized row). So it is no reason of its own.
 - **The domain check reads V alone.**
 - **The slot writers rewrite no block field.**
   - `pump_composite.SLOT_WRITERS` lists `cells.operator.scheduled_cell_replacement@1` and `@2`,
@@ -438,7 +442,7 @@ sources (§8).
 | A gate, any kind | No term, as today. Gating slopes are excluded, the exponential update is stable at any step, and the step studies measure them | None |
 | The block, no shift | FR-51's T_V | None: FR-51's T_c is zero there |
 | The block, reversal | T_V at V_ref | FR-51's T_c,i and T_c,o, with their parts through E, unchanged |
-| The block, pH | T_V at V_ref | **New:** for each permeant ion s, \|J_s,free\| β \|σ\| / (h ln 10 V_n), joined to each row the ion moves, at both ends. Held baths are left out. There is no term where the read node is a held bath |
+| The block, pH | T_V at V_ref | **New:** for each permeant ion s, the slope \|J_s,free\| β \|σ\| / (h ln 10 V_n) against the proton row, placed as each host function places FR-51's part through E (below). There is no term where the read node is a held bath |
 
 Here β = (Σ_k w_k |a_k| θ_k (1 − θ_k)) / (Σ_k w_k) is FR-51's slope bound (the block law's `slope`), and V_n is the
 read node's volume.
@@ -452,8 +456,14 @@ read node's volume.
   stored row: the term is conservative.
 - **T_V needs no new term,** since ΔV never reads V, so dV_ref/dV = 1 for both kinds.
 - **It follows D327's rule:** the step bound sees every concentration that u reads. Like FR-51's part through E, it is
-  an off-diagonal slope, the ion's flux against the proton row. It joins the ion's rows as that part does, in both
-  `block_material_rates` and `channel_material_rates`. For every registered law the ion is a single row.
+  an off-diagonal slope, the ion's flux against the proton row.
+- **Each host function places it as it places FR-51's part through E:**
+  - `block_material_rates` puts each derivative at the node it differentiates: T_c,i/V_c at the cell and T_c,o/V_o at
+    the outside node. So there the pH term goes to the read node, over that node's volume.
+  - `channel_material_rates` adds the parts through E into the ion's mode rate at both ends. So there the pH term joins
+    the ion's rows, with held baths left out.
+  - The exact placement is derived at the build, and the host row of §9.2 holds it to the exact slope.
+- For every registered law the ion is a single row.
 - **For a law with several ions,** the term is per ion (option O3).
 
 ### 4.3 Domains at run time
@@ -484,7 +494,7 @@ Each refusal names its reason, and each has one parse row (§9.1).
 | An empty `gates`; a gate name that is not the law's; `gates` on a gate-free law | no such reader |
 | `block` on a population that declares no block | no such reader |
 | An unknown kind, two kinds on one reader, or an explicit membrane-voltage entry | the closed set (`reversal_of`, `ph`). A combined or new kind is a new request; the default is omitted |
-| A reversal of an ion the population does not carry, **or carries at relative permeability 0** (new) | E is the population's own moved ion's |
+| A reversal of an ion the population does not carry, **or carries at relative permeability 0** (new) | E is the population's own moved ion's. An ion it does not move could be held by a closure, and the rules and the rates would then form different reversals (§2.1) |
 | A block on a reversal, for a law with several ions and a material term | FR-51's rule, kept |
 | A pH shift whose proton row is missing, does not have valence +1, is not B4's where B4 is declared, or is not the general closure's declared proton row where that closure holds it | a pH shift needs the proton row (`cells.kind.ph_condition@1`'s rule) |
 | A side other than `inside` or `outside`; a σ, reference or window that is not finite; low ≥ high; a reference outside the window | — |
@@ -497,8 +507,8 @@ Each refusal names its reason, and each has one parse row (§9.1).
 
 ## 6. Options and recommendations
 
-Each choice below is the lead's to rule, except where a question in §15 asks the user. The choices D361 settled are in
-§14.
+Each choice below is the lead's to rule, except where a question in §16 asks the user. The choices D361 settled are in
+§15, and §14 sorts them all.
 
 **O1. Where the kernels live.**
 
@@ -665,14 +675,23 @@ Only a compiled IMEX run reaches the stage path with the static switches traced,
 gates, and carries one population per pair.
 - **The world:** `cells.model.resolved_pump_composite@1` over @3, ARS(2,2,2), one cell on a held bath, with B4 at the
   cell (one buffer). Its populations:
-  - **P1, a gate on pH:** Kv1.5, whose m reads the bath's pH;
+  - **P1, a gate on pH:** Kv1.5, whose m reads the bath's pH. The bath is held at the acid pH from the start, and P1's
+    reference is the control;
   - **P2, a gate on the reversal:** a second Kv1.5, whose m reads V − E_K;
   - **P3, the block on the reversal:** the Kir composition, `cells.channel.kleak_always_open@1` with FR-51's block on
     the K reversal;
   - **P4, the block on pH:** `cells.channel.naleak_always_open@1`, whose block reads the cell's pH. The cell is
-    buffered, so the read is B4's free h, and the new material term is evaluated away from a held bath.
-  - **The bath steps:** one neutral step in K, then one in pH, by `cells.operator.scheduled_bath_composition@1`, which
-    refuses net-charged steps.
+    buffered, so the read is B4's free h, and the new material term is evaluated away from a held bath. Nothing moves
+    protons, so the cell's pH stays where it starts. It is set apart from both P4's reference and the bath's pH.
+- **Each bath's pH is held from the start, and only K steps.**
+  - `cells.operator.scheduled_bath_composition@1` admits a step only inside its measured region, per ion species.
+    Its `MEASURED_POINTS` has no key for H (`operators/bath_schedule.py`), so a step in pH would be refused at the
+    definition.
+  - The one step is a neutral step in K, inside probe I's measured K-up points: a ratio up to 10, and a level up to
+    50 mM. The operator refuses net-charged steps.
+- **B4 beside the bath operator was read, not run.** `check_stage_read_rows` refuses an operator that names or moves a
+  held species, per species. `scheduled_bath_composition@1` declares no species identities and no in-step moves. The
+  build parses the world before anything else.
 - **The values** are fixed at build time so that each reader sits where its shifted and unshifted values differ by
   much. For example, the K step brings the resting V near m's midpoint.
 - **On every observed row:**
@@ -682,9 +701,9 @@ gates, and carries one population per pair.
      and at V (h). ΔV comes from the row's recorded concentrations;
   4. P3's and P4's recorded `channel_unblocked_fraction` equals the law at the closed-form V_ref, within 1e-12
      relative. P4's pH is B4's recorded `pH`;
-  5. **the stage path:** after each bath step, at rows where the cell has settled, the gate shifted by that step equals
-     m∞(V_r), within a bound well below |m∞(V_r) − m∞(V)|/2. The bound and the settling test are fixed from the run's
-     own rows before any plant runs.
+  5. **the stage path:** at rows where the cell has settled, before the K step and after it, P1's and P2's m each
+     equal m∞(V_r), within a bound well below |m∞(V_r) − m∞(V)|/2. The bound and the settling test are fixed from the
+     run's own rows before any plant runs.
 - **Item 5 is the one that reaches the stage path,** since items 3 and 4 read the readouts.
   - `exponential_gates.advance` mixes the start and end targets. So a gate whose stage targets read V settles at
     m∞(V_r) + (m∞(V) − m∞(V_r)) f(z), where f(z) = 1/(1 − e^−z) − 1/z and z is the step times the mean of the two end
@@ -696,8 +715,9 @@ gates, and carries one population per pair.
   - step and compile time are reported against the same world with no shift (D142).
 - **Plants,** each failing the item named:
   - the pH sign flipped (items 3 and 4);
-  - the other side's pH read (items 3 and 4, after the pH step);
-  - ΔV frozen at the initial state (item 3 or 4, after the bath steps);
+  - the other side's pH read (items 3 and 4), since the cell's pH and the bath's differ by construction;
+  - ΔV frozen at the initial state (items 3 and 4, for P2 and P3, after the K step). P1's and P4's ΔV is constant in
+    this world, so the host rows cover this plant for the pH readers;
   - the stage path at V (item 5);
   - the stored H_eq in place of free h, in `reader_voltages` (item 4, at the buffered cell). The same plant in the
     per-stage rules alone is the host row's (§9.2).
@@ -821,7 +841,46 @@ The library pages of `cells.channel.kv1p5_mh@1` and of the block law say the sam
    quantity.
 4. FR-50's phase 2, whenever it is built, spells the new key in its live driver.
 
-## 14. Decided
+## 14. What this note builds on
+
+**Its sources:**
+- **The earlier note,** `docs/VOLTAGE_SHIFT_DESIGN.md` at 377a1b34 on `fr64-design`. It was written at main 28756b2b,
+  D377 calls it final, and it was never merged. This note reads its code claims again at 4f4a4c34 and keeps its
+  design, except where this section says otherwise.
+- **D361** (`docs/DECISIONS.md`): the user's decisions and the lead's rulings on that note.
+- **fc899d3d:** the lead's rulings on the window (option (c), ε = 1e-9 pH), on τ's wording and on the slot writers.
+- **377a1b34:** the ruling that the standalone replacement model needs no check of its own.
+
+**How this note's items sort against them:**
+
+| Group | Item | Basis |
+| --- | --- | --- |
+| Already decided | Question 6, the build | D361: normal priority, and the build after FR-51's follow-up and the rename. D391: free to build. The queue order is the user's standing call (D392) |
+| Already decided | O1 C, a law family | D361: "the declaration adds no new ID"; the earlier note's §7 |
+| Already decided | O2 (c), ΔV frozen at the step start | D361: "at every stage and on every path" |
+| Already decided | O6, the slot refusal widened to every shift | D361's coverage line; fc899d3d and 377a1b34 |
+| Decided in part | Question 2 / O5, @3's major | "No aliases" is the user's (D356). "@3 keeps its major" is the earlier note's statement (its §6.1 and §7), which no decision records |
+| The lead's to rule | Question 1, which note lands | — |
+| The lead's to rule | Question 4 / O7, the zero-ratio reversal | New. It narrows fr51-channel-block-v1 §1.2's admitted domain by a case no registered case reaches |
+| The lead's to rule | Question 5, the compiled world's tier | The earlier note's §8.4 planned its own file under the cap; D224 |
+| The lead's to rule | O1 A or B, the kernels' home, with one table where the earlier note had two | It departs from the earlier note's §3.6 recommendation, which was not a ruling |
+| The lead's to rule | O2 (a) or (b), a shared stage read | The earlier note's own recommendation (§3.4) |
+| The lead's to rule | O3, a pH term per ion | New |
+| The lead's to rule | O4, no readout column | The earlier note's design (§8.3) |
+| The lead's to rule | The retired 20-row fallback (§7) | This note's reading. D371 Q7's translator maps ID strings, and the key's move is structural. The retirement rests on `validation/fr51/engine.py` being a live driver that builds the declaration itself |
+| New for the user | Question 3, FR-63's qualification | No decision covers it. It revises the earlier note's §6.2 plan (a judged direction) and FR-63's first reading. It also touches D361's user decision that the gates on pH are claimed: the claim stands, and only its form of qualification would change |
+
+**What changes against the earlier note.** None of these is a ruling:
+- one table in a new module, in place of two (O1);
+- FR-63's report, in place of a judged registration (§8);
+- the pH material term, placed as each host function places FR-51's part through E (§4.2);
+- the composed world, with B4 at the cell, each bath's pH held from the start, and a K step only (§9.3);
+- the zero-ratio refusal (§5);
+- the per-ion term (O3).
+
+§3.3 labels the two pairs with evidence "Evidence". D361's word for them, "claimed", stands.
+
+## 15. Decided
 
 **By the user** (D361):
 - FR-64's priority is normal.
@@ -845,9 +904,16 @@ The library pages of `cells.channel.kv1p5_mh@1` and of the block law say the sam
 - **Q7:** frozen files are read by translation at the live driver, with the engine strict. §7 applies it to FR-51's
   `cases.json`.
 
-**Rulings this note asks of the lead:** O1 (A), O2 (b), O3 (a), O4 (a) and O6 (a).
+**Rulings this note asks of the lead:** those listed in §14.
 
-## 15. Questions for the user
+## 16. Questions for the user
+
+§14 sorts these questions:
+- only question 3 is new for the user;
+- question 6 is decided, and question 2 is decided in part;
+- questions 1, 4 and 5 are the lead's to rule.
+
+They stay here as written, with their recommendations.
 
 1. **Which note lands.** This note re-reads the code at main 4f4a4c34 and carries D361's decisions unchanged. Land it in
    place of the earlier `docs/VOLTAGE_SHIFT_DESIGN.md`, and leave that note's branch, `fr64-design` (377a1b34),
@@ -862,9 +928,10 @@ The library pages of `cells.channel.kv1p5_mh@1` and of the block law say the sam
    the three studies has an unscored third pH level, or an unscored readout of the same preparation, such as Trapani and
    Korn's held-out 75 ms step. Any registration would also have to own the parity law's control offset.
 4. **A reversal of an ion that the population does not move.** Refuse a reversal, on a gate or on the block, of a
-   permeant ion at relative permeability 0? Its material part through E would use that ion's zero flux, while the other
-   ions' fluxes depend on it. No registered law has such an ion, so no world changes. **Recommended: yes.** It narrows
-   FR-51's admitted domain by a case none of its registered cases reaches.
+   permeant ion at relative permeability 0? Such an ion is not moved, so a closure could hold it. The per-stage rules,
+   which read stored amounts, and the rates, which read free ones, would then form different reversals (§2.1). No
+   registered law and no test law has such an ion, so no world changes. **Recommended: yes.** It narrows FR-51's
+   admitted domain by a case none of its registered cases reaches.
 5. **The compiled world's tier.** The composed world is the only compiled proof of the stage path, of the free-h read
    and of conservation across all four pairs. Should it be its own tier-2 file, at an estimated 60 to 80 s, with its
    seconds stated at landing? Or should it run weekly in tier 3, with the host rows as the gate?
