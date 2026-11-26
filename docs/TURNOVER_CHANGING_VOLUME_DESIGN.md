@@ -1,8 +1,10 @@
 # FR-65: turnover beside a changing volume (design)
 
-**Status: final, decided on 24 November 2026 (D375, and the lead's rulings on this revision, §8.2); nothing is built.**
-The first version was proposed and decided that day. This revision, on branch `fr65-design` with main merged (the probes
-ran at 95559271, whose source is unchanged since):
+**Status: built (26 November 2026, branch `fr65-build`): the first build, steps 1 to 4, as §10 records; the coupling's
+step (§3.8) and the run view for water worlds (§9.2) are not built.** Decided on 24 November 2026 (D375, and the lead's
+rulings on this revision, §8.2). Its IDs are written in the spelling of the move (D345), translated with
+`validation/id_table.py`; the step IDs keep theirs. The first version was proposed and decided that day. This
+revision, on branch `fr65-design` with main merged (the probes ran at 95559271, whose source is unchanged since):
 - records the user's choice (Q3 b) and the lead's rulings (Q1 b, Q2 a) in §8;
 - designs the lumen case (§3.5) and lists the saved amounts and volumes (§4.2);
 - corrects the first version (§8.3).
@@ -10,10 +12,10 @@ ran at 95559271, whose source is unchanged since):
 The build comes after the rename. FR-65 is D301's composition M3, and D150's planned version 1.1 for turnover
 (SECRETED_SPECIES_TRANSPORT_DESIGN §5.1, §5.3 and §5.5).
 
-**Engine models:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`. `scheduled_species_turnover@1` sits
-beside `ideal_osmosis_linear_compliance_water@1`, `isopotential_partition@1`, `scheduled_membrane_insertion@1` and
-`@2`, `restricted_cleft_lumen@1` and `@2`, and `neutral_arrival_labels@1`. A1 adds `templated_polymerisation@1`, and in
-the second step `species_regulated_availability@2`.
+**Engine models:** `cells.model.resolved_pump_composite@1` over `cells.model.resolved_pump_tissue@3`. `cells.operator.scheduled_species_turnover@1` sits
+beside `cells.operator.ideal_osmosis_linear_compliance_water@1`, `cells.operator.isopotential_partition@1`, `cells.operator.scheduled_membrane_insertion@1` and
+`@2`, `cells.operator.restricted_cleft_lumen@1` and `@2`, and `cells.operator.neutral_arrival_labels@1`. A1 adds `cells.operator.templated_polymerisation@1`, and in
+the second step `cells.operator.species_regulated_availability@2`.
 
 **S** marks our own reading or derivation. The probes ran on the host only: nothing was compiled or run (§9).
 
@@ -26,7 +28,7 @@ the second step `species_regulated_availability@2`.
   - the occupant rule knows only replacement@1's carriers, so a daughter's routes cannot be keyed by the partition's
     carriers;
   - **A1 in a swelling cell is refused by two operators:** turnover, and the coupling operator
-    (`species_regulated_availability@2`), which reads c = n/V at the declared volume. We read D334's and D347's "A1" as
+    (`cells.operator.species_regulated_availability@2`), which reads c = n/V at the declared volume. We read D334's and D347's "A1" as
     this world;
   - water with replacement@2 and turnover would parse, so the shared volume rule must refuse it by name.
 - **The recommendation is option A, as in FR-43 part 2B:** the same law ID, turnover's own read declarations, and C1's
@@ -58,15 +60,15 @@ were replaced in process by §3.1's set, under the same law ID.
 
 | World | Today | Lifted |
 | --- | --- | --- |
-| FR-43 2B's swelling cell, with S produced and cleared in the cell | "scheduled_species_turnover@1 reads volume as declared, but ideal_osmosis_linear_compliance_water@1 provides it", and the same for `extracellular_volume` | Parses |
-| A1 in a swelling cell: the gene unit, turnover of X, and the coupling's Hill factor on initiation | Turnover's two refusals, plus the same two for `species_regulated_availability@2` | Still refused by the coupling's two. It parses once the coupling's declarations are lifted too, but that program is unexercised: the coupling's code still reads `p.volume` |
-| S5's division (`partition_fixtures.divided`), daughters keyed by their slots | "reads active as declared, but isopotential_partition@1 closes it", and the same for `membrane_active` | Parses |
+| FR-43 2B's swelling cell, with S produced and cleared in the cell | "cells.operator.scheduled_species_turnover@1 reads volume as declared, but cells.operator.ideal_osmosis_linear_compliance_water@1 provides it", and the same for `extracellular_volume` | Parses |
+| A1 in a swelling cell: the gene unit, turnover of X, and the coupling's Hill factor on initiation | Turnover's two refusals, plus the same two for `cells.operator.species_regulated_availability@2` | Still refused by the coupling's two. It parses once the coupling's declarations are lifted too, but that program is unexercised: the coupling's code still reads `p.volume` |
+| S5's division (`partition_fixtures.divided`), daughters keyed by their slots | "reads active as declared, but cells.operator.isopotential_partition@1 closes it", and the same for `membrane_active` | Parses |
 | The same, with daughters keyed by their carriers c1 and c2 | "route p1 needs a schedule for its founder carrier d1" | The same refusal, from the occupant rule |
-| The cleft cell's furrow, S cleared at the cleft, beside insertion@1 | "reads outside_active as declared, but scheduled_membrane_insertion@1 provides it", and the same for `membrane_active` | Parses (§3.1's anchor guard would then refuse it) |
-| The same beside insertion@2 | "… scheduled_membrane_insertion@2 closes it", and the same for `membrane_active` | Parses |
-| S5's furrow world with a lumen (`cleft_divided`), turnover on cells, declared after the lumen | Four: "reads extracellular_volume as declared, but restricted_cleft_lumen@2 provides it", and `active` (the partition), `outside_active` and `membrane_active` (insertion@2) | Parses |
-| The same, turnover declared first | The same | "reads the view extracellular_volume at stage split before restricted_cleft_lumen@2 changes it there", and the same for `outside_active` and insertion@2 |
-| The cleft cell with insertion and lumen@1, or @2, turnover on the cell | "reads extracellular_volume as declared, but restricted_cleft_lumen@1 provides it" (or @2), and the masks' | Parses |
+| The cleft cell's furrow, S cleared at the cleft, beside insertion@1 | "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@1 provides it", and the same for `membrane_active` | Parses (§3.1's anchor guard would then refuse it) |
+| The same beside insertion@2 | "… cells.operator.scheduled_membrane_insertion@2 closes it", and the same for `membrane_active` | Parses |
+| S5's furrow world with a lumen (`cleft_divided`), turnover on cells, declared after the lumen | Four: "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@2 provides it", and `active` (the partition), `outside_active` and `membrane_active` (insertion@2) | Parses |
+| The same, turnover declared first | The same | "reads the view extracellular_volume at stage split before cells.operator.restricted_cleft_lumen@2 changes it there", and the same for `outside_active` and insertion@2 |
+| The cleft cell with insertion and lumen@1, or @2, turnover on the cell | "reads extracellular_volume as declared, but cells.operator.restricted_cleft_lumen@1 provides it" (or @2), and the masks' | Parses |
 
 - **Parsing runs every definition check** (`pump_composite_spec`, line 225). So nothing else in the engine refuses
   these pairs.
@@ -104,13 +106,13 @@ has the same table, at 3c10b833.
 
 | Operator | Fixed reads | Why | Under FR-65 |
 | --- | --- | --- | --- |
-| `species_regulated_availability@1`, `@2` (the coupling) | The shared list | Its factors read c = n/V at the declared volume (D244's Q2 for @2's site sources), at the control view and in its targets' half-steps | The second step (§3.8) |
-| `scheduled_species_exchange@1` | The shared list | Uptake reads c = n/V | Unchanged |
-| `population_unit_turnover@1` | The shared list | It requires membrane state, which water refuses. Division and insertion are refused world-wide (D232) | Unchanged |
-| `templated_polymerisation@1` | The masks | Its chains, hold and machines have no division or onset rule. Its volumes have been current since part 2B, so its degradations already run in a swelling cell (FR-38 v2's family D) | Unchanged |
-| `local_species_reactions@1` | The masks and the outside anchors | Closers, and insertion@1 | Unchanged |
-| `isopotential_partition@1` | `volume` | The daughters' volumes are declared anchors (M4) | So turnover with water and the partition together stays refused |
-| `ideal_osmosis_linear_compliance_water@1` | `membrane_area` | Its conductances are bound from the declared areas. Its undeclared mask reads (gap 5) land with this change (M2) | So turnover with water and insertion together stays refused |
+| `cells.operator.species_regulated_availability@1`, `@2` (the coupling) | The shared list | Its factors read c = n/V at the declared volume (D244's Q2 for @2's site sources), at the control view and in its targets' half-steps | The second step (§3.8) |
+| `cells.operator.scheduled_species_exchange@1` | The shared list | Uptake reads c = n/V | Unchanged |
+| `cells.operator.population_unit_turnover@1` | The shared list | It requires membrane state, which water refuses. Division and insertion are refused world-wide (D232) | Unchanged |
+| `cells.operator.templated_polymerisation@1` | The masks | Its chains, hold and machines have no division or onset rule. Its volumes have been current since part 2B, so its degradations already run in a swelling cell (FR-38 v2's family D) | Unchanged |
+| `cells.operator.local_species_reactions@1` | The masks and the outside anchors | Closers, and insertion@1 | Unchanged |
+| `cells.operator.isopotential_partition@1` | `volume` | The daughters' volumes are declared anchors (M4) | So turnover with water and the partition together stays refused |
+| `cells.operator.ideal_osmosis_linear_compliance_water@1` | `membrane_area` | Its conductances are bound from the declared areas. Its undeclared mask reads (gap 5) land with this change (M2) | So turnover with water and insertion together stays refused |
 
 The compartments declaration, trafficking, the wash, replacement@1 and injection keep their reads, and so do the integer
 population's volumes. None of them meets FR-65's worlds.
@@ -122,7 +124,7 @@ population's volumes. None of them meets FR-65's worlds.
   `check_volume_changers` admits water alone. C2.7's endpoint identity converged at a ratio of 4.006.
 - **FR-38 v2's family D.** The gene unit's first-order degradations run in the same swelling cell, with labels, and read
   V only through their bookings, as turnover does. Amendment 3 judges their energy identity as a stepped entry at p = 2.
-- **`integer_unit_population@1`** reads the patch mask and the outside anchors current at the split, and selects a
+- **`cells.operator.integer_unit_population@1`** reads the patch mask and the outside anchors current at the split, and selects a
   closed site idle.
 - **The lumens' bookings are exact per fill** (`restricted_lumen.py`): the mixing heat is the exact W − ΔG, and the
   dilution term brings @3's chemical term to the physical one. Their `own_valid` refuses a volume increment at any node
@@ -503,17 +505,16 @@ outside the engine. They exist. What follows is read from `io.write_run` and the
   c·V = n.
 - **At a lumen's node,** `lumen_volume_pL` is filled to the area at the saved time, while the amount column is the
   state's. Amount over volume is not the concentration there; the lumen's own `lumen_concentration_mM` is.
-- **The run view is refused for a water world.** `run_view.prepare` on the swelling cell says: "ideal_osmosis_linear_compliance_water@1
-  declares no VIEW_LAYERS; resolved_pump_tissue@3 declares no axes, unit or layer for its field energy_balance_pJ_s; …
+- **The run view is refused for a water world.** `run_view.prepare` on the swelling cell says: "cells.operator.ideal_osmosis_linear_compliance_water@1
+  declares no VIEW_LAYERS; cells.model.resolved_pump_tissue@3 declares no axes, unit or layer for its field energy_balance_pJ_s; …
   declares no axes for its readout column cell_volume_pL …". Water's layers, units, kinds and axes, its volume
   increments' reference, and the balance rate it replaces are missing. It is logged apart (§9.2) and does not block
   replay.
 
 ## 5. IDs under the planned rename
 
-- **No new ID or major** (option A). Turnover keeps `scheduled_species_turnover@1`. The rename's candidate mapping
-  (read-only, at ce4780d2, in `/mnt/workspaces/Cells/rename-design-20261124/`) maps it to
-  `cells.operator.scheduled_species_turnover@1`.
+- **No new ID or major** (option A). Turnover keeps its ID, `cells.operator.scheduled_species_turnover@1` since the move
+  (the rename's candidate mapping, read-only at ce4780d2 in `/mnt/workspaces/Cells/rename-design-20261124/`, gave it).
 - **Its partners there** take the same form, `cells.operator.<name>@major`: water, the partition, insertion@1 and @2, the
   lumens, the labels, the coupling and the gene unit. The table at f8c6c326 has a row for each. The rename's design note
   (`rename-design`, b5c44a6e, not yet on main) keeps `operator` for every operator (D371).
@@ -673,3 +674,38 @@ numerics, which C2.6 judged in the same world family.
   each increment the anchor it is taken over. A reader outside the engine would then form n, V and c from declarations
   rather than from the names and units in §4.2. The numbers themselves are already in `trajectory.npz`, so replay does
   not wait for it.
+
+## 10. As built (26 November 2026)
+
+**Built on `fr65-build`, in four commits, fail-closed** (each refusal lands before or with the admission it guards):
+1. `f1aeea39`: the shared volume rule moves to `species_common.check_volume_changers` and becomes per node, with
+   `contract.changed_volume_nodes` and the lumens naming their nodes (route B). The reactions and the gene unit pass
+   every finite node (the lead's ruling), so their admissions and words stay as they were.
+2. `77678116`: the occupant hook (`contract.slot_occupants`, `contract.Occupant`), replacement@1's and the partition's
+   carriers, the tables' idle entries, the founder rule at the definition, and the onset-node refusal
+   (`species_common.check_node_onsets`).
+3. `270994ad`: turnover's own reads, the half-step's view, the anchor guard (`species_turnover.check_anchor_providers`),
+   Q5 amended in place and disclosed, the composition matrix's tags and rules, and the tier-1 rows.
+4. `a21dd2e4` and `d09e8449`: the tier-3 rows, and their plants after review.
+
+**What newly parses** is §3.6's count, measured on the built code with nothing patched: of 5,559 ordered sequences of up
+to three operators holding turnover or a lumen, the structure check admits 584 against main's 565, the same 19.
+
+**Where the build differs from this note:**
+- **Replacement@2 fills no slot.** It subclasses replacement@1, so it overrides the hook to give none; its slots keep
+  their founders, and the shared volume rule refuses it beside turnover by name (§3.4 named replacement@1 and the
+  partition only).
+- **The declared-mask twin** (§6.1, the furrow world with today's masks and tables) is refused at its first step by
+  @3's padded-slot domain: turnover writes S into the pending slots from time 0. The note expected a break of S's
+  ledger at a daughter at the division, which a rate small enough to pass the domain would show.
+- **P1, the booking at V0,** is refused by the engine's own energy ledger in the swelling cell (§4.1 said it is not
+  relied on). The stepped entry's failure is shown on the correct run's books: the planted run's amounts and volume
+  are the correct run's, and its residual is the correct one less RT Σ Δn ln(V/V0), about 10.9 pJ against a residual of
+  2.4e-5 pJ.
+- **The resumes:** the cleft world and the furrow world each resume once, before the onset or the division, across it
+  (the lead's ruling: each resume compiles its own rollout). The swelling cell resumes mid-run, in process and from a
+  written snapshot.
+- **A1 without the coupling** starts X at its steady state P/k (the sheet's A1), so X's closed form is that constant
+  while the cell swells.
+- **The cost.** The reader views cost nothing measurable: on the timed core 4, 1,000 steps of the swelling world took
+  0.182 s with turnover's view against 0.188 s for its twin without it (median of seven; development, not a gate).
