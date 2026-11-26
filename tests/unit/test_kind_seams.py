@@ -92,7 +92,7 @@ def test_a_planted_kind_snapshot_round_trips_in_a_fresh_process(tmp_path):
     )
     value, name = done.stdout.split()
     assert float(value) == moved
-    assert name.startswith("SurfacePumpChannelState") and "tests_exchange" in name
+    assert name.startswith("SurfacePumpChannelState") and "tests_kind_exchange" in name
 
 
 CARRIED_FMOL_S = 1e-3  # K+ carried out of the cell (about 140 fmol of K inside).
