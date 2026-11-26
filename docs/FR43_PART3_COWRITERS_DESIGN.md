@@ -714,4 +714,6 @@ int64, -1 where no event is recorded, beside each recorded event's time, channel
 - **The round** waits for FR-65's landing (the lead assigns lanes): every existing field bit for bit, part 3's judged
   traces and statistics included. Crossrev's co-writer world's nine files are superseded, not added (the 23 November
   renewal's pattern), and its G1 save is renewed.
-- **The registration's exporter copies the field and derives nothing** (validation/fr43_part3_cowriters).
+- **Once this lands,** the registration's exporter (validation/fr43_part3_cowriters) copies the field and derives
+  nothing. Until then it forms the counts from the declared jumps and checks them against the engine's counts and
+  channel totals at every sample.
