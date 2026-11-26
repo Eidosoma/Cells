@@ -179,7 +179,8 @@ class Judge:
                 kind = self.inputs.worlds[state.spec.world].kind
                 read_entry(entry, kind)
                 if table.world is not None and table.world != state.spec.world:
-                    entry.add("echo", "nothing", "table", f"a {state.spec.world} run in {table.name}")
+                    entry.add("table placement", "flag", "table", f"a {state.spec.world} run in {table.name} "
+                                                                  "(runs are matched by name)")
                 if table_effect == "nothing":
                     entry.add("hash", "nothing", table.name, "its table's hash departs")
                 elif table_effect == "refused":
@@ -323,7 +324,8 @@ class Judge:
                     continue
                 for name, values in r.series.items():
                     other = u.series.get(name)
-                    if other is not None and not same_bits(values[i], other[j]):
+                    if other is not None and i < len(values) and j < len(other) and not same_bits(values[i],
+                                                                                                    other[j]):
                         out.append(f"{name} at t = {t!r}: {values[i]!r} against {other[j]!r}")
         if r.times is not None and r.first_index is not None and u.times is not None:
             for i, t in enumerate(r.times):
@@ -376,7 +378,7 @@ class Judge:
                 return None
         if source.t is None or not source.t or source.t[0] != 0.0:
             return None
-        return {name: values[0] for name, values in source.series.items()}
+        return {name: values[0] for name, values in source.series.items() if values}
 
     # ---- E, R and D of one run ----
 
@@ -429,7 +431,7 @@ class Judge:
                 for readout in world.start:
                     declared = self.inputs.start_value(spec.world, readout)
                     values = entry.series.get(readout)
-                    if values is None or entry.t is None or not entry.t or entry.t[0] != 0.0:
+                    if values is None or not values or entry.t is None or not entry.t or entry.t[0] != 0.0:
                         out.append(Result(family, spec.name, f"R start {readout}", "R", "unformed",
                                           note="no t = 0 value"))
                         continue
@@ -482,7 +484,8 @@ class Judge:
             miss = False
             worst_value = None
             registered = _registered_times(entry, world)
-            for i, t in enumerate(entry.t):
+            listed = min([len(entry.t)] + [len(entry.series[n]) for n in needed])
+            for i, t in enumerate(entry.t[:listed]):
                 if spec.variant == RESTART_VARIANT and t == 0.0:
                     continue
                 at_t = {n: entry.series[n][i] for n in needed}
@@ -492,7 +495,7 @@ class Judge:
                     worst_value = value
                 if not value.passes:
                     miss = True
-            formed = formed_run and running_ok
+            formed = formed_run and running_ok and listed == len(entry.t)
             outcome = compared_outcome(miss, formed)
             out.append(Result(family, spec.name, f"R identity {ident}", "R", outcome,
                               statistic=float(abs(worst_value.residual)) if worst_value else None,
@@ -513,7 +516,7 @@ class Judge:
             return False, "the running check cannot be formed"
         last = len(entry.t) - 1
         t_last = _registered_time(world, entry.t[last])
-        if t_last != world.samples[-1]:
+        if t_last != world.samples[-1] or any(len(v) != len(entry.t) for v in entry.series.values()):
             return False, "no last sample"
         carriers = {"xi_1": "X", "xi_2": "Y", "moved": "S node"}
         reasons = []

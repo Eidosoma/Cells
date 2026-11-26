@@ -293,6 +293,8 @@ def read_entry(entry: Entry, world_kind: str | None) -> None:
             entry.add("entry key", "refused", "status", f"{status!r} is neither completed nor refused")
         else:
             entry.status = status
+    if entry.status == "completed" and "definition" in raw and raw["definition"] is None:
+        entry.add("recorded-only leaf", "flag", "definition", "null in a completed run (TABLE.md §3: a fault)")
     _read_sub_objects(entry, raw)
     _read_source(entry, raw)
     _read_t(entry, raw)
@@ -382,7 +384,7 @@ def _read_series(entry: Entry, raw: dict, world_kind: str | None) -> None:
             entry.add("missing leaf", "leaf", f"series/{name}", "missing")
         elif not isinstance(value, list) or not all(sj.is_number(x) for x in value):
             entry.add("missing leaf", "leaf", f"series/{name}", "not a list of finite numbers")
-        elif length is not None and len(value) != length:
+        elif length is not None and len(value) != length and not (entry.status == "refused" and len(value) <= length):
             entry.add("missing leaf", "leaf", f"series/{name}", f"{len(value)} values for {length} sample times")
         else:
             entry.series[name] = [float(x) for x in value]
@@ -441,7 +443,8 @@ def _read_ledger(entry: Entry, raw: dict) -> None:
         return
     if not all(sj.is_integer(x) for x in ledger):
         entry.add("missing leaf", "leaf", "integer_ledger", "not a list of integers")
-    elif entry.t is not None and len(ledger) != len(entry.t):
+    elif entry.t is not None and len(ledger) != len(entry.t) and not (entry.status == "refused"
+                                                                         and len(ledger) <= len(entry.t)):
         entry.add("missing leaf", "leaf", "integer_ledger", f"{len(ledger)} values for {len(entry.t)} sample times")
     else:
         entry.ledger = [int(x) for x in ledger]
