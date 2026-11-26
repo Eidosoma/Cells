@@ -406,7 +406,8 @@
   "/mnt/workspaces/Cells/test-slimming-20261126/job1/measure/measured-placed.json",
   "/mnt/workspaces/Cells/test-slimming-20261126/job2/gates-row/measure/measured.json",
   "/mnt/workspaces/Cells/test-slimming-20261126/regen/measure/measured-placed.json",
-  "/mnt/workspaces/Cells/test-slimming-20261126/split/so_idle/m1/measured.json"
+  "/mnt/workspaces/Cells/test-slimming-20261126/split/so_idle/m1/measured.json",
+  "/mnt/workspaces/Cells/betse-cleanup-20261126/c3/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3475,6 +3476,14 @@
    "root": "/mnt/workspaces/Cells/test-slimming-20261126/split/so_idle/snapshot",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-26T17:11:29+00:00"
+  },
+  {
+   "git_revision": "51a19a7c4dc35c4acdcb63b6759986b6ec23ca07",
+   "dirty": true,
+   "patch_sha256": "a70187f4ab0139182561bae6fbe8c39457348dfae7be741e3ea3530a23dcc140",
+   "root": "/mnt/workspaces/Cells/betse-cleanup-20261126/c3/snapshot",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T17:49:50+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5134,7 +5143,7 @@
    },
    {
     "file": "tests/unit/test_native_mapping_setup_diagnostic.py",
-    "seconds": 0.52,
+    "seconds": 0.47,
     "exit_code": 0,
     "counts": {
      "passed": 14
@@ -5503,7 +5512,7 @@
    },
    {
     "file": "tests/unit/test_rectangular_current_coupling.py",
-    "seconds": 0.52,
+    "seconds": 0.42,
     "exit_code": 0,
     "counts": {
      "passed": 1
