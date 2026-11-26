@@ -5902,14 +5902,6 @@
     }
    },
    {
-    "file": "tests/unit/test_surface_catalog_planning.py",
-    "seconds": 5.79,
-    "exit_code": 0,
-    "counts": {
-     "passed": 1
-    }
-   },
-   {
     "file": "tests/unit/test_surface_pump_step_checks.py",
     "seconds": 7.59,
     "exit_code": 0,

@@ -902,3 +902,84 @@ def test_the_energy_role_table_is_the_suffix_selection_for_every_composition():
         model = pump_composite.implementation(pump3.MODEL_ID, laws)
         fields = model.STATE_TYPE._fields
         assert model.ENERGY_FLOW_FIELDS == tuple(k for k in fields if k.endswith(suffixes)), laws
+
+
+# ------------------------------------------------------------------ one computation (test review)
+
+
+def one_computation_worlds():
+    """The worlds of the rows the test review retired as two-format mirrors (each was run in its
+    family's own format by one row and through frozen_definition by another): the replacement
+    events world of test_cell_replacement.py (two templates, five events, ARS(2,2,2), 50 ms), cell D
+    under water and its two idle symports of test_surface_pump_water_v2.py, and cell H at
+    minimum_fraction 0.9999 of test_surface_pump_water.py, each built as those files build it."""
+    from cells.definitions.cell_replacement_spec import exact_event_times
+    from cells.numerics import surface_imex as imex
+
+    dt = 1e-3
+    t1, t2, t3 = exact_event_times((10, 20, 30), dt)
+    sheet = rfx.heredity_sheet(1, 0, dt=dt, end_time=0.05, solver=imex.ARS222_ID)
+    sheet["experiment"]["observation_times"] = list(exact_event_times((0, 10, 11, 30, 31, 50), dt))
+    templates = [
+        rfx.template_from_cell(sheet, "cell_1", "h"),
+        rfx.template_from_cell(sheet, "cell_3", "d"),
+    ]
+    events = (
+        (t1, "cell_0", "h", "n1"),
+        (t2, "cell_2", "h", "n2"),
+        (t2, "cell_5", "h", "n3"),
+        (t3, "cell_0", "d", "n4"),
+        (t3, "cell_3", "h", "n5"),
+    )
+    cell_d = wfx.heredity_cell("D", end_time=0.2)
+    cell_d["experiment"]["observation_times"] = [0.0, 0.1, 0.2]
+    cell_d["execution"]["jit"] = True
+    water_d = wfx.with_water(cell_d, pf_m_s=5e-4)
+    cell_h = wfx.heredity_cell("H", dt=dt, end_time=0.2, solver=imex.ARS222_ID)
+    cell_h["experiment"]["observation_times"] = [0.0, 0.1, 0.2]
+    return dict(
+        events=rfx.with_replacement(sheet, templates, events),
+        water_d=water_d,
+        no_route=wfx.with_symport(water_d, membranes=[]),
+        blocked=wfx.with_symport(water_d, availability=0.0),
+        volume_bound=wfx.with_water(cell_h, pf_m_s=5e-4, minimum_fraction=0.9999),
+    )
+
+
+def same_bits(a, b):
+    a, b = np.asarray(a), np.asarray(b)
+    return a.dtype == b.dtype and a.shape == b.shape and a.tobytes() == b.tobytes()
+
+
+@pytest.mark.parametrize("world", ("events", "water_d", "no_route", "blocked", "volume_bound"))
+def test_a_frozen_definition_and_its_rewrite_are_one_computation(world):
+    """On each world, the family's own format and its frozen_definition rewrite give an equal
+    composite spec, the same implementation object, and bit-identical initial state, layout and
+    controls at every point of the world's event grid: the two formats are one computation."""
+    from cells.execution.grid import EventGrid
+
+    raw = one_computation_worlds()[world]
+    frozen, rewrite = parse_spec(raw), parse_spec(cs.frozen_definition(raw))
+    family, model = get_model(frozen.model), get_model(rewrite.model)
+    assert family.module.composite(frozen) == rewrite
+    assert family.composition is model
+    state, layout = model.initial_values(rewrite)
+    frozen_state, frozen_layout = family.initial_values(frozen)
+    assert type(state) is type(frozen_state) and type(layout) is type(frozen_layout)
+    for name in type(state)._fields:
+        assert same_bits(getattr(state, name), getattr(frozen_state, name)), name
+    for name in type(layout)._fields:
+        a, b = getattr(layout, name), getattr(frozen_layout, name)
+        assert same_bits(a, b) if hasattr(a, "shape") else a == b, name
+    grid = EventGrid(frozen)
+    times = [grid[i] for i in range(len(grid))]
+    controls, frozen_controls = cs.control_values(rewrite, times), scheduled_controls(frozen, times)
+    assert controls._fields == frozen_controls._fields
+    for name, a, b in zip(controls._fields, controls, frozen_controls, strict=True):
+        assert same_bits(a, b), name
+    from cells.execution.runner import integration_steps  # The step sequence: the run's last input.
+
+    rewrite_grid = EventGrid(rewrite)
+    assert [rewrite_grid[i] for i in range(len(rewrite_grid))] == times
+    steps = [integration_steps(spec, np.asarray(times)) for spec in (frozen, rewrite)]
+    assert same_bits(*steps)
