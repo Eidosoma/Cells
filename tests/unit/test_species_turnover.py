@@ -698,7 +698,7 @@ def test_beside_the_changers_it_reads_by_name(name, monkeypatch):
     monkeypatch.setattr(cls, "VIEW_READS", ())
     monkeypatch.setattr(cls, "SCOPED_READS", {})
     composite._implementation.cache_clear()  # Compositions are cached per operator list.
-    today = r"scheduled_species_turnover@1 reads \w+ as declared"
+    today = re.escape(LAW_ID_TURNOVER) + r" reads \w+ as declared"
     try:
         with pytest.raises(ConfigError, match=today):
             parse_spec(build())
