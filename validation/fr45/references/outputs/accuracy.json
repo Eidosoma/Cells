@@ -1,0 +1,788 @@
+{
+ "normalisation": "amounts by the node's scale s_node, heats by E, C8 by S, plants by their criterion's bound (CRITERIA.md)",
+ "worlds": {
+  "W1": {
+   "equilibrium": {
+    "newton_vs_bracket": 1.1541664929005046e-67,
+    "bracket_width": 8.664582028832489e-67,
+    "bracket_iterations": 166,
+    "newton_iterations": 9,
+    "residual_root": {
+     "ligand_totals": 4.166666039352002e-71,
+     "moieties": 1.912499712062569e-67,
+     "detailed_balance": 0.0
+    },
+    "residual_written": {
+     "ligand_totals": 2.2587541859435065e-17,
+     "moieties": 0.0,
+     "detailed_balance": 3.3523304401110775e-17
+    },
+    "affinity_over_RT": 1.7178165313640673e-39,
+    "wang": {
+     "matrix": {
+      "gap": 1.157083159128051e-67,
+      "binary64_gap": 4.6646482848503694e-17,
+      "branch": 0,
+      "is_largest_root": true,
+      "cubic_residual_over_terms": 3.2619161924637238e-71
+     }
+    }
+   },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.018741251119823162
+   },
+   "trajectory": {
+    "tolerance_gap_over_scale_max": 1.936204088190774e-12,
+    "pairs_with_gap_above_1e-10_of_scale": 0,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 2.5085953206801006e-14,
+    "taylor_fine_vs_coarse_over_scale_max": 2.0766555915966153e-49,
+    "taylor_steps": {
+     "fine": 140,
+     "coarse": 153
+    },
+    "dop853_nfev": {
+     "1e-12": 1122,
+     "1e-13": 1374
+    }
+   },
+   "closure": {
+    "ligand_totals_high_precision_over_s_node": 8.333332078704005e-71,
+    "ligand_totals_written_over_s_node": 2.2587541859435065e-17,
+    "moieties_high_precision_over_S": 1.2499998118056006e-69,
+    "moieties_written_over_S": 4.517508371887013e-17
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.0001390382024166126
+   },
+   "heats_C3a_bound_over_heat": {
+    "min": 0.00020806134407940836,
+    "max": 220597700333.34885
+   },
+   "heat_pairs_with_gap_above_1e-10_of_E": 0,
+   "heats": {
+    "tolerance_gap_over_E_max": 1.4539875621404428e-15,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 1.392403622335887e-16,
+    "taylor_fine_vs_coarse_over_E_max": 1.395551009158755e-50,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 4.036308624420502e-42,
+    "smallest_heat_over_E": 3.7959351619744583e-17
+   },
+   "horizon_distance_over_C2a_band_max": 5.086329918001721e-07
+  },
+  "W1eq": {
+   "equilibrium": {
+    "newton_vs_bracket": 3.194348558124622e-67,
+    "bracket_width": 2.387723877289774e-66,
+    "bracket_iterations": 166,
+    "newton_iterations": 9,
+    "residual_root": {
+     "ligand_totals": 1.1482201862417765e-70,
+     "moieties": 5.270330654849754e-67,
+     "detailed_balance": 0.0
+    },
+    "residual_written": {
+     "ligand_totals": 9.67908160040042e-18,
+     "moieties": 0.0,
+     "detailed_balance": 9.238113748340978e-17
+    },
+    "affinity_over_RT": 1.7178165314448953e-39,
+    "wang": {
+     "matrix": {
+      "gap": 3.1886074571934134e-67,
+      "binary64_gap": 1.0260813087463056e-16,
+      "branch": 0,
+      "is_largest_root": true,
+      "cubic_residual_over_terms": 3.2619161924637236e-70
+     }
+    }
+   },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 3.652955290360527e-05
+   },
+   "trajectory": {
+    "tolerance_gap_over_scale_max": 0.0,
+    "pairs_with_gap_above_1e-10_of_scale": 0,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 3.652955290360527e-17,
+    "taylor_fine_vs_coarse_over_scale_max": 9.857983623329925e-50,
+    "taylor_steps": {
+     "fine": 14,
+     "coarse": 14
+    },
+    "dop853_nfev": {
+     "1e-12": 234,
+     "1e-13": 138
+    }
+   },
+   "closure": {
+    "ligand_totals_high_precision_over_s_node": 0.0,
+    "ligand_totals_written_over_s_node": 9.67908160040042e-18,
+    "moieties_high_precision_over_S": 4.166666039352002e-70,
+    "moieties_written_over_S": 0.0
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 5.0501732570047385e-06
+   },
+   "heats_C3a_bound_over_heat": {
+    "min": 1.2434655282969185e+29,
+    "max": 2.479943554075488e+32
+   },
+   "heat_pairs_with_gap_above_1e-10_of_E": 0,
+   "heats": {
+    "tolerance_gap_over_E_max": 0.0,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 5.050173257004738e-18,
+    "taylor_fine_vs_coarse_over_E_max": 4.919905604590729e-69,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 7.04434192843469e-33,
+    "smallest_heat_over_E": 1.2252973278520588e-38
+   },
+   "C2b_reference_fraction_of_tolerance_max": 0.019499649871652106,
+   "horizon_distance_over_C2a_band_max": 3.427993693003681e-11,
+   "own_root_equals_W1_root_in_binary64": true,
+   "own_root_vs_W1_root_over_s_node": 1.2334415241622016e-17
+  },
+  "W1p": {
+   "equilibrium": {
+    "newton_vs_bracket": 1.1541664929005046e-67,
+    "bracket_width": 8.664582028832489e-67,
+    "bracket_iterations": 166,
+    "newton_iterations": 9,
+    "residual_root": {
+     "ligand_totals": 4.166666039352002e-71,
+     "moieties": 1.912499712062569e-67,
+     "detailed_balance": 0.0
+    },
+    "residual_written": {
+     "ligand_totals": 2.2587541859435065e-17,
+     "moieties": 0.0,
+     "detailed_balance": 3.3523304401110775e-17
+    },
+    "affinity_over_RT": 1.7178165313640673e-39,
+    "wang": {
+     "matrix": {
+      "gap": 1.157083159128051e-67,
+      "binary64_gap": 4.6646482848503694e-17,
+      "branch": 0,
+      "is_largest_root": true,
+      "cubic_residual_over_terms": 3.2619161924637238e-71
+     }
+    }
+   },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.018741251119823162
+   },
+   "trajectory": {
+    "tolerance_gap_over_scale_max": 3.385420773892128e-13,
+    "pairs_with_gap_above_1e-10_of_scale": 0,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 2.5085953206801006e-14,
+    "taylor_fine_vs_coarse_over_scale_max": 2.0766555915966153e-49,
+    "taylor_steps": {
+     "fine": 85,
+     "coarse": 94
+    },
+    "dop853_nfev": {
+     "1e-12": 648,
+     "1e-13": 792
+    }
+   },
+   "closure": {
+    "ligand_totals_high_precision_over_s_node": 8.333332078704005e-71,
+    "ligand_totals_written_over_s_node": 2.2587541859435065e-17,
+    "moieties_high_precision_over_S": 1.2499998118056006e-69,
+    "moieties_written_over_S": 4.517508371887013e-17
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.0001390382024166126
+   },
+   "heats_C3a_bound_over_heat": {
+    "min": 0.00020806134407940836,
+    "max": 0.04222016908227551
+   },
+   "heat_pairs_with_gap_above_1e-10_of_E": 0,
+   "heats": {
+    "tolerance_gap_over_E_max": 1.4539875621404428e-15,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 1.392403622335887e-16,
+    "taylor_fine_vs_coarse_over_E_max": 1.395551009158755e-50,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 9.244969758826154e-49,
+    "smallest_heat_over_E": 0.00019792613446341874
+   },
+   "horizon_distance_over_C2a_band_max": 2676356.028208,
+   "rows_bitwise_equal_W1": true,
+   "plants": {
+    "P1": {
+     "taylor_vs_dop853_distance_gap": 1.1533006994205822e-08
+    },
+    "P2": {
+     "taylor_vs_dop853_distance_gap": 4.839234603693771e-09
+    },
+    "P3": {
+     "smallest_planted_heat_sign": "non-negative",
+     "taylor_vs_dop853_relative_distance_gap": 9.405030832601634e-13
+    },
+    "P6": {
+     "smallest_planted_heat_sign": "non-negative",
+     "taylor_vs_dop853_relative_distance_gap": 6.358550135004977e-12
+    },
+    "P8": {
+     "taylor_vs_dop853_relative_distance_gap": 5.942793047994538e-14
+    },
+    "P9": {
+     "taylor_vs_dop853_relative_distance_gap": 1.062707554012471e-13
+    }
+   }
+  },
+  "W2": {
+   "equilibrium": {
+    "newton_vs_bracket": 2.5008173810824864e-67,
+    "bracket_width": 1.2861167543492848e-67,
+    "bracket_iterations": 98,
+    "newton_iterations": 8,
+    "residual_root": {
+     "ligand_totals": 1.252914519580404e-70,
+     "moieties": 3.252566092830729e-67,
+     "detailed_balance": 0.0
+    },
+    "residual_written": {
+     "ligand_totals": 2.8650240570824374e-17,
+     "moieties": 8.346087285151987e-18,
+     "detailed_balance": 7.238977391737243e-18
+    },
+    "affinity_over_RT": 1.379036204060616e-39,
+    "wang": {
+     "matrix": {
+      "gap": 4.490445638176168e-68,
+      "binary64_gap": 1.1081509015999619e-16,
+      "branch": 0,
+      "is_largest_root": true,
+      "cubic_residual_over_terms": 8e-70
+     }
+    },
+    "root_from_methodA_wash_state": 7.563559966646768e-17
+   },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.0036376433871177075
+   },
+   "trajectory": {
+    "tolerance_gap_over_scale_max": 2.1110036773244426e-14,
+    "pairs_with_gap_above_1e-10_of_scale": 0,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 3.714434172787711e-15,
+    "taylor_fine_vs_coarse_over_scale_max": 6.455961134874109e-50,
+    "taylor_steps": {
+     "fine": 117,
+     "coarse": 128
+    },
+    "dop853_nfev": {
+     "1e-12": 1028,
+     "1e-13": 1268
+    }
+   },
+   "closure": {
+    "ligand_totals_high_precision_over_s_node": 2.505829039160808e-70,
+    "ligand_totals_written_over_s_node": 5.37673713700515e-17,
+    "moieties_high_precision_over_S": 8e-70,
+    "moieties_written_over_S": 5.329070518200751e-17,
+    "books_high_precision_over_s_node": 2.740750511582134e-70,
+    "books_written_over_s_node": 1.3290026057183117e-16
+   },
+   "wash_interval_site_heat_over_E_min": 0.0005641563759517554,
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.00011443496571173089
+   },
+   "heats_C3a_bound_over_heat": {
+    "min": 0.0005183477216575267,
+    "max": 1.0128260002206228e+18
+   },
+   "heat_pairs_with_gap_above_1e-10_of_E": 0,
+   "heats": {
+    "tolerance_gap_over_E_max": 4.1232290978941963e-16,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 1.1448214986977481e-16,
+    "taylor_fine_vs_coarse_over_E_max": 3.717119176548589e-51,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 5.89093282202588e-39,
+    "smallest_heat_over_E": 6.19294037729981e-24
+   },
+   "horizon_distance_over_C2a_band_max": 5.153459844320239e-06,
+   "plants": {
+    "P5": {
+     "C6_taylor_vs_dop853_relative_distance_gap": 1.55802400243938e-14,
+     "C4a_taylor_vs_dop853_relative_distance_gap": 9.968847352024923e-05
+    }
+   }
+  },
+  "W3": {
+   "equilibrium": {
+    "newton_vs_bracket": 1.740685448247619e-67,
+    "bracket_width": 1.131875694272381e-66,
+    "bracket_iterations": 251,
+    "newton_iterations": 10,
+    "residual_root": {
+     "ligand_totals": 2.8676860761904765e-70,
+     "moieties": 2.7931262382095242e-67,
+     "detailed_balance": 0.0
+    },
+    "residual_written": {
+     "ligand_totals": 3.1091514738121465e-17,
+     "moieties": 1.5545757369060732e-17,
+     "detailed_balance": 2.898279239414209e-17
+    },
+    "affinity_over_RT": 2.642569822099482e-38,
+    "wang": {
+     "C": {
+      "gap": 2.0073802533333333e-70,
+      "binary64_gap": 3.698293821582766e-17,
+      "branch": 0,
+      "is_largest_root": true,
+      "cubic_residual_over_terms": 8.175835202686866e-70
+     }
+    }
+   },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.2951614085006502
+   },
+   "trajectory": {
+    "tolerance_gap_over_scale_max": 4.1364151207596796e-13,
+    "pairs_with_gap_above_1e-10_of_scale": 0,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 4.1725241981933157e-13,
+    "taylor_fine_vs_coarse_over_scale_max": 3.1449268823487022e-49,
+    "taylor_steps": {
+     "fine": 154,
+     "coarse": 164
+    },
+    "dop853_nfev": {
+     "1e-12": 1218,
+     "1e-13": 1446
+    }
+   },
+   "closure": {
+    "ligand_totals_high_precision_over_s_node": 1.1470744304761906e-69,
+    "ligand_totals_written_over_s_node": 4.352812063337005e-17,
+    "moieties_high_precision_over_S": 1.6059042026666666e-69,
+    "moieties_written_over_S": 6.529218095005507e-17
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.00023531800905852198
+   },
+   "heats_C3a_bound_over_heat": {
+    "min": 0.00014730947731591177,
+    "max": 1.5874093461473768e+20
+   },
+   "heat_pairs_with_gap_above_1e-10_of_E": 0,
+   "heats": {
+    "tolerance_gap_over_E_max": 1.6417673404970434e-15,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 2.3570434648042506e-16,
+    "taylor_fine_vs_coarse_over_E_max": 1.3913286451556178e-50,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 5.467996244580036e-38,
+    "smallest_heat_over_E": 4.5191012407022266e-26
+   },
+   "horizon_distance_over_C2a_band_max": 9.673299632020553e-07,
+   "W3p_rows_bitwise_equal_W3": true,
+   "W3p_s_node_equals_W3": true,
+   "plants": {
+    "P7": {
+     "C1_taylor_vs_dop853_distance_gap": 1.1880932805996984e-08
+    }
+   }
+  },
+  "W4": {
+   "equilibrium": {
+    "newton_vs_bracket": 8.333333333333334e-70,
+    "bracket_width": 0.0,
+    "bracket_iterations": 8,
+    "newton_iterations": 5,
+    "residual_root": {
+     "ligand_totals": 8.333333333333334e-70,
+     "moieties": 8.333333333333334e-79,
+     "detailed_balance": 0.0
+    },
+    "residual_written": {
+     "ligand_totals": 1.3308741044978922e-17,
+     "moieties": 0.0,
+     "detailed_balance": 6.454209354989396e-26
+    },
+    "affinity_over_RT": 4.0414091712049445e-40,
+    "wang": {
+     "matrix": {
+      "gap": 2.3618894633333332e-70,
+      "binary64_gap": 1.778595751402053e-16,
+      "branch": 0,
+      "is_largest_root": true,
+      "cubic_residual_over_terms": 3.1098206577251908e-61
+     }
+    }
+   },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.008511249488010013
+   },
+   "trajectory": {
+    "tolerance_gap_over_scale_max": 9.701276818911235e-17,
+    "pairs_with_gap_above_1e-10_of_scale": 0,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 8.007006002582432e-17,
+    "taylor_fine_vs_coarse_over_scale_max": 3.3737095433977397e-59,
+    "taylor_steps": {
+     "fine": 11,
+     "coarse": 12
+    },
+    "dop853_nfev": {
+     "1e-12": 272,
+     "1e-13": 332
+    },
+    "C8_tolerance_gap_over_S_max": 7.815289483364533e-14,
+    "C8_pairs_with_gap_above_1e-10_of_S": 0,
+    "C8_taylor_vs_dop853_rtol1e-13_over_S_max": 9.150667014801783e-15
+   },
+   "closure": {
+    "ligand_totals_high_precision_over_s_node": 8.333333333333334e-70,
+    "ligand_totals_written_over_s_node": 8.007006010192034e-17,
+    "moieties_high_precision_over_S": 4.166666039352002e-70,
+    "moieties_written_over_S": 4.517508371887013e-17
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 1.9778875678157972e-05
+   },
+   "heats_C3a_bound_over_heat": {
+    "min": 86494.79337668205,
+    "max": 2690938.239068052
+   },
+   "heat_pairs_with_gap_above_1e-10_of_E": 0,
+   "heats": {
+    "tolerance_gap_over_E_max": 2.6311685424201266e-17,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 1.9778875678260024e-17,
+    "taylor_fine_vs_coarse_over_E_max": 1.2016128784960192e-60,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 7.166362606981483e-50,
+    "smallest_heat_over_E": 2.985559231869991e-12
+   },
+   "horizon_distance_over_C2a_band_max": 0.5143285999817058,
+   "closed_form_gap_over_S_max": 1.9240547928335725e-10
+  },
+  "W5": {
+   "stage": {
+    "binary64_vs_exact_relative_max": 0.0,
+    "verdicts_agree": true
+   }
+  },
+  "W6": {
+   "equilibrium": {
+    "newton_vs_bracket": 3.6466666666666664e-68,
+    "bracket_width": 5.162e-67,
+    "bracket_iterations": 129,
+    "newton_iterations": 9,
+    "residual_root": {
+     "ligand_totals": 0.0,
+     "moieties": 8.733333333333333e-68,
+     "detailed_balance": 0.0
+    },
+    "residual_written": {
+     "ligand_totals": 8.53484024906574e-18,
+     "moieties": 0.0,
+     "detailed_balance": 3.5711293272623664e-17
+    },
+    "affinity_over_RT": 1.902037675230259e-40,
+    "wang": {
+     "D": {
+      "gap": 3.673333333333333e-68,
+      "binary64_gap": 1.427296547941886e-17,
+      "branch": 0,
+      "is_largest_root": true,
+      "cubic_residual_over_terms": 6.250000788756156e-70
+     }
+    }
+   },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.04441878839325404
+   },
+   "trajectory": {
+    "tolerance_gap_over_scale_max": 5.843849709696869e-14,
+    "pairs_with_gap_above_1e-10_of_scale": 0,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 4.6454306547843295e-14,
+    "taylor_fine_vs_coarse_over_scale_max": 3.1305910904103323e-49,
+    "taylor_steps": {
+     "fine": 120,
+     "coarse": 130
+    },
+    "dop853_nfev": {
+     "1e-12": 844,
+     "1e-13": 1060
+    }
+   },
+   "closure": {
+    "ligand_totals_high_precision_over_s_node": 6.666666666666667e-70,
+    "ligand_totals_written_over_s_node": 3.187265229165061e-17,
+    "moieties_high_precision_over_S": 1.2500001577512313e-69,
+    "moieties_written_over_S": 3.38813221660277e-17
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 7.988743282611208e-05
+   },
+   "heats_C3a_bound_over_heat": {
+    "min": 0.0001947551470622558,
+    "max": 6.795035455359167e+18
+   },
+   "heat_pairs_with_gap_above_1e-10_of_E": 0,
+   "heats": {
+    "tolerance_gap_over_E_max": 1.013098069950116e-15,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 7.99683666301215e-17,
+    "taylor_fine_vs_coarse_over_E_max": 1.0794634086687444e-50,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 1.8180061307719217e-38,
+    "smallest_heat_over_E": 7.124592538065277e-25
+   },
+   "horizon_distance_over_C2a_band_max": 4.328222396919725e-09
+  },
+  "W7": {
+   "equilibrium": {
+    "newton_vs_bracket": 1.7875e-68,
+    "bracket_width": 1.81e-67,
+    "bracket_iterations": 66,
+    "newton_iterations": 8,
+    "residual_root": {
+     "ligand_totals": 1.25e-70,
+     "moieties": 2.9875e-68,
+     "detailed_balance": 0.0
+    },
+    "residual_written": {
+     "ligand_totals": 4.100643536836935e-17,
+     "moieties": 0.0,
+     "detailed_balance": 2.843025099909194e-17
+    },
+    "affinity_over_RT": 2.8504327781599862e-40,
+    "wang": {
+     "matrix": {
+      "gap": 1.8e-68,
+      "binary64_gap": 1.2866707907978095e-16,
+      "branch": 0,
+      "is_largest_root": true,
+      "cubic_residual_over_terms": 2.3148148148148148e-70
+     }
+    },
+    "pooled_closed_form": {
+     "matrix": {
+      "gap_over_s_node": 1.7875e-68
+     }
+    },
+    "root_from_methodA_wash_state": 1.1110851110809109e-17,
+    "theta": {
+     "formula_vs_root_max": 9.9e-69,
+     "newton_formula_vs_bracket_root_max": 8.6e-69,
+     "written_formula_vs_root_max": 2.598421083040586e-17
+    }
+   },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.0062535001315322325
+   },
+   "trajectory": {
+    "tolerance_gap_over_scale_max": 6.362688154126772e-13,
+    "pairs_with_gap_above_1e-10_of_scale": 0,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 6.574603698693946e-15,
+    "taylor_fine_vs_coarse_over_scale_max": 5.992088515381257e-50,
+    "taylor_steps": {
+     "fine": 128,
+     "coarse": 135
+    },
+    "dop853_nfev": {
+     "1e-12": 1134,
+     "1e-13": 1290
+    }
+   },
+   "closure": {
+    "ligand_totals_high_precision_over_s_node": 1.25e-70,
+    "ligand_totals_written_over_s_node": 5.940183499779278e-17,
+    "moieties_high_precision_over_S": 1e-69,
+    "moieties_written_over_S": 3.700743415417188e-17,
+    "books_high_precision_over_s_node": 3.75e-70,
+    "books_written_over_s_node": 6.245004513516506e-17
+   },
+   "wash_interval_site_heat_over_E_min": 0.0009056568280379462,
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.00015737678318471826
+   },
+   "heats_C3a_bound_over_heat": {
+    "min": 0.0016183014033710826,
+    "max": 3.041151949683163e+31
+   },
+   "heat_pairs_with_gap_above_1e-10_of_E": 0,
+   "heats": {
+    "tolerance_gap_over_E_max": 3.258671978929472e-16,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 1.5742806711606806e-16,
+    "taylor_fine_vs_coarse_over_E_max": 5.350018865540999e-51,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 2.1664889863524127e-34,
+    "smallest_heat_over_E": 5.693803604863674e-37
+   },
+   "C2b_reference_fraction_of_tolerance_max": 0.0005079995247597694,
+   "horizon_distance_over_C2a_band_max": 1.2184123988786007e-15,
+   "start": {
+    "stated_facts_checked": [
+     "S = 6.0 fmol",
+     "the start's B of matrix_L1 = 2.0 fmol",
+     "the start's B of matrix_L2 = 1.0 fmol",
+     "the start's R = 3.0 fmol",
+     "K of matrix_L1 = 12 mM",
+     "B/R = c/K at the start, matrix_L1",
+     "the net flux of matrix_L1 at the start is 0.0 in binary64",
+     "K of matrix_L2 = 12 mM",
+     "B/R = c/K at the start, matrix_L2",
+     "the net flux of matrix_L2 at the start is 0.0 in binary64",
+     "the map on the start removes 4.0 fmol of L1",
+     "the map on the start removes 2.0 fmol of L2",
+     "the map on the start supplies 4.0 fmol of L2",
+     "the rows before the wash are 0.5 and 1.0 s",
+     "the first row after the wash is 1.0025 s"
+    ],
+    "own_root_at_the_start_totals": {
+     "newton_vs_bracket": 4.25e-69,
+     "bracket_width": 7.5875e-68,
+     "bracket_iterations": 67,
+     "newton_iterations": 8,
+     "residual_root": {
+      "ligand_totals": 1.25e-70,
+      "moieties": 7.625e-69,
+      "detailed_balance": 0.0
+     },
+     "residual_written": {
+      "ligand_totals": 1.3877787807814457e-17,
+      "moieties": 0.0,
+      "detailed_balance": 0.0
+     },
+     "affinity_over_RT": 4.958333333597269e-40,
+     "wang": {
+      "matrix": {
+       "gap": 3.25e-69,
+       "binary64_gap": 2.2435756955966707e-16,
+       "branch": 0,
+       "is_largest_root": true,
+       "cubic_residual_over_terms": 1.7361111111111112e-69
+      }
+     },
+     "pooled_closed_form": {
+      "matrix": {
+       "gap_over_s_node": 4.125e-69
+      }
+     }
+    },
+    "own_root_equals_declared_start_in_binary64": true,
+    "own_root_vs_declared_start_over_s_node": 1.2335811384723961e-17,
+    "root_at_declared_binary64_totals_vs_declared_start_over_s_node": 4.25e-69,
+    "own_root_theta_formula_equals_declared_occupancy": true,
+    "rows_before_wash_equal_declared_start_in_binary64": true,
+    "wash_removed_round_to_the_amounts_stated_for_the_start": true
+   },
+   "plants": {
+    "P5": {
+     "C6_taylor_vs_dop853_relative_distance_gap": 0.0,
+     "C4a_taylor_vs_dop853_relative_distance_gap": 1.554726368159204e-05
+    }
+   }
+  },
+  "W7s": {
+   "equilibrium": {
+    "newton_vs_bracket": 3.5875e-68,
+    "bracket_width": 2.0925e-67,
+    "bracket_iterations": 64,
+    "newton_iterations": 8,
+    "residual_root": {
+     "ligand_totals": 3.75e-70,
+     "moieties": 5.3375e-68,
+     "detailed_balance": 0.0
+    },
+    "residual_written": {
+     "ligand_totals": 4.163336342344337e-17,
+     "moieties": 0.0,
+     "detailed_balance": 7.167720110017086e-18
+    },
+    "affinity_over_RT": 5.479065019891941e-41,
+    "wang": {},
+    "pooled_closed_form": {
+     "matrix": {
+      "gap_over_s_node": 3.5875e-68
+     }
+    },
+    "theta": {
+     "formula_vs_root_max": 2.76e-68,
+     "newton_formula_vs_bracket_root_max": 2.32e-68,
+     "written_formula_vs_root_max": 5.832778096514022e-18
+    }
+   },
+   "trajectory_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.004592070646754085
+   },
+   "trajectory": {
+    "tolerance_gap_over_scale_max": 2.4896751327219135e-13,
+    "pairs_with_gap_above_1e-10_of_scale": 0,
+    "taylor_vs_dop853_rtol1e-13_over_scale_max": 4.725134255641384e-15,
+    "taylor_fine_vs_coarse_over_scale_max": 8.340643857252199e-50,
+    "taylor_steps": {
+     "fine": 74,
+     "coarse": 79
+    },
+    "dop853_nfev": {
+     "1e-12": 502,
+     "1e-13": 634
+    }
+   },
+   "closure": {
+    "ligand_totals_high_precision_over_s_node": 0.0,
+    "ligand_totals_written_over_s_node": 6.938893903907228e-17,
+    "moieties_high_precision_over_S": 0.0,
+    "moieties_written_over_S": 0.0
+   },
+   "heats_convergence_requirement": {
+    "misses": 0,
+    "worst_ratio": 0.00013428151175001518
+   },
+   "heats_C3a_bound_over_heat": {
+    "min": 0.005981660935833097,
+    "max": 1.517843908741249e+28
+   },
+   "heat_pairs_with_gap_above_1e-10_of_E": 0,
+   "heats": {
+    "tolerance_gap_over_E_max": 2.1018803428263438e-16,
+    "taylor_vs_dop853_rtol1e-13_over_E_max": 1.343097361170104e-16,
+    "taylor_fine_vs_coarse_over_E_max": 2.0568221358961866e-53,
+    "taylor_fine_vs_coarse_relative_to_heat_max": 9.543038114505523e-34,
+    "smallest_heat_over_E": 7.070496534304794e-34
+   },
+   "horizon_distance_over_C2a_band_max": 2.295610614163349e-13,
+   "stated_horizon": {
+    "slowest_mode_per_s": 23.323807579381203,
+    "horizon_time_constants": 46.647615158762406,
+    "stated": 47
+   }
+  }
+ },
+ "provenance": {
+  "references_revision": "78ff6be4a4d35399775efcf77150b4eab8ae6d44",
+  "tree_clean": true,
+  "writer_version": "fr45-references-writer 2",
+  "regeneration_hash_seeds": [
+   0,
+   1,
+   2
+  ],
+  "spec": {
+   "label": "fr45-site-competition-v1, amendment 3 of 2026-11-24 (98cd33db)",
+   "files": [
+    "docs/FR45_SITE_COMPETITION_PROTOCOL.md",
+    "validation/fr45/spec/AMENDMENT-2-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-3-2026-11-24.md",
+    "validation/fr45/spec/CRITERIA.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
+    "validation/fr45/spec/SPEC.md"
+   ],
+   "verified_against": "SHA256SUMS-fr45-spec-98cd33db.txt",
+   "rows_matched": 106
+  },
+  "profile": "reference"
+ }
+}

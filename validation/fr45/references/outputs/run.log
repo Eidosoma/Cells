@@ -1,0 +1,13 @@
+[23:12:45] revision 78ff6be4a4d35399775efcf77150b4eab8ae6d44 clean=True; spec verified against SHA256SUMS-fr45-spec-98cd33db.txt; 106 SPEC rows matched
+[23:12:45] W1 integrated
+[23:12:45] W1eq integrated
+[23:12:46] W1p integrated, plants sized
+[23:12:47] W2 integrated, plants sized
+[23:12:50] W3 integrated, W3p plants sized
+[23:12:50] W4 integrated
+[23:12:50] W5 loads
+[23:12:50] W6 integrated
+[23:12:51] W7 integrated, plants sized
+[23:12:51] W7s integrated
+[23:12:51] wrote 10 reference files and accuracy.json in 6.6 s
+[23:12:51] python 3.13.5 numpy 2.5.3 scipy 1.18.1 PYTHONHASHSEED=0 cpus=[4] blas_threads=[1]
