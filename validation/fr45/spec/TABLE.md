@@ -32,6 +32,8 @@ spec's text (the lead's first rulings, Q5: `/mnt/workspaces/Cells/fr45-readings-
   records or step report, or returned by the engine's own functions (the wash's event map, `quantities`) called on a
   saved state.
   - No difference, sum, ratio, recomputed quantity, tolerance or verdict is written. The judge forms those.
+  - This assumes that the engine holds amounts, volumes, concentrations, times and heats in SPEC §0's units (§9). If it
+    does not, a conversion rule enters by a dated change to this file before the judged run.
 - **Strict JSON** (RFC 8259): no NaN or infinity, and no key twice in one object.
   - Floats are written in Python's `repr` form, so each parses to the engine's binary64 value, the sign of zero
     included. "Bit for bit" (CRITERIA:61, 82) compares the 64-bit patterns.
@@ -97,7 +99,7 @@ Every entry holds every key below, for honest, plant and refused runs alike.
 | --- | --- |
 | `status` | `"completed"` or `"refused"` |
 | `world` | string: the run's world (§3) |
-| `plant` | null in an honest run; else `{"id", "patch", "change"}`: the plant (`P1` to `P9`), the scoped patch's path under `validation/` (CRITERIA:111-112), and one line naming what it changes |
+| `plant` | null in an honest run; else `{"id", "patch", "change", "inputs_changed"}`: the plant (`P1` to `P9`), the scoped patch's path under `validation/` (CRITERIA:111-112), one line naming what it changes, and the list of `inputs` key paths it changes (strings; empty when it acts on the engine's code alone) |
 | `dt_s` | number: the step the engine ran |
 | `steps` | integer: the steps completed: the last row's `step`, or the steps before a refused one |
 | `backend` | `"numpy"` or `"compiled"`: the backend the run's steps used |
@@ -107,10 +109,10 @@ Every entry holds every key below, for honest, plant and refused runs alike.
 | `event_map` | list of the wash's event map applied alone to saved states (§6); empty in a world without a wash |
 | `step_report` | the engine's report of the first step (§7) in W5's two runs; null in every other run |
 | `refusal` | null in a completed run; else `{"kind", "name", "message", "step", "time_s"}` (§7) |
-| `checks` | the engine's own ledgers and host checks, as it reports them at the end of the run (recorded, never judged) |
+| `checks` | object, or null before parse: the engine's own ledgers and host checks, as it reports them at the end of the run (recorded, never judged) |
 | `operators` | list of strings: the model and operator IDs the run's definition declares, in declared order, in today's spellings (§9) |
 | `inputs` | the world as the engine parsed it (§4.1) |
-| `definition` | the engine's own declaration of the world, as run (recorded, never judged) |
+| `definition` | object, or null before parse: the engine's own declaration of the world, as run (recorded, never judged) |
 | `source` | provenance (§10) |
 | `record`, `record_sha256` | the run's own record file, by its path relative to `table/`, and its sha256 (64 hex digits); recorded, never judged |
 
@@ -129,7 +131,7 @@ Read back from the definition the engine parsed and ran, never copied from SPEC.
 | --- | --- |
 | `world` | string |
 | `constants` | `{"sites_per_fmol", "temperature_K", "RT_pJ_per_fmol"}`: N_f, T and RT as the engine uses them (SPEC:34-40) |
-| `nodes` | list of `{"id", "kind", "volume_pL"}`; `kind` is `"node"` or `"cell"` |
+| `nodes` | list of `{"id", "kind", "volume_pL", "registered"}`; `kind` is `"node"` or `"cell"`; `registered` is false for a compartment SPEC §2 does not name (below) |
 | `patches` | list of `{"id", "inside", "outside"}` (W3, W3p, W6); empty in the others |
 | `ligands` | list of strings |
 | `free_amounts` | list of `{"ligand", "node", "n_fmol", "declared"}`: every ligand at every node and cell, as the engine parsed it. `declared` is false for a trace (SPEC:104-106) |
@@ -142,11 +144,16 @@ Read back from the definition the engine parsed and ran, never copied from SPEC.
   - `shared` is false for a one-population set, which is its population's own sites (SPEC:53; PROTOCOL:55).
   - `owner` is a node or a patch. `face` is `"inside"` or `"outside"` for a patch's set, and null for a node's.
   - `faces` is the facing node or cell (SPEC:55-58).
-- **W6's patch** `specimen_face` needs a cell inside it, which SPEC does not name (SPEC:210). It is `specimen`, as in W3
-  (SPEC:178), and holds only traces.
+- **Compartments SPEC §2 does not name** (silent: no criterion reads them, so recording them cannot make a pass easier;
+  §14). W6's patch `specimen_face` needs a cell inside it, which SPEC does not name (SPEC:210), and the host tissue may
+  need others (SPEC:59-61).
+  - Each is listed in `nodes` with `registered` false, under the engine world's own name.
+  - Its ligand amounts are traces (SPEC:104-105), and they appear in `free_amounts` and in the rows as information.
+  - The echo's comparison below covers the registered compartments only. An unregistered one is recorded.
 - **The judge compares `inputs` with the registered inputs** of SPEC §2 bit for bit: "Every number below is a binary64
   literal as written" (SPEC:104).
-  - An extra, missing or different key or value means the run is not the registered world.
+  - An extra, missing or different key or value means the run is not the registered world. The exceptions are a key
+    path that a plant run's `plant.inputs_changed` names (§8), and an unregistered compartment.
   - `constants.sites_per_fmol` and `temperature_K` are compared exactly (SPEC:35, 38). `RT_pJ_per_fmol` is recorded,
     since SPEC gives RT as a formula, not a literal (SPEC:36-39).
   - A trace (`declared` false) is information.
@@ -154,7 +161,8 @@ Read back from the definition the engine parsed and ran, never copied from SPEC.
 ## 5. The rows
 
 A row is the engine's saved state after `step` steps. Row 0 is the start, before any step (SPEC:251-254). The saved
-rows are the start and every observation time (AMENDMENT-1:41-43), and in W5, which has none, the horizon.
+rows are the start and every observation time (AMENDMENT-1:41-43). W5 has no observation time, so its runs also save the
+horizon, for the record only (silent: the contract's choice; no criterion reads it).
 
 | Key | Type and meaning |
 | --- | --- |
@@ -196,7 +204,8 @@ steps are computed from SPEC.md's inputs alone.
     the row at t is the row whose `step` is t's step above.
   - In binary64, t/dt is that integer at every registered time but one: at W7's 1.0025 s it is 400.99999999999994.
     Truncating it would land on the wash row, so a step is always the table's integer, never a truncated quotient.
-- **The row's clock is checked.** Its `time_s` equals t within 10⁻¹²·t, and is 0.0 at step 0.
+- **The row's clock is checked.** Its `time_s` equals t within 10⁻¹²·t, and is 0.0 at step 0. The 10⁻¹² is the
+  contract's own number, after FR-43 part 3's contract (its TABLE.md:79); SPEC states none.
   - A clock summed step by step stays within about 4·10⁻¹³·t over these runs. Neighbouring rows are at least dt apart.
     So this tolerance admits the clock's rounding and no other row.
   - A row whose clock departs is not the registered row.
@@ -273,7 +282,7 @@ DECISIONS:10367-10368).
 | --- | --- |
 | `state_step` | integer: the row whose saved state the map is applied to: 320 in W2; 0 and 400 in W7 |
 | `variant` | `"numpy"` or `"compiled"`: the engine's NumPy implementation of the map, or its compiled one |
-| `node`, `fraction`, `buffer_mM` | the map's parameters as the engine passed them; they equal `inputs.wash` |
+| `node`, `fraction`, `buffer_mM` | string, number, and object ligand → mM: the map's parameters as the engine passed them; they equal `inputs.wash` |
 | `before` | `{"amounts", "records"}`: the state passed to the map, read from it before the call, in a row's shapes (§5) |
 | `after` | `{"amounts", "records"}`: the state the map returns, in the same shapes |
 
@@ -347,7 +356,9 @@ The kinds stay apart. A `harness` refusal is never a run's "own books or checks"
 - **Each plant runs in its own process,** as a scoped patch under `validation/`, never in `src/`, on the plant's own
   world (CRITERIA:111-112).
   - Its entry has the honest shape, and its `plant` names the plant, the patch and what it changes.
-  - Its `world`, `dt_s`, `inputs`, `operators` and `definition` equal those of its world's honest run.
+  - Its `world`, `dt_s`, `inputs`, `operators` and `definition` equal those of its world's honest run, but for what its
+    patch changes. Where the patch acts on the declaration (P2's crossed k_off, say), `plant.inputs_changed` names
+    every `inputs` key path it changes, and `plant.change` says how.
 - **What each plant's criterion reads** (CRITERIA:119-129):
 
 | Plant | Run | Keys |
@@ -361,7 +372,8 @@ The kinds stay apart. A `harness` refusal is never a run's "own books or checks"
 | P9 (C9) | `W1p-P9` | `rows[].site_occupied_fraction` and `amounts`; `capacities` |
 
 - **P5's patch changes the wash wherever the engine implements it:** its NumPy and compiled maps, and the run's own
-  event. CRITERIA:125 names the wash's mechanism, not one of its forms.
+  event. This is the contract's reading of CRITERIA:125, which names the wash's mechanism, not one of its forms. It is
+  marked because it bears on reading 4 (§14).
   - P5's `event_map` is the planted map alone on the run's own saved states (step 320 in W2; 0 and 400 in W7), in each
     variant.
 - **A plant's scoring** is CRITERIA:113-114, with the lead's ruling on reading 2. The contract adds nothing to it.
@@ -374,6 +386,8 @@ The kinds stay apart. A `harness` refusal is never a run's "own books or checks"
 - **Names are the spec's** (SPEC §2), never the engine's indices:
   - the nodes `well` and `vat`, the cell `specimen` and the patch `specimen_face`;
   - the ligands `L1` to `L5`, and the sets and populations as SPEC.md names them.
+
+  A compartment SPEC §2 does not name keeps the engine world's own name (§4.1).
 - **Observables** are `n:<ligand>@<node>`, `R:<set>` and `B:<population>`, the reference's own names (SPEC:368-369). So a
   row's amounts at a node go to the references' G as they stand (NOTES:184). A pool or a record is `<ligand>@<node>`.
 - **IDs are in today's spellings.** The registration's prose is read through the ID table (D345;
@@ -448,6 +462,7 @@ only.
     a wash, with its event and its map on the start and on the wash row in both variants; a cell with both patch faces;
     one world at three steps; a one-population set;
   - W5's two shapes, refused by the stage condition and admitted;
+  - an unregistered compartment (§4.1), and a plant run whose `inputs_changed` is not empty;
   - a refused run of each kind, a plant run of each shape in §8, and a non-empty `missing`.
 
   Beside it, a README lists every key and type to the leaf.
@@ -499,6 +514,11 @@ marked silent there. Each is settled as a format, and none changes a criterion.
    checks".
 6. **A one-population set's free sites** (W3's `B`, W7s's `matrix`). If the engine holds them as S − B, C5 holds there
    by construction.
+7. **Compartments SPEC §2 does not name** (§4.1): W6's cell inside `specimen_face`, and any compartment the host tissue
+   needs. The contract records them and compares only the registered compartments. The lead may rule that they are
+   compared too, or that a world may hold none beyond what its patches need.
+8. **P5's patch in both forms of the map** (§8). The contract reads CRITERIA:125 as the wash in all its forms. Together
+   with reading 4, the lead may rule otherwise.
 
 ## 15. Disclosures
 
