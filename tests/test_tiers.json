@@ -401,7 +401,8 @@
   "/mnt/workspaces/Cells/fr38-v2-landing-20261125/measure/measured.json",
   "/mnt/workspaces/Cells/id-rename-tool-20261125/measure-l1/measured.json",
   "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure/measured-41.json",
-  "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure-fixes/measured.json"
+  "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure-fixes/measured.json",
+  "/mnt/workspaces/Cells/test-slimming-20261126/job1/measure/measured-placed.json"
  ],
  "measured_provenance": [
   {
@@ -3430,6 +3431,14 @@
    "root": "/mnt/workspaces/Cells/final-gate-20261126/snap-fixes-d224e2b8",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-26T12:29:01+00:00"
+  },
+  {
+   "git_revision": "c52d099805027ca43c93da99467dbca3980fa9fb",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/test-slimming-20261126/snap-c52d0998",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T15:28:59+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3608,14 +3617,6 @@
    {
     "file": "tests/unit/test_atp_transporter.py",
     "seconds": 1.37,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
-    "file": "tests/unit/test_baseline_transfer_diagnostic.py",
-    "seconds": 2.92,
     "exit_code": 0,
     "counts": {
      "passed": 7
@@ -3914,14 +3915,6 @@
     }
    },
    {
-    "file": "tests/unit/test_channel_compensation_diagnostic.py",
-    "seconds": 3.6,
-    "exit_code": 0,
-    "counts": {
-     "passed": 8
-    }
-   },
-   {
     "file": "tests/unit/test_channel_law_kernels.py",
     "seconds": 17.13,
     "exit_code": 0,
@@ -4143,14 +4136,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 8
-    }
-   },
-   {
-    "file": "tests/unit/test_cue_separation_diagnostic.py",
-    "seconds": 4.33,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
     }
    },
    {
@@ -5716,46 +5701,6 @@
     }
    },
    {
-    "file": "tests/unit/test_source_order_diagnostic.py",
-    "seconds": 3.89,
-    "exit_code": 0,
-    "counts": {
-     "passed": 11
-    }
-   },
-   {
-    "file": "tests/unit/test_source_order_long_diagnostic.py",
-    "seconds": 2.72,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
-    }
-   },
-   {
-    "file": "tests/unit/test_source_order_observation_design.py",
-    "seconds": 9.54,
-    "exit_code": 0,
-    "counts": {
-     "passed": 32
-    }
-   },
-   {
-    "file": "tests/unit/test_source_order_selected_diagnostic.py",
-    "seconds": 3.13,
-    "exit_code": 0,
-    "counts": {
-     "passed": 9
-    }
-   },
-   {
-    "file": "tests/unit/test_source_order_spanning_diagnostic.py",
-    "seconds": 4.73,
-    "exit_code": 0,
-    "counts": {
-     "passed": 3
-    }
-   },
-   {
     "file": "tests/unit/test_source_snapshot.py",
     "seconds": 3.22,
     "exit_code": 0,
@@ -6004,14 +5949,6 @@
     }
    },
    {
-    "file": "tests/unit/test_template_diagnostic.py",
-    "seconds": 3.73,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
     "file": "tests/unit/test_tier3_record.py",
     "seconds": 0.57,
     "exit_code": 0,
@@ -6049,23 +5986,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 80
-    }
-   },
-   {
-    "file": "tests/unit/test_two_task_diagnostic.py",
-    "seconds": 3.14,
-    "exit_code": 0,
-    "counts": {
-     "passed": 6
-    }
-   },
-   {
-    "file": "tests/unit/test_unstimulated_diagnostic.py",
-    "seconds": 3.58,
-    "exit_code": 1,
-    "counts": {
-     "failed": 1,
-     "passed": 6
     }
    },
    {
@@ -6467,14 +6387,6 @@
     }
    },
    {
-    "file": "tests/unit/test_channel_compensation_design.py",
-    "seconds": 31.92,
-    "exit_code": 0,
-    "counts": {
-     "passed": 21
-    }
-   },
-   {
     "file": "tests/unit/test_cleft_tissue_reference.py",
     "seconds": 22.26,
     "exit_code": 0,
@@ -6872,14 +6784,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
-    }
-   },
-   {
-    "file": "tests/unit/test_local_channel_design.py",
-    "seconds": 33.26,
-    "exit_code": 0,
-    "counts": {
-     "passed": 33
     }
    },
    {
@@ -7628,6 +7532,14 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_baseline_transfer_diagnostic.py",
+    "seconds": 3.6,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
     "file": "tests/unit/test_batch.py",
     "seconds": 90.08,
     "exit_code": null,
@@ -7676,6 +7588,22 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_channel_compensation_design.py",
+    "seconds": 22.27,
+    "exit_code": 0,
+    "counts": {
+     "passed": 21
+    }
+   },
+   {
+    "file": "tests/unit/test_channel_compensation_diagnostic.py",
+    "seconds": 5.2,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
     "file": "tests/unit/test_cleft_division_runs.py",
     "seconds": 90.17,
     "exit_code": null,
@@ -7686,6 +7614,14 @@
     "seconds": 90.01,
     "exit_code": null,
     "counts": {}
+   },
+   {
+    "file": "tests/unit/test_cue_separation_diagnostic.py",
+    "seconds": 4.46,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
    },
    {
     "file": "tests/unit/test_current_injection_runs.py",
@@ -7784,6 +7720,14 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_local_channel_design.py",
+    "seconds": 34.67,
+    "exit_code": 0,
+    "counts": {
+     "passed": 33
+    }
+   },
+   {
     "file": "tests/unit/test_membrane_insertion_runs.py",
     "seconds": 90.1,
     "exit_code": null,
@@ -7878,6 +7822,46 @@
     "seconds": 90.07,
     "exit_code": null,
     "counts": {}
+   },
+   {
+    "file": "tests/unit/test_source_order_diagnostic.py",
+    "seconds": 6.34,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_long_diagnostic.py",
+    "seconds": 2.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_observation_design.py",
+    "seconds": 6.64,
+    "exit_code": 0,
+    "counts": {
+     "passed": 32
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_selected_diagnostic.py",
+    "seconds": 3.18,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_source_order_spanning_diagnostic.py",
+    "seconds": 3.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
    },
    {
     "file": "tests/unit/test_species_cap_large.py",
@@ -8032,6 +8016,31 @@
     "seconds": 90.11,
     "exit_code": null,
     "counts": {}
+   },
+   {
+    "file": "tests/unit/test_template_diagnostic.py",
+    "seconds": 2.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_two_task_diagnostic.py",
+    "seconds": 2.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_unstimulated_diagnostic.py",
+    "seconds": 2.92,
+    "exit_code": 1,
+    "counts": {
+     "failed": 1,
+     "passed": 6
+    }
    },
    {
     "file": "tests/unit/test_vector_windows.py",
