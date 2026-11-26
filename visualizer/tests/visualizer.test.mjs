@@ -114,7 +114,7 @@ test("what an overlay leaves out of the picture is named once in the scene, and 
   const legacyParts = listed.filter((item) => item.kind === "component");
   for (const item of legacyParts) {
     assert.ok(overlay.legacy && overlay.components.some((part) => part.id === item.id), `${item.id} is left out as legacy code, yet the map has no such part or no legacy rule`);
-    assert.equal(item.reason, overlay.legacy.reason);
+    assert.equal(item.reason, item.files ? overlay.legacy.reason : "its source was removed from the engine");
     assert.equal(item.since, overlay.legacy.since);
   }
   const expected = [...leftOutCapabilities.map((item) => item.id), ...leftOutUnits.map((unit) => `unit.${unit.id}`), ...held.map((id) => `species.${id}`), ...legacyParts.map((item) => item.id)];
@@ -226,7 +226,10 @@ test("each protein unit is linked to the engine part that holds its law", () => 
     const links = scene.relations.filter((relation) => relation.from === unit.id && relation.kind === "modelled_by");
     // A unit whose laws all stand in held legacy code, which the map leaves out, links to no part, and the stamp says so.
     const inLegacy = (scene.proteins.stamp.in_legacy || {})[unit.id.replace("unit.", "")];
-    assert.ok(links.length || inLegacy?.length, `${unit.id} is linked to no engine part`);
+    const historical = unit.sections.find(section => section.key === "laws").items
+      .every(item => item.lines.some(line => line === `Historical inventory record at ${scene.proteins.stamp.read_at}.`));
+    const cited = unit.sources.some(source => source.revision === scene.proteins.stamp.read_at);
+    assert.ok(links.length || inLegacy?.length || (historical && cited), `${unit.id} needs a current engine link or pinned inventory sources`);
     for (const link of links) assert.ok(ids.has(link.to) && !link.to.startsWith("unit."), `${unit.id} -> ${link.to}`);
   }
 });
@@ -416,6 +419,11 @@ test("the page carries the replay catalogue, and the runs themselves only when a
     // A page exported without the Experiments view keeps its replays (the cell view's flux reads a species' looping run from
     // them) and says the view is hidden; the page's list of views offers Experiments only where it is not.
     assert.equal(sceneOf(linked).replays.hidden, undefined, "by default the view is offered");
+    const fromSnapshot = JSON.parse(JSON.stringify(sceneOf(linked).replays));
+    fromSnapshot.experiments[0].engine_entities = ["op.scheduled_cell_replacement@1"];
+    const translated = sceneOf(await buildPage({replays: fromSnapshot})).replays.experiments[0];
+    assert.deepEqual(translated.engine_entities, ["op.cells.operator.scheduled_cell_replacement@1"]);
+    assert.deepEqual(fromSnapshot.experiments[0].engine_entities, ["op.scheduled_cell_replacement@1"]);
     const hidden = await buildPage({ runsDir: runs, hideExperiments: true });
     assert.equal(sceneOf(hidden).replays.hidden, true);
     assert.equal(sceneOf(hidden).replays.runs[0].id, "x--arm--seed1", "the replays stay with the page");

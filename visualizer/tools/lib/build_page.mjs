@@ -9,6 +9,8 @@ import path from "node:path";
 import { PARTS_FORMAT, validatePart } from "../../src/replay/run.js";
 import { UNIT_EVIDENCE_FORMAT } from "../../src/scene/model.js";
 
+import { canonicalAddress } from "../../src/lenses/laws_data.js";
+
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const THREE_VERSION = "0.170.0";
 // Published pages may load scripts only from a short list of CDNs; cdnjs is the preferred one.
@@ -503,7 +505,14 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, preparedScene, thre
   const replays = published && made === undefined ? publishedReplays(index, data, listing) : withModelDoors(index, data, listing);
   // A page without the Experiments view (hideExperiments) keeps its replays and says the view is hidden: the cell view's flux
   // finds a species' looping run among them.
-  if (replays) data.replays = hideExperiments ? { ...replays, hidden: true } : replays;
+  if (replays) {
+    const aliases = data.laws?.viewer_ids?.aliases;
+    const experiments = replays.experiments?.map(experiment => experiment.engine_entities?.length ? {
+      ...experiment,
+      engine_entities: experiment.engine_entities.map(id => canonicalAddress(id, aliases)),
+    } : experiment);
+    data.replays = { ...replays, experiments, ...(hideExperiments ? { hidden: true } : {}) };
+  }
   const scene = JSON.stringify(data).replaceAll("<", "\\u003c");
   // A page that cannot fetch (a file opened from disk) carries its runs inline.
   let inline = "";

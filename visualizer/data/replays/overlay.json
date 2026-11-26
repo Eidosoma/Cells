@@ -946,7 +946,7 @@
       },
       "engine_entities": [
         "models.replacement",
-        "op.scheduled_cell_replacement@1",
+        "op.cells.operator.scheduled_cell_replacement@1",
         "cap.replacement",
         "cap.sheet"
       ],
@@ -1250,8 +1250,8 @@
         ]
       },
       "engine_entities": [
-        "op.scheduled_species_turnover@1",
-        "op.scheduled_species_exchange@1",
+        "op.cells.operator.scheduled_species_turnover@1",
+        "op.cells.operator.scheduled_species_exchange@1",
         "models.composite",
         "cap.secretion"
       ],
@@ -1317,7 +1317,7 @@
       "engine_entities": [
         "models.composite",
         "models.pump_tissue",
-        "op.electrode_current_injection@1",
+        "op.cells.operator.electrode_current_injection@1",
         "cap.junctions"
       ],
       "events": {
