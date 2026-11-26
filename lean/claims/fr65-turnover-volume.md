@@ -23,7 +23,7 @@ Uses [Production and first-order clearance preserve a positive pool and account 
 
 ## Numerical comparison
 
-**Open.** On main 796f04fa the scheduled turnover operator refuses a changing volume at definition time. The native refusal control passed. A compiled replay of turnover with osmotic water awaits FR-65.
+**Open.** On 796f04fa the definition-time refusal control passed. FR-65 landed at ae349721 and admits scheduled turnover with osmotic water. The engine’s saved-run check verifies separate amount, volume and concentration observations. A replay matched to a swelling experiment remains open.
 
 ## Biological evidence
 
