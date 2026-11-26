@@ -1105,6 +1105,56 @@
     "owner": "gard"
    },
    {
+    "path": "validation/legacy_port/README.md",
+    "reason": "the deletion's record: the page of its list and tools, as the deletion used them",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/capture.sh",
+    "reason": "the captures' runner: it runs the frozen legacy snapshot, whose IDs its worlds spell",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/capture_worlds.py",
+    "reason": "the captures' tool: it runs the frozen legacy snapshot, and its four old spellings are comments that name the captured worlds as the snapshot spells them (the plants' manifests quote an earlier version's hash, so no pin holds it)",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/carrier_plants.json",
+    "reason": "the deletion's record: the faults planted in the engine before the move, and the rows that failed on each",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/carrier_plants.py",
+    "reason": "the deletion's tool that planted faults in the engine before the move; its record is carrier_plants.json",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/edits-optional.json",
+    "reason": "the deletion's record: the optional batch's edits, as made at the deletion's head",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/edits.json",
+    "reason": "the deletion's record: its edits, with the texts and library pages they replaced, as made at the deletion's head",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/make_deletion.py",
+    "reason": "the deletion's tool, as it made the deletion",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/make_edits.py",
+    "reason": "the deletion's tool that wrote edits.json: the texts it replaced, and the pages it named, in the IDs of the tree before the move",
+    "owner": "the deletion"
+   },
+   {
+    "path": "validation/legacy_port/reach.py",
+    "reason": "the deletion's tool that read the import graph before the move",
+    "owner": "the deletion"
+   },
+   {
     "path": "validation/long_duration/REGISTRATION_20261118.md",
     "reason": "a record: FR-8 stage 0's registration, in the IDs of its time",
     "owner": "fr8"
