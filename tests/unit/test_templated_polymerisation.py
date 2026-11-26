@@ -359,7 +359,7 @@ def test_the_release_refuses(edit, words, monkeypatch):
             ConfigError, match="cells.operator.scheduled_cell_replacement@2 changes the volumes"
         ):
             parse_spec(raw)
-        monkeypatch.setattr(polymerisation.species_reactions, "check_volume_changers", lambda *_: 0)
+        monkeypatch.setattr(polymerisation.common, "check_volume_changers", lambda *_: 0)
     with pytest.raises(ConfigError, match=words):
         parse_spec(raw)
 

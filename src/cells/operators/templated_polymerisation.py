@@ -1584,7 +1584,7 @@ def smallest_volumes(spec):
     volumes (FR-43 / D315) its water compartment's declared minimum."""
     out = {c.id: c.volume_pL for c in spec.model.cells}
     for op, water, _ in composite_spec.entries(spec):
-        if op.LAW_ID == species_reactions.WATER:
+        if op.LAW_ID == common.WATER:
             for c in water.compartments:
                 if c.compartment_id in out:
                     out[c.compartment_id] = min(out[c.compartment_id], c.minimum_volume_pL)
@@ -2958,8 +2958,8 @@ class TemplatedPolymerisation(Operator):
     # Its own tuple, not species_common's, which turnover and exchange share (FR-43 / D315): the
     # volumes are current reads at the split, as the reactions' are, so where water changes them
     # its concentrations (c_T, its saturations and affinities) and bookings take the view's (C1's
-    # fallback without a changer). Water is the one changer admitted
-    # (species_reactions.check_volume_changers); the masks' providers and closers stay refused.
+    # fallback without a changer). Water is the one changer admitted at every finite node
+    # (species_common.check_volume_changers); the masks' providers and closers stay refused.
     CONFLICTS_VIEW = ("active", "outside_active", "membrane_active")
     VIEW_READS = ("volume", "extracellular_volume")
     SCOPED_READS = {
@@ -3333,7 +3333,7 @@ class TemplatedPolymerisation(Operator):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, declaration.species)
         check_compartments(spec, declaration)
-        species_reactions.check_volume_changers(spec, LAW_ID)
+        common.check_volume_changers(spec, LAW_ID, common.finite_nodes(spec))
         check_writers(spec, declaration)
         check_occupants(spec, declaration, schedule)
         check_rate_bound(spec, declaration, schedule)

@@ -36,6 +36,11 @@ are built.
   - outside-node routes are environment, not carriers: one schedule per route, from time 0.
   Replacement@1's events are prescribed, so every slot's occupant at every time is known from the
   definition, and the per-world controls are built from it (recomputed at a restart, R7).
+* **The volume rule** (FR-43 / D315; FR-65, docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3.5): an
+  operator that reads the volumes current at its split admits water as the one changer of them
+  (check_volume_changers). A changer of the outside volume is refused only where it reaches a node
+  the reader reads: a restricted lumen names its own nodes (contract.changed_volume_nodes, route
+  B), so a lumen at a node the reader never reads is admitted.
 """
 
 import math
@@ -330,6 +335,52 @@ def summary_identities(identities):
         )
         for s in identities
     }
+
+
+# ------------------------------------------------------------------ the volume rule
+
+WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"  # The one volume changer admitted.
+
+
+def finite_nodes(spec):
+    """The indices of the definition's finite outside nodes (its held baths left out)."""
+    return tuple(i for i, c in enumerate(spec.model.extracellular) if not c.reservoir)
+
+
+def check_volume_changers(spec, law, read_nodes):
+    """FR-43 / D315 and FR-65 (route B, docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3.5): `law` reads
+    the volumes current at the split, and water is the one changer of them admitted beside it.
+
+    read_nodes: the outside nodes, by index, at which `law` reads a volume.
+    * A changer of the cell volume other than water is refused: a provider of `volume`, or a writer
+      of water's volume increments (cells.operator.scheduled_cell_replacement@2, which writes a
+      newcomer's volume into water's state).
+    * A provider of extracellular_volume other than water is refused where it changes a node of
+      read_nodes: at the nodes its changed_volume_nodes names (a restricted lumen's own), or at
+      every node where it names none. A changer at nodes `law` never reads is admitted, since its
+      volume reaches no read of `law`.
+    The refusal is by name: door S admits a current read declared after a change on a shared slot
+    (pump_composite.scope_errors), so no structure check refuses these pairs."""
+    read = frozenset(int(k) for k in read_nodes)
+    ids = [c.id for c in spec.model.extracellular]
+    for op, declaration, _ in composite_spec.entries(spec):
+        if op.LAW_ID in (law, WATER):
+            continue
+        if "volume" in op.VIEW_FIELDS or "volume_increment_pL" in op.ENTITY_WRITES:
+            raise ConfigError(
+                f"{law}: {op.LAW_ID} changes the volumes it reads; water is the one volume "
+                "changer admitted beside it (FR-43 / D315)"
+            )
+        if "extracellular_volume" not in op.VIEW_FIELDS:
+            continue
+        nodes = op.changed_volume_nodes(spec, declaration)
+        shared = sorted(read if nodes is None else read & {int(k) for k in nodes})
+        if shared:
+            raise ConfigError(
+                f"{law}: {op.LAW_ID} changes the volumes it reads (the outside volume at "
+                f"{', '.join(ids[k] for k in shared)}); water is the one volume changer admitted "
+                "at a node it reads (FR-43 / D315; FR-65)"
+            )
 
 
 # ------------------------------------------------------------------ schedules

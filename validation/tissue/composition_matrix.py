@@ -875,7 +875,7 @@ def _tags():
     )
     by_name = (
         "; whatever the order, the definition refuses it beside the network and the gene unit, "
-        "where water is the one volume changer admitted (species_reactions.check_volume_changers)"
+        "where water is the one volume changer admitted (species_common.check_volume_changers)"
     )
     for reader in (REACTIONS, poly):
         for name in ("volume", "extracellular_volume"):
@@ -1460,7 +1460,7 @@ RULES = (
             REPLACEMENT_2,
         ),
         level="data",
-        check=OPS + "species_reactions.py::check_volume_changers",
+        check=OPS + "species_common.py::check_volume_changers",
         test=TESTS
         + "test_species_reactions_refusals.py::test_the_other_volume_changers_are_refused_by_name",
         tag=REAL,

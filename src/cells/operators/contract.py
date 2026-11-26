@@ -646,6 +646,16 @@ class Operator:
         as above)."""
         return {}
 
+    def changed_volume_nodes(self, spec, declaration):
+        """The outside nodes, by index into the definition's extracellular list, whose volume
+        this operator changes where it provides extracellular_volume (host side, as above), or
+        None: every node. The shared volume rule of the current-volume readers reads it
+        (species_common.check_volume_changers; FR-65's route B,
+        docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3.5): a changer other than water is refused only
+        at a node its reader reads. A provider that changes the volume at its own nodes alone
+        names them, as a restricted lumen does; no program reads it."""
+        return None
+
     def charged_compartments(self, spec, declaration):
         """The compartments, by their declared IDs (operators/compartments.py), into which its
         routes move charge (host side, as above). Refusal 5 version 1.2 admits a nonzero charge
