@@ -53,7 +53,7 @@ Measured activation curves from one preparation predict its separate 0 mV pulse 
 
 ### trapani2003_kv15_ph
 
-Wild-type human Kv1.5 expressed in HEK293 cells, whole-cell at room temperature, 100 mM internal and 10 mM external K⁺. Figure 1F uses voltage-dependent prepulse durations and peak tails at −90 mV. Figure 1B compares outward currents in a pulse from −80 to 0 mV. Figure 1F at the 0 mV prepulse and the activation midpoints in its caption. The 75 ms step in Figure 1B is held out. [Trapani and Korn (2003), Fig. 1B and 1F](https://doi.org/10.1016/S0006-3495(03)74842-5)
+Wild-type human Kv1.5 expressed in HEK293 cells, whole-cell at room temperature, 100 mM internal and 10 mM external K⁺. Figure 1F uses voltage-dependent prepulse durations and peak tails at −90 mV. Figure 1B compares outward currents in a pulse from −80 to 0 mV. Figure 1F at the 0 mV prepulse and the activation midpoints in its caption. Figure 1B’s 75 ms current was held out from fitting and scored in the 21 November replay. [Trapani and Korn (2003), Fig. 1B and 1F](https://doi.org/10.1016/S0006-3495(03)74842-5)
 
 - **Evidence role** held out from fitting
 - **Fit** Figure 1F peak-tail fractions at 0 mV and the two activation midpoints
@@ -73,7 +73,7 @@ Wild-type human Kv1.5 in Ltk− cells, whole-cell clamp, 4 mM extracellular K, 2
 
 Mean ± SEM. Midpoint groups included 38 control and 27 acidic recordings. Tail voltages differed by 10 mV between conditions.
 
-At pH 7.4 and 6.5 the midpoint was −14.2 ± 2.1 and +3.1 ± 0.7 mV. The dominant activation time constant at +60 mV also increased from 2.10 ± 0.20 to 4.23 ± 0.30 ms. Separately normalized curves leave the absolute conductance scale open. [Dataset manifest](../checks/data/paired_calibration_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
+At pH 7.4 and 6.5 the midpoint was −14.2 ± 2.1 and +3.1 ± 0.7 mV. The dominant activation time constant at +60 mV also increased from 2.10 ± 0.20 to 4.23 ± 0.30 ms. Separately normalized curves leave the absolute conductance scale open. The fast and slow tail-decay components are separate published readouts available for a future comparison. [FR-63 source audit](../PROGRESS.md#fr63-holdout-audit) [Dataset manifest](../checks/data/paired_calibration_measurements.json) · [Comparison verdict](../PROGRESS.md#paired-calibration-and-leaflet-packing)
 
 ### trapani2003_kv15_high_voltage@1
 

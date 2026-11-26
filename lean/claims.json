@@ -4788,7 +4788,7 @@
       "numerical": {
         "status": "open",
         "comparisons": [],
-        "result": "On main 796f04fa the scheduled turnover operator refuses a changing volume at definition time. The native refusal control passed. A compiled replay of turnover with osmotic water awaits FR-65."
+        "result": "On 796f04fa the definition-time refusal control passed. FR-65 landed at ae349721 and admits scheduled turnover with osmotic water. The engine’s saved-run check verifies separate amount, volume and concentration observations. A replay matched to a swelling experiment remains open."
       },
       "biology": {
         "status": "open",
@@ -4845,7 +4845,7 @@
             "comparison": "Labelled leucine release fell during hypotonic perfusion. In the isolated-cell no-added-amino-acid series, cumulative valine at 90 min was 15.5 ± 1.2 versus 15.5 ± 0.9 µmol/g dry cells (SEM). The physiological amino-acid mixture gave greater inhibition under hypotonic conditions.",
             "replay": {
               "status": "pending",
-              "assessment": "FR-65 remains open on main. These studies do not supply a common quantitative clearance rate across the two preparations."
+              "assessment": "FR-65 supports turnover with changing water volume. A quantitative replay still needs a clearance rate for the chosen preparation and nutrient conditions."
             }
           },
           {
@@ -10863,7 +10863,7 @@
             "manifest": "lean/checks/data/trapani2003_kv15_ph.json",
             "citation": "Trapani and Korn (2003), Fig. 1B and 1F",
             "doi": "10.1016/S0006-3495(03)74842-5",
-            "locator": "Figure 1F at the 0 mV prepulse and the activation midpoints in its caption. The 75 ms step in Figure 1B is held out.",
+            "locator": "Figure 1F at the 0 mV prepulse and the activation midpoints in its caption. Figure 1B’s 75 ms current was held out from fitting and scored in the 21 November replay.",
             "context": "Wild-type human Kv1.5 expressed in HEK293 cells, whole-cell at room temperature, 100 mM internal and 10 mM external K⁺. Figure 1F uses voltage-dependent prepulse durations and peak tails at −90 mV. Figure 1B compares outward currents in a pulse from −80 to 0 mV.",
             "role": "held_out_from_fitting",
             "fit": [
@@ -10887,7 +10887,7 @@
             "context": "Wild-type human Kv1.5 in Ltk− cells, whole-cell clamp, 4 mM extracellular K, 21–23 °C. The tail voltage changed from −40 to −30 mV between pH conditions.",
             "role": "descriptive",
             "uncertainty": "Mean ± SEM. Midpoint groups included 38 control and 27 acidic recordings. Tail voltages differed by 10 mV between conditions.",
-            "assessment": "At pH 7.4 and 6.5 the midpoint was −14.2 ± 2.1 and +3.1 ± 0.7 mV. The dominant activation time constant at +60 mV also increased from 2.10 ± 0.20 to 4.23 ± 0.30 ms. Separately normalized curves leave the absolute conductance scale open.",
+            "assessment": "At pH 7.4 and 6.5 the midpoint was −14.2 ± 2.1 and +3.1 ± 0.7 mV. The dominant activation time constant at +60 mV also increased from 2.10 ± 0.20 to 4.23 ± 0.30 ms. Separately normalized curves leave the absolute conductance scale open. The fast and slow tail-decay components are separate published readouts available for a future comparison. [FR-63 source audit](../PROGRESS.md#fr63-holdout-audit)",
             "report": "lean/PROGRESS.md#paired-calibration-and-leaflet-packing"
           },
           {
