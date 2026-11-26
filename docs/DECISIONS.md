@@ -13656,3 +13656,51 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - D244's Q2 was the user's, so the site source's concentration beside water stays as declared, and refused.
   - The price is 2.1 to 3.05 agent-days, against D375's 2 to 2.5. Its code waits for FR-52's landing, since the two share `contract.py`.
 - **Five stale watcher shells,** left by agents of 25 November and polling for files that will never appear, were stopped.
+
+## D403: FR-43 part 3's co-writers registered comparison passes; the judge and the independent checker agree
+
+2026-11-26, written at 22:22 UTC.
+
+- **The verdict: pass.** The registration is `fr43-part3-cowriters-registered-2026-11-26` (2421e9e9), with its strings note
+  `fr43-part3-cowriters-strings-2026-11-26`.
+  - All three arms pass: W5, second order beside the reactions; W5-exact, exact event times at constant rates; W6, second order beside the gene unit.
+  - All six families pass, in both declared orders of each arm.
+  - All 20 plants are caught, and no retry was owed.
+  - The judge's first pass (from the registration snapshot, `fr43-cowriters-judge-20261126/registered-2421e9e9/first/record.json`, sha256
+    f93041e6…) scores 5,230 entries, all passing, with no flag.
+  - C0 finds no fault in the references.
+- **The independent checker agrees.** Its own code was frozen before it read the table (`fr43-checker-20261126/MANIFEST-before-table.json`), and it
+  recomputed from the hashed table and the references alone. It then compared entry by entry with the judge's record, with no disagreement.
+  - The judge's 5,230 entries cover the checker's 5,206 one to one. The other 24 are the Lie runs' D entries, which the checker applies as P3's
+    scorability condition (ruling 6d), with the same outcome.
+  - The S entries, pairs, rungs, R entries and plant statistics are equal to the last bit.
+  - Two differences decide nothing. P4's recorded planted distance differs by about 2e-10 relative: the published shift against an RMS of the
+    shifted times, both caught. Identity residuals differ at rounding level: rationals against floats, with a worst ratio of 0.0024 of the bound.
+- **The order of work kept** (D394, D401, D402):
+  - the lead hashed the references, every format sample and the table before the judge opened them, and hashed `retry_owed.json`;
+  - the 250 runs ran cold and one-threaded from the lead's clean snapshot of the registration commit, 21:33–22:08 UTC;
+  - every record names that commit;
+  - the strings note was parsed from the snapshot before it was committed.
+- **Disclosed:**
+  - the build tag was made after the judge's tag (D402);
+  - the lead's references hash record was made after the judge's first C0 pass;
+  - the trace counts were added to the engine after the criteria tag (D397, D400), so the counts check tests the engine's own record;
+  - the builder read the two invented input files that its SPEC requires;
+  - the lead's hash file showed the checker the judge's empty retry list before its run, and it opened neither file.
+- **What this pass does not show** (CRITERIA §11, protocol §9):
+  - the choice of a channel, since each site's two subunits alternate;
+  - a timing or amount error below τ;
+  - the order of `made` and `exits`, judged by size alone;
+  - books formed from rows;
+  - the order of W5's reactions' own half-step;
+  - an engine's error above the registered ladder, or at λ·dt of order one;
+  - W5-exact's amounts;
+  - anything the engine records but the table does not.
+
+  The claim holds for the registered worlds and ladders on CPU.
+- **A follow-up for the exporter, which decided nothing here.** A row-check failure is classed `check` only when a frame named `check_values` is in
+  the traceback; otherwise it becomes `domain`, a refusal instead of a D fail. No run was refused. The builder fixes it before the exporter is reused.
+- **Landed with this entry:** the registration branch, which carries the builder's worlds, exporter and Lie patch, the judge's reader and scorer
+  with the lead's rulings, the references, the spec with the lead's three dated notes, and the strings note, under `validation/fr43_part3_cowriters/`.
+  It changes no src file.
+- **Next:** FR-52 may land after its own D148 round, now that this comparison is judged (D401).
