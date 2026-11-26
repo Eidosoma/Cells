@@ -39,14 +39,12 @@ The rehearsal compares `operators` with this list (CRITERIA.md §4.1), in place 
 - **The events** come from the population's trace: its clock's times, the declared channel IDs and its pools at each
   event (`pools_at_event`).
 - **`integer_ledger`** is Σ_k w_k n_k from the engine's `integer_counts` at each sample.
-- **`counts_after`.** On this head the exporter forms it by applying each listed channel's declared jump to the
-  engine's own counts, starting at t = 0 or at the checkpoint. At every sample it checks the result against the
-  engine's `integer_counts`, and the listed channels against its per-channel totals (`integer_channel_events`). A
-  mismatch is a `harness` refusal.
-  - The user chose (1) instead: the engine records the counts (branch `fr43-trace-counts`, its own landing).
-  - Once (1) lands, the exporter copies `integer_trace_counts` and derives nothing. The field holds the counts the
-    event loop carries after each event. No rate, draw or ledger reads it. The composite's finiteness check over the
-    operator's owned fields covers it, and is always true for an integer field.
+- **`counts_after`** is the engine's recorded counts after each listed event, `integer_trace_counts` (the counts the
+  event loop carries on after it; landed at 7f98d838), copied and never derived. No rate, draw or ledger reads that
+  field. The composite's finiteness check over the operator's owned fields covers it, and is always true for an
+  integer field. At every sample the run checks the copied counts against the engine's `integer_counts` (the start's
+  before the first listed event), and the listed channels against its per-channel totals (`integer_channel_events`).
+  A mismatch is a `harness` refusal.
 - **`inputs`** is read back from the definition the engine parsed (its `to_dict`), with exactly `echo`'s keys:
   - `copy` comes from the site's ID (`site_c<copy>`);
   - `machines_copies` is the pool's machines as the engine parsed them, a float, written as its integer when whole

@@ -11,12 +11,11 @@ the exporter (table.py) adds, formed here from the engine's own state:
   `spend`, `moved` the population's transfer, and the gene unit's `inits`, `exits`, `made` (its
   releases of finished chains), `lost` (its degraded molecules) and `free`; `engaged` and
   `transit` the sums of READOUTS.md §1 over its stage complexes;
-- the events from the population's trace (its clock's times, its channels), and `pools_at_event`
-  its recorded pools. The trace holds no counts, so `counts_after` applies each listed channel's
-  declared jump to the engine's own counts at the run's first row (a resumed run: the
-  checkpoint's), and the run checks that against the engine's `integer_counts` and
-  `integer_channel_events` at every sample (`counts_checked`); a mismatch is not the engine's
-  refusal (kind `harness`);
+- the events from the population's trace: its clock's times, its channels, `counts_after` its
+  recorded counts after each event (`integer_trace_counts`, copied, nothing derived), and
+  `pools_at_event` its recorded pools. The run checks the copied counts against the engine's
+  `integer_counts` at every sample, and the listed channels against its `integer_channel_events`
+  (`counts_checked`); a mismatch is not the engine's refusal (kind `harness`);
 - `inputs` read back from the parsed definition (echo, below); `definition` the engine's own
   form of it (`to_dict`); `checks` the windows' diagnostics and the composite's ledgers at the
   last row; `source` the code's provenance (validation/gene_regulation/engine_run.provenance: the
@@ -312,11 +311,6 @@ def layout(spec, p, kind):
     units = ops[worlds.POPULATION].populations[0]
     out["weights"] = [int(u.subunits) for u in units.unit_states]
     out["channels"] = [c.id for c in units.channels]
-    states = [u.id for u in units.unit_states]
-    out["jumps"] = [
-        [int(dict(c.products).get(s, 0)) - int(dict(c.reactants).get(s, 0)) for s in states]
-        for c in units.channels
-    ]
     if kind == "reactions":
         routes = ops[worlds.REACTIONS].routes
         out["extents"] = {
@@ -388,10 +382,11 @@ def readout(kind, lay, p, row):
 
 def events_of(lay, last, first_index, start_counts, start_channels, rows):
     """(events, pools_at_event, events_total, the counts' check, faults): the trace's events from
-    `first_index` at the last accepted row (as many as it holds), counts_after by the declared
-    jumps from `start_counts`, checked at every sample row against the engine's counts and its
-    per-channel event totals (from `start_channels`). A truncated trace or a count that departs is
-    a fault (kind harness), never raised here."""
+    `first_index` at the last accepted row (as many as it holds), counts_after copied from its
+    recorded counts (integer_trace_counts), checked at every sample row against the engine's
+    counts (`start_counts` before the first listed event) and its per-channel event totals (from
+    `start_channels`). A truncated trace or a count that departs is a fault (kind harness), never
+    raised here."""
     faults = []
     total = int(np.asarray(last.integer_events)[0])
     capacity = int(np.asarray(last.integer_trace_time_s).shape[1])
@@ -406,25 +401,23 @@ def events_of(lay, last, first_index, start_counts, start_channels, rows):
         faults.append("the trace holds an unrecorded or unknown channel")
         index = [j for j in index if 0 <= j < len(lay["channels"])][: len(times)]
         times = times[: len(index)]
-    counts, after = [int(c) for c in start_counts], []
-    for j in index:
-        counts = [c + d for c, d in zip(counts, lay["jumps"][j], strict=True)]
-        after.append(list(counts))
+    recorded = np.asarray(last.integer_trace_counts)[0, first_index : first_index + len(index)]
+    after = [[int(c) for c in row] for row in recorded]
     compared = 0
     for t, row in rows:
         fired = int(np.asarray(row.integer_events)[0])
         held = [int(c) for c in np.asarray(row.integer_counts)[0]]
         if fired - first_index > len(after) or fired < first_index:
             continue  # Past the trace, or before the first listed event: not comparable.
-        derived = after[fired - first_index - 1] if fired > first_index else list(start_counts)
+        listed = after[fired - first_index - 1] if fired > first_index else list(start_counts)
         channels = list(start_channels)
         for j in index[: fired - first_index]:
             channels[j] += 1
         compared += 1
         held_channels = [int(c) for c in np.asarray(row.integer_channel_events)[0]]
-        if derived != held or channels != held_channels:
+        if listed != held or channels != held_channels:
             faults.append(
-                f"after event {fired - 1}: counts {derived} and channel totals {channels}; the "
+                f"after event {fired - 1}: counts {listed} and channel totals {channels}; the "
                 f"engine holds {held} and {held_channels} at {t} s"
             )
             break
