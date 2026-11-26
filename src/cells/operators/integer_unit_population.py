@@ -14,7 +14,8 @@ next-reaction rule (Haseltine and Rawlings 2002; Alfonsi et al. 2005; from memor
 - `species`: the species it moves, with their identity (species_common.parse_species: neutral and
   impermeant on @3's own routes); `read_species`: species rows it only reads (parse_read_species).
 - `seed`: the streams' seed, an integer in [0, 2**32) (numerics/counter_streams.py).
-- `trace_events`: the trace's capacity T >= 0 per site: the first T events are recorded.
+- `trace_events`: the trace's capacity T >= 0 per site: the first T events are recorded, each
+  with its time, its channel, the unit counts after it and the pools at it.
 - `populations`, each with:
   - `unit_states`: [{id, subunits}], each with an integer subunit weight w >= 1;
   - `channels`: [{id, reactants, products, rate_per_s, read}], integer stoichiometry over the unit
@@ -65,7 +66,12 @@ Second order holds while the transfer is slow against the step, lambda dt of abo
 world with a faster transfer shows its own halving. The pools recorded at an event
 (integer_trace_cell_fmol, integer_trace_node_fmol) are this operator's view inside the step, first
 order in dt beside a co-writer (off by up to half its kick per step): they are reported, not
-judged.
+judged. The counts recorded at an event (integer_trace_counts, FR-43 part 3's co-writers
+registration) are the counts the event loop carries on after it, written as the loop forms them
+and never formed again from the channel's declared jump, so a trace whose counts break the
+declared jump shows an engine that applied another one. No rate, draw or ledger reads it. The
+composite's finiteness check over the operator's owned fields covers it, and is always true for an
+integer field.
 
 **Co-writers** (FR-43 part 3; the species registry's rule, check_row_writers). The operator is a
 transfer (ROW_MOVES): a moved row may have any declared split writer beside it, a reaction or the
@@ -171,6 +177,7 @@ STATE_AXES = {
     "integer_trace_channel": ["integer_site", "integer_trace"],  # int64; -1: not recorded.
     "integer_trace_cell_fmol": ["integer_site", "integer_trace", "integer_route"],
     "integer_trace_node_fmol": ["integer_site", "integer_trace", "integer_route"],
+    "integer_trace_counts": ["integer_site", "integer_trace", "integer_state"],  # int64; -1: none.
 }
 STATE_DTYPES = {
     "integer_counts": "int64",
@@ -178,6 +185,7 @@ STATE_DTYPES = {
     "integer_channel_events": "int64",
     "integer_divided_units": "int64",
     "integer_trace_channel": "int64",
+    "integer_trace_counts": "int64",
 }
 LAYOUT_FIELDS = (
     "integer_site_cell",  # [site] int64
@@ -677,6 +685,7 @@ def bind(spec, declaration):
         integer_trace_channel=-np.ones((n, t), dtype=np.int64),
         integer_trace_cell_fmol=np.zeros((n, t, r)),
         integer_trace_node_fmol=np.zeros((n, t, r)),
+        integer_trace_counts=-np.ones((n, t, k), dtype=np.int64),
     )
     return state, layout
 
@@ -843,8 +852,8 @@ def _run_stage(state, length, offset, member, p, *, view):
     linear = p.integer_linear
 
     def segment(carry):
-        (done, counts, hz, thr, k, chan, nc, no, moved, heat, mag, tt, tc, tcell, tnode, fired,
-         ok, count) = carry  # fmt: skip
+        (done, counts, hz, thr, k, chan, nc, no, moved, heat, mag, tt, tc, tcell, tnode, tn,
+         fired, ok, count) = carry  # fmt: skip
         running = live & ok & (done < length)
         rest = jnp.where(running, length - done, 0.0)
         lam, u0, scale = _flow(nc, no, counts, vc, vo, p)
@@ -891,6 +900,8 @@ def _run_stage(state, length, offset, member, p, *, view):
             tc = tc.at[rows, slot].set(jnp.where(record, chosen, tc[rows, slot]))
             tcell = tcell.at[rows, slot].set(jnp.where(record[:, None], nc_new, tcell[rows, slot]))
             tnode = tnode.at[rows, slot].set(jnp.where(record[:, None], no_new, tnode[rows, slot]))
+            # The counts this loop carries on after the event, as it formed them (counts_new).
+            tn = tn.at[rows, slot].set(jnp.where(record[:, None], counts_new, tn[rows, slot]))
         hot = jax.nn.one_hot(chosen, chan.shape[1], dtype=jnp.int64)
         chan = jnp.where(event[:, None], chan + hot, chan)
         positive = (nc_new > 0) & (no_new > 0)
@@ -900,7 +911,7 @@ def _run_stage(state, length, offset, member, p, *, view):
         heat = heat + entity_sum(q_heat, axis=1, xp=jnp)
         mag = mag + entity_sum(q_mag, axis=1, xp=jnp)
         return (done, counts_new, hz_new, thr_new, jnp.where(event, k + 1, k), chan, nc_new,
-                no_new, moved + step, heat, mag, tt, tc, tcell, tnode, fired + event, ok,
+                no_new, moved + step, heat, mag, tt, tc, tcell, tnode, tn, fired + event, ok,
                 count + 1)  # fmt: skip
 
     start = (
@@ -908,8 +919,8 @@ def _run_stage(state, length, offset, member, p, *, view):
         state.integer_events, state.integer_channel_events, nc0, no0,
         jnp.zeros((n_sites, n_routes)), jnp.zeros(n_sites), jnp.zeros(n_sites),
         state.integer_trace_time_s, state.integer_trace_channel, state.integer_trace_cell_fmol,
-        state.integer_trace_node_fmol, jnp.zeros(n_sites, dtype=jnp.int64),
-        jnp.ones(n_sites, dtype=bool), jnp.asarray(0),
+        state.integer_trace_node_fmol, state.integer_trace_counts,
+        jnp.zeros(n_sites, dtype=jnp.int64), jnp.ones(n_sites, dtype=bool), jnp.asarray(0),
     )  # fmt: skip
 
     # A fixed trip, EVENT_CAP events and the segment that finishes the stage, so every world of a
@@ -917,11 +928,11 @@ def _run_stage(state, length, offset, member, p, *, view):
     # A trip in which no site of the world runs is skipped by lax.cond, which under vmap becomes a
     # select (the lanes stay in step) and on the scalar path skips the trips after the last event.
     def trip(_, carry):
-        running = jnp.any(live & carry[16] & (carry[0] < length))
+        running = jnp.any(live & carry[17] & (carry[0] < length))
         return jax.lax.cond(running, segment, lambda unchanged: unchanged, carry)
 
     end = jax.lax.fori_loop(0, EVENT_CAP + 1, trip, start)
-    (done, counts, hz, thr, k, chan, _, _, moved, heat, mag, tt, tc, tcell, tnode, _, ok,
+    (done, counts, hz, thr, k, chan, _, _, moved, heat, mag, tt, tc, tcell, tnode, tn, _, ok,
      _) = end  # fmt: skip
     ok = ok & ~(live & (done < length))  # A site the loop could not finish: refused (the cap).
     sp, cell, node = p.integer_route_species, p.integer_site_cell, p.integer_site_node
@@ -949,6 +960,7 @@ def _run_stage(state, length, offset, member, p, *, view):
         integer_trace_channel=tc,
         integer_trace_cell_fmol=tcell,
         integer_trace_node_fmol=tnode,
+        integer_trace_counts=tn,
     )
     return new, ok
 
@@ -1299,6 +1311,7 @@ class IntegerUnitPopulationOperator(Operator):
             "integer_trace_channel": "level",
             "integer_trace_cell_fmol": "amount",
             "integer_trace_node_fmol": "amount",
+            "integer_trace_counts": "amount",
         }
     )
     UNITS = MappingProxyType(
@@ -1309,6 +1322,7 @@ class IntegerUnitPopulationOperator(Operator):
             "integer_events": "events",
             "integer_channel_events": "events",
             "integer_trace_channel": "index",
+            "integer_trace_counts": "units",
             "integer_divided_units": "units",
         }
     )
@@ -1426,7 +1440,7 @@ class IntegerUnitPopulationOperator(Operator):
         included, times a margin of 2."""
         (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
         n, k, j, r, t, _ = dimensions(declaration)
-        return 2 * n * ((2 * k + j + r + 7) + t * (2 + 2 * r))
+        return 2 * n * ((2 * k + j + r + 7) + t * (2 + 2 * r + k))
 
     def fixed_working_size(self, spec):
         """Values held once per resident copy (execution/resources.fixed_bytes): its bound

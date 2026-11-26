@@ -68,8 +68,9 @@ changing volumes.
 | `integer_trace_channel` | Owns | integer_site, integer_trace | index | Not stated |
 | `integer_trace_cell_fmol` | Owns | integer_site, integer_trace, integer_route | fmol | Not stated |
 | `integer_trace_node_fmol` | Owns | integer_site, integer_trace, integer_route | fmol | Not stated |
+| `integer_trace_counts` | Owns | integer_site, integer_trace, integer_state | units | Not stated |
 
-Writes into other pieces' fields: `amount_increment`, booked in `integer_transferred_fmol` and `extracellular_amount_increment`, booked in `integer_transferred_fmol`. Ledgers: `integer_subunits`. Records: `integer_counts` (amount), `integer_hazard` (level), `integer_threshold` (level), `integer_events` (cumulative), `integer_channel_events` (cumulative), `integer_clock_s` (level), `integer_clock_carry_s` (level), `integer_transferred_fmol` (cumulative), `integer_transfer_dissipated_energy_pJ` (cumulative), `integer_energy_magnitude_pJ` (cumulative), `integer_divided_units` (cumulative), `integer_trace_time_s` (level), `integer_trace_channel` (level), `integer_trace_cell_fmol` (amount) and `integer_trace_node_fmol` (amount).
+Writes into other pieces' fields: `amount_increment`, booked in `integer_transferred_fmol` and `extracellular_amount_increment`, booked in `integer_transferred_fmol`. Ledgers: `integer_subunits`. Records: `integer_counts` (amount), `integer_hazard` (level), `integer_threshold` (level), `integer_events` (cumulative), `integer_channel_events` (cumulative), `integer_clock_s` (level), `integer_clock_carry_s` (level), `integer_transferred_fmol` (cumulative), `integer_transfer_dissipated_energy_pJ` (cumulative), `integer_energy_magnitude_pJ` (cumulative), `integer_divided_units` (cumulative), `integer_trace_time_s` (level), `integer_trace_channel` (level), `integer_trace_cell_fmol` (amount), `integer_trace_node_fmol` (amount) and `integer_trace_counts` (amount).
 
 <!-- /generated -->
 
