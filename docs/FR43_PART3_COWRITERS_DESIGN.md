@@ -712,6 +712,11 @@ int64, -1 where no event is recorded, beside each recorded event's time, channel
 - **What changes.** The state layout gains one owned field, zero-size at `trace_events` = 0 but still a leaf. So the
   program text changes for every world of the operator, not only those with a trace. Checkpoints saved before it do
   not load.
+- **A known cost: trace storage.** The field adds `trace_events` × unit states values per site to every saved row and
+  to a window's storage estimate. A world of many sites with a trace pays it in full. Part 3's C3.3 world (16,384
+  sites, a trace of 12, one window of 50 steps) went from 2.09 to about 2.44 GB, over `execution.max_trace_bytes`
+  (2^31), and was refused at its plan. So `validation/fr43_part3/statistics.py` now runs its worlds in windows of at
+  most 10 steps, an execution choice, and its `statistics.json` stays byte-identical to evidence-52935908's.
 - **The round** waits for FR-65's landing (the lead assigns lanes): every existing field bit for bit, part 3's judged
   traces and statistics included. Crossrev's co-writer world's nine files are superseded, not added (the 23 November
   renewal's pattern), and its G1 save is renewed.

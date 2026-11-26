@@ -38,7 +38,8 @@ def rows_of(spec, every_step=False):
     from cells.execution.windows import WindowPolicy, iter_windows
 
     steps = int(round(spec.experiment.end_time / spec.execution.dt))
-    policy = WindowPolicy(steps, "full" if every_step else "observations")
+    # At most 10 steps a window: the trace's counts put C3.3's 16,384 sites over the 2^31-byte cap.
+    policy = WindowPolicy(min(steps, 10), "full" if every_step else "observations")
     rows = {}
     for window in iter_windows(spec, policy, None):
         for i, t in enumerate(np.asarray(window.times)):
