@@ -23,7 +23,7 @@ At fixed binder totals and other free ligand concentrations, increasing one free
 - [CellsProofs.Chemistry.BindingResponse.masked_response_posDef](../CellsProofs/Chemistry/BindingResponse.lean#L161)
 - [CellsProofs.Chemistry.BindingResponse.free_increment_le_total_increment](../CellsProofs/Chemistry/BindingResponse.lean#L178)
 
-Direct proof subject `cells.rapid_binding@1`
+Direct proof subject `cells.binding.rapid_binding@1`
 
 Proof sources [Mathlib positive definite diagonal, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L362-L370) · [Mathlib weighted positive semidefinite matrix product, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L69-L76) · [Mathlib sum of a positive definite and a positive semidefinite matrix, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L420-L426) · [Mathlib strict monotonicity from a positive derivative, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L382-L385) · [Mathlib monotonicity from a nonnegative derivative, imported for the finite concentration increment](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L413-L416)
 

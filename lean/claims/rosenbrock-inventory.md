@@ -19,7 +19,7 @@ A weighted sum of species amounts that balances each reaction is preserved by ev
 - [CellsProofs.Chemistry.RosenbrockInventory.step_inventory](../CellsProofs/Chemistry/RosenbrockInventory.lean#L49)
 - [CellsProofs.Chemistry.RosenbrockInventory.dense_inventory](../CellsProofs/Chemistry/RosenbrockInventory.lean#L56)
 
-Direct proof subject `cells.rate_equations@1`
+Direct proof subject `cells.assembly_representation.rate_equations@1`
 
 Proof sources [Imported Mathlib chain rule for Fréchet derivatives](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/FDeriv/Comp.lean#L86) · [Imported Mathlib derivative of a continuous linear map](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/FDeriv/Linear.lean#L57) · [Imported Mathlib uniqueness of the derivative](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/FDeriv/Basic.lean#L491)
 

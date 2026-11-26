@@ -23,7 +23,7 @@ For a well-mixed pool place, the molecules left in the pool plus those withdrawn
 - [CellsProofs.Chemistry.PoolWithdrawal.withdrawn_moments](../CellsProofs/Chemistry/PoolWithdrawal.lean#L107)
 - [CellsProofs.Chemistry.PoolWithdrawal.pool_moments](../CellsProofs/Chemistry/PoolWithdrawal.lean#L116)
 
-Direct proof subject `cells.pool_withdrawal@1`
+Direct proof subject `cells.operator.pool_withdrawal@1`
 
 Proof sources [Mathlib natural ceiling and strict comparison, imported in the grid count](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Floor/Defs.lean#L109-L129) · [Mathlib ceiling bounds, specialized for midpoint probabilities](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Floor/Semiring.lean#L342) · [Finite Bernoulli count moments reused from lineage fission](../CellsProofs/Chemistry/LineageFission.lean#L90-L119) · [Withdrawal rule and the finite uniform convention](../../docs/ASSEMBLY_WITHDRAWAL_DESIGN.md#L42-L52)
 

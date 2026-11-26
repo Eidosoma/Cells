@@ -18,7 +18,7 @@ A replacement swaps the finite bath at one isolated stop. For each finite specie
 - [CellsProofs.Chemistry.VesiclePopulation.wash_history_inventory](../CellsProofs/Chemistry/VesiclePopulation.lean#L140)
 - [CellsProofs.Chemistry.VesiclePopulation.replacement_energy](../CellsProofs/Chemistry/VesiclePopulation.lean#L147)
 
-Direct proof subject `cells.pool_replacement@1`
+Direct proof subject `cells.operator.pool_replacement@1`
 
 Uses [Vesicles withdrawing from a finite shared bath conserve each species across the population](shared-pool-inventory.md) · [Serial transfer accounts for the spent bath and the vesicles removed](vesicle-serial-transfer.md)
 

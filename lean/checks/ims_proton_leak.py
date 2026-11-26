@@ -73,7 +73,7 @@ def general_binding(raw):
         dict(
             id="inner_H_leak",
             patch=fr.BOUNDING,
-            law="proton_constant_field_leak@1",
+            law="cells.route.proton_constant_field_leak@1",
             permeability_m_per_s=6e-7,
         )
     ]
@@ -83,7 +83,11 @@ def general_binding(raw):
         reason = str(exc)
         if any(
             key not in reason
-            for key in ("species H", "proton_constant_field_leak@1", "rapid_binding@1")
+            for key in (
+                "species H",
+                "cells.route.proton_constant_field_leak@1",
+                "cells.binding.rapid_binding@1",
+            )
         ):
             raise
         return dict(admitted=False, reason=reason)

@@ -71,7 +71,7 @@ def pulse_world(version, dt):
         dict(
             id="kleak",
             membrane_id="wall_cell_0",
-            kinetic_law="kleak_always_open@1",
+            kinetic_law="cells.channel.kleak_always_open@1",
             max_permeability_m_per_s=1e-9,
             abundance=1.0,
             initial_gate=[],

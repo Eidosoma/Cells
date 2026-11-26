@@ -1,4 +1,4 @@
-"""Check the two membrane free-energy terms in cells.assembly_lineages@2 on CPU."""
+"""Check the two membrane free-energy terms in cells.model.assembly_lineages@2 on CPU."""
 
 import json
 import math
@@ -10,6 +10,7 @@ import numpy as np
 
 from cells.definitions.specs import parse_spec
 from cells.models.assembly_lineages_v2 import kernel, runner
+from validation import id_table
 from validation.assembly_lineages_v2 import probes
 from validation.ool.references import detailed_balance, ledger
 from validation.ool.references.laws import Law
@@ -103,7 +104,7 @@ def check_binary(ideal, regular, names, offset):
 
 
 def main():
-    world = json.loads((INPUTS / "ol1_wa.world.json").read_text())
+    world = id_table.load(INPUTS / "ol1_wa.world.json")
     grid = json.loads((INPUTS / "ol1_kernel_probe_states.json").read_text())
     report = {}
     for pair in probes.PAIRS:

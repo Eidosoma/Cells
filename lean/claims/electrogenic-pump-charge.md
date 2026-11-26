@@ -21,7 +21,7 @@ The Na⁺/K⁺ pump stalls at ψ = g_NaK − 3r_Na + 2r_K and the calcium pump a
 - [CellsProofs.Transport.ElectrogenicPumps.voltage_work](../CellsProofs/Transport/ElectrogenicPumps.lean#L54)
 - [CellsProofs.Transport.ElectrogenicPumps.zero_current_iff](../CellsProofs/Transport/ElectrogenicPumps.lean#L61)
 
-Direct proof subject `cells.nak_atp_mass_action_positive@1`, `cells.ca_atp_mass_action_positive@1`
+Direct proof subject `cells.cycle.nak_atp_mass_action_positive@1`, `cells.cycle.ca_atp_mass_action_positive@1`
 
 Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 

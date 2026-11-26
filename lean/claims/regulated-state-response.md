@@ -27,7 +27,7 @@ At fixed input a two-state gate stays in [0, 1] and moves toward its steady open
 - [CellsProofs.Transport.RegulatedAvailability.route_bounds](../CellsProofs/Transport/RegulatedAvailability.lean#L104)
 - [CellsProofs.Transport.RegulatedAvailability.route_mono](../CellsProofs/Transport/RegulatedAvailability.lean#L112)
 
-Direct proof subject `cells.species_regulated_availability@1`, `cells.species_regulated_availability@2`
+Direct proof subject `cells.operator.species_regulated_availability@1`, `cells.operator.species_regulated_availability@2`
 
 Proof sources [grn-lean activation monotonicity](https://github.com/marpaia/grn-lean/blob/070ba8da6a09bdc4b0550396c61611668768bc0b/GRN/Dynamics/Sensor.lean#L30) · [grn-lean inhibition monotonicity](https://github.com/marpaia/grn-lean/blob/070ba8da6a09bdc4b0550396c61611668768bc0b/GRN/Dynamics/Sensor.lean#L51) · [Optional Cells proof for both monotone responses with basal availability](../checks/hill/Response.lean#L46) · [Imported Mathlib Real.exp_sub, specialized locally to the two response levels](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L231) · [Imported Mathlib Real.log_exp, specialized locally to elapsed time](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L70)
 

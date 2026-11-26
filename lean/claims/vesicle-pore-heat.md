@@ -18,7 +18,7 @@ The work to open a critical pore is σπ(Γ/σ)². In units of k_BT the opening 
 - [CellsProofs.Chemistry.VesiclePore.event_heat](../CellsProofs/Chemistry/VesiclePore.lean#L141)
 - [CellsProofs.Chemistry.VesiclePore.viscosity_heat_split](../CellsProofs/Chemistry/VesiclePore.lean#L146)
 
-Direct proof subject `cells.pore_nucleation@1`, `cells.tension_hold@1`
+Direct proof subject `cells.assembly_hazard.pore_nucleation@1`, `cells.operator.tension_hold@1`
 
 Proof sources [Mathlib logarithms of products and quotients, imported for the rate ratio](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L125-L132) · [Mathlib log_sqrt, imported for the collapse rate](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L284) · [Cells forward and reverse rate pair and hold work](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/docs/VESICLE_PORES_LAWS.md#7-the-event-pair-d287-opening-is-a-pair-no-second-exemption)
 

@@ -16,7 +16,7 @@ Removing the full declared number of functional units sets both the normalized a
 - [CellsProofs.Chemistry.PopulationUnits.empty_surface](../CellsProofs/Chemistry/PopulationUnits.lean#L143)
 - [CellsProofs.Chemistry.PopulationUnits.whole_patch_flow](../CellsProofs/Chemistry/PopulationUnits.lean#L135)
 
-Direct proof subject `cells.membrane_entity_state@1`
+Direct proof subject `cells.operator.membrane_entity_state@1`
 
 Uses [At fixed channel drive, whole-patch flow tracks the surface unit count](membrane-population-flow.md)
 

@@ -7,7 +7,7 @@ import Mathlib.Tactic.Ring
 
 /-! # Extracellular face transport
 
-The `logmean_electrodiffusion@1` surface kernel uses two positive concentrations,
+The `cells.route.logmean_electrodiffusion@1` surface kernel uses two positive concentrations,
 sender minus receiver voltage, and a nonnegative face coefficient. All formulas
 here use real arithmetic. The mean uses the engine's two thresholds and its
 fourth-degree polynomial. The force uses the difference of the concentration logs.

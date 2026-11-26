@@ -27,7 +27,7 @@ Each edge of a steady ring carries the same net flux. For the declared two-sodiu
 - [CellsProofs.Transport.SodiumAnionDiagram.cycle_stall](../CellsProofs/Transport/SodiumAnionDiagram.lean#L246)
 - [CellsProofs.Transport.SodiumAnionDiagram.stall_slope](../CellsProofs/Transport/SodiumAnionDiagram.lean#L261)
 
-Direct proof subject `cells.na2_anion_symport_diagram@1`
+Direct proof subject `cells.cycle.na2_anion_symport_diagram@1`
 
 Uses [Sodium coupling sets net charge and the stall voltage of an anion carrier](sodium-anion-symport.md)
 

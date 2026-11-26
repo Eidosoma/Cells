@@ -17,7 +17,7 @@ When a departing occupant takes its unfinished chains and attached RNA and a new
 - [CellsProofs.Chemistry.TerminalRelease.replacement_energy](../CellsProofs/Chemistry/TerminalRelease.lean#L80)
 - [CellsProofs.Chemistry.TerminalRelease.generation_counter](../CellsProofs/Chemistry/TerminalRelease.lean#L91)
 
-Direct proof subject `cells.templated_polymerisation@1`, `cells.scheduled_cell_replacement@1`
+Direct proof subject `cells.operator.templated_polymerisation@1`, `cells.operator.scheduled_cell_replacement@1`
 
 Proof sources [FR-38 amendment S, event inventory and energy](https://github.com/Eidosoma/Cells/blob/5ef761505f2dbd48c35e36a2caee391e1f7d9394/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1499) · [Mathlib finite telescoping sum, imported as Finset.sum_range_sub](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L862-L865)
 

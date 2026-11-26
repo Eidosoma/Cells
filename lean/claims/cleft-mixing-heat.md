@@ -21,7 +21,7 @@ For each species in an ideal isothermal fill, mixing heat is the bath’s chemic
 - [CellsProofs.Tissue.RestrictedLumen.heat_entropy](../CellsProofs/Tissue/RestrictedLumen.lean#L120)
 - [CellsProofs.Tissue.RestrictedLumen.energy_booking](../CellsProofs/Tissue/RestrictedLumen.lean#L133)
 
-Direct proof subject `cells.restricted_cleft_lumen@1`, `cells.restricted_cleft_lumen@2`
+Direct proof subject `cells.operator.restricted_cleft_lumen@1`, `cells.operator.restricted_cleft_lumen@2`
 
 Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294) · [Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149) · [Cells specialization of the relative-entropy formula](../checks/mixing/KLFun.lean)
 

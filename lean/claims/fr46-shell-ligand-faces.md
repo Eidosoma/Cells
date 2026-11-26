@@ -18,7 +18,7 @@ If every event conserves a ligand moiety and every possible transfer preserves i
 - [CellsProofs.Chemistry.ShellLigandFaces.possible_origin](../CellsProofs/Chemistry/ShellLigandFaces.lean#L61)
 - [CellsProofs.Chemistry.ShellLigandFaces.sealed_lumen](../CellsProofs/Chemistry/ShellLigandFaces.lean#L74)
 
-Direct proof subject `cells.prescribed_shell@1`, `cells.stochastic_mass_action@1`
+Direct proof subject `cells.assembly_geometry.prescribed_shell@1`, `cells.reaction.stochastic_mass_action@1`
 
 Proof sources [D323 sealed-lumen and face-propagation contract](https://github.com/Eidosoma/Cells/blob/9eb9890a91ad6049be9b2e5a1bfae7b383a464eb/docs/DECISIONS.md#L10202-L10212) · [Mathlib finite-path closure, imported and specialized to equality of ligand faces](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Logic/Relation.lean#L544-L546) · [Cells exact two-ligand carrier, same-face control and preloaded-site check](../checks/chemistry/ShellLigandFaces.lean)
 

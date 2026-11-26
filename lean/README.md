@@ -6,15 +6,15 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of 35 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [56 of 63 laws](COVERAGE.md#registered-laws) and [35 of 35 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 6 of 6 | 11 of 11 | 11 checked | 10 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 16 of 16 | 16 checked | 15 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 18 of 18 | 16 checked · 1 failed · 1 open | 14 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 46 of 46 | 44 checked · 1 failed · 1 open | 28 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 16 of 17 | 16 of 16 | 16 checked | 15 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 17 | 9 of 9 | 8 checked · 1 open | 9 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 4 | 18 of 18 | 16 checked · 1 failed · 1 open | 14 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 17 | 46 of 46 | 44 checked · 1 failed · 1 open | 28 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 30 of 30 | 30 checked | 23 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 4 of 4 | 3 checked · 1 open | 4 |
 
@@ -24,7 +24,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of
 
 Each category opens its detailed claim table on GitHub. A covered law or operator has at least one directly proved property, with its assumptions listed on the claim page. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-FR-51’s channel blocker now has proofs for changing voltage and for changing ion concentration on either side of a membrane. The compiled engine passed all 6,546 endpoint concentration checks. Its law registry entry is pending. Two independent nerve studies support the direction of voltage-dependent proton block. The separate Kir2.1 study has a frozen scoring rule for two prospective potassium comparisons. [Blocker proof and evidence](claims/fr51-weighted-channel-block.md) · [Concentration replay and fault controls](PROGRESS.md#fr51-concentration-bounds) · [Panama holdout protocol](PROGRESS.md#fr51-panama-holdouts)
+The registered FR-51 channel blocker has proofs for changing voltage and for changing ion concentration on either side of a membrane. The compiled engine passed all 6,546 endpoint concentration checks. Two independent nerve studies support the direction of voltage-dependent proton block. The separate Kir2.1 study has a frozen scoring rule for two prospective potassium comparisons. [Blocker proof and evidence](claims/fr51-weighted-channel-block.md) · [Concentration replay and fault controls](PROGRESS.md#fr51-concentration-bounds) · [Panama holdout protocol](PROGRESS.md#fr51-panama-holdouts)
 
 FR-65 distinguishes solute dilution from a change in amount. In swollen hepatocytes ATP concentration fell while ATP amount rose slightly. Two rat liver studies found different proteolysis responses under different nutrient and preparation conditions. A compiled comparison of scheduled turnover during swelling awaits the engine feature. [FR-65 proof and measurements](claims/fr65-turnover-volume.md) · [Two-lab proteolysis comparison](WET_LAB_EVIDENCE.md#pair-liver-swelling-proteolysis)
 
@@ -116,14 +116,14 @@ To review two experiments together, add a `biology.pairs` entry to the claim and
 
 When a pair has been assessed against Cells, record the result in `replay.status` and explain it in `replay.assessment`. Name the shared observable, which inputs came from fitting and which measurements a replay still needs. Pairs awaiting assessment appear as “Awaiting replay”. [Replay verdicts and examples](WET_LAB_EVIDENCE.md#cells-replay-results)
 
-A normal `lake build` checks that each named theorem exists in its declared module, then regenerates the topic overview, claim notes, coverage catalog and paired wet-lab register. With `CELLS_PYTHON` set to the Cells Python interpreter, the build also refreshes the registry inventory from the active checkout. A Lean-only build uses the last exported inventory. Commit the generated files alongside edits to the register. The documentation commands below run from `lean/`.
+A normal `lake build` checks that each named theorem exists in its declared module, then regenerates the topic overview, claim notes, coverage catalog and paired wet-lab register. With `CELLS_PYTHON` set to the Cells Python interpreter, the build also refreshes the registry inventory from the active checkout. A build using standard-library Python reads the last exported inventory and the checkout’s ID translation table. Commit the generated files alongside edits to the register. The documentation commands below run from `lean/`.
 
 ```bash
 python3 scripts/generate_claims.py
 python3 scripts/generate_claims.py --check
 ```
 
-To compare with today's engine registrations, run the following in the Cells environment. Omit `--check` to refresh the inventory and pages. The inventory contains declaration IDs and locations exported by the engine. [Manifest source](../src/cells/registry/declarations.py#L659)
+To compare with today's engine registrations, run the following in the Cells environment. Omit `--check` to refresh the inventory and pages. The catalog uses the family-qualified IDs from `cells.declarations@3`. Each comparison keeps the IDs and source revision it ran with. The catalog uses the engine's rename table to link those historical runs to today's laws and operators. [Manifest source](../src/cells/registry/declarations.py#L619) · [ID translation for frozen inputs](../validation/id_table.py)
 
 ```bash
 python -B scripts/generate_claims.py --live-registry --check
@@ -140,13 +140,14 @@ python3 -B scripts/generate_claims.py --check-sources --since 8f9bc050
 
 The first command includes historical comparisons. The second checks for changes since the reviewed engine commit. Use the previous landing as the baseline in automation, or `HEAD` for uncommitted edits. Exit 0 means all selected files match, 1 means at least one changed, and 2 means the comparison could not be completed. A changed file identifies a driver to review or rerun. Imports and data omitted from a comparison's citations can also affect its result. A replay establishes the current numerical outcome. [Source review and retests](PROGRESS.md#claim-source-review)
 
-These queries list claims with held-out measurements and claims whose comparison exercised a given law.
+These queries list claims with held-out measurements and claims whose recorded comparisons exercised a law under any of its registered spellings.
 
 ```bash
 jq -r '.claims[] | select(any(.biology.evidence[]; .role == "held_out_from_fitting")) | .id' claims.json
-jq -r --arg law 'logmean_electrodiffusion@1' '
+jq -r --arg law 'cells.route.logmean_electrodiffusion@1' --slurpfile moves ../scripts/moves/id-rename-map.json '
+  ([$law] + [$moves[0].rows[] | select(.new == $law) | .old[]]) as $ids |
   .comparisons as $checks | .claims[]
-  | select(any(.numerical.comparisons[]; $checks[.].laws | index($law))) | .id' claims.json
+  | select(any(.numerical.comparisons[] | $checks[.].laws[]?; . as $id | $ids | index($id))) | .id' claims.json
 ```
 
 ### Reusing a proof

@@ -19,7 +19,7 @@ At fixed temperature and tension, the rate of first pore opening is area times a
 - [CellsProofs.Chemistry.VesiclePore.temperature_slope_gt](../CellsProofs/Chemistry/VesiclePore.lean#L51)
 - [CellsProofs.Chemistry.VesiclePore.warming_increases_rate](../CellsProofs/Chemistry/VesiclePore.lean#L67)
 
-Direct proof subject `cells.pore_nucleation@1`
+Direct proof subject `cells.assembly_hazard.pore_nucleation@1`
 
 Proof sources [Mathlib exp_log, imported for area scaling](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L54) · [Mathlib hasDerivAt_log, imported for the implemented temperature derivative](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Deriv.lean#L47) · [Mathlib strictMonoOn_of_deriv_pos, specialized to the admitted temperatures](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L370) · [Cells pore law and its physical assumptions](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/docs/VESICLE_PORES_LAWS.md#2-the-rupture-law)
 

@@ -39,7 +39,7 @@ def tracer_world(schedules):
     raw = wash.with_wash(raw, schedules, events)
     raw["model"]["operators"].append(
         dict(
-            law="neutral_arrival_labels@1",
+            law="cells.operator.neutral_arrival_labels@1",
             species=[
                 dict(
                     id=wash.TRACER,

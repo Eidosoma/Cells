@@ -18,7 +18,7 @@ Each binder form contributes one binder and its signed ligand stoichiometry to e
 - [CellsProofs.Transport.FormsFace.row_conservation](../CellsProofs/Transport/FormsFace.lean#L42)
 - [CellsProofs.Transport.FormsFace.ligand_moves_at_zero_binder_flux](../CellsProofs/Transport/FormsFace.lean#L51)
 
-Direct proof subject `cells.logmean_electrodiffusion_forms@1`
+Direct proof subject `cells.route.logmean_electrodiffusion_forms@1`
 
 Proof sources [Imported Mathlib sum over an optional mover, specialized to free ligand plus forms](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Fintype/BigOperators.lean#L97) · [Imported Mathlib interchange of finite sums, specialized to total charge](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Sigma.lean#L116)
 

@@ -22,7 +22,7 @@ For the six Kv1 laws, Kir2.1 and NaV1.2, both targets lie between zero and one a
 - [CellsProofs.Transport.IonChannels.opening_bounded](../CellsProofs/Transport/IonChannels.lean#L124)
 - [CellsProofs.Transport.IonChannels.stage_opening_bounded](../CellsProofs/Transport/IonChannels.lean#L140)
 
-Direct proof subject `cells.kv1p1_mh2@1`, `cells.kv1p2_mh@1`, `cells.kv1p3_mh@1`, `cells.kv1p4_mh@1`, `cells.kv1p5_mh@1`, `cells.kv1p6_mh@1`, `cells.kir2p1_mh2@1`, `cells.nav1p2_m3h_regularized@1`
+Direct proof subject `cells.channel.kv1p1_mh2@1`, `cells.channel.kv1p2_mh@1`, `cells.channel.kv1p3_mh@1`, `cells.channel.kv1p4_mh@1`, `cells.channel.kv1p5_mh@1`, `cells.channel.kv1p6_mh@1`, `cells.channel.kir2p1_mh2@1`, `cells.channel.nav1p2_m3h_regularized@1`
 
 Proof sources [Mathlib exponential inequalities used in the stage proof](https://github.com/leanprover-community/mathlib4/blob/v4.19.0/Mathlib/Data/Complex/Exponential.lean#L641) · [Cells regularized Bernoulli positivity](../CellsProofs/Transport/ProtonLeak.lean#L56)
 

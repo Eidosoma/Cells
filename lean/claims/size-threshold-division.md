@@ -18,7 +18,7 @@ Ranking the occupied membrane places gives a daughter of size k and a sibling of
 - [CellsProofs.Chemistry.LineageFission.ranked_sizes](../CellsProofs/Chemistry/LineageFission.lean#L23)
 - [CellsProofs.Chemistry.LineageFission.binary_inventory](../CellsProofs/Chemistry/LineageFission.lean#L42)
 
-Direct proof subject `cells.size_threshold_division@1`
+Direct proof subject `cells.operator.size_threshold_division@1`
 
 Proof sources [Cells reuses the existing ranked quota and per-species inventory](../CellsProofs/Chemistry/LineageFission.lean#L23) · [Imported Mathlib cardinality of the complementary set](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Fintype/Card.lean#L130)
 

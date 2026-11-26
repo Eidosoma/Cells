@@ -15,7 +15,7 @@ For any declared target strictly between the water bounds, subtracting and addin
 
 - [CellsProofs.Tissue.CellReplacement.template_volume_interior](../CellsProofs/Tissue/CellReplacement.lean#L64)
 
-Direct proof subject `cells.scheduled_cell_replacement@2`
+Direct proof subject `cells.operator.scheduled_cell_replacement@2`
 
 Uses [Replacement over water accounts for incoming volume and composition-dependent free energy](cell-replacement-water.md)
 

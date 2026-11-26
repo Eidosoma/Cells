@@ -18,7 +18,7 @@ For each species, the new world plus the spent bath and removed vesicles contain
 - [CellsProofs.Chemistry.VesiclePopulation.successive_transfers](../CellsProofs/Chemistry/VesiclePopulation.lean#L36)
 - [CellsProofs.Chemistry.VesiclePopulation.transfer_free_energy](../CellsProofs/Chemistry/VesiclePopulation.lean#L44)
 
-Direct proof subject `cells.serial_transfer@1`
+Direct proof subject `cells.operator.serial_transfer@1`
 
 Uses [Vesicles withdrawing from a finite shared bath conserve each species across the population](shared-pool-inventory.md)
 

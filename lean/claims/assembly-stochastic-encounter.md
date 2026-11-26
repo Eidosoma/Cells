@@ -24,7 +24,7 @@ A molecular encounter draws from the available counts without replacement. For a
 - [CellsProofs.Chemistry.AssemblyKinetics.singular_draw](../CellsProofs/Chemistry/AssemblyKinetics.lean#L239)
 - [CellsProofs.Chemistry.AssemblyKinetics.occupancy_by_count](../CellsProofs/Chemistry/AssemblyKinetics.lean#L24)
 
-Direct proof subject `cells.stochastic_mass_action@1`
+Direct proof subject `cells.reaction.stochastic_mass_action@1`
 
 Proof sources [Imported Mathlib falling-factorial identity](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L368)
 

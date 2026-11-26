@@ -23,7 +23,7 @@ On a positive reversible edge, catalysis preserves the forward-to-reverse rate r
 - [CellsProofs.Chemistry.AssemblyKinetics.ratio_iff](../CellsProofs/Chemistry/AssemblyKinetics.lean#L180)
 - [CellsProofs.Chemistry.AssemblyKinetics.equilibrium_flow_iff](../CellsProofs/Chemistry/AssemblyKinetics.lean#L174)
 
-Direct proof subject `cells.transition_state_factor@1`
+Direct proof subject `cells.rate_factor.transition_state_factor@1`
 
 Proof sources [Pythia Eyring rate and positivity proof, imported in the optional check](https://github.com/athanor-ai/pythia/blob/65404339b5c6fe8004d91fdd9c0c14ceb0bf7cd3/Pythia/Frontier/Chemistry/Eyring.lean#L23-L36) · [Cells single-contact factor as the ratio of the two Eyring rates](../checks/chemistry/Reuse.lean#L77)
 

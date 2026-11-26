@@ -1,4 +1,4 @@
-"""Count conservation and independent sampling in cells.pool_withdrawal@1, with droplet controls."""
+"""Check count conservation and droplet sampling in cells.operator.pool_withdrawal@1."""
 
 import argparse
 import json

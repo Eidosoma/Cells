@@ -102,7 +102,7 @@ def definition():
                 receiver=f"cell_{2 * i + 1}",
                 area_m2=AREA,
                 permeability_m_per_s=impermeable | {"X": PERMEABILITY},
-                law="constant_field@1",
+                law="cells.route.constant_field@1",
                 gate=dict(
                     law=gate.LAW_ID,
                     threshold_voltage_V=THRESHOLD,

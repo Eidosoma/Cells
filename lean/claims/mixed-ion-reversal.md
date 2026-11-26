@@ -17,7 +17,7 @@ For monovalent Na⁺, K⁺ and Cl⁻ the analytic sum of the outward constant-fi
 - [CellsProofs.Transport.MixedMembrane.reversal_iff](../CellsProofs/Transport/MixedMembrane.lean#L42)
 - [CellsProofs.Transport.MixedMembrane.engine_current_eq](../CellsProofs/Transport/MixedMembrane.lean#L58)
 
-Direct proof subject `cells.passive_constant_field_permeation@1`
+Direct proof subject `cells.route.passive_constant_field_permeation@1`
 
 Uses [Ion charge sets permeation reversal and bounds the current–voltage slope](charged-permeation.md)
 

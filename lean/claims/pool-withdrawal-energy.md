@@ -26,7 +26,7 @@ For every count split and supplied buffer, the change of pool free energy equals
 - [CellsProofs.Chemistry.PoolWithdrawalEnergy.last_midpoint_mean_heat](../CellsProofs/Chemistry/PoolWithdrawalEnergy.lean#L196)
 - [CellsProofs.Chemistry.PoolWithdrawalEnergy.last_midpoint_gap](../CellsProofs/Chemistry/PoolWithdrawalEnergy.lean#L211)
 
-Direct proof subject `cells.pool_withdrawal@1`
+Direct proof subject `cells.operator.pool_withdrawal@1`
 
 Proof sources [Mathlib binomial distribution and its point mass, imported and specialized](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Binomial.lean#L25-L44) · [Mathlib bound on the mass of a single outcome, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Basic.lean#L115) · [Mathlib binomial coefficient and factorial identity, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Choose/Basic.lean#L174) · [Cells proof of the midpoint sampler’s count law](../CellsProofs/Chemistry/PoolWithdrawal.lean#L91-L125) · [Discrete energy and expected heat convention in the withdrawal design](../../docs/ASSEMBLY_WITHDRAWAL_DESIGN.md#L101-L175)
 

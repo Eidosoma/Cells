@@ -22,7 +22,7 @@ Each physical release fate books nonnegative heat throughout the active domain. 
 - [CellsProofs.Chemistry.ReleaseEnergy.split_heat_nonneg](../CellsProofs/Chemistry/ReleaseEnergy.lean#L68)
 - [CellsProofs.Chemistry.ReleaseEnergy.booking_balance](../CellsProofs/Chemistry/ReleaseEnergy.lean#L78)
 
-Direct proof subject `cells.templated_polymerisation@1`
+Direct proof subject `cells.operator.templated_polymerisation@1`
 
 Proof sources [Mathlib derivative of x log x, imported and specialized to the ideal row](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/NegMulLog.lean#L51-L60) · [Mathlib derivative sign on a convex interval](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L474-L490) · [Cells completion and per-fate heat](https://github.com/Eidosoma/Cells/blob/e924f450ad74a878eda6727ac255527ec5d74ff7/src/cells/operators/templated_polymerisation.py#L1355-L1400)
 

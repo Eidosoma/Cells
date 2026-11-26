@@ -21,7 +21,7 @@ For a membrane with N molecules and a molecules of the incoming species, the act
 - [CellsProofs.Chemistry.AssemblyMixing.first_insertion](../CellsProofs/Chemistry/AssemblyMixing.lean#L71)
 - [CellsProofs.Chemistry.AssemblyMixing.ideal_transfer](../CellsProofs/Chemistry/AssemblyMixing.lean#L81)
 
-Direct proof subject `cells.ideal_mixing@1`
+Direct proof subject `cells.free_energy.ideal_mixing@1`
 
 ## Numerical comparison
 

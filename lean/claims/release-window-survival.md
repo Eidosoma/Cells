@@ -28,7 +28,7 @@ A detachment event marked in a half-open window belongs to exactly one of the tw
 - [CellsProofs.Chemistry.MarkedRelease.marked_fates](../CellsProofs/Chemistry/MarkedRelease.lean#L20)
 - [CellsProofs.Chemistry.MarkedRelease.survivors_bounded](../CellsProofs/Chemistry/MarkedRelease.lean#L34)
 
-Direct proof subject `cells.templated_polymerisation@1`, `cells.neutral_arrival_labels@1`
+Direct proof subject `cells.operator.templated_polymerisation@1`, `cells.operator.neutral_arrival_labels@1`
 
 Proof sources [Mathlib product over the successor range, imported for survival across a chase](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L503) · [FR-42 boundary and reuse requirements](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) · [FR-38 clarification of release, survivors and the chase denominator](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) · [Mathlib finite partition into a predicate and its complement, imported for individual events](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L117-L124) · [Cells uses neutral RNA shares to mark at release](https://github.com/Eidosoma/Cells/blob/947ff262c7fba53b53b32a7c44394e84be3fa897/docs/TEMPLATED_POLYMERISATION_LAWS.md#914-erratum-c-route-1-on-shares)
 

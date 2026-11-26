@@ -22,7 +22,7 @@ For one held ligand the feasibility margin has one direction. For two, its minim
 - [CellsProofs.Chemistry.BindingVertices.common_floor_minimum_at_corner](../CellsProofs/Chemistry/BindingVertices.lean#L232)
 - [CellsProofs.Chemistry.BindingVertices.common_floor_equilibrium_iff](../CellsProofs/Chemistry/BindingVertices.lean#L249)
 
-Direct proof subject `cells.rapid_binding@1`
+Direct proof subject `cells.binding.rapid_binding@1`
 
 Proof sources [Mathlib interval parametrization of the two-weight simplex, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Basic.lean#L665-L675) · [Mathlib singleton simplex, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Basic.lean#L623-L627) · [Mathlib minimum on a nonempty finite set, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Finset/Max.lean#L513-L516) · [Cells existence and uniqueness criterion](../CellsProofs/Chemistry/BindingFeasibility.lean#L264)
 

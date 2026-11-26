@@ -28,7 +28,7 @@ At constant rates, the local pool solves dn/dt = P − kn. Production and cleara
 - [CellsProofs.Chemistry.SpeciesTurnover.cohort_survival](../CellsProofs/Chemistry/SpeciesTurnover.lean#L113)
 - [CellsProofs.Chemistry.SpeciesTurnover.half_life](../CellsProofs/Chemistry/SpeciesTurnover.lean#L118)
 
-Direct proof subject `cells.scheduled_species_turnover@1`
+Direct proof subject `cells.operator.scheduled_species_turnover@1`
 
 ## Numerical comparison
 

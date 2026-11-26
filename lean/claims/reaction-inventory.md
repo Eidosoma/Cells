@@ -14,7 +14,7 @@ If each reaction balances an integer-weighted inventory, the combined update pre
 
 - [CellsProofs.Chemistry.inventory_after_reactions](../CellsProofs/Chemistry/Stoichiometry.lean#L27)
 
-Direct proof subject `cells.local_species_reactions@1`
+Direct proof subject `cells.operator.local_species_reactions@1`
 
 ## Numerical comparison
 

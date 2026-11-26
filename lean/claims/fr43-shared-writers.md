@@ -20,7 +20,7 @@ The change in a shared stock equals the sum of the two writers’ signed booking
 - [CellsProofs.Chemistry.SharedWriter.volume_rate_distinguishes](../CellsProofs/Chemistry/SharedWriter.lean#L47)
 - [CellsProofs.Chemistry.SharedWriter.stale_volume_energy](../CellsProofs/Chemistry/SharedWriter.lean#L61)
 
-Direct proof subject `cells.local_species_reactions@1`, `cells.templated_polymerisation@1`
+Direct proof subject `cells.operator.local_species_reactions@1`, `cells.operator.templated_polymerisation@1`
 
 Proof sources [Imported Mathlib telescoping sum specialized to a saved interval](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L862-L865) · [Imported Mathlib logarithm of a quotient for the ideal-energy correction](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L129) · [Cells locally proves the two-writer split and volume specializations](../CellsProofs/Chemistry/SharedWriter.lean)
 

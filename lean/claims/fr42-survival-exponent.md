@@ -24,7 +24,7 @@ With nonnegative old stock and gross arrivals, every positive endpoint up to the
 - [CellsProofs.Chemistry.ArrivalSurvival.sum_labelAmounts](../CellsProofs/Chemistry/ArrivalSurvival.lean#L109)
 - [CellsProofs.Chemistry.ArrivalSurvival.sum_normalized](../CellsProofs/Chemistry/ArrivalSurvival.lean#L116)
 
-Direct proof subject `cells.neutral_arrival_labels@1`
+Direct proof subject `cells.operator.neutral_arrival_labels@1`
 
 Proof sources [Mathlib strict convexity of the exponential, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/SpecificFunctions/Basic.lean#L37) · [Mathlib's strictly ordered secant slopes, specialized to exponential arrival survival](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Slope.lean#L290) · [Mathlib continuity of the derivative-extended secant at zero, imported](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/DSlope.lean#L107) · [Mathlib intermediate value theorem, imported to establish existence](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Topology/Order/IntermediateValue.lean#L478)
 

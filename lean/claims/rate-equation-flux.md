@@ -19,7 +19,7 @@ An enabled reaction with positive forward factor has forward flux exactly when i
 - [CellsProofs.Chemistry.RateEquations.dissipation_nonneg](../CellsProofs/Chemistry/RateEquations.lean#L34)
 - [CellsProofs.Chemistry.RateEquations.network_dissipation_nonneg](../CellsProofs/Chemistry/RateEquations.lean#L49)
 
-Direct proof subject `cells.rate_equations@1`
+Direct proof subject `cells.assembly_representation.rate_equations@1`
 
 Proof sources [Cells specializes the existing ATP-cycle sign and stall proofs](../CellsProofs/Transport/ATPCycle.lean#L31) · [Imported Mathlib exponential of the log of a positive forward factor](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L54) · [Imported Mathlib nonnegativity of a finite sum, specialized to reaction power](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Group/Finset.lean#L115)
 
