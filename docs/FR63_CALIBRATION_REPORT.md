@@ -233,6 +233,9 @@ These are reported, not judged.
   - The declaration moves the law's curve by ΔV and does not align it. So the engine's acid midpoints (+5.7, +11.3 and
     +1.8 mV) sit the same offsets above the measured ones.
   - A constant offset is not in the closed set (§7).
+  - **Afterwards (D421 to D423):** a like-for-like gate counted only Longobardo et al., since Trapani and Korn print
+    no fit form, and Kehl et al. give no n for the midpoint. So this gap is recorded as an indication, and nothing is
+    built.
 - **The slope.** The law's m target has a 6.4 mV slope factor, with gate power one.
   - Longobardo et al. fitted 4.9 ± 0.2 and 5.2 ± 0.1 mV.
   - Trapani and Korn's fitted parameters are not printed.

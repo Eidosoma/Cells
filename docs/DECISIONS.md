@@ -14455,3 +14455,38 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
   - some of the agent's reads ran outside a memory scope, unpinned;
   - listings showed other Lean sections' headings and file names, FR-51's among them, never their content;
   - the FR-51 figure and `kir_spermine_potassium.json` were not opened.
+
+## D423: the Kv1.5 like-for-like gate closes at (c): one countable study, so the midpoint gap is an indication
+
+2026-11-27, written at 20:18 UTC. The Lean track answered D422's relay, through the user.
+
+- **Countability, by D421 rule 1** and D422's reading that an item the paper does not print is an "established no":
+  - **Longobardo et al. 2001: counts.**
+    - Its fit form is printed: Equation 1, y = 1/[1 + exp(−(E − Eₕ)/s)], with the normalized maximum fixed at 1, Eₕ being
+      the 50 % activation voltage.
+    - Error type and n: SEM, n = 38, for the control midpoint.
+    - Its control protocol is inside the law's domain: held at −80 mV, prepulses −80 to +60 mV in 10 mV steps of 250 ms
+      each, then a −40 mV tail at pH 7.4.
+  - **Trapani and Korn 2003: established uncountable.** The Methods name a "modified Boltzmann" but print no activation
+    equation, so the fit form is not printed. Its −15.3 ± 0.8 mV (SE, n = 5) is the fitted quantity the authors call
+    half-activation, and its relation to the 50 % crossing cannot be checked.
+  - **Kehl et al. 2002: established uncountable.**
+    - The midpoint's own n is unreported; the caption's n = 6 belongs to the relative maximal conductance.
+    - The paper does not say whether the 1.9 in −18.3 ± 1.9 mV is the SD across cells or a pooled fit's parameter
+      uncertainty.
+  - **Independence:** the authors do not overlap. Longobardo et al. are a Madrid group, and Kehl et al. a British
+    Columbia group.
+- **The outcome, by D421 rule 5: (c).** One countable study cannot make the rule's two, so Longobardo et al.'s
+  like-for-like midpoint is not computed: it could not change the outcome.
+  - The Kv1.5 control-midpoint gap is recorded as an indication in FR-63's records, and nothing is built.
+  - The parity law stays as it is.
+  - The gate reopens if a study with the rule's items appears, or if the missing items are found in a source.
+- **The engine question of D422 is answered** by the Lean track's own replay: a peak-tail protocol needs no voltage
+  clamp.
+  - The replay advanced the native gate kinetics at a constant prepulse voltage, with the engine's exponential update.
+  - It then passed the gate state and the tail voltage to `clamped_channel_flux`, which reads the instantaneous tail
+    current.
+
+  The replay's fitted midpoints were not read.
+- **Not landed:** the gate's driver (`validation/fr63/like_for_like.py`, branch `fr63-like-for-like`). It is tooling, and
+  the Lean track's answers supersede its countability record.
