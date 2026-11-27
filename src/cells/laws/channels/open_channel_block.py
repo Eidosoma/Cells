@@ -11,7 +11,9 @@ binds it with the dissociation constant
 - s is +1 for a blocker from the outside and -1 for one from the inside.
 - m_k is either |z_B| delta_k, with the electrical distance delta_k in [0, 1], or the effective
   valence z_eff,k > 0 (ruling 7).
-- V_ref is the patch voltage V = phi_in - phi_out, or V - E of the population's permeant ion.
+- V_ref is the voltage the population's declared shift gives the block (FR-64): the patch voltage
+  V = phi_in - phi_out where none is declared, or V less the shift its `voltage_shift.block`
+  declares (laws/channels/voltage_shift.py).
 
 The layout carries the signed steepness s sgn(z_B) m_k (dimensionless), and a_k = steepness F/(R T)
 in 1/V.
@@ -37,16 +39,16 @@ domain (fr51-channel-block-v1 §1.2) keeps every intermediate a normal binary64 
 domain_valid refuses one that is not, since compiled CPU code flushes subnormals to zero.
 
 **Scope (D355, D356).**
-- The reversal reference ({"reversal_of": ion}) is supported for changes of that ion outside the
-  cell only.
+- The block on a reversal (`voltage_shift: {"block": {"reversal_of": ion}}`, FR-51's reference
+  moved by FR-64) is supported for changes of that ion outside the cell only.
   - When external K changes, a non-blind two-lab replay (Lean commit 48fb7e0f, D378; run on engine
     revision 7ca7c9c1) finds the half-conductance shift tracking the measured reversal at about
     0.97 to 0.98 mV per mV.
   - One lab finds that raising internal K moves the half-block voltage about +5 mV, where V - E_K
     predicts -36 mV. That is an indication.
 - cells.channel.kir2p1_mh2@1's gates read absolute voltage. A world in which external K changes declares Kir2.1
-  as an always-open K population carrying this block on a K reversal reference (D356). That
-  composition is development-only until the post-landing registration (D353) passes.
+  as an always-open K population carrying this block, shifted by the K reversal (D356). That
+  composition stays development-only for changes of external K (D391).
 - Version 1's limits: the blocker is held at a declared constant concentration, not a species row;
   the block has no kinetics; and binding is trace, with no count.
 """
@@ -70,13 +72,7 @@ K0_RANGE_MM = (1e-15, 1e15)
 BLOCKER_RANGE_MM = (0.0, 1e3)
 SUM_ULPS = 8  # The weights sum to 1 within this many ulps of 1 (the labels' rule).
 SIDES = {"outside": 1, "inside": -1}  # s.
-MEMBRANE_VOLTAGE = "membrane_voltage"  # The reference V; {"reversal_of": ion} is V - E.
 NORMAL = float(np.finfo(np.float64).tiny)  # The smallest normal binary64 number.
-
-
-def reversal_potential(inside_mM, outside_mM, valence, temperature, *, xp=np):
-    """E (V) of an ion of this valence: (R T/(z F)) ln(c_o/c_i), as a difference of logarithms."""
-    return R * temperature * (xp.log(outside_mM) - xp.log(inside_mM)) / (valence * F)
 
 
 def exponent_per_volt(steepness, temperature):

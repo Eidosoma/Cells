@@ -45,6 +45,7 @@ from cells.definitions.surface_pump_v3_spec import (
     TRAPEZOID_JUNCTION_HEAT,
 )
 from cells.laws.channels import kv1p5_mh, nav1p2_m3h_regularized
+from cells.laws.channels.voltage_shift import KINDS as SHIFT_KINDS
 from cells.laws.junctions import junction_series_gates, junction_voltage_relaxation
 from cells.laws.pumps import ca_atp_mass_action_positive, nak_atp_mass_action_positive
 from cells.laws.routes import (
@@ -354,6 +355,14 @@ class InnerStructure:
     # without the model key, so no structure, layout or program of those moves. Added by the @3
     # owner at the lead's word (a recorded exception in this file).
     one_way_records: tuple = ()
+    # FR-64 (D356, D361): the shifted readers, ((channel ID, reader, kind key), ...), sorted
+    # (surface_pump_v3_spec.shifted_readers). A reader is a gate name of the population's law or
+    # "block", and a kind key is one of laws/channels/voltage_shift.KINDS. The entry is value-free:
+    # every static switch on a shift reads it, so only declared kinds are traced, and the values
+    # are layout fields present only where it is not empty. () for every definition without a
+    # shift, so no structure, layout or program of those moves. Added by the @3 owner at the lead's
+    # word (a recorded exception in this file).
+    shifted_readers: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -415,6 +424,23 @@ class InnerStructure:
             raise ValueError(
                 "One-way records are a sorted tuple of distinct (entity kind, entity ID, species "
                 f"ID) pairs, each entity kind one of {', '.join(ONE_WAY_ENTITIES)}"
+            )
+        readers = self.shifted_readers
+        if not (
+            isinstance(readers, tuple)
+            and all(
+                isinstance(reader, tuple)
+                and len(reader) == 3
+                and all(isinstance(name, str) and name for name in reader)
+                and reader[2] in SHIFT_KINDS
+                for reader in readers
+            )
+            and list(readers) == sorted(set(readers))
+            and len({reader[:2] for reader in readers}) == len(readers)
+        ):
+            raise ValueError(
+                "Shifted readers are a sorted tuple of distinct (channel ID, reader, kind key) "
+                f"triples, one kind per reader, each kind one of {', '.join(SHIFT_KINDS)}"
             )
         problems = loop_errors(self.loops, self.routes)
         if problems:

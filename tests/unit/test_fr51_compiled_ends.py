@@ -39,6 +39,7 @@ def test_the_zero_blocker_end_on_the_compiled_program():
                  permeant_ions=[dict(species_id="Na", relative_permeability=1.0)])
         )  # fmt: skip
         raw["model"]["channels"][1].pop("block", None)
+        raw["model"]["channels"][1].pop("voltage_shift", None)  # The block's reader (FR-64).
         raw["experiment"]["channel_controls"].append(
             dict(channel_id="second", schedule=[dict(time=0.0, availability=1.0)])
         )

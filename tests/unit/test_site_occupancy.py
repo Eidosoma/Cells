@@ -1389,11 +1389,15 @@ def test_fr45_the_partners_beside_sets_parse(partner):
     parse_spec(raw)
 
 
-@pytest.mark.parametrize("option", ["one_way_records", "a blocked channel", "energy_check"])
+@pytest.mark.parametrize(
+    "option", ["one_way_records", "a blocked channel", "a shifted channel", "energy_check"]
+)
 def test_fr45_the_inner_options_beside_sets_are_refused_by_name(option):
     """D327: @3's later options beside sets, each refused by name (the sparse field is a REFUSALS
-    row). One-way records and a blocked channel are set on a parsed set world's model, so the
-    fields the check reads must be the model's own (replace refuses a field it lacks). X2's block
+    row). One-way records, a blocked channel and a channel with a declared voltage shift (FR-64,
+    the second to land beside sets, a gate's shift with no block) are set on a parsed set world's
+    model, so the fields the check reads must be the model's own (replace refuses a field it
+    lacks). X2's block
     is attached after the definition's checks have run (energy_check_spec.parse_definition), so
     the world parses, and its binding refuses it before any step."""
     from dataclasses import replace
@@ -1415,8 +1419,11 @@ def test_fr45_the_inner_options_beside_sets_are_refused_by_name(option):
             replace(m, one_way_records=(SimpleNamespace(),)),
             "@3's own one_way records",
         )
-    else:
+    elif option == "a blocked channel":
         blocked = SimpleNamespace(id="blocked", block=SimpleNamespace())
         changed, words = replace(m, channels=(*m.channels, blocked)), "a blocked channel population"
+    else:
+        shifted = SimpleNamespace(id="shifted", block=None, voltage_shift=SimpleNamespace())
+        changed, words = replace(m, channels=(*m.channels, shifted)), "a declared voltage shift"
     with pytest.raises(ConfigError, match=f"{so.OPTION_BESIDE_SETS}: {words}"):
         so.check_set_composition(replace(spec, model=changed), _sets_of(spec))

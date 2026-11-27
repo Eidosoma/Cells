@@ -266,65 +266,112 @@ def test_a_step_above_the_channel_s_material_bound_is_refused():
             assert impl.material_rate(state, control, p, xp=np, potentials=potentials) is None
 
 
-def block_of(reference):
-    """An outside block of valence 2 in one mode, under a reference."""
+def block_of():
+    """An outside block of valence 2 in one mode."""
     return dict(
         law=open_channel_block.LAW_ID,
         blocker=dict(id="blocker", valence=2, side="outside", concentration_mM=2.0),
-        reference=reference,
         modes=[dict(weight=1.0, k0_mM=1.0, electrical_distance=0.8)],
     )
 
 
-def test_a_block_that_reads_the_reversal_joins_its_part_once(monkeypatch):
+def on_reversal(ion):
+    """The population's keys for its block read on ion's reversal (FR-64's voltage_shift), or none
+    for the patch voltage, the default."""
+    return {} if ion is None else dict(voltage_shift=dict(block=dict(reversal_of=ion)))
+
+
+def on_ph():
+    """The population's keys for its block read on the cell's pH (FR-64's voltage_shift)."""
+    ph = dict(side="inside", shift_V_per_ph=-0.1, reference_ph=7.3, ph_window=[6.8, 7.5])
+    return dict(voltage_shift=dict(block=dict(ph=ph)))
+
+
+def proton_slopes(impl, state, control, p, potentials, row):
+    """[species, channel] |dJ/dn_H| at each population's cell (1/s), by central differences of the
+    stage's own fluxes in the amount of the proton row `row` there (FR-64's block on its pH)."""
+
+    def flux(cells):
+        moved = scaled(state, p, [row], cells, 0.0)
+        rates, _ = impl.explicit_rates(moved, potentials, control, p, xp=np)
+        return np.asarray(rates.channel_transferred)
+
+    cell = p.membrane_cell[p.channel_membranes]
+    return np.abs(flux(STEP) - flux(-STEP)) / (2 * STEP * p.amount_reference[row, cell])
+
+
+@pytest.mark.parametrize("reader", ["the Ca reversal", "the cell's pH"])
+def test_a_block_that_reads_a_shift_joins_its_part_once(reader, monkeypatch):
     """A calcium population whose block reads V - E_Ca, at a voltage above E_Ca: the flux is outward
     there, so the direct part of each slope and the part through the reversal have one sign and
-    |dJ/dn| is their sum."""
-    block = block_of(dict(reversal_of="Ca"))
-    own = population("ca_0", "contact_0", cav1p2_m2h.LAW, 3e-7, block=block, factors=["gate"])
+    |dJ/dn| is their sum. FR-64: where its block reads the cell's pH instead (an H trace at pH 7.2,
+    no kinds), the cell's row also takes the flux's slope in the proton amount there, |dJ_Ca/dn_H|
+    (channel_block_terms' proton_slope), which its central difference gives. Each part, planted
+    away, lowers the rate."""
+    reversal = reader == "the Ca reversal"
+    own = population(
+        "ca_0", "contact_0", cav1p2_m2h.LAW, 3e-7, block=block_of(), factors=["gate"],
+        **(on_reversal("Ca") if reversal else on_ph()),
+    )  # fmt: skip
     gate = condition("gate", fx.SPECIES, "cell_0", 3e-3)
-    spec, impl, state, control, p = start(store_side([own], conditions=[gate]))
-    ca = list(spec.model.species_ids).index("Ca")
+    raw = store_side([own], conditions=[gate])
+    if not reversal:
+        h, out = 10**-7.2 * 1e3, 10**-7.4 * 1e3
+        traced = dict(cell_0=h, cell_1=h, node_0=out, bath=out)
+        raw = rfx.with_charged_trace(raw, "H", 1, concentrations_mM=traced)
+    spec, impl, state, control, p = start(raw)
+    ids = list(spec.model.species_ids)
+    ca = ids.index("Ca")
     potentials = np.array([0.058, 0.0, 0.0, 0.0])
-    expected = expected_nodes(difference_slopes(impl, state, control, p, potentials, [ca]), p, [0])
+    to_cell, to_node = difference_slopes(impl, state, control, p, potentials, [ca])
+    if not reversal:
+        to_cell = to_cell + proton_slopes(impl, state, control, p, potentials, ids.index("H"))
+    expected = expected_nodes((to_cell, to_node), p, [0])
     kinds, given = tissue3._kinds(impl.structure), dict(xp=np, structure=impl.structure)
     routed, _ = tissue3._route(impl.structure, kinds, state, control, p, xp=np)
     found = tissue3.channel_material_rates(state, state, potentials, routed, p, **given)
     assert found == pytest.approx(expected, rel=1e-5, abs=0)
     rate = impl.material_rate(state, control, p, xp=np, potentials=potentials)
     assert rate == pytest.approx(expected.max(), rel=1e-5, abs=0)
-    with monkeypatch.context() as plant:  # Planted: the part through the reversal left out.
+    with monkeypatch.context() as plant:  # Planted: the part through E or through the pH left out.
         terms = tissue3.channel_block_terms
-        dropped = dict(inside_through_e=np.zeros(2), outside_through_e=np.zeros(2))
-        plant.setattr(
-            tissue3, "channel_block_terms", lambda *a, **k: terms(*a, **k)._replace(**dropped)
-        )
+
+        def dropped(*args, **kwargs):
+            out = terms(*args, **kwargs)
+            if reversal:
+                return out._replace(inside_through_e=np.zeros(2), outside_through_e=np.zeros(2))
+            return out._replace(proton_slope=np.zeros_like(out.proton_slope))
+
+        plant.setattr(tissue3, "channel_block_terms", dropped)
         wrong = impl.material_rate(state, control, p, xp=np, potentials=potentials)
         assert wrong < 0.9 * expected.max()
     with monkeypatch.context() as plant:  # Planted: the block's own term counted beside it.
         plant.setattr(tissue3, "material_term_slots", lambda p, structure, *, xp: xp.zeros(2, bool))
         beside = tissue3.block_material_rates(state, p, potentials, control=routed, **given)
-        assert (found + beside)[0] > 1.5 * expected[0]
+        assert (found + beside)[0] > (1.5 if reversal else 1.2) * expected[0]  # The pH's: 1.24.
 
 
 MAJORS = (("K", 1, 1.0), ("Na", 1, 0.1))  # Two ions that need no material term.
 
 
 @pytest.mark.parametrize(
-    "law, reference, refused",
+    "law, reversal, refused",
     [
-        (two_ions(), dict(reversal_of="Ca"), "Ca"),
-        (two_ions(permeant=MAJORS), dict(reversal_of="K"), "K"),
-        (two_ions(), open_channel_block.MEMBRANE_VOLTAGE, None),
-        (two_ions(permeant=MAJORS, material_term=None), dict(reversal_of="K"), None),
+        (two_ions(), "Ca", "Ca"),
+        (two_ions(permeant=MAJORS), "K", "K"),
+        (two_ions(), None, None),
+        (two_ions(permeant=MAJORS, material_term=None), "K", None),
     ],
     ids=("a scarce ion", "two major ions", "the membrane voltage", "a law without a term"),
 )
-def test_a_reversal_block_on_several_ions_and_a_term_is_refused_by_name(law, reference, refused):
+def test_a_reversal_block_on_several_ions_and_a_term_is_refused_by_name(law, reversal, refused):
     """The rule's part through the reversal is the named ion's own flux's, so the law's other ions'
-    would have no bound: the definition is refused, with the law, its ions and the block's."""
+    would have no bound: the definition is refused, with the law, its ions and the block's. The
+    reversal is the population's voltage_shift.block since FR-64."""
     with with_laws(law):
-        blocked = population("ca_0", "contact_0", law, 3e-7, block=block_of(reference))
+        blocked = population(
+            "ca_0", "contact_0", law, 3e-7, block=block_of(), **on_reversal(reversal)
+        )
         raw = store_side([blocked])
         if refused is None:
             assert parse_spec(raw).model.channels[0].block is not None

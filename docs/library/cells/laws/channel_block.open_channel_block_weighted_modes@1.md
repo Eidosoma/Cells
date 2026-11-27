@@ -79,9 +79,11 @@ $$\left|\frac{du}{dV_\text{ref}}\right| \le \frac{\sum_k w_k\,|a_k|\,\theta_k\,(
 - **The fraction:** $u$ is the unblocked fraction, and the host multiplies every permeant ion's flux
   by it. Each fraction is formed directly, and both sums run in declared order. So $u$ is exactly 1
   without a blocker, and it keeps its relative accuracy where nearly everything is blocked.
-- **The reference voltage** is the patch voltage (inside less outside), or that voltage less the
-  reversal potential $E$ of one of the population's
-  [permeant](../../GLOSSARY.md#permeant) ions, as the definition declares.
+- **The reference voltage** is the one the population's declared shift gives its block (FR-64).
+  Without a shift it is the patch voltage (inside less outside). With one, the population's
+  `voltage_shift.block` subtracts either the reversal potential $E$ of one of its moved
+  [permeant](../../GLOSSARY.md#permeant) ions, or a declared slope times the pH's distance from
+  its reference.
 - **The steepness** is $m_k = |z_B|\,\delta_k$, with the electrical distance $\delta_k$ in [0, 1], or
   a declared effective valence above 0, which may exceed the blocker's charge. A mode declares
   exactly one of the two.
@@ -95,10 +97,10 @@ $$\left|\frac{du}{dV_\text{ref}}\right| \le \frac{\sum_k w_k\,|a_k|\,\theta_k\,(
   [species row](../../GLOSSARY.md#species-row); the block has no kinetics; and binding is trace, with
   no count.
 - **Scope (D355, D356):** `cells.channel.kir2p1_mh2@1`'s own gates read absolute voltage, so they do not shift
-  with external potassium. A world in which external potassium changes declares this block with a
-  reversal reference, on an always-open potassium population; that composition is development-only
-  until its registration passes (D353).
-- **Scope of the reversal reference (D355):** it is supported for changes of that ion outside the
+  with external potassium. A world in which external potassium changes declares this block, shifted
+  by the potassium reversal, on an always-open potassium population. That composition stays
+  development-only for changes of external potassium (D391).
+- **Scope of the block on a reversal (D355):** it is supported for changes of that ion outside the
   cell only.
   - When external potassium changes, a non-blind two-lab replay (Lean commit 48fb7e0f, D378; run on
     engine revision 7ca7c9c1) finds the half-conductance shift tracking the measured reversal at
