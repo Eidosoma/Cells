@@ -3,7 +3,8 @@
 The landing gates' tools, brought into the repository (D220, D222) from the workspace folders
 where they grew. Each tool says which workspace copy it supersedes. Those copies stay byte for byte,
 because recorded runs cite them, and units already running keep their old paths. Every tool has
-tests with planted failures (`tests/unit/test_gates_*.py`, `tests/unit/test_tier_fold.py`).
+tests with planted failures (`tests/unit/test_gates_*.py`, `tests/unit/test_tier_fold.py`, and
+`tests/unit/test_results_baseline.py` for `c1_additive_check.py`).
 
 | Tool | What it does | Supersedes |
 | --- | --- | --- |
@@ -25,6 +26,7 @@ tests with planted failures (`tests/unit/test_gates_*.py`, `tests/unit/test_tier
 | `nightly_tiers.sh`, `systemd/cells-nightly-tiers.*` | The nightly full tiers 1+2 at 02:30 UTC (definitions only; the lead installs them), and the same run on demand after an engine landing (`systemctl --user start --no-block cells-nightly-tiers.service`; a start while one runs does nothing), so later gates select against a map of the current main (D358): main frozen, whichever lane's lock is free first taken like a gate, tiers 1+2 with the recorder and strace on, the map built and published to `gate-cache/scope-map.json` when the run passes; on a failure `gate-cache/selection-stopped`, which turns selection off until the lead removes it with the explanation. What the trace found is in `verdict.json`; it fails nothing. `TRACE=0` runs without strace. | New |
 | `weekly_tier3.sh`, `systemd/cells-weekly-tier3.*` | The weekly tier 3 on Sundays at 04:00 UTC, after the nightly (D390; definitions only, the lead installs them): main frozen, whichever lane's lock is free first taken like the nightly and let go again while the lane is busy without it (`lane_busy.py`), tier 3 at cap 1800 s on the lane's four physical cores with their siblings idle, the cold check, the run's test IDs collected, and `test_tiers.py diff --require-complete` against tier 3's record read through the ID move's table (`id_moves.py`'s ids rule). The lead reads `weekly/DATE/verdict.json`; a failure turns nothing off. `--judge OUT` judges a finished run again, against `RECORD`. | New |
 | `gate_steps.py` | `gate.sh`'s host steps: preflight, the pre-lock selection and its verdict, the IDs check, the base cache, crossrev's set pool and its head-against-base verdict, and G1's plan, merge and seconds; the cache qualification's tier subsets and verdict. | `core-pass-at3-20261118/tools/ids_additions.py`, `d198-retire-20261117/tools/g1_plan.py` (plan and merge) and `g1-shard.sh` |
+| `c1_additive_check.py` | An additive renewal of G1's record c1 against c1, from saved outputs only (D410): every array of c1 bit for bit with its digest, the same refusals, and the definitions the same through the table of renamed IDs; added keys may only be final states, each its own run's last history row, and in run-paths the scalar paths' final states equal (the vector path's differences reported). Exceptions are listed by world. | The checks of `global-charge-bound-20261122/tools/g1_renewal.py` (D307) and the hand checks of the side saves of 26 November (FR-43's counts, FR-52's cohorts) |
 
 **Locks.** Every lock taken in `scripts/gates/` uses flock's command form, which runs the locked
 work only once flock holds the lock, and its exit status is checked. A flock killed while it waits
