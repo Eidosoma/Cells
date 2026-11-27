@@ -14490,3 +14490,79 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
   The replay's fitted midpoints were not read.
 - **Not landed:** the gate's driver (`validation/fr63/like_for_like.py`, branch `fr63-like-for-like`). It is tooling, and
   the Lean track's answers supersede its countability record.
+
+## D424: three plans read together: FR-44's admission by species, FR-49's pairing and narrowing, and liquid routing's proposal
+
+2026-11-27, written at 23:24 UTC. The user: "lets go", and "use up to 5 agents". The adviser's view is taken.
+
+- **The plans:**
+  - `/mnt/workspaces/Cells/fr44-admission-plan-20261127/PLAN.md`;
+  - `/mnt/workspaces/Cells/fr49-pairing-plan-20261127/PLAN.md`;
+  - `/mnt/workspaces/Cells/liquid-routing-plan-20261127/PLAN.md`.
+
+  All three were read-only, and their parse probes ran only on the CPUs they were given.
+- **The order,** which all three plans give:
+  1. FR-44's admission by species;
+  2. FR-49's site pairing and wash narrowing, landing together, with World B, C1 and C2 judged on the wash before FR-49
+     merges;
+  3. liquid routing's shared edits and landing;
+  4. C4 on the wash;
+  5. liquid routing's phase 1, the lift landing, and phase 2;
+  6. the wash's retirement.
+
+  The router's compartments entry waits for the retirement, with a C1 takeover check.
+- **FR-44's rulings,** on its plan's questions:
+  - `ROW_MOVES` and `written_rows` serve the step: D327's `written_species` hook was replaced by FR-43 part 3.
+  - `cells.operator.site_occupancy@1` alone is admitted by species. The six other writers keep today's message.
+  - The partners are the wash, the reactions, turnover and exchange, shown by one compiled labelled/unlabelled twin in
+    a new tier-2 file. Every other law, and the inner model's five later options, are refused by name.
+  - **C4's four-way form has one home:** a refusal by name in the partner rule in `species_labels.py`. A parse row
+    with FR-49's two list entries patched in shows that it holds, and FR-49 adds no clause of its own.
+  - **An internalising population is refused by name.** No registered world needs it.
+  - It lands first. Its price is about 0.95 agent-day, against D327's 0.5.
+- **FR-49's rulings,** on its plan's twelve questions:
+  - It lands together, with one World B twin at 0.1 s, the literal reading.
+  - The facing refusal is a new name in `site_occupancy.REFUSALS`, not a prefix of any other.
+  - The wash's compartment refusal sits in `wash_schedule.py`, through the helper `compartment_nodes`.
+  - World B is a compiled test in a new file. C1 and C2 are covered by parse rows.
+  - No FR-49 criterion selects X2, since none judges an energy readout.
+  - The refusal in `templated_polymerisation` stays, and is reworded.
+  - C4's amendment is written against the wash.
+  - **Two more items need a check:** `cells.operator.species_regulated_availability@2` reading a lumen-facing population,
+    and sets with a wash elsewhere. Each gets a host row, or a refusal by name, not "inherited, with no world".
+  - **Plants (b) and (d)** are what the new refusals refuse. So they are in-process patches below the checks, reviewed
+    by an agent who is not the builder before the judge's tag, as FR-45's were (N1).
+  - **Part H's Matrix row** (REGISTRATION §2) is a landing host row, not a judged criterion, so it takes a dated
+    reading before the landing, not an erratum.
+    - Its marks are read against today's numbering.
+    - The trafficking-first rule that FR-52 later extended survives for `cells.operator.integer_unit_population@1`
+      only.
+    - The regenerated block must equal the committed one.
+  - **The judge,** `judge_bc.py`, imports `LABELS_ONLY` from `judge_l.py`. Its reader is checked on invented
+    format samples and tagged before any result is read (D308).
+  - **The runs** follow FR-45's pre-launch list: jobs built in the checkout and checked, the registered names, the
+    judge's literals against the jobs, and a launch note. The lead runs the judge.
+  - Its price is about 3.25 to 4.0 agent-days, with its D148 round and twelve judged runs.
+- **Both builders** run FR-64's D327 sequence probe, head against base. Each newly parsing set gets a check or a refusal
+  by name, and the probe covers the inner model's later options, X2 among them. Both run the guard set and
+  `test_model_table.py` before handing back.
+- **Liquid routing is held for the user.** Nothing of it starts, its judge and its new files included, until the user
+  has answered:
+  - **The price:** 15.5 to 21.5 agent-days, against the note's 8.25 to 10.5, calibrated on FR-45's overrun (D409).
+  - **X2,** whose reach the plan corrects to arms 1 to 6, all of which judge a heat on ARS(2,2,2). The planner
+    recommends a reasoned waiver, with the engine refusing X2 by name beside the router.
+    - **For the waiver:** X2 would count only the default face heat's step error, in arms 1 and 2. T4 already bounds
+      that error at every judged default run: by class R, equal to the declared closed form to rounding, and by
+      class B, within the law's Taylor remainder. Elsewhere, events are held steps and flow heats are exact per
+      portion.
+    - **The blindness cuts both ways.** A cap chosen now is not blind, since the dt study's residuals were seen. But
+      FR-8's 2e-3 predates that study, and the seen residuals inform a waiver just as much.
+    - **The fallback** is amendment 7: about 1 to 1.5 days and a re-tag, with a 2e-3 cap, exempting the expected stops,
+      the recorded runs and P8.
+  - **Two builders,** if elapsed time matters.
+- **Corrections:**
+  - the note of record is `docs/LIQUID_ROUTING_DESIGN.md` at 968bd182, whose five commits after f66a4828 hold the 25
+    November rulings that the tagged spec uses;
+  - D417's check said arms 5 and 6, and it is arms 1 to 6.
+- **For the router, later:** FR-45's driver will need a delimited message head, not a prefix match, which is what
+  misnamed `electrode_work`.

@@ -42,6 +42,9 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     - Its price goes to the user before any build.
   - The four stale tier rows (D418) are folded, at 107ca515: counts 241, 78, 60 and 13, all in tier 1.
   - D417's check is done: liquid routing needs X2 by amendment, or a reasoned waiver, before its run; FR-49 needs nothing.
+  - **Three plans read together (D424):** FR-44's admission by species (about 0.95 agent-day) and FR-49's pairing and
+    narrowing (3.25 to 4.0) are building, in that order. Liquid routing (15.5 to 21.5) is held for the user's answer on its
+    price and X2.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).
@@ -87,7 +90,10 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     (with amendment 6, dd21509b) settles an independent audit's findings (D383). The references are tagged
     (`liquid-routing-references-2026-11-25`, D384), and the line holds. FR-45's W2 and W7 have run (D416). The wash retires
     only after FR-49's World B and C1 have run too, or those runs are pinned to an earlier snapshot.
-    **X2 (D412, D417):** arms 5 and 6 judge heats on ARS(2,2,2), and the tagged spec selects no X2 (D412's listing missed it).
+    **X2 (D412, D417, D424):** arms 1 to 6 judge heats on ARS(2,2,2), and the tagged spec selects no X2 (D412's listing
+    missed it).
+    - The plan recommends a reasoned waiver, since T4 already bounds the default heat's step error.
+    - That, and the price of 15.5 to 21.5 agent-days, are the user's (D424).
     - So before its run, an amendment selects X2 on its honest runs, or a reasoned waiver is recorded.
     - Its plant comparison (CRITERIA:165) reads inputs, solver, heat and operators, not `execution`. So X2 on honest runs
       only would not make a plant depart.
