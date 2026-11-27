@@ -1571,9 +1571,11 @@ def test_a_gate_shift_beside_an_operator_that_rewrites_channel_slots_is_refused(
 
 
 def test_a_path_without_the_structure_and_the_stationary_analysis_refuse_a_shift():
-    """FR-64's fail-closed sites (host, about 0.5 s): @3's initial values without the structure,
+    """FR-64's fail-closed sites (host, about 1.5 s): @3's initial values without the structure,
     which would drop the shift, and the stationary analysis, which does not read it, refuse a
-    gate's shift by name."""
+    gate's shift by name. So do the frozen water family models, water@1 and water@2 (crossrev's
+    worlds, nav_0's m on the Na reversal), which build @3 without the structure; D327's probe
+    found them (validation/fr64/d327_probe.py). Their compositions admit the shift."""
     from cells.analysis import stationary
 
     on_na = {"gates": {"m": {"reversal_of": "Na"}}}
@@ -1582,6 +1584,15 @@ def test_a_path_without_the_structure_and_the_stationary_analysis_refuse_a_shift
         v3.initial_values(spec)
     with pytest.raises(ConfigError, match="declared voltage shift"):
         stationary.problem(spec)
+    cell = water_fixtures.heredity_cell("D", end_time=0.1)
+    water = water_fixtures.with_water(cell, pf_m_s=5e-4, bath_pressure_Pa=12.5)
+    symport = water_fixtures.with_symport(water, flux_mmol_L_h=15.0, steepness=0.12)
+    for raw in (water, symport):
+        nav = next(c for c in raw["model"]["channels"] if c["id"] == "nav_0")
+        nav["voltage_shift"] = on_na
+        with pytest.raises(ConfigError, match="voltage_shift runs in @3 through its structure"):
+            parse_spec(raw)
+        assert parse_spec(composite_spec.frozen_definition(raw)).model.channels  # Admitted.
 
 
 def test_a_world_with_every_reader_and_kind_round_trips():
