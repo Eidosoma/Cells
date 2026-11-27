@@ -106,7 +106,7 @@ K_STEP_mM = 14.6  # KCl for NaCl at the bath: K 5.4 -> 20 mM, inside probe I's m
 def composed_world(*, dt=2e-4, end=0.08, step_at=0.04, shifted=True):
     """The note's §9.3 composed world: cells.model.resolved_pump_composite@1 over @3, ARS(2,2,2),
     FR-51's one cell on its held bath (validation/fr51/engine.raw_world, B1), B4 at the cell (pH
-    7.0), the bath held at pH 6.8 from the start, and one neutral KCl step at the bath at
+    7.0), the bath held at pH 6.8 from the start, and one KCl-for-NaCl step at the bath at
     `step_at` (cells.operator.scheduled_bath_composition@1). Its four populations:
     - P1, kv_bath: a Kv1.5 whose m reads the bath's pH (dV = sigma (6.8 - 7.3));
     - P2, kv_reversal: a Kv1.5 whose m reads V - E_K, which the K step moves;

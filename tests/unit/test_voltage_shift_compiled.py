@@ -25,11 +25,14 @@ view's stored row in place of its read.
 import numpy as np
 import pytest
 
+from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.execution.runner import run
 from cells.laws.electrochemistry import F as F_
 from cells.laws.electrochemistry import R as R_
+from cells.laws.channels import kv1p5_mh
+from cells.models import surface_pump_v3 as v3
 from cells.registry.models import get_model
 from validation.fr50 import engine as fr50
 from validation.fr64 import closed_forms as laws
@@ -91,6 +94,11 @@ def test_the_pair_s_records_meet_e4_s_criteria_on_every_row(pair):
 # The note's §9.3: the composed world (validation/fr64/worlds.composed_world), every step observed.
 STEP_AT, COMPOSED_END, COMPOSED_DT = 0.06, 0.12, 2e-4
 P1, P2, P3, P4 = 1, 2, 0, 3  # kv_bath, kv_reversal, B1's K population, na_block: channel slots.
+# Item 5's rows are the last before the step and the last. Their bound, a quarter of the gap
+# |m_inf(V_r) - m_inf(V)|, was fixed before any plant ran. Their settling test was fixed from the
+# honest run's rows after the first plants had run: over the 5 ms before each row, V moved by at
+# most 0.0018 mV and each m by at most 2.1 % of its gap (P1, before the step).
+SETTLE_ROWS, SETTLE_V, SETTLE_M = 25, 1e-5, 0.05
 
 
 @pytest.fixture(scope="module")
@@ -101,9 +109,9 @@ def composed():
 
 
 def composed_findings(raw, spec, result):
-    """{item: worst misfit, at most 1 to pass} of §9.3's items 2 to 5 on every observed row."""
-    from validation.fr64 import closed_forms
-
+    """{item: worst misfit, at most 1 to pass} of §9.3's items 2 to 5 on every observed row. Item 1
+    is the runner's own: run() raises NumericalError on any row's failed domain, ledger or
+    dissipation check (surface_pump.checked_rows), so a returned result has passed it."""
     model = get_model(spec.model)
     _, p = model.initial_values(spec)
     ids = list(spec.model.species_ids)
@@ -111,6 +119,7 @@ def composed_findings(raw, spec, result):
     observed, history = result.observations, result.history
     v = np.asarray(observed.membrane_voltage_V)[:, 0]
     targets = np.asarray(observed.channel_targets)
+    tau = np.asarray(observed.channel_tau_s)
     u = np.asarray(observed.channel_unblocked_fraction)
     cell_ph = np.asarray(observed.pH)[:, 0]
     held = np.asarray(history.bath_held_amount_fmol)
@@ -123,26 +132,28 @@ def composed_findings(raw, spec, result):
     cell_shift = worlds.SIGMA * (cell_ph - worlds.REFERENCE_PH)
     out = {}
     heat = np.asarray(history.channel_dissipated_energy_pJ)
-    out["2: heat never falls"] = float(np.max(-np.diff(heat, axis=0), initial=0.0) > 0)
+    out["2: heat never falls"] = 2.0 if np.any(np.diff(heat, axis=0) < 0) else 0.0  # Any fall.
     worst = 0.0
     for slot, shift in ((P1, bath_shift), (P2, e_k)):
-        m_at, h_at = kv_kinetics(v - shift)[0][0], kv_kinetics(v)[0][1]
+        (m_at, _), (m_tau, _) = kv_kinetics(v - shift)
+        (_, h_at), (_, h_tau) = kv_kinetics(v)
         worst = max(worst, np.max(np.abs(targets[:, 0, slot] - m_at)) / 1e-11,
-                    np.max(np.abs(targets[:, 1, slot] - h_at)) / 1e-11)  # fmt: skip
-    out["3: the gates' targets at V_r"] = float(worst)
+                    np.max(np.abs(targets[:, 1, slot] - h_at)) / 1e-11,
+                    np.max(np.abs(tau[:, 0, slot] / m_tau - 1)) / 1e-11,
+                    np.max(np.abs(tau[:, 1, slot] / h_tau - 1)) / 1e-11)  # fmt: skip
+    out["3: the gates' targets and taus at V_r (m) and V (h)"] = float(worst)
     block = next(c for c in spec.model.channels if c.id == "na_block").block
     modes = [(m.weight, m.k0_mM, s) for m, s in zip(block.modes, block.steepness(), strict=True)]
     worst = 0.0
     for slot, shift in ((P3, e_k), (P4, cell_shift)):
-        for i in range(0, v.size, 25):
-            law = closed_forms.unblocked(float(v[i] - shift[i]), temperature,
-                                         block.concentration_mM, modes)  # fmt: skip
+        for i in range(v.size):
+            law = laws.unblocked(float(v[i] - shift[i]), temperature,
+                                 block.concentration_mM, modes)  # fmt: skip
             worst = max(worst, abs(float(u[i, slot]) - float(law)) / (1e-12 * float(law)))
     out["4: the blocks' u at V_ref"] = worst
     gate = np.asarray(history.channel_gate)
-    before = int(round(STEP_AT / COMPOSED_DT)) - 1
     worst = 0.0
-    for row in (before, v.size - 1):
+    for row in settle_rows(v.size):
         for slot, shift in ((P1, bath_shift), (P2, e_k)):
             at_vr = kv_kinetics(np.asarray([v[row] - shift[row]]))[0][0, 0]
             at_v = kv_kinetics(np.asarray([v[row]]))[0][0, 0]
@@ -151,23 +162,51 @@ def composed_findings(raw, spec, result):
     return out
 
 
-def kv_kinetics(voltage):
-    from cells.laws.channels import kv1p5_mh
+def settle_rows(size):
+    return int(round(STEP_AT / COMPOSED_DT)) - 1, size - 1
 
+
+def kv_kinetics(voltage):
     return kv1p5_mh.kinetics(np.asarray(voltage, dtype=float), xp=np)
 
 
 def test_the_composed_world_reads_each_shift_on_every_row_and_restarts(composed, tmp_path):
-    """§9.3 (compiled; about 45 s here, the compile included, measured at landing): over 600
+    """§9.3 (compiled; about 70 s here, the compile included, measured at landing): over 600
     steps of ARS(2,2,2) on B4's world with a KCl-for-NaCl step at 60 ms, every host check passes,
-    no population's heat falls, P1's and P2's observed m and h targets are Kv1.5's law at their
-    V_r and at V, P3's and P4's observed u is FR-51's law at their V_ref (P4's pH B4's recorded),
-    and at the settled rows before the step and at the end, P1's and P2's m sit at m_inf(V_r)
-    within a quarter of |m_inf(V_r) - m_inf(V)|: the stage path. A restart from mid-run is bit
-    for bit the uninterrupted run."""
+    no population's heat falls, P1's and P2's observed targets and time constants are Kv1.5's law
+    at their V_r (m) and at V (h), P3's and P4's observed u is FR-51's law at their V_ref (P4's pH
+    B4's recorded), and at the settled rows before the step and at the end, P1's and P2's m sit at
+    m_inf(V_r) within a quarter of |m_inf(V_r) - m_inf(V)|: the stage path. At the last row the
+    composite's clamped entry point is @3's with its structure, bit for bit, at the row's voltage
+    (the recorded flux) and at -30 mV. A restart from mid-run is bit for bit the uninterrupted
+    run."""
     raw, spec, result = composed
+    v = np.asarray(result.observations.membrane_voltage_V)[:, 0]
+    gate = np.asarray(result.history.channel_gate)
+    for row in settle_rows(v.size):  # The rows are settled.
+        assert abs(v[row] - v[row - SETTLE_ROWS]) <= SETTLE_V
+        for slot in (P1, P2):
+            gap = abs(result.observations.channel_targets[row, 0, slot]
+                      - kv_kinetics(np.asarray([v[row]]))[0][0, 0])  # fmt: skip
+            assert abs(gate[row, 0, slot] - gate[row - SETTLE_ROWS, 0, slot]) <= SETTLE_M * gap
     findings = composed_findings(raw, spec, result)
     assert all(value <= 1.0 for value in findings.values()), findings
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    row = v.size - 1
+    state = type(state)(*(np.asarray(x)[row] for x in result.history))
+    time = float(np.asarray(result.times)[row])
+    control = model.CONTROL_TYPE(*(x[0] for x in cs.control_values(spec, [time])))
+    inputs = model.clamp_inputs(state, control, p, xp=np)
+    own = np.asarray(result.observations.membrane_voltage_V)[row]
+    for voltage in (own, -0.030):
+        flux, current, _ = model.clamped_channel_flux(state, control, p, voltage, block=True)
+        inner = v3.clamped_channel_flux(*inputs, voltage, xp=np, structure=model.inner.structure,
+                                        block=True)  # fmt: skip
+        for mine, its in zip((flux, current), inner[:2], strict=True):
+            assert np.asarray(mine).tobytes() == np.asarray(its).tobytes()
+    flux, _ = model.clamped_channel_flux(state, control, p, own)
+    assert np.array_equal(flux, np.asarray(result.observations.channel_flux_fmol_s)[row])
     checkpoint = result.checkpoint_at(float(np.asarray(result.times)[len(result.times) // 2]))
     resumed = run(spec, checkpoint)
     for a, b in zip(resumed.history, result.history, strict=True):
