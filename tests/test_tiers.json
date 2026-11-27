@@ -413,7 +413,8 @@
   "/mnt/workspaces/Cells/small-fixes-20261126/measured3/measured.json",
   "/mnt/workspaces/Cells/small-fixes-20261126/measured4/measured.json",
   "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148-counts/lane-a/measure/measured.json",
-  "/mnt/workspaces/Cells/fr52-build-20261126/d148/lane-a/measure/measured.json"
+  "/mnt/workspaces/Cells/fr52-build-20261126/d148/lane-a/measure/measured.json",
+  "/mnt/workspaces/Cells/fr50-phase2-20261126/timed-319d2c23/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3535,6 +3536,14 @@
    "root": "/mnt/workspaces/Cells/fr52-build-20261126/snap-head-56502459",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-26T23:23:52+00:00"
+  },
+  {
+   "git_revision": "319d2c237a06d3eb1a2dc205a6055d2dc55d2760",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr50-phase2-20261126/snap-319d2c23",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T23:31:00+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6886,10 +6895,10 @@
    },
    {
     "file": "tests/unit/test_neutral_labels_kinds.py",
-    "seconds": 64.18,
+    "seconds": 61.5,
     "exit_code": 0,
     "counts": {
-     "passed": 27
+     "passed": 29
     }
    },
    {
@@ -6914,6 +6923,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_one_way_records_own.py",
+    "seconds": 57.44,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_one_way_records_own_composite.py",
+    "seconds": 27.13,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
@@ -7094,10 +7119,10 @@
    },
    {
     "file": "tests/unit/test_run_view.py",
-    "seconds": 57.61,
+    "seconds": 48.47,
     "exit_code": 0,
     "counts": {
-     "passed": 43
+     "passed": 45
     }
    },
    {
@@ -7399,10 +7424,10 @@
    },
    {
     "file": "tests/unit/test_surface_pump_v3_populations.py",
-    "seconds": 23.5,
+    "seconds": 23.41,
     "exit_code": 0,
     "counts": {
-     "passed": 62
+     "passed": 84
     }
    },
    {

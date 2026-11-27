@@ -99,6 +99,7 @@ class SurfacePumpWaterModel:
     kinds: tuple = ()  # @3's declared kinds, carried for projection (the family refuses them).
     heat_bookings: tuple = ()  # @3's heat bookings, carried for projection (its structure's).
     forms_faces: tuple = ()  # @3's forms faces, carried for projection (the composite refuses them).
+    one_way_records: tuple = ()  # @3's own one-way records (FR-50), carried; refused here.
 
 
 class Control(NamedTuple):
