@@ -1324,24 +1324,42 @@ def test_the_block_on_ph_meets_fr51_s_law_at_its_v_ref(side):
     assert worst <= 1e-12 and other > 1e-6, (worst, other)
 
 
-@pytest.mark.parametrize("declare", [False, True], ids=["unbuffered", "buffered"])
-def test_the_block_on_ph_s_term_bounds_the_proton_slope(declare):
-    """The block on pH's material term (§4.2; host, about 0.5 s): kir_0's B1 block reads its cell's
-    pH. Its term per fmol of the cell's proton row, proton_slope[K]/V_cell, bounds |dJ_K/dn_H|,
-    a central difference at -30 mV. Unbuffered, the stored row is free h and the bound is tight,
-    within 1e-6 relative (B1's two modes share their sign, so the slope bound is u's slope). B4-
-    buffered, the stored row is H_eq and dh/dH_eq <= 1: the term still bounds the slope. Planted:
-    the term dropped; and the term formed from the stored H_eq in place of free h, which misses the
-    buffered bound."""
-    raw = kir_shifted({"block": ph_shift(side="inside")}, block=True, declare=declare)
-    if not declare:  # Without B4 the row stores free h: the cell at pH 7.2, its charge kept.
+def ph_block_world(declare, side="inside"):
+    """kir_0 with FR-51's B1 block on pH at `side`; without B4 the cell's row stores free h, at
+    pH 7.2, its charge kept."""
+    raw = kir_shifted({"block": ph_shift(side=side)}, block=True, declare=declare)
+    if not declare:
         cell = raw["model"]["cells"][0]
         free = 1000.0 * 10.0**-7.2 * cell["volume_pL"]
         cell["fixed_charge_equivalent_fmol"] -= free - cell["initial_amount_fmol"]["H"]
         cell["initial_amount_fmol"]["H"] = free
-    spec = parse_spec(raw)
+    return raw
+
+
+def without_proton_term(original):
+    def planted(*args, **kwargs):
+        terms = original(*args, **kwargs)
+        return terms._replace(proton_slope=np.zeros_like(terms.proton_slope))
+
+    return planted
+
+
+@pytest.mark.parametrize("declare", [False, True], ids=["unbuffered", "buffered"])
+def test_the_block_on_ph_s_material_term_bounds_the_proton_slope(declare, monkeypatch):
+    """The block on pH's material term (§4.2; host, about 1 s): kir_0's B1 block reads its cell's
+    pH. block_material_rates' part at the cell (its rate less the same rate with proton_slope
+    zeroed) bounds |dJ_K/dn_H|, a central difference at the state's own potentials. Unbuffered,
+    the stored row is free h and the bound is tight within 1e-6 (B1's modes share their sign).
+    B4-buffered, the stored row is H_eq and dh/dH_eq <= 1. material_rate includes it. Plants: the
+    term dropped (proton_slope zeroed), and block_material_rates reading the stored H_eq in place
+    of the read, which misses the buffered bound."""
+    spec = parse_spec(ph_block_world(declare))
     impl, state, p, control = bound(spec)
-    k, h_row, v = 1, list(spec.model.species_ids).index("H"), -0.030
+    structure = impl.structure
+    k, h_row = 1, list(spec.model.species_ids).index("H")
+    values = impl.field_values(state, control, p, xp=np)
+    potentials, v = values.potential_V, values.rates.membrane_voltage_V
+    routed, _ = v3._route(structure, v3._kinds(structure), state, control, p, xp=np)
     n_h = p.amount_reference[h_row, 0] + state.amount_increment[h_row, 0]
     step = 1e-6 * n_h
 
@@ -1353,18 +1371,74 @@ def test_the_block_on_ph_s_term_bounds_the_proton_slope(declare):
         return out[0][k, 0]
 
     slope = abs(flux(step) - flux(-step)) / (2 * step)
-    terms = impl.clamped_channel_flux(state, control, p, v, xp=np, block=True)[2]
-    bound_ = terms.proton_slope[k, 0] / p.volume[0]
-    assert bound_ >= slope * (1 - 1e-6)
+
+    def cell_rate():
+        return v3.block_material_rates(state, p, potentials, xp=np, structure=structure,
+                                       control=routed)[0]  # fmt: skip
+
+    honest = cell_rate()
+    with monkeypatch.context() as plant:
+        plant.setattr(v3, "channel_block_terms", without_proton_term(v3.channel_block_terms))
+        dropped = cell_rate()
+    part = honest - dropped
+    assert part >= slope * (1 - 1e-6) and dropped < slope
     if not declare:
-        assert bound_ <= slope * (1 + 1e-6)
-    assert not (0.0 >= slope * (1 - 1e-6))  # The plant: the term dropped.
-    if declare:  # The plant: the term from the stored H_eq, at the buffered cell.
-        ci, co = v3.physical_amounts(state, p)
-        ci, co = ci / p.volume, np.where(p.outside_active, co / p.extracellular_volume, 1.0)
-        stored = v3.channel_block_terms(state.channel_gate, ci, co, np.full(2, v), control.channel,
-                                        p, xp=np, structure=impl.structure)  # fmt: skip
-        assert stored.proton_slope[k, 0] / p.volume[0] < slope * (1 - 1e-6)
+        assert part <= slope * (1 + 1e-6)
+    assert impl.material_rate(state, control, p, xp=np, potentials=potentials) >= honest
+    if declare:  # Planted: the stored H_eq in place of the read, inside block_material_rates.
+        with monkeypatch.context() as plant:
+            plant.setattr(v3, "_stage_read", lambda state, p, kinds, *, xp: (state, True))
+            stored = cell_rate()
+        assert stored - dropped < slope * (1 - 1e-6)
+
+
+def test_the_block_on_ph_at_a_held_bath_adds_no_material_term(monkeypatch):
+    """At a held bath the pH does not move, so the block on the bath's pH adds no material term
+    anywhere (§4.2; host, about 0.3 s)."""
+    spec = parse_spec(ph_block_world(True, side="outside"))
+    impl, state, p, control = bound(spec)
+    structure = impl.structure
+    potentials = impl.field_values(state, control, p, xp=np).potential_V
+    routed, _ = v3._route(structure, v3._kinds(structure), state, control, p, xp=np)
+
+    def rates():
+        return v3.block_material_rates(state, p, potentials, xp=np, structure=structure,
+                                       control=routed)  # fmt: skip
+
+    honest = rates()
+    with monkeypatch.context() as plant:
+        plant.setattr(v3, "channel_block_terms", without_proton_term(v3.channel_block_terms))
+        assert np.array_equal(rates(), honest)
+
+
+def test_a_ph_off_its_window_or_a_v_r_off_its_law_s_domain_is_refused():
+    """§3.5 and §4.3 at run time (host, about 1 s). kir_0's m reads the bath's pH on [6.8, 7.5]:
+    with the bath moved to pH 6.79, the readers, the readouts and the step are each refused, never
+    clipped. A bath declared at pH 6.79 is refused at its definition's initial state. kir_0's m on
+    E_K, whose V_r is +75 mV, off Kir2.1's domain, is refused there too."""
+    raw = kir_shifted({"gates": {"m": ph_shift()}})
+    spec = parse_spec(raw)
+    impl, state, p, control = bound(spec)
+    h_row = list(spec.model.species_ids).index("H")
+    acid = state.extracellular_amount_increment.copy()
+    acid[h_row, 0] = 1000.0 * 10.0**-6.79 * p.extracellular_volume[0]
+    acid[h_row, 0] -= p.extracellular_amount_reference[h_row, 0]
+    moved = state._replace(extracellular_amount_increment=acid)
+    ci, co = v3.physical_amounts(moved, p)
+    ci, co = ci / p.volume, np.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    v = impl.field_values(moved, control, p, xp=np).rates.membrane_voltage_V
+    voltage = v3.channel_voltage(v, p, xp=np)
+    assert not bool(v3.reader_voltages(ci, co, voltage, p, xp=np, structure=impl.structure).valid)
+    assert not bool(impl.readouts(moved, control, p, xp=np).valid)
+    assert not bool(impl.imex_step(moved, raw["execution"]["dt"], control, p, xp=np)[1])
+    bath = raw["model"]["extracellular"][0]
+    acidic = 1000.0 * 10.0**-6.79 * bath["volume_pL"]
+    bath["fixed_charge_equivalent_fmol"] -= acidic - bath["initial_amount_fmol"]["H"]
+    bath["initial_amount_fmol"]["H"] = acidic
+    with pytest.raises(ConfigError, match="domain invalid"):
+        parse_spec(raw)
+    with pytest.raises(ConfigError, match="domain invalid"):
+        parse_spec(kir_shifted({"gates": {"m": {"reversal_of": "K"}}}))
 
 
 @pytest.mark.parametrize("law", list(FR51_SLOT_WRITERS))
