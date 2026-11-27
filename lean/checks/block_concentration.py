@@ -7,12 +7,12 @@ from pathlib import Path
 import jax
 import jax.numpy as jnp
 import numpy as np
-from validation.fr51 import engine, judge, plants
 
 from cells.definitions.specs import parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.laws.electrochemistry import F, R
 from cells.registry.models import get_model
+from validation.fr51 import engine, judge, plants
 
 
 def compare(bound, derivative, volts):
@@ -60,7 +60,8 @@ def reversal_case(case):
 def chloride_control():
     """Use a chloride reversal with signed valence and differentiate the compiled native flux."""
     raw = engine.raw_world("B4_anion_effective")
-    raw["model"]["channels"][0]["block"]["reference"] = {"reversal_of": "Cl"}
+    channel = raw["model"]["channels"][0]
+    channel.setdefault("voltage_shift", {})["block"] = {"reversal_of": "Cl"}
     spec = parse_spec(raw)
     model = get_model(spec.model)
     state, layout = model.initial_values(spec)
@@ -81,7 +82,7 @@ def chloride_control():
         return j[cl, 0], (
             terms.inside_term[0],
             terms.outside_term[0],
-            terms.block.reversal[0],
+            terms.block.shift[0],
             terms.block.valid,
         )
 
@@ -106,6 +107,7 @@ def run(directory):
     for key, ref in refs.items():
         if not ref.blocked:
             continue
+        # The tagged FR-51 input records the reference in the original block declaration.
         block = spec["blocks"][ref.declared["block"]]
         if block["reference"] == "membrane_voltage":
             volts, _, term = clamped(ref)

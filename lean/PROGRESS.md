@@ -1,5 +1,15 @@
 # Cells proof comparisons
 
+<a id="fr64-block-replays"></a>
+
+## 27 November 2026 · FR-51 blocker replays after the FR-64 voltage-shift move
+
+Both drivers now declare an ion reversal on the population’s `voltage_shift.block`. The Kir membrane-voltage control omits the shift. The concentration driver reads `reference` only from the tagged FR-51 case description. To rerun, use the drivers and engine from the same FR-64 checkout with its root and `src/` on `PYTHONPATH`, CPU JAX and float64 enabled. The concentration driver takes the tagged reference results directory as its argument. [Kir driver](checks/kir_spermine_potassium.py) · [Concentration driver](checks/block_concentration.py) · [Reference results](https://github.com/Eidosoma/Cells/tree/1360c925e13b72089a567b639caa22c2e26d9c53/validation/fr51/references/results)
+
+On main `2274e9e4`, the Kir replay reproduced its 24 November JSON byte for byte, including the previously scored Panama 5.4 to 60 mM comparison. All 6,546 concentration endpoint checks passed. The reported results matched for all nine reversal cases, all nine membrane-voltage controls and both deliberate failures. [Kir comparison](#fr51-two-potassium) · [Concentration bounds and controls](#fr51-concentration-bounds)
+
+The extra chloride control passed at all 37 voltages. Two values differed in its output. The reversal differed by one float64 ULP (7.1 × 10⁻¹⁵ mV) and the minimum outside bound-to-derivative ratio by two ULPs (2.2 × 10⁻¹⁶). The clean pre-FR-64 engine at `3e4635cb` reproduced the full 24 November concentration JSON byte for byte. The run archive is `lean-fr64-block-drivers-20261127`. [FR-64 migration and bitwise checks](https://github.com/Eidosoma/Cells/blob/ff5c5fdc8d6ca7c817b5c205903b19b626065f4d/docs/FR64_VOLTAGE_SHIFT_DESIGN.md#94-what-must-stay-bit-for-bit)
+
 <a id="fr63-holdout-audit"></a>
 
 ## 26 November 2026 · Which Kv1.5 measurements remain available for FR-63
@@ -13,8 +23,6 @@ Longobardo’s drug-free tail-current decay is a candidate for a registered comp
 | Kehl et al., HEK293, 3.5 mM external K, pH 7.4 and 6.4 | Figs. 3–4 report maximal conductance across pH. The Fig. 10 Results mention an approximate ionic activation shift at pH 5.9 without a curve, explicit bath K, sample count or error. Fig. 9 has a 3.5 mM K saturated-tail recording at pH 5.9. | The audit located no third WT ionic midpoint inside this calibration window. The mutant conductance series and gating-charge curves measure other preparations or observables. [Kehl et al., Figs. 2–4](https://pmc.ncbi.nlm.nih.gov/articles/PMC2290311/#fig02) · [Figs. 9–10](https://pmc.ncbi.nlm.nih.gov/articles/PMC2290311/#fig09) |
 
 For the tail-decay candidate, the two protocols use a 250 ms depolarization and repolarize to **−40 mV at pH 7.4 and −30 mV at pH 6.5**. The fast and slow time constants have 38 and 24 recordings at those pH levels. The paper gives a prepulse family and describes the two-exponential fit. A registration would specify which trace to compare, the fitting interval, component ordering and criterion for a resolvable second component before scoring the simulated current. It would retain the native activation midpoint (−6.0 mV versus −14.2 mV in the control preparation). The published outcomes are visible to evidence reviewers. A new test would assess the channel with its declared shift and kinetics. [Study protocol](https://pmc.ncbi.nlm.nih.gov/articles/PMC1572951/#fig1) · [Native gate and voltage domain](https://github.com/Eidosoma/Cells/blob/ff15f0e766f8ad3e9a4c81df2c298459c9133d08/src/cells/laws/channels/kv1p5_mh.py#L20-L42)
-
-On the future FR-64 landing, the Lean drivers for Kir spermine and blocker concentration need the population’s `voltage_shift.block` for a reversal reference. Plain membrane voltage is expressed by omitting the shift. The live drivers currently use the FR-51 schema. The concentration driver also reads the archived case’s own reference field. [Kir driver](checks/kir_spermine_potassium.py#L101) · [Concentration driver](checks/block_concentration.py#L63)
 
 <a id="fr55-sk2-closing"></a>
 
@@ -53,7 +61,7 @@ The CPU float64 replay ran `resolved_pump_tissue@3` and the `resolved_pump_compo
 
 Both registered fault controls failed at both ends as intended. In B1 at +50 mV the outside derivative magnitude was 0.01066163 and the full bound was 0.01077281 fmol/s per mM. Omitting the change through reversal left 0.00005559, about 192 times too small. Reusing the 5.4 mM reversal in the 10.8 mM condition gave a bound as small as 47.2% of the outside derivative. These are synthetic fault controls. The registered biological comparison for the Panama potassium series is separate. [Registered criterion E](https://github.com/Eidosoma/Cells/blob/796f04fad35ce2bc80f256024dc01b44cc9b705b/validation/fr51/REGISTRATION.md#L182-L195) · [Fault controls](https://github.com/Eidosoma/Cells/blob/796f04fad35ce2bc80f256024dc01b44cc9b705b/validation/fr51/plants.py#L174-L197)
 
-To reproduce, run `JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python -B checks/block_concentration.py "$REF_RESULTS"` from `lean/` with the frozen engine and its `src/` on `PYTHONPATH`. Set `REF_RESULTS` to the `validation/fr51/references/results` directory from the separate `fr51-references-2026-11-24` tag. The driver reports each bound, its closest approach to the reference and both fault outcomes.
+To reproduce the 24 November record, run `JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python -B checks/block_concentration.py "$REF_RESULTS"` from `lean/` at driver revision `dc07534d`, with engine `796f04fa` and its `src/` on `PYTHONPATH`. Set `REF_RESULTS` to the `validation/fr51/references/results` directory from the separate `fr51-references-2026-11-24` tag. [FR-64 replay](#fr64-block-replays)
 
 <a id="fr65-swelling-turnover"></a>
 
@@ -124,7 +132,7 @@ Each fit uses equally weighted normalized fractions from the first K level and t
 
 **Internal potassium gives a different result.** With external K at 150 mM and internal spermine at 20 µM, raising internal K from 150 to 625 mM shifts the plotted half-block voltage from about −20 to −15 mV. The paper's plotted K reversal changes by about −36 mV. The corresponding FR-51 predictions are a −36.3 mV shift with a K reference and zero with an absolute-voltage reference. Both native controls reach a blocked/free current ratio of 0.5 at their predicted midpoint. The full experimental series has a fitted slope of −0.15. This is one laboratory, and the Fig. 3C group means have one to three patches per K level. Figs. 3A–B show a same-patch change. [Lopatin and Nichols, Fig. 3](https://doi.org/10.1085/jgp.108.2.105)
 
-Lean establishes exact translation for any fixed block fraction depending on V − E when the unblocked current is nonzero in each solution. It uses Mathlib's cancellation lemmas, with `propext`, `Classical.choice` and `Quot.sound` in the real-number specialization. The paper comparison supplies the test of that fixed-fraction assumption. Reproduce the numerical results with `JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu PYTHONPATH="$ENGINE/src:$ENGINE" python -B checks/kir_spermine_potassium.py` from the evidence checkout's `lean/`, with `ENGINE` pointing to the FR-51 engine at the revision above. [Lean theorem](CellsProofs/Transport/IonChannels.lean#L333)
+Lean establishes exact translation for any fixed block fraction depending on V − E when the unblocked current is nonzero in each solution. It uses Mathlib's cancellation lemmas, with `propext`, `Classical.choice` and `Quot.sound` in the real-number specialization. The paper comparison supplies the test of that fixed-fraction assumption. To reproduce the 24 November record, run `JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu PYTHONPATH="$ENGINE/src:$ENGINE" python -B checks/kir_spermine_potassium.py` from `lean/` at driver revision `369431f7`, with `ENGINE` pointing to `7ca7c9c1`. [Lean theorem](CellsProofs/Transport/IonChannels.lean#L333) · [FR-64 replay](#fr64-block-replays)
 
 <a id="red-cell-chloride-ratio"></a>
 
