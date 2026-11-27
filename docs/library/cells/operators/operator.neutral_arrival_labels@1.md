@@ -11,8 +11,9 @@ cell and [finite node](../../GLOSSARY.md#finite-node), the shares of it that arr
 No law reads the shares, so labelling never changes the dynamics, the energy or a physical record.
 Each process that moves the substance reports its one-way moves, and the shares follow them. At
 events, a replaced cell's material takes the label in force, and a wash removes every label in
-proportion while its fresh buffer joins the unlabelled base. Left out: movers that do not report,
-such as charged faces, channels, pumps and site binding, and an exchange of a cell's own liquid.
+proportion while its fresh buffer joins the unlabelled base. Surface sites that bind only unlabelled
+substances may sit beside it. Left out: movers that do not report, such as charged faces, channels
+and pumps, sites binding a labelled substance, and an exchange of a cell's own liquid.
 
 ## Seen from each field
 
@@ -129,6 +130,9 @@ Declared test: not yet extracted; the composite's operator contract has no test 
 - **The exchange map** is held to its identity on six cases. Two planted errors must fail: the
   continuous update used for a wash, and the buffer not credited to the base.
 - **A wash and a replacement in one step** commute, in either declared order, bit for bit.
+- **Surface sites beside labels:** every pairing not yet qualified is refused by name. A compiled
+  run of sites with four partners keeps every physical record of its unlabelled twin bit for bit,
+  and its labels follow each partner exactly.
 - **Compiled runs** keep every physical record of their unlabelled twins bit for bit:
   - the dN/dt = −N² reference, a window's cohort against its analytic solution, a replacement's
     record by label, and labels across five washes;

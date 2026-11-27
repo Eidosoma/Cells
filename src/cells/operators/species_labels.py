@@ -78,6 +78,25 @@ its event's declared kind (contract.label_event), never by its shape.
 - Cells' shares are not touched: the report's axis is the outside nodes, so an exchange of a
   cell's own liquid cannot be expressed in version 1.
 
+Admission by species (FR-44 step 3; D327, D424; docs/NEUTRAL_LABELS_DESIGN.md §14). A split writer
+that reports no one-way moves is admitted beside the owner only where its law is on BY_SPECIES, it
+declares its rows (the contract's ROW_MOVES and written_rows, FR-43 part 3's one authority), and no
+species of its written rows is labelled. The test is by species, not by row: a labelled species has
+shares at every cell and finite node, and an unreported change at one node would be carried onward
+by every later transfer. Version 1 lists cells.operator.site_occupancy@1 alone, whose half-steps
+write amounts only at its pools, which are its written rows, and keep every other entry bit for
+bit. Beside such a writer and the owner, each of these is refused by name (by_species_errors, fail
+closed) until a world qualifies it:
+- every operator law but the writer's partners (BY_SPECIES): the wash, D152's reactions, turnover
+  and exchange, qualified together by tests/unit/test_neutral_labels_sites.py's twin. Among them
+  is cells.operator.cell_owned_compartments@1, FR-49's C4, registered by amendment, so its four-way
+  form and its three-way form without a wash stay refused in either order of FR-49's list entries;
+- an internalising population, which no registered world needs (D424);
+- the inner model's later options: cells.model.resolved_pump_tissue@3's own one-way records, a
+  blocked channel population, a declared voltage shift, the sparse field solver, and X2, which is
+  attached after the definition's checks and so is refused at binding (initial_values).
+A labelled ligand stays refused: it waits for sites as label reporters (D327).
+
 Refused (fail closed), each refusal naming the FR-42 stage that lifts it:
 - a labelled species moved inside the inner step (registry moved_in_step) by anything the inner
   step does not report: every mover before @3's side lands (stage 2); afterwards a charged face,
@@ -89,7 +108,7 @@ Refused (fail closed), each refusal naming the FR-42 stage that lifts it:
   buffers, cells.binding.rapid_binding@1's closure rows), whatever moves it (closure_errors);
 - an operator whose split part writes species amounts without reporting (turnover, exchange,
   reactions and templated polymerisation report; FR-42's stage 3 added exchange and the reactions'
-  passive routes);
+  passive routes), unless it is admitted by species (above);
 - an event that writes species amounts and reports neither the slots it replaced nor a liquid
   exchange, a closer or retirer of slots, and a provider of the amount references (no FR-42 stage
   plans them yet);
@@ -103,6 +122,7 @@ part, so no reporter runs there.
 """
 
 from dataclasses import dataclass, replace
+from types import MappingProxyType
 
 import jax.numpy as jnp
 import numpy as np
@@ -143,6 +163,44 @@ REPORTED_MOVERS = {
     "junction": inner_laws.MEMBRANE_ROUTE_LAW_ID,
 }
 NOT_PLANNED = "no FR-42 stage plans it yet"
+# FR-44 step 3, admission by species (D327, D424; module docstring).
+SITES_LAW = "cells.operator.site_occupancy@1"
+COMPARTMENTS_LAW = "cells.operator.cell_owned_compartments@1"
+# Its refusals by name (operator_errors, by_species_errors).
+LABELLED_ROW = "a writer admitted by species writes a labelled row"
+NOT_A_PARTNER = "an operator not admitted beside labels and a writer admitted by species"
+UNQUALIFIED = "a variant not admitted beside labels"
+OPTION = "an inner-model option not admitted beside labels and a writer admitted by species"
+
+
+@dataclass(frozen=True)
+class BySpecies:
+    """A split writer admitted by species: the operator laws admitted beside it and the owner, each
+    qualified by its own check, and its declaration's variants not yet qualified, each
+    (what, function(declaration) -> the IDs that declare it)."""
+
+    partners: tuple
+    unqualified: tuple
+
+
+def _internalising(declaration):
+    """The site operator's populations that internalise (D424: refused by name beside labels)."""
+    return tuple(p.id for p in declaration.populations if p.internalisation_rate is not None)
+
+
+BY_SPECIES = MappingProxyType(
+    {
+        SITES_LAW: BySpecies(
+            partners=(
+                "cells.operator.scheduled_compartment_wash@1",
+                "cells.operator.local_species_reactions@1",
+                "cells.operator.scheduled_species_turnover@1",
+                "cells.operator.scheduled_species_exchange@1",
+            ),
+            unqualified=(("an internalising population", _internalising),),
+        ),
+    }
+)
 
 STATE_AXES = {
     "label_share": ["label_species", "label_slot", "cell_slot"],
@@ -527,9 +585,13 @@ def source_controls(spec, declaration, schedule, times):
 
 
 def operator_errors(spec):
-    """The fail-closed refusals of the composition's operators (module docstring), as messages."""
+    """The fail-closed refusals of the composition's operators (module docstring), as messages:
+    a split writer that reports nothing is refused in today's words unless it is admitted by
+    species (BY_SPECIES, a declared ROW_MOVES, and no labelled species among its written rows),
+    and beside one that is, by_species_errors' refusals by name."""
     errors, events = [], replacing(spec)
-    for op, _, _ in composite_spec.entries(spec):
+    labelled = labelled_species(spec)
+    for op, declaration, _ in composite_spec.entries(spec):
         if op.LABEL_OWNER:
             continue
         if events and op.LABEL_POOLS and op.EVENT and not takes_labels(op.event):
@@ -556,11 +618,112 @@ def operator_errors(spec):
                 f"nor a liquid exchange ({NOT_PLANNED})"
             )
         elif writes and op.SPLIT and not reports_labels(op):
-            errors.append(
-                f"{where}: it writes species amounts without reporting its one-way moves "
-                f"({NOT_PLANNED})"
+            if op.LAW_ID not in BY_SPECIES or op.ROW_MOVES is None:  # Today's words.
+                errors.append(
+                    f"{where}: it writes species amounts without reporting its one-way moves "
+                    f"({NOT_PLANNED})"
+                )
+                continue
+            written = sorted({name for name, _ in op.written_rows(spec, declaration)} & labelled)
+            if written:
+                errors.append(
+                    f"{where}: it writes species amounts without reporting its one-way moves, and "
+                    f"it writes the labelled {', '.join(written)}: {LABELLED_ROW} (admission by "
+                    "species admits only a writer of unlabelled rows; a labelled ligand waits for "
+                    "sites as label reporters, D327)"
+                )
+    return errors + by_species_errors(spec)
+
+
+def by_species_writers(spec):
+    """(operator, declaration) of the composition's split writers on BY_SPECIES that declare their
+    rows (ROW_MOVES), in declared order. Beside the owner each is admitted by species unless it
+    writes a labelled species, which operator_errors refuses."""
+    return tuple(
+        (op, declaration)
+        for op, declaration, _ in composite_spec.entries(spec)
+        if op.LAW_ID in BY_SPECIES and op.ROW_MOVES is not None
+    )
+
+
+def inner_options(spec):
+    """((declared, what), ...): the inner model's later options that a writer admitted by species
+    is refused beside. These are the same five as FR-45's list beside site sets
+    (site_occupancy.check_set_composition)."""
+    from cells.numerics.surface_field import SPARSE_SOLVER_ID
+
+    m = spec.model
+    channels = getattr(m, "channels", ())
+    return (
+        (
+            bool(getattr(m, "one_way_records", ())),
+            "cells.model.resolved_pump_tissue@3's own one_way records (FR-50 phase 2)",
+        ),
+        (
+            any(getattr(c, "block", None) is not None for c in channels),
+            "a blocked channel population (FR-51)",
+        ),
+        (
+            any(getattr(c, "voltage_shift", None) is not None for c in channels),
+            "a declared voltage shift (FR-64)",
+        ),
+        (spec.execution.field_solver == SPARSE_SOLVER_ID, f"the field solver {SPARSE_SOLVER_ID}"),
+        (getattr(spec, "energy_check", None) is not None, "execution.energy_check (X2, D224)"),
+    )
+
+
+def option_errors(spec, writers):
+    """The inner model's declared later options beside the writers admitted by species, named
+    in one message, or none."""
+    if not writers:
+        return []
+    options = [what for declared, what in inner_options(spec) if declared]
+    if not options:
+        return []
+    names = ", ".join(op.LAW_ID for op, _ in writers)
+    return [
+        f"{', '.join(options)} beside {LAW_ID} and {names} admitted by species: {OPTION}; "
+        "refused until a world qualifies each beside them (D327)"
+    ]
+
+
+def by_species_errors(spec):
+    """FR-44 step 3's refusals by name beside a writer admitted by species (module docstring;
+    D327, D424), as messages, none without such a writer:
+    - every operator law other than the owner, the writer and its partners, all named in one
+      message. cells.operator.cell_owned_compartments@1 is named there as FR-49's C4, whose
+      four-way form and three-way form without a wash this keeps refused, whatever the
+      compartments' own list admits;
+    - each of the writer's variants not yet qualified (an internalising population);
+    - the inner model's later options (option_errors)."""
+    writers = by_species_writers(spec)
+    if not writers:
+        return []
+    laws = tuple(dict.fromkeys(op.LAW_ID for op, _, _ in composite_spec.entries(spec)))
+    errors = []
+    for op, declaration in writers:
+        entry = BY_SPECIES[op.LAW_ID]
+        others = [law for law in laws if law not in (LAW_ID, op.LAW_ID, *entry.partners)]
+        if others:
+            c4 = (
+                f"; {COMPARTMENTS_LAW} is FR-49's C4 (fr49-compartment-compositions-v1 §5), "
+                "registered by amendment"
+                if COMPARTMENTS_LAW in others
+                else ""
             )
-    return errors
+            errors.append(
+                f"{', '.join(others)} beside {LAW_ID} and {op.LAW_ID} admitted by species: "
+                f"{NOT_A_PARTNER}; version 1 admits beside both only {', '.join(entry.partners)}, "
+                f"each with its own check (D327){c4}"
+            )
+        for what, find in entry.unqualified:
+            found = find(declaration)
+            if found:
+                errors.append(
+                    f"{op.LAW_ID} beside {LAW_ID}: {UNQUALIFIED}: {what} ({', '.join(found)}); "
+                    "refused until a world qualifies it (D424)"
+                )
+    return errors + option_errors(spec, writers)
 
 
 def in_step_errors(spec, declaration, reports):
@@ -1225,6 +1388,15 @@ class NeutralArrivalLabels(Operator):
     # ------------------------------------------------------------ binding
 
     def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
+        # FR-44 step 3 (D424): execution.energy_check is attached after the definition's checks
+        # have run (energy_check_spec.parse_definition), so they never see it. Every run binds
+        # here first, so a world with a writer admitted by species refuses X2 here, by name,
+        # before its first step, as the site operator's sets do (SiteOccupancy.initial_values).
+        # Only X2 is read here: the definition's checks have already refused every other option.
+        if getattr(spec, "energy_check", None) is not None:
+            errors = option_errors(spec, by_species_writers(spec))
+            if errors:
+                raise ConfigError("; ".join(errors))
         return bind(spec, declaration)
 
     # ------------------------------------------------------------ the composite's calls
