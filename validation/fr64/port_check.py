@@ -11,7 +11,8 @@ themselves are rerun on the head by their own commands; this tool compares the r
   - each case at its references' voltages (validation.fr51.engine.engine);
   - each case of each JUDGED plant, under that plant (validation/fr51/plants.py).
 - FR-50 phase 2 (`--fr50-references`): each case's request (validation/fr50/judge.request_for), and
-  each case of each phase-2 plant under that plant (judge.PLANTS).
+  each case of each phase-2 plant under that plant (judge.PLANTS). E5's refusal rows, which have no
+  reference, are asked for as the judge asks for them.
 
 **compare** reads two dumps and lists every difference. A difference is any of these:
 - a key on one side only;
@@ -95,6 +96,7 @@ def dump_fr50(references):
             if plant["kind"] == ref.case_kind:
                 result = engine.engine(judge.request_for(ref, plant=name))
                 out[f"fr50/{case_id}/{name}"] = _rows(result)
+    out["fr50/E5/honest"] = _rows(engine.engine(dict(kind="E5", plant=None)))  # As the judge asks.
     return out
 
 
