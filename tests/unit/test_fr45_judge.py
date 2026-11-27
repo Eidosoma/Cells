@@ -406,6 +406,13 @@ def test_the_cross_check_and_the_references_structure_report_departures():
     assert J.reference_structure({"W1": ref}, reg, True) == []
     ref["pairs"].append(pair("C1", "speed:X", 1.0, 1e-6, against="r"))
     assert len(J.reference_structure({"W1": ref}, reg, True)) == 1
+    found = J.invented_file_structure(
+        ref
+    )  # The file the judge reads first must hold every census form.
+    assert (
+        any("speed:X" in f for f in found)
+        and sum("is not in the invented file" in f for f in found) == 18
+    )
 
 
 def test_the_files_are_read_strictly(tmp_path):

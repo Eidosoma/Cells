@@ -577,6 +577,28 @@ def pair_form(pair):
             "terms" if "tolerance_terms" in pair else "-", extra)  # fmt: skip
 
 
+def invented_file_structure(ref):
+    """The structure-only pass over the references' invented file, the file the judge reads first (the plan's
+    step 2; PROTOCOL:129-130; SPEC:391-392): every pair's form one the judge maps, every census form present in
+    it, every observable one its criterion's text names, and the constant words. Returns the findings."""
+    out = []
+    forms = {pair_form(p) for p in ref.get("pairs", [])}
+    out += [f"form {f} is not one the judge maps" for f in sorted(forms - PAIR_FORMS, key=str)]
+    out += [
+        f"the census's form {f} is not in the invented file"
+        for f in sorted(PAIR_FORMS - forms, key=str)
+    ]
+    for pair in ref.get("pairs", []):
+        crit = pair.get("criterion")
+        if not re.fullmatch(OBSERVABLE.get(crit, "$^"), str(pair.get("observable"))):
+            out.append(
+                f"{crit} {pair.get('observable')}: an observable its criterion's text does not name"
+            )
+        if crit in WORDS and pair.get("value") != WORDS[crit]:
+            out.append(f"{crit}: the constant {pair.get('value')!r}")
+    return out
+
+
 def reference_structure(refs, reg, invented):
     """The structure-only pass over the reference files (TABLE §12.3 step 2) [12b]: their top keys, each pair's
     form and observable against its criterion's text, the constant words, the terms each formula needs, the plant
@@ -1855,6 +1877,7 @@ def run_judgement(args):
         keys = ("overall", "stopped", "scope", "criteria", "plants", "derived_sets", "unchecked")
         brief = {k: verdict.get(k) for k in keys}
         brief["references_structure"] = len(verdict.get("references_structure") or [])
+        brief["invented_file_structure"] = verdict.get("invented_file_structure")
         brief["faults"] = len(verdict.get("faults") or [])
         print(json.dumps(brief, indent=1, default=str))
         return code
@@ -1887,6 +1910,14 @@ def run_judgement(args):
             return write(2)
     else:
         verdict["blobs"] = "not checked: an invented rehearsal"
+    sample = (
+        folder / "format_sample_INVENTED.json"
+    )  # The file the judge reads first (the plan's step 2).
+    if sample.exists():
+        verdict["invented_file_structure"] = invented_file_structure(strict_load(sample))
+    elif not invented:
+        verdict["stopped"] = "the references' format_sample_INVENTED.json is missing"
+        return write(2)
     refs = {}
     for world in sorted(set(reg.data["files"].values())):
         path = folder / "outputs" / f"reference_{world}.json"
@@ -1902,7 +1933,8 @@ def run_judgement(args):
         verdict["scope"] = (
             "§12.3 steps 1 to 3 only: the blobs, the references' structure, the cross-check"
         )
-        return write(1 if verdict["references_structure"] else 0)
+        findings = verdict["references_structure"] or verdict.get("invented_file_structure")
+        return write(1 if findings else 0)
     digest, departures = table_sha256(
         args.table, args.table_sha256, args.sample_sha256
     )  # Step 7 (§1).
