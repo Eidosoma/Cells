@@ -31,7 +31,9 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     All nine plants are caught.
     - It ran from 3e4635cb (tag `fr45-judged-2026-11-27`), after its addenda (0c888d9a) and its job command (3e4635cb)
       landed and were confirmed by a non-builder.
-  - Next: FR-64's D148 round (lanes running) and landing. The user has D414's refinement of the X2 rule.
+  - The user answered D414 (D417): X2 applies to a registration's honest runs, and its plant runs follow its own plant
+    rule. The adviser agrees, and D417 records five readings.
+  - Next: FR-64's D148 round (lanes running) and landing; D417's check of the tagged, not yet judged registrations.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).

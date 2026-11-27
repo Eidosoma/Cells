@@ -14181,3 +14181,34 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
 
   The pushed commit message of f073086e and the tag's message keep "1,024 entries", the verdict's total with the
   baselines.
+
+## D417: the user's answer on D414: X2 applies to a registration's honest runs, and its plant runs follow its own plant rule
+
+2026-11-27, written at 15:29 UTC.
+
+- **The user's answer to D414's question is yes.** Where a registration must select X2 (D412: its criteria judge energy
+  readouts on ARS(2,2,2) worlds), X2 applies to its honest runs. Its plant runs follow the registration's own plant
+  rule, unless the registration states otherwise.
+  - **The adviser agrees,** at the user's request:
+    - X2 is a requirement on the runs a claim rests on;
+    - a plant is a control whose detection path the registration fixes in advance;
+    - D414 measured that X2 changes no honest value, so on plant runs it could only change how they are scored.
+- **Readings** by the lead and the adviser, so that the rule can be applied without a further question:
+  1. **A plant run carries no `energy_check`** unless its registration says otherwise. A registration that turns X2
+     on for its plants also says whether X2's refusal catches a plant.
+  2. **"Honest" means every run that is not a plant run,** a plant's baseline twin and any convergence runs included.
+  3. **A plant run then differs from its honest twin in `execution.energy_check`.**
+     - A contract that takes a plant run's execution record as its honest run's names `energy_check` as the one
+       allowed difference.
+     - Its judge checks both sides: the honest runs carry X2 at the registered cap, and the plant runs carry none.
+       Otherwise the difference would score as a departure, and the plant would escape.
+  4. **It holds from D417 on, and nothing judged is re-scored.** D381 (FR-38 v2) and D324 (FR-43 part 2) stand, and
+     D414's confirmation is closed.
+  5. **D414's "FR-43 part 2 would pass with X2 on its honest runs only" was derived, not run.** It follows from two
+     measured facts: the honest values are bit-identical with X2 on, and the X2-off runs reproduce D324.
+- **A check follows, and does not block:** each registration tagged but not yet judged (liquid routing's, and FR-49's
+  World B and C1 and C2) is checked for two things:
+  - whether D412 makes it select X2;
+  - whether its plant-twin comparison reads `execution`.
+
+  Where both hold, it is amended before its run.
