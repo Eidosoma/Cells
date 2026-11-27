@@ -819,6 +819,13 @@ def main(argv=None):
 # ------------------------------------------------------------------ the references' own invented file (ruling 5a)
 
 
+def _full_buffer(echo):
+    """The wash's buffer for every ligand: the engine's wash names every neutral species of the world, so that no
+    wash is silently partial (cells.operator.scheduled_compartment_wash@1); a ligand the invented file's buffer
+    leaves out is at its trace, 1e-12 mM."""
+    return {g: echo["wash"]["buffer"].get(g, 1e-12) for g in echo["ligands"]}
+
+
 def invented_world(ref):
     """§4.1 inputs for the references' invented format-sample world (`format_sample_INVENTED.json`, which ruling 5a
     lets the builder read): its echo in W3's bath form (the registered cell walled on the bath), every amount it
@@ -862,7 +869,7 @@ def invented_world(ref):
         constants=dict(sites_per_fmol=float(c["N_f_sites_per_fmol"]), temperature_K=c["T_K"],
                        RT_pJ_per_fmol=c["RT_pJ_per_fmol"]),
         nodes=nodes, patches=patches, ligands=list(echo["ligands"]), free_amounts=free, sets=sets, populations=pops,
-        wash=dict(time_s=w["t"], node=w["node"], fraction=w["f"], buffer_mM=dict(w["buffer"])),
+        wash=dict(time_s=w["t"], node=w["node"], fraction=w["f"], buffer_mM=_full_buffer(echo)),
         permeabilities=[dict(patch=p, ligand=g, value=0.0) for p in ids for g in echo["ligands"]],
         ion_permeabilities={p: {"IA": 0.0, "IB": 0.0} for p in ids},
         multipliers=[dict(of=p["id"], name="site_binding_multiplier", value=1.0) for p in pops],
@@ -913,7 +920,11 @@ def invented_check(path, out, cpus):
     folder = out / "references"
     (folder / "outputs").mkdir(parents=True, exist_ok=True)
     (folder / "fr45ref_free_energy.py").write_text(stand_in_module())
-    (folder / "outputs" / "reference_X.json").write_text(Path(path).read_text())
+    copied = json.loads(
+        Path(path).read_text()
+    )  # Its buffer completed at the trace, as the engine requires.
+    copied["world"]["wash"]["buffer"] = _full_buffer(copied["world"])
+    (folder / "outputs" / "reference_X.json").write_text(json.dumps(copied, indent=1) + "\n")
     times = [0.0, *inputs["observation_times_s"]]
     base = ["cells.model.resolved_pump_composite@1", "cells.model.resolved_pump_tissue@3",
             "cells.operator.site_occupancy@1", "cells.operator.scheduled_compartment_wash@1"]  # fmt: skip
