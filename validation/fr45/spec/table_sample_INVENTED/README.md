@@ -5,9 +5,11 @@ is written in that contract's shapes, on invented worlds. **No number in it belo
 from it:** no number, list length, order of keys or entries, or equality between its numbers (TABLE.md §12.1).
 
 - **Who wrote it, and how.** It was written on 27 November 2026, before the binding tag, by the agent who made the
-  contract's dated change of that day. That agent is not the builder and has seen no reference value. It wrote the
-  sample by hand from the contract (RULINGS-2 §3, item 1). A small writer of the agent's own, outside the checkout,
+  contract's two dated changes of that day. That agent is not the builder and has seen no reference value. It wrote
+  the sample by hand from the contract (RULINGS-2 §3, item 1). A small writer of the agent's own, outside the checkout,
   assembled the JSON from invented values. No engine code was run or read.
+- **The second dated change** (RULINGS-2 §7) added the runs `INVENTED-W1p-P3~check` and `INVENTED-W6~check` [S-f],
+  and made each `plant.patch` a path from the checkout's root [W-a].
 - **What reads it.** The judge reads `table/table.json` in its structure-only mode, with the code that will read the
   table, before the judged run, and must find no fault. At the judged run's snapshot, the builder's exporter writes a
   table on these invented worlds, and the lead compares it with this sample, key by key and type by type
@@ -62,6 +64,7 @@ runs' steps. They are not input values. The writer's check found no other number
 | `INVENTED-W4-dt0.125`, `INVENTED-W4-dt0.0625`, `INVENTED-W4-dt0.03125` | completed | one world at three steps |
 | `INVENTED-W5` | refused, `stage` | W5's refused shape: `step_report` with `verdict` `"refused"`, and `max_load` the set's summed `L_R` |
 | `INVENTED-W6` | completed | a set on a patch's outside face, and an unregistered cell (`husk`, `registered` false) with its traces |
+| `INVENTED-W6~check` | refused, `check` | an honest run refused at run time by a host check: `book` `"host check: INVENTED ion amounts"`, with the failure in `checks` [S-f] |
 | `INVENTED-W6~domain` | refused at parse, `domain` | a refusal by domain |
 | `INVENTED-W7` | completed | a wash: its one event, and its map on the start and on the wash row in both variants (W7's shape) |
 | `INVENTED-W7s` | completed | a one-population set (`shared` false, `free_sites` `"derived"`); the absent ligand `X2` held at its trace, `declared` false |
@@ -69,6 +72,7 @@ runs' steps. They are not input values. The writer's check found no other number
 | `INVENTED-W1p-P1` | completed | P1's shape (`rows[].amounts`) |
 | `INVENTED-W1p-P2` | completed | a plant run whose `inputs_changed` is not empty: the two `k_off` crossed by declaration |
 | `INVENTED-W1p-P3` | completed | P3's shape (`rows[].site_heat_pJ` and `amounts`) |
+| `INVENTED-W1p-P3~check` | refused, `check` | P3's catch by refusal: `book` `"dissipation check"`, with the failure in `checks` [S-f] |
 | `INVENTED-W1p-P6` | refused, `check` | a refusal by the energy ledger: `book` `"energy ledger"`, with the failure in `checks` |
 | `INVENTED-W1p-P8` | refused, `check` | a refusal by its own ledger: `book` `"moiety ledger"`, with the failure in `checks` |
 | `INVENTED-W1p-P9` | completed | P9's shape (`rows[].site_occupied_fraction`) |
@@ -79,9 +83,14 @@ runs' steps. They are not input values. The writer's check found no other number
 
 `missing` holds `INVENTED-W3p`, so the honest W3p shape is shown only through `INVENTED-W3`'s and `INVENTED-W3p-P7`'s.
 
-**Every key of 27 November appears:** `refusal.raised` (a string, and null in the harness refusal), `refusal.book`
-(three book words, and null outside `check`), `free_sites` (both words), `inputs.permeabilities`, `inputs.multipliers`,
-`inputs.charges`, `source.jax_platforms` and `source.external_modules`.
+**Every key of 27 November appears:** `refusal.raised` (a string, and null in the harness refusal), `refusal.book` (all
+four forms: `"moiety ledger"`, `"energy ledger"`, `"dissipation check"` and `"host check: <name>"`, and null outside
+`check`) [S-f], `free_sites` (both words), `inputs.permeabilities`, `inputs.multipliers`, `inputs.charges`, among them
+the absent ligand's member in `INVENTED-W7s` [S-g], `source.jax_platforms` and `source.external_modules`.
+
+**The checks.** Every parsed run lists the same four invented checks, and the refusing one records its failure. That
+uniform set is not the list of checks: the dated addendum gives each check's worlds or operators and its cadence, and
+"lacks a listed check" means a check listed for the run's world (TABLE.md §4, §14.1) [S-b].
 
 ## For the builder's exporter: the invented worlds
 
@@ -96,6 +105,9 @@ Each run's `inputs` declares its world, so the exporter's run on it is defined. 
 - `INVENTED-W5` is refused by the stage condition at its first step. `INVENTED-W5-P4`'s per-population load admits it.
 - The plant runs carry each plant's patch, as TABLE.md §8.1 says. `INVENTED-W1p-P6` and `INVENTED-W1p-P8` show refusals
   by the energy ledger and by the plant's own moiety ledger.
+- `INVENTED-W1p-P3~check` is `INVENTED-W1p-P3` refused by the dissipation check during step 4, and `INVENTED-W6~check`
+  is `INVENTED-W6` refused by the host check `INVENTED ion amounts` during step 15 [S-f]. The builder produces each by a
+  means of its choosing on these invented worlds, such as a check's bound tightened for this world alone.
 
 A run whose outcome on the engine differs from the sample's (a refusal at another step, say) is a difference for the
 contract's author, before the judged run (TABLE.md §12.1).
@@ -139,7 +151,7 @@ non-finite value would also be written as null at a number (TABLE.md §1), but t
 | `runs.<run>.world` | string |
 | `runs.<run>.plant` | object, or null in an honest run |
 | `runs.<run>.plant.id` | string: `P1` to `P9` |
-| `runs.<run>.plant.patch` | string: a path under `validation/` |
+| `runs.<run>.plant.patch` | string: a path from the checkout's root, beginning `validation/` [W-a] |
 | `runs.<run>.plant.change` | string |
 | `runs.<run>.plant.inputs_changed` | list |
 | `runs.<run>.plant.inputs_changed[]` | string: a key path of `inputs` |

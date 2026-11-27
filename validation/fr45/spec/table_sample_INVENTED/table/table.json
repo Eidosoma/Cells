@@ -89,7 +89,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -199,7 +199,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -294,7 +294,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -403,7 +403,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -685,7 +685,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -805,7 +805,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -1067,7 +1067,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -1187,7 +1187,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -1362,7 +1362,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -1646,7 +1646,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -1811,7 +1811,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -1921,7 +1921,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -2035,7 +2035,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -2145,7 +2145,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -2259,7 +2259,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -2369,7 +2369,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -2511,7 +2511,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -2618,7 +2618,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -2738,7 +2738,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -2883,7 +2883,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -2910,6 +2910,263 @@
    },
    "record": "records/INVENTED-W6.json",
    "record_sha256": "53ebdea763490af3abce2a9dc65517be4906e7a09cc69058b26ba409c4d23cb5"
+  },
+  "INVENTED-W6~check": {
+   "status": "refused",
+   "world": "INVENTED-W6",
+   "plant": null,
+   "dt_s": 0.009765625,
+   "steps": 14,
+   "backend": "numpy",
+   "rows": [
+    {
+     "step": 0,
+     "time_s": 0.0,
+     "amounts": {
+      "n:X1@pond": 0.0037,
+      "n:X2@pond": 0.0017,
+      "n:X1@husk": 2.9e-12,
+      "n:X2@husk": 2.9e-12,
+      "R:skin": 0.00842980944667454,
+      "B:skin_X1": 0.0017181777216151927,
+      "B:skin_X2": 0.0005906235918052225
+     },
+     "records": {},
+     "site_heat_pJ": {
+      "pond": 0.0
+     },
+     "site_occupied_fraction": {
+      "skin_X1": 0.16,
+      "skin_X2": 0.055
+     }
+    },
+    {
+     "step": 11,
+     "time_s": 0.107421875,
+     "amounts": {
+      "n:X1@pond": 0.003391975,
+      "n:X2@pond": 0.001558475,
+      "n:X1@husk": 2.9e-12,
+      "n:X2@husk": 2.9e-12,
+      "R:skin": 0.00798025944667454,
+      "B:skin_X1": 0.0020262027216151925,
+      "B:skin_X2": 0.0007321485918052225
+     },
+     "records": {},
+     "site_heat_pJ": {
+      "pond": 7.124e-05
+     },
+     "site_occupied_fraction": {
+      "skin_X1": 0.1886838779132056,
+      "skin_X2": 0.06817907904120259
+     }
+    }
+   ],
+   "capacities": {
+    "skin": 0.010738610760094955
+   },
+   "free_sites": {
+    "skin": "state"
+   },
+   "events": [],
+   "event_map": [],
+   "step_report": null,
+   "refusal": {
+    "kind": "check",
+    "raised": "INVENTED.engine.host.HostCheckError",
+    "book": "host check: INVENTED ion amounts",
+    "name": "INVENTED ion amounts",
+    "message": "INVENTED: an ion amount left its host check's bound",
+    "step": 15,
+    "time_s": 0.13671875
+   },
+   "checks": {
+    "INVENTED moiety ledger": {
+     "failures": []
+    },
+    "INVENTED energy ledger": {
+     "failures": []
+    },
+    "INVENTED dissipation check": {
+     "failures": []
+    },
+    "INVENTED ion amounts": {
+     "failures": [
+      {
+       "step": 14,
+       "message": "INVENTED: an ion amount left its host check's bound"
+      }
+     ]
+    }
+   },
+   "operators": [
+    "cells.model.resolved_pump_composite@1",
+    "cells.model.resolved_pump_tissue@3",
+    "cells.operator.site_occupancy@1"
+   ],
+   "inputs": {
+    "world": "INVENTED-W6",
+    "constants": {
+     "sites_per_fmol": 543210987.0,
+     "temperature_K": 301.5,
+     "RT_pJ_per_fmol": 2.4681357
+    },
+    "nodes": [
+     {
+      "id": "pond",
+      "kind": "node",
+      "volume_pL": 2.75,
+      "registered": true
+     },
+     {
+      "id": "husk",
+      "kind": "cell",
+      "volume_pL": 0.85,
+      "registered": false
+     }
+    ],
+    "patches": [
+     {
+      "id": "husk_wall",
+      "inside": "husk",
+      "outside": "pond"
+     }
+    ],
+    "ligands": [
+     "X1",
+     "X2"
+    ],
+    "free_amounts": [
+     {
+      "ligand": "X1",
+      "node": "pond",
+      "n_fmol": 0.0037,
+      "declared": true
+     },
+     {
+      "ligand": "X2",
+      "node": "pond",
+      "n_fmol": 0.0017,
+      "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "husk",
+      "n_fmol": 2.9e-12,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "husk",
+      "n_fmol": 2.9e-12,
+      "declared": false
+     }
+    ],
+    "sets": [
+     {
+      "id": "skin",
+      "shared": true,
+      "owner": "husk_wall",
+      "face": "outside",
+      "faces": "pond",
+      "copies": 1515151.0,
+      "sites_per_copy": 7,
+      "accessible_fraction": 0.55
+     }
+    ],
+    "populations": [
+     {
+      "id": "skin_X1",
+      "set": "skin",
+      "ligand": "X1",
+      "k_on": 1850.0,
+      "k_off": 0.95,
+      "initial_occupancy": 0.16
+     },
+     {
+      "id": "skin_X2",
+      "set": "skin",
+      "ligand": "X2",
+      "k_on": 1250.0,
+      "k_off": 1.15,
+      "initial_occupancy": 0.055
+     }
+    ],
+    "wash": null,
+    "permeabilities": [
+     {
+      "patch": "husk_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "husk_wall",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
+    "multipliers": [
+     {
+      "of": "skin_X1",
+      "name": "INVENTED binding rate multiplier",
+      "value": 1.0
+     },
+     {
+      "of": "skin_X2",
+      "name": "INVENTED binding rate multiplier",
+      "value": 1.0
+     },
+     {
+      "of": "skin",
+      "name": "INVENTED capacity multiplier",
+      "value": 1.0
+     }
+    ],
+    "charges": {
+     "X1": 0,
+     "X2": 0
+    },
+    "dt_s": 0.009765625,
+    "observation_times_s": [
+     0.107421875,
+     0.205078125
+    ],
+    "horizon_s": 0.205078125
+   },
+   "definition": {
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "world": "INVENTED-W6",
+    "checks": {
+     "INVENTED moiety ledger": "raise",
+     "INVENTED energy ledger": "raise",
+     "INVENTED dissipation check": "raise",
+     "INVENTED ion amounts": "raise"
+    }
+   },
+   "source": {
+    "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
+    "checkout_dirty": false,
+    "snapshot": "/mnt/workspaces/Cells/INVENTED-engine-snapshot",
+    "snapshot_patch_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "python": "INVENTED-python",
+    "numpy": "INVENTED-numpy",
+    "scipy": "INVENTED-scipy",
+    "jax": "INVENTED-jax",
+    "jaxlib": "INVENTED-jaxlib",
+    "jax_enable_x64": true,
+    "jax_platforms": "cpu",
+    "blas_threads": 7,
+    "machine": "INVENTED-machine",
+    "external_modules": [
+     {
+      "name": "INVENTED_external_module",
+      "identity": "INVENTED identity, computed at run time",
+      "frozen": "/mnt/workspaces/Cells/INVENTED-engine-snapshot-modules/INVENTED_external_module"
+     }
+    ]
+   },
+   "record": "records/INVENTED-W6~check.json",
+   "record_sha256": "bafea569d4f0251ae807bb5fc82056f2291fe544b36ac450663b2be77aa5d52a"
   },
   "INVENTED-W6~domain": {
    "status": "refused",
@@ -3340,7 +3597,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -3461,7 +3718,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -3569,7 +3826,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -3666,7 +3923,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -3761,7 +4018,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -3870,7 +4127,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -3903,7 +4160,7 @@
    "world": "INVENTED-W1p",
    "plant": {
     "id": "P1",
-    "patch": "fr45/plants/INVENTED_p1.patch",
+    "patch": "validation/fr45/plants/INVENTED_p1.patch",
     "change": "INVENTED: each population binds its own sites",
     "inputs_changed": []
    },
@@ -3970,7 +4227,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -4079,7 +4336,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -4112,7 +4369,7 @@
    "world": "INVENTED-W1p",
    "plant": {
     "id": "P2",
-    "patch": "fr45/plants/INVENTED_p2.patch",
+    "patch": "validation/fr45/plants/INVENTED_p2.patch",
     "change": "INVENTED: the two populations' k_off crossed",
     "inputs_changed": [
      "populations[id=grid_X1].k_off",
@@ -4182,7 +4439,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -4291,7 +4548,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -4324,7 +4581,7 @@
    "world": "INVENTED-W1p",
    "plant": {
     "id": "P3",
-    "patch": "fr45/plants/INVENTED_p3.patch",
+    "patch": "validation/fr45/plants/INVENTED_p3.patch",
     "change": "INVENTED: each population's free sites taken as S less its own bound",
     "inputs_changed": []
    },
@@ -4391,7 +4648,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -4500,7 +4757,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -4528,12 +4785,215 @@
    "record": "records/INVENTED-W1p-P3.json",
    "record_sha256": "d18be8ba0b43fdd2d57b1778d34cf02bf0d7b4935d4180264621815820cbdf7a"
   },
+  "INVENTED-W1p-P3~check": {
+   "status": "refused",
+   "world": "INVENTED-W1p",
+   "plant": {
+    "id": "P3",
+    "patch": "validation/fr45/plants/INVENTED_p3.patch",
+    "change": "INVENTED: each population's free sites taken as S less its own bound",
+    "inputs_changed": []
+   },
+   "dt_s": 0.0625,
+   "steps": 3,
+   "backend": "numpy",
+   "rows": [
+    {
+     "step": 0,
+     "time_s": 0.0,
+     "amounts": {
+      "n:X1@tank": 0.0042,
+      "n:X2@tank": 0.0027,
+      "R:grid": 0.01309515204862747,
+      "B:grid_X1": 0.0010018149108239596,
+      "B:grid_X2": 0.0002146746237479913
+     },
+     "records": {},
+     "site_heat_pJ": {
+      "tank": 0.0
+     },
+     "site_occupied_fraction": {
+      "grid_X1": 0.07,
+      "grid_X2": 0.015
+     }
+    }
+   ],
+   "capacities": {
+    "grid": 0.014311641583199421
+   },
+   "free_sites": {
+    "grid": "state"
+   },
+   "events": [],
+   "event_map": [],
+   "step_report": null,
+   "refusal": {
+    "kind": "check",
+    "raised": "INVENTED.engine.ledgers.DissipationCheckError",
+    "book": "dissipation check",
+    "name": "INVENTED dissipation check",
+    "message": "INVENTED: a step's site heat is negative",
+    "step": 4,
+    "time_s": 0.1875
+   },
+   "checks": {
+    "INVENTED moiety ledger": {
+     "failures": []
+    },
+    "INVENTED energy ledger": {
+     "failures": []
+    },
+    "INVENTED dissipation check": {
+     "failures": [
+      {
+       "step": 3,
+       "message": "INVENTED: a step's site heat is negative"
+      }
+     ]
+    },
+    "INVENTED ion amounts": {
+     "failures": []
+    }
+   },
+   "operators": [
+    "cells.model.resolved_pump_composite@1",
+    "cells.model.resolved_pump_tissue@3",
+    "cells.operator.site_occupancy@1"
+   ],
+   "inputs": {
+    "world": "INVENTED-W1p",
+    "constants": {
+     "sites_per_fmol": 543210987.0,
+     "temperature_K": 301.5,
+     "RT_pJ_per_fmol": 2.4681357
+    },
+    "nodes": [
+     {
+      "id": "tank",
+      "kind": "node",
+      "volume_pL": 3.5,
+      "registered": true
+     }
+    ],
+    "patches": [],
+    "ligands": [
+     "X1",
+     "X2"
+    ],
+    "free_amounts": [
+     {
+      "ligand": "X1",
+      "node": "tank",
+      "n_fmol": 0.0042,
+      "declared": true
+     },
+     {
+      "ligand": "X2",
+      "node": "tank",
+      "n_fmol": 0.0027,
+      "declared": true
+     }
+    ],
+    "sets": [
+     {
+      "id": "grid",
+      "shared": true,
+      "owner": "tank",
+      "face": null,
+      "faces": "tank",
+      "copies": 2468013.0,
+      "sites_per_copy": 7,
+      "accessible_fraction": 0.45
+     }
+    ],
+    "populations": [
+     {
+      "id": "grid_X1",
+      "set": "grid",
+      "ligand": "X1",
+      "k_on": 1700.0,
+      "k_off": 0.55,
+      "initial_occupancy": 0.07
+     },
+     {
+      "id": "grid_X2",
+      "set": "grid",
+      "ligand": "X2",
+      "k_on": 830.0,
+      "k_off": 0.27,
+      "initial_occupancy": 0.015
+     }
+    ],
+    "wash": null,
+    "permeabilities": [],
+    "multipliers": [
+     {
+      "of": "grid_X1",
+      "name": "INVENTED binding rate multiplier",
+      "value": 1.0
+     },
+     {
+      "of": "grid_X2",
+      "name": "INVENTED binding rate multiplier",
+      "value": 1.0
+     },
+     {
+      "of": "grid",
+      "name": "INVENTED capacity multiplier",
+      "value": 1.0
+     }
+    ],
+    "charges": {
+     "X1": 0,
+     "X2": 0
+    },
+    "dt_s": 0.0625,
+    "observation_times_s": [
+     0.5625
+    ],
+    "horizon_s": 0.5625
+   },
+   "definition": {
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "world": "INVENTED-W1p",
+    "checks": {
+     "INVENTED moiety ledger": "raise",
+     "INVENTED energy ledger": "raise",
+     "INVENTED dissipation check": "raise",
+     "INVENTED ion amounts": "raise"
+    }
+   },
+   "source": {
+    "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
+    "checkout_dirty": false,
+    "snapshot": "/mnt/workspaces/Cells/INVENTED-engine-snapshot",
+    "snapshot_patch_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "python": "INVENTED-python",
+    "numpy": "INVENTED-numpy",
+    "scipy": "INVENTED-scipy",
+    "jax": "INVENTED-jax",
+    "jaxlib": "INVENTED-jaxlib",
+    "jax_enable_x64": true,
+    "jax_platforms": "cpu",
+    "blas_threads": 7,
+    "machine": "INVENTED-machine",
+    "external_modules": [
+     {
+      "name": "INVENTED_external_module",
+      "identity": "INVENTED identity, computed at run time",
+      "frozen": "/mnt/workspaces/Cells/INVENTED-engine-snapshot-modules/INVENTED_external_module"
+     }
+    ]
+   },
+   "record": "records/INVENTED-W1p-P3~check.json",
+   "record_sha256": "16b96cdf1cc2eec47aea2b862afd89255a9b36a5a46adea576fac77089d6f05f"
+  },
   "INVENTED-W1p-P6": {
    "status": "refused",
    "world": "INVENTED-W1p",
    "plant": {
     "id": "P6",
-    "patch": "fr45/plants/INVENTED_p6.patch",
+    "patch": "validation/fr45/plants/INVENTED_p6.patch",
     "change": "INVENTED: the set's free-site term counted once per pool",
     "inputs_changed": []
    },
@@ -4594,7 +5054,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -4703,7 +5163,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -4736,7 +5196,7 @@
    "world": "INVENTED-W1p",
    "plant": {
     "id": "P8",
-    "patch": "fr45/plants/INVENTED_p8.patch",
+    "patch": "validation/fr45/plants/INVENTED_p8.patch",
     "change": "INVENTED: the moiety checked per population",
     "inputs_changed": []
    },
@@ -4797,7 +5257,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -4906,7 +5366,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -4939,7 +5399,7 @@
    "world": "INVENTED-W1p",
    "plant": {
     "id": "P9",
-    "patch": "fr45/plants/INVENTED_p9.patch",
+    "patch": "validation/fr45/plants/INVENTED_p9.patch",
     "change": "INVENTED: theta as B over B plus R",
     "inputs_changed": []
    },
@@ -5006,7 +5466,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -5115,7 +5575,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -5148,7 +5608,7 @@
    "world": "INVENTED-W5",
    "plant": {
     "id": "P4",
-    "patch": "fr45/plants/INVENTED_p4.patch",
+    "patch": "validation/fr45/plants/INVENTED_p4.patch",
     "change": "INVENTED: the free-site load per population",
     "inputs_changed": []
    },
@@ -5279,7 +5739,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -5386,7 +5846,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -5419,7 +5879,7 @@
    "world": "INVENTED-W2",
    "plant": {
     "id": "P5",
-    "patch": "fr45/plants/INVENTED_p5.patch",
+    "patch": "validation/fr45/plants/INVENTED_p5.patch",
     "change": "INVENTED: the wash scales the bound material",
     "inputs_changed": []
    },
@@ -5673,7 +6133,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -5793,7 +6253,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -5826,7 +6286,7 @@
    "world": "INVENTED-W7",
    "plant": {
     "id": "P5",
-    "patch": "fr45/plants/INVENTED_p5.patch",
+    "patch": "validation/fr45/plants/INVENTED_p5.patch",
     "change": "INVENTED: the wash scales the bound material",
     "inputs_changed": []
    },
@@ -6204,7 +6664,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -6325,7 +6785,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
@@ -6358,7 +6818,7 @@
    "world": "INVENTED-W3p",
    "plant": {
     "id": "P7",
-    "patch": "fr45/plants/INVENTED_p7.patch",
+    "patch": "validation/fr45/plants/INVENTED_p7.patch",
     "change": "INVENTED: a set's dR from its first population",
     "inputs_changed": []
    },
@@ -6467,7 +6927,7 @@
     "INVENTED dissipation check": {
      "failures": []
     },
-    "INVENTED host check: ion amounts": {
+    "INVENTED ion amounts": {
      "failures": []
     }
    },
@@ -6750,7 +7210,7 @@
      "INVENTED moiety ledger": "raise",
      "INVENTED energy ledger": "raise",
      "INVENTED dissipation check": "raise",
-     "INVENTED host check: ion amounts": "raise"
+     "INVENTED ion amounts": "raise"
     }
    },
    "source": {
