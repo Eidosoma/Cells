@@ -1,0 +1,532 @@
+{
+ "kind": "fr45 host-entity addendum, version 1",
+ "dated": "27 November 2026",
+ "drafted_by": "FR-45's builder, from the parse-only passes (driver.py parse)",
+ "status": "confirmed against src/ by a reviewer who is not the builder (N2), with the corrections of 27 November 2026; to be hashed by the lead",
+ "passes": {
+  "revision": "bc201ec8d92fce8f97c2781285e60afbdea74389",
+  "snapshot_clean": true,
+  "runs": [
+   "W1",
+   "W1p",
+   "W2",
+   "W3",
+   "W3p",
+   "W4-dt0.02",
+   "W4-dt0.04",
+   "W4-dt0.08",
+   "W5",
+   "W6",
+   "W7",
+   "W7s"
+  ],
+  "not_parsed": "W1eq (TABLE \u00a712.3; \u00a79.2, WF5)"
+ },
+ "runs": {
+  "W1": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W1p": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W2": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145000000.0,
+      "K": 5000000.0,
+      "Cl": 150000000.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W3": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "specimen_face": 1e-11,
+     "host_wall": 1e-10
+    },
+    "capacitances": {
+     "specimen_face": 1e-13,
+     "host_wall": 1e-12
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "specimen": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W3p": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "specimen_face": 1e-11,
+     "host_wall": 1e-10
+    },
+    "capacitances": {
+     "specimen_face": 1e-13,
+     "host_wall": 1e-12
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "specimen": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W4-dt0.08": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "vat": {
+      "Na": 145000000000.0,
+      "K": 5000000000.0,
+      "Cl": 150000000000.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W4-dt0.04": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "vat": {
+      "Na": 145000000000.0,
+      "K": 5000000000.0,
+      "Cl": 150000000000.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W4-dt0.02": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "vat": {
+      "Na": 145000000000.0,
+      "K": 5000000000.0,
+      "Cl": 150000000000.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W5": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W6": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "specimen_face": 1e-11,
+     "host_wall": 1e-10
+    },
+    "capacitances": {
+     "specimen_face": 1e-13,
+     "host_wall": 1e-12
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W7": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W7s": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  },
+  "W1eq": {
+   "nodes": [
+    {
+     "id": "bath",
+     "volume_pL": 1.0
+    },
+    {
+     "id": "host_cell",
+     "volume_pL": 1.0
+    }
+   ],
+   "host_values": {
+    "areas": {
+     "host_wall": 1e-10,
+     "host_contact": 1e-11
+    },
+    "capacitances": {
+     "host_wall": 1e-12,
+     "host_contact": 1e-13
+    },
+    "ion_amounts": {
+     "well": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "bath": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     },
+     "host_cell": {
+      "Na": 145.0,
+      "K": 5.0,
+      "Cl": 150.0
+     }
+    }
+   }
+  }
+ },
+ "takes": {
+  "W1eq": "W1's, copied",
+  "plants": "each its honest run's (TABLE \u00a78.1)"
+ },
+ "form": "the bath form's own values (secreted_species_fixtures): each held bath and host cell 1.0 pL; a wall on the bath 1e-10 m2 and 1e-12 F, every other patch (contacts and specimen_face) 1e-11 m2 and 1e-13 F; every compartment at the bath's ions, Na 145, K 5 and Cl 150 mM times its volume",
+ "traces": "each host compartment's ligand trace is the binary64 product 1e-12 x its volume_pL here (TABLE \u00a74.1)"
+}
