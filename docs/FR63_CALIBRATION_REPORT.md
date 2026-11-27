@@ -35,8 +35,8 @@ Kv1.5's activation positive.
 - **The sizes differ beyond those errors.**
   - Kehl et al.'s σ lies 2.8 and 3.4 standard errors from the other two, which agree within one.
   - So σ is a per-preparation declaration, not a property of Kv1.5, as D351 and D361 say.
-- **The development check passes** (§2). At each preparation's two pH levels, the engine's activation midpoint moves by
-  the declared shift:
+- **The development check meets its criteria** (§2). At each preparation's two pH levels, the engine's activation
+  midpoint moves by the declared shift:
   - within 1.4e-18 V on the host path;
   - within 2.5e-17 V on the compiled path.
 
@@ -199,7 +199,7 @@ crosses one half.
 ΔV is `validation/fr64/closed_forms.ph_shift`, in 50-digit decimals at the bath's own binary64 h. The bath's control
 pH reads back as its reference only to rounding, so ΔV(control) is under 1e-18 V in size, not 0.
 
-**The result: every criterion passes.**
+**The result: every criterion is met.**
 
 | Preparation | Declared shift | Engine midpoint, control → acid (host) | Host: shift − declared | Compiled: shift − declared | Settled gate − its target (control, acid) |
 | --- | --- | --- | --- | --- | --- |
