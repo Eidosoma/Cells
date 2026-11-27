@@ -8,6 +8,8 @@ no `src` or test file changes (D142).**
   and sorts its items.
 - **Every statement about the code is read again at 4f4a4c34.** The rename, the block law's registration, the calcium
   store's channel material term, FR-51's slot refusal and D391 have all landed since 28756b2b.
+- **Read again at main 7149f90a on 27 November (§17),** after FR-50 phase 2 and FR-52 landed. §17 also lists what is
+  ruled. Where it differs from the sections before it, §17 holds.
 - Integration grants no acceptance (D143). **S** marks this note's own derivation, done by hand and not run.
 
 **The request** (FR-64 in [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md); D356, D361). D391 freed it to build at normal
@@ -939,3 +941,282 @@ They stay here as written, with their recommendations.
 6. **The build.** FR-64's build is 4.25 to 5.25 agent-days on one branch with one gate, and FR-63's report 0.5 to 1
    more. Start them at normal priority, in the queue order you set (D392)? **Recommended: yes,** after the items you
    have ranked above them.
+
+## 17. At main 7149f90a, 27 November: read again, and ruled
+
+**Why this section.** FR-50 phase 2 (d92403cc, D405) and FR-52 (ab8b599c, D404) landed after 4f4a4c34.
+- FR-50 phase 2 changed `channel_rates`, `clamped_channel_flux`, the conditions in `readouts` and `explicit_rates`,
+  and the step's record block. O2(b) and §7 edit the same functions.
+- This section reads §2, §7, §9.4 and §12 again at 7149f90a, and lists what is now ruled.
+- **Where it differs from §1 to §16, it holds.** The builder's full record, with every line number, is
+  `/mnt/workspaces/Cells/fr64-build-20261127/PLAN-DELTAS.md`.
+- Line numbers are main 7149f90a's, in `src/cells/models/surface_pump_v3.py` unless a file is named.
+
+### 17.1 Ruled
+
+**The lead's rulings of 27 November** (`/mnt/workspaces/Cells/d172-restructure-20261115-01/fr64-rulings-20261127.md`):
+- **Question 1:** this note lands in place of `docs/VOLTAGE_SHIFT_DESIGN.md`. Branch `fr64-design` (377a1b34) stays
+  unmerged, as history.
+- **Question 2, @3's major:** the user's, and still open.
+  - The build keeps `cells.model.resolved_pump_tissue@3` and the block law's @1, and refuses the old `reference` key by
+    name, naming its new place.
+  - The landing waits for the user's answer. Either way the build shows D148's four criteria at its round.
+- **Question 3:** the user's (D399). FR-63 gets a calibration report, not a registered comparison.
+- **Question 4:** a reversal of an ion at relative permeability 0 is refused by name, on a gate or on the block.
+- **Question 5:** the composed world is its own tier-2 file if it measures under the 90 s cap on one timed core.
+  Otherwise it runs in tier 3, with the host rows as the gate.
+- **Question 6:** decided (D391). The queue order is the user's (D392).
+- **The options:**
+  - **O1:** A, the pure module. The guard that finds law homes is told it is not one.
+  - **O2:** (b), with `explicit_rates`' optional `read` and its cost measured.
+  - **O3:** (a), a term per permeant ion.
+  - **O4:** (a), no readout column in version 1.
+  - **The 20-row fallback** is retired.
+
+**The plan step's seven questions, ruled at 02:30 UTC:**
+1. **The new D327 pair** (§17.5): the check, with its three plants.
+2. **The port checks** (§17.6) are the builder's.
+   - They run after the last merge of main and before the gate, on one timed core under the lock.
+   - They run from frozen snapshots of that base and of the head.
+   - The moved plants' planted rows are compared too.
+3. **An ulp difference** between base and head in any compared row stops the build for the lead's ruling.
+4. **D327's sequence probe** enters `validation/` on FR-64's branch, from FR-65's scratch tool with its origin cited.
+   It enumerates a shifted base world as well as today's.
+5. **Ownership** (§17.7): FR-64 starts on every file except `pump_composite.py`, `composition_matrix.py` and
+   `PUMP_COMPOSITE.md`, and takes those by merging main after FR-65's coupling lands. Whichever of FR-64 and FR-45 lands
+   second reruns the probe.
+6. **This section:** the note lands on main before the build branch starts. The lead merges it, docs only.
+7. **The block's V_ref:** §3.1 stands.
+   - Each site calls the one `reader_voltages` explicitly, with no switch on the layout type.
+   - `row_unblocked_fraction` gains `structure` (§17.2).
+
+**The price** is 5.45 to 6.7 agent-days (§17.8), reported to the user.
+
+### 17.2 §2 at 7149f90a
+
+**Unchanged text, at new lines.** An AST comparison of the function bodies at both revisions found these the same:
+- `channel_kinetics` (698-726), and `channel_domain_valid` (745-749) at its three sites (2098, 2407, 2823);
+- **the block's functions:**
+  - `channel_block` (835-865) and `channel_block_terms` (880-940);
+  - `block_material_rates` (943-979, with stored amounts at 948);
+  - `channel_material_rates` (996-1061, with the read at 1029);
+- **the stage path:**
+  - `_loop_fluxes` (1656-1687), `_stage_read` (1736-1744) and `operator_time_conductances` (2739-2806);
+  - `potential_kinetics` (2817-2823) and `stage_gates` (2826-2834);
+  - the IMEX stage loop (3422-3519), with the stage gates at 3449-3457;
+- `_patch_slopes` (4287-4331, with stored amounts at 4291), `membrane_rate`, `charge_rows` and `material_rate`
+  (4486-4529);
+- the spec's `parse_block` (580-647), `ChannelBlock` (409-439) and `block_to_dict` (690-717).
+
+**§2.2 and §2.3 hold.** No file changed in `src/cells/kinds/`, `src/cells/registry/`, `src/cells/laws/channels/`,
+`src/cells/laws/reactions/`, `numerics/exponential_gates.py`, `src/cells/analysis/` or `operators/bath_schedule.py`.
+
+**Changed by FR-50 phase 2:**
+- **`channel_rates`** (752-801) forms `u` once (791) and multiplies it into the flux.
+  - Under `one_way` it passes that `u`, with the membrane V, to `channel_one_way_split` (797-800, defined at 804-821).
+  - The split is returned sixth.
+- **New callers of `channel_rates`:** the step's end views, through `channel_one_way_fluxes` (3216-3240).
+  - It reads each view's stage read and potentials (`_step_ends`, 3121-3133; `crossing_view`, 3281-3298).
+  - So a shift's ΔV there reads that end's stage read, which is B4's free h at a buffered node. No edit.
+- **`clamped_channel_flux`** (1085-1149) gains `one_way` and returns the split last.
+- **`readouts`** (2084) and **`explicit_rates`** (2387-2388) gain the records' condition. O2(b)'s `read` goes at
+  `explicit_rates`' signature (2243-2253) and its read (2266), apart from that line.
+- **`initial_values`** (388-453): FR-50's fail-closed check (398-402) sits beside FR-51's (395-397). Its fields come
+  last (442-445).
+- **The types:**
+  - `_kind_types` (6262-6361), `kind_types` and `_routed_kind_types` gain `records`, whose layout fields are last
+    (6322);
+  - `structure` gains `one_way_records` (5977);
+  - so does `InnerStructure` (`src/cells/models/inner_laws.py:356`, with its check at 403-418).
+- **The spec's `parse`** (951-1146) pops `one_way_records` (971), parses it after the channels (1075), and names it in
+  the structure clause (1141).
+- **`src/cells/models/pump_composite.py`:**
+  - `one_way_record_errors` (243-253) sits beside FR-51's `block_slot_errors` (256-268);
+  - the two are called together (2144-2149).
+
+**A site that §2.1 missed, though present at 4f4a4c34.** `row_unblocked_fraction` (5800-5806) writes the readout
+`channel_unblocked_fraction` that §9.3 item 4 reads. It calls `channel_block` with no structure.
+- Its one caller is `observe_history` (5880), which holds the structure. So it gains `structure` (ruling 7), and the
+  change stays inside @3's readouts and run view.
+- `UNBLOCKED_FRACTION_NOTE` (213-221) takes §7's wording.
+
+### 17.3 §2.4 and §7
+
+**FR-50 phase 2 is built, and its live driver spells the block key.**
+- `validation/fr50/engine.py` copies the frozen `reference` into the block (`_block`, 467-481: lines 470 and 477), and
+  `world_1` puts it on the channel (532).
+- The frozen cases E4 (`validation/fr50/references/spec/cases.json:92`) and E6 (`:100`) declare it, and `LAWS.md:60`
+  names it.
+- E1 and E5's RK4 row run on the same World 1.
+
+**This build translates that driver,** as it does FR-51's.
+- `_block` drops `reference`.
+- `world_1` writes `voltage_shift: {"block": {"reversal_of": ion}}`, or nothing for `"membrane_voltage"`.
+- It takes both frozen forms: `tests/unit/test_surface_pump_v3_populations.py:773` passes the string in the case's
+  spelling.
+
+**Unchanged:**
+- FR-50's `closed_forms.py`, which takes V_ref = V − E_K at 281 and 298; its `judge.py` (tagged); and its frozen spec;
+- FR-51's `closed_forms.py`, `judge.py` and frozen spec;
+- **`validation/fr50/plants.py`.** It patches `channel_one_way_split` by module name. So the split keeps its signature,
+  its V input and its call in `channel_rates`.
+
+**World 1's readers, which take it through the driver and need no edit:**
+- `tests/unit/test_one_way_records_own.py`;
+- `tests/unit/test_run_view.py`'s D402 rows (601-616);
+- the populations file's FR-50 rows (720-1010).
+
+**The rows edited, at main's lines** (in `test_surface_pump_v3_populations.py` unless named):
+- FR-51's reversal-ion refusal (640-643) moves into the shift's table;
+- the slot row (681-682) and the round trip (704-706) drop `reference`;
+- `fr51_criteria` (459-462) reads the frozen spelling, and stays;
+- `tests/unit/test_calcium_store.py`'s `block_of` (269) and its rows (316-319) change as §7 says.
+
+**FR-51's plants:**
+- **B (ii) and E (ii)** patch `block_law.reversal_potential` (`validation/fr51/plants.py:64-71` and `184-195`).
+  - After the move they patch `electrochemistry.reversal_potential`, and the kernel calls it through the module.
+  - `surface_pump_v3.py` imports electrochemistry's names with `from` (line 86). A by-name import of
+    `reversal_potential` would leave both plants silent.
+- **R** (111-114) zeroes the block row of the shift's reversal mask, in place of `channel_block_reversal`.
+
+**The proof** is §17.6's port checks.
+
+### 17.4 §9.4 and §12
+
+**§9.4:**
+- **"Every world with neither a shift nor a block" holds.** No crossrev or G1 world declares a block or records. The
+  grep covered:
+  - the five crossrev modules that `scripts/gates/crossrev_sets.py` names;
+  - the fixtures they import;
+  - G1's baseline (114 JSON files).
+- **A new row:** worlds with @3's own records and no block, such as FR-50's World 2, keep their programs bit for bit.
+- **FR-50's World 1 joins FR-51's class, compared by values.** Its E1, E4 and E6 engine rows are compared byte for byte,
+  base against head (§17.6).
+- **A risk:** once the layout changes, the compiled programs change, and a compiled value may move by an ulp. That stops
+  the build for the lead's ruling (ruling 3).
+
+**§12 gains:**
+- `validation/fr50/engine.py`, the translation;
+- **`validation/tissue/composition_matrix.py`.** The slot refusal's row (1231-1244) names `block_slot_errors` and its
+  test, so widening the refusal to every declared shift edits it.
+  - Then `python -m validation.tissue.composition_matrix --write` regenerates `docs/PUMP_COMPOSITE.md`, whose row is
+    at 359;
+- in `surface_pump_v3.py`: `row_unblocked_fraction`, `UNBLOCKED_FRACTION_NOTE`, and a `shifts` flag in `_kind_types`
+  beside `records`;
+- the port checks' harness and D327's sequence probe, under `validation/`;
+- the pair's compiled World 1 (§17.5), in its own file or in tier 3.
+
+**Not touched:** `channel_one_way_split`, `channel_one_way_fluxes`, and FR-50's plants, closed forms, judge and frozen
+spec.
+
+**What changes in the plan:**
+- **`channel_rates`** calls `reader_voltages` once.
+  - The block's V_ref feeds its one `channel_block` call.
+  - That `u` goes to the flux and the split alike, with the membrane V for permeation.
+- **The shift's layout fields** follow the block's, which lose `channel_block_reversal` and `channel_block_ion`. They
+  precede the loops' and the records', which stay last.
+- **O2(b):**
+  - the shared read is formed after the stage's implicit part (3448, or 3438 under N2);
+  - it is read by `potential_kinetics` (3452), then passed to `explicit_rates` (3502);
+  - after the gate updates (3449-3490, the junction gates too under N2), its gate fields are replaced with the stage's,
+    so no consumer sees stale gates;
+  - in crossing worlds `crossing_potential` (3496) still forms its own read. That is measured, not threaded.
+- **The host file** is at 84 tests in 23.41 s (tier 2). With about 40 more rows it stays under the cap.
+
+### 17.5 The new D327 pair: one-way channel records on a shifted population
+
+**The pairs.**
+- The block on a reversal, with records, is FR-50's World 1, judged at D405. So a blanket refusal would refuse a judged
+  world.
+- The block on pH, and a gate of either kind, newly parse.
+
+**What reaches the split.**
+- The block's `u` at V_ref reaches it by construction, through the one `channel_block` call in `channel_rates`.
+- A gate shift reaches it only through the gate state, since the split reads the opening, never the kinetics.
+
+**The check (ruled).** One compiled run of FR-50's World 1: one 1 pL cell on the held bath at V = E_K, @3 alone, with no
+operator.
+- **The world:**
+  - an H row (valence +1, impermeant) in both nodes, and B4 at the cell;
+  - three recorded populations:
+    - the gate-free K population, its block on the cell's pH (`inside`, the buffered row, read through the step's end
+      views);
+    - a Kv1.5 with m on the bath's pH;
+    - a Kv1.5 with m on V − E_K;
+    - each Kv1.5 started at its gates' targets.
+- **It stays steady (S).** Every K population's net is zero at E_K, and nothing moves protons. So every record is its
+  flux times t.
+- **The criteria are E4's** (`validation/fr50/REGISTRATION.md` §3):
+  - each direction within 1e-11 of its closed form;
+  - the gap at most 1e-12;
+  - closure on every row;
+  - the kernel closure within 4 ulps at every observed row.
+- **Its three plants:**
+  - the split's `u` formed at V, without the shift;
+  - the split's permeation at V_ref;
+  - the end view's stored row in place of its read, so `u` is formed from H_eq at the buffered cell.
+  - Each runs once on the compiled world at the build, and stands as a host row.
+- **Its tier-2 supplement:**
+  - FR-50's three-step host row on this world, with all three plants;
+  - an E6-like sweep through `clamped_channel_flux(block=True, one_way=True)` at the buffered cell, on both sides and
+    across the window.
+- **Not yet parsed.** That records are admitted beside a stage-read kind was read from the code. The build parses the
+  world first.
+- **The cost:** about 0.5 to 0.6 agent-days. One compile and run, estimated at 30 to 40 s and measured at the build.
+
+**§9.3's composed world carries no records.** It is not steady. Records there would also sit beside B4 and the bath
+operator, a combination no world has run.
+
+### 17.6 The port checks
+
+- **Scope.** Only FR-50's phase-2 cases declare a block (E4 and E6).
+  - FR-51's judge is rerun in full, and FR-50's with `--phase 2`.
+  - Phase 1 is not rerun.
+- **The verdicts:**
+  - FR-51's must be D377's: every criterion passing, and 11 of 11 plants caught;
+  - FR-50's must be D405's: E1 to E6 in band, 4 of 4 plants caught, and 4 of 4 E5 refusals.
+- **The comparison:** each engine row byte for byte, base against head, and the moved plants' planted rows too.
+- **The moved plants** are FR-51's B (ii), E (ii) and R.
+  - FR-50's block plants (`E4_block_omitted`, `E6b_block_omitted`) patch the split, which does not move.
+  - They must still be caught.
+- **The harness** is new, under `validation/`.
+  - It builds each judge's requests from the tagged references, calls each engine in a frozen snapshot, and compares
+    the arrays' bytes.
+  - Both judges at both revisions take about 12 min, from the run times in D377's and D405's run folders.
+
+### 17.7 Ownership
+
+- **Shared with `fr65-coupling`** (7cce9790):
+  - `src/cells/models/pump_composite.py`, in disjoint hunks;
+  - `validation/tissue/composition_matrix.py` and `docs/PUMP_COMPOSITE.md`.
+- **Shared with FR-45's build:** the last two.
+- **Untouched by FR-64:** `src/cells/operators/species_regulated_availability.py`,
+  `src/cells/operators/site_occupancy.py` and their tests.
+- **The landing order:** FR-65's coupling lands first, so FR-64 lands second against it and reruns D327's sequence
+  probe.
+
+### 17.8 Size and order
+
+| Work | §13 | At 7149f90a |
+| --- | --- | --- |
+| The parse | 0.5 | 0.5 |
+| The kernels' module, and the move of `reversal_potential` | 0.25 | 0.25 |
+| @3's plumbing | 1.5 to 2 | 1.75 to 2.25 |
+| The migration | 0.5 | 0.6 |
+| The tests | 1 to 1.25 | 1.5 to 1.85 |
+| The port checks | in the gate | 0.25 to 0.35 |
+| The gate and the review's fixes | 0.5 to 0.75 | 0.6 to 0.9 |
+| **FR-64** | **4.25 to 5.25** | **5.45 to 6.7** |
+
+**The order:**
+1. This note lands, docs only.
+2. Branch `fr64-build` from main.
+3. The kernels' module and the move of `reversal_potential`; then the parse.
+4. @3's sites; then the migration, with the translated drivers.
+5. The tests, with the pair's check.
+6. After FR-65's coupling lands: merge main. Then the slot refusal, the matrix row and `--write`, and the probe.
+7. The port checks, after the last merge of main.
+8. **The gate:**
+   - tiers 1 and 2, crossrev, G1 and FR's baselines;
+   - the landing waits for the user's answer to question 2.
+9. FR-63's calibration report.
