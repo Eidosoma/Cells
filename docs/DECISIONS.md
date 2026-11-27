@@ -14212,3 +14212,61 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
   - whether its plant-twin comparison reads `execution`.
 
   Where both hold, it is amended before its run.
+
+## D418: FR-64, a declared voltage shift on a channel population, is landed
+
+2026-11-27, written at 15:54 UTC.
+
+- **Landed** at ff5c5fdc (tag `fr64-landed-2026-11-27`), from e90e6e1e. The landing's trial passed 370 tests, the
+  tier-3 record's test among them.
+  - **What it adds:** one optional key on a channel population of `cells.model.resolved_pump_tissue@3`.
+    - The population's gates and its open-channel block read V − ΔV, where ΔV is an ion's reversal or a declared shift
+      per pH unit of the local free protons.
+    - Permeation, its heat and its charge still read the membrane voltage.
+    - The set of shifts is closed.
+  - **FR-51's block `reference` key** moves into the declaration with no alias, and is refused by name at its old
+    place. @3 keeps its major (D410). The Lean lane's drivers that declare the old key reach that lane through the
+    user, as FR-64's rulings say.
+  - **D327:** each newly admitted pairing has a check, or a refusal by name:
+    - FR-50's one-way records on a shifted population: compiled, with three plants;
+    - six host rows for the operators that reach a reader's inputs;
+    - the sparse field solver: a twin row.
+
+    FR-45's site sets and X2 are refused by name beside a shift until qualified.
+    - The site-set refusal is the disclosed edit of `src/cells/operators/site_occupancy.py`.
+    - That file's docstring still calls the X2 question open. It is left as is, so that the landed head is the gated
+      one, and is corrected at the file's next change.
+- **The D148 round passes 9 of 9** (`/mnt/workspaces/Cells/fr64-build-20261127/round/verdict.json`):
+  - **The measurement,** cold, one file per core: `test_voltage_shift_compiled.py` enters tier 2 at 78.56 s.
+  - **The port checks:** 44 groups byte for byte, and FR-51's and FR-50 phase 2's verdicts at the head equal D377's and
+    D405's.
+  - **The judges' derivative programs:** 261 files identical.
+  - **`gate.sh`,** at 2167b327 against 3e4635cb:
+    - IDs: 75 added and 2 removed, each renamed or moved and covered;
+    - crossrev: 11 of 11 sets identical;
+    - tiers 1+2: 501 files, none changed;
+    - G1: 113 of 113 worlds equal to the renewed c1.
+  - **FR's bitwise set** passes.
+  - **After the gate:**
+    - only docs lie between the gated head and the landing head: the note's §17.11 sentence and main's D416 and D417
+      records;
+    - the measured head, 12e58d36, differs from the landing head in no `src/` or test file.
+- **Disclosed:**
+  - **Costs at the frozen head:**
+    - a shifted world costs 7.9 % more a step than its unshifted twin, and the composed world 6.7 % more;
+    - an unshifted world's cost is covered by the identical derivative programs, not by a timing;
+    - O2(b)'s saving is within noise, and O2(b) stands for its clarity.
+  - **Departures:** six in the note's §17.9. Among them is the calcium-store pH row's small margin; if it moves, the row
+    is re-derived from theory, never re-tuned.
+- **The tier record:** main's equals the record the gate ran against, and tier 3 is unchanged.
+  - Four rows are stale. They are main's, not FR-64's: each count is the same at base 3e4635cb.
+
+    | File | Recorded | Now |
+    | --- | --- | --- |
+    | `test_cell_owned_compartments.py` | 235 | 241 |
+    | `test_field_solver_enforcement.py` | 76 | 78 |
+    | `test_fr45_judge.py` | 58 | 60 |
+    | `test_results_baseline.py` | 11 | 13 |
+
+  - They are folded at the next measurement.
+- **Next:** FR-63's calibration report (D399).
