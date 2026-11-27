@@ -1294,13 +1294,25 @@ at the merged head 60b3d32f against main 6647cf12, both as frozen snapshots.
 | + FR-45's site sets | — | Refused by name. Shown by its row only, since the site-set worlds declare no channel population |
 | The stand-alone family models | @3 without its structure | Refused fail-closed, by name |
 
-- **D327's rows** (`tests/unit/test_surface_pump_v3_populations.py`, six rows, about 1 s in all).
+- **D327's rows** (`tests/unit/test_surface_pump_v3_populations.py`): five compositions in six rows,
+  about 1 s in all.
   - Each operator moves the state as it does in the step.
-  - At the moved state, the composite's observation of the reader equals its closed form at
-    V_obs − E, within 1e-12. E comes from the moved amounts over the current volume.
+  - At the moved state, the reader equals its closed form at V_obs − E, within 1e-12. E comes from
+    the moved amounts over the current volume.
+  - The rows read the reader through the composite's observation path (`observe_history`), not the
+    step's stage path. The stage path is the composed world's item 5.
   - A reader frozen at the start's concentrations is caught in the five rows where a reader input
     moves.
-- **Not probed:** the sparse field solver and X2 beside a shift.
+  - The injection row's V is shown by its margin, a 1.2 mV move. The frozen-concentration plant
+    caught that row only through the carrier's K.
+  - The water door's leak is declared at zero permeability. It is made permeable (1e-9 m/s) for its
+    row, so that a flux carries u.
+- **The two options the probe did not reach** both parse and bind beside a shift, with and without
+  kinds:
+  - **the sparse field solver** has its row: the twin test under ARS(2,2,2) with that solver, bit for
+    bit;
+  - **X2** waits for the lead's ruling. Its check needs a compiled run, so until it is qualified it
+    would be refused by name.
 - **An operator in no parsed world** is covered by inference from the structure check and the two
   rules.
 
