@@ -1385,8 +1385,10 @@ def _value(env, world, pair, name, run):
         names = {x["observable"] for x in ref["trajectory"]} | {
             x["observable"] for x in ref["world"]["start"]
         }
-        g0 = env.G(ref["world"], what, at_node(r0, what, inputs, names))
-        g1 = env.G(ref["world"], what, at_node(r1, what, inputs, names))
+        # G as the plan writes it, G(world, node, amounts): the world by its registered name, since G's module
+        # knows the worlds by name (RULINGS-2 Q4a: W1p and W3p among them); the amounts at the node by name (S3).
+        g0 = env.G(world, what, at_node(r0, what, inputs, names))
+        g1 = env.G(world, what, at_node(r1, what, inputs, names))
         return _derived(A, h1 - h0, float(g0 - g1), pair["tolerance"])
     sets, pops = _facing(inputs)
     if crit in ("C4a", "C5", "C9"):

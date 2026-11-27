@@ -752,8 +752,26 @@ def stand_in_module():
     exactly as it loads the references' at the judged run: by its folder on sys.path."""
     import inspect
 
-    return ('"""INVENTED: the rehearsal\'s stand-in G (ruling 6), never the references\'."""\n\nimport math\n\n\n'
-            + inspect.getsource(_xlnx) + "\n\n" + inspect.getsource(stand_in_G) + "\n\nG = stand_in_G\n")  # fmt: skip
+    return ('"""INVENTED: the rehearsal\'s stand-in G (ruling 6), never the references\'."""\n\nimport json\nimport math\n'
+            'from pathlib import Path\n\n\n' + inspect.getsource(_xlnx) + "\n\n" + inspect.getsource(stand_in_G)
+            + STAND_IN_BY_NAME)  # fmt: skip
+
+
+# G is called with the world's registered name (RULINGS-2 Q4a), so the stand-in reads that world's echo from its
+# own folder's file, W3p's from W3's.
+STAND_IN_BY_NAME = """
+
+_ECHOES = {}
+
+
+def G(world, node, amounts):
+    \"\"\"The stand-in, called as the references' G is: G(world name, node, amounts at the node by name).\"\"\"
+    if world not in _ECHOES:
+        stem = {"W3p": "W3"}.get(world, world)
+        path = Path(__file__).resolve().parent / "outputs" / f"reference_{stem}.json"
+        _ECHOES[world] = json.loads(path.read_text())["world"]
+    return stand_in_G(_ECHOES[world], node, amounts)
+"""
 
 
 def references(worlds, notes, folder):

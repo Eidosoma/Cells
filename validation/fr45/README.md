@@ -27,7 +27,10 @@ beginning `INVENTED-`); the driver refuses any other name unless the call is jud
 
 `judge.py` imports the standard library, the registered `validation/assembly_lineages_v2/agreement.py` (loaded by
 its path, after its blob is checked) and the references' G (`fr45ref_free_energy.G`, from the references' folder
-on `sys.path`; its source is never read). It imports nothing from `src/` and nothing of the driver's, exporter's or
+on `sys.path`; its source is never read). It calls G as the plan writes it, `float(G(world, node, start) -
+G(world, node, end))`, with the world by its registered name (G's module knows the worlds by name, RULINGS-2 Q4a)
+and each row's amounts at the node as a mapping from their names (§9, S3); the lead confirms that form against
+the references' notes before the judged run. It imports nothing from `src/` and nothing of the driver's, exporter's or
 worlds'.
 
 `judge` follows §12.3. Without `--table` it makes steps 1 to 3 only, as §12.3 places them before any registered
