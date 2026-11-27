@@ -1236,3 +1236,85 @@ operator, a combination no world has run.
 - **D327 beside FR-45's site sets:** FR-64, landing second, adds "a declared voltage shift" to the
   inner options that `site_occupancy.check_set_composition` refuses beside sets (an FR-45 file,
   edited at the lead's leave).
+- **The departures the lead accepted on 27 November,** disclosed again at the landing:
+  - **The composed world's step is KCl for NaCl** (K 5.4 to 20 mM, Na 145 to 130.4 mM), as probe I
+    measured it. §9.3 said only K steps, but a KCl step alone steps Cl, which has no measured region,
+    so the operator refuses it at the definition.
+  - **The stored-H_eq plant (§9.3) is caught by the window,** at the definition: the cell's stored H_eq
+    reads a pH of about 2.2, outside [6.5, 7.5]. With the honest call's validity kept, item 4 catches it.
+  - **Item 5's settling test was fixed after the first plants had run.** Over the 5 ms before each row,
+    V stays within 0.01 mV and each m within 5 % of its gap. Its bound, a quarter of the gap, was fixed
+    before any plant ran.
+  - **No "reader mask dropped" plant.** An unshifted reader's padding gives ΔV = 0 unmasked, so the
+    plant would be vacuous.
+  - **The RK4 twin takes RK4's own path on the host** (`fixed_step.rk4_step` over `rhs`). Called outside
+    the runner's `disable_jit`, `checked_step` compiled its `lax.cond` closures at every call: 91 s for
+    one row.
+  - **The calcium-store pH row's planted-beside threshold is 1.2,** where 1.24 was measured: a small
+    margin. If a later change moves it, the row is re-derived from theory, never re-tuned.
+- **The stand-alone family models** (water@1, water@2 and replacement@1) build @3 without its
+  structure, so they refuse a shift fail-closed, by name. Their compositions admit it.
+
+### 17.10 D327's probe: what newly parses beside a shift, and what covers it
+
+`validation/fr64/d327_probe.py` was ported from FR-65's scratch tools, with their origin cited. It ran
+at the merged head 60b3d32f against main 6647cf12, both as frozen snapshots.
+- **What it enumerates:**
+  - every ordered sequence of one to three of the 27 registered operators, 18,279 in all;
+  - 105 catalogue worlds: crossrev's seven sets, FR-65's coupling worlds and FR-45's site-set worlds.
+    A frozen family's world is also parsed as its composition.
+- **Today's worlds do not change.**
+  - The bare adapter admits the same 2,934 sequences at both trees.
+  - Every catalogue world's outcome as it is matches.
+  - Main refuses every shifted world, by its unknown key.
+- **The structure check does not change:**
+  - in ten twin pairs, B4's pH readers among them, the shifted inner admits exactly its twin's
+    sequences;
+  - beside a shift, the slot rule refuses the 544 sequences that hold a slot writer. That is the rule
+    counted on itself.
+- **Beside a shift at the head:**
+  - 27 worlds newly parse;
+  - 34 are refused by name at the slot rule;
+  - 22 are refused fail-closed, by name: the stand-alone family models;
+  - 22 declare no channel population, so they cannot hold a shift. FR-45's site-set worlds and FR-65's
+    pair and A1 worlds are among them.
+
+| Newly parsing set beside a shift | How it reaches a reader's inputs | What covers it |
+| --- | --- | --- |
+| B4's stage read | The free h | Host rows, and the pair and composed worlds (compiled) |
+| + FR-50's one-way records | u at V_ref | The pair's check |
+| + the bath schedule | The held bath's K, Na and H | The composed world |
+| + FR-51's block | The block's V_ref | FR-51's judged cases, and the sites rows |
+| + water@1 | c = n/V at the current volume | D327's row (host) |
+| + water@1 and the K-anion symport | n, moved by the symport's own rates, and the volume | D327's row |
+| + the electrode injection | V | D327's row |
+| + turnover and regulated availability@1, alone and water first | No reader input: the availability multiplies the flux | D327's rows: the availability is live, and the flux over a block-free twin's is u |
+| + water@1, the coupling @2, reactions and turnover | c = n/V; no other reader input | D327's row |
+| + a slot writer | It rewrites channel slots, not the shift's fields | Refused by name |
+| + FR-45's site sets | — | Refused by name. Shown by its row only, since the site-set worlds declare no channel population |
+| The stand-alone family models | @3 without its structure | Refused fail-closed, by name |
+
+- **D327's rows** (`tests/unit/test_surface_pump_v3_populations.py`, six rows, about 1 s in all).
+  - Each operator moves the state as it does in the step.
+  - At the moved state, the composite's observation of the reader equals its closed form at
+    V_obs − E, within 1e-12. E comes from the moved amounts over the current volume.
+  - A reader frozen at the start's concentrations is caught in the five rows where a reader input
+    moves.
+- **Not probed:** the sparse field solver and X2 beside a shift.
+- **An operator in no parsed world** is covered by inference from the structure check and the two
+  rules.
+
+### 17.11 Costs and tiers
+
+These were measured on the timed cores, under their lock, one thread each, cold.
+- **O2(b),** on the host rows' Kir world with B4, in 12 interleaved rounds:
+  - per step: shared 1.144 ms, unshared 1.156 ms, unshifted 1.056 ms;
+  - stage reads traced per step: 11, 12 and 10;
+  - so sharing saves 2.6 %, and the shift costs 7.9 %;
+  - the compile is not resolved above noise.
+- **D142, the composed world,** in warm runs alternated with its unshifted twin: the shift costs
+  8.1 % a step (6.42 against 6.19 s per 600 steps). Its first run, with the compile, took 24.0 against
+  21.5 s, one sample each.
+- **Tiers** (the lead's ruling):
+  - `test_voltage_shift_compiled.py` goes in tier 2, at 72.8 s on one timed core;
+  - the populations file stays in tier 2, at 30.9 s for its 147 tests before D327's rows.
