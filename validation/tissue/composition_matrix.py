@@ -1548,6 +1548,18 @@ RULES = (
         "volume",
     ),
     dict(
+        rule="@3's own one-way records are refused beside the coupling and a changer of the cell "
+        "volume",
+        laws=(COUPLING, COUPLING_2, WATER),
+        level="data",
+        check=OPS + "species_regulated_availability.py::check_one_way_records",
+        test=TESTS
+        + "test_species_regulated_availability.py::test_version_1_1_beside_water_by_name",
+        tag=REAL,
+        why="D327: each pair was admitted by one change (FR-65's coupling step, FR-50 phase 2); no "
+        "world has qualified the three together",
+    ),
+    dict(
         rule="a site source in mM is refused beside a changer of the cell volume",
         laws=(COUPLING_2, SITES, WATER),
         level="data",

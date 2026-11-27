@@ -146,7 +146,9 @@ reads the declared volume with today's equations (C1). Refused at the definition
 cell volume other than water (replacement@2 by name, the shared rule), and a site source in mM
 beside any changer, since it reads the declared volume (D244's Q2; check_site_volume); the coupling
 declared before water is refused by the composite's order rule (C2). The masks stay fixed, so it
-stays refused beside closers, insertion and the lumens.
+stays refused beside closers, insertion and the lumens. Beside FR-50 phase 2 (D327): @3's own
+one-way records beside the coupling and a changer of the cell volume are refused by name until a
+world qualifies the three together (check_one_way_records).
 
 **Scope, both versions (D337, D338, D351).** A state's off_rate_per_s is one declared closing rate,
 the same at every dose. Reusing one closing rate across doses is provisional, as an indication and
@@ -1744,6 +1746,31 @@ def check_population_sources(spec, declaration):
             )
 
 
+def volume_changer(spec):
+    """The definition's first changer of the cell volume (water, or a provider or writer of the
+    volume), or None."""
+    for op, _, _ in composite_spec.entries(spec):
+        if "volume" in op.VIEW_FIELDS or "volume_increment_pL" in op.ENTITY_WRITES:
+            return op
+    return None
+
+
+def check_one_way_records(spec, law):
+    """FR-65's coupling step beside FR-50 phase 2 (D327, a combination two changes create): @3's
+    own one-way records (one_way_records) beside the coupling and a changer of the cell volume are
+    refused by name until a world qualifies the three together. Each pair alone was admitted by
+    one change: the coupling beside the records at a fixed volume, and the records beside water."""
+    if not getattr(spec.model, "one_way_records", ()):
+        return
+    changer = volume_changer(spec)
+    if changer is not None:
+        raise ConfigError(
+            f"{law}: @3's own one_way records (one_way_records) beside the coupling and "
+            f"{changer.LAW_ID}, a changer of the cell volume, are refused until a world qualifies "
+            "the three together (FR-65's coupling step beside FR-50 phase 2, D327)"
+        )
+
+
 def check_site_volume(spec, declaration):
     """Version 2 (FR-65's coupling step, the lead's ruling 2): a site source in mM, occupied_mM or
     capacity_mM, reads B / V or S / V at the declared volume (D244's Q2, the user's answer), so it
@@ -1757,13 +1784,13 @@ def check_site_volume(spec, declaration):
     ]
     if not sited:
         return
-    for op, _, _ in composite_spec.entries(spec):
-        if "volume" in op.VIEW_FIELDS or "volume_increment_pL" in op.ENTITY_WRITES:
-            raise ConfigError(
-                f"{LAW_ID_V2}: coupling {sited[0].id} reads a site population's "
-                f"{sited[0].quantity} at the declared volume (D244's Q2), so it is refused beside "
-                f"{op.LAW_ID}, which changes the cell volume"
-            )
+    changer = volume_changer(spec)
+    if changer is not None:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {sited[0].id} reads a site population's "
+            f"{sited[0].quantity} at the declared volume (D244's Q2), so it is refused beside "
+            f"{changer.LAW_ID}, which changes the cell volume"
+        )
 
 
 def unit_writers(spec):
@@ -1855,8 +1882,10 @@ class SpeciesRegulatedAvailability(Operator):
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)
         check_identities(spec, declaration)
-        # Version 1.1: water is the one changer of the volume it reads (it reads no outside node).
+        # Version 1.1: water is the one changer of the volume it reads (it reads no outside node),
+        # and not beside @3's own one-way records (D327, beside FR-50 phase 2).
         common.check_volume_changers(spec, LAW_ID, ())
+        check_one_way_records(spec, LAW_ID)
         check_unmoved_sources(declaration, species_registry.moved_in_step(spec))
         check_replaced_slots(spec, declaration)
         check_rate_limit(spec, declaration)
@@ -2143,6 +2172,7 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
             # Version 1.1: water is the one changer of the volume it reads (no outside node), and a
             # site source in mM, read at the declared volume, is refused beside any changer.
             common.check_volume_changers(spec, LAW_ID_V2, ())
+            check_one_way_records(spec, LAW_ID_V2)
             check_site_volume(spec, declaration)
             check_unmoved_sources(declaration, species_registry.moved_in_step(spec))
             check_replaced_slots(spec, declaration)

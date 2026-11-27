@@ -2049,6 +2049,21 @@ def _coupling_first(raw):
     return raw
 
 
+# FR-65's coupling step beside FR-50 phase 2 (D327): @3's own one-way records beside the coupling
+# and water are refused by name until a world qualifies the three (check_one_way_records).
+RECORDS_RULE = (
+    "@3's own one_way records (one_way_records) beside the coupling and "
+    f"{WATER}, a changer of the cell volume, are refused until a world qualifies the three together"
+)
+
+
+def _recorded(raw, entity, entity_id, species):
+    """raw with @3's own one-way records (FR-50 phase 2) on one entity and species."""
+    out = copy.deepcopy(raw)
+    out["model"]["one_way_records"] = [dict(entity=entity, id=entity_id, species=[species])]
+    return out
+
+
 def _as_v2(raw):
     """raw with its idle coupling block under version 2's law (its definition check is its own)."""
     for entry in raw["model"]["operators"]:
@@ -2089,6 +2104,14 @@ BESIDE_WATER = {  # (builder, the refusal's words, or None for an admission)
     ),
     "@1: beside replacement@2 over water": (_replacement_over_water, SHARED_RULE),
     "@2: beside replacement@2 over water": (lambda: _as_v2(_replacement_over_water()), SHARED_RULE),
+    "@1: A7's water world, with @3's own one-way records": (
+        lambda: _recorded(_watered(), "junction", "junction_0", "Na"),
+        RECORDS_RULE,
+    ),
+    "@2: the water door, with @3's own one-way records": (
+        lambda: _recorded(sif.water_door(), "channel", sif.DOOR_CHANNEL, "K"),
+        RECORDS_RULE,
+    ),
 }
 
 
