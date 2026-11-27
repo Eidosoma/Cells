@@ -1451,7 +1451,8 @@ def check_compartments(spec, declaration):
                 "own books at the compartment's node (FR-49)"
             )
     # FR-43 part 3: a transfer may move a listed row (check_row_writers), but not across a
-    # compartment's bounding patch until FR-49's combination checks cover it.
+    # compartment's bounding patch: no registered world qualifies that, FR-49's checks (B, C1, C2
+    # and C4) included, so it waits for a qualification of its own.
     listed = {s.id for s in declaration.species}
     for op, other, _ in composite_spec.entries(spec):
         if op.ROW_MOVES != "transfer":
@@ -1462,7 +1463,8 @@ def check_compartments(spec, declaration):
                 raise ConfigError(
                     f"{LAW_ID}: {op.LAW_ID} moves the listed row {name!r} at {node!r}, compartment "
                     f"{cid!r} of {owner!r} ({COMPARTMENTS_LAW}); a transfer of a listed row across "
-                    "a compartment's patch waits for FR-49's combination checks (FR-43 part 3)"
+                    "a compartment's patch waits for a world that qualifies it, which no FR-49 "
+                    "check is (FR-43 part 3)"
                 )
 
 

@@ -59,7 +59,7 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    lead's ruling of 20 November 2026, amending that of 19 November on FR-2's question 11). The
    producer acts in its populations' cells only, and cells.operator.species_regulated_availability@2 reads its
    sources in its elements' cells and refuses an outside-node element (FR-7's U2 world with a
-   releasing compartment, D217). FR-49 (D327; validation/fr49/REGISTRATION.md, Part H) admits two
+   releasing compartment, D217). FR-49 (D327; validation/fr49/REGISTRATION.md, Part H) admits four
    more laws, each with its own check:
    - cells.operator.templated_polymerisation@1, whose own check refuses an export into a compartment's node and
      an outside degradation there (an export into a compartment is a later step, with its books
@@ -67,9 +67,17 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    - cells.operator.neutral_arrival_labels@1, refused here beside membrane state (FR-49's ruling 4, World L's
      scope): today the labels refuse membrane state's admitted writers anyway, and this check
      names the reason and stays fail closed if the labels' list widens. It runs before the
-     membrane-state wall's rule, so its reason is the one given.
-   Site occupancy, the compartment wash and cells.operator.site_occupant_replacement@1 stay off the list until
-   their own FR-49 pieces land.
+     membrane-state wall's rule, so its reason is the one given;
+   - cells.operator.site_occupancy@1 (FR-49's site pairing, after FR-45), whose own check admits
+     on a compartment's bounding patch only a population or shared site set that faces the
+     compartment, and one owned by the compartment's node (rulings 2 and 3), and refuses
+     internalisation from a compartment; FR-45's shared sets compose with this declaration (the
+     site operator's partners);
+   - cells.operator.scheduled_compartment_wash@1 (FR-49's wash narrowing, after FR-44), whose own
+     check refuses a compartment's node among the nodes it washes (ruling 5: a compartment lies
+     behind its owner's membrane, out of the liquid's reach), so it washes other finite nodes only.
+   The two read the compartments' nodes through compartment_nodes.
+   cells.operator.site_occupant_replacement@1 stays off the list (FR-49's ruling 7).
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
@@ -149,9 +157,13 @@ TRAFFICKING_LAW = "cells.operator.scheduled_membrane_trafficking@1"
 PRODUCER_LAW = "cells.operator.population_unit_turnover@1"
 # FR-49 (D327): expression, whose own check refuses exports and outside degradations at a
 # compartment's node (templated_polymerisation.check_compartments), and the labels, refused here
-# beside membrane state (refuse_labels_beside_membrane_state).
+# beside membrane state (refuse_labels_beside_membrane_state). Then the site pairing and the wash
+# narrowing, each with its own check: the facing rule (site_occupancy.check_compartments) and the
+# compartment-node refusal (wash_schedule.check_definition).
 EXPRESSION_LAW = "cells.operator.templated_polymerisation@1"
 LABELS_LAW = "cells.operator.neutral_arrival_labels@1"
+SITES_LAW = "cells.operator.site_occupancy@1"
+WASH_LAW = "cells.operator.scheduled_compartment_wash@1"
 # §4's admitted list (fails closed). @3 itself is the composite's inner model. Membrane state is
 # admitted only together with one of its admitted writers (check_definition).
 ADMITTED = (
@@ -169,6 +181,8 @@ ADMITTED = (
     PRODUCER_LAW,
     EXPRESSION_LAW,
     LABELS_LAW,
+    SITES_LAW,
+    WASH_LAW,
 )
 # Membrane state's fields that its writers write (membrane_state.ACCEPTS_WRITES): the wall's door
 # admits a writer of any of them only if it is one of the admitted writers (check_definition).
@@ -569,6 +583,18 @@ def declaration_to_dict(declaration):
             for c in declaration.compartments
         ],
     )
+
+
+def compartment_nodes(spec):
+    """{node: Compartment} of the composition's declared compartments, empty without the
+    declaration: what an operator of the admitted list reads to keep a compartment's node out of
+    what it does there (FR-49: the site operator's facing rule and the wash's compartment-node
+    refusal; the identity's storage, so a later storage changes this one place)."""
+    out = {}
+    for op, declaration, _ in composite_spec.entries(spec):
+        if op.LAW_ID == LAW_ID:
+            out |= {c.node: c for c in declaration.compartments}
+    return out
 
 
 def refuse_unwritten_state(entries):

@@ -994,7 +994,7 @@ _TRAFFICKING_FIRST = tuple(
 _COMPARTMENTS_FIRST = tuple(
     pair
     for pair in _TRAFFICKING_OFF
-    if pair not in _TRAFFICKING_FIRST and PRODUCER not in pair and WASH not in pair
+    if pair not in _TRAFFICKING_FIRST and PRODUCER not in pair
 )
 # The laws those pairs name beside trafficking, in the matrix's order: the rule's text names them.
 _OFF_BOTH_LISTS = tuple(
@@ -1003,9 +1003,6 @@ _OFF_BOTH_LISTS = tuple(
         key=LAWS.index,
     )
 )
-# The compartment wash is off both lists too; its pairs with trafficking are refused there first.
-_WASH_FIRST = tuple(pair for pair in _TRAFFICKING_OFF if WASH in pair)
-
 # cells.operator.population_unit_turnover@1 refuses every other writer of population units, in either order
 # (population_unit_turnover.check_writers).
 _UNIT_WRITERS = tuple(
@@ -1604,12 +1601,12 @@ RULES = (
         test=TESTS + "test_cell_owned_compartments.py::test_the_admitted_list_fails_closed",
         tag=REAL,
         why="A new operator may treat outside nodes as environment (the closed-compartment design "
-        "§4). It marks the off-list pairs the declarations admit (site occupancy: FR-1's door for "
-        "it, §4; the compartment wash and cells.operator.site_occupant_replacement@1, off the list until FR-49's "
-        "later pieces admit them; expression and the labels have been on it, each with its own "
-        "check, since FR-49's first pieces, D327) and stands behind the declarations' refusals of "
-        ""
-        "the rest",
+        "§4). It marks the off-list pairs the declarations admit "
+        "(cells.operator.site_occupant_replacement@1, off the list by FR-49's ruling 7, and "
+        "FR-43 part 3's cells.operator.integer_unit_population@1) and stands behind the "
+        "declarations' refusals of the rest. Expression and the labels have been on it since "
+        "FR-49's first pieces, and site occupancy and the wash since its site pairing and wash "
+        "narrowing (D327), each with its own check",
         marks=_off_list(True),
         behind=_off_list(False),
     ),
@@ -1636,29 +1633,15 @@ RULES = (
         laws=(TRAFFICKING, *_OFF_BOTH_LISTS),
         level="law",
         check=OPS + "compartments.py::check_definition",
-        test=TESTS + "test_membrane_trafficking.py::test_each_refusal_fires_with_its_reason",
+        test=TESTS + "test_cell_owned_compartments.py::test_the_admitted_list_fails_closed",
         tag=REAL,
         why="Trafficking requires the compartments, whose check runs first, and each law named "
-        "is on neither admitted list, so the compartments' message is the one given: the case "
-        "'site occupancy beside it' asserts it for cells.operator.site_occupancy@1. Trafficking's "
-        "own reasons "
-        "(for sites, that they move with their membrane only from version 1.1) are a second wall "
-        "these compositions never reach",
+        "is on neither admitted list, so the compartments' fail-closed message is the one given. "
+        "Since FR-49's site pairing that is FR-43 part 3's "
+        "cells.operator.integer_unit_population@1 alone: beside trafficking, site occupancy and "
+        "the wash now meet trafficking's own list (the case 'site occupancy beside it' asserts its "
+        "message), whose reasons are this rule's second wall",
         marks=_COMPARTMENTS_FIRST,
-    ),
-    dict(
-        rule="beside cells.operator.scheduled_membrane_trafficking@1, the compartments' admitted list refuses "
-        "the compartment wash first",
-        laws=(TRAFFICKING, WASH),
-        level="law",
-        check=OPS + "compartments.py::check_definition",
-        test=TESTS + "test_wash_schedule.py::test_each_refusal_fires_with_its_reason",
-        tag=REAL,
-        why="Trafficking requires the compartments, whose check runs first, and "
-        "cells.operator.scheduled_compartment_wash@1 is not on their admitted list: the case 'beside the "
-        "compartments' asserts that message. The wash's own refusals at the definition are a "
-        "second wall this composition never reaches",
-        marks=_WASH_FIRST,
     ),
     dict(
         rule="no declared path moves a washed node's neutral species across its surface: the "
@@ -1715,8 +1698,8 @@ RULES = (
         tag=REAL,
         why="A compartment lies behind its owner's membrane: secretion into it is a later step, "
         "with its own books at the compartment's node; routes in the owner's cytosol compose "
-        "(FR-49, D327). A transfer of a listed row there waits for FR-49's combination checks "
-        "(FR-43 part 3)",
+        "(FR-49, D327). A transfer of a listed row there waits for a world that qualifies it, "
+        "which no FR-49 check is (FR-43 part 3)",
     ),
     dict(
         rule="beside a compartment, cells.operator.neutral_arrival_labels@1 refuses membrane state",
@@ -1729,6 +1712,34 @@ RULES = (
         "ruling 4). Today the labels refuse membrane state's admitted writers anyway; the check "
         "names the reason, before the membrane-state wall's rule, and stays refused if that list "
         "widens",
+    ),
+    dict(
+        rule=f"beside a compartment, {SITES} binds on its bounding patch only from the "
+        "compartment, or from the sites its node owns",
+        laws=(COMPARTMENTS, SITES),
+        level="data",
+        check=OPS + "site_occupancy.py::check_compartments",
+        test=TESTS + "test_site_occupancy.py::test_fr49_sites_beside_a_compartment",
+        tag=REAL,
+        why="FR-49's site pairing (D327; rulings 2 and 3; validation/fr49/REGISTRATION.md, Part "
+        "H): a population or shared site set facing the owner's cytosol on a bounding patch "
+        "never reads the compartment, so it is refused by name; one facing the compartment, and "
+        "one its node owns (FR-28, whose layout is the facing one's), are admitted, with World B "
+        "and C2 their registered checks. Internalisation from a compartment stays refused (FR-1's "
+        "and FR-2's door)",
+    ),
+    dict(
+        rule=f"beside a compartment, {WASH} washes no compartment's node",
+        laws=(COMPARTMENTS, WASH),
+        level="data",
+        check=OPS + "wash_schedule.py::refuse_compartment_nodes",
+        test=TESTS + "test_wash_schedule.py::test_each_refusal_fires_with_its_reason",
+        tag=REAL,
+        why="FR-49's wash narrowing (D327; ruling 5; validation/fr49/REGISTRATION.md, Part H): a "
+        "cell-owned compartment lies behind its owner's membrane, out of the liquid's reach, so "
+        "its node among the wash's nodes is refused, before the surface rule, whether or not an "
+        "event names it; a wash of another finite node is admitted, with World B and C1 its "
+        "registered checks",
     ),
     dict(
         rule="D152 refuses RK4",
@@ -1884,8 +1895,19 @@ RULES = (
     ),
     dict(
         rule=f"beside site_sets, {SITES} admits only the design note's §15 partners: the wash, @2, "
-        "the bath schedule, replacement@1, turnover, exchange and D152's reactions (FR-45)",
-        laws=(SITES, WASH, COUPLING_2, BATH, REPLACEMENT_1, TURNOVER, EXCHANGE, REACTIONS),
+        "the bath schedule, replacement@1, turnover, exchange and D152's reactions (FR-45), and "
+        "the compartments (FR-49)",
+        laws=(
+            SITES,
+            WASH,
+            COUPLING_2,
+            BATH,
+            REPLACEMENT_1,
+            TURNOVER,
+            EXCHANGE,
+            REACTIONS,
+            COMPARTMENTS,
+        ),
         level="data",
         check=OPS + "site_occupancy.py::check_set_composition",
         test=TESTS + "test_site_occupancy.py::test_fr45_the_partners_beside_sets_parse",
@@ -1896,7 +1918,9 @@ RULES = (
         "(run_batch_windowed in the D148 round); turnover, exchange, the reactions and a face at a set's "
         "node writing its ligands, and the bath schedule's and replacement@1's passivity, in "
         "test_site_competition_partners_runs.py; @2's θ on a shared set in "
-        "test_species_regulated_availability.py. Every other operator law is refused by name "
+        "test_species_regulated_availability.py; the compartments' facing rule in "
+        "test_site_occupancy.py::test_fr49_sites_beside_a_compartment, with FR-49's C2 the pair's "
+        "registered check (its site pairing, D327). Every other operator law is refused by name "
         "(test_site_occupancy.py::test_definition_refusals), as is a shared set on a replaced slot "
         "(check_slots)",
     ),

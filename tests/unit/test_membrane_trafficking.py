@@ -333,11 +333,11 @@ def refusal_cases():
         "cells.operator.electrode_current_injection@1 is refused: it is not qualified beside "
         "membrane trafficking",
     )
-    yield (  # The compartments' admitted list, which runs first, refuses it before this one does.
+    yield (  # On the compartments' list since FR-49's site pairing, so trafficking's own list.
         "site occupancy beside it",
         sites_beside(),
-        f"{fx.COMPARTMENTS} composes only with .*; cells.operator.site_occupancy@1 is not on its "
-        f"admitted list",
+        "cells.operator.site_occupancy@1 is refused: sites move with their membrane only from "
+        "version 1.1",
     )
     yield (
         "the bath schedule beside it",
