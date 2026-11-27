@@ -972,7 +972,8 @@ def check_set_composition(spec, declaration):
     options (@3's own one-way records, FR-50; a blocked channel population, FR-51; the sparse field
     solver, FR-17; the step-doubled energy check, X2) are refused by name until a world qualifies
     each beside them. A world without site sets is not read here. X2's block is attached after the
-    definition's checks, so its refusal comes from the binding (SiteOccupancy.initial_values)."""
+    definition's checks, so its refusal comes from the binding (SiteOccupancy.initial_values); the
+    user's open X2 question (D406) may reverse it, with a qualification."""
     if not declaration.site_sets:
         return
     for op, _, _ in composite_spec.entries(spec):
@@ -2257,7 +2258,9 @@ class SiteOccupancy(Operator):
     def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
         # FR-45: execution.energy_check is attached after the definition's checks have run
         # (energy_check_spec.parse_definition), so they never see it. Every run binds here
-        # first, so a set world refuses X2 here, by name, before its first step.
+        # first, so a set world refuses X2 here, by name, before its first step (the lead's
+        # ruling of 27 November 2026). The user's open X2 question (D406) may reverse this: if
+        # the user selects X2 for FR-45, this refusal is revisited with a qualification.
         check_set_composition(spec, declaration)
         return bind(spec, declaration)
 

@@ -1930,7 +1930,8 @@ RULES = (
         why="None is among the design note's §15 partners, and no world qualifies one beside a "
         "set (D327): FR-50 phase 2, FR-51, FR-17 and X2 (D224). X2's block is attached after the "
         "definition's checks (energy_check_spec.parse_definition), so a set world selecting it "
-        "parses, and its binding refuses it, before any step",
+        "parses, and its binding refuses it, before any step. The user's open X2 question "
+        "(D406) may reverse that refusal, with a qualification",
         solver=(
             SolverRefusal(
                 (SITES,),

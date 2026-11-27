@@ -1640,6 +1640,8 @@ the stage condition.
   - @3's own one-way records, a blocked channel population, the sparse field solver and the
     step-doubled energy check. The energy check's block is attached after the definition's
     checks, so a set world that selects it parses, and its binding refuses it before any step.
+    The user's open X2 question (D406) may reverse this refusal; if the user selects X2 for
+    FR-45, it is revisited with a qualification.
 - **The set's own rules:**
   - a set named by fewer than two populations;
   - one ligand twice on a set;
