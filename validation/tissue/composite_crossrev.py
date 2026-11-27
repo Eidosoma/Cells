@@ -135,9 +135,13 @@ def qualification_worlds(all_steps=False):
     closed water and with event-free replacement, each at its guarded step size (W1,
     G2-Q1, W37 and the 825-node world at 1 ms, W2 at its definition's). With all_steps,
     also W1's trajectories at every step size of W1's dt study and Q5's cases at every
-    step size of Q5.
+    step size of Q5. FR52_cohorts is FR-52's qualification world, its two cohorts declared
+    (validation/fr52_cohorts/worlds.qualification, at 10 ms; the lead's P3 and its ruling on
+    the amendment's §9.4): the program with the cohort record, beside the reactions set's
+    co-writer world, which runs the operator with none.
     """
     from validation import id_table
+    from validation.fr52_cohorts import worlds as cohorts
     from validation.tissue import cell_replacement_fixtures as rfx
     from validation.tissue import cell_replacement_judge as judge
     from validation.tissue import cell_replacement_qualification as g2q
@@ -169,6 +173,7 @@ def qualification_worlds(all_steps=False):
     tissue = study.tissue_definition(dt=1e-3, end_time=0.2, observation_times=[0.0, 0.1, 0.2])
     out["S825_closed_water"] = wfx.with_water(tissue, availability=0.0)
     out["S825_event_free"] = rfx.with_replacement(tissue)
+    out["FR52_cohorts"] = cohorts.qualification()
     return out
 
 
