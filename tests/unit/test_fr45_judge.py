@@ -2,9 +2,9 @@
 pair, the identity checks and the faults' scope, the plants' rules, the echo's comparison and the references' reads
 (TABLE §1, §4.1, §8.2, §10, §11, §12.1, §12.3).
 
-Seconds and reason (D224): 1 s measured cold on one timed core (tier 1), pure Python, no engine; the judge is loaded by its path, as it loads
-agreement.py, so no package's __init__ is imported. Self-contained fragments only (the lead's ruling 5c): no file of
-the binding tag is read, and G is a stand-in (ruling 6).
+Seconds and reason (D224): 1 s measured cold on one timed core (tier 1), pure Python, no engine; the judge is
+loaded by its path, as it loads agreement.py, so no package's __init__ is imported. Self-contained fragments only
+(the lead's ruling 5c): no file of the binding tag is read, and G is a stand-in (ruling 6).
 """
 
 import copy
