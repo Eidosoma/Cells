@@ -13856,3 +13856,32 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - the solver is spelled `cells.solver.imex_ars222_face_electromigration@1`, as `definition` records it.
 
   The editor applies §10, and the binding tag follows its read.
+
+## D408: FR-45 is bound by its protocol's tag
+
+2026-11-27, written at 04:27 UTC.
+
+- **The tag:** `fr45-protocol-registered-2026-11-27`, an annotated tag (object 8e26dff4) on f30b1512. It is pushed with branch `fr45-contract`.
+- **What it binds:**
+  - the amendment-3 spec (98cd33db);
+  - references v2 (b62ce23c);
+  - main's `agreement.py` (blob c29f2771);
+  - the engine-table contract `validation/fr45/spec/TABLE.md` (dated 26 November and changed seven times on 27 November), with its
+    expected-inputs file, an engine-table format sample written by an agent that is not the builder, and byte copies of the lead's rulings in
+    `validation/fr45/spec/rulings/`.
+- **The tag of 23 November** (6e92d0ec) was a waypoint (RULINGS-1, Q7).
+- **Before the tag:**
+  - **Six reads** of the contract were made by a reviewer who has seen no reference value. Each finding was ruled in RULINGS-2 §7 to §11. The
+    reviewer twice typed SPEC's inputs again independently, with no difference.
+  - **A source check** was made against `src/` by a reviewer who is not the builder (D406, D407).
+  - **The lead's census and cross-check** printed no value.
+  - **A trial merge onto main** e008df81 was clean, and its guards, `test_model_table.py` and `test_declarations.py` passed (81).
+  - **The lead's hash record** is `/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45-binding-tag-hashes-20261127.json`.
+- **What follows:**
+  - **The build.** A registered world first runs in the judged run; the builder works on invented worlds. The build's tree holds none of
+    `validation/fr45/references/`.
+  - **The registration reaches main** by the lead's merge of this tag after the build lands, before the judged run.
+  - **Before any registered run,** the contract's addenda: the refusal mapping, the list of checks, the execution record, the plants' changes, and
+    the host-entity values. Each is confirmed where the contract says so, and hashed.
+  - **The judged run.**
+  - **X2** (D224) is the user's to settle before the judged run: a cap and a re-tag, or a waiver.
