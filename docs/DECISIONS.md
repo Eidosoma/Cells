@@ -13821,3 +13821,38 @@ It is a port check: it shows that the live engine computes legacy's written equa
      - X2 blocks FR-45's judged run, not its tag.
   4. **A refused write.** The harness refused a subagent's report file ("subagents should return findings as text"). The lead did not write it
      for the agent; its findings came back as text and are in the lead's log. The lead holds this for the user's word.
+
+## D407: FR-65's coupling step is landed; tier 3's record refrozen for its four files; FR-45's contract nears its tag
+
+2026-11-27, written at 04:09 UTC.
+
+- **The coupling step landed** at 00cfbda1 (tag `fr65-coupling-landed-2026-11-27`), from ae26d6e6. The landing's trial passed 318 tests.
+  - **What it builds** (D375, D402): R2′ in the operator contract, and the coupling's version 1.1 in both versions. These read the current cell
+    volume beside water, with their refusals by name. Every read site has a row planted at the starting volume.
+  - **Sequences:** 32 are newly admitted, and none is lost.
+  - **D327, as the change that lands second:**
+    - nothing newly parses beside FR-52's `cohorts`;
+    - beside FR-50 phase 2's records, the coupling with water and @3's own records is refused by name.
+  - **The D148 round** at 7cce9790, against 7149f90a, ran after tonight's nightly passed:
+    - crossrev 11 of 11;
+    - G1 113 of 113;
+    - tiers 1 and 2: 497 files, none changed;
+    - FR's set passes;
+    - tier 3: 13 files exit 0;
+    - the derivative programs are identical;
+    - the pair check of 21 coupling worlds is identical against main and against 10225759;
+    - the planted controls are caught as recorded, with records bit for bit those of 10225759.
+  - **Disclosed:**
+    - the controls file's signature change under R2′;
+    - the timed cores' idle-check sample. Contention only adds time, and every file stays in tier 1;
+    - a docs commit after the round;
+    - tier 3's record refrozen for the step's four files (this decision): one renamed ID, six added, seconds under lane load, and 4 of 90
+      entries changed. The evidence is in `/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/`.
+- **FR-45's contract** (`fr45-contract`) had a fifth read with no blocking finding. RULINGS-2 §10 settles its six should-fix points, from the
+  source check's answers:
+  - the execution record compares declared keys only, never the engine's computed allowances, which follow each run's state;
+  - every ion's permeability is fixed at 0.0 on every patch. The source check ran this bath form at every registered size, and W2's shape
+    through a wash keeps every ion amount exactly constant;
+  - the solver is spelled `cells.solver.imex_ars222_face_electromigration@1`, as `definition` records it.
+
+  The editor applies §10, and the binding tag follows its read.
