@@ -1332,7 +1332,8 @@ These were measured on the timed cores, under their lock, one thread each, cold.
   - stage reads traced per step: 11, 12 and 10;
   - **the shift costs 7.9 %,** the same in both;
   - **sharing's saving is not resolved:** 2.6 % in development, and none in the round, where shared was
-    0.3 % slower;
+    0.3 % slower. That is within noise. O2(b) stands for its clarity: one stage read, seen by the gates
+    and the rates alike;
   - the compile is not resolved above noise.
 - **D142, the composed world,** in warm runs alternated with its unshifted twin: the shift costs
   8.1 % a step in development (6.42 against 6.19 s per 600 steps) and 6.7 % in the round (5.72 against
