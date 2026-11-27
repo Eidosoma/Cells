@@ -151,9 +151,20 @@ def set_world(out):
     return 0
 
 
-# The paths whose final states must equal runner.run's (results_baseline.run_paths' keys), and the
-# batch worlds whose histories must equal its history.
-FINALS = (
+# results_baseline saves no final state for runner.run, run_windowed or run_batch: their checkpoints hold
+# jax arrays, which its flatten does not descend into (a jax array has a __dict__, so it reads
+# vars(), which is empty), and only their step index and time are kept. runner.run's final state is the
+# last row of its history, which is saved. The batch-windowed and vector-windowed checkpoints are host
+# arrays, saved whole. So: these final states against runner.run's last history row; run_batch's
+# histories against runner.run's history; every path's final step index against runner.run's.
+FINAL_STATES = (
+    "run_batch_windowed:world1.final.state",
+    "run_batch_windowed:world2.final.state",
+    "run_vector_windowed:world1.final.state",
+    "run_vector_windowed:world2.final.state",
+)
+HISTORIES = ("run_batch:world1.history", "run_batch:world2.history")
+STEP_INDICES = (
     "run_windowed:final",
     "run_batch:world1.final",
     "run_batch:world2.final",
@@ -162,13 +173,29 @@ FINALS = (
     "run_vector_windowed:world1.final",
     "run_vector_windowed:world2.final",
 )
-HISTORIES = ("run_batch:world1.history", "run_batch:world2.history")
+
+
+def _unequal(saved, reference, key):
+    """None when saved[key] is reference bit for bit (dtype, shape and bytes), else the problem."""
+    if key not in saved.files:
+        return dict(key=key, problem="missing")
+    q = saved[key]
+    if reference.dtype != q.dtype or reference.shape != q.shape:
+        return dict(
+            key=key, problem=f"{q.dtype}{q.shape} against {reference.dtype}{reference.shape}"
+        )
+    if reference.tobytes() != q.tobytes():
+        return dict(key=key, problem="not bitwise")
+    return None
 
 
 def paths_agree(saved, out):
-    """Each world saved by results_baseline's run paths (SAVED/run-paths/*.npz) against itself: every
-    path's final state and step index equal to runner.run's, and run_batch's two histories equal to
-    runner.run's, bit for bit (dtype, shape and bytes). Writes OUT_JSON; exit 0 when all agree."""
+    """Each world saved by results_baseline's run paths (SAVED/run-paths/*.npz) against itself, bit
+    for bit (dtype, shape and bytes): the batch-windowed and vector-windowed paths' final states (both
+    worlds) against runner.run's last history row, run_batch's two histories against runner.run's
+    history, and every path's final step index against runner.run's. run_windowed's state is not
+    saved (FINAL_STATES' note); the pair check's full-recording windows hold that path. Writes
+    OUT_JSON; exit 0 when all agree."""
     import numpy as np
 
     rows = {}
@@ -178,24 +205,17 @@ def paths_agree(saved, out):
             rows[path.stem] = dict(agree=False, refusal=record["refusal"]["type"])
             continue
         a = np.load(path)
-        state = sorted(
-            k[len("run:final.state.") :] for k in a.files if k.startswith("run:final.state.")
-        )
-        history = sorted(k[len("run:history.") :] for k in a.files if k.startswith("run:history."))
-        pairs = [(f"run:final.state.{f}", f"{p}.state.{f}") for p in FINALS for f in state]
-        pairs += [("run:final.step_index", f"{p}.step_index") for p in FINALS]
-        pairs += [(f"run:history.{f}", f"{p}.{f}") for p in HISTORIES for f in history]
-        bad = []
-        for x, y in pairs:
-            if y not in a.files:
-                bad.append(dict(key=y, problem="missing"))
-                continue
-            p, q = a[x], a[y]
-            if p.dtype != q.dtype or p.shape != q.shape or p.tobytes() != q.tobytes():
-                bad.append(dict(key=y, problem="not bitwise"))
-        rows[path.stem] = dict(
-            agree=not bad and bool(state), compared=len(pairs), problems=bad[:20]
-        )
+        fields = sorted(k[len("run:history.") :] for k in a.files if k.startswith("run:history."))
+        pairs = []  # (the reference array, the key that must equal it)
+        for f in fields:
+            history = a[f"run:history.{f}"]
+            pairs += [(history[-1], f"{p}.{f}") for p in FINAL_STATES]
+            pairs += [(history, f"{p}.{f}") for p in HISTORIES]
+        pairs += [(a["run:final.step_index"], f"{p}.step_index") for p in STEP_INDICES]
+        bad = [problem for problem in (_unequal(a, ref, key) for ref, key in pairs) if problem]
+        compared = len(pairs)
+        rows[path.stem] = dict(agree=not bad and bool(fields), fields=len(fields), compared=compared,
+                               problems=bad[:20])  # fmt: skip
     ok = bool(rows) and all(r["agree"] for r in rows.values())
     Path(out).write_text(json.dumps(dict(agree=ok, worlds=rows), indent=1) + "\n")
     print(
