@@ -26,7 +26,9 @@ from validation.tissue import site_occupancy_fixtures as sfx
 from validation.tissue import wash_schedule_fixtures as wfx
 
 BATH = "bath"
-FLOOR_FMOL = 1e-20  # The one floor the driver passes to the species helper for every ligand (TABLE §4).
+FLOOR_FMOL = (
+    1e-20  # The one floor the driver passes to the species helper for every ligand (TABLE §4).
+)
 DIFFUSIVITY = 1e-10  # m^2/s; no world has a face, so no ligand diffuses.
 SOLVER = fx.IMEX
 # The field solver every fixture of the suite declares (secreted_species_fixtures.world): the execution
@@ -75,7 +77,9 @@ def _traces(inputs, volume):
     wash = inputs.get("wash") or {}
     out = {}
     for g in inputs["ligands"]:
-        levels = [e["n_fmol"] / volume[e["node"]] for e in inputs["free_amounts"] if e["ligand"] == g]
+        levels = [
+            e["n_fmol"] / volume[e["node"]] for e in inputs["free_amounts"] if e["ligand"] == g
+        ]
         if wash:
             levels.append(wash["buffer_mM"][g])
         out[g] = min(levels)
@@ -94,14 +98,29 @@ def build(inputs, *, start=None):
     inputs = copy.deepcopy(inputs)
     if start:
         for pop in inputs["populations"]:
-            pop["initial_occupancy"] = start["initial_occupancy"].get(pop["id"], pop["initial_occupancy"])
+            pop["initial_occupancy"] = start["initial_occupancy"].get(
+                pop["id"], pop["initial_occupancy"]
+            )
         for entry in inputs["free_amounts"]:
-            entry["n_fmol"] = start["free_amounts"].get((entry["ligand"], entry["node"]), entry["n_fmol"])
+            entry["n_fmol"] = start["free_amounts"].get(
+                (entry["ligand"], entry["node"]), entry["n_fmol"]
+            )
     nodes = {n["id"]: n for n in inputs["nodes"]}
-    cells = [fx._node(n["id"], n["volume_pL"], outside=False) for n in inputs["nodes"] if n["kind"] == "cell"]
+    cells = [
+        fx._node(n["id"], n["volume_pL"], outside=False)
+        for n in inputs["nodes"]
+        if n["kind"] == "cell"
+    ]
     outside = [fx._node(BATH, nodes[BATH]["volume_pL"], reservoir=True)]
-    outside += [fx._node(n["id"], n["volume_pL"]) for n in inputs["nodes"] if n["kind"] == "node" and n["id"] != BATH]
-    membranes = [fx._patch(p["id"], p["inside"], p["outside"], *_patch_values(inputs, p)) for p in inputs["patches"]]
+    outside += [
+        fx._node(n["id"], n["volume_pL"])
+        for n in inputs["nodes"]
+        if n["kind"] == "node" and n["id"] != BATH
+    ]
+    membranes = [
+        fx._patch(p["id"], p["inside"], p["outside"], *_patch_values(inputs, p))
+        for p in inputs["patches"]
+    ]
     end, dt = inputs["horizon_s"], inputs["dt_s"]
     temperature = (inputs.get("constants") or {}).get("temperature_K") or 310.0
     always = [dict(time=0.0, availability=1.0)]
@@ -125,7 +144,9 @@ def build(inputs, *, start=None):
         experiment=dict(
             end_time=end,
             observation_times=sorted({*inputs["observation_times_s"], end}),
-            membrane_controls=[dict(membrane_id=p["id"], schedule=copy.deepcopy(always)) for p in membranes],
+            membrane_controls=[
+                dict(membrane_id=p["id"], schedule=copy.deepcopy(always)) for p in membranes
+            ],
             junction_controls=[],
             pump_controls=[],
             calcium_pump_controls=[],
@@ -153,9 +174,19 @@ def build(inputs, *, start=None):
     volume = {n: nodes[n]["volume_pL"] for n in nodes}
     trace = _traces(inputs, volume)
     for ligand in inputs["ligands"]:
-        given = {e["node"]: e["n_fmol"] / volume[e["node"]] for e in inputs["free_amounts"] if e["ligand"] == ligand}
+        given = {
+            e["node"]: e["n_fmol"] / volume[e["node"]]
+            for e in inputs["free_amounts"]
+            if e["ligand"] == ligand
+        }
         raw = add_inventory_species(raw, ligand, trace_mM=trace[ligand], diffusivity_m2_per_s=DIFFUSIVITY,
                                     floor_fmol=FLOOR_FMOL, concentrations_mM=given)  # fmt: skip
+        # The helper declares c V from c = n / V, which can miss n by an ulp; each amount is declared as written
+        # (SPEC:104), and a trace as the product 1e-12 V the inputs hold (TABLE §4.1) [W-f].
+        exact = {e["node"]: e["n_fmol"] for e in inputs["free_amounts"] if e["ligand"] == ligand}
+        for node in (*raw["model"]["cells"], *raw["model"]["extracellular"]):
+            if node["id"] in exact:
+                node["initial_amount_fmol"][ligand] = exact[node["id"]]
     world = World(raw=raw, inputs=inputs)
     shared, populations, site_sets = {}, [], []
     for entry in inputs["sets"]:
@@ -184,14 +215,18 @@ def build(inputs, *, start=None):
     for key in shared:
         world.set_of_engine_key[key] = key
     multipliers = {m["of"]: m["value"] for m in inputs.get("multipliers") or []}
-    controls = {(p["id"], "binding"): [(0.0, multipliers.get(p["id"], 1.0))] for p in inputs["populations"]}
+    controls = {
+        (p["id"], "binding"): [(0.0, multipliers.get(p["id"], 1.0))] for p in inputs["populations"]
+    }
     ligands = [sfx.ligand(trace_mM=trace[g], species=g) for g in inputs["ligands"]]
     raw = sfx.with_site_occupancy(raw, populations, ligands=ligands, controls=controls,
                                   site_sets=site_sets or None)  # fmt: skip
     wash = inputs.get("wash")
     if wash:
         buffer = {g: wash["buffer_mM"][g] for g in inputs["ligands"]}
-        raw = wfx.with_wash(raw, [wash["node"]], [(wash["time_s"], wash["node"], wash["fraction"], buffer)])
+        raw = wfx.with_wash(
+            raw, [wash["node"]], [(wash["time_s"], wash["node"], wash["fraction"], buffer)]
+        )
         world.washed_node = wash["node"]
     world.raw = raw
     return world

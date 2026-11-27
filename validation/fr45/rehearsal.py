@@ -26,7 +26,7 @@ import numpy as np
 
 EPS = 2.0**-52
 TARGET_DTL = 0.06  # dt max L at the start (h max L 0.03).
-RELAX = 25.0  # The horizon in the slowest time constants.
+RELAX = 30.0  # The horizon in the slowest time constants.
 STEP_CAP = 6000  # At most the registered worlds' steps.
 N_A, K_B = 6.02214076e23, 1.380649e-23
 
@@ -180,7 +180,13 @@ def echo(inputs, model):
     """The references' world echo (the format note): the inputs as the references hold them."""
     return dict(
         id=inputs["world"],
-        constants=dict(inputs["constants"]),
+        constants=dict(
+            N_f_sites_per_fmol=inputs["constants"]["sites_per_fmol"],
+            N_A_per_mol=N_A,
+            k_B_J_per_K=K_B,
+            T_K=inputs["constants"]["temperature_K"],
+            RT_pJ_per_fmol=inputs["constants"]["RT_pJ_per_fmol"],
+        ),
         nodes=[dict(id=n["id"], kind=n["kind"], V=n["volume_pL"]) for n in inputs["nodes"]],
         patches=[dict(p) for p in inputs["patches"]],
         ligands=list(inputs["ligands"]),
@@ -200,7 +206,7 @@ def echo(inputs, model):
             )
             for s in inputs["sets"]
         ],  # fmt: skip
-        populations=[dict(p) for p in inputs["populations"]],
+        populations=[dict(p, faces=model.faces[p["set"]]) for p in inputs["populations"]],
         start=[
             dict(observable=o, value=float(v))
             for o, v in zip(model.observables(), model.start(), strict=True)
@@ -289,9 +295,12 @@ def design(sample_runs):
             dt = 2.0 ** math.floor(math.log2(0.2 / lmax))
             times = [_grid(k * 5 * dt, dt) for k in (1, 2, 3, 4)]
             horizon, relaxed = times[-1], False
-        elif inputs.get("wash"):
+        elif inputs.get(
+            "wash"
+        ):  # Relaxed before the wash, and again after it at the post-wash rate.
             t_w = _grid(RELAX / rate, dt)
-            horizon = _grid(2 * t_w, dt)
+            washed, _, _ = model.wash(model.equilibrium(y0))
+            horizon = _grid(t_w + RELAX / _slowest_rate(model, washed), dt)
             times = sorted({_grid(t_w / 2, dt), t_w, _grid(t_w + dt, dt), _grid(t_w + (horizon - t_w) / 2, dt),
                             horizon})  # fmt: skip
             inputs["wash"]["time_s"] = t_w
@@ -347,6 +356,8 @@ def registration(worlds):
         heat_nodes={w: sorted({s["faces"] for s in i["sets"]}) for w, i in worlds.items()},
         operators={w: base + (["cells.operator.scheduled_compartment_wash@1"] if i.get("wash") else [])
                    for w, i in worlds.items()},
+        plants=[[p, c, w, t] for w, i in worlds.items() for ww, p, c, t in PLANT_ENTRIES((i.get("wash") or {}).get(
+            "time_s")) if ww == w and (p, c) not in (("P3", "C3a"), ("P6", "C3a"))],
     )  # fmt: skip
 
 
@@ -444,7 +455,9 @@ def reference(world, inputs, dts=None, relaxed=True):
         ref["stage"] = dict(h_s=h, max_hL_summed=h * max(map(float, [*load_n, *load_r, *load_b])))
         pairs.append(dict(criterion="C7", observable="stage:first_step", time_s=0.0, **{"class": "constant"},
                           value="refused", tolerance=None, against="engine: its step report gives h max L above 1/2"))  # fmt: skip
-        ref["plants"].append(_plant_entry("P4", "C7", "W5", None))
+        ref["plants"] = [
+            _plant_entry(p, c, w, t) for w, p, c, t in PLANT_ENTRIES(None) if w == "W5"
+        ]
         return ref
     hi, lo = model.solve(saved, 1e-13), model.solve(saved, 1e-12)
     state = {t: hi[t] for t in saved}
@@ -637,7 +650,8 @@ def PLANT_ENTRIES(t_w):  # noqa: N802 - a table, keyed by the wash's time
             ("W1p", "P3", "C3b", None), ("W1p", "P6", "C3a", None), ("W1p", "P6", "C3b", None),
             ("W1p", "P8", "C10", None), ("W1p", "P9", "C9", None),
             ("W2", "P5", "C6", t_w), ("W2", "P5", "C4a", None), ("W7", "P5", "C6", 0.0), ("W7", "P5", "C6", t_w),
-            ("W7", "P5", "C4a", None), ("W3p", "P7", "C5", None), ("W3p", "P7", "C1", None)]  # fmt: skip
+            ("W7", "P5", "C4a", None), ("W3p", "P7", "C5", None), ("W3p", "P7", "C1", None),
+            ("W5", "P4", "C7", None)]  # fmt: skip
 
 
 # ------------------------------------------------------------------ the rehearsal end to end
@@ -679,13 +693,21 @@ def run_jobs(todo, out, cpus):
 
 def expected_inputs(worlds, todo):
     """The rehearsal's expected-inputs file, in §12.2's shape: each honest run's designed inputs, W1eq's start and
-    RT null (compared with the references' file, and recorded); P2's crossed k_off for its declaration."""
+    RT null (compared with the references' file, and recorded); the host volumes and host_values marked as the
+    host-entity addendum's, and every ion's permeability 0.0 (§4.1); P2's crossed k_off for its declaration."""
     runs = {}
     for name, job in todo:
         if any(name.endswith(f"-{p}") for _, p, _ in PLANTS):
             continue
         inputs = copy.deepcopy(job["inputs"])
         inputs["constants"]["RT_pJ_per_fmol"] = None
+        inputs["host_values"] = MARKERS["host_values"]
+        for node in inputs["nodes"]:
+            if not node["registered"]:
+                node["volume_pL"] = MARKERS["volume"]
+        inputs["ion_permeabilities"] = {
+            patch: {"each_ion": 0.0} for patch in inputs["ion_permeabilities"]
+        }
         if name == "INVENTED-W1eq":
             for p in inputs["populations"]:
                 p["initial_occupancy"] = None
@@ -701,11 +723,24 @@ def expected_inputs(worlds, todo):
         f"populations[id={b['id']}].k_off": a["k_off"],
     }
     return dict(kind="fr45 expected inputs, version 1", protocol="fr45-site-competition-v1", invented=True,
-                runs=runs, plant_inputs_changed={"W1p-P2": crossed},
-                host=dict(markers=dict(volume="from the host-entity addendum",
-                                       trace="from the host-entity addendum: the binary64 product 1e-12 × this "
-                                             "compartment's volume_pL there",
-                                       host_values="from the host-entity addendum")))  # fmt: skip
+                runs=runs, plant_inputs_changed={"W1p-P2": crossed}, host=dict(markers=dict(MARKERS)))  # fmt: skip
+
+
+MARKERS = dict(volume="from the host-entity addendum",
+               trace="from the host-entity addendum: the binary64 product 1e-12 \u00d7 this compartment's volume_pL "
+                     "there", host_values="from the host-entity addendum")  # fmt: skip
+
+
+def addendum(table):
+    """An invented host-entity addendum, as the registered one is made (§4.1, §14.1 item 6): each honest run's host
+    volumes and host_values copied by machine from the engine's own parse, here its run's echo."""
+    out = {}
+    for name, run in table["runs"].items():
+        if run["plant"] is None and run["inputs"] is not None:
+            out[name.removeprefix("INVENTED-")] = dict(
+                nodes=[dict(id=n["id"], volume_pL=n["volume_pL"]) for n in run["inputs"]["nodes"] if not n["registered"]],
+                host_values=run["inputs"]["host_values"])  # fmt: skip
+    return dict(kind="INVENTED host-entity addendum (the rehearsal's)", runs=out)
 
 
 def stand_in_module():
@@ -755,16 +790,17 @@ def main(argv=None):
             return 0
     from validation.fr45 import exporter
 
-    exporter.export(
+    table = exporter.export(
         out / "records", out / "table", [n for n, _ in todo], invented="INVENTED: rehearsal"
     )
+    (out / "addendum.json").write_text(json.dumps(addendum(table), indent=1) + "\n")
     root = Path(__file__).resolve().parents[2]
     import subprocess
 
     command = [sys.executable, "-B", str(root / "validation" / "fr45" / "judge.py"), "judge",
                "--table", str(out / "table"), "--references", str(folder), "--expected",
                str(out / "expected_inputs.json"), "--registration", str(out / "registration.json"),
-               "--out", str(out / "judgement")]  # fmt: skip
+               "--addendum", str(out / "addendum.json"), "--out", str(out / "judgement")]  # fmt: skip
     done = subprocess.run(command, capture_output=True, text=True)
     (out / "judge.log").write_text(done.stdout + done.stderr)
     print(done.stdout[-6000:], done.stderr[-3000:])

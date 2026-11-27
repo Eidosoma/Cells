@@ -344,6 +344,8 @@ def run(job, out):
         record["plant"] = dict(id=plant.ID, patch=f"validation/fr45/plants/{job['plant']}.py",
                                change=plant.CHANGE, inputs_changed=list(changed))  # fmt: skip
     start = job.get("start")
+    if isinstance(start, str):  # W1eq's start file, read at run time in the run's own process (TABLE §3, item 2).
+        start = json.loads(Path(start).read_text())
     if start:
         start = dict(initial_occupancy={p["id"]: p["initial_occupancy"] for p in start["world"]["populations"]},
                      free_amounts={(e["ligand"], e["node"]): e["n"] for e in start["world"]["free_amounts"]})  # fmt: skip
