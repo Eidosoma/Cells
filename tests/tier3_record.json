@@ -73,9 +73,20 @@
    ],
    "note": "the lead's small fixes (small-fixes-20261126, c574cc41) compare its diagnostic at rtol 1e-9 and atol 1e-12, and its chronic failure, frozen as failing by D390, now passes (7 of 7); its entry refrozen from its run on the same trial merge (67e96e21; cap 1800 s, CPU 6)",
    "evidence": "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-diagnostic/"
+  },
+  {
+   "decision": "D407",
+   "files": [
+    "tests/unit/test_shared_inventory_volume.py",
+    "tests/unit/test_species_regulated_availability_execution.py",
+    "tests/unit/test_species_regulated_availability_guards.py",
+    "tests/unit/test_species_regulated_availability_regression.py"
+   ],
+   "note": "FR-65's coupling step (the coupling's reads of the current cell volume, version 1.1; docs/TURNOVER_CHANGING_VOLUME_DESIGN.md \u00a711 and \u00a712): test_shared_inventory_volume.py gains the coupling's compiled rows (test_fr65_coupling_the_water_door_holds_its_identities_at_every_row, test_fr65_coupling_the_water_door_follows_its_reference_at_second_order, test_fr65_coupling_version_1_beside_water and test_fr65_coupling_arm_b_labels_beside_water_leave_the_physics_bitwise), and its A1 row is re-parametrized: test_fr65_a1_without_the_coupling_runs_in_a_swelling_cell is now test_fr65_a1_runs_in_a_swelling_cell[without the coupling], beside the added [with it] (the earlier ID removed as declared). The coupling's three other tier-3 files keep their test IDs and outcomes. The four entries are refrozen from the D148 round's tier-3 run of 7cce9790 (main 7149f90a merged; cap 1800 s, lane B's eight CPUs under its lock): 801.71, 179.50, 265.23 and 65.33 s. Those seconds carry the lane's load: 13 files ran at once on both threads of its four cores, and the run's other files took 1.23 to 1.60 times their recorded seconds (test_cell_replacement_vector.py 0.76). test_shared_inventory_volume.py's 801.71 s against 380.02 s is that load with five more tests (9 to 14); it took about 612 s in two halves on CPUs 6 and 7",
+   "evidence": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/"
   }
  ],
- "frozen_utc": "2026-11-26T19:13:22+00:00",
+ "frozen_utc": "2026-11-27T04:05:12+00:00",
  "cap_seconds": 1800.0,
  "runs": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc",
@@ -84,7 +95,8 @@
   "/mnt/workspaces/Cells/tier3-records/slimming-20261126/regen/tier3-run",
   "/mnt/workspaces/Cells/tier3-records/slimming-20261126/fc/timing2/after",
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run",
-  "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-diagnostic"
+  "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-diagnostic",
+  "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run"
  ],
  "collected": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/collected.json",
@@ -93,7 +105,8 @@
   "/mnt/workspaces/Cells/tier3-records/slimming-20261126/regen/tier3-run/collected.json",
   "/mnt/workspaces/Cells/tier3-records/slimming-20261126/fc/timing2/after/collected.json",
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run/collected.json",
-  "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-diagnostic/collected.json"
+  "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-diagnostic/collected.json",
+  "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/collected.json"
  ],
  "time": "file wall seconds only: the -q logs carry no per-test times",
  "outcomes": [
@@ -820,16 +833,21 @@
    ["test_c28_a_writer_on_the_declared_volume_misses_in_amounts[gene_unit]", "passed"],
    ["test_c28_a_writer_on_the_declared_volume_misses_in_amounts[network]", "passed"]
   ]},
-  "tests/unit/test_shared_inventory_volume.py": {"run": "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run/logs/tests__unit__test_shared_inventory_volume.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 9}, "seconds": 380.02, "collected": 9, "reached": 9, "aligned": true, "tests": [
+  "tests/unit/test_shared_inventory_volume.py": {"run": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/logs/tests__unit__test_shared_inventory_volume.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 14}, "seconds": 801.71, "collected": 14, "reached": 14, "aligned": true, "tests": [
    ["test_c25_a_tracer_keeps_its_amount_and_dilutes_with_the_volume", "passed"],
    ["test_c27_the_energy_identity_closes_at_second_order_and_the_v0_plant_is_refused", "passed"],
    ["test_fr65_s_keeps_its_closed_form_and_the_volume_follows_its_reference_at_second_order", "passed"],
    ["test_fr65_the_energy_identity_is_a_stepped_entry_and_the_v0_booking_fails_it", "passed"],
    ["test_fr65_a_saved_run_holds_amounts_and_volumes_apart_and_resumes_bitwise", "passed"],
    ["test_fr65_labels_beside_water_leave_the_physics_bitwise_and_follow_a_cohort", "passed"],
-   ["test_fr65_a1_without_the_coupling_runs_in_a_swelling_cell", "passed"],
+   ["test_fr65_a1_runs_in_a_swelling_cell[without the coupling]", "passed"],
+   ["test_fr65_a1_runs_in_a_swelling_cell[with it]", "passed"],
    ["test_fr65_a_companion_beside_water_and_turnover[symport]", "passed"],
-   ["test_fr65_a_companion_beside_water_and_turnover[bath schedule]", "passed"]
+   ["test_fr65_a_companion_beside_water_and_turnover[bath schedule]", "passed"],
+   ["test_fr65_coupling_the_water_door_holds_its_identities_at_every_row", "passed"],
+   ["test_fr65_coupling_the_water_door_follows_its_reference_at_second_order", "passed"],
+   ["test_fr65_coupling_version_1_beside_water", "passed"],
+   ["test_fr65_coupling_arm_b_labels_beside_water_leave_the_physics_bitwise", "passed"]
   ]},
   "tests/unit/test_source_order_diagnostic.py": {"run": "/mnt/workspaces/Cells/tier3-records/slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/slimming-20261126/job1/tier3-run/logs/tests__unit__test_source_order_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 11}, "seconds": 3.02, "collected": 11, "reached": 11, "aligned": true, "tests": [
    ["test_both_label_collision_is_distinct_from_single_task_separation", "passed"],
@@ -968,12 +986,12 @@
   "tests/unit/test_species_reactions_same_material.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_species_reactions_same_material.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 1}, "seconds": 54.39, "collected": 1, "reached": 1, "aligned": true, "tests": [
    ["test_exchange_and_reactions_see_the_same_material_under_the_declared_splitting", "passed"]
   ]},
-  "tests/unit/test_species_regulated_availability_execution.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_species_regulated_availability_execution.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 3}, "seconds": 121.06, "collected": 3, "reached": 3, "aligned": true, "tests": [
+  "tests/unit/test_species_regulated_availability_execution.py": {"run": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/logs/tests__unit__test_species_regulated_availability_execution.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 3}, "seconds": 179.5, "collected": 3, "reached": 3, "aligned": true, "tests": [
    ["test_a_vector_batch_reproduces_each_worlds_own_run", "passed"],
    ["test_windowed_and_unwindowed_runs_agree_bit_for_bit", "passed"],
    ["test_a_snapshot_resumed_in_a_fresh_process_is_bitwise", "passed"]
   ]},
-  "tests/unit/test_species_regulated_availability_guards.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_species_regulated_availability_guards.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 11}, "seconds": 182.58, "collected": 11, "reached": 11, "aligned": true, "tests": [
+  "tests/unit/test_species_regulated_availability_guards.py": {"run": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/logs/tests__unit__test_species_regulated_availability_guards.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 11}, "seconds": 265.23, "collected": 11, "reached": 11, "aligned": true, "tests": [
    ["test_every_coupling_switched_off_is_the_world_without_the_operator[1.0-1.0]", "passed"],
    ["test_every_coupling_switched_off_is_the_world_without_the_operator[0.5-0.5]", "passed"],
    ["test_every_coupling_switched_off_is_the_world_without_the_operator[0.0-0.0]", "passed"],
@@ -986,7 +1004,7 @@
    ["test_nine_species_the_factored_path_is_the_world_without_the_operator[zero]", "passed"],
    ["test_nine_species_the_factored_path_is_the_world_without_the_operator[two couplings]", "passed"]
   ]},
-  "tests/unit/test_species_regulated_availability_regression.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_species_regulated_availability_regression.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 2}, "seconds": 43.6, "collected": 2, "reached": 2, "aligned": true, "tests": [
+  "tests/unit/test_species_regulated_availability_regression.py": {"run": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/logs/tests__unit__test_species_regulated_availability_regression.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 2}, "seconds": 65.33, "collected": 2, "reached": 2, "aligned": true, "tests": [
    ["test_the_1ms_errors_stay_within_their_pins[a4]", "passed"],
    ["test_the_1ms_errors_stay_within_their_pins[a5]", "passed"]
   ]},
