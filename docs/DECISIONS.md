@@ -14363,3 +14363,47 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
 - **Disclosed:** the report agent read `lean/PROGRESS.md` lines 1 to 80, FR-51's progress sections included. It
   opened neither FR-51's figure nor `kir_spermine_potassium.json`.
 - **From now on,** builders' briefs ask for the guard set and `test_model_table.py` before hand-back.
+
+## D421: the Kv1.5 midpoint gap: a sourced law for mammalian cells, gated on a like-for-like count of the studies
+
+2026-11-27, written at 17:02 UTC. The user: "lets go adviser you and you dccide on this".
+
+- **The choice, by the lead and the adviser under the user's delegation:** option (b) of D420, gated.
+  - **(b)** is a sourced Kv1.5 law for mammalian cells, beside the parity law.
+  - **(a),** a constant shift, is dropped. It would align the midpoint only, and it lowers the admitted voltage below the
+    studies' own protocol steps.
+  - **(c),** document only, is taken only if the gate below closes the gap. Exempting a parity law would narrow the
+    user's two-studies rule.
+  - The delegation covers the choice, not the build. The design note's price goes to the user before any build.
+- **The gate, written before any run.** It counts the studies like for like.
+  1. **A study counts** only if all three hold:
+     - its control midpoint's fit form, error type and n are known, from the paper or the Lean files;
+     - its control protocol runs inside the parity law's declared domain, −120 to +60 mV;
+     - it is independent of the other counted studies.
+
+     A missing item goes to the Lean relay, and the study is not counted meanwhile.
+  2. **For each counted study,** a fresh agent runs the lab's own control protocol (its prepulses, tail voltage, control
+     pH and external K) on the unshifted parity law. It fits the law's tail currents with the lab's own fit form, and
+     saves the fitted midpoint only:
+     - no decay time;
+     - no activation time constant;
+     - nothing at acid pH.
+
+     The same protocol produces row 4's decay, which stays unscored.
+  3. **A study shows a gap** when |V½(lab) − V½(law, lab's protocol and fit)| exceeds twice the lab's standard error of
+     the control midpoint (the SEM, or the SD over √n).
+  4. **Two or more counted studies with a gap in the same direction:** a source survey and a design note follow, by a
+     fresh agent.
+     - Every parameter the law fixes needs two or more independent studies, looking beyond FR-63's three.
+     - A one-study parameter is carried from the old form and labelled an indication. If only the midpoint qualifies,
+       the note says plainly that the result is the old form with a sourced midpoint, and that the +60 mV ceiling
+       stays.
+     - The note names the fit data before any fit, and keeps Longobardo et al.'s kinetics (rows 4 and 5) out of it.
+       Once the law is tagged, those rows become the comparison D420 left open.
+     - The note answers four more questions:
+       - who else on main would use the law (never build for one experiment);
+       - a fixed-number law against a general gate with declared parameters;
+       - the provenance class, which is not parity;
+       - that the parity law stays untouched, and that no code or coefficients are taken from another simulator.
+  5. **Fewer than two:** (c). The gap is recorded as an indication in FR-63's records. The gate reopens if new studies
+     appear.
