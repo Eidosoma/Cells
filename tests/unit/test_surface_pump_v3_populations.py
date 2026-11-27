@@ -1165,22 +1165,27 @@ def kir_versus_twin():
     return (shifted, after), (twin, twin_after)
 
 
-@pytest.mark.parametrize("solver", ["n2", "rk4"])
+@pytest.mark.parametrize("solver", ["n2", "rk4", "sparse"])
 def test_the_twin_holds_under_n2_and_rk4_and_in_the_clamp(solver):
-    """FR-64's test double beyond ARS(2,2,2) (§9.2; host, about 1 s each): under N2 on B4's
-    world, and under RK4 (25 us, the gated laws' bound) without kinds, which RK4 refuses, the
-    shifted population's start readouts, one step and its clamped flux and current at -30 mV are
-    bit for bit its twin's. The clamp reads the state's gates, so the gate's shift reaches it only
-    through them, and never through permeation."""
+    """FR-64's test double beyond ARS(2,2,2) (§9.2; host, about 0.3 s each): under N2 on B4's
+    world, under RK4 (25 us, the gated laws' bound) without kinds, which RK4 refuses, and under
+    ARS(2,2,2) with the sparse field solver on B4's world (D327's probe found it admitted beside a
+    shift), the shifted population's start readouts, one step and its clamped flux and current at
+    -30 mV are bit for bit its twin's. The clamp reads the state's gates, so the gate's shift
+    reaches it only through them, and never through permeation."""
     shift = {"gates": {"m": ph_shift(side="outside", reference_ph=PH_REF, shift_V_per_ph=SIGMA,
                                     ph_window=[6.8, 7.5])}}  # fmt: skip
 
     def world(shift, law=None):
-        raw = kir_shifted(shift, declare=solver == "n2")
+        from cells.numerics.surface_field import SPARSE_SOLVER_ID
+
+        raw = kir_shifted(shift, declare=solver != "rk4")
         if law is not None:
             raw["model"]["channels"][0]["kinetic_law"] = law
         if solver == "n2":
             raw["execution"]["solver"] = imex.IMPLICIT_CONDUCTANCE_IDS[0]
+        elif solver == "sparse":
+            raw["execution"]["field_solver"] = SPARSE_SOLVER_ID
         else:
             raw["execution"].update(solver="rk4", dt=2.5e-5)
         return raw
