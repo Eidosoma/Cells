@@ -358,7 +358,7 @@ def test_w_resets_a_replaced_slots_populations_from_the_newcomers_template():
     assert bound[:2] == pytest.approx(theta * s[:2], rel=4 * np.finfo(float).eps, abs=0)
     assert free[:2] == pytest.approx(s[:2] - theta * s[:2], rel=4 * np.finfo(float).eps, abs=0)
     for name, axes in so.STATE_AXES.items():  # o0, on cell_0, keeps its bits.
-        if axes == ["site_population"]:
+        if axes in (["site_population"], ["site_set"]):  # FR-45: R is on the set axis.
             assert np.asarray(getattr(after, name))[2] == np.asarray(getattr(state, name))[2]
     ecs = [c.id for c in spec.model.extracellular].index("ecs_0")
     assert (

@@ -88,7 +88,9 @@ WASH_LAW = "cells.operator.scheduled_compartment_wash@1"
 CELL, OUTSIDE = 0, 1  # A facing node's kind.
 
 STATE_AXES = {
-    "site_free_increment_fmol": ["site_population"],  # R - R0.
+    # R - R0 per site set (FR-45): a private population's set is itself, so without site_sets the
+    # set axis is the population axis, entry for entry.
+    "site_free_increment_fmol": ["site_set"],
     "site_bound_increment_fmol": ["site_population"],  # B - B0.
     "site_bound_net_fmol": ["site_population"],  # Net binding, signed (bound positive).
     "site_internalised_fmol": ["site_population"],  # >= 0, non-decreasing.
@@ -118,6 +120,12 @@ LAYOUT_FIELDS = (
     "site_pool_component",  # [pool] int64.
     "site_facing_pool",  # [population] int64: the pool it binds from.
     "site_receiving_pool",  # [population] int64: the pool it internalises into (else its facing).
+    # FR-45's shared site sets: each zero-size where every set is private (no site_sets), so the
+    # half-step keeps today's path there (the static switch).
+    "site_set_of",  # [population] int64: its set's index on the set axis.
+    "site_set_capacity_fmol",  # [set] S of each set.
+    "site_set_facing_kind",  # [set] int64: CELL or OUTSIDE.
+    "site_set_facing_node",  # [set] int64: its index on that axis.
 )
 CONTROL_FIELDS = ("site_binding_multiplier", "site_internalisation_multiplier")
 LEDGERS = ("site_bound_entity", "site_moiety_entity")
@@ -764,6 +772,11 @@ def bind(spec, declaration):
         site_pool_component=np.asarray(pool_component, dtype=np.int64).reshape(len(pools)),
         site_facing_pool=np.asarray(facing_pool, dtype=np.int64).reshape(n),
         site_receiving_pool=np.asarray(receiving_pool, dtype=np.int64).reshape(n),
+        # FR-45: no site_sets declared, so every set is private and these are zero-size.
+        site_set_of=np.zeros(0, dtype=np.int64),
+        site_set_capacity_fmol=np.zeros(0),
+        site_set_facing_kind=np.zeros(0, dtype=np.int64),
+        site_set_facing_node=np.zeros(0, dtype=np.int64),
     )
     x = spec.execution
     state = {
