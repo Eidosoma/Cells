@@ -1835,6 +1835,22 @@ its rows are in [TURNOVER_CHANGING_VOLUME_DESIGN.md](TURNOVER_CHANGING_VOLUME_DE
   (`validation/tissue/regulated_availability_controls.py`) subclasses @1, so it inherits the
   control-view read: its `control_factors` gains the keyword `view=None`, which is always None in
   the protocol's worlds (no changer of the volume). Its behaviour there is unchanged.
+- **Beside FR-50 phase 2** (D327, 27 November 2026): @3's own one-way records (`one_way_records`)
+  beside the coupling and a changer of the cell volume are refused by name, in both versions
+  (`check_one_way_records`), until a world qualifies the three together. Each pair alone is
+  admitted: the coupling beside the records at a fixed volume (FR-50 phase 2), whose programs stay
+  bit for bit, and the coupling beside water (this step).
+- **The D148 round at the merged head** (`7cce9790` against main 7149f90a, 27 November 2026;
+  TURNOVER_CHANGING_VOLUME_DESIGN.md §12). The protocol's generator and judge ran in development
+  mode at the head and at 10225759, with A1, A4, A5 and the controls.
+  - The records are bit for bit identical in every part and every control.
+  - Both development verdicts pass 47 of 47 criteria.
+  - The two planted controls are caught on a4.coupled, by the same criteria. Both δ-controls are
+    caught at the development δ.
+  - Every control's orders, resolved pairs and δ equal the protocol's recorded development
+    controls.
+
+  These are development runs, not judged ones, so §10.8's judged verdict stands.
 
 ## Appendix A. Equations for the independent references
 

@@ -1346,3 +1346,51 @@ main's 978. They are the same 32 as §11.6, and none is lost (`/mnt/workspaces/C
 - **Its result:** 68 of 68 program texts and constants identical, and 17 of 17 bindings.
 - **It is not the round's evidence.** The D148 round comes after FR-52's, on lanes the lead assigns. It adds the A4
   and A5 protocol worlds, crossrev, G1, FR's set, the derivative programs, and tiers 1 and 2.
+
+**Beside FR-52 and FR-50 phase 2 (27 November 2026).**
+- **The commits after this section's three:** `4b8b0490` adds @2's parse row beside replacement@2 over water. Main
+  merged twice, each without conflict in `pump_composite.py`, which both sides change: 9506a1cc (FR-52, D404) at
+  `b11b5e40`, and 7149f90a (FR-50 phase 2, D405) at `02524063`. Then `7cce9790` lands D327's refusal below.
+- **D327's probe** (`/mnt/workspaces/Cells/fr65-coupling-20261126/probe/d327/`). The structure check admits 1,398
+  ordered sequences at main and 1,430 at the merged head: the same 32 new, none lost.
+  - **Beside FR-52's cohorts,** nothing newly parses together. With water first, the cohorts are refused by name, by
+    the population's own rule.
+  - **Beside FR-50 phase 2's records,** one combination newly parses: @3's own one-way records (`one_way_records`)
+    beside the coupling and water. Each pair alone was admitted by one change: the coupling beside the records at a
+    fixed volume by FR-50 phase 2, and the coupling beside water by this step.
+  - **`7cce9790` refuses the three together by name, in both versions** (`check_one_way_records`), until a world
+    qualifies them. It adds two parse rows, @1 in A7's water world and @2 in the water door, and a composition-matrix
+    row. The coupling beside the records at a fixed volume still parses, and the round below finds its programs bit
+    for bit.
+
+**The D148 round (27 November 2026):** head `7cce9790` against main 7149f90a, from clean full snapshots. Its results
+are in `/mnt/workspaces/Cells/fr65-coupling-20261126/round/`: `NOTE.txt` says where each one is, and `verdict.json`
+gathers them.
+- **Before it,** the nightly of main 7149f90a passed: 497 files, 0 changed.
+- **Lane A:**
+  - crossrev: 11 of 11 sets identical;
+  - G1: 113 of 113 for main and for the head against c1, and for main against the head;
+  - tiers 1 and 2, against the record with the measurement below folded in: 497 files, 0 changed. The three count
+    increases are main's own.
+- **Lane B:**
+  - FR's landing set passed;
+  - tier 3, the coupling's four files with the nine water and replacement files: all 13 pass and none timed out.
+    Against the tier-3 record, the one blocking entry is the renamed A1 row, and the six added rows pass.
+- **Timed cores 4 and 5:**
+  - The judges' derivative programs: 261 files identical.
+  - The pair check of §11.7's 21 worlds: 84 of 84 program texts and constants and 21 of 21 bindings identical, against
+    main and against 10225759.
+  - Two worlds with @3's one-way records at a fixed volume, traced on CPUs 6 and 7: A5″ with channel records, and
+    crossrev's pair with junction records. Against main they give 8 of 8 and 2 of 2, identical.
+  - The protocol's controls, in development runs at the head and at 10225759: INVENTORY_COUPLING_DESIGN §11.
+  - The changed tier-1 files, measured: the coupling's file in 16.05 s (130 tests), the contract's in 15.30 s (40) and
+    turnover's in 10.09 s (51). All three stay in tier 1.
+  - **The idle check:** no Cells unit ran on the four CPUs. The busy share of every process over 10 s was 0.22, 0.49,
+    0.17 and 0.02 on CPUs 4, 5, 20 and 21, since the machine's interactive sessions use idle CPUs. Contention only
+    adds time, so the measurement stands for tier placement (the lead).
+- **The declared test IDs:** 11,016 at main and 11,037 at the head. 10 are removed and 31 added, all in the four test
+  files changed.
+- **The tier-3 record** is refrozen for the coupling's four files (D407).
+  - `test_shared_inventory_volume.py` now holds 14 tests. It took 802 s under lane B's load, with 13 files on the
+    lane's eight CPUs, and about 612 s in two halves on CPUs 6 and 7.
+  - The three other files keep their test IDs and outcomes.
