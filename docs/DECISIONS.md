@@ -14033,3 +14033,28 @@ It is a port check: it shows that the live engine computes legacy's written equa
     evidence and stays.
   - `test_results_baseline.py`'s row (11 to 13 tests) is folded by the next measurement.
   - The scope map is refreshed by the nightly, and heads in flight merge main before their gate.
+
+## D414: the X2 confirmation of FR-38 v2 and FR-43 part 2; a refinement of D412's X2 rule for the user
+
+2026-11-27, written at 13:17 UTC.
+
+- **The confirmation** (D412): FR-38 v2's and FR-43 part 2's judged worlds were run with X2 on and off, at one revision (a clean snapshot of main
+  4fd3d042), as development runs.
+  - The cap was 2e-3, FR-8's. Nothing was tagged or re-judged.
+  - The evidence is in `/mnt/workspaces/Cells/x2-confirmation-20261127/`.
+- **No honest result changes.**
+  - Every honest value is bit-identical with X2 on, and every honest criterion's verdict is unchanged.
+  - No run is refused by the cap. The largest Σ|a|/F on an admitted run is 2.67e-7, and on most runs X2 counts no step at all.
+  - The X2-off runs reproduce D381 and D324 in every number.
+- **X2 refuses planted runs.** Six plant runs are refused by its whole-run order condition, because a plant breaks the integrator's error order.
+  - **FR-38 v2:** P9 is caught by that refusal instead of in amounts, and the verdict is unchanged. Its judge leaves the refusal to the checker to
+    confirm.
+  - **FR-43 part 2:** C2.8's rule requires the V0 plants' miss to show in amounts, not only in energy. X2's refusal pre-empts that, so C2.8 would
+    turn from pass to fail on plant scoring alone. With X2 on the honest runs only, it would pass.
+- **For the user, a refinement of D412's rule:** where a registration must select X2, it applies to the honest runs. Plant runs follow the
+  registration's own plant rule, unless the registration states otherwise.
+- **A separate finding:** FR-38 v2's frozen builder no longer runs on main as registered.
+  - The ID move rewrote its shared helper, so its definitions mix spellings, and main refuses the old ones (D345).
+  - The confirmation translated them at the parse (D371 Q7) and restored the registered spelling in the records. All 86 equal the registered
+    definitions.
+  - D381 stands at its own revision.
