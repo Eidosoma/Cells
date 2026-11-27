@@ -14304,3 +14304,62 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
   - Any registration using them is written and banded by an agent who has not seen it, under rule 5, and states this
     exposure.
   - The report agent was told to save no kinetics from the engine.
+
+## D420: FR-63's calibration report is landed; D419's rule gives no registered comparison now; the Kv1.5 midpoint gap is put to the user
+
+2026-11-27, written at 16:44 UTC.
+
+- **The report landed** at 03d96f54 (tag `fr63-calibration-report-landed-2026-11-27`), from a2fda668: `docs/FR63_CALIBRATION_REPORT.md`
+  and `validation/fr63/calibration_check.py`, with no `src/` change.
+  - The trial merge's ID guard found the law's bare old spelling in a comment of the check. The lead wrote it in full
+    (a2fda668). So the landed driver differs from check-02's (5b95145d) by that one comment.
+  - **Each preparation's shift per pH unit,** a secant with one SE:
+
+    | Preparation | Shift per pH unit |
+    | --- | --- |
+    | Trapani and Korn (HEK293) | −23.4 ± 5.1 mV |
+    | Longobardo et al. (Ltk−) | −19.2 ± 2.5 mV |
+    | Kehl et al. (HEK293) | −7.8 ± 2.2 mV |
+
+    Each carries FR-64's declaration and a closed window over its two levels.
+  - **The development check** shows the engine's steady-state midpoint moving by exactly the declared shift. That is
+    circular, and calibrates nothing.
+  - **The held-out quantities** are listed, and none was computed.
+- **D419's rule, applied: no registered comparison now.** The calibration report is FR-63's check (D399).
+  - **Rows 1 to 3** are the extra pH levels. They lie outside their windows, so they are indications.
+  - **Row 6,** Kehl et al.'s conductance, is an indication. Its pH levels are not in the Lean files, which is a relay to
+    the Lean track.
+  - **Rows 4 and 5,** Longobardo et al.'s kinetics at the calibration levels: not now. They reopen if the law is aligned
+    with that preparation.
+    - The law's control midpoint sits 8.2 mV above that preparation's, and its slope factor is 6.4 mV against the
+      fitted 4.9 and 5.2 mV.
+    - So a control-pH gate would test a law already off that preparation's steady state.
+    - D419's exposure stands: the lead has evaluated the law's time-constant formula at those readouts' voltages.
+- **The Kv1.5 control-midpoint gap, under the user's rule** that two or more independent studies confirming something
+  Cells does not reproduce must be explained and fixed.
+  - **The gap:** three studies put the control midpoint at −14.2 to −18.3 mV. The law's m∞ midpoint is −6.0 mV.
+  - **Only its direction and rough size are established.** The labs' midpoints are fits to tail currents after
+    prepulses (Trapani and Korn's fit form is unprinted), and the engine's is m∞'s.
+  - **Why:** `cells.channel.kv1p5_mh@1` is a parity law. Its coefficients are BETSE v1.5.0's Kv1p5 model (SPEC-006).
+    That model cites Philipson et al. 1991 (Kv1.5 in oocytes), but nothing ties −6.0 mV to that paper. The law was
+    never fit to these cells. This corrects the lead's earlier "oocytes, so expected", which was an inference.
+  - **Options for the user:**
+    - **(a) A declared constant shift.** It is a new kind, so a new request: the FR-64 note's closed set admits
+      `reversal_of` and `ph` only.
+      - It aligns a preparation's steady-state midpoint, and nothing else.
+      - It moves the whole gate, and the gate's domain check reads the shifted voltage (−120 to +60 mV). So each
+        offset lowers the highest admitted voltage by 8 to 12 mV, below the preparations' own +60, +65 and +100 mV
+        protocol steps.
+      - It also re-fits a parity law from the world's side.
+    - **(b) A sourced Kv1.5 law fit to mammalian cells, beside the parity law.** A design note comes first, with its
+      price.
+      - It starts from a source survey, with two or more studies per parameter. The midpoint has three studies; the
+        slope and the kinetics are Longobardo et al.'s alone, so an indication.
+      - It names the fit data before any fit, and keeps rows 4 and 5 out.
+    - **(c) Document only.** The parity law reproduces its reference simulator by design. Whether the two-studies rule
+      covers a parity law is the user's call.
+  - **The question for the user:** must Kv1.5 reproduce these cells' steady-state midpoints only, or their currents and
+    kinetics too?
+- **Disclosed:** the report agent read `lean/PROGRESS.md` lines 1 to 80, FR-51's progress sections included. It
+  opened neither FR-51's figure nor `kir_spermine_potassium.json`.
+- **From now on,** builders' briefs ask for the guard set and `test_model_table.py` before hand-back.

@@ -34,10 +34,9 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - The user answered D414 (D417): X2 applies to a registration's honest runs, and its plant runs follow its own plant
     rule. The adviser agrees, and D417 records five readings.
   - **FR-64,** a declared voltage shift on a channel population (D418, ff5c5fdc). Its D148 round passes 9 of 9.
-  - Next: FR-63's calibration report (D399), running. Four stale tier rows of main's are folded at the next measurement
-    (D418).
-  - FR-63's registered comparison: the user left the decision to the lead (D419). Its rule is fixed and is applied when the
-    report lands.
+  - **FR-63's calibration report** (D420, 03d96f54) is FR-63's check. D419's rule gives no registered comparison now.
+  - The Kv1.5 control-midpoint gap goes to the user with options (D420). Four stale tier rows of main's are folded at the
+    next measurement (D418).
   - D417's check is done: liquid routing needs X2 by amendment, or a reasoned waiver, before its run; FR-49 needs nothing.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
@@ -93,7 +92,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     landed (ae349721). The coupling's step is built (branch `fr65-coupling`, D402); its round follows FR-50 phase 2's landing. The water worlds' run view (§9.2)
     goes to water's owner.
   - **FR-64** (normal; D356, D361, D418): **landed** (ff5c5fdc). A declared voltage shift on a channel population.
-  - **FR-63** (normal; D353) is re-formed as a pH shift on it; its calibration report comes next (D399).
+  - **FR-63** (normal; D353, D420): a pH shift on it. Its calibration report is landed (03d96f54). The Kv1.5 midpoint gap
+    is with the user (D420).
   - **FR-53** (normal; D371, D370): a rounding allowance for global ledgers. Note `docs/LEDGER_ROUNDING_DESIGN.md`
     (774fdcd5); D370 corrects its premise for the pump-tissue family. FR-47's ledger limit: the
     evidence recommends keeping it, with the user to decide (D379).
