@@ -14083,11 +14083,12 @@ It is a port check: it shows that the live engine computes legacy's written equa
 
 ## D416: FR-45 v1's judged run passes
 
-2026-11-27, written at 15:05 UTC.
+2026-11-27, written at 14:57 UTC.
 
 **FR-45 v1, several ligands competing for one shared, wash-retained site capacity, passes its registered comparison.**
-All 15 criteria pass on 1,024 entries, and all nine plants are caught. No entry failed, was unformed, was faulted or was
-inconclusive, and the judge found no fault. X2 was waived for this registration (D412).
+All 15 criteria pass on their 904 entries, and all nine plants are caught. The verdict's total of 1,024 entries also
+counts 120 baseline-only entries, which serve the plants and are not tallied by the criteria. Every one of them passed.
+No entry failed, was unformed, was faulted or was inconclusive, and the judge found no fault. X2 was waived for this registration (D412).
 
 - **The addenda** landed at 0c888d9a (tag `fr45-addenda-landed-2026-11-27`), after the parse-only passes of twelve
   registered worlds (W1eq never). There are six: the refusal mapping, the checks list, the execution record, the plants'
@@ -14120,7 +14121,7 @@ inconclusive, and the judge found no fault. X2 was waived for this registration 
   - **Unchanged afterwards:** the snapshot and the job files.
 - **Outcomes:**
   - Every honest run completed except W5, which the stage condition refused at its first step, as C7 requires.
-  - Seven plant runs were refused, all by named checks.
+  - Six plant runs were refused, all by named checks.
   - P2, P3, P9 and W5-P4 completed and were judged on their entries.
 - **The table** (sha256 b7651cd6…), hashed by the lead before any judge step:
   - the lead's reader finds no fault;
@@ -14147,13 +14148,14 @@ inconclusive, and the judge found no fault. X2 was waived for this registration 
   | C9 | 124 |
   | C10 | 12 |
 
-  Every entry passes.
+  These 904 entries all pass. The 120 baseline-only entries (`BASELINE_ONLY`) are W1p's C1 (30), C3b (6) and C9 (14),
+  and W3p's C1 (70). Each passed as its plant's baseline, with no baseline failure.
 - **How each plant was caught:**
-  - in the amounts: P2 (C1) and P9 (C9);
+  - in the amounts: P1 and P2 (C1), and P9 (C9);
   - in the heat: P3 (C3b);
   - by W5-P4's admission: P4 (C7);
   - by its own check's refusal:
-    - P1, by its dissipation check;
+    - P1, by its dissipation check as well;
     - P6, by its energy ledger;
     - P8, by its moiety ledger;
     - P5 in W2 and W7, by their energy ledger after the wash, with C6 also catching it;
@@ -14171,3 +14173,11 @@ inconclusive, and the judge found no fault. X2 was waived for this registration 
     `fr45-judged-jobs-hashes-20261127.json` and `fr45-table-sha256-20261127.json`.
 
   The annotated tag `fr45-judged-2026-11-27` marks 3e4635cb, the commit from which the runs and the judge ran.
+- **Corrected after the push,** in a follow-up commit. As first pushed, D416:
+  - gave 1,024 entries without the split above;
+  - said seven plant runs were refused (it is six; the seventh refusal was W5, an honest run);
+  - listed P1 under its refusal only;
+  - gave a typed time.
+
+  The pushed commit message of f073086e and the tag's message keep "1,024 entries", the verdict's total with the
+  baselines.

@@ -27,7 +27,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - FR-45's engine: shared site sets in `cells.operator.site_occupancy@1` (D411, de72e530), its D148 round passing.
   - The `results_baseline` fix, with G1's c1 renewed additively (D413).
   - FR-45's tooling (D415), and its registration merged into main.
-  - **FR-45 v1's judged run passes** (D416). All 15 criteria pass on 1,024 entries, and all nine plants are caught.
+  - **FR-45 v1's judged run passes** (D416). All 15 criteria pass on 904 entries, and the 120 baseline entries pass too.
+    All nine plants are caught.
     - It ran from 3e4635cb (tag `fr45-judged-2026-11-27`), after its addenda (0c888d9a) and its job command (3e4635cb)
       landed and were confirmed by a non-builder.
   - Next: FR-64's D148 round (lanes running) and landing. The user has D414's refinement of the X2 rule.
@@ -97,8 +98,9 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     uncovered readout controls go to a later registration, FR-38 v3 (D354).
   - **FR-43 part 3's co-writers** (D328, D383, D394, D395, D402, D403): the engine build is landed (4be34f74), and the
     registered comparison **passes**: 3 arms, 6 families, 20 of 20 plants, 5,230 entries; the independent checker agrees.
-  - **FR-45** (D327, D377, D394, D416): **its judged run passes.** All 15 criteria pass on 1,024 entries, and all nine
-    plants are caught, run from 3e4635cb.
+  - **FR-45** (D327, D377, D394, D416): **its judged run passes,** run from 3e4635cb.
+    - All 15 criteria pass on 904 entries, and the 120 baseline entries pass too.
+    - All nine plants are caught.
   - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;
     C4's four-way form by amendment once admission by species lands.
   - **GJ-N1** (D330, D337, D338, D388): judged on 25 November 2026, passed on the line and on the 2D field. The references land with the next landing; the 3D field is not run.
