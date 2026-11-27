@@ -597,6 +597,61 @@ def test_a_kind_worlds_sets_and_records_come_from_its_kinds(monkeypatch):
     assert (records["observed_pH"]["set"], records["observed_pH"]["unit"]) == ("node", "pH")
 
 
+RECORDED_KIND_FREE = {  # A kind-free world's name: the field its row reads.
+    "FR-51's block without kinds (D402)": "channel_unblocked_fraction",
+    "FR-50's own one-way records": "one_way_forward_fmol",
+}
+
+
+def kind_free_world(name):
+    """A world that declares no kind but records its own fields: FR-51's run world (a blocked
+    population), or FR-50's World 1 (@3's own one-way records, beside its block)."""
+    if name.startswith("FR-51"):
+        from validation.fr51 import engine as fr51
+
+        return fr51.run_world()
+    from validation.fr50 import engine as fr50
+
+    cases = fr50._cases()
+    return fr50.world_1(cases["E1"], cases["E4"], dt=1e-4, end=1e-3)
+
+
+@pytest.mark.parametrize("name", list(RECORDED_KIND_FREE))
+def test_a_kind_free_world_s_own_records_are_described(name, monkeypatch):
+    """D402 (host, about 1 s each): a world that declares no kind still folds @3's records of what
+    it declares into its view declarations, so the view states them: FR-51's unblocked fraction
+    (before D402 the writer refused it, "declares no axes, unit or layer", since only a kind world
+    folded them), and FR-50's own one-way records, on their pair set with each pair's entity and
+    species, forward from origin to destination. Plant: the old fold, kinds only, refuses both."""
+    monkeypatch.setattr(run_view, "_engine_source", lambda root=None: None)
+    spec = parse_spec(kind_free_world(name))
+    impl = get_model(spec.model)
+    assert not impl.structure.kinds
+    _, layout = impl.initial_values(spec)
+    plan = run_view.prepare(spec, layout=layout)
+    view = plan.view(run_view.single_file_bases([0.0, 1e-3], [0.0, 1e-3]), "write_run")
+    run_view.validate(view)
+    records, sets = {r["field"]: r for r in view["records"]}, {s["id"]: s for s in view["sets"]}
+    field = RECORDED_KIND_FREE[name]
+    if name.startswith("FR-51"):
+        assert (records[field]["unit"], records[field]["kind"]) == ("1", "level")
+    else:
+        forward, gap = records[field], records["one_way_gap_relative"]
+        assert (forward["set"], forward["unit"], forward["kind"]) == (
+            "one_way_pair", "fmol", "cumulative",
+        )  # fmt: skip
+        assert (forward["sign"]["from"], forward["sign"]["to"]) == ("origin", "destination")
+        assert (gap["unit"], gap["kind"]) == ("1", "level")
+        pairs = sets["one_way_pair"]
+        assert pairs["ids"] == [f"{k}:{e}:{s}" for k, e, s in impl.structure.one_way_records]
+        assert pairs["carries"] == ["K", "K"] and pairs["kinds"] == ["channel", "membrane"]
+    monkeypatch.setattr(tissue3, "declares_view", lambda structure: bool(structure.kinds))
+    before = tissue3.InnerImplementation(impl.structure)  # The plant: the fold before D402,
+    monkeypatch.setattr("cells.registry.models.get_model", lambda model: before)  # uncached.
+    with pytest.raises(run_view.ViewRefused, match="declares no axes, unit or layer"):
+        run_view.prepare(spec, layout=layout)
+
+
 def test_the_injections_records_layer_and_events(monkeypatch):
     """The writer reads cells.operator.electrode_current_injection@1's own declarations (host only, no run):
     each field's unit (from its name), axes, kind and prescribed layer, and each scheduled current

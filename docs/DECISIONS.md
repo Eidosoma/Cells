@@ -13740,3 +13740,45 @@ It is a port check: it shows that the live engine computes legacy's written equa
   G1 saves stay beside G1's record.
 - **Next:** FR-65's coupling step, whose code is built, reruns D327's sequence probe with FR-52 landed, then takes its D148 round. FR-50 phase 2's
   round is running.
+
+## D405: FR-50 phase 2 is landed, its judged comparison passing; FR-45's second rulings, after a fresh review of the contract
+
+2026-11-27, written at 01:47 UTC.
+
+- **FR-50 phase 2 landed** at d92403cc (tag `fr50-phase2-landed-2026-11-27`), from aede3147. The landing's trial passed 239 tests.
+  - **What it builds:** an optional `one_way_records` key on `cells.model.resolved_pump_tissue@3`, for membrane routes, junctions, uncharged faces
+    and channels. The channel split comes from `channel_rates`' own factors. D402's plan and rulings 1 to 7 apply.
+  - **D402's run-view fix:** wherever the run-view declarations add something, they are folded in.
+  - **Disclosed:** two water spec files each carry the new model field, so that water worlds parse.
+  - **The D148 round** at 42d9719c, against 10225759, passes: crossrev 11 of 11 identical, G1 113 of 113, tiers 1 and 2 with 0 changed, and
+    tier 3's water and replacement files.
+  - **Stacked on main with FR-52** (D229 rule 2), at 070720ac:
+    - crossrev and G1 identical;
+    - tiers 1 and 2 had one failure: the old-spelling guard caught a bare ID in the new D327 rows;
+    - the test-only fix, aede3147, passes that guard, its file and the guard set;
+    - beside `cohorts`, the new records are refused by name: they stand next to `cells.operator.integer_unit_population@1` until a world
+      qualifies the pair (D327).
+  - **The judged run** of `fr50-one-way-records-v1 --phase 2` ran once, at aede3147, from a clean snapshot, on the timed cores, in phase 1's
+    form (D363). It used the tagged judge and erratum 1, and took the references by `git archive`. It **passes**: E1 to E6 are inside their
+    bands, all four plants are caught, and all four E5 refusals pass. The verdict's sha256 is ad6f2505…, as the lead hashed it.
+  - **Next:** FR-64's build follows, once the lead has ruled its new note's questions (D399). FR-65's coupling step merges main and reruns
+    D327's probe against the new records. Its D148 round runs after tonight's nightly.
+- **FR-45's contract had a fresh review** by an agent that has seen no reference value (`/mnt/workspaces/Cells/fr45-contract-review-20261127/`).
+  It found 7 blocking problems, 14 should-fix and 14 wording points, and it confirmed that it never saw a draft of the rulings.
+- **FR-45's second rulings** are `/mnt/workspaces/Cells/fr45-readings-20261126/RULINGS-2-2026-11-27.md`, hashed with their census at
+  01:08 UTC.
+  - **Coverage:** the remaining readings, the contract's eight open items, and every review finding. 34 of the 35 findings are accepted; S1
+    is not needed.
+  - **A census** of the tagged reference files records keys, types, counts and words, never a result. It shows:
+    - no compared pair or heat is above the convergence threshold;
+    - every catching plant entry is sized above one bound (P4 is caught by its verdict);
+    - the invented sample shares no result with the registered files.
+  - **The two rules:** on an honest run, a missing or faulty entry fails its criterion. On a plant run, it is not caught.
+  - **Plants:** each registered entry, and each variant, must fail. Only a named `check` refusal catches. The honest run's same entry must
+    pass.
+  - **New for the user to know:** a registered world first runs in the judged run itself. The builder develops and tests on invented worlds
+    only.
+  - **Next:**
+    - an editor that has seen no value applies the rulings to the contract, and writes the format sample and the expected-inputs file;
+    - the reviewer then reads the whole final contract;
+    - then come the binding tag and the build.

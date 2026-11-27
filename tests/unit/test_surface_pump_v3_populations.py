@@ -31,6 +31,7 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions import surface_pump_v3_spec as spec_v3
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
+from cells.laws.junctions.selective import selective_flux
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump_v3 as v3
@@ -41,6 +42,10 @@ from cells.registry.models import get_model
 from tests import kind_fixtures as kf
 from tests import membrane_insertion_fixtures as insertion_fixtures
 from tests import partition_fixtures
+from validation.fr50 import closed_forms as fr50_closed
+from validation.fr50 import engine as fr50_engine
+from validation.fr50 import judge as fr50_judge
+from validation.fr50 import plants as fr50_plants
 from validation.fr51 import closed_forms as fr51_laws
 from validation.fr51 import engine as fr51
 from validation.fr51 import judge as fr51_judge
@@ -243,13 +248,22 @@ def test_the_effective_availability_is_recorded_where_the_door_routes_into_chann
 
 
 def test_the_model_gains_no_field_so_the_families_that_copy_it_still_parse():
-    """The water families build their models from @3's model fields by name, so the door adds
-    none (the factors ride on the population); a planted model field would break their parse."""
+    """The water families build their models from @3's model fields by name, so a model field
+    they do not carry would break their parse. The door adds none (the factors ride on the
+    population). FR-50 phase 2 adds one, one_way_records, which @3's model gains only where it is
+    declared: empty by default, written by to_dict only where declared, and carried empty by the
+    water model (which refuses a declared one), so the water world parses and writes as before."""
+    from cells.definitions import surface_pump_water_spec as water_spec
+
     raw = water_fixtures.with_water(
         water_fixtures.heredity_cell("D", end_time=0.004), pf_m_s=5e-4, bath_pressure_Pa=12.5
     )
-    assert parse_spec(raw).model.water is not None
+    spec = parse_spec(raw)
+    assert spec.model.water is not None
     assert "channel_factors" not in spec_v3.SurfacePumpChannelModel.__dataclass_fields__
+    assert spec_v3.SurfacePumpChannelModel.__dataclass_fields__["one_way_records"].default == ()
+    assert spec.model.one_way_records == ()
+    assert spec_v3.ONE_WAY_RECORDS_KEY not in water_spec.to_dict(spec)["model"]
 
 
 # ------------------------------------------------------------------ the gate
@@ -695,3 +709,302 @@ def test_a_block_round_trips_alone_and_beside_factors():
         assert both.model.channels[0].factors == ("f_b", "f_c")
         assert both.model.channels[0].block is not None
         assert type(both.model.channels[1]) is not spec_v3.FactoredChannelPopulation
+
+
+# ------------------------------------------------------------------ FR-50 phase 2: @3's own records
+# fr50-one-way-records-v1 §3 (validation/fr50/REGISTRATION.md): the model key one_way_records. The
+# host rows take the registered cases' worlds (validation/fr50/engine) and the builder's closed
+# forms (validation/fr50/closed_forms), read by the tagged judge's own checks; the code-blind
+# references are the judged run's alone. The compiled rows are test_one_way_records_own.py.
+
+FR50 = fr50_engine._cases()  # {case kind: its registered case}
+FR50_PLANTS = {name: plant for name, plant in fr50_judge.PLANTS.items() if plant["kind"] == "E6"}
+
+
+def fr50_world(name, **kwargs):
+    if name == "world_1":
+        return fr50_engine.world_1(FR50["E1"], FR50["E4"], dt=1e-4, end=1e-3, **kwargs)
+    return fr50_engine.world_2(FR50["E2"], FR50["E3"], dt=5e-3, end=5e-2, **kwargs)
+
+
+@pytest.mark.parametrize("plant", [None, *FR50_PLANTS])
+def test_the_channel_split_off_reversal_and_each_registered_plant(plant):
+    """E6 (host, about 0.3 s): World 1's blocked population at the five declared voltages and two
+    availabilities, through clamped_channel_flux: u and each direction within 1e-12 of the closed
+    forms, the kernel closure within 4 ulps and Ussing's ratio within 1e-12, by the judge's own
+    check_e6. Each registered plant (validation/fr50/plants) fails as the judge's PLANTS say: the
+    availability left out of the split, the block left out, B(x) and B(-x) exchanged."""
+    ref = fr50_closed.e6("E6", FR50["E6"])
+    request = fr50_judge.request_for(ref, plant=plant)
+    results = fr50_judge.judge_case(ref, fr50_engine.engine(request), request)
+    if plant is None:
+        assert all(r["passed"] for r in results.values()), results
+    else:
+        assert fr50_judge._plant_caught(FR50_PLANTS[plant], results)[0], results
+
+
+def test_the_channel_split_closes_to_channel_rates_flux_within_four_ulps():
+    """The kernel closure (fr50-one-way-records-v1 §1) on a sweep (host, about 3 s): World 1's
+    population at five K pairs (each world's V is its E_K, inside the domain), every 12 mV from
+    -120 to +60 mV and three availabilities, under its
+    reversal reference, under the membrane voltage and with a second mode: outward less inward is
+    channel_rates' outward flux within 4 ulps of their sum at every point. Plant: the split without
+    the block fails where u is not 1."""
+
+    def sweep(case):
+        spec = parse_spec(fr50_engine.world_1(None, case, dt=1e-4, end=1e-4))
+        impl, state, p, control = bound(spec)
+        k, worst = list(spec.model.species_ids).index("K"), 0.0
+        for v in np.arange(-0.120, 0.0601, 0.012):
+            for a in (1.0, 0.5, 0.3):
+                held = control._replace(channel=np.full_like(control.channel, a))
+                flux, _, (out, back) = impl.clamped_channel_flux(
+                    state, held, p, float(v), xp=np, one_way=True
+                )
+                f, b, j = (float(x[k, 0]) for x in (out, back, flux))
+                excess = abs(Decimal(f) - Decimal(b) - Decimal(j))
+                worst = max(worst, float(excess / Decimal(float(np.spacing(f + b)))))
+        return worst
+
+    pairs = (("140", "5.4"), ("140", "50"), ("30", "140"), ("0.5", "0.2"), ("5", "5"))
+    block = FR50["E4"]["block"]
+    variants = (
+        block,
+        dict(block, reference="membrane_voltage"),
+        dict(block, modes=[dict(weight="0.6", k0_mM="1", electrical_distance="0.5"),
+                           dict(weight="0.4", k0_mM="0.2", electrical_distance="0.9")]),
+    )  # fmt: skip
+    for c_in, c_out in pairs:
+        for b in variants:
+            assert sweep(dict(FR50["E4"], c_in_mM=c_in, c_out_mM=c_out, block=b)) <= 4.0
+    with fr50_plants.planted("E6b_block_omitted"):
+        assert sweep(dict(FR50["E4"], c_in_mM="140", c_out_mM="50")) > 4.0
+
+
+def test_each_route_s_split_is_its_net_record_s_two_directions():
+    """@3's own kernels at one end (host, own_one_way_fluxes on a LabelView): World 1's patch route
+    at -60 mV, its inward over outward Ussing's (c_o/c_i) e^(-x) within 1e-12 and its difference the
+    transport's membrane flux within 4 ulps of their sum; World 2's face and junction at unequal S
+    (2 and 1 uM), each direction g c of its own end within 1e-15 of the closed forms' g. Plant: the
+    potentials negated (B(x) and B(-x) exchanged) misses Ussing's ratio."""
+    from cells.laws.electrochemistry import F, R
+    from cells.registry.kind_registry import LabelView
+
+    spec = parse_spec(fr50_world("world_1"))
+    impl, state, p, control = bound(spec)
+    n, v = p.active.size, -0.060
+    potentials = np.zeros(n + p.outside_active.size)
+    potentials[0] = v
+
+    def membrane(volts):
+        view = LabelView(state, state, volts, control)
+        forward, backward = v3.own_one_way_fluxes(view, p, impl.structure, xp=np)
+        return float(forward[1]), float(backward[1])  # The structure's order: channel, membrane.
+
+    out, back = membrane(potentials)
+    x = F * v / (R * spec.model.temperature_K)
+    ussing = (5.4 / 140) * np.exp(-x)
+    assert abs(back / out - ussing) <= 1e-12 * ussing
+    k = list(spec.model.species_ids).index("K")
+    j = float(selective_flux(140.0, 5.4, v, 1, spec.model.temperature_K, p.membrane_area[0],
+                             p.membrane_permeability[k, 0], 0.0, 1.0, 1.0, xp=np))  # fmt: skip
+    assert abs(out - back - j) <= 4 * float(np.spacing(out + back))  # The transport's own law.
+    planted, planted_back = membrane(-potentials)
+    assert abs(planted_back / planted - ussing) > 1e-6 * ussing
+    raw = fr50_world("world_2")
+    for node, c in ((fr50_engine.CELL, 2e-3), (fr50_engine.NODE, 2e-3)):
+        amounts = next(x for x in (*raw["model"]["cells"], *raw["model"]["extracellular"])
+                       if x["id"] == node)["initial_amount_fmol"]  # fmt: skip
+        amounts["S"] = c * 1.0
+    spec = parse_spec(raw)
+    impl, state, p, control = bound(spec)
+    view = LabelView(state, state, np.zeros(p.active.size + p.outside_active.size), control)
+    forward, backward = v3.own_one_way_fluxes(view, p, impl.structure, xp=np)
+    face = 1e15 * 1e-10 * 1e-10 / 1e-5  # g = 1e15 D A / L (pL/s), E3's.
+    junction = 1e15 * 1e-9 * 1e-12  # g = 1e15 P A gate v, E2's.
+    for got, want in zip((*forward, *backward), (face * 2e-3, junction * 2e-3, face * 1e-3,
+                                                  junction * 1e-3), strict=True):  # fmt: skip
+        assert abs(float(got) - want) <= 1e-14 * want
+
+
+def test_the_registered_refusals_each_name_one_way_and_their_cause_beside_an_accepted_control():
+    """E5 (parse only, about 2 s): a charged face row, a forms face, a pump and RK4, each refused
+    with its declaration's name and its cause, and each control (the same world without the
+    declaration; for RK4, erratum 1's) accepted, by the judge's own check_refusals."""
+    results = fr50_judge.check_refusals("E5", fr50_engine.e5(FR50))
+    assert all(r["passed"] for r in results.values()), results
+
+
+def fr50_refusal_world(name):
+    """(raw, reason) of each further refusal of @3's own records (FR50_REFUSALS)."""
+    raw = fr50_world("world_1")
+    m, record = raw["model"], raw["model"]["one_way_records"]
+    if name == "an empty list":
+        m["one_way_records"] = []
+    elif name == "an unknown entity kind":
+        record[0]["entity"] = "pore"
+    elif name == "a kind's route":
+        record[0]["entity"] = "passive_route"
+    elif name == "an unknown entity":
+        record[0]["id"] = "nowhere"
+    elif name == "an unknown species":
+        record[0]["species"] = ["Q"]
+    elif name == "a pair twice":
+        record.append(dict(record[0]))
+    elif name == "an unknown key":
+        record[0]["readout"] = True
+    elif name == "a calcium pump":
+        raw = v3_fixtures.definition("closed")
+        pump = raw["model"]["membranes"][0]["calcium_pump"]["id"]
+        raw["model"]["one_way_records"] = [dict(entity="calcium_pump", id=pump, species=["Ca"])]
+    return raw
+
+
+FR50_REFUSALS = {
+    "an empty list": "non-empty list",
+    "an unknown entity kind": "entity is one of",
+    "a kind's route": "keep their own one_way records",
+    "an unknown entity": "names no membrane",
+    "an unknown species": "distinct species rows",
+    "a pair twice": "declared twice",
+    "an unknown key": "unknown=",
+    "a calcium pump": "is a pump",
+}
+
+
+@pytest.mark.parametrize("name", list(FR50_REFUSALS))
+def test_each_further_refusal_of_the_records_names_its_reason(name):
+    """@3's own records (parse only, about 0.2 s each): each malformed declaration is refused with
+    its reason."""
+    with pytest.raises(ConfigError, match=FR50_REFUSALS[name]):
+        parse_spec(fr50_refusal_world(name))
+
+
+def fr50_beside(name):
+    """(raw, reason) of the records beside a path that cannot carry them (each fails closed)."""
+    if name == "a slot changer (partition)":
+        raw = partition_fixtures.divided()
+        reason = "opens, closes or retires slots, and @3 keeps its own one_way records"
+    elif name == "a fixed-field operator (replacement@1)":
+        raw = composite_spec.frozen_definition(
+            replacement_fixtures.with_replacement(replacement_fixtures.heredity_sheet(radius=1))
+        )
+        reason = "today's fixed fields, which drop @3's own one_way records"
+    elif name.startswith("the integer unit population"):  # D327 beside FR-52's cohorts.
+        from validation.fr52_cohorts import worlds as fr52_worlds
+
+        raw = fr52_worlds.qualification(cohorts=name.endswith("cohorts"))
+        reason = (
+            "cells.operator.integer_unit_population@1 is refused beside @3's own one_way records"
+        )
+    else:  # The water family, whose internals are today's fixed fields.
+        raw = water_fixtures.with_water(water_fixtures.heredity_cell("D", end_time=0.004),
+                                        pf_m_s=5e-4)  # fmt: skip
+        reason = "does not run @3's own one_way records"
+    patch = raw["model"]["membranes"][0]["id"]
+    raw["model"]["one_way_records"] = [dict(entity="membrane", id=patch, species=["K"])]
+    return raw, reason
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "a slot changer (partition)",
+        "a fixed-field operator (replacement@1)",
+        "water@1",
+        "the integer unit population with its cohorts",
+        "the integer unit population without cohorts",
+    ],
+)
+def test_the_records_are_refused_where_a_path_would_drop_them(name):
+    """Fails closed (parse only, about 1 s each): beside a composite operator that opens, closes or
+    retires slots, or that builds the inner fields with today's fixed fields, and in a family with
+    fixed internals, @3's own records are refused by name, as are a kind's beside a closer. Beside
+    cells.operator.integer_unit_population@1, with or without FR-52's cohorts, they are refused by
+    name until a world qualifies the pair (D327's rule for two landings' combinations); FR-52's
+    qualification world parses without them in its own tests."""
+    raw, reason = fr50_beside(name)
+    with pytest.raises(ConfigError, match=reason):
+        parse_spec(raw)
+
+
+def test_records_run_on_the_fine_engine_and_through_their_structure_alone():
+    """Fails closed (host, about 1 s): under execution.projective both phases' records are refused
+    (a jump would extrapolate them and their gap's running maximum), @3's own and a kind's (phase
+    1's routes world: the lead's ruling 2 of 26 November 2026; no registered or judged world ran
+    one there); and a path that runs @3 without its structure refuses @3's own records."""
+    one = parse_spec(fr50_world("world_1"))
+    cases = fr50_engine._cases()
+    kinds = parse_spec(fr50_engine.routes_world(cases["K1"], cases["K2"], dt=0.1, end=0.2))
+    for spec in (one, kinds):
+        with pytest.raises(ConfigError, match="one_way records run on the fine engine"):
+            get_model(spec.model).check_steps(replace(spec, projective=object()),
+                                              [spec.execution.dt], None)  # fmt: skip
+    plain = parse_spec(fr50_world("world_1", records=False))
+    get_model(plain.model).check_steps(replace(plain, projective=None), [plain.execution.dt], None)
+    with pytest.raises(ConfigError, match="one_way_records runs in @3 through its structure"):
+        v3.initial_values(parse_spec(fr50_world("world_2")))  # World 1's block refuses first.
+
+
+def test_the_records_key_round_trips_and_without_it_nothing_moves():
+    """D148 (host): with one_way_records the definition round-trips, its structure holds the sorted
+    pairs, the state gains exactly the three record fields on the pair axis and the layout the
+    pairs' entity slot and species row; without it, to_dict writes no key and the structure, the
+    state and the layout are the world's without records."""
+    spec = parse_spec(fr50_world("world_1"))
+    assert parse_spec(spec_v3.to_dict(spec)) == spec
+    assert (
+        spec_v3.to_dict(spec)["model"]["one_way_records"]
+        == fr50_world("world_1")["model"]["one_way_records"]
+    )
+    impl, state, p, _ = bound(spec)
+    assert impl.structure.one_way_records == (
+        ("channel", fr50_engine.CHANNEL, "K"), ("membrane", fr50_engine.WALL, "K"),
+    )  # fmt: skip
+    plain = parse_spec(fr50_world("world_1", records=False))
+    assert "one_way_records" not in spec_v3.to_dict(plain)["model"]
+    assert v3.structure(plain.model).one_way_records == ()
+    base, plain_state, plain_p, _ = bound(plain)
+    assert base.STATE_TYPE is v3.STATE_TYPE  # A block alone adds no state field.
+    assert type(state)._fields == (*v3.STATE_TYPE._fields, *v3.ONE_WAY_STATE_AXES)
+    assert type(p)._fields == (*type(plain_p)._fields, *v3.ONE_WAY_LAYOUT_FIELDS)
+    k = list(spec.model.species_ids).index("K")
+    assert p.one_way_entity.tolist() == [0, 0] and p.one_way_row.tolist() == [k, k]
+    assert all(np.all(getattr(state, f) == 0) for f in v3.ONE_WAY_STATE_AXES)
+
+
+@pytest.mark.parametrize("solver", [ARS, "cells.solver.imex_euler_face_electromigration@1"])
+def test_the_records_are_passive_and_d327_s_planted_fault_doubles_them(solver):
+    """Three host steps of each world, under ARS(2,2,2) and the Euler IMEX (about 2 s each):
+    - with and without the records, every other field is bit for bit the same (nothing reads them);
+    - every pair's records grow and close to its net record, with its gap at most 1e-12;
+    - D327's planted fault, FR-51's block left out of both directions of the channel split, doubles
+      World 1's channel records at V = E_K (u = 1/2) while its net, gap and closure still hold,
+      which only an absolute check (E4-1) sees."""
+
+    def steps(raw):
+        raw["execution"]["solver"] = solver
+        impl, state, p, control = bound(parse_spec(raw))
+        for _ in range(3):
+            state, valid = impl.imex_step(state, raw["execution"]["dt"], control, p, xp=np)
+            assert bool(valid)
+        return state
+
+    for name in ("world_1", "world_2"):
+        recorded, plain = steps(fr50_world(name)), steps(fr50_world(name, records=False))
+        for field in type(plain)._fields:
+            assert (
+                np.asarray(getattr(recorded, field)).tobytes()
+                == np.asarray(getattr(plain, field)).tobytes()
+            ), (name, field)
+        forward, backward = recorded.one_way_forward_fmol, recorded.one_way_backward_fmol
+        assert np.all(forward > 0) and np.all(backward > 0)
+        assert np.all(recorded.one_way_gap_relative <= 1e-12)
+        if name == "world_1":
+            with fr50_plants.planted("E4_block_omitted"):
+                planted = steps(fr50_world(name))
+            channel = 0  # The structure's order: the channel's pair first.
+            for record in ("one_way_forward_fmol", "one_way_backward_fmol"):
+                ratio = getattr(planted, record)[channel] / getattr(recorded, record)[channel]
+                assert abs(ratio - 2.0) <= 1e-12
+            assert np.all(planted.one_way_gap_relative <= 1e-12)

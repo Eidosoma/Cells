@@ -1,5 +1,5 @@
 """FR-50's engine values for the judge (validation/fr50/judge.py, `--engine
-validation.fr50.engine:engine`), phase 1, under the judge's contract (its docstring) and its
+validation.fr50.engine:engine`), both phases, under the judge's contract (its docstring) and its
 erratum 1 (validation/fr50/JUDGE_ERRATUM_1.md).
 
 **Each case's world** is built from the request's spec case (the registered cases.json's entry)
@@ -38,20 +38,40 @@ Every world is at the declared temperature and runs @3 alone (its inner definiti
     judges a kind's admission beside a closer; the control is the population without the key.
 - A request with a plant runs under validation/fr50/plants.py's planted kind registry.
 
-Phase 2's kinds are not built here yet; they are judged at phase 2's landing.
+**Phase 2** (fr50-one-way-records-v1 §3), @3's own records (its model key one_way_records), each
+world from the registered cases alone:
+- World 1 (world_1; E1 and E4): one 1 pL cell on the held bath at V = E_K by its charge anchor,
+  its wall patch's own route and a gate-free K population with FR-51's declared block both
+  carrying K at the declared values; their records are the patch's K pair and the population's.
+- World 2 (world_2; E2 and E3): two 1 pL cells joined by a junction carrying S alone (its gate
+  held at 1) and their two 1 pL nodes joined by a face carrying S alone, S at the declared
+  concentrations and every potential 0; the junction's S pair and the face's.
+- E1 to E4 run compiled at the engine's own step (PHASE_2_STEPS; the cases register none) to the
+  last record time, once per world and plant. Each case's rows are its pair's records, net record
+  and gap at every accepted step. E4's also hold the population's split and channel_rates' flux at
+  each row's own state (channel_split_rows, on the host). World 1's restart is at mid-run.
+- E6 on the host (e6_values): World 1's population at the declared voltages and availabilities,
+  through clamped_channel_flux.
+- E5 (e5): its four refusal rows, each with its control.
+- A phase-2 plant runs under validation/fr50/plants.py's planted split, which rebuilds @3's
+  implementation so a compiled run traces it.
 """
 
 import contextlib
+import copy
+import math
 from decimal import Decimal
+from functools import cache
 
 import numpy as np
 
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.definitions.surface_pump_v3_spec import control_values
+from cells.definitions.surface_pump_v3_spec import ONE_WAY_RECORDS_KEY, control_values
 from cells.execution.runner import run
 from cells.kinds import passive_routes, transporter
 from cells.laws.cycles.forms import CycleForm, FluxTerm
-from cells.models import pump_composite
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.models import pump_composite, surface_pump_v3
 from cells.operators import OPERATORS
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
@@ -416,8 +436,309 @@ def k5(k1_case, k4_case):
     return dict(refusals=rows)
 
 
+# ------------------------------------------------------------------ phase 2: @3's own records
+#
+# World 1 (E1, E4, and E6's population) and World 2 (E2, E3), each from the registered cases alone
+# (the module docstring, phase 2), and E5's refusals. The cases declare no step: each world's is
+# the engine's own (PHASE_2_STEPS), a divisor of its record times.
+
+CHANNEL = "k_population"  # World 1's gate-free K population (E4, E6).
+BLOCKER = "blocker_B"  # FR-51's constant blocker: no species row (version 1).
+CELL_1, NODE_1, CONTACT_1 = "cell_1", "ecs_1", "contact_1"  # World 2's second cell and node.
+JUNCTION, FACE = "junction_0", "face_0"  # World 2's junction (E2) and face (E3).
+KLEAK = "cells.channel.kleak_always_open@1"
+FORMS_LAW = "cells.route.logmean_electrodiffusion_forms@1"
+# World 1's patch capacitance per area (F/m^2), the engine's choice: the cases declare none, and at
+# V = E_K the records do not depend on it (a typical specific membrane capacitance).
+SPECIFIC_CAPACITANCE_F_PER_M2 = 1e-2
+# The engine's steps (s), as decimal strings: World 1's records run 0.01 s apart to 0.1 s, World 2's
+# 10 s apart to 100 s; World 2's step also meets the junction gate's conservative bound.
+PHASE_2_STEPS = {"world_1": "0.0001", "world_2": "0.005"}
+# The pairs each case reads, in its world's one_way_records, and its forward direction's word.
+PAIRS = {
+    "E1": ("membrane", WALL, "K"),
+    "E4": ("channel", CHANNEL, "K"),
+    "E2": ("junction", JUNCTION, "S"),
+    "E3": ("face", FACE, "S"),
+}
+DIRECTION = {"E1": "outward", "E2": "sender", "E3": "sender", "E4": "outward", "E6": "outward"}
+
+
+def _block(block):
+    """E4's and E6's declared block (cases.json) as @3's channel entry's (FR-51's form), with the
+    blocker's ID, which version 1 requires and the case leaves to the engine."""
+    blocker, reference = block["blocker"], block["reference"]
+    return dict(
+        law="cells.channel_block.open_channel_block_weighted_modes@1",
+        blocker=dict(
+            id=BLOCKER, valence=int(blocker["valence"]), side=blocker["side"],
+            concentration_mM=_value(blocker["concentration_mM"]),
+        ),
+        reference=reference if isinstance(reference, str) else dict(reference),
+        modes=[
+            {k: _value(v) for k, v in mode.items()} for mode in block["modes"]
+        ],
+    )  # fmt: skip
+
+
+def _valences(raw):
+    return {s["id"]: s["valence"] for s in raw["model"]["species"]}
+
+
+def world_1(e1, e4, *, dt, end, records=True, solver=None):
+    """World 1 (fr50-one-way-records-v1 §3): one 1 pL cell on the held bath through its wall patch
+    of the declared area, at the declared temperature. K is 140 mM in the cell and 5.4 mM in the
+    bath (as declared); the patch's own permeability carries K alone (E1's, or 0 without e1), and a
+    gate-free K population (cells.channel.kleak_always_open@1) on the same patch carries it with
+    FR-51's declared block (E4's). Every other row is impermeant, so V stays at E_K: the cell's
+    charge anchor is C E_K, E_K = (R T/(z F)) ln(c_out/c_in) in binary64 from the declared
+    concentrations, with its fixed charge closing the anchor (the bath stays electroneutral). Its
+    one_way_records: the patch's own K route and the population's K (`records`)."""
+    shared = ("T_K", "valence", "A_m2", "c_in_mM", "c_out_mM")
+    if e1 is not None and any(e1[key] != e4[key] for key in shared):
+        raise ConfigError(f"E1 and E4 share World 1 only where they declare the same {shared}")
+    if e1 is not None and _value(e1["availability"]) != 1.0:
+        raise ConfigError("World 1's patch is held open (the fixture's): E1's availability is 1")
+    raw = _inner(
+        fx.world(cells=((CELL, 1.0),), nodes=(), contacts=(), faces=(), dt=dt, end=end,
+                 trace_mM=TRACE_mM)
+    )  # fmt: skip
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    temperature, z = _value(e4["T_K"]), int(e4["valence"])
+    m["temperature_K"] = temperature
+    wall = next(p for p in m["membranes"] if p["id"] == WALL)
+    wall["area_m2"] = _value(e4["A_m2"])
+    wall["capacitance_F"] = SPECIFIC_CAPACITANCE_F_PER_M2 * wall["area_m2"]
+    wall["permeability_m_per_s"]["K"] = 0.0 if e1 is None else _value(e1["P_m_per_s"])
+    c_in, c_out = _value(e4["c_in_mM"]), _value(e4["c_out_mM"])
+    cell = m["cells"][0]
+    bath = next(n for n in m["extracellular"] if n["id"] == BATH)
+    for node, c in ((cell, c_in), (bath, c_out)):
+        node["initial_amount_fmol"]["K"] = c * node["volume_pL"]
+    valence = _valences(raw)
+    ions = lambda node: math.fsum(valence[s] * a for s, a in node["initial_amount_fmol"].items())  # noqa: E731
+    bath["fixed_charge_equivalent_fmol"] = -ions(bath)
+    e_k = R * temperature / (z * F) * math.log(c_out / c_in)
+    charge = wall["capacitance_F"] * e_k
+    cell["initial_charge_C"] = charge
+    cell["fixed_charge_equivalent_fmol"] = charge / CHARGE_PER_FMOL - ions(cell)
+    m["channels"] = [
+        dict(
+            id=CHANNEL, membrane_id=WALL, kinetic_law=KLEAK,
+            max_permeability_m_per_s=_value(e4["P_m_per_s"]), abundance=_value(e4["abundance"]),
+            initial_gate=[],
+            permeant_ions=[dict(species_id="K",
+                                relative_permeability=_value(e4["relative_permeability"]))],
+            block=_block(e4["block"]),
+        )
+    ]  # fmt: skip
+    e["channel_controls"] = [
+        dict(channel_id=CHANNEL, schedule=[dict(time=0.0, availability=_value(e4["availability"]))])
+    ]
+    x["channel_capacity"] = 1
+    if _value(e4["open_fraction"]) != 1.0:
+        raise ConfigError("World 1's population is gate-free: its open fraction is 1")
+    if records:
+        m[ONE_WAY_RECORDS_KEY] = [
+            dict(entity="membrane", id=WALL, species=["K"]),
+            dict(entity="channel", id=CHANNEL, species=["K"]),
+        ]
+    if solver is not None:
+        x["solver"] = solver
+    return raw
+
+
+def world_2(e2, e3, *, dt, end, records=True, inner=True):
+    """World 2 (fr50-one-way-records-v1 §3): two 1 pL cells joined by a junction of the declared
+    area that carries S alone at the declared permeability, its gate held open at 1 (a minimum open
+    fraction of 1), and each cell's contact patch on its own 1 pL finite node, the two nodes joined
+    by a face of the declared area and length carrying S alone at the declared diffusivity (the
+    secreted-species fixture: quiescent ions, every potential 0). S is at the declared
+    concentrations everywhere. Its one_way_records: the junction's S and the face's S. inner False
+    keeps the composite fixture's form (no operator), whose step the records then cross."""
+    raw = fx.world(
+        cells=((CELL, 1.0), (CELL_1, 1.0)), nodes=((NODE, 1.0), (NODE_1, 1.0)),
+        contacts=((CONTACT, CELL, NODE), (CONTACT_1, CELL_1, NODE_1)),
+        faces=((FACE, NODE, NODE_1, _value(e3["A_m2"]), _value(e3["L_m"])),),
+        junctions=((JUNCTION, CELL, CELL_1),), dt=dt, end=end, trace_mM=TRACE_mM,
+        concentrations_mM={CELL: _value(e2["c_sender_mM"]), CELL_1: _value(e2["c_receiver_mM"]),
+                           NODE: _value(e3["c_sender_mM"]), NODE_1: _value(e3["c_receiver_mM"])},
+        diffusivity=_value(e3["D_m2_per_s"]),
+    )  # fmt: skip
+    raw = _inner(raw) if inner else raw
+    m = raw["model"]
+    if e2["T_K"] != e3["T_K"]:
+        raise ConfigError("E2 and E3 share World 2 only at one temperature")
+    m["temperature_K"] = _value(e2["T_K"])
+    junction = m["junctions"][0]
+    junction["area_m2"] = _value(e2["A_m2"])
+    junction["permeability_m_per_s"][fx.SPECIES] = _value(e2["P_m_per_s"])
+    if _value(e2["gate"]) != 1.0:
+        raise ConfigError("World 2 holds its junction's gate at 1 by a minimum open fraction of 1")
+    junction["gate"].update(minimum_open_fraction=1.0, initial_gate=1.0)
+    for control in raw["experiment"]["junction_controls"]:
+        control["schedule"] = [dict(time=0.0, availability=_value(e2["availability"]))]
+    if records:
+        m[ONE_WAY_RECORDS_KEY] = [
+            dict(entity="junction", id=JUNCTION, species=[fx.SPECIES]),
+            dict(entity="face", id=FACE, species=[fx.SPECIES]),
+        ]
+    return raw
+
+
+def own_rows(result, dt, pair):
+    """A run's rows for one of @3's own record pairs ((entity kind, entity ID, species ID)): n, F,
+    B, the pair's net record and its gap at every accepted step, from the run's history (@3 alone
+    or the composite form, whose model holds @3's fields)."""
+    model = result.spec.model
+    pairs = surface_pump_v3.structure(model).one_way_records
+    index, (kind, entity, species) = pairs.index(pair), pair
+    slots = dict(
+        channel=[c.id for c in model.channels], face=[f.id for f in model.faces],
+        junction=[j.id for j in model.junctions], membrane=[p.id for p in model.membranes],
+    )  # fmt: skip
+    s, slot = list(model.species_ids).index(species), slots[kind].index(entity)
+    net = surface_pump_v3.ONE_WAY_NETS[kind]
+    return _rows(
+        result, dt, lambda h: (
+            np.asarray(h.one_way_forward_fmol)[:, index],
+            np.asarray(h.one_way_backward_fmol)[:, index],
+            np.asarray(getattr(h, net))[:, s, slot],
+            np.asarray(h.one_way_gap_relative)[:, index],
+        ),
+    )  # fmt: skip
+
+
+def channel_split_rows(result, rows=None):
+    """E4's extra columns at every accepted row (or the given row indices), on the host: the
+    population's K split (outward, inward) and channel_rates' outward K flux at the row's own state,
+    controls and membrane voltage (its field's), through clamped_channel_flux."""
+    spec = result.spec
+    impl = get_model(spec.model)
+    _, p = impl.initial_values(spec)
+    times = np.asarray(result.times, dtype=np.float64)
+    controls = control_values(spec, times)
+    k = list(spec.model.species_ids).index("K")
+    history = [np.asarray(v) for v in result.history]
+    forward, backward, flux = [], [], []
+    for i in range(times.size) if rows is None else rows:
+        state = impl.STATE_TYPE(*(v[i] for v in history))
+        control = impl.Control(*(np.asarray(v)[i] for v in controls))
+        voltage = impl.field_values(state, control, p, xp=np).rates.membrane_voltage_V
+        j, _, (out, back) = impl.clamped_channel_flux(state, control, p, voltage, xp=np,
+                                                      one_way=True)  # fmt: skip
+        forward.append(out[k, 0])
+        backward.append(back[k, 0])
+        flux.append(j[k, 0])
+    return dict(split_forward=np.asarray(forward), split_backward=np.asarray(backward),
+                channel_flux=np.asarray(flux))  # fmt: skip
+
+
+@cache
+def _phase_2_run(world, dt, end, plant):
+    """(spec, result) of World 1 or 2 at dt to end (decimal strings), one run per plant (the
+    planted runs compile their own programs: validation/fr50/plants.py)."""
+    cases = _cases()
+    if world == "world_1":
+        raw = world_1(cases["E1"], cases["E4"], dt=float(dt), end=float(end))
+    else:
+        raw = world_2(cases["E2"], cases["E3"], dt=float(dt), end=float(end))
+    spec = parse_spec(raw)
+    return spec, run(spec)
+
+
+@cache
+def _phase_2_restart(world, dt, end, at):
+    """The run resumed from its checkpoint at `at` (s): (checkpoint, resumed result)."""
+    spec, full = _phase_2_run(world, dt, end, None)
+    checkpoint = full.checkpoint_at(float(at))
+    return checkpoint, run(spec, checkpoint)
+
+
+def _own_record_case(request):
+    kind = request["kind"]
+    world = "world_1" if kind in ("E1", "E4") else "world_2"
+    dt, end = PHASE_2_STEPS[world], request["record_times_s"][-1]
+    _steps(dt, end)  # The horizon is a whole number of steps.
+    spec, result = _phase_2_run(world, dt, end, request.get("plant"))
+    rows = own_rows(result, dt, PAIRS[kind])
+    if kind == "E4":
+        rows |= channel_split_rows(result)
+    out = dict(direction=DIRECTION[kind], runs={dt: rows})
+    if request.get("restart_at_s") is not None:
+        checkpoint, resumed = _phase_2_restart(world, dt, end, request["restart_at_s"])
+        after_rows = own_rows(resumed, dt, PAIRS[kind])
+        after = after_rows["n"] > checkpoint.step_index
+        out["restart"] = dict(
+            dt_s=dt,
+            from_n=int(checkpoint.step_index),
+            **{q: v[after] for q, v in after_rows.items()},
+            state=_state(resumed),
+            uninterrupted_state=_state(result),
+        )
+    return out
+
+
+def e6_values(case, evaluations):
+    """E6 on the host: World 1's population (its patch's own route closed) at the initial state, at
+    each (V, availability) of the request (decimal strings): u, its K split (outward, inward) and
+    channel_rates' outward K flux, all through clamped_channel_flux at that patch voltage with the
+    population's held availability set."""
+    spec = parse_spec(world_1(None, case, dt=1e-4, end=1e-4))
+    impl = get_model(spec.model)
+    state, p = impl.initial_values(spec)
+    control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+    k = list(spec.model.species_ids).index("K")
+    out = {q: [] for q in ("u", "forward", "backward", "channel_flux")}
+    for voltage, availability in evaluations:
+        held = control._replace(channel=np.full_like(control.channel, float(Decimal(availability))))
+        flux, _, terms, (forward, backward) = impl.clamped_channel_flux(
+            state, held, p, float(Decimal(voltage)), xp=np, block=True, one_way=True
+        )
+        out["u"].append(terms.block.u[0])
+        out["forward"].append(forward[k, 0])
+        out["backward"].append(backward[k, 0])
+        out["channel_flux"].append(flux[k, 0])
+    return {q: np.asarray(v, dtype=np.float64) for q, v in out.items()}
+
+
+def e5(cases):
+    """E5's four refusal rows (the judge's REFUSALS["E5"]), each the world with its declaration
+    against the same world without it (the control, which must be accepted):
+    - charged_face_row: World 2 with a record of K, a charged row, on its face;
+    - forms_face: World 2 with its face on the forms law
+      (cells.route.logmean_electrodiffusion_forms@1) and a record of S on that face;
+    - pump: @3's closed fixture (validation/tissue/surface_pump_v3_fixtures, with Na/K pumps) with
+      a record on its first pump;
+    - rk4: World 1 with its records under RK4; its control, World 1 without them under RK4, which
+      admits a world without kinds (erratum 1)."""
+    from validation.tissue import surface_pump_v3_fixtures as closed
+
+    rows = {}
+    two = dict(dt=float(PHASE_2_STEPS["world_2"]), end=float(PHASE_2_STEPS["world_2"]))
+    asked = world_2(cases["E2"], cases["E3"], **two)
+    asked["model"][ONE_WAY_RECORDS_KEY].append(dict(entity="face", id=FACE, species=["K"]))
+    control = world_2(cases["E2"], cases["E3"], **two)
+    rows["charged_face_row"] = _refusal(_parsed(asked), _parsed(control) is None)
+    control = world_2(cases["E2"], cases["E3"], records=False, **two)
+    control["model"]["faces"][0]["law"] = FORMS_LAW
+    asked = copy.deepcopy(control)
+    asked["model"][ONE_WAY_RECORDS_KEY] = [dict(entity="face", id=FACE, species=[fx.SPECIES])]
+    rows["forms_face"] = _refusal(_parsed(asked), _parsed(control) is None)
+    control = closed.definition("closed")
+    pump = control["model"]["membranes"][0]["pump"]["id"]
+    asked = copy.deepcopy(control)
+    asked["model"][ONE_WAY_RECORDS_KEY] = [dict(entity="pump", id=pump, species=["Na"])]
+    rows["pump"] = _refusal(_parsed(asked), _parsed(control) is None)
+    one = dict(dt=float(PHASE_2_STEPS["world_1"]), end=float(PHASE_2_STEPS["world_1"]))
+    asked = world_1(cases["E1"], cases["E4"], solver="rk4", **one)
+    control = world_1(cases["E1"], cases["E4"], solver="rk4", records=False, **one)
+    rows["rk4"] = _refusal(_parsed(asked), _parsed(control) is None)
+    return dict(refusals=rows)
+
+
 def engine(request):
-    """The judge's engine function (its docstring's contract), phase 1."""
+    """The judge's engine function (its docstring's contract), both phases."""
     kind = request["kind"]
     with plants.planted(request.get("plant")):
         if kind in ("K1", "K2", "K4"):
@@ -428,12 +749,20 @@ def engine(request):
             return _k4h(request)
         if kind == "K5":
             return k5(*_phase_1_cases())
-    raise NotImplementedError(f"FR-50's phase 2 ({kind}) is built after phase 1 lands")
+        if kind in PAIRS:
+            return _own_record_case(request)
+        if kind == "E6":
+            values = e6_values(request["spec"], request["evaluations"])
+            return dict(direction=DIRECTION["E6"], **values)
+        if kind == "E5":
+            return e5(_cases())
+    raise NotImplementedError(f"no engine values for case kind {kind!r}")
 
 
-def _phase_1_cases():
-    """K1's and K4's spec cases from the registered cases.json (the judge's SPEC), for K5's worlds,
-    which its request does not carry."""
+def _cases():
+    """{case kind: the first spec case of that kind} from the registered cases.json (the judge's
+    SPEC), for the worlds a request's own case does not hold (World 1's two cases, World 2's two,
+    E5's)."""
     import json
 
     from validation.fr50 import judge
@@ -441,7 +770,12 @@ def _phase_1_cases():
     cases = json.loads(judge.SPEC.read_text())["cases"]
     pick = {}
     for case_id, case in cases.items():
-        for kind in ("K1", "K4"):
-            if case_id.split("_")[0] == kind and kind not in pick:
-                pick[kind] = case
+        pick.setdefault(case_id.split("_")[0], case)
+    return pick
+
+
+def _phase_1_cases():
+    """K1's and K4's spec cases from the registered cases.json (the judge's SPEC), for K5's worlds,
+    which its request does not carry."""
+    pick = _cases()
     return pick["K1"], pick["K4"]
