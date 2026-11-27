@@ -419,6 +419,11 @@ def at_node(row, node, inputs):
     return out
 
 
+def _derived(agreement, value, expected, tolerance):
+    """agreement.judge_derived on one value: its expected value a scalar, its tolerance a float."""
+    return agreement.judge_derived([value], float(expected), float(tolerance))
+
+
 def _band(e, ref, tol):
     ok = e is not None and ref is not None and tol is not None and abs(e - ref) <= tol
     return dict(
@@ -444,7 +449,7 @@ def evaluate(pair, ctx, agreement, G, run=None):
                 return dict(unformed=why)
             e = row["amounts"].get(obs)
             if crit == "C2b":
-                return agreement.judge_derived([e], [pair["value"]], pair["tolerance"])
+                return _derived(agreement, e, pair["value"], pair["tolerance"])
             if crit == "C8" and pair["tolerance"] is None:
                 return dict(passes=True, fails=False, information=True, e=e)
             return _band(e, pair["value"], pair["tolerance"])
@@ -457,10 +462,10 @@ def evaluate(pair, ctx, agreement, G, run=None):
             if crit == "C3a":
                 return _band(h1 - h0, pair["value"], pair["tolerance"])
             if crit == "C3c":
-                return agreement.judge_derived([max(h0 - h1, 0.0)], [0.0], pair["tolerance"])
+                return _derived(agreement, max(h0 - h1, 0.0), 0.0, pair["tolerance"])
             minus_dg = float(G(ctx.ref["world"], node, at_node(r0, node, inputs)) -
                              G(ctx.ref["world"], node, at_node(r1, node, inputs)))  # fmt: skip
-            return agreement.judge_derived([h1 - h0], [minus_dg], pair["tolerance"])
+            return _derived(agreement, h1 - h0, minus_dg, pair["tolerance"])
         if crit in ("C4a", "C5", "C9"):
             row, why = _row(run, pair["time_s"])
             if row is None:
@@ -477,13 +482,13 @@ def evaluate(pair, ctx, agreement, G, run=None):
                     + rec["collected"]
                     - rec["supplied"]
                 )
-                return agreement.judge_derived([books], [pair["value"]], pair["tolerance"])
+                return _derived(agreement, books, pair["value"], pair["tolerance"])
             if crit == "C5":
                 s = obs.split(":", 1)[1]
                 sites = row["amounts"][f"R:{s}"] + sum(
                     row["amounts"][f"B:{p}"] for p, ps in pops.items() if ps == s
                 )
-                return agreement.judge_derived([sites], [pair["value"]], pair["tolerance"])
+                return _derived(agreement, sites, pair["value"], pair["tolerance"])
             pop = obs.split(":", 1)[1]
             s = pops[pop]
             S = run["capacities"][s]
@@ -493,9 +498,8 @@ def evaluate(pair, ctx, agreement, G, run=None):
                 / S
             )
             tol = pair["tolerance_terms"]["eps_term"] + moiety
-            return agreement.judge_derived(
-                [row["site_occupied_fraction"][pop]], [row["amounts"][f"B:{pop}"] / S], tol
-            )
+            theta, expected = row["site_occupied_fraction"][pop], row["amounts"][f"B:{pop}"] / S
+            return _derived(agreement, theta, expected, tol)
         if crit in ("C4b", "C6"):
             k = _step(pair["time_s"], run["dt_s"])
             entries = [m for m in run["event_map"] if m["state_step"] == k]
@@ -517,7 +521,7 @@ def evaluate(pair, ctx, agreement, G, run=None):
             return _c7(run)
         if crit == "C10":
             return _c10(run, ctx)
-    except (KeyError, TypeError, ZeroDivisionError) as error:
+    except (KeyError, IndexError, StopIteration, TypeError, ValueError, ZeroDivisionError) as error:
         return dict(unformed=f"{type(error).__name__}: {error}")
     return dict(unformed=f"no rule for {crit} {obs}")
 
@@ -540,13 +544,13 @@ def _map_pair(pair, entry, inputs, agreement):
             if a["ligand"] == ligand and a["node"] == node
         )
         tol = tt["eps_factor"] * (abs(anchor) + abs(n) + tt["f_V_c_buf"])
-        return agreement.judge_derived([after["amounts"][obs]], [expected], tol)
+        return _derived(agreement, after["amounts"][obs], expected, tol)
     record = "collected" if kind == "removed" else "supplied"
     key = f"{ligand}@{node}"
     value = after["records"][key][record] - before["records"][key][record]
     if kind == "removed":
-        return agreement.judge_derived([value], [f * n], tt["eps_factor"] * f * abs(n))
-    return agreement.judge_derived([value], [pair["value"]], pair["tolerance"])
+        return _derived(agreement, value, f * n, tt["eps_factor"] * f * abs(n))
+    return _derived(agreement, value, pair["value"], pair["tolerance"])
 
 
 def _c7(run):

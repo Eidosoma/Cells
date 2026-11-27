@@ -25,8 +25,10 @@ from pathlib import Path
 import numpy as np
 
 EPS = 2.0**-52
-TARGET_HL = 0.015  # h max L at the start: dt max L = 0.03, as the registered worlds (amendment 3).
-RELAX = 45.0  # The horizon in the slowest time constants.
+TARGET_DTL = 0.06  # dt max L at the start (h max L 0.03).
+RELAX = 25.0  # The horizon in the slowest time constants.
+STEP_CAP = 6000  # At most the registered worlds' steps.
+N_A, K_B = 6.02214076e23, 1.380649e-23
 
 
 class Model:
@@ -249,20 +251,28 @@ def _at_root(inputs, model):
     return out
 
 
+def _constants(inputs):
+    """The engine's own constants (SPEC §0): N_f = N_A 1e-15 and RT = N_A k_B T 1e-3 pJ per fmol; the format
+    sample's invented N_f is not the engine's."""
+    c = inputs["constants"]
+    c["sites_per_fmol"] = 602214076.0
+    c["RT_pJ_per_fmol"] = N_A * K_B * c["temperature_K"] * 1e-3
+
+
 def design(sample_runs):
-    """{world: inputs} of the rehearsal: the sample's invented worlds, re-timed (module docstring)."""
-    out = {}
+    """({world: inputs}, {world: notes}) of the rehearsal: the sample's invented worlds with the engine's constants,
+    re-timed (module docstring). W1p's times are its first six; W3p is W3's inputs at W3's first five times, as
+    the registration has them (SPEC:182). A world that does not relax within STEP_CAP steps keeps no C2a pair."""
+    out, notes = {}, {}
     base = {r["world"].removeprefix("INVENTED-"): r["inputs"] for r in sample_runs.values()
             if r["inputs"] is not None and r["plant"] is None}  # fmt: skip
-    base.setdefault(
-        "W3p", next(r["inputs"] for n, r in sample_runs.items() if n.startswith("INVENTED-W3p"))
-    )
     for world, inputs in sorted(base.items()):
+        if world == "W3p":
+            continue
         inputs = copy.deepcopy(inputs)
-        if (
-            world == "W5"
-        ):  # Kept as the sample has it: refused at its first step by the stage condition.
-            out[world] = inputs
+        _constants(inputs)
+        if world == "W5":  # As the sample has it: refused at its first step by the stage condition.
+            out[world], notes[world] = inputs, dict(relaxed=False)
             continue
         if world in ("W1eq", "W7"):
             inputs = _at_root(inputs, Model(inputs))
@@ -272,25 +282,72 @@ def design(sample_runs):
         if inputs.get("wash"):
             after, _, _ = model.wash(model.equilibrium(y0))
             lmax = max(lmax, *(float(np.max(x)) for x in model.loads(after)))
-        dt = 2.0 ** math.floor(math.log2(2 * TARGET_HL / lmax))
+        dt = 2.0 ** math.floor(math.log2(TARGET_DTL / lmax))
         rate = _slowest_rate(model, y0)
+        relaxed = True
         if world == "W4":  # Three steps, the coarsest at dt max L about 0.2, over four short times.
             dt = 2.0 ** math.floor(math.log2(0.2 / lmax))
             times = [_grid(k * 5 * dt, dt) for k in (1, 2, 3, 4)]
-            horizon = times[-1]
+            horizon, relaxed = times[-1], False
         elif inputs.get("wash"):
             t_w = _grid(RELAX / rate, dt)
             horizon = _grid(2 * t_w, dt)
-            before = sorted({_grid(t_w / 2, dt), t_w})
-            after = sorted({_grid(t_w + dt, dt), _grid(t_w + (horizon - t_w) / 2, dt), horizon})
-            times = [*before, *after]
+            times = sorted({_grid(t_w / 2, dt), t_w, _grid(t_w + dt, dt), _grid(t_w + (horizon - t_w) / 2, dt),
+                            horizon})  # fmt: skip
             inputs["wash"]["time_s"] = t_w
         else:
-            horizon = _grid(RELAX / rate, dt) if world != "W3p" else _grid(RELAX / rate / 4, dt)
+            horizon = _grid(RELAX / rate, dt)
+            if horizon / dt > STEP_CAP:
+                horizon, relaxed = STEP_CAP * dt, False
             times = sorted({_grid(horizon * 2.0**-j, dt) for j in range(7, -1, -1)} - {0.0})
+            if world == "W1p":
+                times = times[:6]
+                horizon = times[-1]
         inputs["dt_s"], inputs["observation_times_s"], inputs["horizon_s"] = dt, times, horizon
-        out[world] = inputs
-    return out
+        out[world], notes[world] = inputs, dict(relaxed=relaxed, steps=round(horizon / dt))
+    w3p = copy.deepcopy(out["W3"])
+    w3p["world"] = "INVENTED-W3p"
+    w3p["observation_times_s"] = out["W3"]["observation_times_s"][:5]
+    w3p["horizon_s"] = w3p["observation_times_s"][-1]
+    out["W3p"], notes["W3p"] = (
+        w3p,
+        dict(relaxed=False, steps=round(w3p["horizon_s"] / w3p["dt_s"]), of="W3"),
+    )
+    return out, notes
+
+
+def registration(worlds):
+    """The rehearsal's registration, in the judge's shape (judge.Registration): the runs and their dt (TABLE §3),
+    each world's saved steps (§5.1), the wash's step, the event map's steps (§6), the facing nodes (§5.2), the
+    operators (§9), and which reference file each world reads (W3p reads W3's)."""
+    runs, rows, wash, maps = {}, {}, {}, {}
+    for world, inputs in worlds.items():
+        dts = [inputs["dt_s"] / d for d in W4_DIVISORS] if world == "W4" else [inputs["dt_s"]]
+        for dt in dts:
+            runs[f"{world}-dt{dt!r}" if world == "W4" else world] = dict(
+                world=world, plant=None, dt_s=dt
+            )
+        times = [0.0, *inputs["observation_times_s"]] + (
+            [inputs["horizon_s"]] if world == "W5" else []
+        )
+        rows[world] = {repr(dt): [[t, round(t / dt)] for t in times] for dt in dts}
+        if inputs.get("wash"):
+            wash[world] = dict(
+                step=round(inputs["wash"]["time_s"] / inputs["dt_s"]),
+                time_s=inputs["wash"]["time_s"],
+            )
+            maps[world] = [wash[world]["step"]] if world == "W2" else [0, wash[world]["step"]]
+    for world, plant, _ in PLANTS:
+        runs[f"{world}-{plant}"] = dict(world=world, plant=plant, dt_s=worlds[world]["dt_s"])
+    base = ["cells.model.resolved_pump_composite@1", "cells.model.resolved_pump_tissue@3",
+            "cells.operator.site_occupancy@1"]  # fmt: skip
+    return dict(
+        runs=runs, rows=rows, wash=wash, maps=maps,
+        files={w: ("W3" if w == "W3p" else w) for w in worlds},
+        heat_nodes={w: sorted({s["faces"] for s in i["sets"]}) for w, i in worlds.items()},
+        operators={w: base + (["cells.operator.scheduled_compartment_wash@1"] if i.get("wash") else [])
+                   for w, i in worlds.items()},
+    )  # fmt: skip
 
 
 PLANTS = [("W1p", "P1", "p1"), ("W1p", "P2", "p2"), ("W1p", "P3", "p3"), ("W1p", "P6", "p6"), ("W1p", "P8", "p8"),
@@ -298,37 +355,40 @@ PLANTS = [("W1p", "P1", "p1"), ("W1p", "P2", "p2"), ("W1p", "P3", "p3"), ("W1p",
 W4_DIVISORS = (1, 2, 4)
 
 
-def jobs(worlds):
-    """[(run, job)] of the rehearsal's honest and plant runs."""
+def jobs(worlds, start_file=None):
+    """[(run, job)] of the rehearsal's honest and plant runs; W1eq reads its start from its reference file, as the
+    registered W1eq does (TABLE §3)."""
     out = []
+
+    def job(name, inputs, plant=None, start=None):
+        out.append(
+            (name, dict(run=name, inputs=inputs, plant=plant, start=start, time_limit_step=None))
+        )
+
     for world, inputs in worlds.items():
         if world == "W4":
             for d in W4_DIVISORS:
                 w4 = copy.deepcopy(inputs)
                 w4["dt_s"] = inputs["dt_s"] / d
-                out.append((f"INVENTED-W4-dt{w4['dt_s']!r}", dict(run=f"INVENTED-W4-dt{w4['dt_s']!r}", inputs=w4,
-                                                               plant=None, start=None, time_limit_step=None)))  # fmt: skip
+                job(f"INVENTED-W4-dt{w4['dt_s']!r}", w4)
             continue
-        out.append((f"INVENTED-{world}", dict(run=f"INVENTED-{world}", inputs=inputs, plant=None, start=None,
-                                              time_limit_step=None)))  # fmt: skip
-    for world, plant, module in PLANTS:
-        name = f"INVENTED-{world}-{plant}"
-        out.append(
-            (
-                name,
-                dict(
-                    run=name, inputs=worlds[world], plant=module, start=None, time_limit_step=None
-                ),
-            )
+        job(
+            f"INVENTED-{world}",
+            inputs,
+            start=str(start_file) if world == "W1eq" and start_file else None,
         )
+    for world, plant, module in PLANTS:
+        job(f"INVENTED-{world}-{plant}", worlds[world], plant=module)
     return out
 
 
 # ------------------------------------------------------------------ the rehearsal's reference files
 
-C1_WORLDS = ("W1", "W2", "W3", "W6", "W7", "W7s", "W1p", "W3p")
+# The registered files' pairs by world (the census): W1p holds C1, C3b, C5, C9 and C10; W3p has no file of its own.
+C1_WORLDS = ("W1", "W2", "W3", "W6", "W7", "W7s", "W1p")
 C2A_WORLDS = ("W1", "W2", "W3", "W6", "W7", "W7s")
 C3_WORLDS = ("W1", "W2", "W3", "W6", "W7", "W7s", "W1p")
+C3AC_WORLDS = ("W1", "W2", "W3", "W6", "W7", "W7s")
 C9_WORLDS = ("W1", "W3", "W6", "W7", "W7s", "W1p")
 
 
@@ -359,8 +419,9 @@ def _g_terms(model, node, y):
     return total
 
 
-def reference(world, inputs, dts=None):
-    """The rehearsal's reference file for one world, in the references' format (the format note)."""
+def reference(world, inputs, dts=None, relaxed=True):
+    """The rehearsal's reference file for one world, in the references' format (the format note); C2a only where
+    the world relaxes within its horizon."""
     model = Model(inputs)
     obs_times = list(inputs["observation_times_s"])
     saved = [0.0, *obs_times]
@@ -368,10 +429,13 @@ def reference(world, inputs, dts=None):
     echo_ = echo(inputs, model)
     if dts:
         echo_["dt"] = list(dts)
+    # The registered files' top keys (the census): `wash` in W2 and W7, `closed_form` in W4, `stage` in W5.
     ref = dict(schema="fr45-reference/1", invented=True, world=echo_, units={}, equilibrium=None, trajectory=[],
-               balances=dict(ligands=[], sets=[]), wash=None, heats=dict(intervals=[], G=[]), pairs=[],
+               balances=dict(ligands=[], sets=[]), heats=dict(intervals=[], G=[]), pairs=[],
                spread="none", spread_note="rehearsal: nothing is drawn", distance_at_horizon=None,
-               closed_form=[], stage=None, plants=[], provenance=dict(writer="validation/fr45/rehearsal.py"))  # fmt: skip
+               plants=[], provenance=dict(writer="validation/fr45/rehearsal.py"))  # fmt: skip
+    if world == "W4":
+        ref["closed_form"] = []
     pairs = ref["pairs"]
     dt = inputs["dt_s"]
     if world == "W5":
@@ -380,7 +444,7 @@ def reference(world, inputs, dts=None):
         ref["stage"] = dict(h_s=h, max_hL_summed=h * max(map(float, [*load_n, *load_r, *load_b])))
         pairs.append(dict(criterion="C7", observable="stage:first_step", time_s=0.0, **{"class": "constant"},
                           value="refused", tolerance=None, against="engine: its step report gives h max L above 1/2"))  # fmt: skip
-        ref["plants"].append(dict(plant="P4", criterion="C7", world="W5", time_s=None, compared={}))
+        ref["plants"].append(_plant_entry("P4", "C7", "W5", None))
         return ref
     hi, lo = model.solve(saved, 1e-13), model.solve(saved, 1e-12)
     state = {t: hi[t] for t in saved}
@@ -410,7 +474,7 @@ def reference(world, inputs, dts=None):
                 pair(
                     "C1", obs, t, "band", float(state[t][o_k]), 1e-6 * s_node[_node_of(model, obs)]
                 )
-    if world in C2A_WORLDS:
+    if world in C2A_WORLDS and relaxed:
         for o_k, obs in enumerate(names):
             pair("C2a", obs, horizon, "band", float(eq[o_k]), 1e-9 * s_node[_node_of(model, obs)])
     load_n, load_r, load_b = model.loads(start)
@@ -432,6 +496,10 @@ def reference(world, inputs, dts=None):
                 y0 = hi["after_wash"] if spans else state[a]
                 E = _g_terms(model, node, y0) + _g_terms(model, node, state[b])
                 k = round((b - a) / dt)
+                if not spans and world not in C3AC_WORLDS:
+                    pair("C3b", f"H:{node}", b, "derived", None, 16 * EPS * k * E, start_s=a, end_s=b, dt_s=dt,
+                         against="engine: -dG of its own saved states, G the stand-in")  # fmt: skip
+                    continue
                 if not spans:
                     heat = model.G(node, state[a]) - model.G(node, state[b])
                     bh = 0.0
@@ -445,7 +513,8 @@ def reference(world, inputs, dts=None):
                     pair("C3b", f"H:{node}", b, "derived", None, 16 * EPS * k * E, start_s=a, end_s=b, dt_s=dt,
                          against="engine: -dG of its own saved states, G the stand-in")  # fmt: skip
                 pair("C3c", f"cumulative_site_heat:{node}", b, "derived", None, 16 * EPS * E, start_s=a, end_s=b,
-                     spans_wash=spans, against="engine: its own cumulative site heat may not fall")  # fmt: skip
+                     against="engine: its own cumulative site heat may not fall",
+                     **(dict(spans_wash=True) if spans else {}))  # fmt: skip
     if wash:
         node, f = wash["node"], wash["fraction"]
         ligands = [lig for lig, where in model.pools if where == node]
@@ -477,9 +546,11 @@ def reference(world, inputs, dts=None):
                 fvc = f * volume * wash["buffer_mM"][lig]
                 pair("C4b", f"n:{lig}@{node}", t, "derived", None, None, tolerance_terms=dict(
                     eps_factor=4 * EPS, f_V_c_buf=fvc, formula="eps_factor * (|a_n| + |n| + f_V_c_buf)"),
+                    tolerance_information="R-ode's state terms: information",
                     against="engine: (1 - f) n + f V c_buf of its own state at the event")  # fmt: skip
                 pair("C4b", f"removed:{lig}@{node}", t, "derived", None, None,
                      tolerance_terms=dict(eps_factor=2 * EPS, f=f, formula="eps_factor * f * |n|"),
+                     tolerance_information="R-ode's state terms: information",
                      against="engine: f n of its own state at the event")  # fmt: skip
                 pair("C4b", f"supplied:{lig}@{node}", t, "derived", fvc, 2 * EPS * fvc)
             for obs in names:
@@ -525,6 +596,7 @@ def reference(world, inputs, dts=None):
             for p in model.pops:
                 pair("C9", f"theta:{p['id']}", t, "derived", None, None, tolerance_terms=dict(
                     eps_term=4 * EPS, formula="eps_term + |R_s + sum B - S_s| / S_s"),
+                    tolerance_information="R-ode's moiety term: information",
                     against="engine: B_b / S_s of its own saved state")  # fmt: skip
     if world == "W4":
         finest = min(dts)
@@ -547,15 +619,23 @@ def reference(world, inputs, dts=None):
     for d in dts or [dt]:
         pair("C10", "run", horizon, "constant", "completes", None, dt_s=d,
              against="engine: the run completes and closes its ledgers on every row")  # fmt: skip
-    ref["plants"] = [dict(plant=p, criterion=c, world=world, time_s=t, compared={}) for w, p, c, t in PLANT_ENTRIES(t_w)
-                     if w == world]  # fmt: skip
+    ref["plants"] = [_plant_entry(p, c, w, t) for w, p, c, t in PLANT_ENTRIES(t_w)
+                     if (w if w != "W3p" else "W3") == world]  # fmt: skip
     return ref
+
+
+def _plant_entry(plant, criterion, world, time_s):
+    """A plant entry in the registered files' keys (the census); the rehearsal sizes no plant, so its sizes are
+    null."""
+    return dict(plant=plant, criterion=criterion, world=world, time_s=time_s, compared={}, honest=None, planted=None,
+                distance_in_bounds=None)  # fmt: skip
 
 
 def PLANT_ENTRIES(t_w):  # noqa: N802 - a table, keyed by the wash's time
     """(world, plant, criterion, time_s) of the rehearsal's plant entries, after CRITERIA's table."""
-    return [("W1p", "P1", "C1", None), ("W1p", "P2", "C1", None), ("W1p", "P3", "C3b", None),
-            ("W1p", "P6", "C3b", None), ("W1p", "P8", "C10", None), ("W1p", "P9", "C9", None),
+    return [("W1p", "P1", "C1", None), ("W1p", "P2", "C1", None), ("W1p", "P3", "C3a", None),
+            ("W1p", "P3", "C3b", None), ("W1p", "P6", "C3a", None), ("W1p", "P6", "C3b", None),
+            ("W1p", "P8", "C10", None), ("W1p", "P9", "C9", None),
             ("W2", "P5", "C6", t_w), ("W2", "P5", "C4a", None), ("W7", "P5", "C6", 0.0), ("W7", "P5", "C6", t_w),
             ("W7", "P5", "C4a", None), ("W3p", "P7", "C5", None), ("W3p", "P7", "C1", None)]  # fmt: skip
 
@@ -597,62 +677,98 @@ def run_jobs(todo, out, cpus):
         return list(pool.map(one, todo))
 
 
+def expected_inputs(worlds, todo):
+    """The rehearsal's expected-inputs file, in §12.2's shape: each honest run's designed inputs, W1eq's start and
+    RT null (compared with the references' file, and recorded); P2's crossed k_off for its declaration."""
+    runs = {}
+    for name, job in todo:
+        if any(name.endswith(f"-{p}") for _, p, _ in PLANTS):
+            continue
+        inputs = copy.deepcopy(job["inputs"])
+        inputs["constants"]["RT_pJ_per_fmol"] = None
+        if name == "INVENTED-W1eq":
+            for p in inputs["populations"]:
+                p["initial_occupancy"] = None
+            for a in inputs["free_amounts"]:
+                if a["declared"]:
+                    a["n_fmol"] = None
+        runs[name.removeprefix("INVENTED-")] = inputs
+    w1p = worlds["W1p"]
+    first = next(s["id"] for s in w1p["sets"] if s["shared"])
+    a, b = [p for p in w1p["populations"] if p["set"] == first][:2]
+    crossed = {
+        f"populations[id={a['id']}].k_off": b["k_off"],
+        f"populations[id={b['id']}].k_off": a["k_off"],
+    }
+    return dict(kind="fr45 expected inputs, version 1", protocol="fr45-site-competition-v1", invented=True,
+                runs=runs, plant_inputs_changed={"W1p-P2": crossed},
+                host=dict(markers=dict(volume="from the host-entity addendum",
+                                       trace="from the host-entity addendum: the binary64 product 1e-12 × this "
+                                             "compartment's volume_pL there",
+                                       host_values="from the host-entity addendum")))  # fmt: skip
+
+
+def stand_in_module():
+    """The source of a stand-in `fr45ref_free_energy` module (ruling 6), so that the judge loads G in the rehearsal
+    exactly as it loads the references' at the judged run: by its folder on sys.path."""
+    import inspect
+
+    return ('"""INVENTED: the rehearsal\'s stand-in G (ruling 6), never the references\'."""\n\nimport math\n\n\n'
+            + inspect.getsource(_xlnx) + "\n\n" + inspect.getsource(stand_in_G) + "\n\nG = stand_in_G\n")  # fmt: skip
+
+
+def references(worlds, notes, folder):
+    """Each world's reference file but W3p's, which reads W3's (TABLE §3), and the stand-in G module."""
+    (folder / "outputs").mkdir(parents=True, exist_ok=True)
+    (folder / "fr45ref_free_energy.py").write_text(stand_in_module())
+    for world, inputs in worlds.items():
+        if world == "W3p":
+            continue
+        dts = [inputs["dt_s"] / d for d in W4_DIVISORS] if world == "W4" else None
+        ref = reference(world, inputs, dts, relaxed=notes[world]["relaxed"])
+        (folder / "outputs" / f"reference_{world}.json").write_text(
+            json.dumps(ref, indent=1) + "\n"
+        )
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("sample")
     parser.add_argument("out")
     parser.add_argument("--cpus", default="6,7")
-    parser.add_argument(
-        "--judge-only",
-        action="store_true",
-        help="the records exist: rebuild the references and judge",
-    )
+    parser.add_argument("--stage", choices=("all", "runs", "judge"), default="all")
     args = parser.parse_args(argv)
     out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
     sample = json.loads((Path(args.sample) / "table" / "table.json").read_text())
-    worlds = design(sample["runs"])
-    (out / "worlds.json").parent.mkdir(parents=True, exist_ok=True)
-    (out / "worlds.json").write_text(json.dumps(worlds, indent=1) + "\n")
-    todo = jobs(worlds)
-    if not args.judge_only:
+    worlds, notes = design(sample["runs"])
+    folder = out / "references"
+    references(worlds, notes, folder)
+    todo = jobs(worlds, start_file=folder / "outputs" / "reference_W1eq.json")
+    for name, value in (("worlds", worlds), ("notes", notes), ("registration", registration(worlds)),
+                        ("expected_inputs", expected_inputs(worlds, todo))):  # fmt: skip
+        (out / f"{name}.json").write_text(json.dumps(value, indent=1) + "\n")
+    if args.stage in ("all", "runs"):
         results = run_jobs(todo, out, [int(c) for c in args.cpus.split(",")])
         print("driver failures:", [n for n, rc in results if rc])
+        if args.stage == "runs":
+            return 0
     from validation.fr45 import exporter
 
-    table = exporter.export(
+    exporter.export(
         out / "records", out / "table", [n for n, _ in todo], invented="INVENTED: rehearsal"
     )
-    refs = {}
-    (out / "references").mkdir(exist_ok=True)
-    for world, inputs in worlds.items():
-        dts = [inputs["dt_s"] / d for d in W4_DIVISORS] if world == "W4" else None
-        refs[world] = reference(world, inputs, dts)
-        (out / "references" / f"reference_{world}.json").write_text(
-            json.dumps(refs[world], indent=1) + "\n"
-        )
     root = Path(__file__).resolve().parents[2]
-    judge = _load("fr45_judge", root / "validation" / "fr45" / "judge.py")
-    agreement = judge.load_by_path(
-        "fr45_agreement", root / "validation" / "assembly_lineages_v2" / "agreement.py"
-    )
-    verdict = judge.judge(table, refs, agreement, stand_in_G, prefix="INVENTED-")
-    faults, kinds = judge.structure(table)
-    verdict["structure"] = dict(faults=faults, kinds=kinds)
-    verdict["plant_rule"] = judge.plant_rule(table)["departures"]
-    (out / "verdict.json").write_text(json.dumps(verdict, indent=1, default=str) + "\n")
-    print(json.dumps(dict(criteria={c: v["verdict"] for c, v in sorted(verdict["criteria"].items())},
-                          plants={p: v["caught"] for p, v in sorted(verdict["plants"].items())},
-                          structure=faults, plant_rule=verdict["plant_rule"]), indent=1))  # fmt: skip
-    return 0
+    import subprocess
 
-
-def _load(name, path):
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    command = [sys.executable, "-B", str(root / "validation" / "fr45" / "judge.py"), "judge",
+               "--table", str(out / "table"), "--references", str(folder), "--expected",
+               str(out / "expected_inputs.json"), "--registration", str(out / "registration.json"),
+               "--out", str(out / "judgement")]  # fmt: skip
+    done = subprocess.run(command, capture_output=True, text=True)
+    (out / "judge.log").write_text(done.stdout + done.stderr)
+    print(done.stdout[-6000:], done.stderr[-3000:])
+    return done.returncode
 
 
 if __name__ == "__main__":
