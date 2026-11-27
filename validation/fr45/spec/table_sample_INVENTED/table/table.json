@@ -4586,7 +4586,7 @@
     "INVENTED energy ledger": {
      "failures": [
       {
-       "step": 2,
+       "step": 1,
        "message": "INVENTED: heat and ledger term disagree"
       }
      ]
@@ -4786,7 +4786,7 @@
     "INVENTED moiety ledger": {
      "failures": [
       {
-       "step": 1,
+       "step": 0,
        "message": "INVENTED: R plus one population's B departs"
       }
      ]

@@ -11,6 +11,7 @@
   "multipliers holds {\"each_value\": 1.0}: SPEC names no multiplier, so every member the engine lists must have that value (SPEC:62). It is the one key whose expected form differs from the echo's.",
   "A trace (declared false) is 1e-12 mM times its compartment's volume_pL, in binary64 (SPEC:104-105; TABLE.md §4.1). At every registered volume that product is exact.",
   "permeabilities lists every ligand on every patch at 0.0 (SPEC:59-61); charges every ligand at 0 (SPEC:59).",
+  "plant_inputs_changed holds W1p-P2's two crossed k_off, each the other population's registered value. They apply only if P2 is planted by declaration; otherwise W1p-P2's inputs_changed is empty and its inputs equal W1p's. Every other plant's inputs_changed is empty, unless a dated addendum names a list (TABLE.md §8.1).",
   "Before any registered run the judge cross-checks this file against the references' world echo, by TABLE.md §4.1's key map. A departure stops the judge before anything is scored."
  ],
  "runs": {
@@ -1439,12 +1440,8 @@
  },
  "plant_inputs_changed": {
   "W1p-P2": {
-   "if_planted_by_declaration": {
-    "populations[id=matrix_L1].k_off": 0.15,
-    "populations[id=matrix_L2].k_off": 0.9
-   },
-   "otherwise": "inputs_changed is empty, and W1p-P2's inputs equal W1p's"
-  },
-  "every other plant": "inputs_changed is empty, unless a dated addendum names a list (TABLE.md §8.1)"
+   "populations[id=matrix_L1].k_off": 0.15,
+   "populations[id=matrix_L2].k_off": 0.9
+  }
  }
 }

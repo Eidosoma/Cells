@@ -182,7 +182,7 @@ Every entry holds every key below, for honest, plant and refused runs alike.
 | `world` | string: the run's world (§3) |
 | `plant` | null in an honest run; else `{"id", "patch", "change", "inputs_changed"}`: the plant (`P1` to `P9`, as the run's name gives it), the scoped patch's path under `validation/` (CRITERIA:111-112), one line naming what it changes, and the list of `inputs` key paths it changes (§8.1) |
 | `dt_s` | number: the step the engine ran, §3's dt bit for bit |
-| `steps` | integer: the steps completed: the last row's `step`, or the steps before a refused one |
+| `steps` | integer: the steps completed: the last row's `step`, or the steps before a refused one; 0 in a run refused at parse |
 | `backend` | `"numpy"` or `"compiled"`: the engine's implementation that the run's steps used. Every run, honest and planted, uses the one the lead records with the runs' inputs before the judged run, and a run whose `backend` departs from that record is a fault [B5]. Its arithmetic is binary64 on the CPU (§10) |
 | `rows` | list of rows (§5), in step order |
 | `capacities` | object, set → fmol: each set's capacity S_s, one-population sets included. It is the engine's constant, set at parse from the declaration (SPEC:48), never from a state [S8] |
