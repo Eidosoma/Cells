@@ -34,7 +34,10 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - The user answered D414 (D417): X2 applies to a registration's honest runs, and its plant runs follow its own plant
     rule. The adviser agrees, and D417 records five readings.
   - **FR-64,** a declared voltage shift on a channel population (D418, ff5c5fdc). Its D148 round passes 9 of 9.
-  - Next: FR-63's calibration report (D399). Four stale tier rows of main's are folded at the next measurement (D418).
+  - Next: FR-63's calibration report (D399), running. Four stale tier rows of main's are folded at the next measurement
+    (D418).
+  - FR-63's registered comparison: the user left the decision to the lead (D419). Its rule is fixed and is applied when the
+    report lands.
   - D417's check is done: liquid routing needs X2 by amendment, or a reasoned waiver, before its run; FR-49 needs nothing.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**

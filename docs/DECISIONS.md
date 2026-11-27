@@ -14270,3 +14270,37 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
 
   - They are folded at the next measurement.
 - **Next:** FR-63's calibration report (D399).
+
+## D419: FR-63's registered comparison is left to the lead; the rule is fixed before its calibration report lands
+
+2026-11-27, written at 16:26 UTC. The user: "lets go on the decision as you see fit".
+
+- **The decision delegated:** whether FR-63 gets a registered comparison against held-out quantities (D399), after the
+  Lean track's audit found candidates. The delegation covers this decision only. The adviser's view is taken, at the
+  user's standing request. The rule is fixed now and applied when the calibration report lands.
+- **The rule:**
+  1. **A held-out quantity must lie inside its preparation's declared pH window.**
+     - FR-64's pH shift requires a closed `ph_window`, and refuses a world whose pH leaves it. A wider window is an
+       extrapolation that a registration would own (`docs/FR64_VOLTAGE_SHIFT_DESIGN.md` §3.5).
+     - Each preparation's window is its two calibration levels.
+     - So the extra pH levels lie outside: Trapani's 6.2, 8.0 and 8.5, Longobardo's 5.5 and 10.0, and Kehl's 5.9. They
+       are evidence about the range, reported as indications, not held-out tests.
+  2. **In-window kinetics test the base law `kv1p5_mh@1` and the shift together:** Longobardo's activation time
+     constant at +60 mV, and its tail-decay times at pH 7.4 and 6.5.
+     - A comparison is fair only if the base law reproduces that readout at control pH in that preparation.
+     - That is a registered gate: if it fails, the result is inconclusive, not a fail.
+  3. **Kehl's conductance across pH:** the shift moves no conductance, so it stays with the K–pH interaction as an
+     indication.
+  4. **One study:** a verdict on one preparation's quantity is an indication, and a fail changes no law form.
+  5. **Bands:** set by a stated rule on the reported errors. No engine output at a candidate readout is computed before
+     a tag.
+  6. **The outcome:**
+     - **If the rule gives yes:** the first step is a short design note with its price, reported to the user at FR-63's
+       normal priority.
+     - **If no:** the calibration report is FR-63's check (D399), and the candidates stay listed as indications.
+- **A disclosure.** While weighing rule 2, the lead evaluated `kv1p5_mh@1`'s activation time-constant formula, from
+  FR-64's note, at +60 mV and at the tail voltage of −40 mV.
+  - So the lead is not blind to the model's side of those two readouts.
+  - Any registration using them is written and banded by an agent who has not seen it, under rule 5, and states this
+    exposure.
+  - The report agent was told to save no kinetics from the engine.
