@@ -377,18 +377,26 @@ def _tags():
         "(BATH_SCHEDULE_DESIGN.md §3.1)",
         (),
     )
-    tags[("reads", COUPLING, WATER, "volume")] = (
+    # FR-65's coupling step (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §11): the coupling reads the
+    # cell volume current at its split part (its states, and its routed factors at its targets'
+    # half-steps), so water is admitted declared before it and refused after it (C2's order rule);
+    # replacement@2 is refused by name at the definition (the shared volume rule). It reads no
+    # outside volume, so the lumens meet it only through insertion's masks.
+    tags[("order", COUPLING, WATER, "volume")] = (
         REAL,
-        "The coupling's Hill factors read cell volumes as declared (route_factors, state_inputs); "
-        "water changes them",
-        COUPLING_CODE,
+        "Its split part reads the cell volume current (FR-65's coupling step): declared before "
+        "water it would read it lagged by half a step (C2's order rule); declared after water it "
+        "is admitted",
+        (),
     )
-    for provider in (WATER, LUMEN_1, LUMEN_2):
-        tags[("reads", COUPLING, provider, "extracellular_volume")] = (
-            NOMINAL,
-            COUPLING_CELLS + "; it reads no outside node",
-            COUPLING_CODE,
-        )
+    tags[("order", COUPLING, REPLACEMENT_2, "volume")] = (
+        REAL,
+        "Replacement@2 writes a newcomer's volume into water's state at its split part, after the "
+        "coupling reads it (C2's order rule); whatever the order, the definition refuses it beside "
+        "the coupling, where water is the one volume changer admitted "
+        "(species_common.check_volume_changers)",
+        (),
+    )
     for name in ("membrane_active", "outside_active"):
         tags[("reads", COUPLING, INSERTION_1, name)] = (
             NOMINAL,
@@ -1526,6 +1534,41 @@ RULES = (
         tag=REAL,
         why="Turnover reads the cell volumes and its outside route nodes' volumes current (FR-65); "
         "a lumen names its nodes (route B), so one at a node turnover never reads reaches no read",
+    ),
+    dict(
+        rule="beside the coupling, water is the one volume changer admitted: replacement@2 is "
+        "refused",
+        laws=(COUPLING, COUPLING_2, REPLACEMENT_2),
+        level="data",
+        check=OPS + "species_common.py::check_volume_changers",
+        test=TESTS
+        + "test_species_regulated_availability.py::test_version_1_1_beside_water_by_name",
+        tag=REAL,
+        why="The coupling reads the cell volume current (FR-65's coupling step) and no outside "
+        "volume",
+    ),
+    dict(
+        rule="@3's own one-way records are refused beside the coupling and a changer of the cell "
+        "volume",
+        laws=(COUPLING, COUPLING_2, WATER),
+        level="data",
+        check=OPS + "species_regulated_availability.py::check_one_way_records",
+        test=TESTS
+        + "test_species_regulated_availability.py::test_version_1_1_beside_water_by_name",
+        tag=REAL,
+        why="D327: each pair was admitted by one change (FR-65's coupling step, FR-50 phase 2); no "
+        "world has qualified the three together",
+    ),
+    dict(
+        rule="a site source in mM is refused beside a changer of the cell volume",
+        laws=(COUPLING_2, SITES, WATER),
+        level="data",
+        check=OPS + "species_regulated_availability.py::check_site_volume",
+        test=TESTS
+        + "test_species_regulated_availability.py::test_a_site_source_stays_refused_beside_water",
+        tag=REAL,
+        why="Its B / V and S / V read the declared volume (D244's Q2, the user's answer); site "
+        "occupancy refuses water itself",
     ),
     dict(
         rule="beside water@1 every bath step is isosmotic",

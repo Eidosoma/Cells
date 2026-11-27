@@ -55,7 +55,8 @@ target, state cell or junction endpoint on a slot replacement@1 replaces; dt (k_
 (ruling 5); a switch schedule that does not start at 0 or holds a value other than 0 and 1; a
 later switch change off the dt grid or outside 0 < t < end; a write off the dt grid or outside
 0 <= t < end, to an undeclared (state, cell), outside [0, 1], or twice at one time; and
-(CONFLICTS_VIEW, D150's static-tissue list) every provider of volumes and closer of masks. At run
+(CONFLICTS_VIEW, D150's static-tissue list) every provider and closer of masks, and since version
+1.1 every changer of the cell volume but water (species_common.check_volume_changers). At run
 time a non-finite or out-of-range state or factor refuses the step (domain_valid, on every step's
 end state; also rate_checks, wherever the composite evaluates readouts), as does a stale write
 count (in the event map, as replacement's stale generation does).
@@ -128,6 +129,27 @@ cells.operator.site_occupancy@1, an unknown population, and a population outside
 codes are a Hill kind plus SITE_OFFSET and SITE_FRACTION or SITE_COMPLEMENT, so @1's kernels and
 the population kernel give it exactly f = 1 (padding); only the site kernel evaluates it.
 
+**Version 1.1, both versions (FR-65's coupling step; docs/TURNOVER_CHANGING_VOLUME_DESIGN.md
+§11; D375's Q1 (b), D402).** The cell volume is read current wherever a factor or a state is
+evaluated, beside water (cells.operator.ideal_osmosis_linear_compliance_water@1) declared
+first, under the same law IDs:
+* the states' half-steps read their inputs' concentrations at the view's volume (door S, stage
+  split), and so do the routed factors at their targets' half-steps, the midpoint's predictor
+  included (the contract's R2′: the composite passes the source its reader view there);
+* the control view's factors and ranges read it through R2′'s view, which carries a field only
+  where some operator changes it (C1 per field), so a population world's view carries no volume;
+* observation reads the row's view, whose volume is the declared array itself without a changer;
+* the end's validity check (factors_valid) keeps the declared volume, a reference read: a factor
+  lies in [0, 1] at every finite positive volume, so its outcome is the same at both.
+Without a changer of the cell volume the coupling receives no view anywhere, and every kernel
+reads the declared volume with today's equations (C1). Refused at the definition: a changer of the
+cell volume other than water (replacement@2 by name, the shared rule), and a site source in mM
+beside any changer, since it reads the declared volume (D244's Q2; check_site_volume); the coupling
+declared before water is refused by the composite's order rule (C2). The masks stay fixed, so it
+stays refused beside closers, insertion and the lumens. Beside FR-50 phase 2 (D327): @3's own
+one-way records beside the coupling and a changer of the cell volume are refused by name until a
+world qualifies the three together (check_one_way_records).
+
 **Scope, both versions (D337, D338, D351).** A state's off_rate_per_s is one declared closing rate,
 the same at every dose. Reusing one closing rate across doses is provisional, as an indication and
 with no change of law: two labs' SK2 recordings contradict one fixed closing rate in opposite
@@ -148,7 +170,7 @@ from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one pre
 from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
 from cells.operators import species_common as common
-from cells.operators.contract import Operator, Read
+from cells.operators.contract import Operator, Read, carried
 from cells.registry import species_registry
 
 LAW_ID = "cells.operator.species_regulated_availability@1"
@@ -219,6 +241,13 @@ LAYOUT_FIELDS = (
     "coupling_channel_routes",  # [channel capacity, width] int64 route per element (-1 pads)
 )
 TARGET_TABLES = {"junction": "coupling_junction_routes", "channel": "coupling_channel_routes"}
+# Version 1.1 (FR-65's coupling step, docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §11): the cell volume
+# is read current at the split (its states' half-steps, and its routed factors at its targets'
+# half-steps, which follow it) and at the control view (R2′), and as declared by the end's validity
+# check (factors_valid), whose outcome is the same at every positive volume (C3). It reads no
+# outside volume. The masks stay on its fixed list as D150's static-tissue scope: it reads none.
+VOLUME_READS = (Read("current", "split"), Read("current", "inner"), Read("reference", "end"))
+MASKS = ("active", "outside_active", "membrane_active")
 
 # Version 2 (the module docstring): the routable controls it routes to, each with its element
 # table ([elements, width] int64 route per element, -1 pads), and every route's operating range
@@ -1328,12 +1357,15 @@ def bind(spec, declaration, schedule):
 # ------------------------------------------------------------------ the laws
 
 
-def route_factors(state, p, *, xp):
-    """[route] F = b + (1 - b) f, exactly 1 for a switched-off coupling (module docstring)."""
+def route_factors(state, p, *, xp, volume=None):
+    """[route] F = b + (1 - b) f, exactly 1 for a switched-off coupling (module docstring). A
+    species source's concentration is n/V at `volume` [cell], the current volume a reader view
+    carries (version 1.1), else at the declared volume (C1's fallback: today's equations)."""
     law = p.coupling_route_law
     rows, cells = p.coupling_route_row, p.coupling_route_cell
     amount = p.amount_reference[rows, cells] + state.amount_increment[rows, cells]
-    log_x = xp.log(amount) - xp.log(p.volume[cells])
+    v = p.volume if volume is None else volume
+    log_x = xp.log(amount) - xp.log(v[cells])
     hill = hill_factors.factor(
         log_x, p.coupling_route_half_saturation_mM, p.coupling_route_coefficient, law, xp=xp
     )
@@ -1358,12 +1390,14 @@ def element_product(values, table, *, xp):
     return total
 
 
-def state_inputs(state, p, *, xp):
-    """[slot] u, the product of each state's input factors at the current amounts."""
+def state_inputs(state, p, *, xp, volume=None):
+    """[slot] u, the product of each state's input factors at the current amounts, each input's
+    concentration at `volume` [cell] where given (version 1.1), else at the declared volume."""
     rows = p.regulatory_input_row
     cells = p.regulatory_slot_cell[:, None]
     amount = p.amount_reference[rows, cells] + state.amount_increment[rows, cells]
-    log_x = xp.log(amount) - xp.log(p.volume[p.regulatory_slot_cell])[:, None]
+    v = p.volume if volume is None else volume
+    log_x = xp.log(amount) - xp.log(v[p.regulatory_slot_cell])[:, None]
     log_f = hill_factors.log_factor(
         log_x,
         p.regulatory_input_half_saturation_mM,
@@ -1374,11 +1408,12 @@ def state_inputs(state, p, *, xp):
     return xp.exp(entity_sum(log_f, axis=1, xp=xp))
 
 
-def state_half_step(state, h, p, *, xp):
-    """(state after h of every regulatory state, valid); u frozen over h (module docstring)."""
+def state_half_step(state, h, p, *, xp, volume=None):
+    """(state after h of every regulatory state, valid); u frozen over h (module docstring), its
+    inputs' concentrations at `volume` where given (version 1.1)."""
     if p.regulatory_slot_cell.shape[0] == 0:  # Static: no state.
         return state, None
-    u = state_inputs(state, p, xp=xp)
+    u = state_inputs(state, p, xp=xp, volume=volume)
     k_on, k_off = p.regulatory_on_rate, p.regulatory_off_rate
     lam = k_on * u + k_off
     x = lam * h
@@ -1438,10 +1473,11 @@ def used_routes(tables, count, *, xp):
     return used
 
 
-def range_valid(state, p, used, *, xp, density=None, site=None):
+def range_valid(state, p, used, *, xp, density=None, site=None, volume=None):
     """Version 2: every enabled route of `used` inside its declared operating range at `state`,
-    where its factor is evaluated: a species route's concentration (mM, in its cell at the
-    declared volume), a state route's fraction, a population route's density (units per µm²;
+    where its factor is evaluated: a species route's concentration (mM, in its cell at `volume`,
+    the current volume where given, version 1.1, else the declared one), a state route's
+    fraction, a population route's density (units per µm²;
     `density` [population route], given at the control view, its one point of evaluation, and
     elsewhere None, which leaves those routes out), or a site route's source (`site` [route],
     site_route_sources; None leaves those routes out). A switched-off coupling's routes are
@@ -1449,7 +1485,7 @@ def range_valid(state, p, used, *, xp, density=None, site=None):
     law = p.coupling_route_law
     rows, cells = p.coupling_route_row, p.coupling_route_cell
     amount = p.amount_reference[rows, cells] + state.amount_increment[rows, cells]
-    source = amount / p.volume[cells]
+    source = amount / (p.volume if volume is None else volume)[cells]
     if p.regulatory_slot_cell.shape[0] > 0:  # Static: states declared.
         s = state.regulatory_state[p.coupling_route_slot]
         source = xp.where(law >= STATE_FRACTION, s, source)
@@ -1710,6 +1746,53 @@ def check_population_sources(spec, declaration):
             )
 
 
+def volume_changer(spec):
+    """The definition's first changer of the cell volume (water, or a provider or writer of the
+    volume), or None."""
+    for op, _, _ in composite_spec.entries(spec):
+        if "volume" in op.VIEW_FIELDS or "volume_increment_pL" in op.ENTITY_WRITES:
+            return op
+    return None
+
+
+def check_one_way_records(spec, law):
+    """FR-65's coupling step beside FR-50 phase 2 (D327, a combination two changes create): @3's
+    own one-way records (one_way_records) beside the coupling and a changer of the cell volume are
+    refused by name until a world qualifies the three together. Each pair alone was admitted by
+    one change: the coupling beside the records at a fixed volume, and the records beside water."""
+    if not getattr(spec.model, "one_way_records", ()):
+        return
+    changer = volume_changer(spec)
+    if changer is not None:
+        raise ConfigError(
+            f"{law}: @3's own one_way records (one_way_records) beside the coupling and "
+            f"{changer.LAW_ID}, a changer of the cell volume, are refused until a world qualifies "
+            "the three together (FR-65's coupling step beside FR-50 phase 2, D327)"
+        )
+
+
+def check_site_volume(spec, declaration):
+    """Version 2 (FR-65's coupling step, the lead's ruling 2): a site source in mM, occupied_mM or
+    capacity_mM, reads B / V or S / V at the declared volume (D244's Q2, the user's answer), so it
+    is refused by name beside a changer of the cell volume: water, or any other provider or writer
+    of it. Site occupancy reads the volume as declared and is refused there itself; this refusal
+    keeps the site read refused should that change."""
+    sited = [
+        c
+        for c in declaration.couplings
+        if type(c) is SiteCoupling and c.quantity != "occupied_fraction"
+    ]
+    if not sited:
+        return
+    changer = volume_changer(spec)
+    if changer is not None:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {sited[0].id} reads a site population's "
+            f"{sited[0].quantity} at the declared volume (D244's Q2), so it is refused beside "
+            f"{changer.LAW_ID}, which changes the cell volume"
+        )
+
+
 def unit_writers(spec):
     """Version 2: the definition's operators that declare a write of population units or
     membrane area (ENTITY_WRITES; class level), in declared order: those that could change a
@@ -1749,7 +1832,12 @@ class SpeciesRegulatedAvailability(Operator):
     CONTROL_FIELDS = ("coupling_switch", "regulatory_write_count", "regulatory_write_value")
     EXPERIMENT_KEYS = (CONTROLS_KEY, WRITES_KEY)
     CONTROL_FACTORS = TARGET_CONTROLS
-    CONFLICTS_VIEW = common.CONFLICTS_VIEW
+    # Version 1.1: its own declarations (VOLUME_READS; the shared species_common.CONFLICTS_VIEW
+    # stays for exchange and the unit producer). Where no operator changes the volume it receives
+    # no view and reads the declared one (C1), so every world admitted before keeps its program.
+    CONFLICTS_VIEW = MASKS
+    VIEW_READS = ("volume",)
+    SCOPED_READS = MappingProxyType({"volume": VOLUME_READS})
     READOUT_COLUMNS = ("coupling_factor",)
 
     # ------------------------------------------------------------ definition
@@ -1794,6 +1882,10 @@ class SpeciesRegulatedAvailability(Operator):
     def check_definition(self, spec, declaration, schedule, model):
         common.check_species_cap(spec, LAW_ID)
         check_identities(spec, declaration)
+        # Version 1.1: water is the one changer of the volume it reads (it reads no outside node),
+        # and not beside @3's own one-way records (D327, beside FR-50 phase 2).
+        common.check_volume_changers(spec, LAW_ID, ())
+        check_one_way_records(spec, LAW_ID)
         check_unmoved_sources(declaration, species_registry.moved_in_step(spec))
         check_replaced_slots(spec, declaration)
         check_rate_limit(spec, declaration)
@@ -1888,21 +1980,27 @@ class SpeciesRegulatedAvailability(Operator):
     def statically_idle(self, p):
         return p.regulatory_slot_cell.shape[0] == 0 and p.coupling_route_law.shape[0] == 0
 
-    def control_factors(self, state, p, *, xp):
+    def control_factors(self, state, p, *, xp, view=None):
+        """Its factors at the control view; a species source's concentration at the current volume
+        where its view carries it (R2′), else at the declared one (static)."""
         factors, values = {}, None
         for name in self.CONTROL_FACTORS:
             table = getattr(p, TARGET_TABLES[name])
             if table.shape[1] == 0:  # Static: no route on this control.
                 continue
-            values = route_factors(state, p, xp=xp) if values is None else values
+            if values is None:
+                values = route_factors(state, p, xp=xp, volume=carried(view, "volume", state))
             factors[name] = element_product(values, table, xp=xp)
         return factors
 
-    def event(self, state, control, p, *, xp):
+    def event(self, state, control, p, *, xp, view=None):
+        """The event map (view=: a door S reader's view, which the event map does not read)."""
         return event_map(state, control, p, xp=xp)
 
-    def half_step(self, state, h, control, p, *, xp):
-        return state_half_step(state, h, p, xp=xp)
+    def half_step(self, state, h, control, p, *, xp, view=None):
+        """Its states' half-steps; their inputs at the current volume where the composite passes its
+        reader view (a changer of the volume is composed: C1), else at the declared one."""
+        return state_half_step(state, h, p, xp=xp, volume=None if view is None else view.volume)
 
     def control_valid(self, control, p, *, xp):
         switch = control.coupling_switch
@@ -1922,9 +2020,13 @@ class SpeciesRegulatedAvailability(Operator):
     # ------------------------------------------------------------ observations
 
     def observe(self, row, state, control, p, view, model, spec):
+        """Its state and each route's factor at the row's state, at the row's view's volume (the
+        declared array itself where nothing changes the volume)."""
         columns = {k: getattr(state, k) for k in self.STATE_AXES}
         if p.coupling_route_law.shape[0]:
-            columns["coupling_factor"] = np.asarray(route_factors(state, p, xp=np))
+            columns["coupling_factor"] = np.asarray(
+                route_factors(state, p, xp=np, volume=view.volume)
+            )
         else:
             columns["coupling_factor"] = np.zeros(0)
         return columns
@@ -1959,9 +2061,13 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
     STATE_AXES = STATE_AXES_V2
     FACTOR_RECORD = "coupling_applied_factor"
     RATE_ROUTES = tuple(OPERATOR_TABLES)
-    # R2 (step 0 of FR-7's part (b)): the populations' abundance read at the control view.
-    VIEW_READS = ("channel_abundance",)
-    SCOPED_READS = MappingProxyType({"channel_abundance": Read("current", "inner")})
+    # R2 (step 0 of FR-7's part (b)): the populations' abundance read at the control view; and
+    # version 1.1's volume reads, as @1's (VOLUME_READS). R2′ passes each control-view field only
+    # where some operator changes it, so a population world's view carries no volume.
+    VIEW_READS = ("channel_abundance", "volume")
+    SCOPED_READS = MappingProxyType(
+        {"channel_abundance": Read("current", "inner"), "volume": VOLUME_READS}
+    )
     # R3 (FR-24): a site source reads cells.operator.site_occupancy@1's readable quantities.
     QUANTITY_READS = MappingProxyType({SITE_LAW: tuple(SITE_READS.values())})
     # Its run view (the contract; an operator registered after the run view declares it).
@@ -2063,6 +2169,11 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         with _named_v2():
             common.check_species_cap(spec, LAW_ID_V2)
             common.check_identities(spec, LAW_ID_V2, declaration.species)
+            # Version 1.1: water is the one changer of the volume it reads (no outside node), and a
+            # site source in mM, read at the declared volume, is refused beside any changer.
+            common.check_volume_changers(spec, LAW_ID_V2, ())
+            check_one_way_records(spec, LAW_ID_V2)
+            check_site_volume(spec, declaration)
             check_unmoved_sources(declaration, species_registry.moved_in_step(spec))
             check_replaced_slots(spec, declaration)
             check_replaced_operator_elements(spec, declaration)
@@ -2137,7 +2248,7 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         """[route] every route's factor at `state`, a population route's from `view` (its reader
         view, R2), called only with a population route, and a site route's from `quantities` (its
         owner's, R3), called only with a site route (static)."""
-        values = route_factors(state, p, xp=xp)
+        values = route_factors(state, p, xp=xp, volume=carried(view, "volume", state))
         if has_population(p):
             density = population_densities(_required(view)(state), p, xp=xp)
             values = with_population_factors(values, state, p, density, xp=xp)
@@ -2156,7 +2267,7 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         """@1's factors, with each population route's from `view` and each site route's from
         `quantities` (static: without either, @1's call)."""
         if not (has_population(p) or has_site(p)):
-            return super().control_factors(state, p, xp=xp)
+            return super().control_factors(state, p, xp=xp, view=view)
         values = self._values(state, p, view, quantities, xp=xp)
         return {
             name: element_product(values, getattr(p, TARGET_TABLES[name]), xp=xp)
@@ -2176,7 +2287,8 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         if has_population(p):  # Static.
             density = population_densities(_required(view)(state), p, xp=xp)
         site = self._site_sources(state, p, quantities, xp=xp)
-        return range_valid(state, p, used, xp=xp, density=density, site=site)
+        volume = carried(view, "volume", state)  # R2′: the current volume, where carried.
+        return range_valid(state, p, used, xp=xp, density=density, site=site, volume=volume)
 
     def factor_record(self, state, p, target, field, *, xp, view=None, quantities=None):
         """(each route's factor at `state`, the routes evaluated there): the step_view routes at
@@ -2187,7 +2299,7 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
             values = self._values(state, p, view, quantities, xp=xp)
         else:
             tables = [getattr(p, OPERATOR_TABLES[(target, field)])]
-            values = route_factors(state, p, xp=xp)
+            values = route_factors(state, p, xp=xp, volume=carried(view, "volume", state))
             site = self._site_sources(state, p, quantities, xp=xp)
             if site is not None:
                 values = with_site_factors(values, state, p, site, xp=xp)
@@ -2228,20 +2340,22 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
             if type(c.target) is OperatorTarget and c.source_kind == "species"
         )
 
-    def rate_factors(self, state, p, target, field, *, xp, quantities=None):
+    def rate_factors(self, state, p, target, field, *, xp, quantities=None, view=None):
         """(the product of the routes on each element of the target's control, every enabled
         route's source in its range) from the state the target's half-step receives, a site
-        route's from `quantities` (R3); None without a route on that control (static, by its
-        table's shape)."""
+        route's from `quantities` (R3), and a species route's concentration at the current volume
+        where its reader view carries it (R2′); None without a route on that control (static, by
+        its table's shape)."""
         table = getattr(p, OPERATOR_TABLES[(target, field)])
         if table.shape[1] == 0:
             return None
-        values = route_factors(state, p, xp=xp)
+        volume = carried(view, "volume", state)
+        values = route_factors(state, p, xp=xp, volume=volume)
         site = self._site_sources(state, p, quantities, xp=xp)
         if site is not None:
             values = with_site_factors(values, state, p, site, xp=xp)
         used = used_routes((table,), values.shape[0], xp=xp)
-        valid = range_valid(state, p, used, xp=xp, site=site)
+        valid = range_valid(state, p, used, xp=xp, site=site, volume=volume)
         return element_product(values, table, xp=xp), valid
 
     def observe(self, row, state, control, p, view, model, spec, quantities=None):

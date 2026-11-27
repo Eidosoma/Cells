@@ -68,9 +68,11 @@ from cells.operators.contract import (
     HEAT_SUFFIX,
     READ_STAGES,
     WORK_SUFFIX,
+    ViewFunction,
     factor_reads,
     label_event,
     monotone_heat,
+    part_reads,
     part_stages,
     reads_of,
     reports_labels,
@@ -720,16 +722,6 @@ def view_changes(inner, operators):
     return {name: tuple(changes) for name, changes in out.items()}
 
 
-def _part_reads(op):
-    """The fields op's event map or half-step reads current, in declared order: door S's
-    SCOPED_READS, its opt-in to receive the merged view (a VIEW_READS default does not opt in)."""
-    return tuple(
-        k
-        for k in op.SCOPED_READS
-        if any(r.mode == "current" and r.stage in ("event", "split") for r in reads_of(op, k))
-    )
-
-
 @cache
 def reader_view_type(fields):
     """The view a door S current reader's part receives: its read fields only (C4)."""
@@ -1368,9 +1360,6 @@ class Composition:
         self.providers = tuple(op for op in operators if op.VIEW_FIELDS)
         self.factors = tuple(op for op in operators if op.CONTROL_FACTORS)
         self.factored = tuple(dict.fromkeys(k for op in self.factors for k in op.CONTROL_FACTORS))
-        # R2: each factor operator's current reads at the control view (static: none declared,
-        # no view is passed and every control-view call is as before).
-        self.factor_fields = {op: factor_reads(op) for op in self.factors if factor_reads(op)}
         # B1′: each routed split target's (source, field) routes (static: none without a source).
         self.rate_routes = rate_routes(operators)
         # R3: each reader's composed owners (static: none declared, no call changes).
@@ -1424,11 +1413,19 @@ class Composition:
         )
         self.view_changes = view_changes(inner, operators)
         self.view_readers = tuple(
-            op for op in operators if any(k in self.view_changes for k in _part_reads(op))
+            op for op in operators if any(k in self.view_changes for k in part_reads(op))
         )
         # C4 (docs/OPERATOR_COMPOSITION_DESIGN.md §4.1, §11): each view reader's part receives its
         # current-read fields only (reader_view), never the full view's field refresh.
-        self.reader_fields = {op: _part_reads(op) for op in self.view_readers}
+        self.reader_fields = {op: part_reads(op) for op in self.view_readers}
+        # R2′ (FR-65's coupling step): each factor operator's current reads at the control view
+        # that some operator changes, C1's fallback per field (static: none declared or none
+        # changed, no view is passed and every control-view call is as before).
+        self.factor_fields = {}
+        for op in self.factors:
+            fields = tuple(k for k in factor_reads(op) if k in self.view_changes)
+            if fields:
+                self.factor_fields[op] = fields
         # Topology (S5 design §2, §3.5). With a closer the composite owns the capacitor-energy
         # correction at the view, referenced to the view of the initial state through two
         # bound layout arrays (COMPOSITE_LAYOUT_FIELDS); with a retiring operator its row
@@ -1675,12 +1672,22 @@ class Composition:
         return reader_view_type(fields)(*(getattr(q, k) for k in fields))
 
     def _factor_views(self, p, *, xp):
-        """R2: {factor operator: the function of state giving its reader view of factor_reads}
-        for each one that declares such a read (static)."""
+        """R2′: {factor operator: the ViewFunction of its reader view at the control view} for
+        each one with a declared control-view read that some operator changes, carrying those
+        fields only (factor_fields: C1 per field; static)."""
         return {
-            op: (lambda s, fields=fields: self._reader_view_of(fields, p, s, xp=xp))
+            op: ViewFunction(fields, partial(self._reader_view_of, fields, p, xp=xp))
             for op, fields in self.factor_fields.items()
         }
+
+    def _routed_view(self, source, p, *, xp):
+        """R2′: {"view": the ViewFunction of a rate-route source's door S reader view} where the
+        source is a door S current reader (reader_fields: C1, as at the split), else {} (static:
+        every other routed call is unchanged)."""
+        fields = self.reader_fields.get(source)
+        if not fields:
+            return {}
+        return {"view": ViewFunction(fields, partial(self._reader_view_of, fields, p, xp=xp))}
 
     def _view_for(self, op, p, *, xp):
         """The view function op's part receives (static): the full view for one that books at
@@ -1921,6 +1928,7 @@ class Composition:
         fields, valid, records = {}, None, {}
         for source, name in routes:
             keywords = self._quantity_keywords(source, p, xp=xp)  # R3 (static: {} for most).
+            keywords |= self._routed_view(source, p, xp=xp)  # R2′ (static: {} for most).
             out = source.rate_factors(state, p, op.LAW_ID, name, xp=xp, **keywords)
             if out is None:
                 continue

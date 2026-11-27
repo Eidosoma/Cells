@@ -1027,7 +1027,7 @@ of record are therefore value checks:
 | **A4 Reciprocal feedback** | R-feedback's two cells: the junction target, an ion source through a regulatory state (ruling 1) | Inventory → effective control → electrical response → inventory, under dt refinement at four step sizes, plus a fast arm at the largest admitted rates, dt·(k_on + k_off) near 1 (ruling 5) | Against the coupled-ODE reference: expected order 2 (**S**), with the error at the production dt reported against its tolerance and the fast arm's order constant reported |
 | **A5 The channel response** (after M1) | R-cell's one cell; a neutral regulator with closed-form kinetics, instantaneous form | The first integrated milestone: inventory → effective control → measurable electrical response (voltage and amounts) | Against R-cell, tolerance from the dt study |
 | **A6 Locality** | Two cells with no path between them; two species | *An unrelated cell:* every control and the whole trajectory of a cell the coupling does not target is bitwise unchanged. *An unrelated species:* perturbing a species the coupling does not read leaves every factor bitwise unchanged, and the operator writes no species row | Bitwise |
-| **A7 Volume** | Water, a lumen, replacement@2 | A conserved amount with changing volume is refused at the definition in version 1, with the reason named. The water door's own acceptance, concentration following n/V(t) at conserved n, is recorded for 1.1 | Refusal |
+| **A7 Volume** | Water, a lumen, replacement@2 | A conserved amount with changing volume is refused at the definition in version 1, with the reason named. The water door's own acceptance, concentration following n/V(t) at conserved n, is recorded for 1.1. *Amended in place for version 1.1 (26 November 2026, §11): water is admitted, its acceptance the water door; replacement@2 over water and the lumens stay refused, by the shared volume rule and insertion's masks* | Refusal (version 1); admission and refusals (1.1) |
 | **A8 Restart, windows and observation** | A2's and A4's worlds | Bitwise state across a restart at, before and after writes, switches and crossings; across window boundaries; through a written snapshot. Identical crossing steps. Identical observed factors at identical rows | Bitwise |
 | **A9 Idleness, crossrev, signature, refusals** | Existing sets; each refusal | §1.10's claims 1 and 2; the signature refusing different structures; each refusal with its message | As claimed |
 | **A10 The first consumer** | §4.5 | Local accuracy at the concentrations it uses | §4.5 |
@@ -1453,7 +1453,7 @@ changes (checkpoint manifests carry no `field_owners`).
 | **RK4, admitted "split"** | The sheet at 2.5 µs | Factored against the world without the operator, bitwise (the schedules change the step); a moving state's closed form to rounding | `_guards` |
 | **A6** | Two cells no junction joins | (i) the operator's locality and (ii) the untargeted cell's whole trajectory, both bitwise: the stop rule did not apply | `_locality` |
 | **Compositions** | replacement@1 replacing cell_1; injection with K as the state's input; D152 making R | Every host check passes; junction_0's availability is replacement's exact 1 times the operator's product, bit for bit; the polarity moves K and s oppositely; R rises at the reaction's rate | `_with_replacement`, `_with_injection`, `_with_reactions` |
-| **A7** | Water, replacement@2 over water, lumen@1, lumen@2 | Refused at the definition, each with its reason | tier 1 |
+| **A7** | Water, replacement@2 over water, lumen@1, lumen@2 | Refused at the definition, each with its reason. *Since version 1.1 (§11): water admitted; the other three refused, in new words* | tier 1 |
 | **A9** | A batch with another side, law or read species; parameter-only variants | Refused with "matching model array axes"; the variants admitted | tier 1 |
 | **Nine species** (FR-9's cap at 16) | The sheet with four more neutral species: a and k at 1/2, at 0, and two couplings over 1/2 | Against every coupling off over the same schedules, and every coupling off against the world without the operator: bitwise | `_guards` |
 | **The `factors` entry** | The crossrev sets' 67 worlds, field maps dumped at main and at the head (2d2d9816 against af8a5b92, and da94f813 against d2871f4d) | 58 byte-identical; 9 differ by the added key only (four bridge worlds of the division set, D150's three replacement@1 worlds, the volume set's two replacement@2 worlds); the four run tests that read `field_owners` pass | `field_maps/`, tier 1, `_runs` |
@@ -1811,6 +1811,46 @@ of the milestone-4 folder (`rehearsal.json`, `rehearsal.log`).
 
   PROGRESS and the plan are at 026c86f.
 - **What it qualifies** is the status line's scope, numerically. It makes no biological claim.
+
+## 11. Version 1.1: the current cell volume (FR-65's coupling step, 26 November 2026)
+
+Both versions read the cell volume current wherever they evaluate a factor or a state, beside
+water declared first, under the same law IDs. The design, its decisions (D375's Q1 (b), D402) and
+its rows are in [TURNOVER_CHANGING_VOLUME_DESIGN.md](TURNOVER_CHANGING_VOLUME_DESIGN.md) §11.
+- **The reads.** A state's half-steps and the routed factors at a target's half-steps read the
+  view's volume (door S, stage split), and the control view's factors and ranges read it through
+  the contract's R2′ (C1's fallback per field, so a population world's view carries no volume).
+  Observation reads the row's view. The end's validity check keeps the declared volume, a
+  reference read with the same outcome at every positive volume.
+- **What stays.** Without a changer of the cell volume the operator receives no view and runs
+  today's equations. The masks stay fixed, so it stays refused beside closers, insertion and the
+  lumens; a site source in mM keeps the declared volume (§2.6, D244's Q2) and stays refused beside
+  water.
+- **A7 is amended in place** (§4.4, §8.4): water's case moved to the admissions
+  (`test_version_1_1_beside_water_by_name`), and the water door is its acceptance (T1 in
+  `tests/unit/test_shared_inventory_volume.py`). Replacement@2 over water is refused by the shared
+  volume rule, and the lumens by insertion's masks. The judged protocol (§10.2) never listed A7, so
+  its verdict stands within its static-tissue scope.
+- **The protocol's planted control** `control_lagged_factor@1`
+  (`validation/tissue/regulated_availability_controls.py`) subclasses @1, so it inherits the
+  control-view read: its `control_factors` gains the keyword `view=None`, which is always None in
+  the protocol's worlds (no changer of the volume). Its behaviour there is unchanged.
+- **Beside FR-50 phase 2** (D327, 27 November 2026): @3's own one-way records (`one_way_records`)
+  beside the coupling and a changer of the cell volume are refused by name, in both versions
+  (`check_one_way_records`), until a world qualifies the three together. Each pair alone is
+  admitted: the coupling beside the records at a fixed volume (FR-50 phase 2), whose programs stay
+  bit for bit, and the coupling beside water (this step).
+- **The D148 round at the merged head** (`7cce9790` against main 7149f90a, 27 November 2026;
+  TURNOVER_CHANGING_VOLUME_DESIGN.md §12). The protocol's generator and judge ran in development
+  mode at the head and at 10225759, with A1, A4, A5 and the controls.
+  - The records are bit for bit identical in every part and every control.
+  - Both development verdicts pass 47 of 47 criteria.
+  - The two planted controls are caught on a4.coupled, by the same criteria. Both δ-controls are
+    caught at the development δ.
+  - Every control's orders, resolved pairs and δ equal the protocol's recorded development
+    controls.
+
+  These are development runs, not judged ones, so §10.8's judged verdict stands.
 
 ## Appendix A. Equations for the independent references
 

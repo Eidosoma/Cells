@@ -1,7 +1,8 @@
 # FR-65: turnover beside a changing volume (design)
 
-**Status: built (26 November 2026, branch `fr65-build`): the first build, steps 1 to 4, as §10 records; the coupling's
-step (§3.8) and the run view for water worlds (§9.2) are not built.** Decided on 24 November 2026 (D375, and the lead's
+**Status: built (26 November 2026, branch `fr65-build`): the first build, steps 1 to 4, as §10 records. The coupling's
+step (§3.8) is designed and decided in §11 (26 November 2026, branch `fr65-coupling`; D402) and built there (§12),
+awaiting its D148 round; the run view for water worlds (§9.2) is not built.** Decided on 24 November 2026 (D375, and the lead's
 rulings on this revision, §8.2). Its IDs are written in the spelling of the move (D345), translated with
 `validation/id_table.py`; the step IDs keep theirs. The first version was proposed and decided that day. This
 revision, on branch `fr65-design` with main merged (the probes ran at 95559271, whose source is unchanged since):
@@ -15,7 +16,7 @@ The build comes after the rename. FR-65 is D301's composition M3, and D150's pla
 **Engine models:** `cells.model.resolved_pump_composite@1` over `cells.model.resolved_pump_tissue@3`. `cells.operator.scheduled_species_turnover@1` sits
 beside `cells.operator.ideal_osmosis_linear_compliance_water@1`, `cells.operator.isopotential_partition@1`, `cells.operator.scheduled_membrane_insertion@1` and
 `@2`, `cells.operator.restricted_cleft_lumen@1` and `@2`, and `cells.operator.neutral_arrival_labels@1`. A1 adds `cells.operator.templated_polymerisation@1`, and in
-the second step `cells.operator.species_regulated_availability@2`.
+the second step `cells.operator.species_regulated_availability@2` (§11 recommends `@1` too).
 
 **S** marks our own reading or derivation. The probes ran on the host only: nothing was compiled or run (§9).
 
@@ -50,6 +51,11 @@ the second step `cells.operator.species_regulated_availability@2`.
   step adds D375's 2–2.5, carried here, not re-derived.
 - **The lead's rulings on this revision** (§8.2): route B for the lumen; the symport and the bath schedule each get a
   parse row and one tier-3 run; the run view for water worlds is logged apart (§9.2).
+- **The coupling's step** (§11, designed and decided 26 November; built, §12). Both versions read the current cell
+  volume wherever they are evaluated, through one contract extension (R2′): C1's fallback per field at the control
+  view, and the source's reader view at a routed half-step. 30 more sequences parse, and every world admitted today keeps its program by
+  construction. 2.1–3.05 agent-days. The user left its two questions to the lead and the adviser, who decided them
+  with conditions (D402; §11.12).
 
 ## 1. What reads the declared volume or masks today, and why
 
@@ -732,3 +738,659 @@ small-fixes at c574cc41, merged), against main at 4be34f74 (26 November 2026; th
   `test_cell_owned_compartments.py`, whose contract-wide row gains the two new hooks (`changed_volume_nodes`,
   `slot_occupants`: a declaration that defines either is refused); small-fixes adds or removes none.
 So every world without a changer of turnover's read fields keeps its program, as §3.9 argued by construction.
+
+## 11. The coupling's step: its design (26 November 2026)
+
+**Designed and decided** (built since: §12). This section was written on branch `fr65-coupling`, from main 69d2a36a,
+as docs only.
+- The user approved the step "as you and adviser see fit" (D401). It is D375's Q1 (b), and §3.8 lists its inputs.
+- **Decided (D402):** the user left both of its questions to the lead and the adviser, who decided them with
+  conditions. The lead also ruled on its form (§11.12). Every part below is written as decided.
+- Its code waits for FR-52's landing, which holds `contract.py` and the composition table until then (D401). FR-52
+  lands first (§11.11).
+- The probes ran on the host only (§11.10).
+- **Engine models:** `cells.model.resolved_pump_composite@1` over `cells.model.resolved_pump_tissue@3`, with
+  `cells.operator.species_regulated_availability@1` and `@2` beside `cells.operator.ideal_osmosis_linear_compliance_water@1`.
+  A1 adds `cells.operator.scheduled_species_turnover@1` and `cells.operator.templated_polymerisation@1`.
+
+### 11.1 In short
+
+- **What it admits.** Both versions of the coupling read the cell volume current wherever they evaluate it, beside
+  water declared first.
+  - A1 in a swelling cell (§3.8) then parses (probe), and runs once the code reads the volume.
+  - The law IDs stay the same (option A, as for turnover, §3.1).
+- **What stays.**
+  - The masks stay fixed (§3.8), so the coupling stays refused beside the partition, insertion and the lumens.
+  - The shared volume rule refuses replacement@2 by name.
+  - A site source keeps the declared volume (D244's Q2, the user's own answer), and stays refused beside water.
+  - A read site with no row that catches it planted at the starting volume stays refused (D327; §11.8).
+  - Every other refusal stays.
+- **The contract extension, R2′,** has two parts:
+  - C1's fallback per field at the control view;
+  - the source's reader view at a routed half-step.
+
+  No state, layout, control or ledger term is added.
+- **Every world admitted today keeps its program, by construction.** None of them holds a changer of the volume the
+  coupling reads, so no view reaches it, and every kernel reads the declared volume as today (§11.7). For @1 this stays
+  a claim until the round's pair check shows it (D402).
+- **What newly parses:** of 3,854 ordered sequences of up to three operators that hold either version, 32 more pass
+  the structure check and none is lost. The shared rule refuses 2 of them, so 30 newly parse (§11.6).
+- **The price:** 2.1–3.05 agent-days, against D375's 2–2.5, which was carried (§11.9).
+- **Decided** (§11.12): every read site, each with its own row, and both versions.
+
+### 11.2 The read sites, and what each becomes
+
+The coupling reads one volume field, the cell's, in four kernels of `species_regulated_availability.py` (main
+69d2a36a).
+- It reads no outside volume and no mask. Every state, route and element it binds is in a cell, since version 2 routes
+  cell-side elements only.
+- So `extracellular_volume` and the three masks on its fixed list are never read.
+
+| Kernel (line) | Where it is evaluated | Stage | Today | After |
+| --- | --- | --- | --- | --- |
+| `route_factors`, c = n/V (1336) | The control view: an inner target's `control_factors`, `factor_valid`, `factor_record` | inner | Declared V | Current (R2′) |
+| | A routed target's half-step: `rate_factors`, the routed `factor_record`, the midpoint's predictor | split, at the target | Declared V | Current (the source's reader view) |
+| | Observation: `observe`'s `coupling_factor`; `observe_history`'s control view and routed controls | the row | Declared V | The row's view |
+| | @2's bind: `initial_values`, the record's start | — | Declared V | Unchanged: water's increments start at zero, so V = V₀ there, and no plant can tell the two apart |
+| | `factors_valid`, in `rate_checks` and `domain_valid` | end | Declared V | Unchanged, declared as a reference read (below) |
+| `state_inputs`, u at c = n/V (1366) | The coupling's own half-steps (its states) | split | Declared V | Current (door S, as the reactions read it) |
+| `range_valid` (1452) | With the factor it guards: `factor_valid` at the control view, `rate_factors` at a routed half-step | inner, split | Declared V | Current |
+| `site_route_sources`, B/V or S/V (1509) | The same points as a site route's factor | inner, split | Declared V | Unchanged: the declared V, as D244's Q2 (the user's own answer) says. Beside water it stays refused, since site occupancy reads `volume` as declared. No row reaches it (§11.12, ruling 2) |
+
+The population source reads no volume (ρ = N/A), and the event map reads none.
+
+**The declarations, the same in both versions, are the coupling's own tuples.** The shared
+`species_common.CONFLICTS_VIEW` stays as it is for exchange and the unit producer (composition design §16.1).
+
+| Field | Read |
+| --- | --- |
+| `volume` | Current at the split; current at stage inner (R2′); reference at the end (C3) |
+| `extracellular_volume` | Dropped: never read |
+| `active`, `outside_active`, `membrane_active` | Fixed, as today. They are never read, and stay as the static-tissue scope (§3.8) |
+| `channel_abundance` (@2) | Current at stage inner, as today (FR-7's part (b)) |
+
+- **The split read** puts the coupling after water (C2). The engine's words for the other order are in §11.5.
+  - It covers the coupling's own half-steps and its routed factors. A routed factor is evaluated at its target's
+    half-step, and a target follows its source (B1′), so water precedes every evaluation.
+  - A coupling with neither a state nor an operator target is held to the same order, since its declarations belong to
+    its class. That is conservative.
+- **The read at stage inner** sees water's first half in any declared order, since changes are made only at events
+  and in split parts (C2).
+- **The end read is a reference read** (S). `factors_valid` asks only whether each factor is finite and in [0, 1].
+  - f = b + (1 − b) h(ln n − ln V) lies in [0, 1] for every finite ln n and every finite positive V.
+  - It is 0 or 1 at n = 0, where ln n = −∞, and NaN for a negative or NaN amount, at any V.
+  - So its outcome is the same at V and at V₀, and @1's end checks keep their program. A tier-1 row shows it (§11.8).
+- **Observation** already receives the row's view (`observe(row, state, control, p, view, …)`). Where nothing provides
+  `volume`, that view's `volume` is the declared array itself, so today's observations are bitwise.
+
+**What the current volume changes, and what it does not** (S).
+- **Concentrations.** Every source concentration is n/V at the current volume. K, n, b and the operating ranges keep
+  their units. A regulator that dilutes as the cell swells lowers its factor. That is the declared coupling, not a new
+  law.
+- **The held factor stays exact.** An instantaneous source is a row the inner step does not move (the coupling's
+  design §1.4). Water changes V only in its half-steps, so a factor held through @3's step stays exact there.
+- **The order of accuracy.** Water's half-steps come first, so both halves of the coupling and of each routed target
+  read the same V, the one after water's first half. The palindrome stays symmetric and the step second order, as in
+  FR-43 part 2B (composition design §6). The midpoint's predictor runs inside the target's half-step, where V does not
+  move.
+- **Energy.** The coupling books nothing. Each target books its own moves at the volumes it reads (§3.2).
+- **Ranges.** A source outside its declared operating range refuses the half-step, now at the current volume, as it
+  does today at the declared one (§3.8). A world declares a range that holds its regulator's dilution.
+
+### 11.3 The contract extension (R2′)
+
+There are two changes in `pump_composite.py`, with their rules in `contract.py`.
+
+1. **C1's fallback per field at the control view.** Today R2's view is passed wherever a read at stage inner is
+   declared, since `factor_fields` is built from the declarations alone (§3.8).
+   - R2′ keeps, for each factor operator, only the declared control-view reads that some operator changes
+     (`view_changes`). Where none is left, it passes no view.
+   - The function of state names the fields it carries (`fields`, as the lead ruled, §11.12). A hook reads a field from
+     the view only where it is carried, and from the declared layout otherwise. The test is static.
+   - **Per field, not per operator**, because @2 already reads `channel_abundance` there. Under a per-operator rule,
+     @2's population worlds, where membrane state changes `channel_abundance`, would get a view that also carries
+     `volume`, which nothing changes there. The values would be equal, but the coupling would trace a second call of
+     the view, so the program text would move.
+   - The probe (§11.10) shows the difference.
+     - Today @2 alone receives a view of `channel_abundance`, which nothing changes.
+     - With the lifted declarations and today's rule, @1 alone (A5″'s family) would receive a view of `volume`.
+     - Under R2′, @1 alone receives none, @2 beside membrane state receives `channel_abundance` only, and @2 beside
+       water receives `volume` only.
+2. **A routed half-step passes the source its reader view.** Today `_routed_control`, which serves `_half_step` and
+   `observe_history`, passes the source the state alone (§3.8).
+   - Under R2′ it also passes `rate_factors` and the routed `factor_record` `view=`: the source's door S reader view as
+     a function of state, with its `fields` (C4).
+   - It does so only where the source is a door S current reader (`view_readers`), which is C1 per operator, as at the
+     split. So the source sees the same view as its own half-step.
+   - The midpoint's predictor goes through the same call, at its own state.
+3. **The rules.**
+   - `check_declarations` requires `view=None` on `rate_factors` and `factor_record` of a rate-route source that reads
+     current at the split.
+   - The base Operator's `control_factors`, `factor_valid`, `factor_record` and `rate_factors` take `view=None`. The
+     composite calls the base `factor_valid` of each factor operator it passes a view, and @1 defines none.
+   - The contract's R2 text gains both rules. Today it says that "a routed half-step's factor_record passes none".
+
+**Which operators it reaches.**
+- **In code:** only the coupling's two versions. They are the only factor operators with control-view reads, and @2
+  is the only rate-route source.
+- **Unchanged:** the other factor operators, replacement@1 and the bridge. They declare no read, so their calls are
+  as before.
+- **Unchanged in code and program:** the four targets. They are turnover, the reactions, the gene unit (two controls)
+  and the unit producer, and the composite forms their routed controls.
+- **Unchanged:** the field map of every world without water, and so its manifest. Its view entries exist only for
+  provided fields.
+
+**Other forms considered.**
+- **A `volume=` keyword at each hook.** It is narrower, but adds a second keyword outside the reader-view rule.
+- **C1 per operator at the control view.** The program text would move in @2's population worlds, with equal values,
+  so program identity would not hold by construction.
+- **No read at stage inner,** refusing an instantaneous source on an inner target beside water. That was the
+  narrower scope of the first question, not chosen (§11.12).
+
+### 11.4 The coupling's code
+
+- **The kernels** `route_factors`, `state_inputs` and `range_valid` take `volume=None`. With `None` they read
+  `p.volume`, today's equations. `site_route_sources` keeps the declared volume (ruling 2).
+- **@1:**
+  - `control_factors(…, view=None)` reads the carried volume;
+  - `half_step(…, view=None)` passes `view.volume` to its states;
+  - `observe` reads the row's view;
+  - `check_definition` calls `common.check_volume_changers(spec, law, ())`. The empty tuple says it reads no outside
+    node.
+- **@2:** `_values`, `control_factors`, `factor_valid`, `factor_record` and `rate_factors` take the volume from their
+  view where it is carried. The population and site paths, R3 and `initial_values` are unchanged.
+- **The replaced-slot checks** keep `replacement_of`, since every slot changer is refused beside water:
+  - replacement@1 by its own volume read;
+  - replacement@2 by the shared rule;
+  - the partition by the masks.
+- **Version 1.1 is recorded** in the module docstring and in INVENTORY_COUPLING_DESIGN. Its A7 already planned "the
+  water door's own acceptance, concentration following n/V(t) at conserved n", for 1.1.
+
+### 11.5 The refusals
+
+| Composition | After the step |
+| --- | --- |
+| The coupling beside water, declared after it | Admitted, in both versions |
+| Declared before water | Refused (C2): "cells.operator.species_regulated_availability@2 reads the view volume at stage split before cells.operator.ideal_osmosis_linear_compliance_water@1 changes it there" (probe) |
+| Replacement@2 over water, beside the coupling | Refused by name by the shared rule: "…: cells.operator.scheduled_cell_replacement@2 changes the volumes it reads; water is the one volume changer admitted beside it (FR-43 / D315)". Declared after the coupling, it is refused first by C2. Without the rule it parses (probe: A7's replacement@2 world) |
+| Insertion@1, insertion@2, and so the lumens | Refused by the masks: "reads outside_active as declared, but cells.operator.scheduled_membrane_insertion@1 provides it" (for @2, "closes it"), and the same for `membrane_active` (probe). Today the first words are about `extracellular_volume` |
+| The partition, and the bridge that requires it | Refused, as today: by the coupling's fixed `active`, and beside water by the partition's own volume read (M4) |
+| Membrane state, site occupancy, exchange, the unit producer, the integer population, compartments, injection, the wash, replacement@1 | Refused beside water, as today, by their own reads (or by water's, for membrane state) |
+| RK4 beside water | Refused by the engine: event maps and split-only parts cannot sit beside water's coupled part |
+| A site source beside water | Refused, as today, by site occupancy's fixed `volume` read. Its kernel keeps the declared volume (D244's Q2) |
+| A read site with no row that catches it planted at the starting volume | Refused in this build, by name at the definition (D327: a combination is enabled only once its check passes). §11.8 gives every read site its row |
+| A source outside its declared range | Refused at run time, at the current volume, and never clipped, as today |
+
+### 11.6 What newly parses, and what covers it
+
+Among the 3,854 ordered sequences of one to three operators that hold either version, the structure check admits
+1,010 where it admitted 978 (probe).
+- That is 32 more, 16 per version, and none is lost.
+- The two with replacement@2 are refused by the shared rule at the definition, so 30 newly parse.
+- Water comes first in every new sequence, except where labels or the bath schedule precede it.
+
+Reduced to sets, each newly parsing pairing gets one composed-world check (§8.2). The exceptions are the two
+companions, which the lead's ruling 3 covers by argument:
+
+| Newly parsing set | What couples | Covered by |
+| --- | --- | --- |
+| Water + the coupling | c = n/V at the current volume | T1, the water door, both versions (run) |
+| + turnover | The routed rate reads c, and turnover's osmolytes move V | T1: turnover's production is one of its routed targets |
+| + the reactions | The network reads V, and a routed multiplier reads c | T1: the binding reaction's multiplier is its second routed target |
+| + the gene unit | A1 | T2 (run) |
+| + labels | Labels report the targets' moves; the coupling writes no row | T2's labelled row (run) |
+| + the K-anion symport, + the bath schedule | V, through the symport's volume factor or through the dose's exchange with water | The argument below and a parse row each (the lead's ruling 3) |
+| + replacement@2 | It writes water's volume | Refused by name (a row) |
+
+**The argument for the two companions** (ruling 3).
+- **What they do not do.** Neither writes a volume or a mask, and neither is a target the coupling routes to. The
+  coupling reads no outside node, so the bath schedule's anchors never reach it.
+- **How they reach it.**
+  - Both reach it through V, which T1 covers at every read site.
+  - The symport can also move an ion a state reads. A state reads its inputs at its half-step's start, beside any
+    split mover, as A4 reads its ion today.
+- **Their own dependence on V** is tested in their own worlds, the first build's companion rows.
+
+**D327.** By today's declarations, neither build below admits a composition that this step also admits:
+- **FR-52** changes the integer unit population. Its volume reads are fixed, so it is refused beside water. FR-52
+  lands first (ruling 4), and this step reruns this probe at its merged head with both changes in place. It names any
+  composition that both admit, each with its check or a refusal by name.
+- **FR-45** admits @2 reading a shared site set's θᵦ. That is a site source, which this step leaves declared and
+  refused beside water (ruling 2). Whichever of the two lands second reruns the probe.
+
+### 11.7 The worlds that must stay bit for bit
+
+**By construction, and a claim until the pair check shows it.** No world admitted today holds a changer of the volume
+the coupling reads, since water is refused beside it. So in every such world:
+- **No view at the split.** The coupling is no door S view reader, since nothing changes the field of its one split
+  read. Its half-steps and its routed factors receive no view.
+- **The same control-view reads.** R2′'s fields never hold `volume`. They hold `channel_abundance` exactly where
+  membrane state changes it, which includes every world that can have a population route, since such a route requires
+  membrane state.
+- **No new trace.** Where today's view is passed but never called (@2 without a population route), R2′ may pass none.
+  That traces nothing different.
+- **The same equations.** Every kernel takes `volume=None`, so the same equations run in the same order.
+- **The same observations.** Observation reads the row's view, whose `volume` is the declared array itself.
+- **Checkpoints and resumes.** No state, layout or control field is added, so checkpoints load and a resume stays
+  bitwise.
+
+**The named worlds.**
+- **Judged:**
+  - FR-6's A5″ (`fr6-a5pp-v1`, @1);
+  - the coupling's milestone-4 protocol: A4 on R-feedback and A5 on R-cell (@1, judged on 15 November);
+  - FR-38 v2's arm B (`fr38-v2-registered-2026-11-25`, @2, D381).
+- **Development:**
+  - crossrev's coupling set, six @1 worlds that G1 runs;
+  - FR-7's part (b), the population source;
+  - FR-24's site source and FR-26's part C′;
+  - FR-7's unit producer routes;
+  - the gene lane's A1 and R2;
+  - FR-8 rung 1's W0.
+- **FR-8 rung 1's registration** (tag `fr8-rung1-registration-2026-11-19`, with its dated §10 amendments) is tagged,
+  and its arm W0, on @1, has not run under the new integrator. In `/mnt/workspaces/Cells/fr8-rung1-20261119/`, W0
+  appears only under the control (`records-d03ca463`), and the new integrator's runs hold H2 alone. W0 joins the pair
+  check below. If that check shows any difference in W0, W0 runs from a snapshot taken before this step.
+- **The verdicts stand within their scope.** They were judged on static tissues, and no registered protocol asserts
+  the volume refusal. A7 is a tier-1 row, amended in place and disclosed (§11.8).
+- **@1's program identity is a claim** (D402) until the round's pair check covers program text, constants and bindings
+  for every @1 judged world named above and for FR-38 v2's arm B, the @2 world that passed in FR-38.
+
+**The evidence at landing (D148):**
+- crossrev's sets, which hold A5″ and the coupling set;
+- G1 at 113 of 113;
+- FR's set;
+- the judges' derivative programs;
+- tiers 1 and 2;
+- a jaxpr-text pair check of the coupling's worlds, base against head. It compares the checked step, the right-hand
+  side and the device checks, with their program text, constants and bindings. Its worlds:
+  - A5″'s registered world, though crossrev also holds it;
+  - the protocol worlds of A4 and A5;
+  - FR-38 v2's arm B, in both machine options, labelled and unlabelled;
+  - FR-8 rung 1's W0;
+  - an FR-7 population world, an FR-24 site world and an FR-7 unit-producer world;
+  - the gene lane's A1 and R2.
+
+### 11.8 Acceptance rows and planted errors
+
+Each row has a planted error it must catch. A fix adds a row to an existing parametrized test, never a new file
+(D224).
+
+**Every read site has its own row** (D402's condition). Each row runs under a changing volume, and fails when that
+read is planted at the starting volume V₀. A read site without such a row stays refused in this build, by name at
+the definition (D327). The rows are numbered below.
+
+| Read site (§11.2) | Its row under a changing volume | Planted at V₀ |
+| --- | --- | --- |
+| Control view: an inner target's factor (`control_factors`), a channel target | Tier 1, row 4; T1's observed `channel_availability` at every row; T1's @1 run | The identities miss |
+| Control view: a junction target, sides first, second and both | Tier 1, row 4, A7's water world with its two cells' volumes set apart | The identity misses |
+| Control view: the range check (`factor_valid`) | Tier 1, row 4: a source inside its range at V₀ but outside it at V | The refusal is lost |
+| Control view: the inner routes' record (`factor_record`) | Tier 1, row 4; T1's `coupling_applied_factor` against the reference | The identity misses; the window is left |
+| A routed target's rate (`rate_factors`) | Tier 1, row 4 (turnover, the network and the gene unit); T1's S against the reference | The identities miss; S leaves the window |
+| A routed target's range check | Tier 1, row 4: a routed source inside its range at V₀ but outside it at V | The refusal is lost |
+| A routed record (`factor_record` at the target) | T1's `coupling_applied_factor` against the reference | The window is left |
+| A self-moved route's midpoint predictor | Tier 1, row 4, through `_half_step` on a self-moved route; T1's self-moved route | The identity misses; S leaves the window |
+| The states (`state_inputs`) | Tier 1, row 4 (one half-step, the code both versions run); T1's s against the reference | The identity misses; s leaves the window |
+| Observation: `coupling_factor` | T1, T2 and the replay against one saved file | The identities miss |
+| Observation: a routed target's controls (`observe_history`) | T1's observed `reaction_rate_fmol_per_s` for `bind` | The identity misses |
+| @2's bind | None needed: V = V₀ at the bind by construction | — |
+| The end check (`factors_valid`), a reference read | Tier 1, row 3: the same outcome at V and V₀ | A volume-dependent check in its place changes the outcome |
+| A site source (`site_route_sources`) | None: it keeps the declared volume and stays refused beside water (ruling 2) | — |
+
+**Tier 1, on the host (nothing compiled):**
+1. **Parse rows.**
+   - Admitted: both versions beside water alone, and @2 beside each set of §11.6, water first.
+   - Refused, each in its own words:
+     - before water (C2);
+     - beside replacement@2 (the shared rule);
+     - beside insertion@1, insertion@2 and each lumen (the masks).
+   - Planted: today's declarations restored, with the composition cache cleared. Every admission row is then refused
+     with "reads volume as declared".
+2. **The kernels in NumPy at V = 1.3 V₀.**
+   - `route_factors`, `state_inputs` and `range_valid` match their closed forms at n/V.
+   - A source inside its range at V₀ but outside it at a shrunken V is refused.
+   - Planted: V₀ in each in turn.
+3. **The end read.** `factors_valid` gives the same outcome at V and at V₀, over the amounts 0, 1e-30, 1, 1e30, ∞,
+   NaN and −1. Planted: a volume-dependent check (`range_valid`) in its place changes the outcome.
+4. **The wiring, through the composite in NumPy.**
+   - **The water door's world** (@2) is bound, with water's increment set to +0.3 V₀ by hand. At that state each of
+     these equals its closed form at n/V:
+     - the control view's channel availability;
+     - `factor_valid`, with a range that the current concentration leaves and V₀'s keeps;
+     - the inner routes' `factor_record`;
+     - the routed rates of turnover, the network and, in A1's world, the gene unit, with their validity under the same
+       kind of range. These go through `_routed_control`. No observation column holds a routed turnover or gene-unit
+       rate, so this row is their exact check;
+     - a self-moved route's applied factor, through `_half_step` with the midpoint;
+     - one state half-step, through `_half_step`;
+     - the observed `coupling_factor`.
+   - **A7's water world** (@1, a junction) is bound with its two cells' increments set apart by hand. The junction's
+     availability matches its closed form for each side: first, second and both.
+   - **No view without a changer:** in A5″'s composition and in a population world, the coupling receives no view of
+     `volume`.
+   - **Planted:** the view withheld at each site in turn; and today's declaration-based R2, under which A5″'s
+     composition would receive a view.
+5. **The contract.**
+   - A rate-route source that reads current at the split is refused if its `rate_factors` or `factor_record` lacks
+     `view=None`.
+   - The registered control-view readers become both versions. Today `test_pump_composite_contract.py` lists @2 alone.
+   - Planted: a stub source without the keyword.
+6. **A7, amended in place and disclosed** (INVENTORY_COUPLING_DESIGN §4.4 and §8.4):
+   - its water case moves to the admissions;
+   - replacement@2 over water is refused by the shared rule;
+   - the lumens are refused by the masks, in their new words.
+
+   The same applies to `REFUSED` and to the "volume provider" row of `REFUSALS` in
+   `test_species_regulated_availability.py`.
+   - **Before amending,** the build greps that no registered protocol or judged set runs that file (D402).
+   - **This section's grep,** on main 6f6547e7, found none. The file's other mentions are:
+     - design notes' citations;
+     - the composition matrix's rule rows, which cite `::test_refusals`, a name that stays;
+     - `validation/channel_readouts/README.md`;
+     - the legacy port's finished record of plants, made at bc40533b;
+     - the Lean project's claims, whose line anchors are pinned to their own record revisions.
+
+     The coupling's registered protocol names only `test_species_regulated_availability_regression.py`, as a
+     regression guard outside its judged list. A5″'s names none.
+
+**Tier 3, compiled.** The seconds are estimates, measured at landing (D224).
+- **T1, the water door** (A7's acceptance for version 1.1). New rows in `test_shared_inventory_volume.py`.
+  - **The world:** the first build's swelling cell (water first, the network active, turnover of S). It adds a
+    conserved neutral regulator R and a channel population at zero permeability, so the regulation moves no ions.
+  - **The coupling's routes:**
+    - an instantaneous Hill of R on that population (the control view);
+    - a state with a Hill input of R, gating the same population (the split);
+    - Hill factors of R routed onto S's production and onto the binding reaction's multiplier (routed);
+    - a Hill inhibition of S routed onto S's own production. Turnover moves S, so the composite evaluates this route
+      at the midpoint (self-moved).
+  - **Checks:**
+    - R's amount is bitwise constant while V grows by 5% or more;
+    - **at every row,** three observed columns equal their closed forms:
+      - the inner model's `channel_availability` of the population equals its schedule times F at n_R/V and at the
+        row's s;
+      - every route's `coupling_factor` equals its factor at n/V, or at s for the state route;
+      - the network's `reaction_rate_fmol_per_s` for `bind` equals its rate at the row's state with the routed
+        multiplier. That rate comes from the network's own rate functions, as the first build's reference uses them.
+
+      Turnover observes only its accumulators, so its routed production is checked through S and the record below;
+    - V, S and s follow the first build's in-test reference at h, 2h and 4h, inside C2.6's ratio window. The reference
+      is extended by the state's two-state law and the routed factors, written plainly, and solved by SciPy's Radau at
+      rtol 1e-12;
+    - every route's `coupling_applied_factor` at each step's end, against F at the reference's state half a step
+      earlier, falls inside the same window;
+    - the energy identity's stepped entry (amendment 3) holds;
+    - every host check holds on every row.
+  - **Planted:**
+    - the reference's routed factors taken at V₀;
+    - the expected values taken at V₀, which the observed ones miss.
+  - **@1's run** (ruling 3), since @1 beside water is a newly admitted combination. One run at step h of the same
+    world without the routed routes, which @1 does not have.
+    - **Checks:** the inner availability and `coupling_factor` at every row, and every host check. The state's
+      integration is the code @2 inherits, so its order is shown by @2's rungs.
+    - **Planted:** the expected values taken at V₀.
+  - **Seconds:** about 150 for @2's three rungs, and 40 for @1's run.
+  - **Reason:** it is the one composed check, against a reference, of every place where the coupling is evaluated.
+- **T2, A1 in a swelling cell with the coupling.** This is §3.8's composed check of its readers: a row added to
+  `test_fr65_a1_without_the_coupling_runs_in_a_swelling_cell`, plus a labelled row.
+  - **Checks:**
+    - every host check, and X's closed form, as today;
+    - transcription's route has `coupling_factor` equal to F(n_X/V) at every row. The gene unit observes only its own
+      state, so its routed initiation rate has no column; tier-1 row 4 checks that wiring exactly;
+    - **the saved records,** checked against one saved file, which the test names. From `write_run`'s
+      `trajectory.npz`, the saved n_X and V give the saved `coupling_factor`, to rounding;
+    - a resume mid-run, in process and from a written snapshot, is bitwise;
+    - **the labelled row** is FR-38 v2's arm B, labelled, in a swelling cell. Its registered builders keep the IDs
+      from before the move, so its IDs are translated with `validation/id_table.translate`. There the physics is
+      bitwise with and without the labels.
+  - **Planted:**
+    - the expected factor taken at V₀;
+    - k × 1.001 in X's closed form.
+  - **Seconds:** about 80 with its resumes, and about 40 for the labelled row.
+- **The companions,** the symport and the bath schedule, have the argument of §11.6 and a parse row each, with no run
+  (ruling 3).
+
+### 11.9 The price
+
+| Item | Files | Agent-days |
+| --- | --- | --- |
+| R2′: the per-field fallback and its `fields`, the routed view, the base hooks' keyword, the declaration rule, the contract's text | `pump_composite.py`, `contract.py` | 0.4–0.6 |
+| The coupling, both versions: declarations, the kernels' volume (the site kernel unchanged), the hooks, observation, the shared rule, the docstring | `species_regulated_availability.py` | 0.4–0.6 |
+| Tier-1 rows 1 to 6, one row for each read site, with A7, `REFUSED` and the contract's reader row amended | tests | 0.4–0.55 |
+| Tier-3 runs: T1 with its reference, rungs and self-moved route; @1's run; T2 with replay, resumes and its labelled row | tests, `shared_inventory_fixtures.py` | 0.55–0.8 |
+| D148's round, with the pair check of program text, constants and bindings; the regenerated matrix and library page; INVENTORY_COUPLING_DESIGN's version 1.1; this note's as-built section | `composition_matrix.py`, `PUMP_COMPOSITE.md`, docs | 0.35–0.5 |
+| **The coupling's step** | | **2.1–3.05** |
+
+- **Against D375's 2–2.5,** which was carried, not itemized: 0.1 higher at the low end and 0.55 higher at the top.
+  The top pays for three things:
+  - R2′'s per-field fallback with its wiring rows: 0.25;
+  - a row for every read site, as D402 asks: 0.1;
+  - the composed runs (@1's own, T2's labelled row and the self-moved route): 0.2.
+
+  The companions' two runs are no longer in it (ruling 3).
+- **Fast.** In a water world each evaluation adds one reader view of V₀ + increment, elementwise. One development
+  timing on the timed cores, under their lock, would need the lead's word. It is not a gate.
+
+### 11.10 Evidence
+
+The probes are in `/mnt/workspaces/Cells/fr65-coupling-20261126/probe/`.
+- **How they ran:** on CPU 6, from the clean worktree at 69d2a36a, host only, so nothing was compiled or run.
+  Probe 4 ran at 19a374a3, whose source is the same.
+- **What they changed:** each patched the coupling's class attributes in process, to §11.2's declarations, and
+  restored them afterwards. Nothing was saved in the checkout.
+
+The four probes:
+- **`coupling-probe-69d2a36a.json`** (`coupling_probe.py`):
+  - **The structure check's admissions,** today and lifted: 978 and 1,010 of 3,854, so 32 new and none lost. It also
+    gives the sets of §11.6, and the reason each water sequence that is still refused stays refused.
+  - **Eight named worlds,** parsed today and lifted.
+    - Under the lift, each @1 world that passes the structure check fails with "control_factors() got an unexpected
+      keyword argument 'view'". R2 passes the view wherever the read is declared, already in the definition's checks,
+      which evaluate the control view on the host.
+    - `check_declarations` refuses the lifted @1 with "its control_factors takes view=None".
+    - A1 in a swelling cell, water first, parses. The coupling declared before water is refused by C2.
+- **`coupling-probe-2-69d2a36a.json`** (`coupling_probe_2.py`): the same worlds, with @1's `control_factors` taking
+  `view=` and ignoring it.
+  - Three worlds parse: A7's water world (an instantaneous Hill on a junction), the coupling's pair world, and A5″
+    with water first.
+  - A7's replacement@2 world also parses, which shows the shared rule is needed.
+  - The lumens are refused by the masks.
+- **`coupling-probe-3-69d2a36a.json`** (`coupling_probe_3.py`): `factor_fields`, `view_readers` and the changed
+  fields for thirteen compositions, five today and eight lifted (§11.3, item 1).
+- **`coupling-probe-4-19a374a3.json`** (`coupling_probe_4.py`), with the same shim. The checkout was this section's
+  commit, whose source is 69d2a36a's. It parsed sketches of §11.8's worlds: T1's world, the two companion worlds, and
+  arm B, labelled and unlabelled, in a swelling cell. Each is refused today, and each parses under the lift. Arm B's
+  IDs were translated, as T2's labelled row will be.
+
+**The checks for D402,** on main 6f6547e7:
+- the grep before A7's amendment (§11.8, row 6);
+- FR-8 rung 1's tags and its run folder (§11.7);
+- FR-45's file list, from its design note (§11.11).
+
+**What the probes do not show.**
+- **No probe exercised the code's reads.** The lift changes declarations only, so the kernels still read the
+  declared volume, and nothing was compiled or run.
+- **R2′ is designed, not written.** Its wiring and its program identity are claims of §11.3 and §11.7, to be shown
+  by tier-1 row 4 and by D148's pair check.
+- **The sketches' parameters are not yet set** for the runs' criteria: V moving by 5% or more, with R inside its
+  declared range.
+
+### 11.11 Files, and the order with FR-52 and FR-45
+
+- **The step changes:**
+  - `src/cells/operators/contract.py`;
+  - `src/cells/models/pump_composite.py`;
+  - `src/cells/operators/species_regulated_availability.py`;
+  - the comment on `species_common.CONFLICTS_VIEW`, whose readers become exchange and the unit producer;
+  - `validation/tissue/composition_matrix.py`, with `docs/PUMP_COMPOSITE.md` regenerated;
+  - `validation/tissue/shared_inventory_fixtures.py`;
+  - the tests named in §11.8, among them `tests/unit/test_species_regulated_availability.py`,
+    `tests/unit/test_pump_composite_contract.py` and `tests/unit/test_shared_inventory_volume.py`;
+  - `docs/INVENTORY_COUPLING_DESIGN.md`, `docs/OPERATOR_COMPOSITION_DESIGN.md` (R2′ beside R2) and this note.
+- **Shared with FR-52's build:** `contract.py` and the composition table (D401), and possibly `pump_composite.py`.
+  FR-52 lands first (ruling 4).
+- **Shared with FR-45's build,** which admits @2 reading a shared site set's θᵦ (D327).
+  - Its design note's file list (`/mnt/workspaces/Cells/fr44-45-design-20261123/DESIGN.md`, §16 and §17) names:
+    - `site_occupancy.py`, the operators owner's;
+    - `species_regulated_availability.py`, for one admission and its row;
+    - `composition_matrix.py`, rule text only;
+    - fixtures, `tests/unit/test_site_occupancy.py`, and a row in `test_species_regulated_availability.py`.
+  - So the two builds share `species_regulated_availability.py`, the composition table and
+    `test_species_regulated_availability.py`.
+  - In behaviour they do not meet. FR-45's change is a site source, which this step leaves declared and refused
+    beside water.
+  - The two file lists are compared again before either codes (D402).
+  - One owner per file at a time (D327). The second to land merges main, regenerates the matrix with `--write`, and
+    reruns §11.6's probe.
+- **When the code starts:** on the lead's word, after FR-52's landing, from main merged in, never rebased. D327's
+  sequence probe is then rerun on both changes (§11.6).
+
+### 11.12 Decided (D402)
+
+**The two questions.** The user left both to the lead and the adviser, who decided them as follows, with conditions.
+They are not the user's choice.
+1. **Every read site.** Each read site gets its own row under a changing volume, which fails when the read is planted
+   at the starting volume. A site with no such row stays refused in this build (D327: a combination is enabled only
+   once its check passes). §11.8's table gives each read site its row.
+2. **Both versions, @1 and @2.**
+   - @1's "unchanged by construction" stays a claim until the round's pair check covers program text, constants and
+     bindings, for @1's judged worlds and for FR-38 v2's arm B, the @2 world that passed in FR-38 (§11.7).
+   - FR-8 rung 1's registration on @1 is tagged, and its W0 has not run under the new integrator. W0 is in that pair
+     check (§11.7).
+
+**The lead's rulings.**
+1. **R2′'s form:** the view function carries a `fields` list, per field, so @2's population worlds keep their program
+   text (§11.3).
+2. **The site source's concentration** keeps the declared volume, and stays refused beside water in this build. No
+   row reaches it (§11.2, §11.5).
+   - D244's Q2 was the user's own answer.
+   - This corrects the lead's first ruling the same evening, which had the site source read the current volume.
+3. **Tier 3:**
+   - @1 gets its own run, since it is a newly admitted combination (§11.8);
+   - the companions, the symport and the bath schedule, are covered by argument, with a parse row each (§11.6).
+4. **Order:**
+   - FR-52 lands first;
+   - this step's code starts on the lead's word after that, from main merged in;
+   - D327's sequence probe is rerun on both (§11.6).
+   - FR-45's file list is compared with this step's before either codes (§11.11).
+5. **Before A7 is amended in place,** the build greps that no registered protocol or judged set runs it. This
+   section's grep found none (§11.8, row 6).
+6. **The price** is stated against D375's 2–2.5: 2.1–3.05 agent-days (§11.9).
+
+## 12. The coupling's step, as built (26 November 2026)
+
+**Built on `fr65-coupling`**, from main 10225759 merged at eb1c7d96, on the lead's word. FR-52's build left
+`contract.py` and the composition table unchanged (D402). It is fail-closed: each refusal lands with the admission it
+guards. Three commits:
+1. `380e3489`: the contract extension R2′, the coupling's version 1.1, their refusals and §11.8's tier-1 rows, the
+   regenerated composition matrix, A7 amended in place, and the protocol's planted control's keyword;
+2. `a2779941`: the tier-3 rows (T1 with @1's run, T2 with the coupling, and its labelled row);
+3. this section and the docs (INVENTORY_COUPLING_DESIGN §11 and its A7 rows, the composition design's C1 row).
+
+**What it is.**
+- **The contract and the composite (R2′, as ruled).**
+  - `contract.ViewFunction` is a function of state with its `fields`, and `contract.carried` reads a field from it
+    only where it is named.
+  - `Composition.factor_fields` is built per field, after `view_changes`.
+  - `Composition._routed_view` gives a door S reader's view to `rate_factors` and the routed `factor_record`. It is
+    used through `_routed_control`, so the half-steps, the midpoint's predictor and `observe_history` all get it.
+  - The base factor hooks take `view=None`. `check_declarations` requires it of a rate-route source that reads
+    current at the split.
+  - The composite's `_part_reads` moved, unchanged, into the contract as `part_reads`.
+- **The coupling.** §11.2's declarations in both versions. The kernels take `volume=None`; the site kernel keeps the
+  declared volume. Both versions call the shared volume rule, and `check_site_volume` refuses a site source in mM
+  beside a changer of the cell volume.
+
+**Where the build differs from §11:**
+- **`carried` treats a plain function of state as carrying no field.** FR-7's population tests pass plain functions
+  as views, and the composite always passes a ViewFunction.
+- **The event map takes `view=None`.** The composite passes a door S reader's view to its event map as well, which
+  does not read it.
+- **The protocol's planted control** `control_lagged_factor@1` gains the keyword `view=None`. It is always None in
+  the protocol's worlds (INVENTORY_COUPLING_DESIGN §11).
+- **The companions' world** moved from the first build's test into `shared_inventory_fixtures.companion_world`,
+  which the parse rows also use. The test's world is unchanged.
+- **Row 4 checks the self-moved route's applied factor** at the midpoint's predictor. T1's reference window covers
+  the routes of R and the state, whose records are evaluated half a step earlier.
+
+**What newly parses,** measured on the built code with nothing patched: 1,010 of 3,854 ordered sequences, against
+main's 978. They are the same 32 as §11.6, and none is lost (`/mnt/workspaces/Cells/fr65-coupling-20261126/probe/`).
+
+**The tests** ran on CPUs 6 and 7, cold, one BLAS thread:
+- **Tier 1:** the reached files pass (849 tests in about 145 s on one CPU). The coupling's file has 128 tests in 15 s
+  with its version 1.1 rows.
+- **Tier 2:** the coupling's 15 compiled files pass (239 tests).
+- **Tier 3:** `test_shared_inventory_volume.py` passes, 14 tests, in two halves:
+  - the first build's ten, with A1 now run with and without the coupling: 393 s on CPU 6;
+  - the coupling's four: 219 s on CPU 7.
+
+  Within them:
+
+  | Row | Seconds |
+  | --- | --- |
+  | T1's three rungs (the fixture) | about 125 |
+  | T1's reference rows | 10 |
+  | @1's run | 29 |
+  | T2's labelled pair | 91 |
+  | A1 with the coupling, with its resumes | 72 |
+
+  These are this build's seconds, cold. The tier record is refrozen after the round.
+- **The declared test IDs:**
+  - 10 are removed: the renamed or moved rows of A7, `REFUSED`, `REFUSALS`, the R2 row, the first build's A1 row and
+    its turnover parse row;
+  - 28 are added, in the four test files changed: 20 in the coupling's, 6 in the tier-3 file, 1 in the contract's
+    and 1 in turnover's.
+
+**A smoke pair check before the round** (`/mnt/workspaces/Cells/fr65-coupling-20261126/pair-smoke/`) took base
+10225759 against the head, host only.
+- **Its worlds:** A5″, crossrev's coupling set, FR-38 v2's arm B in four runs, FR-8 rung 1's W0, the gene lane's A1
+  and R2, a population world, and a routed and a site world.
+- **Its result:** 68 of 68 program texts and constants identical, and 17 of 17 bindings.
+- **It is not the round's evidence.** The D148 round comes after FR-52's, on lanes the lead assigns. It adds the A4
+  and A5 protocol worlds, crossrev, G1, FR's set, the derivative programs, and tiers 1 and 2.
+
+**Beside FR-52 and FR-50 phase 2 (27 November 2026).**
+- **The commits after this section's three:** `4b8b0490` adds @2's parse row beside replacement@2 over water. Main
+  merged twice, each without conflict in `pump_composite.py`, which both sides change: 9506a1cc (FR-52, D404) at
+  `b11b5e40`, and 7149f90a (FR-50 phase 2, D405) at `02524063`. Then `7cce9790` lands D327's refusal below.
+- **D327's probe** (`/mnt/workspaces/Cells/fr65-coupling-20261126/probe/d327/`). The structure check admits 1,398
+  ordered sequences at main and 1,430 at the merged head: the same 32 new, none lost.
+  - **Beside FR-52's cohorts,** nothing newly parses together. With water first, the cohorts are refused by name, by
+    the population's own rule.
+  - **Beside FR-50 phase 2's records,** one combination newly parses: @3's own one-way records (`one_way_records`)
+    beside the coupling and water. Each pair alone was admitted by one change: the coupling beside the records at a
+    fixed volume by FR-50 phase 2, and the coupling beside water by this step.
+  - **`7cce9790` refuses the three together by name, in both versions** (`check_one_way_records`), until a world
+    qualifies them. It adds two parse rows, @1 in A7's water world and @2 in the water door, and a composition-matrix
+    row. The coupling beside the records at a fixed volume still parses, and the round below finds its programs bit
+    for bit.
+
+**The D148 round (27 November 2026):** head `7cce9790` against main 7149f90a, from clean full snapshots. Its results
+are in `/mnt/workspaces/Cells/fr65-coupling-20261126/round/`: `NOTE.txt` says where each one is, and `verdict.json`
+gathers them.
+- **Before it,** the nightly of main 7149f90a passed: 497 files, 0 changed.
+- **Lane A:**
+  - crossrev: 11 of 11 sets identical;
+  - G1: 113 of 113 for main and for the head against c1, and for main against the head;
+  - tiers 1 and 2, against the record with the measurement below folded in: 497 files, 0 changed. The three count
+    increases are main's own.
+- **Lane B:**
+  - FR's landing set passed;
+  - tier 3, the coupling's four files with the nine water and replacement files: all 13 pass and none timed out.
+    Against the tier-3 record, the one blocking entry is the renamed A1 row, and the six added rows pass.
+- **Timed cores 4 and 5:**
+  - The judges' derivative programs: 261 files identical.
+  - The pair check of §11.7's 21 worlds: 84 of 84 program texts and constants and 21 of 21 bindings identical, against
+    main and against 10225759.
+  - Two worlds with @3's one-way records at a fixed volume, traced on CPUs 6 and 7: A5″ with channel records, and
+    crossrev's pair with junction records. Against main they give 8 of 8 and 2 of 2, identical.
+  - The protocol's controls, in development runs at the head and at 10225759: INVENTORY_COUPLING_DESIGN §11.
+  - The changed tier-1 files, measured: the coupling's file in 16.05 s (130 tests), the contract's in 15.30 s (40) and
+    turnover's in 10.09 s (51). All three stay in tier 1.
+  - **The idle check:** no Cells unit ran on the four CPUs. The busy share of every process over 10 s was 0.22, 0.49,
+    0.17 and 0.02 on CPUs 4, 5, 20 and 21, since the machine's interactive sessions use idle CPUs. Contention only
+    adds time, so the measurement stands for tier placement (the lead).
+- **The declared test IDs:** 11,016 at main and 11,037 at the head. 10 are removed and 31 added, all in the four test
+  files changed.
+- **The tier-3 record** is refrozen for the coupling's four files (D407).
+  - `test_shared_inventory_volume.py` now holds 14 tests. It took 802 s under lane B's load, with 13 files on the
+    lane's eight CPUs, and about 612 s in two halves on CPUs 6 and 7.
+  - The three other files keep their test IDs and outcomes.
