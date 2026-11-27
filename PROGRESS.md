@@ -14,15 +14,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
-- **26 to 27 November, night: four landings.**
+- **26 to 27 November, night: five landings.**
   - The per-event counts in `integer_unit_population@1` (D400, 7f98d838).
   - FR-43 part 3's co-writers registered comparison, which **passes**: the judge and the independent checker agree (D402, D403;
     799a6070, tag `fr43-part3-cowriters-passed-2026-11-26`).
   - FR-52, passive cohort observations for integer units (D404, ab8b599c).
   - The Lean track's FR-51 run-view note (9506a1cc).
-  - Running:
-    - FR-50 phase 2's D148 round, then a rerun on its head merged with main, then its judged run;
-    - FR-65's coupling step, built, whose round follows FR-50 phase 2's landing.
+  - FR-50 phase 2, one-way records on @3's own routes, faces and channels, with its judged run passing (D405, d92403cc).
+  - Next: FR-65's coupling step, built, takes its D148 round after the nightly; FR-64's build follows the lead's rulings on its note (D399).
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).
