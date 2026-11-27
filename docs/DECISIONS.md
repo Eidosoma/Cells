@@ -14010,3 +14010,26 @@ It is a port check: it shows that the live engine computes legacy's written equa
    - The folder was made writable for the copy, then read-only again.
    - Its four npz files differ only by one added layout key, and all their arrays are bit-identical.
    - Every set of the record now equals main's crossrev output, FR-45's landing renewal included.
+
+## D413: the results_baseline fix is landed, and G1's c1 is renewed additively
+
+2026-11-27, written at 12:55 UTC.
+
+- **Landed** at 8381f54f (tag `results-baseline-final-state-landed-2026-11-27`), from 3961cafb. The landing's trial passed 307 tests.
+- **The fix** (D410): `validation/results_baseline.py` now saves a checkpoint held as jax arrays.
+  - Every G1 world had lost its final state, as had run-paths' `run`, `run_windowed` and `run_batch`. Histories were saved and compared all along.
+  - A planted row fails before the fix and passes after.
+- **G1's c1 is renewed** by D307's sequence on lane A: `global-charge-bound-20261122/c1-813dd072/`, read-only, with a renewal record.
+  - Rule A: all 13,902 old arrays are byte-identical. Rule B: all 3,733 added final states equal their run's last history row, bit for bit.
+    Rule C: the scalar paths are equal. No exception.
+  - `gate.sh` and `cache_qualify.sh` point to it.
+  - The additive check enters the checkout as `scripts/gates/c1_additive_check.py`, with a row of five planted faults.
+- **The final gate** at the pointer commit: G1 113 of 113, with final states compared, and the full tiers (498 files, none changed).
+- **Noted:**
+  - `channel_activity` is now filled. No gate passes `--padding`.
+  - `legacy_port`'s compare takes the union of keys, so across tool versions compare only the old keys.
+  - `cache_qualify`'s default trees predate D305 (pre-existing).
+  - The workspace tool `final-gate-20261126/tools/g1_run.sh` still names the old c1. Rounds copy it with the new path; the original is cited
+    evidence and stays.
+  - `test_results_baseline.py`'s row (11 to 13 tests) is folded by the next measurement.
+  - The scope map is refreshed by the nightly, and heads in flight merge main before their gate.
