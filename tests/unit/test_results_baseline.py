@@ -3,10 +3,12 @@
 Bitwise by default, a declared tolerance when given, and check K1's padding rule: per-law
 dispatch may change channel_targets and channel_tau_s only at channel slots inactive for the whole
 run, in worlds whose channel activity is static. A planted difference at an active slot, or in a
-world whose activity an operator provides, must fail. No engine run.
+world whose activity an operator provides, must fail. A checkpoint held as jax arrays saves its
+values. No engine run.
 """
 
 import json
+from collections import namedtuple
 
 import numpy as np
 import pytest
@@ -134,3 +136,27 @@ def test_a_table_of_renamed_ids_translates_the_saved_side(tmp_path, monkeypatch)
     (tmp_path / "t.json").write_text('{"law_x@1": "cells.a.x@1", "law_x@1": "cells.b.x@1"}')
     with pytest.raises(id_table.Ambiguous, match="given twice"):
         rb.id_map_table(tmp_path / "t.json")
+
+
+def test_a_checkpoint_held_as_jax_arrays_saves_its_values():
+    """D410's planted row: flatten read a jax array's attribute dict, which is empty, instead of its
+    values, so a checkpoint held as jax arrays saved only its time and step. Each leaf (a 0-d, an
+    int and a bool among them) is saved with its own dtype, shape and bytes, under the keys that a
+    NumPy checkpoint of the same values gets; that control's keys and bytes are as they were."""
+    import jax
+
+    from cells.execution.state import Checkpoint
+
+    bits = lambda a: (a.dtype, a.shape, a.tobytes())  # noqa: E731
+    State = namedtuple("State", "amount count gate scale")
+    host = State(
+        np.arange(6.0).reshape(2, 3), np.array([3, 4]), np.array([1, 0], bool), np.float64(0.5)
+    )
+    device = State(*(jax.device_put(v) for v in host))
+    control = rb.checkpoint_arrays(Checkpoint(host, None, 0.25, 7, -1), "final")
+    saved = rb.checkpoint_arrays(Checkpoint(device, None, 0.25, 7, -1), "final")
+    states = [f"final.state.{f}" for f in State._fields]
+    assert sorted(control) == sorted(states + ["final.time", "final.step_index"])
+    assert [bits(control[k]) for k in states] == [bits(np.asarray(v)) for v in host]
+    assert sorted(saved) == sorted(control)
+    assert [bits(saved[k]) for k in states] == [bits(np.asarray(v)) for v in device]
