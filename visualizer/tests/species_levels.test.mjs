@@ -415,7 +415,7 @@ test("the levels, the size modes and what has no place follow the species", () =
   }
 });
 
-test("the viewer holds no drawing that belongs to one species, and names no species in its code", async () => {
+test("shared views and controls take their species and model names from the scene", async () => {
   // The modules that draw and that hold the switch, but not the replay of runs, which names
   // experiments. The stage and its controls are left out: they know nothing of species, and an
   // everyday word there (a species called Mouse, say) would be a false alarm.
@@ -438,10 +438,12 @@ test("the viewer holds no drawing that belongs to one species, and names no spec
       for (const word of [data.id, data.label]) if (word && word.length > 3) words.add(word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
     }
   }
-  const named = new RegExp(`\\b(${[...words].join("|")})\\b`, "i");
+  // The dedicated Physarum model view and its registration can name the model they provide.
+  const physarumView = new Set([path.join("src", "lenses", "physarum.js"), path.join("src", "ui", "model_views.js")]);
+  const named = new RegExp(`\\b(${[...words].join("|")})\\b`, "gi");
   for (const file of files) {
     const code = (await readFile(path.join(ROOT, file), "utf8")).replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
-    const found = named.exec(code);
+    const found = [...code.matchAll(named)].find(([name]) => !(physarumView.has(file) && name.toLowerCase() === "physarum"));
     assert.ok(!found, `${file} names a species or one of its organs in its code: ${found?.[0]}`);
   }
 });

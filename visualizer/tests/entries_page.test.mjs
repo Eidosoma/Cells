@@ -13,7 +13,7 @@ import path from "node:path";
 import { ROOT, modelFiles, shapeFiles } from "../tools/lib/build_page.mjs";
 import { CellLens } from "../src/lenses/cell.js";
 import { EntryCardLens, entryId, levelId } from "../src/lenses/entry_card.js";
-import { LADDER, MODELLED, notInEngine, modelSystems, modelSystemOf, cellTypesOf, cellTypeOf, switchRows } from "../src/scene/entries.js";
+import { LADDER, MODELLED, notInEngine, modelSystems, modelSystemOf, cellTypesOf, cellTypeOf, switchRows, switchSections } from "../src/scene/entries.js";
 import { registerEntryView, entryView, entryTab, makeEntryLens, fitView, mountStyles } from "../src/ui/entry_views.js";
 
 const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
@@ -97,6 +97,20 @@ test("a species with two cell types: a row for each under it, the second with it
   assert.equal(row.group, rows[at].group);
   assert.equal(cellTypeOf(species).id, own.id, "the default is the species' own");
   assert.equal(cellTypeOf(species, "no-such-type").id, own.id, "an unknown type shows the default");
+});
+
+test("the switch nests eukaryote groups and leaves Archaea open to future model entries", () => {
+  const rows = switchRows(scene, options(scene));
+  const sections = switchSections(rows);
+  assert.deepEqual(sections.map((section) => section.name), ["Eukarya", "Bacteria", "Origin of life"]);
+  const eukarya = sections[0].groups;
+  assert.deepEqual(eukarya.map((group) => group.name), ["Animals", "Plants", "Amoebozoa"]);
+  assert.deepEqual(eukarya[2].rows.map((row) => row.id), ["physarum"]);
+  assert.equal(new Set(sections.flatMap((section) => section.groups.flatMap((group) => group.rows.map((row) => row.id)))).size, rows.length);
+  const haloferax = { id: "haloferax", group: "Archaea" };
+  const expanded = switchSections([...rows, haloferax]);
+  assert.deepEqual(expanded.map((section) => section.name), ["Eukarya", "Bacteria", "Archaea", "Origin of life"]);
+  assert.deepEqual(expanded[2].groups, [{ name: "Archaea", rows: [haloferax] }]);
 });
 
 test("a species with two cell types: the Cell view plans the type shown, and its panel lists both", () => {

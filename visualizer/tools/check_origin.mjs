@@ -283,6 +283,17 @@ try {
     await open("lens=cell&still=1", false);
     if (PHONE) await openCard();
     await press(".species-pick");
+    const taxonomy = await evaluate(`(() => {
+      const list = ${root}.querySelector("#species-list");
+      const eukarya = list?.querySelector('[data-entry-section="Eukarya"]');
+      return {
+        groups: [...(eukarya?.querySelectorAll('[role="group"]') || [])].map(group => group.getAttribute("aria-label")),
+        physarum: eukarya?.querySelector('[data-species="physarum"]')?.closest('[role="group"]')?.getAttribute("aria-label"),
+        peers: [...(list?.querySelectorAll(":scope > [data-entry-section]") || [])].map(section => section.dataset.entrySection),
+      };
+    })()`);
+    check("Eukarya contains Animals, Plants and Physarum under Amoebozoa", JSON.stringify(taxonomy.groups) === JSON.stringify(["Eukarya, Animals", "Eukarya, Plants", "Eukarya, Amoebozoa"]) && taxonomy.physarum === "Eukarya, Amoebozoa");
+    check("Bacteria and Origin of life have their own headings", taxonomy.peers.includes("Bacteria") && taxonomy.peers.includes("Origin of life"));
     const row = await placeOf('Array.from(root.querySelectorAll("#species-list [role=option]")).find(el=>el.textContent.includes("Physarum Lagrangian"))');
     if (row) await click(row.x,row.y,150);
     check("the Physarum menu item opens the plasmodium", await until(`${L}?.id==="physarum" && ${L}.network.visible`,40));

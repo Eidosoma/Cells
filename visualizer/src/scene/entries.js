@@ -65,6 +65,27 @@ export function switchRows(scene, options) {
   });
 }
 
+const EUKARYA_GROUPS = new Set(["Animals", "Plants", "Amoebozoa"]);
+const DOMAINS = ["Eukarya", "Bacteria", "Archaea"];
+
+/** Domains come first. Their groups and other sections follow the order of their first rows. */
+export function switchSections(rows) {
+  const sections = new Map();
+  for (const row of rows) {
+    const name = EUKARYA_GROUPS.has(row.group) ? "Eukarya" : row.group;
+    if (!sections.has(name)) sections.set(name, new Map());
+    const groups = sections.get(name);
+    if (!groups.has(row.group)) groups.set(row.group, []);
+    groups.get(row.group).push(row);
+  }
+  const ordered = [...DOMAINS.filter((name) => sections.has(name)), ...[...sections.keys()].filter((name) => name && !DOMAINS.includes(name))];
+  if (sections.has("")) ordered.push("");
+  return ordered.map((name) => ({
+    name,
+    groups: [...sections.get(name)].map(([name, rows]) => ({ name, rows })),
+  }));
+}
+
 /** The cell type of a species with this id, or its default where the id is not one of its types. */
 export function cellTypeOf(species, id = null) {
   const types = cellTypesOf(species);

@@ -482,9 +482,13 @@ cells-trace { display: grid; gap: 4px; }
 .seg-species .species-pick { width: 100%; justify-content: space-between; padding: 5px 10px 5px 11px; border-radius: 8px; font-size: 12.5px; }
 .species-veil { position: absolute; inset: 0; z-index: 5; }
 .species-list { position: absolute; z-index: 6; display: grid; align-content: start; gap: 2px; padding: 6px; overflow-y: auto; overscroll-behavior: contain; border-radius: 12px; background-color: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 16px 36px -16px rgb(0 0 0 / .5); }
+.species-section { display: grid; gap: 2px; }
+.species-section + .species-section { margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
 .species-group { display: grid; gap: 2px; }
-.species-group + .species-group { margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
+.species-subgroup { margin-inline-start: 10px; padding-inline-start: 5px; border-inline-start: 1px solid var(--line); }
+.species-subgroup + .species-subgroup { margin-top: 4px; }
 .species-group-name { padding: 3px 9px 2px; font-family: var(--font-display); font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.species-group-name.is-top { font-size: 11px; color: var(--fg); }
 /* A row: the name and what Cells models of it on one line, the organism under them across the row. */
 .species-option { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1px 10px; padding: 7px 9px; border-radius: 8px; cursor: pointer; }
 .species-option-name { grid-column: 1; grid-row: 1; font-size: 13.5px; font-weight: 600; line-height: 1.3; }

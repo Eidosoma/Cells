@@ -30,7 +30,7 @@ import { MACHINES_CSS } from "../lenses/machines_styles.js";
 import { Catalogue } from "../replay/catalogue.js";
 import { chartOf, tableOf, armWords, unitSign } from "../replay/sweep.js";
 import { renderAtlasNav } from "./atlas_nav.js";
-import { modelSystemOf, modelSystems, switchRows } from "../scene/entries.js";
+import { modelSystemOf, modelSystems, switchRows, switchSections } from "../scene/entries.js";
 import { speciesAt, stageFromAddress, writeStage } from "../scene/life_stages.js";
 import { makeEntryLens, entryTab } from "./entry_views.js";
 import { makeTissueLens } from "../lenses/tissue_line.js";
@@ -1302,19 +1302,6 @@ class CellsViewer extends HTMLElement {
   }
 
   /**
-   * The species as the list shows them: in the order of the files, under the headings the
-   * files give (a species file's `group`; schema/SPECIES.md). Each row says the species'
-   * name, its organism, and what Cells models of it.
-   */
-  speciesRows(species) {
-    // The species and model systems, and the cell types of a species that has more than one (src/scene/entries.js).
-    const rows = switchRows(this.model.raw, species.options);
-    // Species with one heading stand together, the headings in the order of their first species; those with none come last.
-    const headings = [...new Set(rows.map((row) => row.group).filter(Boolean))];
-    return [...headings.flatMap((group) => rows.filter((row) => row.group === group)), ...rows.filter((row) => !row.group)];
-  }
-
-  /**
    * The species switch is a dropdown: one button that names the species in view and opens a
    * list of them. It is a list of the page's own and not the browser's select: each row says
    * three things (the species, its organism, what Cells models of it), the rows stand under
@@ -1324,7 +1311,8 @@ class CellsViewer extends HTMLElement {
    */
   speciesPicker(species) {
     const menu = (this.speciesMenu ||= { open: false, active: null, typed: "", typedAt: 0 });
-    const rows = this.speciesRows(species);
+    const sections = switchSections(switchRows(this.model.raw, species.options));
+    const rows = sections.flatMap((section) => section.groups.flatMap((group) => group.rows));
     const current = rows.find((row) => row.id === (species.row || species.active)) || rows[0];
     // Every name lies in the button, one over the other, so that its width does not change with the species.
     const names = rows.map((row) => h("span", row.id === current.id ? {} : { "aria-hidden": "true" }, row.label));
@@ -1337,7 +1325,7 @@ class CellsViewer extends HTMLElement {
     button.addEventListener("click", () => (menu.open ? this.closeSpecies() : this.openSpecies()));
     button.addEventListener("keydown", (event) => this.speciesKey(event));
     this.speciesButton = button;
-    this.speciesShown = { rows, active: current.id };
+    this.speciesShown = { sections, rows, active: current.id };
     // Redrawn while its list was open (a file arrived, the window changed): the list stays, under the new button.
     if (menu.open) queueMicrotask(() => menu.open && this.speciesButton === button && this.showSpecies({ focus: true }));
     return button;
@@ -1386,12 +1374,17 @@ class CellsViewer extends HTMLElement {
         row.word ? h("span", { class: "species-option-state", dataset: { state: row.state } }, row.word) : null,
         row.organism ? h("span", { class: "species-option-organism" }, row.organism) : null
       );
-    const headings = [...new Set(shown.rows.map((row) => row.group))];
-    list.replaceChildren(
-      ...headings.map((group) =>
-        h("div", { class: "species-group", role: "group", "aria-label": group || "Other species" }, group ? h("div", { class: "species-group-name", "aria-hidden": "true" }, group) : null, shown.rows.filter((row) => row.group === group).map(option))
-      )
-    );
+    const heading = (name, top) => name ? h("div", { class: `species-group-name${top ? " is-top" : ""}`, "aria-hidden": "true" }, name) : null;
+    list.replaceChildren(...shown.sections.map((section) => {
+      const nested = section.groups.some((group) => group.name !== section.name);
+      return h("div", { class: "species-section", role: "presentation", dataset: { entrySection: section.name } },
+        nested ? heading(section.name, true) : null,
+        section.groups.map((group) => h("div", {
+          class: `species-group${nested ? " species-subgroup" : ""}`,
+          role: "group",
+          "aria-label": group.name !== section.name ? `${section.name}, ${group.name}` : group.name || "Other species",
+        }, nested && group.name === section.name ? null : heading(group.name, !nested), group.rows.map(option))));
+    }));
     list.hidden = this.speciesVeil.hidden = false;
     // Under the button, within the frame; as wide as its rows need, and no taller than the room below.
     const frame = this.frame.getBoundingClientRect(), at = button.getBoundingClientRect();

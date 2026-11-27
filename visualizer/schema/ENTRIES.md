@@ -133,10 +133,9 @@ files, and `tools/lib/entries.py` holds them to the rule as it reads them.
 
 ## The switch
 
-- **Headings.** There is a heading for each `group`, in the order of its first entry. Within a
-  heading, entries stand in `order`.
-  - The species keep theirs: Animals, Bacteria and Plants.
-  - A model system brings its own, such as "Origin of life".
+- **Headings.** Entries stand under their `group` in `order`. Eukarya contains the Animals, Plants
+  and Amoebozoa groups. Bacteria and Archaea stand at the top level when there are entries for
+  them. Other groups, such as Origin of life, have their own heading.
 - **A species' row:** its label, its organism in italics, and its word.
 - **A model system's row:** its label, its `is` line where a species has its organism ("A model,
   not an organism"), and its word.
