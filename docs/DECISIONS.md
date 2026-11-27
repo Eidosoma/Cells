@@ -14080,3 +14080,94 @@ It is a port check: it shows that the live engine computes legacy's written equa
   3. their confirmation by a reviewer who is not the builder (N1, N2, B4);
   4. the lead's hashes;
   5. the judged run.
+
+## D416: FR-45 v1's judged run passes
+
+2026-11-27, written at 15:05 UTC.
+
+**FR-45 v1, several ligands competing for one shared, wash-retained site capacity, passes its registered comparison.**
+All 15 criteria pass on 1,024 entries, and all nine plants are caught. No entry failed, was unformed, was faulted or was
+inconclusive, and the judge found no fault. X2 was waived for this registration (D412).
+
+- **The addenda** landed at 0c888d9a (tag `fr45-addenda-landed-2026-11-27`), after the parse-only passes of twelve
+  registered worlds (W1eq never). There are six: the refusal mapping, the checks list, the execution record, the plants'
+  changes and patches, the host-entity values and the species floors.
+  - A reviewer who is not the builder confirmed them against `src/` (N1, N2, B4).
+  - The review found one driver bug: a failure was named by message prefix, so `electrode_work`'s was named
+    `electrode`. Failures are now named by the engine's exact message, with a planted row. It also corrected two
+    sentences.
+  - The same reviewer then re-confirmed the landed state: the diff, the plant runs through the landed driver, and the
+    judge's three literals (the refusal mapping, the operators list and P2's path).
+- **The job command** landed at 3e4635cb (tag `fr45-jobs-landed-2026-11-27`). It moved the building of the judged jobs
+  into the checkout before any run, so the run's snapshot holds it, and the launcher only queues.
+- **The lead's checks before launch,** made as a non-builder with no world stepped:
+  - **Timing:** invented worlds at the registered sizes took about 4.3 minutes and under 1 GB. Each run had 4G and no
+    time limit.
+  - **G:** the references' G, called through the judge's own path for every world and heat node, returns.
+  - **Names:** every amount name the references hold is formed by the engine from the registered inputs.
+  - **Run table:** the judge's built-in run table equals the 23 job files in world, dt, saved steps, horizon and wash
+    time.
+  - **W1eq's start:** the driver reads it at the contract's paths.
+  - **Registered names:** every invented-name branch in the driver, exporter and judge takes the registered path.
+  - **Job files:** checked against the parse passes, and hashed.
+  - **The lead's table reader:** an independent copy of the contract editor's reader, adapted to registered names.
+  - **Launch note version 3** fixed what every outcome would mean before the run.
+- **The run:**
+  - **Snapshot:** `fr45-registered-runs-20261127/source-3e4635cb` (`freeze_snapshot.py --scope full
+    --require-clean`, 3,988 files).
+  - **Runs:** 23, from 14:40 to 14:54 UTC, two at a time on CPUs 6 and 7. Every driver exited 0, and no run was
+    refused by the harness.
+  - **Unchanged afterwards:** the snapshot and the job files.
+- **Outcomes:**
+  - Every honest run completed except W5, which the stage condition refused at its first step, as C7 requires.
+  - Seven plant runs were refused, all by named checks.
+  - P2, P3, P9 and W5-P4 completed and were judged on their entries.
+- **The table** (sha256 b7651cd6…), hashed by the lead before any judge step:
+  - the lead's reader finds no fault;
+  - the judge's structure pass finds no fault, and its plant rule no departure;
+  - against the format sample it shows no extra pattern. It lacks only the sample's missing run and its
+    externally installed module.
+- **The verdict** (`fr45-judge-run-20261127/judgement/verdict.json`, sha256 57df599d…), by criterion:
+
+  | Criterion | Entries |
+  | --- | --- |
+  | C1 | 321 |
+  | C2a | 37 |
+  | C2b | 25 |
+  | C3a | 57 |
+  | C3b | 57 |
+  | C3c | 59 |
+  | C4a | 42 |
+  | C4b | 18 |
+  | C4c | 8 |
+  | C5 | 120 |
+  | C6 | 9 |
+  | C7 | 1 |
+  | C8 | 14 |
+  | C9 | 124 |
+  | C10 | 12 |
+
+  Every entry passes.
+- **How each plant was caught:**
+  - in the amounts: P2 (C1) and P9 (C9);
+  - in the heat: P3 (C3b);
+  - by W5-P4's admission: P4 (C7);
+  - by its own check's refusal:
+    - P1, by its dissipation check;
+    - P6, by its energy ledger;
+    - P8, by its moiety ledger;
+    - P5 in W2 and W7, by their energy ledger after the wash, with C6 also catching it;
+    - P7, by its moiety ledger at step 1, as the lead's step-5 reading foresaw.
+- **What follows:**
+  - FR-45's washed worlds W2 and W7 have now run, so the wash's retirement (D364) waits only on FR-49's World B and C1,
+    or on pinning them.
+  - FR-49's site pairing follows FR-45 (D327).
+  - FR-64's D148 round is under way.
+- **Records:**
+  - the runs: `/mnt/workspaces/Cells/fr45-registered-runs-20261127/`, with `LAUNCH-NOTE.md` (version 3, versions 1 and
+    2 kept), the snapshot, the job files, the runs, the records and the table;
+  - the judge and the lead's tools: `/mnt/workspaces/Cells/fr45-judge-run-20261127/`;
+  - the lead's hash records: `/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45-judged-run-inputs-hashes-20261127-3e4635cb.json`,
+    `fr45-judged-jobs-hashes-20261127.json` and `fr45-table-sha256-20261127.json`.
+
+  The annotated tag `fr45-judged-2026-11-27` marks 3e4635cb, the commit from which the runs and the judge ran.

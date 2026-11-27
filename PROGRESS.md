@@ -27,7 +27,10 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - FR-45's engine: shared site sets in `cells.operator.site_occupancy@1` (D411, de72e530), its D148 round passing.
   - The `results_baseline` fix, with G1's c1 renewed additively (D413).
   - FR-45's tooling (D415), and its registration merged into main.
-  - Next: FR-45's addenda, then its judged run; FR-64's build (D410). The user has D414's refinement of the X2 rule.
+  - **FR-45 v1's judged run passes** (D416). All 15 criteria pass on 1,024 entries, and all nine plants are caught.
+    - It ran from 3e4635cb (tag `fr45-judged-2026-11-27`), after its addenda (0c888d9a) and its job command (3e4635cb)
+      landed and were confirmed by a non-builder.
+  - Next: FR-64's D148 round (lanes running) and landing. The user has D414's refinement of the X2 rule.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).
@@ -71,8 +74,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     `docs/LIQUID_ROUTING_DESIGN.md` (968bd182, branch `fr54-57-design`); 8.25 to 10.5 agent-days, after the
     rename. The protocol and spec are tagged (`liquid-routing-criteria-2026-11-25`), and amendment 5
     (with amendment 6, dd21509b) settles an independent audit's findings (D383). The references are tagged
-    (`liquid-routing-references-2026-11-25`, D384), and the line holds. The wash retires only after FR-49's World B and C1 and FR-45's W2 and W7 have run, or those runs are
-    pinned to an earlier snapshot.
+    (`liquid-routing-references-2026-11-25`, D384), and the line holds. FR-45's W2 and W7 have run (D416). The wash retires
+    only after FR-49's World B and C1 have run too, or those runs are pinned to an earlier snapshot.
   - **FR-65** (high, part of FR-43; D365, D375, D398): turnover beside a changing volume, with a lumen. The first build is
     landed (ae349721). The coupling's step is built (branch `fr65-coupling`, D402); its round follows FR-50 phase 2's landing. The water worlds' run view (§9.2)
     goes to water's owner.
@@ -94,8 +97,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     uncovered readout controls go to a later registration, FR-38 v3 (D354).
   - **FR-43 part 3's co-writers** (D328, D383, D394, D395, D402, D403): the engine build is landed (4be34f74), and the
     registered comparison **passes**: 3 arms, 6 families, 20 of 20 plants, 5,230 entries; the independent checker agrees.
-  - **FR-45** (D327, D377, D394): its judge is the builder's own, written with its build; the build starts next, once the
-    lead has ruled which tag binds its registration. W2 and W7 stay on the wash or are pinned.
+  - **FR-45** (D327, D377, D394, D416): **its judged run passes.** All 15 criteria pass on 1,024 entries, and all nine
+    plants are caught, run from 3e4635cb.
   - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;
     C4's four-way form by amendment once admission by species lands.
   - **GJ-N1** (D330, D337, D338, D388): judged on 25 November 2026, passed on the line and on the 2D field. The references land with the next landing; the 3D field is not run.
