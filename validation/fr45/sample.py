@@ -58,7 +58,7 @@ def jobs(sample):
         out.append((name, job))
     p7 = runs["INVENTED-W3p-P7"]["inputs"]
     out.append((EXTRA, dict(run=EXTRA, inputs=p7, plant=None, start=None, time_limit_step=None, judged=False)))
-    return list(runs), out
+    return [*runs, *table["missing"]], out
 
 
 def run_all(sample, out, cpus):
@@ -98,7 +98,7 @@ def run_all(sample, out, cpus):
         for record in folder.glob("*.json") if folder.exists() else ():
             shutil.copyfile(record, every / record.name)
     exporter.export(out / "records", out / "table", names, invented="INVENTED: the format sample's runs on the engine")
-    exporter.export(every, out / "table-with-twin", [*names, EXTRA], invented="INVENTED: with INVENTED-W3p")
+    exporter.export(every, out / "table-with-twin", names, invented="INVENTED: with INVENTED-W3p")
     return results
 
 

@@ -376,7 +376,16 @@ def run(job, out):
     if world.washed_node is not None:
         wash_step = int(round(world.inputs["wash"]["time_s"] / dt))
         map_steps = {wash_step} | ({0} if world_shape in MAP_AT_START else set())
-    kept, last = {}, None  # Saved states for the event map; the last row (step, time, state).
+    # The start, row 0: the state every window run begins from (TABLE §5: the start, before any step), so a
+    # refusal at step 1 keeps it, and the stage condition is read on it.
+    from cells.execution.state import initialise
+
+    start_state = initialise(spec).state
+    start_state = type(start_state)(*(np.asarray(v) for v in start_state))
+    kept, last = {}, (0, 0.0, start_state)  # Saved states for the event map; the last row (step, time, state).
+    record["rows"].append(reader.row(0, 0.0, start_state))
+    if 0 in map_steps:
+        kept[0] = start_state
     limit = job.get("time_limit_step")
     try:
         for window in iter_windows(spec, WindowPolicy(1, "full")):
@@ -419,7 +428,30 @@ def run(job, out):
     for step in sorted(kept):
         for variant in ("numpy", "compiled"):
             record["event_map"].append(_event_map(spec, reader, world, kept[step], step, variant, wash, p))
+    _event_of_refused_step(record, world, map_steps)
     return _write(record, out)
+
+
+def _event_of_refused_step(record, world, map_steps):
+    """A run refused in the step whose start applies the wash holds the event (TABLE §4, Y2) unless the wash
+    itself refused: no row follows that step, so its records are the engine's compiled event map's on the wash
+    row's saved state, the same compiled map the step applies."""
+    refusal = record["refusal"]
+    if world.washed_node is None or refusal is None or refusal["step"] is None or record["events"]:
+        return
+    wash_step = max(map_steps)
+    if refusal["step"] != wash_step + 1 or refusal["name"] == "wash_ions":
+        return
+    entry = next((m for m in record["event_map"] if m["state_step"] == wash_step and m["variant"] == "compiled"), None)
+    if entry is None:
+        return
+    node = world.washed_node
+    before, after = entry["before"]["records"], entry["after"]["records"]
+    ligands = [key.split("@")[0] for key in after]
+    record["events"].append(dict(
+        kind="wash", operator=WASH_LAW, node=node, after_step=wash_step, time_s=refusal["time_s"],
+        collected={g: after[f"{g}@{node}"]["collected"] - before[f"{g}@{node}"]["collected"] for g in ligands},
+        supplied={g: after[f"{g}@{node}"]["supplied"] - before[f"{g}@{node}"]["supplied"] for g in ligands}))  # fmt: skip
 
 
 def _qualified(error):

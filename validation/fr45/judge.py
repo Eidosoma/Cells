@@ -93,6 +93,93 @@ def compare(table, sample):
                 keys=keys, patterns=len(ours), sample_patterns=len(theirs))  # fmt: skip
 
 
+# ------------------------------------------------------------------ the structure-only pass
+
+KIND_TABLE = "fr45 site-competition engine table, version 1"
+PROTOCOL = "fr45-site-competition-v1"
+UNITS = {"amount": "fmol", "volume": "pL", "concentration": "mM", "k_on": "per mM per s", "k_off": "per s",
+         "time": "s", "heat": "pJ", "fraction": "1", "load": "per s", "copies": "copies"}  # fmt: skip
+ENTRY = {"status", "world", "plant", "dt_s", "steps", "backend", "driver", "rows", "capacities", "free_sites",
+         "events", "event_map", "step_report", "refusal", "checks", "operators", "inputs", "definition", "source",
+         "record", "record_sha256"}  # fmt: skip
+REFUSAL_KINDS = {"stage", "check", "definition", "domain", "harness"}
+BOOKS = {"moiety ledger", "energy ledger", "dissipation check"}
+OPERATOR_ID = re.compile(r"^cells\.[a-z_]+\.[a-z0-9_]+@[0-9]+$")
+MAPS = {"W2": 2, "W7": 4}  # A completed run's event-map entries; one event in each.
+
+
+def shape(run):
+    name = run.removeprefix("INVENTED-").split("~")[0]
+    return name.split("-P")[0].split("-dt")[0]
+
+
+def structure(table):
+    """The structure-only pass (TABLE §12.1): keys, the words and counts the contract fixes, and the nulls it
+    allows; no other number. Returns (faults, the entry kinds found)."""
+    faults, kinds = [], set()
+    if table.get("kind") != KIND_TABLE or table.get("protocol") != PROTOCOL:
+        faults.append("top: kind or protocol")
+    if table.get("units") != UNITS:
+        faults.append("top: units")
+    for name, run in table.get("runs", {}).items():
+        bad = lambda why, n=name: faults.append(f"{n}: {why}")  # noqa: E731
+        if set(run) != ENTRY:
+            bad(f"keys {sorted(set(run) ^ ENTRY)}")
+            continue
+        refusal, plant, world_shape = run["refusal"], run["plant"], shape(name)
+        if run["status"] not in ("completed", "refused") or (run["status"] == "completed") != (refusal is None):
+            bad("status against refusal")
+        if run["backend"] != "compiled" or run["driver"] != {"window_steps": 1}:
+            bad("backend or driver")
+        if plant is not None and (plant.get("id") not in {f"P{k}" for k in range(1, 10)}
+                                  or not str(plant.get("patch", "")).startswith("validation/")):  # fmt: skip
+            bad("plant id or patch")
+        if any(not OPERATOR_ID.match(op) for op in run["operators"]):
+            bad("an operator ID")
+        if any(v not in ("state", "derived") for v in run["free_sites"].values()):
+            bad("free_sites word")
+        for event in run["events"]:
+            if event.get("kind") != "wash" or event.get("operator") != "cells.operator.scheduled_compartment_wash@1":
+                bad("event words")
+        if any(m.get("variant") not in ("numpy", "compiled") for m in run["event_map"]):
+            bad("event_map variant")
+        report = run["step_report"]
+        if report is not None:
+            if world_shape != "W5" or report.get("step") != 1 or report.get("limit") != 0.5 or report.get(
+                    "verdict") not in ("refused", "admitted") or any(
+                    x.get("kind") not in ("L_n", "L_R", "L_B") for x in report.get("loads", [])):  # fmt: skip
+                bad("step_report words")
+        parsed = run["inputs"] is not None
+        if refusal is not None:
+            kinds.add(f"refused:{refusal.get('kind')}")
+            if refusal.get("kind") not in REFUSAL_KINDS:
+                bad("refusal kind")
+            book = refusal.get("book")
+            if refusal.get("kind") == "check":
+                if not (book in BOOKS or str(book).startswith("host check: ")):
+                    bad("refusal book")
+            elif book is not None:
+                bad("a book outside check")
+            if refusal.get("raised") is None and refusal.get("kind") != "harness":
+                bad("raised null outside harness")
+            if not parsed and (run["definition"] is not None or run["checks"] is not None or run["operators"]
+                               or run["capacities"] or run["free_sites"] or run["rows"] or run["events"]
+                               or run["event_map"] or report is not None):  # fmt: skip
+                bad("a run refused before parse holds more than its nulls")
+            if not parsed and (refusal.get("step") is not None or refusal.get("time_s") is not None):
+                bad("step or time at parse")
+        else:
+            kinds.add("completed" if plant is None else f"plant:{plant.get('id')}")
+            want = MAPS.get(world_shape, 0)
+            if len(run["events"]) != (1 if want else 0) or len(run["event_map"]) != want:
+                bad("event or map count")
+            if world_shape == "W5" and report is None:
+                bad("W5 without its step report")
+        if parsed and (run["definition"] is None or run["checks"] is None):
+            bad("a parsed run without definition or checks")
+    return faults, sorted(kinds)
+
+
 # ------------------------------------------------------------------ the plant rule
 
 PATH = re.compile(r"^(?P<list>\w+)\[(?P<match>[^\]]+)\]\.(?P<key>\w+)$")
@@ -199,6 +286,9 @@ def main(argv=None):
     c.add_argument("table")
     c.add_argument("sample")
     c.add_argument("out", nargs="?")
+    st = sub.add_parser("structure")
+    st.add_argument("table")
+    st.add_argument("out", nargs="?")
     r = sub.add_parser("plant-rule")
     r.add_argument("table")
     r.add_argument("out", nargs="?")
@@ -208,6 +298,9 @@ def main(argv=None):
     if args.command == "compare":
         result = compare(table, json.loads(Path(args.sample).read_text()))
         ok = result["identical"]
+    elif args.command == "structure":
+        faults, found = structure(table)
+        result, ok = dict(faults=faults, kinds=found), not faults
     else:
         result = plant_rule(table, args.exclude)
         ok = result["departures"] == 0

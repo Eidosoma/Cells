@@ -23,8 +23,9 @@ def apply():
         node = p.site_facing_node
         hit = (p.site_facing_kind == so.OUTSIDE) & due[node]
         bound = p.site_bound_anchor_fmol + state.site_bound_increment_fmol
-        scaled = xp.where(hit, (1.0 - control.wash_fraction[node]) * bound, bound)
-        new = new._replace(site_bound_increment_fmol=scaled - p.site_bound_anchor_fmol)
+        scaled = (1.0 - control.wash_fraction[node]) * bound - p.site_bound_anchor_fmol
+        # Only where the wash acts: every other entry keeps the honest map's bits.
+        new = new._replace(site_bound_increment_fmol=xp.where(hit, scaled, new.site_bound_increment_fmol))
         return (new, *out[1:])
 
     wash.apply_events = planted
