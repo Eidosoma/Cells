@@ -416,6 +416,21 @@ def test_the_files_are_read_strictly(tmp_path):
     }
 
 
+def test_the_tags_blobs_are_gits_own(tmp_path):
+    import subprocess
+
+    def git(*args):
+        subprocess.run(["git", "-C", str(tmp_path), *args], check=True, capture_output=True)
+
+    (tmp_path / "refs").mkdir()
+    (tmp_path / "refs" / "a.json").write_bytes(b'{"a": 1}\n')
+    git("init", "-q")
+    git("add", "refs/a.json")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "t")
+    git("tag", "binding")
+    assert J.tag_blobs(tmp_path, "binding", ["refs"]) == {"refs/a.json": J.git_blob(b'{"a": 1}\n')}
+
+
 def test_the_registered_rows_are_the_tables_integers():
     reg = J.Registration(J.REGISTERED)
     for world, by_dt in J.REGISTERED["rows"].items():
