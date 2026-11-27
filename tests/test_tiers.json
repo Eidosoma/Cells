@@ -418,7 +418,8 @@
   "/mnt/workspaces/Cells/fr65-coupling-20261126/round/measure/measured.json",
   "/mnt/workspaces/Cells/fr45-build-20261127/round/measure/measured-tiers-1-2.json",
   "/mnt/workspaces/Cells/fr45-tooling-20261127/landing/measure/measured.json",
-  "/mnt/workspaces/Cells/fr64-build-20261127/round/measure/measured.json"
+  "/mnt/workspaces/Cells/fr64-build-20261127/round/measure/measured.json",
+  "/mnt/workspaces/Cells/tier-fold-20261127/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3580,6 +3581,13 @@
    "root": "/mnt/workspaces/Cells/fr64-build-20261127/round/snap-head-12e58d36",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-27T14:33:26+00:00"
+  },
+  {
+   "git_revision": "4b2519a16d32e6dcc2abfc14e842e15b697195ac",
+   "dirty": false,
+   "root": ".claude/worktrees/tier-fold-20261127",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-27T22:27:47+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3972,10 +3980,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 10.91,
+    "seconds": 16.11,
     "exit_code": 0,
     "counts": {
-     "passed": 235
+     "passed": 241
     }
    },
    {
@@ -4381,10 +4389,10 @@
    },
    {
     "file": "tests/unit/test_field_solver_enforcement.py",
-    "seconds": 15.82,
+    "seconds": 15.71,
     "exit_code": 0,
     "counts": {
-     "passed": 76
+     "passed": 78
     }
    },
    {
@@ -4549,10 +4557,10 @@
    },
    {
     "file": "tests/unit/test_fr45_judge.py",
-    "seconds": 0.62,
+    "seconds": 0.97,
     "exit_code": 0,
     "counts": {
-     "passed": 58
+     "passed": 60
     }
    },
    {
@@ -5670,10 +5678,10 @@
    },
    {
     "file": "tests/unit/test_results_baseline.py",
-    "seconds": 1.47,
+    "seconds": 1.87,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 13
     }
    },
    {
