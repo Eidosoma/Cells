@@ -33,7 +33,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
       landed and were confirmed by a non-builder.
   - The user answered D414 (D417): X2 applies to a registration's honest runs, and its plant runs follow its own plant
     rule. The adviser agrees, and D417 records five readings.
-  - Next: FR-64's D148 round (lanes running) and landing; D417's check of the tagged, not yet judged registrations.
+  - Next: FR-64's D148 round (lanes running) and landing.
+  - D417's check is done: liquid routing needs X2 by amendment, or a reasoned waiver, before its run; FR-49 needs nothing.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).
@@ -79,6 +80,11 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     (with amendment 6, dd21509b) settles an independent audit's findings (D383). The references are tagged
     (`liquid-routing-references-2026-11-25`, D384), and the line holds. FR-45's W2 and W7 have run (D416). The wash retires
     only after FR-49's World B and C1 have run too, or those runs are pinned to an earlier snapshot.
+    **X2 (D412, D417):** arms 5 and 6 judge heats on ARS(2,2,2), and the tagged spec selects no X2 (D412's listing missed it).
+    - So before its run, an amendment selects X2 on its honest runs, or a reasoned waiver is recorded.
+    - Its plant comparison (CRITERIA:165) reads inputs, solver, heat and operators, not `execution`. So X2 on honest runs
+      only would not make a plant depart.
+    - FR-49's World B, C1 and C2 judge no energy readout, so X2 stays optional there.
   - **FR-65** (high, part of FR-43; D365, D375, D398): turnover beside a changing volume, with a lumen. The first build is
     landed (ae349721). The coupling's step is built (branch `fr65-coupling`, D402); its round follows FR-50 phase 2's landing. The water worlds' run view (§9.2)
     goes to water's owner.
