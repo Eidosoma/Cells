@@ -77,13 +77,13 @@ from cells.definitions.surface_pump_v3_spec import (
     channel_blocks,
     channel_factors,
     channel_laws,
+    channel_shifts,
     law_codes,
     one_way_pairs,
     projection,
     shifted_readers,
 )
 from cells.execution.errors import NumericalError
-from cells.laws import electrochemistry
 from cells.laws.channels import open_channel_block as block_law
 from cells.laws.channels import voltage_shift as vshift
 from cells.laws.channels import sodium_channels, voltage_gates
@@ -199,9 +199,30 @@ BLOCK_LAYOUT_FIELDS = (
     "channel_block_k0_mM",  # [mode, channel] K_k(0) (mM)
     "channel_block_steepness",  # [mode, channel] s sgn(z_B) m_k (dimensionless; a_k = this F/RT)
     "channel_block_concentration_mM",  # [channel] c_B (mM)
-    "channel_block_reversal",  # [channel] True where V_ref = V - E of channel_block_ion
-    "channel_block_ion",  # [channel] the reversal ion's species row (0 where none is named)
 )
+# FR-64 (D356, D361): the shifted readers' layout, present only where the structure declares a
+# shift (InnerStructure.shifted_readers, _kind_types), so no other world's types, layouts or
+# programs carry anything of it (D148). [reader, channel]: the reader axis is the structure's gate
+# rows, then one row for the block, the last. A reader that is not shifted carries SHIFT_PADDING,
+# which keeps every intermediate finite, and each kind's mask selects V there. FR-51's
+# channel_block_reversal and channel_block_ion are the block row of channel_shift_reversal and
+# channel_shift_row since FR-64.
+SHIFT_LAYOUT_FIELDS = (
+    "channel_shift_reversal",  # [reader, channel] True where the reader reads V - E of its row
+    "channel_shift_ph",  # [reader, channel] True where it reads V - sigma (pH - pH_ref)
+    "channel_shift_row",  # [reader, channel] the species row read: the ion, or the proton row
+    "channel_shift_outside",  # [reader, channel] True where the pH is the patch's outside node's
+    "channel_shift_V_per_ph",  # [reader, channel] sigma (V per pH unit)
+    "channel_shift_reference_ph",  # [reader, channel] pH_ref
+    "channel_shift_ph_low",  # [reader, channel] the window's low pH
+    "channel_shift_ph_high",  # [reader, channel] its high pH
+)
+SHIFT_PADDING = MappingProxyType(
+    dict(
+        reversal=False, ph=False, row=0, outside=False, V_per_ph=0.0, reference_ph=7.0,
+        ph_low=0.0, ph_high=14.0,
+    )
+)  # fmt: skip
 # A factor's feedback (docs/CALCIUM_STORE_AND_CHANNELS_DESIGN.md §6.5): the loops' layout, present
 # only where a routed slot closes a loop on its own gate (InnerStructure.loops, _kind_types), so no
 # other world's types, layouts or programs carry anything of it. [P] and [M] are the read pairs and
@@ -216,9 +237,9 @@ LOOP_LAYOUT_FIELDS = (
 UNBLOCKED_FRACTION = "channel_unblocked_fraction"  # FR-51's readout column, only where declared.
 UNBLOCKED_FRACTION_NOTE = (
     "the unblocked fraction u of each channel population at the row's read state: (sum_k w_k "
-    "K_k/(c_B + K_k)) / (sum_k w_k) at the row's patch voltage V (or V - E of the reversal ion), "
-    "which multiplies its flux (FR-51, cells.channel_block.open_channel_block_weighted_modes@1); 1 "
-    "for a population "
+    "K_k/(c_B + K_k)) / (sum_k w_k) at the voltage its declared shift gives the block (the row's "
+    "patch voltage V, or V less its voltage_shift.block, FR-64), which multiplies its flux "
+    "(FR-51, cells.channel_block.open_channel_block_weighted_modes@1); 1 for a population "
     "without a block. Recorded only where a population declares a block. It is separate from "
     "channel_availability and channel_effective_availability, which carry the controls and the "
     "routing door's factors"
@@ -232,12 +253,6 @@ SHIFT_STRUCTURE_REFUSAL = (
     "voltage_shift runs in @3 through its structure's implementation (registry.get_model), which "
     "holds the shifted readers; a path without that structure would drop the shift, so it refuses "
     "it (FR-64)"
-)
-# FR-64's build, between its declaration and its sites (temporary, removed with the sites): the
-# block's reversal runs on FR-51's layout as before; every other declared shift is refused.
-SHIFT_SITES_PENDING = (
-    "voltage_shift: a gate's shift and a block's pH shift are parsed but their sites are not built "
-    "yet (FR-64's build in progress), so they are refused (fails closed)"
 )
 FORMS_STRUCTURE_REFUSAL = (
     f"{forms_law.LAW_ID} runs in @3 through its structure's implementation (registry.get_model), "
@@ -418,10 +433,6 @@ def initial_values(spec, *, structure=None):
     shifted = shifted_readers(spec.model)  # FR-64.
     if shifted != (() if structure is None else structure.shifted_readers):
         raise ConfigError(SHIFT_STRUCTURE_REFUSAL)  # Fail closed, as the block and the records.
-    if any(
-        (reader, kind) != (BLOCK_READER, vshift.ReversalShift.KEY) for _, reader, kind in shifted
-    ):
-        raise ConfigError(SHIFT_SITES_PENDING)
     with forms_return_paths(spec.model):  # Left before anything else runs.
         state, layout = _todays_initial_values(spec)
     if (
@@ -430,6 +441,7 @@ def initial_values(spec, *, structure=None):
         and not declared_forms
         and not blocked
         and not recorded
+        and not shifted
     ):
         return state, layout
     # Schema A (§7.4 (j), (k)): each declared kind adds its state and layout fields, by name, in
@@ -459,6 +471,8 @@ def initial_values(spec, *, structure=None):
         entries |= own_layout
     if blocked:  # FR-51: the blocked populations' layout.
         entries |= block_initial_values(spec, structure)
+    if shifted:  # FR-64: the shifted readers' layout.
+        entries |= shift_initial_values(spec, structure)
     if loops_declared(structure):  # The loops' layout (its kinds are declared: above).
         entries |= loop_initial_values(spec, structure)
     if recorded:  # FR-50 phase 2: the record pairs' state and layout, last.
@@ -579,23 +593,55 @@ def block_initial_values(spec, structure):
     m, nc, modes = spec.model, spec.execution.channel_capacity, structure.block_modes
     weight, k0, steepness = np.zeros((modes, nc)), np.ones((modes, nc)), np.zeros((modes, nc))
     weight[0] = 1.0  # One unblocked mode, where no block is declared (u = 1.0 exactly).
-    concentration, reversal = np.zeros(nc), np.zeros(nc, dtype=bool)
-    ion = np.zeros(nc, dtype=np.int64)
+    concentration = np.zeros(nc)
     for slot, _, block in channel_blocks(m):
         for k, (mode, steep) in enumerate(zip(block.modes, block.steepness(), strict=True)):
             weight[k, slot], k0[k, slot], steepness[k, slot] = mode.weight, mode.k0_mM, steep
         concentration[slot] = block.concentration_mM
-        shift = getattr(m.channels[slot].voltage_shift, "block", None)  # FR-64: its reader's.
-        if isinstance(shift, vshift.ReversalShift):
-            reversal[slot], ion[slot] = True, m.species_ids.index(shift.ion)
     return dict(
         channel_block_weight=weight,
         channel_block_k0_mM=k0,
         channel_block_steepness=steepness,
         channel_block_concentration_mM=concentration,
-        channel_block_reversal=reversal,
-        channel_block_ion=ion,
     )
+
+
+def shifts_declared(structure):
+    """Whether the structure declares a shifted reader (FR-64; static)."""
+    return structure is not None and bool(structure.shifted_readers)
+
+
+def gate_shifts_declared(structure):
+    """Whether the structure declares a shifted gate (FR-64; static)."""
+    readers = () if structure is None else structure.shifted_readers
+    return any(reader != BLOCK_READER for _, reader, _ in readers)
+
+
+def block_shift_kinds(structure):
+    """The kind keys of the structure's shifted blocks (FR-64; static)."""
+    readers = () if structure is None else structure.shifted_readers
+    return frozenset(kind for _, reader, kind in readers if reader == BLOCK_READER)
+
+
+def shift_initial_values(spec, structure):
+    """The shifted readers' layout fields (SHIFT_LAYOUT_FIELDS), [reader, channel], with the
+    structure's gate rows and then the block's row: each shifted reader's own values (its kind's
+    layout_values), and SHIFT_PADDING at every other reader."""
+    m, nc = spec.model, spec.execution.channel_capacity
+    rows = structure.gate_rows + 1
+    kinds = dict(reversal=bool, ph=bool, outside=bool, row=np.int64)
+    values = {
+        key: np.full((rows, nc), value, dtype=kinds.get(key, float))
+        for key, value in SHIFT_PADDING.items()
+    }
+    laws = channel_laws()
+    for slot, _, declared in channel_shifts(m):
+        gates = laws[m.channels[slot].kinetic_law].gates
+        for reader, shift in declared.readers():
+            row = rows - 1 if reader == BLOCK_READER else gates.index(reader)
+            for key, value in shift.layout_values(m.species_ids).items():
+                values[key][row, slot] = value
+    return {f"channel_shift_{key}": value for key, value in values.items()}
 
 
 def records_declared(structure):
@@ -718,8 +764,14 @@ def forms_field(co, p, *, xp=jnp):
     return field.FormsField(forms_faces_of(p), left, right, p.forms_face_incidence)
 
 
-def channel_kinetics(voltage, codes, *, xp=jnp, structure=None):
+def channel_kinetics(voltage, codes, *, xp=jnp, structure=None, gate_voltages=None):
     """Targets and time constants [..., rows, channel] in s; gate-free leaks get 0 and 1.
+
+    gate_voltages (FR-64): where a gate shift is declared (static), each gate row's voltage V_r
+    [..., rows, channel] (reader_voltages' gates; V itself on a row that is not shifted). Each
+    declared gated law is then evaluated once per gate row, at that row's voltages, and row r is
+    taken from its own evaluation: the whole gate moves, its target and tau together (D361). A row
+    that is not shifted reads V itself, so its values are the law's at V.
 
     structure None: today's dispatch over the full catalogue. With a structure (§7.4 (c)), only
     the declared gated laws' kernels are traced, each selected where a slot carries its code, in
@@ -742,7 +794,12 @@ def channel_kinetics(voltage, codes, *, xp=jnp, structure=None):
     for law in laws:
         if len(law.gates) != rows:  # Not in R: every gated law has today's two gates.
             raise NotImplementedError("Channel laws with fewer gates than the structure's rows")
-        law_target, law_tau = law.kinetics(voltage, xp=xp)
+        if gate_voltages is None:
+            law_target, law_tau = law.kinetics(voltage, xp=xp)
+        else:  # FR-64: row r from the law at V_r.
+            each = [law.kinetics(gate_voltages[..., r, :], xp=xp) for r in range(rows)]
+            law_target = xp.stack([own[0][..., r, :] for r, own in enumerate(each)], axis=-2)
+            law_tau = xp.stack([own[1][..., r, :] for r, own in enumerate(each)], axis=-2)
         mask = xp.expand_dims(codes == law.code, -2)
         target = xp.where(mask, law_target, target)
         tau = xp.where(mask, law_tau, tau)
@@ -765,11 +822,63 @@ def channel_voltage(membrane_voltage, p, *, xp=jnp):
     return xp.where(p.channel_active, membrane_voltage[p.channel_membranes], 0.0)
 
 
-def channel_domain_valid(voltage, target, tau, p, *, xp=jnp):
-    """Active populations stay on their laws' -120..60 mV domain with finite kinetics."""
+def channel_domain_valid(voltage, target, tau, p, *, xp=jnp, gate_voltages=None):
+    """Active populations stay on their laws' -120..60 mV domain with finite kinetics; where a gate
+    shift is declared (FR-64), each gate row's V_r too, where the law's kernel is evaluated."""
     inside = (voltage >= VOLTAGE_DOMAIN_V[0]) & (voltage <= VOLTAGE_DOMAIN_V[1])
+    if gate_voltages is not None:
+        rows = (gate_voltages >= VOLTAGE_DOMAIN_V[0]) & (gate_voltages <= VOLTAGE_DOMAIN_V[1])
+        inside = inside & xp.all(rows, axis=-2)
     kinetics = xp.isfinite(target) & (target >= 0) & (target <= 1) & xp.isfinite(tau) & (tau > 0)
     return xp.all(xp.where(p.channel_active, inside & xp.all(kinetics, axis=-2), True))
+
+
+class ReaderVoltages(NamedTuple):
+    """FR-64: the voltage each reader of each population reads at a stage (reader_voltages)."""
+
+    gates: object  # [rows, channel] each gate row's V_r: V - dV where shifted, V itself elsewhere
+    block: object  # [channel] the block's V_ref: V - dV where shifted, V elsewhere
+    shift: object  # [reader, channel] dV (V), 0 where a reader is not shifted
+    valid: object  # every active shifted reader's concentrations finite and positive, pH in window
+
+
+def reader_voltages(ci, co, voltage, p, *, xp=jnp, structure=None):
+    """FR-64: the voltage each reader reads (ReaderVoltages), at the concentrations [species, cell]
+    and [species, outside] (mM) of the caller's read and the populations' voltages [channel] (V,
+    channel_voltage), in a world that declares a shift (shifts_declared).
+
+    The one function every site calls (D361). A reader reads V_ref = V - dV, with dV of its kind
+    (laws/channels/voltage_shift.KINDS) from the species row it names, at its population's cell
+    and its patch's outside node, never from V. Only the kinds the structure declares are traced.
+    The reversal is FR-51's arithmetic, moved: E of the row at both ends. The pH is the free proton
+    read at the declared side, and leaving its window refuses the step, never clipped."""
+    kinds = {kind for _, _, kind in structure.shifted_readers}
+    patch = p.channel_membranes
+    cell, outside = p.membrane_cell[patch], p.membrane_outside[patch]
+    row = p.channel_shift_row
+    c_in, c_out = ci[row, cell], co[row, outside]  # [reader, channel]
+    shift, valid = xp.zeros(row.shape), True
+    named = p.channel_shift_reversal
+    if vshift.ReversalShift.KEY in kinds:
+        inside = xp.where(named, c_in, 1.0)
+        out = xp.where(named, c_out, 1.0)
+        z = xp.where(named, xp.reshape(p.valence, (-1,))[row], 1.0)
+        reversal = vshift.ReversalShift.delta_v(inside, out, z, p.temperature, xp=xp)
+        shift = xp.where(named, reversal, shift)
+        usable = xp.isfinite(c_in) & (c_in > 0) & xp.isfinite(c_out) & (c_out > 0)
+        valid = valid & xp.all(xp.where(named & p.channel_active, usable, True))
+    acid = p.channel_shift_ph
+    if vshift.PhShift.KEY in kinds:
+        h = xp.where(p.channel_shift_outside, c_out, c_in)
+        dv = vshift.PhShift.delta_v(
+            xp.where(acid, h, vshift.PH_REFERENCE_mM), p.channel_shift_V_per_ph,
+            p.channel_shift_reference_ph, xp=xp,
+        )  # fmt: skip
+        shift = xp.where(acid, dv, shift)
+        window = vshift.PhShift.valid(h, p.channel_shift_ph_low, p.channel_shift_ph_high, xp=xp)
+        valid = valid & xp.all(xp.where(acid & p.channel_active, window, True))
+    v_ref = xp.where(named | acid, voltage - shift, voltage)
+    return ReaderVoltages(v_ref[:-1], v_ref[-1], shift, valid)
 
 
 def channel_rates(
@@ -791,10 +900,21 @@ def channel_rates(
     [species, channel], built from this call's own factors (channel_one_way_split): the same
     concentrations, voltage, opening times availability and unblocked fraction u, so the opening,
     the availability and the block are shared by construction. Without it the operations are
-    today's."""
+    today's.
+
+    FR-64: a declared shift moves only what reads a voltage besides permeation: each shifted gate
+    row's kinetics read its V_r, and the block's u its V_ref (reader_voltages, formed once here at
+    these concentrations). The flux, its heat and the one-way split read V, and the split takes
+    this same u."""
     patch = p.channel_membranes
     voltage = channel_voltage(membrane_voltage, p, xp=xp)
-    target, tau = channel_kinetics(voltage, p.channel_laws, xp=xp, structure=structure)
+    readers = gates = None
+    if shifts_declared(structure):  # FR-64 (static): the readers' voltages, at this read.
+        readers = reader_voltages(ci, co, voltage, p, xp=xp, structure=structure)
+        gates = readers.gates if gate_shifts_declared(structure) else None
+    target, tau = channel_kinetics(
+        voltage, p.channel_laws, xp=xp, structure=structure, gate_voltages=gates
+    )
     flux = selective_flux(
         ci[:, p.membrane_cell[patch]],
         co[:, p.membrane_outside[patch]],
@@ -811,7 +931,7 @@ def channel_rates(
     flux = xp.where(p.channel_active, flux, 0.0)
     u = None
     if _has_block(p):  # FR-51 (static): the unblocked fraction u multiplies the population's flux.
-        u = channel_block(ci, co, voltage, p, xp=xp).u
+        u = channel_block(ci, co, voltage, p, xp=xp, structure=structure, readers=readers).u
         flux = flux * u
     rates = (flux, 1e-3 * flux * delta_mu[:, patch], target, tau, voltage)
     if not one_way:
@@ -851,24 +971,23 @@ class ChannelBlockValues(NamedTuple):
     theta: object  # [mode, channel] the blocked fraction of each mode
     free: object  # [mode, channel] 1 - theta, formed directly
     slope: object  # [channel] (sum_k w_k |a_k| theta_k (1 - theta_k)) / (sum_k w_k), 1/V
-    reversal: object  # [channel] E of the reversal ion (V); 0 where none is named
+    shift: object  # [channel] the block's dV (V) from its declared shift (FR-64); 0 where none
     valid: object  # Every active population's K_k and c_B + K_k finite and normal
 
 
-def channel_block(ci, co, voltage, p, *, xp=jnp):
+def channel_block(ci, co, voltage, p, *, xp=jnp, structure=None, readers=None):
     """FR-51: each population's block (ChannelBlockValues) at a stage.
 
     The inputs are the concentrations [species, cell] and [species, outside] (mM) and the
-    populations' voltages [channel] (V, channel_voltage). V_ref is V, or V - E for a population
-    under the reversal reference, with E = (R T/(z F)) ln(c_o/c_i) of its ion at its cell and
-    outside node. The fraction's form is exact at both ends (fr51-channel-block-v1 §1.3). It needs
-    the layout's block fields: a world with a block (_has_block)."""
-    patch, ion, named = p.channel_membranes, p.channel_block_ion, p.channel_block_reversal
-    inside = xp.where(named, ci[ion, p.membrane_cell[patch]], 1.0)
-    outside = xp.where(named, co[ion, p.membrane_outside[patch]], 1.0)
-    z = xp.where(named, xp.reshape(p.valence, (-1,))[ion], 1.0)
-    reversal = electrochemistry.reversal_potential(inside, outside, z, p.temperature, xp=xp)
-    v_ref = xp.where(named, voltage - reversal, voltage)
+    populations' voltages [channel] (V, channel_voltage). V_ref is the voltage the population's
+    declared shift gives its block (FR-64): readers.block, given or formed here by reader_voltages
+    at these concentrations where the structure declares a shift, or V. The fraction's form is
+    exact at both ends (fr51-channel-block-v1 §1.3). It needs the layout's block fields: a world
+    with a block (_has_block)."""
+    if readers is None and shifts_declared(structure):
+        readers = reader_voltages(ci, co, voltage, p, xp=xp, structure=structure)
+    v_ref = voltage if readers is None else readers.block
+    shift = xp.zeros_like(voltage) if readers is None else readers.shift[-1]
     k = block_law.dissociation(
         p.channel_block_k0_mM, p.channel_block_steepness, v_ref, p.temperature, xp=xp
     )
@@ -883,7 +1002,7 @@ def channel_block(ci, co, voltage, p, *, xp=jnp):
         theta,
         free,
         xp.where(p.channel_active, slope, 0.0),
-        xp.where(named, reversal, 0.0),
+        xp.where(p.channel_active, shift, 0.0),
         xp.all(xp.where(p.channel_active, domain, True)),
     )
 
@@ -898,6 +1017,10 @@ class ChannelBlockTerms(NamedTuple):
     inside_term: object  # T_c,i (fmol/s per mM) under the reversal reference; else 0
     outside_through_e: object  # T_c,o's part through E, |J_free| slope R T/(|z| F c_o); else 0
     inside_through_e: object  # T_c,i's part through E, with c_i; else 0
+    # FR-64: [species, channel] the block on pH's slope of each ion's flux in the free proton
+    # concentration at its read side, |J_s,free| slope |sigma|/(h ln 10) (fmol/s per mM of h);
+    # else 0
+    proton_slope: object
 
 
 def channel_block_terms(gate, ci, co, voltage, availability, p, *, xp=jnp, structure=None):
@@ -907,10 +1030,15 @@ def channel_block_terms(gate, ci, co, voltage, availability, p, *, xp=jnp, struc
     - G_max is membrane_rate's own term, F^2/(R T) sum z^2 P r max(c_i, c_o) a o v A.
     - I_free and J_free are the population's unblocked current and flux at V.
     - T_c,o = u 1e15 A P r a o v B(x) + |J_free| slope R T/(|z| F c_o), at the outside end; T_c,i
-      is the same with B(-x) and c_i. They are zero for a population under the membrane-voltage
-      reference, whose u does not depend on E, so a world without one keeps today's rule.
+      is the same with B(-x) and c_i. They are zero for a population whose block reads no reversal
+      (FR-64: its voltage_shift.block), whose u does not depend on E, so such a world keeps today's
+      rule.
+    - FR-64, the block on pH: each permeant ion's flux depends on the free proton concentration h
+      at the shift's side through u. Its slope there is bounded by
+      |J_s,free| slope |sigma|/(h ln 10) (proton_slope; the note's §4.2, a term per ion, O3), and
+      is zero elsewhere.
     Inactive slots give zeros."""
-    block = channel_block(ci, co, voltage, p, xp=xp)
+    block = channel_block(ci, co, voltage, p, xp=xp, structure=structure)
     patch = p.channel_membranes
     cell, outside = p.membrane_cell[patch], p.membrane_outside[patch]
     opening = channel_opening(gate, p.channel_laws, xp=xp, structure=structure)
@@ -935,7 +1063,11 @@ def channel_block_terms(gate, ci, co, voltage, availability, p, *, xp=jnp, struc
     )
     free = xp.where(p.channel_active, free, 0.0)
     voltage_term = block.u * g_max + xp.abs(channel_current_A(free, p, xp=xp)) * block.slope
-    ion, named = p.channel_block_ion, p.channel_block_reversal
+    if shifts_declared(structure):  # FR-64 (static): the block's reader row, the last.
+        ion, named = p.channel_shift_row[-1], p.channel_shift_reversal[-1]
+        named = named & (vshift.ReversalShift.KEY in block_shift_kinds(structure))
+    else:
+        ion, named = xp.zeros_like(p.channel_laws), xp.zeros_like(p.channel_active)
     z = xp.reshape(p.valence, (-1,))[ion]
     x = z * F * voltage / (R * p.temperature)
     conductance = (
@@ -952,6 +1084,13 @@ def channel_block_terms(gate, ci, co, voltage, availability, p, *, xp=jnp, struc
     outside_term = block.u * conductance * bernoulli(x, xp=xp) + outside_e
     inside_term = block.u * conductance * bernoulli(-x, xp=xp) + inside_e
     live = p.channel_active & named
+    proton = xp.zeros_like(free)
+    if vshift.PhShift.KEY in block_shift_kinds(structure):  # FR-64 (static): the block on pH.
+        acid = p.channel_shift_ph[-1] & p.channel_active
+        row = p.channel_shift_row[-1]
+        h = xp.where(p.channel_shift_outside[-1], co[row, outside], ci[row, cell])
+        per_h = vshift.PhShift.slope(xp.where(acid, h, 1.0), p.channel_shift_V_per_ph[-1], xp=xp)
+        proton = xp.where(acid, xp.abs(free) * (block.slope * per_h), 0.0)
     return ChannelBlockTerms(
         block,
         xp.where(p.channel_active, g_max, 0.0),
@@ -960,6 +1099,7 @@ def channel_block_terms(gate, ci, co, voltage, availability, p, *, xp=jnp, struc
         xp.where(live, inside_term, 0.0),
         xp.where(live, outside_e, 0.0),
         xp.where(live, inside_e, 0.0),
+        proton,
     )
 
 
@@ -967,9 +1107,14 @@ def block_material_rates(state, p, potentials, *, xp=jnp, structure=None, contro
     """FR-51: the blocked populations' material rates (1/s) per node [cells, then outside nodes]:
     T_c,i over the cell's volume and T_c,o over the outside node's (criterion E), at the stage's
     amounts and potentials. A population whose law declares its material term is left out (static):
-    channel_material_rates counts its T_c, the part through E included."""
+    channel_material_rates counts its T_c, the part through E included. FR-64: where a shift is
+    declared (static), the terms read the stage's read, as the rates do, and the block on pH adds
+    its slope in the free protons at its read node, over that node's volume, but not at a held
+    bath (the note's §4.2)."""
     n = p.active.size
-    ci, co = physical_amounts(state, p)
+    kinds = _kinds(structure)
+    read = _stage_read(state, p, kinds, xp=xp)[0] if kinds and shifts_declared(structure) else state
+    ci, co = physical_amounts(read, p)
     ci = xp.where(p.active, ci / p.volume, 1.0)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
     patch_voltage = xp.where(
@@ -990,15 +1135,20 @@ def block_material_rates(state, p, potentials, *, xp=jnp, structure=None, contro
         terms = terms._replace(
             inside_term=xp.where(own, 0.0, terms.inside_term),
             outside_term=xp.where(own, 0.0, terms.outside_term),
+            proton_slope=xp.where(own, 0.0, terms.proton_slope),
         )
     patch = p.channel_membranes
     cell, outside = p.membrane_cell[patch], p.membrane_outside[patch]
     volume = xp.where(p.active, p.volume, 1.0)[cell]
     outside_volume = xp.where(p.outside_active, p.extracellular_volume, 1.0)[outside]
-    cells = scatter(terms.inside_term / volume, xp.zeros(n), (cell,), xp=xp)
-    nodes = scatter(
-        terms.outside_term / outside_volume, xp.zeros(p.outside_active.size), (outside,), xp=xp
-    )
+    inside_term, outside_term = terms.inside_term / volume, terms.outside_term / outside_volume
+    if vshift.PhShift.KEY in block_shift_kinds(structure):  # FR-64: at the read node.
+        proton = species_sum(terms.proton_slope, xp=xp)
+        side, held = p.channel_shift_outside[-1], p.reservoir[outside]
+        inside_term = inside_term + xp.where(side, 0.0, proton / volume)
+        outside_term = outside_term + xp.where(side & ~held, proton / outside_volume, 0.0)
+    cells = scatter(inside_term, xp.zeros(n), (cell,), xp=xp)
+    nodes = scatter(outside_term, xp.zeros(p.outside_active.size), (outside,), xp=xp)
     return xp.concatenate((cells, nodes))
 
 
@@ -1072,10 +1222,16 @@ def channel_material_rates(state, read, potentials, control, p, *, xp=jnp, struc
             outside_volume,
             xp=xp,
         )  # [species, channel]
-        if terms is not None:
-            ion = xp.arange(zero.shape[0])[:, None] == p.channel_block_ion
+        if terms is not None and shifts_declared(structure):  # FR-64: the block's reader row.
+            ion = xp.arange(zero.shape[0])[:, None] == p.channel_shift_row[-1]
             to_cell = to_cell + xp.where(ion, terms.inside_through_e / volume, 0.0)
             to_outside = to_outside + xp.where(ion, terms.outside_through_e / outside_volume, 0.0)
+            if vshift.PhShift.KEY in block_shift_kinds(structure):  # Each ion's, at its read end.
+                side = p.channel_shift_outside[-1]
+                to_cell = to_cell + xp.where(side, 0.0, terms.proton_slope / volume)
+                to_outside = to_outside + xp.where(
+                    side & ~held, terms.proton_slope / outside_volume, 0.0
+                )
         mode = to_cell + to_outside
         at_cell = xp.where(own, xp.where(held, to_cell, mode), 0.0)
         at_outside = xp.where(own & ~held, mode, 0.0)
@@ -2118,9 +2274,14 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
     if ca_args is not None:
         valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
-    valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
+    if shifts_declared(structure):  # FR-64 (static): each reader's voltage, its domain and window.
+        readers = reader_voltages(ci, co, cv, p, xp=xp, structure=structure)
+        rows = readers.gates if gate_shifts_declared(structure) else None
+        valid &= readers.valid & channel_domain_valid(cv, target, tau, p, xp=xp, gate_voltages=rows)
+    else:
+        valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
     if _has_block(p):  # FR-51 (static): every K_k and c_B + K_k finite and normal.
-        valid &= channel_block(ci, co, cv, p, xp=xp).valid
+        valid &= channel_block(ci, co, cv, p, xp=xp, structure=structure).valid
     if process is not None:
         valid &= process.valid
     if kinds:  # A failed stage read, a kind's domain or a stage check refuses the row.
@@ -2273,8 +2434,13 @@ def explicit_rates(
     membrane_process=None,
     structure=None,
     conductances=None,
+    read=None,
 ):
     """surface_pump_v2.explicit_rates with the channel currents at the same potentials.
+
+    read (FR-64's O2(b)): the stage's read, formed once by the IMEX step where a gate shift is
+    declared and kinds declare a stage read, and shared with the stage's gates; its validity is the
+    step's. Otherwise the read is formed here, as before.
 
     The channel gates' rate is zero here: IMEX steps set them by the exponential update, and
     under N2 the junction gates' too ((a)).
@@ -2286,7 +2452,10 @@ def explicit_rates(
     """
     s, n = tissue.field_layout(p).surface, p.active.size
     kinds = _kinds(structure)
-    read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
+    if read is not None:  # FR-64's O2(b) (static): the caller's read, its validity the step's.
+        read_valid = True
+    else:
+        read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
     if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
         control, routed = _route(structure, kinds, read, control, p, xp=xp)
         read_valid = read_valid & routed
@@ -2427,9 +2596,14 @@ def explicit_rates(
         valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
     if ca_args is not None:
         valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
-    valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
+    if shifts_declared(structure):  # FR-64 (static): each reader's voltage, its domain and window.
+        readers = reader_voltages(ci, co, cv, p, xp=xp, structure=structure)
+        rows = readers.gates if gate_shifts_declared(structure) else None
+        valid &= readers.valid & channel_domain_valid(cv, target, tau, p, xp=xp, gate_voltages=rows)
+    else:
+        valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
     if _has_block(p):  # FR-51 (static): every K_k and c_B + K_k finite and normal.
-        valid &= channel_block(ci, co, cv, p, xp=xp).valid
+        valid &= channel_block(ci, co, cv, p, xp=xp, structure=structure).valid
     if series_junctions(structure):  # FR-30: each gate on its law's domain.
         valid &= series_junction_domain(state, r.junction_voltage_V, control.junction, p, structure,
                                         xp=xp)  # fmt: skip
@@ -2837,13 +3011,26 @@ class StepStart(NamedTuple):
     potential: object  # the start's node potentials
 
 
-def potential_kinetics(potential, p, *, xp=jnp, structure=None):
-    """Channel targets, time constants and voltage-domain status at node potentials."""
+def potential_kinetics(potential, p, *, xp=jnp, structure=None, read=None):
+    """Channel targets, time constants and voltage-domain status at node potentials.
+
+    read (FR-64): where a gate shift is declared (static), the stage's read, whose concentrations
+    give each gate row's V_r (reader_voltages); its validity joins the status."""
     n = p.active.size
     membrane = potential[p.membrane_cell] - potential[n + p.membrane_outside]
     voltage = channel_voltage(xp.where(p.membrane_active, membrane, 0.0), p, xp=xp)
-    target, tau = channel_kinetics(voltage, p.channel_laws, xp=xp, structure=structure)
-    return target, tau, channel_domain_valid(voltage, target, tau, p, xp=xp)
+    if read is None:
+        target, tau = channel_kinetics(voltage, p.channel_laws, xp=xp, structure=structure)
+        return target, tau, channel_domain_valid(voltage, target, tau, p, xp=xp)
+    ci, co = physical_amounts(read, p)
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    readers = reader_voltages(ci, co, voltage, p, xp=xp, structure=structure)
+    target, tau = channel_kinetics(
+        voltage, p.channel_laws, xp=xp, structure=structure, gate_voltages=readers.gates
+    )
+    valid = channel_domain_valid(voltage, target, tau, p, xp=xp, gate_voltages=readers.gates)
+    return target, tau, valid & readers.valid
 
 
 def stage_gates(gate, start, stage, fraction, dt, p, *, xp=jnp):
@@ -3469,10 +3656,14 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             drift = implicit_rates(weight, potential, state, p, xp=xp)
         implicit.append(drift)
         stage = first._combine(known, dt, [(implicit_matrix[i, i], drift)])
+        shared = None
+        if gate_shifts_declared(structure):  # FR-64's O2(b) (static): one read per stage.
+            shared, ok = _stage_read(stage, p, kinds, xp=xp) if kinds else (stage, True)
+            valid &= ok
         gate, ok = stage_gates(
             state.channel_gate,
             start_kinetics,
-            potential_kinetics(potential, p, xp=xp, structure=structure),
+            potential_kinetics(potential, p, xp=xp, structure=structure, read=shared),
             entity_sum(explicit_matrix[i], axis=None, xp=xp),
             dt,
             p,
@@ -3522,7 +3713,13 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
                 valid &= solved
             else:
                 at = potential
-            rates, ok, *process = explicit_rates(stage, at, control, p, xp=xp, **hook)
+            reads = {}
+            if shared is not None and kinds:  # FR-64: the read's amounts on the moved gates.
+                reads["read"] = stage._replace(
+                    amount_increment=shared.amount_increment,
+                    extracellular_amount_increment=shared.extracellular_amount_increment,
+                )  # A stage read replaces amounts only (B4's and the general closure's).
+            rates, ok, *process = explicit_rates(stage, at, control, p, xp=xp, **hook, **reads)
             processes += process
             explicit.append(rates)
             explicit_states.append(stage)
@@ -4336,10 +4533,17 @@ def _patch_slopes(state, control, p, *, xp, structure, potentials, explicit_only
         patch_voltage = xp.where(
             p.membrane_active, potentials[p.membrane_cell] - potentials[n + p.membrane_outside], 0.0
         )
+        block_ci, block_co = ci, co
+        kinds = _kinds(structure)
+        if kinds and shifts_declared(structure):  # FR-64 (static): the block reads the read.
+            read, _ = _stage_read(state, p, kinds, xp=xp)
+            block_ci, block_co = physical_amounts(read, p)
+            block_ci = xp.where(p.active, block_ci / p.volume, 0.0)
+            block_co = xp.where(p.outside_active, block_co / p.extracellular_volume, 0.0)
         blocked = channel_block_terms(
             state.channel_gate,
-            ci,
-            co,
+            block_ci,
+            block_co,
             channel_voltage(patch_voltage, p, xp=xp),
             control.channel,
             p,
@@ -5820,13 +6024,15 @@ EFFECTIVE_AVAILABILITY_NOTE = (
 )
 
 
-def row_unblocked_fraction(read, membrane_voltage, p):
+def row_unblocked_fraction(read, membrane_voltage, p, structure=None):
     """FR-51's readout at an observed row, on the host: each population's u at the row's read
-    concentrations and patch voltages (channel_unblocked_fraction)."""
+    concentrations and patch voltages (channel_unblocked_fraction), at the V_ref its declared
+    shift gives the block (FR-64; the structure's)."""
     ci, co = physical_amounts(read, p)
     ci = np.where(p.active, ci / p.volume, 1.0)
     co = np.where(p.outside_active, co / p.extracellular_volume, 1.0)
-    return channel_block(ci, co, channel_voltage(membrane_voltage, p, xp=np), p, xp=np).u
+    voltage = channel_voltage(membrane_voltage, p, xp=np)
+    return channel_block(ci, co, voltage, p, xp=np, structure=structure).u
 
 
 def observe_history(times, history, layout, requested, spec, *, structure=None):
@@ -5900,7 +6106,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
                 ),
                 # FR-51: the unblocked fraction, where a population declares a block.
                 *(
-                    (row_unblocked_fraction(read, r.membrane_voltage_V, p),)
+                    (row_unblocked_fraction(read, r.membrane_voltage_V, p, structure),)
                     if _has_block(p)
                     else ()
                 ),
@@ -6284,7 +6490,14 @@ TODAYS_TYPES = KindTypes(
 
 @cache
 def _kind_types(
-    fields, registry, series=False, forms=False, block=False, loops=False, records=False
+    fields,
+    registry,
+    series=False,
+    forms=False,
+    block=False,
+    loops=False,
+    records=False,
+    shifts=False,
 ):
     """fields: ((kind ID, the bound kind's KindFields), ...) in canonical order. Classes are cached
     by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
@@ -6299,8 +6512,10 @@ def _kind_types(
     its own gate, whose layout fields (LOOP_LAYOUT_FIELDS) follow those (its kinds are in
     `fields`). records (FR-50 phase 2): the model declares @3's own one-way records, whose state
     fields (ONE_WAY_STATE_AXES) come last among the state fields and whose layout fields
-    (ONE_WAY_LAYOUT_FIELDS) last among the layout's."""
-    if not fields and not series and not forms and not block and not records:
+    (ONE_WAY_LAYOUT_FIELDS) last among the layout's. shifts (FR-64): a population declares a
+    voltage shift, whose layout fields (SHIFT_LAYOUT_FIELDS) follow the block's; it adds no state
+    or control."""
+    if not fields and not series and not forms and not block and not records and not shifts:
         return TODAYS_TYPES
 
     def label(kind_id, own):
@@ -6320,6 +6535,7 @@ def _kind_types(
     suffix += "_" + SERIES_GATES if series else ""
     suffix += "_forms_faces" if forms else ""
     suffix += "_channel_block" if block else ""
+    suffix += "_voltage_shift" if shifts else ""
     suffix += "_feedback_loops" if loops else ""
     suffix += "_one_way_records" if records else ""
     axes = dict(STATE_AXES)
@@ -6342,6 +6558,7 @@ def _kind_types(
     layout_extra += [SERIES_PARAMETERS] if series else []
     layout_extra += list(FORMS_LAYOUT_FIELDS) if forms else []
     layout_extra += list(BLOCK_LAYOUT_FIELDS) if block else []
+    layout_extra += list(SHIFT_LAYOUT_FIELDS) if shifts else []
     layout_extra += list(LOOP_LAYOUT_FIELDS) if loops else []
     layout_extra += list(ONE_WAY_LAYOUT_FIELDS) if records else []
     layout = NamedTuple(
@@ -6402,17 +6619,26 @@ def kind_types(structure):
     forms = forms_faces_declared(structure)
     block, loops = block_declared(structure), loops_declared(structure)  # FR-51; the feedback's.
     records = records_declared(structure)  # FR-50 phase 2.
+    shifts = shifts_declared(structure)  # FR-64.
+    flags = (series, forms, block, loops, records, shifts)
     if routes_into_channels(structure):
-        return _routed_kind_types(tuple(fields), registry, series, forms, block, loops, records)
-    return _kind_types(tuple(fields), registry, series, forms, block, loops, records)
+        return _routed_kind_types(tuple(fields), registry, *flags)
+    return _kind_types(tuple(fields), registry, *flags)
 
 
 @cache
 def _routed_kind_types(
-    fields, registry, series=False, forms=False, block=False, loops=False, records=False
+    fields,
+    registry,
+    series=False,
+    forms=False,
+    block=False,
+    loops=False,
+    records=False,
+    shifts=False,
 ):
     """_kind_types' classes with one more observation column, EFFECTIVE_AVAILABILITY, last."""
-    types = _kind_types(fields, registry, series, forms, block, loops, records)
+    types = _kind_types(fields, registry, series, forms, block, loops, records, shifts)
     columns = (*types.OBSERVATION_FIELDS, EFFECTIVE_AVAILABILITY)
     observations = make_dataclass(
         types.Observations.__name__ + "_" + EFFECTIVE_AVAILABILITY,

@@ -1027,8 +1027,7 @@ def test_the_ph_window_is_closed_with_its_rounding_margin_and_the_block_bound_ad
     while vshift.PhShift("outside", sigma, 7.3, (low, high)).largest_shift_V() > 0.369:
         sigma = math.nextafter(sigma, 0.0)
     at_limit = fr64_world({"block": ph_shift(shift_V_per_ph=sigma, ph_window=[low, high])})
-    with pytest.raises(ConfigError, match="sites are not built yet"):  # Parsed; FR-64's sites.
-        parse_spec(at_limit)
+    assert parse_spec(at_limit).model.channels[0].voltage_shift.block.shift_V_per_ph == sigma
     steeper = ph_shift(shift_V_per_ph=sigma * (1 + 1e-6), ph_window=[low, high])
     above = fr64_world({"block": steeper})
     with pytest.raises(ConfigError, match="above 0.369 V"):
@@ -1078,6 +1077,337 @@ def test_the_closed_set_has_its_kernels_refusals_and_plants():
         "surface_charge: its refusal rows",
         "surface_charge: its plants",
     ]
+
+
+# ------------------------------------------------------------------ FR-64: the sites
+# The note's §9.1 and §9.2 on the host. Each site reads its reader's voltage (reader_voltages) at
+# the stage's read, and nothing else moves: permeation, its heat and its charge read V.
+
+SIGMA, PH_REF = -0.0234, 7.3
+
+
+def kir_shifted(shift, *, declare=True, block=False, nav=None):
+    """buffered_world (B4 at its cell where declare; the bath held at pH 7.4, the cell at 7.2)
+    with `shift` as kir_0's voltage_shift and `nav` as nav_0's where given, and FR-51's B1 block
+    on kir_0 where asked. At the start V is -21.5 mV, E_K -96.8 mV and E_Na about +70 mV, so a
+    gate of nav_0 on E_Na reads about -92 mV, while one of kir_0 on E_K would read +75 mV, off
+    its law's domain, and is refused there."""
+    raw = fr64_world(shift, block=block) if declare else buffered_world(declare=False)
+    if not declare:
+        kir = raw["model"]["channels"][0]
+        if block:
+            kir["block"] = fr51.raw_world("B1_two_modes_E1")["model"]["channels"][0]["block"]
+        if shift is not None:
+            kir["voltage_shift"] = shift
+    if nav is not None:
+        raw["model"]["channels"][1]["voltage_shift"] = nav
+    return raw
+
+
+def stepped(raw):
+    """(implementation, layout, control, the start's readouts, the state after one host step)."""
+    spec = parse_spec(raw)
+    impl, state, p, control = bound(spec)
+    after, valid = impl.imex_step(state, raw["execution"]["dt"], control, p, xp=np)
+    assert bool(valid)
+    return impl, p, control, impl.readouts(state, control, p, xp=np), after
+
+
+def bath_shift_V(p, species_ids):
+    """dV of a pH shift read at the held bath (kir_0's patch's outside node), as the engine forms
+    it from the layout: sigma (pH(h) - pH_ref), h the bath's H over its volume."""
+    h = p.extracellular_amount_reference[species_ids.index("H"), 0] / p.extracellular_volume[0]
+    return vshift.PhShift.delta_v(np.float64(h), SIGMA, PH_REF)
+
+
+def twin_law(delta_v):
+    """Kir2.1's law, code 99, its m row read at V - delta_v: the shifted population's twin."""
+    from cells.laws.channels import kir2p1_mh2
+
+    base = kir2p1_mh2.LAW
+
+    def kinetics(voltage, *, xp):
+        moved, plain = base.kinetics(voltage - delta_v, xp=xp), base.kinetics(voltage, xp=xp)
+        target = xp.concatenate((moved[0][..., :1, :], plain[0][..., 1:, :]), axis=-2)
+        tau = xp.concatenate((moved[1][..., :1, :], plain[1][..., 1:, :]), axis=-2)
+        return target, tau
+
+    return dataclasses.replace(base, law_id="tests.channel.kir_m_twin@1", code=99,
+                               kinetics=kinetics)  # fmt: skip
+
+
+def same_bits(a, b):
+    """Bit for bit, field by field, into nested tuples; a field on one side only is skipped."""
+    if hasattr(a, "_fields"):
+        return all(same_bits(getattr(a, f), getattr(b, f)) for f in a._fields if f in b._fields)
+    if isinstance(a, (tuple, list)):
+        return len(a) == len(b) and all(same_bits(x, y) for x, y in zip(a, b, strict=True))
+    if isinstance(a, dict):
+        return a.keys() == b.keys() and all(same_bits(a[k], b[k]) for k in a)
+    x, y = np.asarray(a), np.asarray(b)
+    return x.shape == y.shape and x.tobytes() == y.tobytes()
+
+
+def kir_versus_twin():
+    """(the shifted world's readouts and stepped state, its twin's): kir_0's m on the bath's pH
+    against the twin law at V - dV, both on B4's world under ARS(2,2,2)."""
+    shift = {"gates": {"m": ph_shift(side="outside", reference_ph=PH_REF, shift_V_per_ph=SIGMA,
+                                    ph_window=[6.8, 7.5])}}  # fmt: skip
+    _, p, _, shifted, after = stepped(kir_shifted(shift))
+    law = twin_law(bath_shift_V(p, list(parse_spec(kir_shifted(None)).model.species_ids)))
+    with law_registry.scope(law_registry.BUILTIN.extended(law)):
+        raw = kir_shifted(None)
+        raw["model"]["channels"][0]["kinetic_law"] = law.law_id
+        _, _, _, twin, twin_after = stepped(raw)
+    return (shifted, after), (twin, twin_after)
+
+
+def potential_kinetics_at_v(original):
+    def planted(potential, p, *, xp=jnp, structure=None, read=None):
+        return original(potential, p, xp=xp, structure=structure)
+
+    return planted
+
+
+def kinetics_tau_at_v(original):
+    def planted(voltage, codes, *, xp=jnp, structure=None, gate_voltages=None):
+        given = dict(xp=xp, structure=structure)
+        target, _ = original(voltage, codes, gate_voltages=gate_voltages, **given)
+        _, tau = original(voltage, codes, **given)
+        return target, tau
+
+    return planted
+
+
+def shift_layout(change):
+    original = v3.shift_initial_values
+
+    def planted(spec, structure):
+        fields = {k: np.array(v) for k, v in original(spec, structure).items()}
+        change(fields)
+        return fields
+
+    return planted
+
+
+def flip_side(fields):
+    fields["channel_shift_outside"][0, 0] = ~fields["channel_shift_outside"][0, 0]
+
+
+def shift_h_too(fields):
+    for name in ("ph", "outside", "row", "V_per_ph", "reference_ph", "ph_low", "ph_high"):
+        fields[f"channel_shift_{name}"][1, 0] = fields[f"channel_shift_{name}"][0, 0]
+
+
+FR64_GATE_PLANTS = {  # name: (owner, attribute, a function of the original)
+    "the stage gate at V": (v3, "potential_kinetics", potential_kinetics_at_v),
+    "tau read at V": (v3, "channel_kinetics", kinetics_tau_at_v),
+    "the other side read": (v3, "shift_initial_values", lambda _: shift_layout(flip_side)),
+    "h's row shifted too": (v3, "shift_initial_values", lambda _: shift_layout(shift_h_too)),
+}
+
+
+@pytest.mark.parametrize("plant", [None, *FR64_GATE_PLANTS])
+def test_a_gate_on_ph_is_its_twin_bit_for_bit_and_each_plant_breaks_it(plant, monkeypatch):
+    """FR-64's test double (§9.2; host, about 1 s): kir_0's m reads the held bath's pH, so dV is
+    constant, and the shifted population is bit for bit a twin running Kir2.1's law with m's row
+    at V - dV (code 99). Compared: the start's readouts (targets, taus, fluxes, every column) and
+    one host ARS(2,2,2) step on B4's world, whose stage gates read each stage's read (O2(b)).
+    Plants, each breaking the equality: the stage gate at V, tau read at V, the cell's pH read in
+    place of the bath's, and h's row shifted too."""
+    if plant is not None:
+        owner, name, make = FR64_GATE_PLANTS[plant]
+        monkeypatch.setattr(owner, name, make(getattr(owner, name)))
+        v3._implementation.cache_clear()
+    (shifted, after), (twin, twin_after) = kir_versus_twin()
+    v3._implementation.cache_clear()
+    equal = same_bits(shifted, twin) and same_bits(after, twin_after)
+    assert equal if plant is None else not equal, plant
+
+
+def test_the_stage_gates_read_each_stage_s_state(monkeypatch):
+    """FR-64's stage-state row (§9.1; host, about 1 s): nav_0's m reads V - E_Na at its own cell,
+    whose Na its own flux moves, so E moves within the step. In one host ARS(2,2,2) step on B4's
+    world, every stage's kinetics are bit for bit NaV1.2's law at V - E of that stage's read (m)
+    and at V (h). Planted: the stage gate at V."""
+    from cells.laws.channels import nav1p2_m3h_regularized as nav
+
+    def run(planted):
+        if planted:
+            monkeypatch.setattr(v3, "potential_kinetics", potential_kinetics_at_v(
+                v3.potential_kinetics))  # fmt: skip
+        captured, original = [], v3.potential_kinetics
+
+        def capturing(potential, p, *, xp=jnp, structure=None, read=None):
+            out = original(potential, p, xp=xp, structure=structure, read=read)
+            captured.append((potential, read, p, out))
+            return out
+
+        monkeypatch.setattr(v3, "potential_kinetics", capturing)
+        stepped(kir_shifted(None, nav={"gates": {"m": {"reversal_of": "Na"}}}))
+        monkeypatch.undo()
+        return captured
+
+    def matches(captured):
+        assert captured and all(read is not None for _, read, _, _ in captured)
+        same = True
+        for potential, read, p, (target, tau, _) in captured:
+            k, n, slot = 0, p.active.size, 1  # Na's row; nav_0 (slot 1), the cell to the bath.
+            v = np.asarray([potential[0] - potential[n + 0]])
+            c_in = (p.amount_reference[k, 0] + read.amount_increment[k, 0]) / p.volume[0]
+            outside = p.extracellular_amount_reference[k, 0]
+            outside = outside + read.extracellular_amount_increment[k, 0]
+            c_out = outside / p.extracellular_volume[0]
+            ends = np.asarray([c_in]), np.asarray([c_out])
+            e = vshift.ReversalShift.delta_v(*ends, 1, p.temperature)
+            at_vr, at_v = nav.LAW.kinetics(v - e, xp=np), nav.LAW.kinetics(v, xp=np)
+            same &= target[0, slot] == at_vr[0][0, 0] and tau[0, slot] == at_vr[1][0, 0]
+            same &= target[1, slot] == at_v[0][1, 0] and tau[1, slot] == at_v[1][1, 0]
+        return same
+
+    assert matches(run(planted=False))
+    assert not matches(run(planted=True))
+
+
+def test_a_zero_shift_is_no_shift_and_its_neighbour_is_unchanged():
+    """§9.1's zero size (host, about 1 s): sigma = 0 on kir_0's m and on its block leaves the
+    start's readouts and one host ARS(2,2,2) step on B4's world bit for bit the unshifted world's,
+    nav_0's included."""
+    zero = ph_shift(shift_V_per_ph=0.0)
+    zeroed = {"gates": {"m": zero}, "block": zero}
+    _, _, _, shifted, after = stepped(kir_shifted(zeroed, block=True))
+    _, _, _, plain, plain_after = stepped(kir_shifted(None, block=True))
+    assert same_bits(shifted, plain) and same_bits(after, plain_after)
+
+
+def block_u(v_ref, block, temperature):
+    """FR-51's law at V_ref (50 digits): (sum_k w_k K_k/(c_B + K_k)) / (sum_k w_k)."""
+    from decimal import localcontext
+
+    with localcontext() as ctx:
+        ctx.prec = 50
+        f_rt = fr64_laws.F / (fr64_laws.R * Decimal(float(temperature)))
+        c_b = Decimal(block.concentration_mM)
+        num = den = Decimal(0)
+        for mode, steep in zip(block.modes, block.steepness(), strict=True):
+            k = Decimal(mode.k0_mM) * (Decimal(steep) * f_rt * v_ref).exp()
+            num, den = num + Decimal(mode.weight) * k / (c_b + k), den + Decimal(mode.weight)
+        return num / den
+
+
+@pytest.mark.parametrize("side", ["inside", "outside"])
+def test_the_block_on_ph_meets_fr51_s_law_at_its_v_ref(side):
+    """The block on pH (§9.2; host, about 0.3 s): kir_0's B1 block reads the pH of its cell (B4's
+    free h) or of the held bath. u meets FR-51's law at V_ref = V - sigma (pH - pH_ref), with the
+    pH formed from the read's h in 50 digits, within 1e-12 relative, every 10 mV from -100 to
+    +40 mV. Planted: the pH read on the other side."""
+    raw = kir_shifted({"block": ph_shift(side=side)}, block=True)
+    spec = parse_spec(raw)
+    impl, state, p, control = bound(spec)
+    read, _ = v3._stage_read(state, p, v3._kinds(impl.structure), xp=np)
+    h_row = list(spec.model.species_ids).index("H")
+    cell_h = (p.amount_reference[h_row, 0] + read.amount_increment[h_row, 0]) / p.volume[0]
+    bath_h = p.extracellular_amount_reference[h_row, 0] / p.extracellular_volume[0]
+    block = spec.model.channels[0].block
+    worst, other = 0.0, 0.0
+    for v in np.arange(-0.100, 0.0401, 0.010):
+        u = impl.clamped_channel_flux(state, control, p, float(v), xp=np, block=True)[2].block.u[0]
+        for h, which in ((cell_h if side == "inside" else bath_h, "own"),
+                         (bath_h if side == "inside" else cell_h, "other")):  # fmt: skip
+            dv = Decimal(SIGMA) * (fr64_laws.ph(float(h)) - Decimal(PH_REF))
+            expected = block_u(Decimal(float(v)) - dv, block, p.temperature)
+            gap = float(abs(Decimal(float(u)) - expected) / expected)
+            if which == "own":
+                worst = max(worst, gap)
+            else:
+                other = max(other, gap)
+    assert worst <= 1e-12 and other > 1e-6, (worst, other)
+
+
+@pytest.mark.parametrize("declare", [False, True], ids=["unbuffered", "buffered"])
+def test_the_block_on_ph_s_term_bounds_the_proton_slope(declare):
+    """The block on pH's material term (§4.2; host, about 0.5 s): kir_0's B1 block reads its cell's
+    pH. Its term per fmol of the cell's proton row, proton_slope[K]/V_cell, bounds |dJ_K/dn_H|,
+    a central difference at -30 mV. Unbuffered, the stored row is free h and the bound is tight,
+    within 1e-6 relative (B1's two modes share their sign, so the slope bound is u's slope). B4-
+    buffered, the stored row is H_eq and dh/dH_eq <= 1: the term still bounds the slope. Planted:
+    the term dropped; and the term formed from the stored H_eq in place of free h, which misses the
+    buffered bound."""
+    raw = kir_shifted({"block": ph_shift(side="inside")}, block=True, declare=declare)
+    if not declare:  # Without B4 the row stores free h: the cell at pH 7.2, its charge kept.
+        cell = raw["model"]["cells"][0]
+        free = 1000.0 * 10.0**-7.2 * cell["volume_pL"]
+        cell["fixed_charge_equivalent_fmol"] -= free - cell["initial_amount_fmol"]["H"]
+        cell["initial_amount_fmol"]["H"] = free
+    spec = parse_spec(raw)
+    impl, state, p, control = bound(spec)
+    k, h_row, v = 1, list(spec.model.species_ids).index("H"), -0.030
+    n_h = p.amount_reference[h_row, 0] + state.amount_increment[h_row, 0]
+    step = 1e-6 * n_h
+
+    def flux(delta):
+        moved = state.amount_increment.copy()
+        moved[h_row, 0] += delta
+        out = impl.clamped_channel_flux(state._replace(amount_increment=moved), control, p, v,
+                                        xp=np)  # fmt: skip
+        return out[0][k, 0]
+
+    slope = abs(flux(step) - flux(-step)) / (2 * step)
+    terms = impl.clamped_channel_flux(state, control, p, v, xp=np, block=True)[2]
+    bound_ = terms.proton_slope[k, 0] / p.volume[0]
+    assert bound_ >= slope * (1 - 1e-6)
+    if not declare:
+        assert bound_ <= slope * (1 + 1e-6)
+    assert not (0.0 >= slope * (1 - 1e-6))  # The plant: the term dropped.
+    if declare:  # The plant: the term from the stored H_eq, at the buffered cell.
+        ci, co = v3.physical_amounts(state, p)
+        ci, co = ci / p.volume, np.where(p.outside_active, co / p.extracellular_volume, 1.0)
+        stored = v3.channel_block_terms(state.channel_gate, ci, co, np.full(2, v), control.channel,
+                                        p, xp=np, structure=impl.structure)  # fmt: skip
+        assert stored.proton_slope[k, 0] / p.volume[0] < slope * (1 - 1e-6)
+
+
+@pytest.mark.parametrize("law", list(FR51_SLOT_WRITERS))
+def test_a_gate_shift_beside_an_operator_that_rewrites_channel_slots_is_refused(law, monkeypatch):
+    """FR-64's widened slot refusal (parse only, about 1 s each): a gate's shift, with no block,
+    beside replacement, partition or insertion is refused by name in the composite form, and with
+    the refusal planted away it is admitted, its shift kept."""
+    raw = FR51_SLOT_WRITERS[law]()
+    entry = raw["model"]["channels"][0]
+    gates = spec_v3.channel_laws()[entry["kinetic_law"]].gates
+    assert gates
+    ion = next(i["species_id"] for i in entry["permeant_ions"] if i["relative_permeability"])
+    entry["voltage_shift"] = {"gates": {gates[0]: {"reversal_of": ion}}}
+    with pytest.raises(ConfigError, match=f"{law} rewrites channel slots but not a voltage shift"):
+        parse_spec(raw)
+    monkeypatch.setattr(pump_composite, "block_slot_errors", lambda pairs, spec: [])  # The plant.
+    assert parse_spec(raw).model.channels[0].voltage_shift is not None
+
+
+def test_a_path_without_the_structure_and_the_stationary_analysis_refuse_a_shift():
+    """FR-64's fail-closed sites (host, about 0.5 s): @3's initial values without the structure,
+    which would drop the shift, and the stationary analysis, which does not read it, refuse a
+    gate's shift by name."""
+    from cells.analysis import stationary
+
+    on_na = {"gates": {"m": {"reversal_of": "Na"}}}
+    spec = parse_spec(kir_shifted(None, declare=False, nav=on_na))
+    with pytest.raises(ConfigError, match="voltage_shift runs in @3 through its structure"):
+        v3.initial_values(spec)
+    with pytest.raises(ConfigError, match="declared voltage shift"):
+        stationary.problem(spec)
+
+
+def test_a_world_with_every_reader_and_kind_round_trips():
+    """FR-64's declaration at the world level (host, about 0.5 s): both gates and the block, each
+    kind, on B4's world, parse, round-trip through to_dict and name their readers sorted."""
+    shift = {"gates": {"m": ph_shift()}, "block": ph_shift(side="inside")}
+    on_na = {"gates": {"h": {"reversal_of": "Na"}}}
+    spec = parse_spec(kir_shifted(shift, block=True, nav=on_na))
+    assert parse_spec(spec_v3.to_dict(spec)) == spec
+    assert spec_v3.shifted_readers(spec.model) == (
+        ("kir_0", "block", "ph"), ("kir_0", "m", "ph"), ("nav_0", "h", "reversal_of"),
+    )  # fmt: skip
 
 
 # ------------------------------------------------------------------ FR-50 phase 2: @3's own records

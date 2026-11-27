@@ -111,10 +111,18 @@ def effective_without_sign():
 
 
 def reversal_read_as_voltage():
-    """R's plant: a reversal reference read as the membrane voltage."""
-    return _layout_plant(
-        lambda f, spec: f | {"channel_block_reversal": np.zeros_like(f["channel_block_reversal"])}
-    )
+    """R's plant: a reversal reference read as the membrane voltage. The reference is the
+    population's voltage_shift.block since FR-64, whose layout is the block row (the last) of
+    channel_shift_reversal (surface_pump_v3.shift_initial_values): the plant clears it."""
+    original = v3.shift_initial_values
+
+    def planted(spec, structure):
+        fields = original(spec, structure)
+        cleared = fields["channel_shift_reversal"].copy()
+        cleared[-1] = False
+        return fields | {"channel_shift_reversal": cleared}
+
+    return _patched(v3, "shift_initial_values", planted)
 
 
 def literal_fraction():

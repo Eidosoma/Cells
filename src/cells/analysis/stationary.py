@@ -653,6 +653,10 @@ BLOCK_REFUSAL = (
     "refused until a judge "
     "reads the block in the stationary analysis (FR-51, fail closed)"
 )
+SHIFT_REFUSAL = (
+    "A channel population with a declared voltage shift (FR-64) is refused until a judge reads the "
+    "shift in the stationary analysis (fail closed)"
+)
 FORMS_FACE_REFUSAL = (
     "cells.route.logmean_electrodiffusion_forms@1's faces join outside nodes outside the faces' "
     "arrays, and "
@@ -856,6 +860,8 @@ def problem(
     state, p = _numpy(state), _numpy(model.parameters(spec, _numpy(layout)))
     if "channel_block_weight" in type(p)._fields:  # FR-51 (fail closed, static).
         raise ConfigError(BLOCK_REFUSAL)
+    if "channel_shift_reversal" in type(p)._fields:  # FR-64, a gate's shift too (static).
+        raise ConfigError(SHIFT_REFUSAL)
     for name, a, b in zip(type(initial_layout)._fields, p, _numpy(initial_layout), strict=True):
         if a.shape != b.shape or a.dtype != b.dtype or not np.array_equal(a, b):
             raise ConfigError(f"Checkpoint layout {name} differs from the definition")
