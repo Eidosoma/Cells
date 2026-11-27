@@ -84,7 +84,9 @@ def reference(*pairs):
                  nodes=[dict(id="pond", kind="node", V=2.0)],
                  start=[dict(observable=o, value=v) for o, v in (("n:X@pond", 1.0), ("B:b", 0.0), ("R:s", 1.0))],
                  constants={})  # fmt: skip
-    return dict(world=world, pairs=list(pairs), trajectory=[], plants=[])
+    trajectory = [dict(observable=o, time_s=0.2, value=v, tolerance_gap=0.0)
+                  for o, v in (("n:X@pond", 1.0), ("B:b", 0.25), ("R:s", 0.75))]  # fmt: skip
+    return dict(world=world, pairs=list(pairs), trajectory=trajectory, plants=[])
 
 
 def pair(criterion, observable, value=None, tolerance=None, time_s=0.2, **extra):

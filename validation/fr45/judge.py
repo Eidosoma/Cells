@@ -1404,9 +1404,9 @@ def _value(env, world, pair, name, run):
         ):  # One-sided [5c]: the fall max(H_k - H_k+1, 0) against 0.0 within the file's tolerance.
             return _derived(A, max(h0 - h1, 0.0), 0.0, pair["tolerance"])
         ref = env.ref(world)
-        names = {x["observable"] for x in ref["trajectory"]} | {
-            x["observable"] for x in ref["world"]["start"]
-        }
+        names = {
+            x["observable"] for x in ref["trajectory"]
+        }  # Only the names its trajectory holds (S3).
         # G as the plan writes it, G(world, node, amounts): the world by its registered name, since G's module
         # knows the worlds by name (RULINGS-2 Q4a: W1p and W3p among them); the amounts at the node by name (S3).
         g0 = env.G(world, what, at_node(r0, what, inputs, names))
