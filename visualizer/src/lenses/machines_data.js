@@ -203,7 +203,9 @@ export class Catalogue {
 /** The words a search finds a machine by. */
 export function keywords(item) {
   const proteins = [...(item.entry?.proteins?.items || []), ...(item.entry?.gathered?.proteins || [])];
-  return [item.label, item.short, item.kind?.plain, item.unit?.eyebrow, item.unit?.keywords, ...proteins.map(([id, gene, label]) => [id, gene, label].filter(Boolean).join(" "))].filter(Boolean).join(" ");
+  const structures = (item.entry?.structures || []).flatMap(({ id, title, partner_organisms }) => [id, title, ...(partner_organisms || [])]);
+  const chains = item.entry?.structures ? item.size.chains.flatMap(({ label, protein }) => [label, protein]) : [];
+  return [item.label, item.short, item.kind?.plain, item.unit?.eyebrow, item.unit?.keywords, ...proteins.map(([id, gene, label]) => [id, gene, label].filter(Boolean).join(" ")), ...structures, ...chains].filter(Boolean).join(" ");
 }
 
 /** "Gilbert and others (2021)": the citation's head, for a line that names its source. */

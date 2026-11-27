@@ -1,0 +1,144 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "3A5P-assembly1": {
+   "entry": "3A5P",
+   "assembly": "1",
+   "title": "Crystal structure of hemagglutinin",
+   "method": "X-RAY DIFFRACTION",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 1526,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     6.2,
+     3.6,
+     2.8
+    ],
+    "farthest_nm": [
+     5.9,
+     4.1,
+     2.9
+    ],
+    "middle_98_percent_nm": [
+     5.3,
+     3.6,
+     2.4
+    ],
+    "radius_of_gyration_nm": 1.72
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "Haemagglutinin I",
+     "atoms": 763,
+     "centre_nm": [
+      -1.12,
+      -0.26,
+      0.0
+     ],
+     "axes": [
+      [
+       0.7467,
+       -0.6647,
+       -0.0225
+      ],
+      [
+       -0.004,
+       -0.0383,
+       0.9993
+      ],
+      [
+       -0.6651,
+       -0.7461,
+       -0.0313
+      ]
+     ],
+     "across_nm": [
+      4.3,
+      2.7,
+      2.6
+     ],
+     "farthest_nm": [
+      3.9,
+      2.8,
+      2.6
+     ],
+     "radius_of_gyration_nm": 1.28
+    },
+    {
+     "chain": "B",
+     "entity": "1",
+     "description": "Haemagglutinin I",
+     "atoms": 763,
+     "centre_nm": [
+      1.12,
+      0.26,
+      0.0
+     ],
+     "axes": [
+      [
+       0.7348,
+       -0.6778,
+       0.026
+      ],
+      [
+       0.0402,
+       0.0818,
+       0.9958
+      ],
+      [
+       -0.6771,
+       -0.7306,
+       0.0874
+      ]
+     ],
+     "across_nm": [
+      4.3,
+      2.8,
+      2.6
+     ],
+     "farthest_nm": [
+      3.9,
+      2.9,
+      2.6
+     ],
+     "radius_of_gyration_nm": 1.28
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "Haemagglutinin I",
+     "copies": 2,
+     "sequence_length": 104,
+     "residues_modelled_per_copy": 103.0,
+     "modelled_share": 0.99,
+     "atoms_per_modelled_residue": 7.41
+    }
+   ]
+  }
+ }
+}

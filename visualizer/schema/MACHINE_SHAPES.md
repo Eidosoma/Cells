@@ -236,6 +236,8 @@ of 0.1 nm, with the grid as wide. The setting stays the default.
   | the 80S ribosome | its tones 13,740, 397 KB | 2.0 nm; at 1.9, 254,650 bytes |
   | the mitochondrial ribosome | 331 KB | 1.8 nm; at 1.7, 287,326 bytes |
 
+The small Physarum proteins use widths of 0.32 to 0.48 nm. Their files report the finer width and keep the same triangle and file-size ceilings. The assembly IDs and widths are recorded in the Physarum bench and the shape regeneration table in `tests/machine_shapes.test.mjs`.
+
 **Each call** reads the measure's parts, frame and left-out entities from its record
 (`--measure`). E. coli's six give the same bytes as the explicit calls they were first made with.
 With `DATASETS` the folder of the downloads (each entry with its MANIFEST; the Protein Data Bank's

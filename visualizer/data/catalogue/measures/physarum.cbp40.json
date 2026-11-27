@@ -1,0 +1,105 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "1IJ5-assembly1": {
+   "entry": "1IJ5",
+   "assembly": "1",
+   "title": "METAL-FREE STRUCTURE OF MULTIDOMAIN EF-HAND PROTEIN, CBP40, FROM TRUE SLIME MOLD",
+   "method": "X-RAY DIFFRACTION",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 2364,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     6.5,
+     5.4,
+     3.3
+    ],
+    "farthest_nm": [
+     7.4,
+     5.4,
+     3.9
+    ],
+    "middle_98_percent_nm": [
+     6.3,
+     4.6,
+     3.1
+    ],
+    "radius_of_gyration_nm": 2.02
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "PLASMODIAL SPECIFIC LAV1-2 PROTEIN",
+     "atoms": 2364,
+     "centre_nm": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "axes": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0
+      ]
+     ],
+     "across_nm": [
+      6.5,
+      5.4,
+      3.3
+     ],
+     "farthest_nm": [
+      7.4,
+      5.4,
+      3.9
+     ],
+     "radius_of_gyration_nm": 2.02
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "PLASMODIAL SPECIFIC LAV1-2 PROTEIN",
+     "copies": 1,
+     "sequence_length": 323,
+     "residues_modelled_per_copy": 305.0,
+     "modelled_share": 0.944,
+     "atoms_per_modelled_residue": 7.75
+    }
+   ]
+  }
+ }
+}

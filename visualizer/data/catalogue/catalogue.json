@@ -34,6 +34,15 @@
    "data/catalogue/measures/human.rna-polymerase-iii.json",
    "data/catalogue/measures/human.rna-polymerase.json",
    "data/catalogue/measures/human.vault.json",
+   "data/catalogue/measures/physarum.actin-fragmin-complex.json",
+   "data/catalogue/measures/physarum.actin-fragmin-kinase.json",
+   "data/catalogue/measures/physarum.cbp40.json",
+   "data/catalogue/measures/physarum.cytochrome-b5-reductase.json",
+   "data/catalogue/measures/physarum.fragmin-p.json",
+   "data/catalogue/measures/physarum.haemagglutinin-i.json",
+   "data/catalogue/measures/physarum.i-ppoi.json",
+   "data/catalogue/measures/physarum.myosin-ii-regulatory-domain.json",
+   "data/catalogue/measures/physarum.spherulin-3a.json",
    "data/catalogue/overlay.json",
    "data/catalogue/shapes/animals.connexin-channel.json",
    "data/catalogue/shapes/animals.innexin-channel.json",
@@ -57,10 +66,21 @@
    "data/catalogue/shapes/human.rna-polymerase-iii.json",
    "data/catalogue/shapes/human.rna-polymerase.json",
    "data/catalogue/shapes/human.vault.json",
+   "data/catalogue/shapes/physarum.actin-fragmin-complex.json",
+   "data/catalogue/shapes/physarum.actin-fragmin-kinase.json",
+   "data/catalogue/shapes/physarum.cbp40.json",
+   "data/catalogue/shapes/physarum.cytochrome-b5-reductase.json",
+   "data/catalogue/shapes/physarum.fragmin-p.json",
+   "data/catalogue/shapes/physarum.haemagglutinin-i.json",
+   "data/catalogue/shapes/physarum.i-ppoi.json",
+   "data/catalogue/shapes/physarum.myosin-ii-regulatory-domain.json",
+   "data/catalogue/shapes/physarum.spherulin-3a.json",
+   "data/catalogue/structures/physarum.json",
    "data/machines/ecoli.flagellar-motor.json",
    "data/proteins/ecoli/proteins.tsv",
    "data/proteins/ecoli/shelves.json",
    "data/proteins/mpneumoniae/shelves.json",
+   "data/proteins/physarum/shelves.json",
    "data/proteins/syn3a/shelves.json",
    "data/species/ecoli.json",
    "data/species/fruitfly.json",
@@ -123,6 +143,21 @@
    "id": "moving",
    "label": "Moving, sensing and attaching",
    "plain": "Machines that move the cell, steer it, or hold it to a surface."
+  },
+  {
+   "id": "binding",
+   "label": "Binding and stress response",
+   "plain": "Proteins that bind ions or sugars, or are associated with a stress response."
+  },
+  {
+   "id": "redox",
+   "label": "Electron transfer",
+   "plain": "Proteins that pass electrons between molecules."
+  },
+  {
+   "id": "cleavage",
+   "label": "Cutting DNA",
+   "plain": "Endonucleases and their deposited complexes."
   },
   {
    "id": "traffic",
@@ -1271,6 +1306,96 @@
    "from": "gather",
    "species": [
     "thalecress"
+   ]
+  },
+  {
+   "id": "myosin-ii-regulatory-domain",
+   "label": "Myosin II regulatory domain",
+   "group": "moving",
+   "plain": "Two light chains wrap around a short segment of the myosin II heavy-chain neck. The resolved region measures 63 residues on the heavy-chain construct. The motor head and tail lie outside this structure.",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
+   "id": "fragmin-p",
+   "label": "Fragmin P domains",
+   "group": "moving",
+   "plain": "The F2 and F3 domains of the actin-binding protein fragmin P are shown together. The related depositions capture different ion conditions.",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
+   "id": "actin-fragmin-complex",
+   "label": "Actin–fragmin F1 complex",
+   "group": "moving",
+   "plain": "The reference crystal pairs the F1 domain of Physarum fragmin with chicken skeletal actin. Other deposits include human actin. The structures show how the isolated domain binds actin.",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
+   "id": "actin-fragmin-kinase",
+   "label": "Actin–fragmin kinase",
+   "group": "moving",
+   "plain": "The resolved catalytic domain belongs to a kinase that phosphorylates actin in the actin–fragmin complex.",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
+   "id": "cbp40",
+   "label": "Calcium-binding protein CBP40",
+   "group": "binding",
+   "plain": "CBP40, also called LAV1-2, forms aggregates in the presence of calcium at sites of damage to the plasmodium. This assembly is the metal-free construct. The calcium-bound structure is also listed.",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
+   "id": "haemagglutinin-i",
+   "label": "Haemagglutinin I",
+   "group": "binding",
+   "plain": "A lectin from Physarum. The deposited assembly contains two copies of the same protein chain.",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
+   "id": "spherulin-3a",
+   "label": "Spherulin-3A",
+   "group": "binding",
+   "plain": "A βγ-crystallin family protein associated with the spherule stage. The surface shows the four-chain assembly assigned to the crystal structure. A solution NMR entry is also listed.",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
+   "id": "cytochrome-b5-reductase",
+   "label": "NADH–cytochrome b5 reductase",
+   "group": "redox",
+   "plain": "This flavoprotein transfers electrons from NADH to cytochrome b5. The surface includes both protein chains in the deposited dimer.",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
+   "id": "i-ppoi",
+   "label": "Homing endonuclease I-PpoI",
+   "group": "cleavage",
+   "plain": "This Physarum endonuclease is deposited in several experimental complexes with nucleic acids. The reference assembly shows two protein chains and four DNA strands.",
+   "records": [],
+   "species": [
+    "physarum"
    ]
   }
  ],
@@ -4432,6 +4557,78 @@
    "class": "permissive",
    "accessed": "2026-11-15"
   },
+  "pdb:1A73": {
+   "text": "Protein Data Bank entry 1A73: INTRON-ENCODED ENDONUCLEASE I-PPOI COMPLEXED WITH DNA",
+   "doi": "10.2210/pdb1A73/pdb",
+   "url": "https://www.rcsb.org/structure/1A73",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:1CJA": {
+   "text": "Protein Data Bank entry 1CJA: ACTIN-FRAGMIN KINASE, CATALYTIC DOMAIN FROM PHYSARUM POLYCEPHALUM",
+   "doi": "10.2210/pdb1CJA/pdb",
+   "url": "https://www.rcsb.org/structure/1CJA",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:1HDF": {
+   "text": "Protein Data Bank entry 1HDF: Evolution of the eye lens beta-gamma-crystallin domain fold",
+   "doi": "10.2210/pdb1HDF/pdb",
+   "url": "https://www.rcsb.org/structure/1HDF",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:1IJ5": {
+   "text": "Protein Data Bank entry 1IJ5: METAL-FREE STRUCTURE OF MULTIDOMAIN EF-HAND PROTEIN, CBP40, FROM TRUE SLIME MOLD",
+   "doi": "10.2210/pdb1IJ5/pdb",
+   "url": "https://www.rcsb.org/structure/1IJ5",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:2BL0": {
+   "text": "Protein Data Bank entry 2BL0: Physarum polycephalum myosin II regulatory domain",
+   "doi": "10.2210/pdb2BL0/pdb",
+   "url": "https://www.rcsb.org/structure/2BL0",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:2EIX": {
+   "text": "Protein Data Bank entry 2EIX: The Structure of Physarum polycephalum cytochrome b5 reductase",
+   "doi": "10.2210/pdb2EIX/pdb",
+   "url": "https://www.rcsb.org/structure/2EIX",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:3A5P": {
+   "text": "Protein Data Bank entry 3A5P: Crystal structure of hemagglutinin",
+   "doi": "10.2210/pdb3A5P/pdb",
+   "url": "https://www.rcsb.org/structure/3A5P",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:6LJC": {
+   "text": "Protein Data Bank entry 6LJC: Crystal structure of fragmin F2-F3 domains (calcium and magnesium condition)",
+   "doi": "10.2210/pdb6LJC/pdb",
+   "url": "https://www.rcsb.org/structure/6LJC",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:7W51": {
+   "text": "Protein Data Bank entry 7W51: Crystal structure of fragmin domain-1 in complex with actin (ADP-form)",
+   "doi": "10.2210/pdb7W51/pdb",
+   "url": "https://www.rcsb.org/structure/7W51",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
   "planarian:dutta2025": {
    "text": "Dutta A and others (2025) Identification and characterization of planarian multinucleated cells in Schmidtea mediterranea using imaging flow cytometry. Frontiers in Cell and Developmental Biology 13:1611516. Results, 3.2; Discussion. Read as Europe PMC full text PMC12698644.",
    "doi": "10.3389/fcell.2025.1611516",
@@ -4521,6 +4718,14 @@
    "file": "catalogue/thalecress.json",
    "machines": 38,
    "organelles": 6
+  },
+  "physarum": {
+   "file": "catalogue/physarum.json",
+   "machines": 9,
+   "label": "Physarum",
+   "organism": "Physarum polycephalum",
+   "structures": 74,
+   "searched": "2026-11-27"
   }
  }
 }

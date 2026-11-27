@@ -25,13 +25,15 @@ export function catalogueOf(scene) {
 }
 
 /** The organism a species' data is of, as the scene names it (its scientific name). */
-const organismOf = (scene, id) => (scene?.species || []).find((item) => item.id === id)?.organism || (scene?.proteins?.atlases || []).find((item) => item.id === id)?.organism || null;
+const organismOf = (scene, id) => scene?.catalogue?.benches?.[id]?.organism || (scene?.species || []).find((item) => item.id === id)?.organism || (scene?.proteins?.atlases || []).find((item) => item.id === id)?.organism || null;
 /** Whether two organisms' names are of one species: their first two words (a strain's name after them does not count). */
 const sameOrganism = (a, b) => Boolean(a && b) && a.split(/\s+/).slice(0, 2).join(" ") === b.split(/\s+/).slice(0, 2).join(" ");
 /** "<the structure's organism>", and, where the species shown is of another, that none of its own is in hand. */
 const elsewhereWords = (organism, of) => (organism && !sameOrganism(organism, of) ? `${of} (one of ${organism}: none in hand)` : of);
 
-const speciesLabel = (scene, id) => (scene?.species || []).find((item) => item.id === id)?.label || (scene?.proteins?.atlases || []).find((item) => item.id === id)?.label || id;
+export const speciesLabel = (scene, id) => scene?.catalogue?.benches?.[id]?.label || (scene?.species || []).find((item) => item.id === id)?.label || (scene?.proteins?.atlases || []).find((item) => item.id === id)?.label || id;
+const uniprotLink = (id) => ({ text: `UniProt ${id}`, url: `https://www.uniprot.org/uniprotkb/${id}/entry` });
+const chainItem = (chain) => ({ label: chain.label, detail: chain.organism, links: chain.protein ? [uniprotLink(chain.protein)] : [] });
 
 /**
  * What a size says, in words, with what it rests on. `organism` is the organism of the species shown: where the
@@ -76,8 +78,10 @@ export const SHAPE_LEVEL = 4;
 /** What a machine's shape is, in the contract's words: whose surface, of which entry, by what definition, at what setting. */
 export function shapeWords(surface) {
   const of = `Protein Data Bank entry ${surface.entry}${surface.assembly ? ` (its biological assembly ${surface.assembly})` : ""}`;
-  const width = `${Number(surface.width_nm).toFixed(1)} nm${surface.setting_width_nm ? `, coarser than the setting's ${Number(surface.setting_width_nm).toFixed(1)} nm to hold the budget` : ""}`;
-  const by = surface.by === "parts" ? `each part as one solid, at ${width}` : `a chain at ${width}`;
+  const standard = surface.setting_width_nm;
+  const width = surface.width_nm < standard ? surface.width_nm : Number(surface.width_nm).toFixed(1);
+  const coarser = surface.width_nm > standard ? `, coarser than the setting's ${Number(standard).toFixed(1)} nm to hold the budget` : "";
+  const by = `${surface.by === "parts" ? "each part as one solid, at" : "a chain at"} ${width} nm${coarser}`;
   return `The viewer's own smooth surface of ${of}'s coordinates (${by}), worked out by tools/shape_particle.py: ${surface.definition}. An illustration, not the structure and not a measurement; the Protein Data Bank states no surface.`;
 }
 
@@ -116,24 +120,25 @@ export function describePart(catalogue, species, owner, partId, { scene = catalo
   const proteins = (part.proteins || []).map((id) => rows.get(id)).filter(Boolean);
   const protein = part.protein ? rows.get(part.protein) || [part.protein, null, ""] : null;
   const holder = size.chains?.includes(part) ? partOfChainIn(size, part) : null;
+  const deposited = Boolean(part.organism);
   const by = (list) => list.map((n) => Number(n).toFixed(1)).join(" by ");
   return {
     id: `${owner}:${part.id}`,
     label: part.label,
     kind: "machine part",
     eyebrow: `${item.label} · a part`,
-    chips: [{ label: "Illustration", title: "An ellipsoid at its measured size, centre and axes: not a structure" }],
+    chips: [{ label: "Illustration", title: deposited ? "Drawn from the measured polymer coordinates" : "An ellipsoid at its measured size, centre and axes: not a structure" }],
     plain: size.parts.includes(part) ? `One of the ${item.label}'s ${size.parts.length} measured parts.` : `One of the ${size.chains.length} chains of the entry the ${item.label} is measured from.`,
     facts: [
-      ...(protein ? [["Its protein", `${protein[1] || protein[0]}, ${protein[2]} (UniProt ${protein[0]}), as its dossier reads the entry's entity ${part.entity}`]] : []),
+      ...(deposited ? [["Source organism", part.organism]] : protein ? [["Its protein", `${protein[1] || protein[0]}, ${protein[2]} (UniProt ${protein[0]}), as its dossier reads the entry's entity ${part.entity}`]] : []),
       ["How big", `${by(part.across_nm)} nm, the ellipsoid of the same spread as its atoms${part.farthest_nm ? ` (its farthest atoms ${by(part.farthest_nm)} nm)` : ""}`],
       ["Where", `Its centre at ${part.centre_nm.map((n) => Number(n).toFixed(1)).join(", ")} nm from the machine's, in the measure's frame`],
       ...(partsByChains(size) && size.parts.includes(part) ? [["Drawn as", `Its ${size.chains.filter((chain) => partOfChainIn(size, chain) === part).length} chains' ellipsoids, in its colour; the size above is the part's own ellipsoid, of the same spread as all its atoms`]] : []),
       ["Measured from", `Protein Data Bank entry ${size.entry}, a structure of ${size.whose ? size.of : elsewhereWords(organismOf(scene, species), size.of)}, by the viewer with tools/measure_particle.py`],
     ],
-    sections: proteins.length ? [{ title: "Its proteins", items: proteins.map(gatheredItem) }] : [],
+    sections: deposited && part.protein ? [{ title: "Protein record", count: false, items: [chainItem(part)] }] : proteins.length ? [{ title: "Its proteins", items: proteins.map(gatheredItem) }] : [],
     doors: [
-      ...(protein ? [{ label: `Show ${protein[1] || protein[0]} in the Protein atlas`, lens: "proteins", show: "own", find: protein[0] }] : []),
+      ...(protein && (!deposited || part.in_atlas) ? [{ label: `Show ${protein[1] || protein[0]} in the Protein atlas`, lens: "proteins", show: "own", find: protein[0] }] : []),
       // A chain's part, where a named part holds it.
       ...(holder ? [{ label: `Its part: ${holder.label}`, lens: "machines", value: `${owner}:${holder.id}` }] : []),
       { label: "Back to the machine", lens: "machines", value: owner },
@@ -196,6 +201,12 @@ export function doorsOf(item, scene, species) {
   const summary = (scene?.proteins?.shelves || []).find((shelf) => shelf.id === species);
   const offered = proteins && (summary?.sets?.[proteins.mark] || []).some((value) => String(value) === proteins.value);
   if (offered) doors.push({ label: `Show its ${number(proteins.items.length)} proteins in the Protein atlas`, lens: "proteins", show: "own", mark: proteins.mark, value: proteins.value });
+  if (item.entry?.structures) {
+    const deposited = [...new Set(item.size.chains.filter((chain) => chain.in_atlas).map((chain) => chain.protein))];
+    if (deposited.length) doors.push({ label: "Find the deposited proteins in the Protein atlas", lens: "proteins", show: "own", ids: deposited });
+    const entry = (scene?.models || []).find((model) => model.view?.machine_bench === species);
+    if (entry) doors.push({ label: "Return to the 3D organism view", lens: "cell", entry: entry.id });
+  }
   if (item.entry?.closer) doors.push({ label: "Look closer in the cell", lens: "cell", look: "closer", machine: item.entry.id });
   else if (item.kind?.cell_part && (scene?.entities || []).some((entity) => entity.id === item.kind.cell_part)) doors.push({ label: "Show where it sits in the cell", lens: "cell", select: item.kind.cell_part });
   return doors;
@@ -215,6 +226,18 @@ const TIERS = [
 
 /** A protein of a dossier's rows as a panel item: its gene, its name and accession, and its UniProt entry. */
 const gatheredItem = ([id, gene, label]) => ({ label: gene || id, detail: [label, id].filter(Boolean).join(" · "), links: ACCESSION.test(id) ? [{ text: `UniProt ${id}`, url: `https://www.uniprot.org/uniprotkb/${id}/entry` }] : [] });
+
+/** All of the archive results remain accessible without loading their coordinates into the viewer. */
+function structureItem(row, reference) {
+  const method = { "X-RAY DIFFRACTION": "X-ray diffraction", "SOLUTION NMR": "Solution NMR", "ELECTRON MICROSCOPY": "Electron microscopy" }[row.method] || row.method;
+  return {
+    label: `PDB ${row.id}`, tag: reference ? "Shown in 3D" : null,
+    detail: row.title,
+    lines: [[method, row.resolution_A && `${row.resolution_A.toFixed(2)} Å`].filter(Boolean).join(" · "),
+      ...(row.partner_organisms?.length ? [`Partner source: ${row.partner_organisms.join(", ")}`] : [])],
+    links: [{ text: "Open in RCSB PDB", url: `https://www.rcsb.org/structure/${row.id}` }],
+  };
+}
 
 /**
  * A number per cell from an open paper: the paper's own number as it writes it (with its power of ten), what it counts, in
@@ -519,7 +542,8 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   // What names it: the species' file, a record of the viewer, or the machine's dossier (the Gene Ontology and UniProt).
   // A dossier that looked for its proteins by family names nothing: its line says what was looked for, labelled so.
   const familyNamed = (said) => family && said?.by === FAMILY;
-  if (familyNamed(entry.named)) facts.push(["Looked for, by family", lookedFor(gathered, where, reference)]);
+  if (entry.structures) facts.push(["Reference", `PDB ${entry.size.surface.entry} · biological assembly ${entry.size.surface.assembly}`]);
+  else if (familyNamed(entry.named)) facts.push(["Looked for, by family", lookedFor(gathered, where, reference)]);
   else if (entry.named?.by) facts.push(["Named by", entry.named.text]);
   else if (entry.named?.text) facts.push(["Named by", `${speciesLabel(scene, species)}'s file: “${entry.named.text}”`]);
   else if (entry.named?.record) facts.push(["Named by", `${catalogue.record(entry.named.record)?.path.replace(/^visualizer\//, "") || entry.named.record}: ${entry.named.word}`]);
@@ -528,13 +552,15 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   if (entry.count) facts.push([entry.count.says ? `How many (${entry.count.says})` : "How many", entry.count.text]);
   else if (entry.per_cell?.length === 1) facts.push(["How many", perCellWords(catalogue, entry.per_cell[0])]);
   else if (entry.per_cell?.length) facts.push(["How many", `${entry.per_cell.length} numbers, each in its own condition (below); none is picked`]);
-  else facts.push(["How many", "No count in hand for this species"]);
+  else if (!entry.structures) facts.push(["How many", "No count in hand for this species"]);
   const size = sizeWords(catalogue, item.size, { organism: organismOf(scene, species) });
-  if (size) facts.push(["How big", size]);
+  if (entry.structures) facts.push(["Resolved span", `${entry.size.whole.farthest_nm.map((nm) => nm.toFixed(1)).join(" × ")} nm`]);
+  else if (size) facts.push(["How big", size]);
   else if (entry.closer) facts.push(["How big", "As its closer view draws it: each part's size is in its own panel, with its paper"]);
   else if (entry.no_size) facts.push(["How big", entry.no_size]);
   else facts.push(["How big", "No size in hand: it stands as a card, not a shape"]);
-  if (shapeFact(item, scene, species)) facts.push(shapeFact(item, scene, species));
+  const surface = shapeFact(item, scene, species);
+  if (surface && (!entry.structures || catalogue.shapeWords.has(entry.size.surface.file))) facts.push(surface);
   // The entry the gathering would measure it from, where its size is not measured from that one.
   if (pick) facts.push(["The gathering's pick", `Protein Data Bank entry ${pick.entry}${pick.title ? `, “${pick.title}”` : ""}${pick.resolution_A ? ` (${pick.resolution_A} Å)` : ""}${pick.present !== undefined && pick.wanted ? `, which holds ${pick.present} of the ${pick.wanted} proteins its dossier seeks` : ""}${pick.holds_more ? `; it holds ${pick.holds_more.says}${pick.holds_more.left_out_entities ? `, and a measure would leave ${pick.holds_more.left_out_entities} of its entities out` : ""}` : ""}${item.size?.shape === "measured" ? `: not the entry this size is measured from` : entry.no_size ? "" : ": not measured here yet"}`]);
   // Where the species has no entry of its own: what its dossier says, and another organism's entry, named as that organism's.
@@ -543,7 +569,8 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   const levels = levelsOf(item);
   const tiers = TIERS.map(([tier, title]) => ({ title, items: (entry.gathered?.proteins || []).filter((row) => row[3] === tier) }));
   const candidates = family ? gathered.proteins : [];
-  if (entry.proteins) facts.push(["Its proteins", `${number(entry.proteins.items.length)} in ${where}'s data carry the mark “${entry.proteins.label}: ${entry.proteins.value}”. ${entry.proteins.by || ""}`.trim()]);
+  if (entry.structures) facts.push(["Source organisms", [...new Set(entry.size.chains.filter((chain) => chain.protein).map((chain) => chain.organism))].join(" · ")]);
+  else if (entry.proteins) facts.push(["Its proteins", `${number(entry.proteins.items.length)} in ${where}'s data carry the mark “${entry.proteins.label}: ${entry.proteins.value}”. ${entry.proteins.by || ""}`.trim()]);
   else if (family) facts.push(["Its proteins", `${number(candidates.length)} of ${where}'s proteins are candidates by their family (InterPro) for parts of ${reference}'s machine: candidates, not the machine's parts${gathered.in_atlas ? "; every one is in the Protein atlas" : ""}`]);
   else if (entry.gathered) facts.push(["Its proteins", `${number(tiers[0].items.length + tiers[1].items.length)} parts and ${number(tiers[2].items.length)} named with it alone, by the Gene Ontology and UniProt (its dossier)${entry.gathered.in_atlas && entry.gathered.proteins.length ? "; every one is in the Protein atlas" : ""}`]);
   else facts.push(["Its proteins", `${where}'s own data marks no set of proteins for it`]);
@@ -551,6 +578,8 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   const sources = (entry.size?.sources || []).concat(entry.count?.sources || [], entry.named?.sources || [], entry.also_named?.sources || [], (entry.per_cell || []).map((value) => value.source), pick?.source ? [pick.source] : [], gathered.elsewhere?.source ? [gathered.elsewhere.source] : [], gathered.paxdb?.source ? [gathered.paxdb.source] : [], gathered.forms?.source ? [gathered.forms.source] : []).filter((key, index, all) => key && all.indexOf(key) === index);
   const geneOf = new Map((gathered.proteins || []).map((row) => [row[0], row[1] || row[0]]));
   const sections = [
+    entry.structures ? { title: "Chains in the 3D surface", items: entry.size.chains.map(chainItem) } : null,
+    entry.structures ? { title: "Experimental structures", items: entry.structures.map((row, index) => structureItem(row, index === 0)), shown: 4 } : null,
     { title: "What Cells models of it", note: "Only what a record says.", items: [...records.map(({ label, detail, lines }) => ({ label, detail, lines })), ...(entry.closer ? [{ label: "Its closer view", lines: [entry.closer.modelled] }] : [])] },
     // Its proteins: by tier where a dossier gives them, else the set the species' own data marks.
     ...(entry.per_cell?.length > 1 ? [{ title: "Counts per cell, each in its condition", items: entry.per_cell.map((value) => ({ label: value.written || Number(value.value).toLocaleString("en-US"), detail: value.counts, lines: [perCellWords(catalogue, value)] })) }] : []),
@@ -584,11 +613,12 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
     swatch: item.sized ? SWATCH.sized : SWATCH.card,
     status: status && part?.status ? part.status : null,
     as_of: status && part?.as_of ? part.as_of : null,
-    chips: [{ label: "Illustration", title: "Drawn as a simple shape from a published size, or as a card where no size is in hand: not a structure, and not a run" }, { label: item.sized ? "Drawn to scale" : "No size in hand" }, ...records.filter((line) => line.own).map((line) => ({ label: `${line.detail} · ${line.label.split(",")[0]}`, title: line.lines[0] }))],
+    chips: [{ label: entry.structures ? "Structure-derived surface" : "Illustration", title: entry.structures ? "A smoothed surface derived from the deposited polymer coordinates" : "Drawn as a simple shape from a published size, or as a card where no size is in hand: not a structure, and not a run" }, { label: item.sized ? "Drawn to scale" : "No size in hand" }, ...records.filter((line) => line.own).map((line) => ({ label: `${line.detail} · ${line.label.split(",")[0]}`, title: line.lines[0] }))],
     plain: kind.plain,
     note: records.length ? `What Cells models of it: ${records.map((line) => `${line.label.split(",")[0]}: ${line.detail}`).join("; ")}.` : null,
     facts,
     sections,
+    ...(entry.structures ? { disclosures: [{ title: "How the coordinates were measured", lines: [size] }] } : {}),
     doors: doorsOf(item, scene, species),
     sources: [
       ...records.map((line) => line.source).filter(Boolean),
@@ -712,6 +742,7 @@ export function doorWords(tier, item, scene) {
     return null;
   }
   if (tier === "part") return `It is a part of the ${name}`;
+  if (tier === "deposited chain") return `A chain of this protein is resolved in ${item.label}`;
   if (tier === "part by keyword") return `It is a part, by UniProt's keyword, of the ${name}`;
   if (tier === "named") return `It is named with the ${name}`;
   const reference = item.entry?.gathered?.route?.reference;

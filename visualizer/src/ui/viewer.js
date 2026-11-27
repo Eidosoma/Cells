@@ -475,7 +475,7 @@ class CellsViewer extends HTMLElement {
         this.lenses.set(key, lens);
       }
       this.current = this.lenses.get(key);
-      this.current.setSpecies?.(this.state.species);
+      this.current.setSpecies?.(this.lensSpecies(id));
       if (this.state.stage) this.current.setStage?.(this.state.stage);
       this.current.setCellType?.(this.state.cellType);
       this.current.setAtlas?.(id === "proteins" ? this.proteinAtlasId() : this.state.species);
@@ -498,7 +498,7 @@ class CellsViewer extends HTMLElement {
     if (this.state.lens === "experiments") return this.replays.entities();
     // A view that makes its own parts gives them as text where no 3D can be drawn (the Laws library).
     const text = this.views.find((view) => view.id === this.state.lens)?.textSections;
-    if (text) return text(this.model.raw, this.state.species).flatMap((section) => section.entities);
+    if (text) return text(this.model.raw, this.lensSpecies()).flatMap((section) => section.entities);
     return this.model.inLens(this.state.lens);
   }
 
@@ -511,18 +511,19 @@ class CellsViewer extends HTMLElement {
   /** A part by its id: one of the scene's, or one the current view makes itself (a run, a cell of a run). */
   lookup(id) {
     if (!id) return null;
-    let entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || (!this.current ? this.views.find((view) => view.owns?.(id))?.textDescribe?.(this.model.raw, id, this.state.species) : null) || null;
+    let entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || (!this.current ? this.views.find((view) => view.owns?.(id))?.textDescribe?.(this.model.raw, id, this.lensSpecies()) : null) || null;
     // A part of another view's that the view shown holds too (a unit with laws, in the Machines catalogue): as that view shows it.
     const present = this.views.find((view) => view.id === this.state.lens)?.present;
-    if (entity && present) entity = present(entity, this.model.raw, this.state.species);
+    if (entity && present) entity = present(entity, this.model.raw, this.lensSpecies());
     // A door another view offers on this part (the Laws library on an Engine view box that holds its pieces), after the view's own doors.
-    const offered = entity ? this.views.filter((view) => view.id !== this.state.lens && view.doorsFor).flatMap((view) => view.doorsFor(entity, this.model.raw, { species: this.state.species })) : [];
+    const offered = entity ? this.views.filter((view) => view.id !== this.state.lens && view.doorsFor).flatMap((view) => view.doorsFor(entity, this.model.raw, { species: this.lensSpecies(view.id) })) : [];
     // A part is shown as the chosen species has it: a unit with that species' side of the atlas,
     // a level under the species' name for it.
     const linkedEntry = entity && modelSystems(this.model.raw).find(item => item.view?.engine_part === entity.id);
     if (linkedEntry && this.state.lens === "engine") entity = {...entity, doors:[...(entity.doors || []),
       {label:"Open the 3D organism view",lens:"cell",entry:linkedEntry.id},
       {label:"Open the organism's Protein catalogue",lens:"proteins",entry:linkedEntry.id,show:"own"},
+      ...(linkedEntry.view.machine_bench ? [{label:"Open the organism's Machines catalogue",lens:"machines",entry:linkedEntry.id}] : []),
     ]};
     const shown = this.state.lens === "proteins" ? (this.current?.asShown ? this.current.asShown(entity) : inSpecies(entity, this.model.raw.proteins, this.state.species)) : this.state.lens === "cell" && this.current?.inSpecies ? this.current.inSpecies(entity) : entity;
     return shown && offered.length ? { ...shown, doors: [...(shown.doors || []), ...offered] } : shown;
@@ -532,7 +533,7 @@ class CellsViewer extends HTMLElement {
     if (this.current) return this.current.sections();
     if (this.state.lens === "experiments") return this.replays.sections();
     const text = this.views.find((view) => view.id === this.state.lens)?.textSections;
-    if (text) return text(this.model.raw, this.state.species);
+    if (text) return text(this.model.raw, this.lensSpecies());
     const groups = new Map();
     for (const part of this.shownEntities()) {
       const entity = this.state.lens === "proteins" ? inSpecies(part, this.model.raw.proteins, this.state.species) : part;
@@ -651,6 +652,15 @@ class CellsViewer extends HTMLElement {
     return this.model.raw.proteins?.shelves?.some(shelf => shelf.id === id) ? id : this.state.species;
   }
 
+  /** The Machines lens can use a model system's associated organism bench. */
+  lensSpecies(lens = this.state.lens) {
+    if (lens === "machines") {
+      const bench = modelSystemOf(this.model?.raw, this.state.model)?.view?.machine_bench;
+      if (this.model.raw.catalogue?.benches?.[bench]) return bench;
+    }
+    return this.state.species;
+  }
+
   /** The species the page can show: the scene's species, or the atlases of a scene that names none. */
   speciesChoices() {
     const species = this.model?.raw.species || [];
@@ -666,9 +676,9 @@ class CellsViewer extends HTMLElement {
     this.state.stage = null; // a life stage is a species' own: another species opens on its own
     this.state.species = this.state.atlas = id;
     this.dataset.species = this.dataset.atlas = id;
-    for (const lens of this.lenses.values()) {
-      lens.setSpecies?.(id);
-      lens.setAtlas?.(id);
+    for (const [key, lens] of this.lenses) {
+      lens.setSpecies?.(this.lensSpecies(key));
+      lens.setAtlas?.(key === "proteins" ? this.proteinAtlasId() : id);
     }
     // What the panel says of the species follows the species; a part that has no place in the
     // species now shown is no longer selected.
@@ -841,6 +851,9 @@ class CellsViewer extends HTMLElement {
       this.lenses.get("cell")?.setCellType?.(this.state.cellType);
     }
     this.lenses.get("proteins")?.setAtlas?.(this.proteinAtlasId());
+    const machines = this.lenses.get("machines");
+    machines?.setSpecies(this.lensSpecies("machines"));
+    if (this.current === machines && machines && !machines.has(this.state.selected)) this.state.selected = null;
     this.nameFirstTab();
     if (this.state.selected?.startsWith("model:") || (entry && this.state.selected?.startsWith("species:"))) this.state.selected = entry ? `model:${entry.id}` : null;
     // Shown in the Cell view's place: the view follows the entry (a phone's folded card starts folded in it, as in the next view).
@@ -949,7 +962,7 @@ class CellsViewer extends HTMLElement {
       const stage = `${at.label}${at.index && at.system ? ` (${at.system.short} ${at.index})` : ""}`;
       out.caveat = [this.state.lens === "proteins" ? `The atlas holds the proteins of ${name} as an organism: which of them are made at the stage ${stage} is not in its data.` : `The catalogue holds the machines of ${name} as an organism: which of them a cell holds at the stage ${stage} is not in its data.`, chrome.caveat].filter(Boolean).join(" ");
     }
-    if (entry && this.state.lens === "machines") out.caveat = [`${entry.label} is a model system, not an organism: it has no machines of a species. The catalogue shows ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}'s.`, chrome.caveat].filter(Boolean).join(" ");
+    if (entry && this.state.lens === "machines" && this.lensSpecies() === this.state.species) out.caveat = [`The catalogue shows the machine records for ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}.`, chrome.caveat].filter(Boolean).join(" ");
     return out;
   }
 

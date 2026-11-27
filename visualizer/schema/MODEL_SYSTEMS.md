@@ -65,9 +65,9 @@ recorded development run. The molecular traffic and times in the vesicle replay 
   | `vesicle` | `vesicle`, `membrane`, `molecule` | `vesicle` | Vesicle, Membrane, Molecule | `cells.visualizer.assembly_run@2` (`ASSEMBLY_RUN.md`) |
   | `physarum` | `network`, `vein` | Both levels | Plasmodium, Vein cutaway | Anatomy preview |
 
-The Physarum preview uses `view.protein_atlas` for the organism's protein shelves and
-`view.engine_part` for its catalogue entry. It depicts a plasmodium and a cutaway and labels
-the geometry and flow as illustrative.
+The Physarum preview uses `view.protein_atlas` for the organism's protein shelves,
+`view.machine_bench` for its structure bench and `view.engine_part` for its Engine catalogue
+entry. It depicts a plasmodium and a cutaway and labels the geometry and flow as illustrative.
 
   A kind not in this table is a breach, and so is a level not in its kind's list, or one out of
   order. A further kind (an RNA world, say) is a row of this table, with the view that draws it.

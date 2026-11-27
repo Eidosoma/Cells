@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-22",
-  "generated_at": "2026-11-27T11:28:54Z",
+  "generated_at": "2026-11-27T12:03:30Z",
   "revision": "4fd3d042",
   "revision_date": "2026-11-27",
   "dirty": false,
@@ -9325,6 +9325,7 @@
    "view": {
     "kind": "physarum",
     "protein_atlas": "physarum",
+    "machine_bench": "physarum",
     "engine_part": "models.physarum"
    },
    "levels": [

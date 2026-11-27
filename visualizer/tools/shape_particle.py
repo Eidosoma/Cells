@@ -77,12 +77,18 @@ TETRAHEDRA = [(0, 5, 1, 6), (0, 1, 2, 6), (0, 2, 3, 6), (0, 3, 7, 6), (0, 7, 4, 
 def definition(width, grid, by="chains"):
     volumes = f"{VOLUME['protein']} nm³ for each amino acid, {VOLUME['nucleic']} nm³ for each nucleotide"
     pieces = f"; of a surface in pieces, its largest and every piece of at least {SHARE:.0%} of its volume are kept, smaller ones dropped (listed under dropped)"
-    coarser = f" (coarser than the setting's {WIDTH[by]:g} nm, to hold the budget)" if width != WIDTH[by] else ""
+    setting = WIDTH[by]
+    if width > setting:
+        width_note = f" (coarser than the setting's {setting:g} nm, to hold the budget)"
+    elif width < setting:
+        width_note = f" (finer than the standard {setting:g} nm setting)"
+    else:
+        width_note = ""
     if by == "chains":
-        return f"each chain as the closed surface that holds its own volume ({volumes}) in a cloud where each residue is spread as a Gaussian {width:g} nm wide, on a grid {grid:g} nm apart{coarser}{pieces}"
+        return f"each chain as the closed surface that holds its own volume ({volumes}) in a cloud where each residue is spread as a Gaussian {width:g} nm wide, on a grid {grid:g} nm apart{width_note}{pieces}"
     return (
         f"each part as one solid: the closed surface that holds its residues' own volume ({volumes}), protein and nucleic acid together, in a cloud "
-        f"where each residue is spread as a Gaussian {width:g} nm wide weighted by its volume, on a grid {grid:g} nm apart{coarser}{pieces}; for two tones, "
+        f"where each residue is spread as a Gaussian {width:g} nm wide weighted by its volume, on a grid {grid:g} nm apart{width_note}{pieces}; for two tones, "
         "that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)"
     )
 

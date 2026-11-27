@@ -12,7 +12,7 @@
   "text": "Physarum Lagrangian is a planned Cells model. This 3D atlas shows the organism and illustrates shuttle streaming.",
   "record": [{"path":"visualizer/docs/PHYSARUM.md","where":"Physarum Lagrangian"}]
  },
- "view": {"kind":"physarum","protein_atlas":"physarum","engine_part":"models.physarum"},
+ "view": {"kind":"physarum","protein_atlas":"physarum","machine_bench":"physarum","engine_part":"models.physarum"},
  "levels": [
   {"id":"network","label":"Plasmodium","shows":"A branching network with thick veins and thin advancing regions."},
   {"id":"vein","label":"Vein cutaway","shows":"The contractile wall, streaming cytoplasm and a parcel that can be followed through a flow reversal."}

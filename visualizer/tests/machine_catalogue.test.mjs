@@ -67,6 +67,32 @@ test("each entry is a kind of the catalogue, once for its species, and a machine
   assert.equal(kindOf("machine:flagellar-motor:c-ring"), "flagellar-motor");
 });
 
+test("the Physarum bench links every archived experiment and attributes each resolved chain", () => {
+  const { entries, by_protein } = benchOf("physarum");
+  const records = entries.flatMap((entry) => entry.structures.map((row) => row.id));
+  assert.equal(entries.length, 9);
+  assert.equal(records.length, 74);
+  assert.equal(new Set(records).size, 74);
+  for (const entry of entries) {
+    assert.equal(entry.size.surface.entry, entry.structures[0].id);
+    assert.ok(entry.size.chains.every((chain) => chain.organism));
+    const panel = describe(catalogue, "physarum", pageId(entry.id));
+    const archive = panel.sections.find((section) => section.title === "Experimental structures");
+    assert.equal(archive.items.length, entry.structures.length);
+    assert.equal(archive.items[0].links[0].url, `https://www.rcsb.org/structure/${entry.size.surface.entry}`);
+  }
+  const id = pageId("actin-fragmin-complex");
+  assert.ok(catalogue.passes(catalogue.item("physarum", id), "9L2N"));
+  const complex = catalogue.item("physarum", id);
+  assert.deepEqual(complex.size.chains.map((chain) => [chain.organism, chain.protein]).sort(), [["Gallus gallus", "P68139"], ["Physarum polycephalum", "Q94707"]]);
+  const chicken = complex.size.chains.find((chain) => chain.protein === "P68139");
+  const panel = describePart(catalogue, "physarum", id, chicken.id);
+  assert.ok(panel.facts.some(([key, value]) => key === "Source organism" && value === "Gallus gallus"));
+  assert.ok(!panel.doors.some((door) => door.lens === "proteins"));
+  assert.equal(by_protein.P68139, undefined);
+  assert.deepEqual(by_protein.P08053, [["myosin-ii-regulatory-domain", "deposited chain"]]);
+});
+
 test("every number stands on a permissive source the entry names, and a size is its species file's own, never a second number", () => {
   for (const entry of raw.entries) {
     for (const block of [entry.count, entry.size, entry.named].filter(Boolean)) {
@@ -896,6 +922,7 @@ test("a bench by family holds only the machines its species' records name or tha
 test("a protein's door into Machines says what its dossier makes it: a part, a part by keyword, or a candidate by family; an unknown tier has none", () => {
   const WORDS = {
     part: /^It is a part of the [^:]+: show it in Machines$/,
+    "deposited chain": /^A chain of this protein is resolved in [^:]+: show it in Machines$/,
     "part by keyword": /^It is a part, by UniProt's keyword, of the [^:]+: show it in Machines$/,
     named: /^It is named with the [^:]+: show it in Machines$/,
     "candidate by family": /^It is a candidate, by its family, for a part of (?:(?:Human|E\. coli)'s [^:]+|the vault): show it in Machines$/,
@@ -1155,7 +1182,7 @@ test("the organelles on the shelf: no machines, sized by their species' file's f
     fruitfly: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     planarian: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     thalecress: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion", "chloroplast", "vacuole"],
-    ecoli: [], syn3a: [], mpneumoniae: [], xenopus: [], // the frog: no bench gathered yet, so no shelf
+    ecoli: [], syn3a: [], mpneumoniae: [], xenopus: [], physarum: [], // the frog: no bench gathered yet, so no shelf
   };
   assert.deepEqual(Object.keys(ROWS).sort(), [...SPECIES].sort());
   for (const [species, kinds] of Object.entries(ROWS)) {

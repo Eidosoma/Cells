@@ -1,0 +1,105 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "6LJC-assembly1": {
+   "entry": "6LJC",
+   "assembly": "1",
+   "title": "Crystal structure of fragmin F2-F3 domains (calcium and magnesium condition)",
+   "method": "X-RAY DIFFRACTION",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 1604,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     6.4,
+     3.6,
+     3.0
+    ],
+    "farthest_nm": [
+     5.9,
+     4.3,
+     3.4
+    ],
+    "middle_98_percent_nm": [
+     5.4,
+     3.6,
+     2.8
+    ],
+    "radius_of_gyration_nm": 1.78
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "C",
+     "entity": "1",
+     "description": "Actin-binding protein fragmin P",
+     "atoms": 1604,
+     "centre_nm": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "axes": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0
+      ]
+     ],
+     "across_nm": [
+      6.4,
+      3.6,
+      3.0
+     ],
+     "farthest_nm": [
+      5.9,
+      4.3,
+      3.4
+     ],
+     "radius_of_gyration_nm": 1.78
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "Actin-binding protein fragmin P",
+     "copies": 1,
+     "sequence_length": 212,
+     "residues_modelled_per_copy": 208.0,
+     "modelled_share": 0.981,
+     "atoms_per_modelled_residue": 7.71
+    }
+   ]
+  }
+ }
+}

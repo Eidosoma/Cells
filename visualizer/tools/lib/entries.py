@@ -390,6 +390,8 @@ class Entries:
         if kind == "physarum":
             if not ID.fullmatch(str(view.get("protein_atlas", ""))):
                 problems.append("the Physarum preview names its protein catalogue")
+            if "machine_bench" in view and not ID.fullmatch(str(view["machine_bench"])):
+                problems.append("the Physarum preview names its Machines bench by id")
             if not re.fullmatch(r"models\.[a-z0-9_]+", str(view.get("engine_part", ""))):
                 problems.append("the Physarum preview names its Engine catalogue part")
             if data.get("runs") or data.get("clock"):

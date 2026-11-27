@@ -21,7 +21,7 @@ import { fitView, plaqueMesh } from "./laws_marks.js";
 import { buildMachine, describeMachinePart } from "./machine_parts.js";
 import { loadBeside } from "./protein_shelves.js";
 import { IONS, PREFIX, kindOf, byFamily, organelleKind } from "./machines_data.js";
-import { catalogueOf, describe as describeItem, describePart, sections as listSections, levelsOf, shapeWords, SHAPE_LEVEL, SWATCH, groupSwatch, NONE_FOUND, noneFoundNote } from "./machines_card.js";
+import { catalogueOf, describe as describeItem, describePart, sections as listSections, levelsOf, shapeWords, speciesLabel, SHAPE_LEVEL, SWATCH, groupSwatch, NONE_FOUND, noneFoundNote } from "./machines_card.js";
 import { h } from "../ui/dom.js";
 import { loadShape, buildShape } from "./machine_shape.js";
 import { layoutOf, bodiesAt, membraneOf, partOfChain, shelfOf, CARD, TRAY, BENCH, UNIT_NM, SHELF } from "./machines_layout.js";
@@ -31,7 +31,7 @@ import { organelleModels, simpleModel, placeModel, scaleFor, drawnSize, paintMod
 export const MACHINES_LOOK = { rich: true, filmic: true, exposure: 1.04, contact: true, reach: 0.5, shade: 0.55 };
 /** Each group's colour: a token of the page's palette (page.css), one for each thing the machines do. */
 // Each group's own colour, told apart in both themes: the three groups the dossiers brought take colours no other tray has.
-export const GROUP_HUE = { proteins: "bioRibosome", genes: "bioNucleus", dna: "bioGolgi", light: "bioChloroplast", atp: "bioFuel", ions: "bioIon", membranes: "bioEr", folding: "bioProtein", breaking: "bioSignal", moving: "bioMito", traffic: "bioWound", unknown: "bioCyto" };
+export const GROUP_HUE = { proteins: "bioRibosome", genes: "bioNucleus", dna: "bioGolgi", light: "bioChloroplast", atp: "bioFuel", ions: "bioIon", membranes: "bioEr", folding: "bioProtein", breaking: "bioSignal", moving: "bioMito", binding: "bioMembrane", redox: "bioWater", cleavage: "bioPump", traffic: "bioWound", unknown: "bioCyto" };
 /** What each role of a machine file's part wears (as its closer view, machine_view.js, dresses it). */
 const ROLE_HUE = { membrane: ["bioMembrane", 0.32, true], wall: ["ghost", 0.36, true], rotor: ["bioProtein", 1], stator: ["bioMito", 1], bearing: ["edge", 1], export: ["bioIon", 1], mark: ["fg", 1], swept: ["fg", 0.3, true], arrow: ["fg", 1] };
 const VIEW = { azimuth: 0.12, polar: 0.98 };
@@ -832,7 +832,10 @@ export class MachinesLens {
     const palette = this.stage.palette || {}, shape = entry.shape;
     const ground = new THREE.Color(palette.bg || "#ffffff");
     const seen = new Map();
+    const chainHues = new Map(shape.chains.filter((chain) => chain.hue).map((chain) => [chain.id, chain.hue]));
     return (partId, kind, row) => {
+      const chainColour = palette[chainHues.get(row.id)];
+      if (chainColour) return new THREE.Color(chainColour);
       const index = shape.parts.findIndex((part) => part.id === partId);
       const part = shape.parts[index];
       const base = new THREE.Color(palette[part?.hue] || palette[GROUP_HUE[entry.group]] || palette.ghost || "#888888");
@@ -1085,12 +1088,12 @@ export class MachinesLens {
 
   /** The bench as a stop of its own: what it holds, and how much smaller its machines are than the organelles above it. */
   describeBench() {
-    const label = (this.model.raw.species || []).find((item) => item.id === this.species)?.label || this.species;
+    const label = speciesLabel(this.model.raw, this.species);
     const range = this.benchRange();
     const largest = this.shelf?.layout.items.filter((item) => item.type === "shape").sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h))[0];
     const facts = [["Its machines", `${this.counts.machines.toLocaleString("en-US")} machines, ${this.counts.sized.toLocaleString("en-US")} of them drawn to scale${range ? `, from ${lengthWords(range[0])} to ${lengthWords(range[1])} at their longest` : ""}`], ["Its scale", "One scale for every shape: the scale bar etched on the bench is 100 nm, as the shelf's organelles are drawn at the same scale."]];
     if (largest && range) facts.push(["Beside the shelf", `The ${largest.item.label.toLowerCase()} on the shelf is about ${Math.round((Math.max(largest.w, largest.h) * UNIT_NM) / range[1]).toLocaleString("en-US")} times as wide as the largest machine here.`]);
-    return { id: BENCH_ID, label: "The bench", kind: "machines", eyebrow: `Machines · ${label}`, chips: [{ label: "Illustration", title: "Simple shapes at a size in hand, and cards: not structures" }], plain: `The machines of ${label}, in trays by what they do, below the shelf of its organelles.`, facts, sections: [], doors: [] };
+    return { id: BENCH_ID, label: "The bench", kind: "machines", eyebrow: `Machines · ${label}`, chips: [{ label: "Illustration", title: "Simple shapes at a size in hand, and cards: not structures" }], plain: `The machines of ${label}, in trays by what they do${this.organelles.length ? ", below the shelf of its organelles" : ""}.`, facts, sections: [], doors: [] };
   }
 
   /** The longest and shortest of the bench's shapes drawn to scale, at their longest, in nanometres; null where it has none. */
@@ -1265,7 +1268,8 @@ export class MachinesLens {
 
   chrome() {
     const counts = this.counts;
-    const label = (this.model.raw.species || []).find((item) => item.id === this.species)?.label || this.species;
+    const label = speciesLabel(this.model.raw, this.species);
+    const structural = this.catalogue.raw.benches?.[this.species];
     const chosen = this.item(this.selected) || (this.partOf(this.selected) ? this.item(this.partOf(this.selected)) : null);
     const levels = chosen ? levelsOf(chosen) : null;
     const shown = MARKS.filter((mark) => mark.when(this));
@@ -1276,16 +1280,16 @@ export class MachinesLens {
       card: {
         heading: "Machines",
         species: this.speciesChoice(),
-        find: { label: "Find a machine", placeholder: "Find a machine or a gene", value: this.query },
+        find: { label: "Find a machine", placeholder: structural?.structures ? "Name, PDB ID or protein" : "Find a machine or a gene", value: this.query },
         marks: groups.length > 1 ? { label: "Group", options: [["all", "All groups"], ...groups.map((group) => [group.id, group.label])], active: this.focusGroup || "all" } : null,
         modes: levels ? { label: "Detail", options: levels.map((level) => [String(level.id), level.label]), active: String(this.built?.get(chosen.id)?.level ?? this.level), oneRow: true } : null,
         // A species the catalogue holds no bench for (one with an atlas, shown for its units of the law inventory) says so first,
         // by rule; while its bench is read, and where it cannot be, the card says so; else whether any machine has a size in hand.
         notice: !this.catalogue.species.includes(this.species) ? `No bench of machines has been gathered for ${label} yet${counts.laws ? `: only the units of the law inventory that its atlas finds stand here${counts.sized ? "" : ", each a card"}` : ""}.` : this.catalogue.benchState(this.species)?.status === "failed" ? this.catalogue.benchState(this.species).words : this.catalogue.raw.benches?.[this.species] && !this.catalogue.hasBench(this.species) ? `Reading the machines of ${label}…` : counts.sized ? null : `No machine of ${label} has a size in hand: each is a card, not a shape.`,
         // A species whose dossier looks by family: how many machines its own records name, and how many are candidates by family.
-        stats: counts.family || counts.none ? [[counts.named, "named by its own records"], [counts.family, "candidates by family"], [counts.laws, "in the law inventory"]] : [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
+        stats: structural?.structures ? [[structural.machines, "3D entries"], [structural.structures, "PDB records"]] : counts.family || counts.none ? [[counts.named, "named by its own records"], [counts.family, "candidates by family"], [counts.laws, "in the law inventory"]] : [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
         own: () => this.cardNoneFound(),
-        text: `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine.${counts.laws ? " The membrane machines in the tray of moving ions are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares." : ""}${this.organelles.length ? ` Behind the bench, a shelf holds ${label}'s organelles at the same scale, the small ones on a plank of their own: each drawn with the Cell view's model of it where there is one, else with a simple model, an illustration, at a size its panel gives with its source (a measurement in one cell type, or a general figure); one with no size in hand is a card. The rail travels between them.` : ""}`,
+        text: structural?.structures ? `Choose an entry to inspect its measured surface and individual chains. Related experimental structures are listed on each card. RCSB archive search: ${structural.searched}.` : `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine.${counts.laws ? " The membrane machines in the tray of moving ions are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares." : ""}${this.organelles.length ? ` Behind the bench, a shelf holds ${label}'s organelles at the same scale, the small ones on a plank of their own: each drawn with the Cell view's model of it where there is one, else with a simple model, an illustration, at a size its panel gives with its source (a measurement in one cell type, or a general figure); one with no size in hand is a card. The rail travels between them.` : ""}`,
         sources: [
           { name: "The species' files and their own proteins", holds: "which machines each species has, how many, and the proteins its data marks with each (tools/build_catalogue.py)", licence: "each source's own, named in each panel; the files are the project's own, MIT" },
           { name: "Sizes", holds: "from the species' files, each with its sources (the attachment organelle's length); from the flagellar motor's own file; and the viewer's own measures from entries of the Protein Data Bank (the ribosome), each naming its entry, its definition and its tool", licence: "each source's own, named in each panel; the Protein Data Bank's entries CC0 1.0" },
@@ -1771,7 +1775,7 @@ export class MachinesLens {
     if (before === this.selected && kindAt(before) === "measured") this.shadeParts(before);
     if (before !== this.selected && !owner) {
       const levels = this.selected ? levelsOf(this.item(this.selected)) : null;
-      this.level = levels?.find((value) => value.id > 1)?.id ?? 2;
+      this.level = this.item(this.selected)?.entry?.structures ? SHAPE_LEVEL : levels?.find((value) => value.id > 1)?.id ?? 2;
     }
     for (const value of rebuild) this.rebuildMachine(value);
     if (this.layout?.items.some((item) => item.id === this.selected && item.type === "shape")) this.lastMachine = this.selected;
@@ -1972,6 +1976,11 @@ export class MachinesLens {
 
   /** The box a move toward a machine frames: its shape or card with its neighbours in the tray. */
   focusBox(entry) {
+    if (entry.item.entry?.structures) {
+      const centre = new THREE.Vector3(entry.x, entry.y + LIFT + entry.h / 2, entry.z);
+      const room = new THREE.Vector3(entry.w, entry.h, entry.d).multiplyScalar(1.6);
+      return new THREE.Box3().setFromCenterAndSize(centre, room);
+    }
     const pad = entry.type === "card" ? 6 : Math.max(2, Math.max(entry.w, entry.h) * 0.6);
     return new THREE.Box3(new THREE.Vector3(entry.x - entry.w / 2 - pad, entry.y, entry.z - entry.d / 2 - pad), new THREE.Vector3(entry.x + entry.w / 2 + pad, entry.y + entry.h + LIFT + 1, entry.z + entry.d / 2 + pad));
   }

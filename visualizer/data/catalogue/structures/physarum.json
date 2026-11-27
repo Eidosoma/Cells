@@ -1,0 +1,265 @@
+{
+  "format": "cells.visualizer.structure_bench@1",
+  "label": "Physarum",
+  "organism": "Physarum polycephalum",
+  "taxonomy_id": 5791,
+  "searched": "2026-11-27",
+  "query": {
+    "attribute": "rcsb_entity_source_organism.taxonomy_lineage.id",
+    "operator": "exact_match",
+    "value": "5791",
+    "return_type": "polymer_entity",
+    "content": "experimental"
+  },
+  "items": [
+    {
+      "id": "myosin-ii-regulatory-domain",
+      "label": "Myosin II regulatory domain",
+      "group": "moving",
+      "plain": "Two light chains wrap around a short segment of the myosin II heavy-chain neck. The resolved region measures 63 residues on the heavy-chain construct. The motor head and tail lie outside this structure.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Myosin heavy-chain neck",
+          "organism": "Physarum polycephalum",
+          "protein": "Q9BJD3",
+          "hue": "bioFuel"
+        },
+        "2": {
+          "label": "Myosin light chain P08053",
+          "organism": "Physarum polycephalum",
+          "protein": "P08053",
+          "hue": "bioWater"
+        },
+        "3": {
+          "label": "Myosin light chain Q8WSQ4",
+          "organism": "Physarum polycephalum",
+          "protein": "Q8WSQ4",
+          "hue": "bioProtein"
+        }
+      },
+      "structures": [
+        {"id": "2BL0", "title": "Physarum polycephalum myosin II regulatory domain", "method": "X-RAY DIFFRACTION", "resolution_A": 1.75}
+      ]
+    },
+    {
+      "id": "fragmin-p",
+      "label": "Fragmin P domains",
+      "group": "moving",
+      "plain": "The F2 and F3 domains of the actin-binding protein fragmin P are shown together. The related depositions capture different ion conditions.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Fragmin P domains F2–F3",
+          "organism": "Physarum polycephalum",
+          "protein": "Q94707"
+        }
+      },
+      "structures": [
+        {"id": "6LJC", "title": "Crystal structure of fragmin F2-F3 domains (calcium and magnesium condition)", "method": "X-RAY DIFFRACTION", "resolution_A": 1.85},
+        {"id": "6KWZ", "title": "Crystal structure of fragmin F3 domain with calcium ion", "method": "X-RAY DIFFRACTION", "resolution_A": 1.551},
+        {"id": "6LJD", "title": "Crystal structure of fragmin F2-F3 domains (calcium condition)", "method": "X-RAY DIFFRACTION", "resolution_A": 2.15}
+      ]
+    },
+    {
+      "id": "actin-fragmin-complex",
+      "label": "Actin–fragmin F1 complex",
+      "group": "moving",
+      "plain": "The reference crystal pairs the F1 domain of Physarum fragmin with chicken skeletal actin. Other deposits include human actin. The structures show how the isolated domain binds actin.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Skeletal-muscle actin",
+          "organism": "Gallus gallus",
+          "protein": "P68139",
+          "hue": "bioWater"
+        },
+        "2": {
+          "label": "Fragmin P domain F1",
+          "organism": "Physarum polycephalum",
+          "protein": "Q94707",
+          "hue": "bioMito"
+        }
+      },
+      "structures": [
+        {"id": "7W51", "title": "Crystal structure of fragmin domain-1 in complex with actin (ADP-form)", "method": "X-RAY DIFFRACTION", "resolution_A": 1.2, "partner_organisms": ["Gallus gallus"]},
+        {"id": "7W4Z", "title": "Crystal structure of fragmin domain-1 in complex with actin (AMPPNP-form)", "method": "X-RAY DIFFRACTION", "resolution_A": 1.15, "partner_organisms": ["Gallus gallus"]},
+        {"id": "7W50", "title": "Crystal structure of fragmin domain-1 in complex with actin (ADP-Pi-form)", "method": "X-RAY DIFFRACTION", "resolution_A": 1.15, "partner_organisms": ["Gallus gallus"]},
+        {"id": "7W52", "title": "Crystal structure of fragmin domain-1 (15-160) in complex with actin", "method": "X-RAY DIFFRACTION", "resolution_A": 2.001, "partner_organisms": ["Gallus gallus"]},
+        {"id": "7YNE", "title": "Crystal structure of fragmin domain-1 (1-160) in complex with G-form actin", "method": "X-RAY DIFFRACTION", "resolution_A": 2.7, "partner_organisms": ["Gallus gallus"]},
+        {"id": "8GSU", "title": "Crystal structure of human cardiac alpha actin (WT_ADP-Pi) in complex with fragmin F1 domain", "method": "X-RAY DIFFRACTION", "resolution_A": 1.5, "partner_organisms": ["Homo sapiens"]},
+        {"id": "8GSW", "title": "Crystal structure of human cardiac alpha actin A108G mutant (AMPPNP state) in complex with fragmin F1 domain", "method": "X-RAY DIFFRACTION", "resolution_A": 1.4, "partner_organisms": ["Homo sapiens"]},
+        {"id": "8GT1", "title": "Crystal structure of human cardiac alpha actin A108G mutant (ADP-Pi state) in complex with fragmin F1 domain", "method": "X-RAY DIFFRACTION", "resolution_A": 1.35, "partner_organisms": ["Homo sapiens"]},
+        {"id": "8GT2", "title": "Crystal structure of human cardiac alpha actin P109A mutant (AMPPNP state) in complex with fragmin F1 domain", "method": "X-RAY DIFFRACTION", "resolution_A": 1.5, "partner_organisms": ["Homo sapiens"]},
+        {"id": "8GT3", "title": "Crystal structure of human cardiac alpha actin P109A mutant (ADP-Pi state) in complex with fragmin F1 domain", "method": "X-RAY DIFFRACTION", "resolution_A": 1.5, "partner_organisms": ["Homo sapiens"]},
+        {"id": "8GT4", "title": "Crystal structure of human cardiac alpha actin Q137A mutant (AMPPNP state) in complex with fragmin F1 domain", "method": "X-RAY DIFFRACTION", "resolution_A": 1.55, "partner_organisms": ["Homo sapiens"]},
+        {"id": "8GT5", "title": "Crystal structure of human cardiac alpha actin Q137A mutant (ADP-Pi state) in complex with fragmin F1 domain", "method": "X-RAY DIFFRACTION", "resolution_A": 1.4, "partner_organisms": ["Homo sapiens"]},
+        {"id": "9L2N", "title": "Crystal structure of Cytochalasin D bound to a filamentous conformation actin", "method": "X-RAY DIFFRACTION", "resolution_A": 1.7, "partner_organisms": ["Gallus gallus"]}
+      ]
+    },
+    {
+      "id": "actin-fragmin-kinase",
+      "label": "Actin–fragmin kinase",
+      "group": "moving",
+      "plain": "The resolved catalytic domain belongs to a kinase that phosphorylates actin in the actin–fragmin complex.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Actin–fragmin kinase catalytic domain",
+          "organism": "Physarum polycephalum",
+          "protein": "P80197"
+        }
+      },
+      "structures": [
+        {"id": "1CJA", "title": "ACTIN-FRAGMIN KINASE, CATALYTIC DOMAIN FROM PHYSARUM POLYCEPHALUM", "method": "X-RAY DIFFRACTION", "resolution_A": 2.9}
+      ]
+    },
+    {
+      "id": "cbp40",
+      "label": "Calcium-binding protein CBP40",
+      "group": "binding",
+      "plain": "CBP40, also called LAV1-2, forms aggregates in the presence of calcium at sites of damage to the plasmodium. This assembly is the metal-free construct. The calcium-bound structure is also listed.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "CBP40 / LAV1-2",
+          "organism": "Physarum polycephalum",
+          "protein": "P14725"
+        }
+      },
+      "structures": [
+        {"id": "1IJ5", "title": "METAL-FREE STRUCTURE OF MULTIDOMAIN EF-HAND PROTEIN, CBP40, FROM TRUE SLIME MOLD", "method": "X-RAY DIFFRACTION", "resolution_A": 3.0},
+        {"id": "1IJ6", "title": "CA2+-BOUND STRUCTURE OF MULTIDOMAIN EF-HAND PROTEIN, CBP40, FROM TRUE SLIME MOLD", "method": "X-RAY DIFFRACTION", "resolution_A": 3.1}
+      ]
+    },
+    {
+      "id": "haemagglutinin-i",
+      "label": "Haemagglutinin I",
+      "group": "binding",
+      "plain": "A lectin from Physarum. The deposited assembly contains two copies of the same protein chain.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Haemagglutinin I",
+          "organism": "Physarum polycephalum",
+          "protein": "O60949"
+        }
+      },
+      "structures": [
+        {"id": "3A5P", "title": "Crystal structure of hemagglutinin", "method": "X-RAY DIFFRACTION", "resolution_A": 1.82}
+      ]
+    },
+    {
+      "id": "spherulin-3a",
+      "label": "Spherulin-3A",
+      "group": "binding",
+      "plain": "A βγ-crystallin family protein associated with the spherule stage. The surface shows the four-chain assembly assigned to the crystal structure. A solution NMR entry is also listed.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Spherulin-3A",
+          "organism": "Physarum polycephalum",
+          "protein": "P09353"
+        }
+      },
+      "structures": [
+        {"id": "1HDF", "title": "Evolution of the eye lens beta-gamma-crystallin domain fold", "method": "X-RAY DIFFRACTION", "resolution_A": 2.35},
+        {"id": "1AG4", "title": "NMR STRUCTURE OF SPHERULIN 3A (S3A) FROM PHYSARUM POLYCEPHALUM, MINIMIZED AVERAGE STRUCTURE", "method": "SOLUTION NMR"}
+      ]
+    },
+    {
+      "id": "cytochrome-b5-reductase",
+      "label": "NADH–cytochrome b5 reductase",
+      "group": "redox",
+      "plain": "This flavoprotein transfers electrons from NADH to cytochrome b5. The surface includes both protein chains in the deposited dimer.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "NADH–cytochrome b5 reductase",
+          "organism": "Physarum polycephalum",
+          "protein": "Q1HA49"
+        }
+      },
+      "structures": [
+        {"id": "2EIX", "title": "The Structure of Physarum polycephalum cytochrome b5 reductase", "method": "X-RAY DIFFRACTION", "resolution_A": 1.56}
+      ]
+    },
+    {
+      "id": "i-ppoi",
+      "label": "Homing endonuclease I-PpoI",
+      "group": "cleavage",
+      "plain": "This Physarum endonuclease is deposited in several experimental complexes with nucleic acids. The reference assembly shows two protein chains and four DNA strands.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "DNA strand",
+          "organism": "No source organism recorded",
+          "hue": "bioWater"
+        },
+        "2": {
+          "label": "DNA strand",
+          "organism": "No source organism recorded",
+          "hue": "bioWater"
+        },
+        "3": {
+          "label": "I-PpoI endonuclease",
+          "organism": "Physarum polycephalum",
+          "protein": "Q94702",
+          "hue": "bioPump"
+        }
+      },
+      "structures": [
+        {"id": "1A73", "title": "INTRON-ENCODED ENDONUCLEASE I-PPOI COMPLEXED WITH DNA", "method": "X-RAY DIFFRACTION", "resolution_A": 1.8},
+        {"id": "1A74", "title": "I-PPOL HOMING ENDONUCLEASE/DNA COMPLEX", "method": "X-RAY DIFFRACTION", "resolution_A": 2.2},
+        {"id": "1CYQ", "title": "INTRON ENCODED HOMING ENDONUCLEASE I-PPOI (H98A)/DNA HOMING SITE COMPLEX", "method": "X-RAY DIFFRACTION", "resolution_A": 1.93, "partner_organisms": [null]},
+        {"id": "1CZ0", "title": "INTRON ENCODED HOMING ENDONUCLEASE I-PPOI/DNA COMPLEX LACKING CATALYTIC METAL ION", "method": "X-RAY DIFFRACTION", "resolution_A": 2.1, "partner_organisms": [null]},
+        {"id": "1EVW", "title": "L116A MUTANT OF THE HOMING ENDONUCLEASE I-PPOI COMPLEXED TO HOMING SITE DNA.", "method": "X-RAY DIFFRACTION", "resolution_A": 3.1, "partner_organisms": [null]},
+        {"id": "1EVX", "title": "APO CRYSTAL STRUCTURE OF THE HOMING ENDONUCLEASE, I-PPOI", "method": "X-RAY DIFFRACTION", "resolution_A": 2.0},
+        {"id": "1IPP", "title": "HOMING ENDONUCLEASE/DNA COMPLEX", "method": "X-RAY DIFFRACTION", "resolution_A": 2.2},
+        {"id": "2O6M", "title": "H98Q mutant of the homing endonuclease I-PPOI complexed with DNA", "method": "X-RAY DIFFRACTION", "resolution_A": 2.3},
+        {"id": "8VMO", "title": "Homing endonuclease I-PpoI-DNA complex:ground state at pH7.0 (K+ MES) with Na+", "method": "X-RAY DIFFRACTION", "resolution_A": 1.68, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMP", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH7.0 (K+ MES) with 500 uM Mg2+ for 10s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.45, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMQ", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH7.0 (K+ MES) with 500 uM Mg2+ for 20s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.48, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMR", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH7.0 (K+ MES) with 500 uM Mg2+ for 40s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.5, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMS", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH7.0 (K+ MES) with 500 uM Mg2+ for 80s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.42, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMT", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH7.0 (K+ MES) with 500 uM Mg2+ for 160s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.48, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMU", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH7.0 (K+ MES) with 500 uM Mg2+ for 320s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.52, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMV", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH7.0 (K+ MES) with 500 uM Mg2+ for 600s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.59, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMW", "title": "Homing endonuclease I-PpoI-DNA complex:ground state at pH6.0 (K+ MES) with Na+", "method": "X-RAY DIFFRACTION", "resolution_A": 1.6, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMX", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mg2+ for 10s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.45, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMY", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mg2+ for 20s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.53, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VMZ", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mg2+ for 40s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.57, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN0", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mg2+ for 80s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.6, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN1", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mg2+ for 160s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.79, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN2", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mg2+ for 320s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.63, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN3", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mg2+ for 600s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.63, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN4", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mg2+ for 1200s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.75, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN5", "title": "Homing endonuclease I-PpoI-DNA complex:ground state at pH8.0 (Tris) with Na+", "method": "X-RAY DIFFRACTION", "resolution_A": 1.65, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN6", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH8.0 (Tris) with 500 uM Mg2+ for 10s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.54, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN7", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH8.0 (Tris) with 500 uM Mg2+ for 20s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.67, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN8", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH8.0 (Tris) with 500 uM Mg2+ for 40s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.6, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VN9", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH8.0 (Tris) with 500 uM Mg2+ for 80s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.69, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNA", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH8.0 (Tris) with 500 uM Mg2+ for 160s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.54, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNB", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH8.0 (Tris) with 500 uM Mg2+ for 240s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.72, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNC", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH8.0 (Tris) with 500 uM Mg2+ for 320s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.62, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VND", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH8.0 (Tris) with 500 uM Mg2+ for 600s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.6, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNE", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 10s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.57, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNF", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 20s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.5, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNG", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 40s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.6, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNH", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 80s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.76, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNJ", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 120s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.61, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNK", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 160s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.61, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNL", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 240s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.64, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNM", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 320s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.59, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNN", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 480s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.79, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNO", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mn2+ for 600s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.7, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNP", "title": "Homing endonuclease I-PpoI-DNA complex at pH6.0 (K+ MES) with 0.2 M sodium malonate", "method": "X-RAY DIFFRACTION", "resolution_A": 1.79, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNQ", "title": "Homing endonuclease H98A I-PpoI-DNA complex at pH6.0 (K+ MES) with 1 mM Mn2+ for 1800s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.93, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNR", "title": "Homing endonuclease H98A I-PpoI-DNA complex at pH6.0 (K+ MES) with 1 mM Mn2+ for 600s and then 100 mM imidazole for 15 hrs", "method": "X-RAY DIFFRACTION", "resolution_A": 1.98, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNS", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 200 mM Mn2+ for 600s", "method": "X-RAY DIFFRACTION", "resolution_A": 2.11, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNT", "title": "Homing endonuclease I-PpoI-DNA complex:reaction at pH6.0 (K+ MES) with 500 uM Mg2+ for 1800s", "method": "X-RAY DIFFRACTION", "resolution_A": 1.62, "partner_organisms": ["synthetic construct"]},
+        {"id": "8VNU", "title": "Homing endonuclease H98A I-PpoI-DNA complex at pH6.0 (K+ MES) with 70 mM Tl+ for 1800s", "method": "X-RAY DIFFRACTION", "resolution_A": 2.2, "partner_organisms": ["synthetic construct"]}
+      ]
+    }
+  ]
+}

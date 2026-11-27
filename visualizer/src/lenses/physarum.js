@@ -285,7 +285,10 @@ export class PhysarumLens {
     const [label,plain] = detail[key];
     return {id,label,plain,kind:"illustrated anatomy",eyebrow:"Physarum · 3D illustration",
       doors:key==="veins" ? [{lens:"engine",select:this.entry.view.engine_part,label:"Open the Engine catalogue entry"}] :
-        key==="wall" ? [{lens:"proteins",show:"own",find:"P02576",label:"Look up plasmodial actin"}] : []};
+        key==="wall" ? [
+          {lens:"machines",select:"machine:myosin-ii-regulatory-domain",label:"Inspect the myosin II regulatory domain"},
+          {lens:"proteins",show:"own",find:"P02576",label:"Look up plasmodial actin"},
+        ] : []};
   }
   chrome() {
     const show = (lens, detail) => emit(this.stage.canvas,"cells-door",{lens,...detail});
@@ -298,6 +301,7 @@ export class PhysarumLens {
         own:()=>[h("div",{class:"physarum-links"},
           this.level==="vein" ? button("Reverse arrows",()=>this.reverse(),"reverse") : null,
           button("Physarum proteins",()=>show("proteins",{show:"own"}),"proteins"),
+          button("Molecular machines",()=>show("machines",{}),"machines"),
           button("Engine catalogue",()=>show("engine",{select:this.entry.view.engine_part}),"engine"))],
         sources:this.entry.modelled.record},
       legend:false,

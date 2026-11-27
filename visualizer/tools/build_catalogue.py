@@ -100,12 +100,12 @@ def measured_from_part(part, size, species, species_file, where, cite):
     }
 
 
-def measured_from_file(overlay, size, where, inputs, own_source, gathered=None):
+def measured_from_file(spec, where, inputs, own_source, gathered=None):
     """A machine's measure from the tool's own output that the overlay names (tools/measure_particle.py, run by the viewer):
     the whole, its named parts and, in the machine mode, each chain, all in the measure's own frame. With the machine's
     dossier (`gathered`): a part that names its genes carries their proteins, and where the measured entry is the dossier's
-    own, each chain carries the protein its entity is, by the dossier's reading of the entry (never by a name)."""
-    spec = overlay["measures"][size["measure"]]
+    own, each chain carries the protein its entity is, by the dossier's reading of the entry (never by a name).
+    A structure bench can give the deposited entity's own label, source organism and protein directly."""
     path = ROOT / spec["file"]
     record = read(path)
     inputs.add(rel(path))
@@ -124,6 +124,14 @@ def measured_from_file(overlay, size, where, inputs, own_source, gathered=None):
         return value if isinstance(value, str) else value["label"]
     parts = [{**part_of(name, label_of(name), named[name]), **({"hue": labels[name]["hue"]} if isinstance(labels[name], dict) and labels[name].get("hue") else {})} for name in labels]
     chains = [{"id": f"chain-{body['chain']}", "label": f"{body['description']}, chain {body['chain']}", "entity": body["entity"], "across_nm": body["across_nm"], "centre_nm": body["centre_nm"], "axes": body["axes"]} for body in first.get("chains") or []] if spec.get("chains") else []
+    if spec.get("entities"):
+        annotations = spec["entities"]
+        if set(annotations) != {chain["entity"] for chain in chains}:
+            raise Breach(f"{where}: the structure's annotations must name every measured polymer entity")
+        for chain in chains:
+            annotation = annotations[chain["entity"]]
+            chain["label"] = f"{annotation['label']}, {chain['id'].replace('-', ' ', 1)}"
+            chain.update({key: annotation[key] for key in ("organism", "protein", "in_atlas", "hue") if key in annotation})
     if gathered:
         rows = [dict(zip(gathered["proteins"]["columns"], row)) for row in gathered["proteins"]["rows"]]
         by_gene = {}
@@ -360,6 +368,78 @@ def shape_of(size, species, kind, where, inputs):
     return None
 
 
+def structure_bench(species, path, group_ids, kinds, sources, inputs):
+    """Build an experimental-structure bench for a model system without a Cell anatomy file."""
+    data = read(path)
+    if data["format"] != "cells.visualizer.structure_bench@1":
+        raise Breach(f"{rel(path)} is not a structure bench")
+    inputs.add(rel(path))
+    shelf_path = ROOT / "data" / "proteins" / species / "shelves.json"
+    atlas = set()
+    if shelf_path.exists():
+        shelf = read(shelf_path)
+        column = shelf["columns"].index("id")
+        atlas = {row[column] for row in shelf["proteins"]}
+        inputs.add(rel(shelf_path))
+    entries, by_protein, seen = [], {}, set()
+    organism = data["organism"]
+    for item in data["items"]:
+        kind = item["id"]
+        where = f"{species}, {kind}"
+        if kind in kinds or item["group"] not in group_ids:
+            raise Breach(f"{where}: the kind must be unique and name a group of the catalogue")
+        kinds[kind] = {**{key: item[key] for key in ("id", "label", "group", "plain")}, "records": []}
+        structures = item.get("structures") or []
+        if not structures:
+            raise Breach(f"{where}: no experimental structures to display")
+        representative = structures[0]
+        for row in structures:
+            if not re.fullmatch(r"[0-9][A-Z0-9]{3}", row["id"]) or row["id"] in seen:
+                raise Breach(f"{where}: invalid or repeated PDB ID {row['id']}")
+            seen.add(row["id"])
+        pdb = representative["id"]
+        source = f"pdb:{pdb}"
+        sources[source] = {
+            "text": f"Protein Data Bank entry {pdb}: {representative['title']}",
+            "doi": f"10.2210/pdb{pdb}/pdb",
+            "url": f"https://www.rcsb.org/structure/{pdb}",
+            "licence": "CC0 1.0",
+            "class": "permissive",
+            "accessed": data["searched"],
+        }
+        entities = {}
+        for ident, annotation in item["entities"].items():
+            accession = annotation.get("protein")
+            in_atlas = annotation["organism"] == organism and accession in atlas
+            entities[ident] = {**annotation, **({"in_atlas": True} if in_atlas else {})}
+            if in_atlas:
+                link = [kind, "deposited chain"]
+                machines = by_protein.setdefault(accession, [])
+                if link not in machines:
+                    machines.append(link)
+        spec = {
+            "file": f"data/catalogue/measures/{species}.{kind}.json",
+            "entry": f"{pdb}-assembly{item['assembly']}",
+            "of": " and ".join([organism, *representative.get("partner_organisms", [])]),
+            "outline": "whole",
+            "chains": True,
+            "entities": entities,
+            "sources": [source],
+        }
+        size = measured_from_file(spec, where, inputs, lambda key: key)
+        surface = shape_of(size, species, kind, where, inputs)
+        if not surface:
+            raise Breach(f"{where}: the representative needs a published surface")
+        size["surface"] = surface
+        entries.append({
+            "id": kind, "species": species, "label": item["label"],
+            "named": {"text": f"Protein Data Bank entry {pdb}", "by": "experimental structure", "sources": [source]},
+            "size": size,
+            "structures": structures,
+        })
+    return entries, by_protein, {"label": data["label"], "organism": organism, "structures": len(seen), "searched": data["searched"]}
+
+
 def build():
     overlay_path = ROOT / "data" / "catalogue" / "overlay.json"
     overlay = read(overlay_path)
@@ -407,6 +487,7 @@ def build():
     organelles = []
     by_protein = {}
     none_found = {}
+    structure_benches = {}
     inputs = {rel(overlay_path), *([rel(gather_path)] if gather_path.exists() else []), *(f"data/catalogue/dossiers/{species}.json" for species in dossiers)}
 
     def gathered_source(species, key):
@@ -537,9 +618,9 @@ def build():
                 if part is not None:
                     entry["size"] = measured_from_part(part, size, species, species_file, where, cite)
                 elif size.get("measure"):
-                    entry["size"] = measured_from_file(overlay, size, where, inputs, own_source)
+                    entry["size"] = measured_from_file(overlay["measures"][size["measure"]], where, inputs, own_source)
             elif isinstance(size, dict) and "measure" in size:
-                entry["size"] = measured_from_file(overlay, size, where, inputs, own_source, machine)
+                entry["size"] = measured_from_file(overlay["measures"][size["measure"]], where, inputs, own_source, machine)
             elif isinstance(size, dict) and "fact" in size:
                 found = fact(species_file, size["fact"], where)
                 numbers = [str(n) for n in size["long_nm"]]
@@ -580,6 +661,11 @@ def build():
                 none_found.setdefault(species, []).append({"id": kind["id"], "label": entry["label"], "group": kind["group"], "reference": route["reference"], "looked_for": entry["gathered"]["looked_for"], "text": route["text"], "sources": entry["named"]["sources"]})
                 continue
             entries.append(entry)
+    for species, file in (overlay.get("structure_benches") or {}).items():
+        if species in overlay["species"]:
+            raise Breach(f"{species}: two ways to build the same bench")
+        added, by_protein[species], structure_benches[species] = structure_bench(species, ROOT / file, groups, kinds, sources, inputs)
+        entries.extend(added)
     for kind in kinds.values():
         if not kind.get("plain"):
             raise Breach(f"the kind {kind['id']} has no plain line")
@@ -594,7 +680,7 @@ def build():
             for finding, key in by_finding.items():
                 if finding not in ("found", "different family"):
                     raise Breach(f"unit_sizes: {unit}: {finding!r} is no finding of an atlas")
-                size = measured_from_file(overlay, {"measure": key}, f"unit_sizes {unit}", inputs, own_source)
+                size = measured_from_file(overlay["measures"][key], f"unit_sizes {unit}", inputs, own_source)
                 # A unit's shape, where one is published for its measure (schema/MACHINE_SHAPES.md: a unit by its page id).
                 shape = shape_of(size, "unit", unit, f"unit_sizes {unit}", inputs)
                 if shape:
@@ -617,6 +703,7 @@ def build():
         "organelles": organelles,
         "by_protein": by_protein,
         "none_found": none_found,
+        "structure_benches": structure_benches,
         **({"unit_sizes": unit_sizes} if unit_sizes else {}),
         "sources": dict(sorted(sources.items())),
     }
@@ -649,9 +736,11 @@ def split(whole):
     having = {}
     for entry in whole["entries"] + (whole.get("organelles") or []):
         having.setdefault(entry["id"], []).append(entry["species"])
-    core = {key: value for key, value in whole.items() if key not in ("entries", "organelles", "by_protein", "none_found")}
+    core = {key: value for key, value in whole.items() if key not in ("entries", "organelles", "by_protein", "none_found", "structure_benches")}
     core["kinds"] = [{**kind, "species": having.get(kind["id"], [])} for kind in whole["kinds"]]
-    core["benches"] = {name: {"file": f"catalogue/{name}.json", "machines": len(benches[name]["entries"]), **({"organelles": len(benches[name]["organelles"])} if benches[name].get("organelles") else {})} for name in species}
+    core["benches"] = {name: {"file": f"catalogue/{name}.json", "machines": len(benches[name]["entries"]),
+                              **({"organelles": len(benches[name]["organelles"])} if benches[name].get("organelles") else {}),
+                              **whole["structure_benches"].get(name, {})} for name in species}
     return core, benches
 
 

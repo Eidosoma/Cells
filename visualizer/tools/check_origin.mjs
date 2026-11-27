@@ -12,7 +12,7 @@
 //            a pair); a real press on a lipid's head chooses its type, and ] steps a fission. The
 //            Laws library and back: the view plays again as it was, and nothing of it stays on the
 //            library. The Cell view opened after it is as the Cell view opened alone.
-//   physarum  the menu, 3D network and cutaway, and the linked Protein and Engine catalogues.
+//   physarum  the menu, 3D network and cutaway, and the linked Protein, Machines and Engine catalogues.
 //   vesicle  the saved vesicle life, divided daughters, threshold crossing and released state, bilayer and molecular reference.
 //   phone    the same at a phone's width: the first tab's short name keeps the bar to one row, the
 //            card folds to one line that names the model system, apart from the rail's button, and
@@ -309,6 +309,17 @@ try {
     check("Engine links back to the 3D model menu entry",await until(`${L}?.id==="physarum" && ${V}.state.model==="physarum"`,50));
     await open("entry=physarum&scale=vein&still=1",false);
     check("a shared link opens the cutaway",await until(`${L}?.id==="physarum" && ${L}.level==="vein"`,50));
+    if (PHONE) await openCard();
+    await press('[data-physarum="machines"]');
+    check("the Physarum menu opens its own nine-entry Machines bench", await until(`${L}?.species==="physarum" && ${L}.counts.machines===9`,65));
+    await shot(NAME+"-machines");
+    await open("entry=physarum&lens=machines&select=machine:actin-fragmin-complex&still=1",false);
+    const complex = `${L}.built?.get("machine:actin-fragmin-complex")`;
+    check("the shared link draws the two-chain experimental surface", await until(`${complex}?.surface?.surfaces.length===2`,65));
+    check("the card identifies the two source organisms and its PDB entry", /Gallus gallus/.test((await state()).panel) && /Physarum polycephalum/.test((await state()).panel) && /7W51/.test((await state()).panel));
+    await shot(NAME+"-actin-fragmin");
+    await evaluate(`${V}.setEntry(${V}.state.species)`);
+    check("leaving Physarum restores the previously selected organism's bench", await until(`${V}.state.model===null && ${L}.species===${V}.state.species`,40));
   } else if (CASE === "vesicle") {
     await open("entry=origin-vesicles&still=1", false);
     const ready = await until(`${L}?.id === "vesicle"`, 90);

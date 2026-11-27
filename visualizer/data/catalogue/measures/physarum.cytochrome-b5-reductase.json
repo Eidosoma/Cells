@@ -1,0 +1,144 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "2EIX-assembly1": {
+   "entry": "2EIX",
+   "assembly": "1",
+   "title": "The Structure of Physarum polycephalum cytochrome b5 reductase",
+   "method": "X-RAY DIFFRACTION",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 3900,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     8.5,
+     5.9,
+     4.2
+    ],
+    "farthest_nm": [
+     8.2,
+     5.2,
+     4.7
+    ],
+    "middle_98_percent_nm": [
+     7.0,
+     4.6,
+     3.7
+    ],
+    "radius_of_gyration_nm": 2.49
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "NADH-cytochrome b5 reductase",
+     "atoms": 1950,
+     "centre_nm": [
+      1.65,
+      -0.24,
+      0.0
+     ],
+     "axes": [
+      [
+       0.3882,
+       0.9215,
+       -0.0141
+      ],
+      [
+       0.4289,
+       -0.1671,
+       0.8878
+      ],
+      [
+       0.8157,
+       -0.3507,
+       -0.4601
+      ]
+     ],
+     "across_nm": [
+      6.0,
+      4.3,
+      3.6
+     ],
+     "farthest_nm": [
+      5.5,
+      4.8,
+      3.9
+     ],
+     "radius_of_gyration_nm": 1.85
+    },
+    {
+     "chain": "B",
+     "entity": "1",
+     "description": "NADH-cytochrome b5 reductase",
+     "atoms": 1950,
+     "centre_nm": [
+      -1.65,
+      0.24,
+      0.0
+     ],
+     "axes": [
+      [
+       0.382,
+       0.924,
+       0.0173
+      ],
+      [
+       -0.4089,
+       0.1522,
+       0.8998
+      ],
+      [
+       0.8288,
+       -0.3508,
+       0.4359
+      ]
+     ],
+     "across_nm": [
+      6.0,
+      4.3,
+      3.6
+     ],
+     "farthest_nm": [
+      5.4,
+      4.9,
+      3.9
+     ],
+     "radius_of_gyration_nm": 1.84
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "NADH-cytochrome b5 reductase",
+     "copies": 2,
+     "sequence_length": 243,
+     "residues_modelled_per_copy": 243.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 8.02
+    }
+   ]
+  }
+ }
+}

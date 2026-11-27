@@ -1,0 +1,318 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "1A73-assembly1": {
+   "entry": "1A73",
+   "assembly": "1",
+   "title": "INTRON-ENCODED ENDONUCLEASE I-PPOI COMPLEXED WITH DNA",
+   "method": "X-RAY DIFFRACTION",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 3346,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     8.9,
+     5.4,
+     3.4
+    ],
+    "farthest_nm": [
+     7.3,
+     5.7,
+     3.8
+    ],
+    "middle_98_percent_nm": [
+     6.7,
+     5.0,
+     3.3
+    ],
+    "radius_of_gyration_nm": 2.45
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "C",
+     "entity": "1",
+     "description": "DNA (5'-D(*TP*TP*GP*AP*CP*TP*CP*TP*CP*TP*TP*AP*A)-3')",
+     "atoms": 259,
+     "centre_nm": [
+      -1.32,
+      1.19,
+      -0.1
+     ],
+     "axes": [
+      [
+       0.8888,
+       -0.3673,
+       0.2741
+      ],
+      [
+       -0.4516,
+       -0.5997,
+       0.6606
+      ],
+      [
+       -0.0783,
+       -0.7109,
+       -0.6989
+      ]
+     ],
+     "across_nm": [
+      6.1,
+      2.2,
+      1.7
+     ],
+     "farthest_nm": [
+      4.5,
+      2.3,
+      1.7
+     ],
+     "radius_of_gyration_nm": 1.5
+    },
+    {
+     "chain": "D",
+     "entity": "2",
+     "description": "DNA (5'-D(P*GP*AP*GP*AP*GP*TP*CP*A)-3')",
+     "atoms": 169,
+     "centre_nm": [
+      1.7,
+      1.56,
+      0.0
+     ],
+     "axes": [
+      [
+       0.5291,
+       0.7928,
+       0.3025
+      ],
+      [
+       0.3364,
+       -0.5233,
+       0.7829
+      ],
+      [
+       0.779,
+       -0.3125,
+       -0.5436
+      ]
+     ],
+     "across_nm": [
+      4.4,
+      1.6,
+      1.1
+     ],
+     "farthest_nm": [
+      3.3,
+      1.7,
+      1.2
+     ],
+     "radius_of_gyration_nm": 1.07
+    },
+    {
+     "chain": "E",
+     "entity": "1",
+     "description": "DNA (5'-D(*TP*TP*GP*AP*CP*TP*CP*TP*CP*TP*TP*AP*A)-3')",
+     "atoms": 259,
+     "centre_nm": [
+      1.32,
+      1.2,
+      0.12
+     ],
+     "axes": [
+      [
+       0.8953,
+       0.368,
+       0.2511
+      ],
+      [
+       -0.4355,
+       0.6044,
+       0.6671
+      ],
+      [
+       0.0937,
+       -0.7066,
+       0.7013
+      ]
+     ],
+     "across_nm": [
+      6.2,
+      2.2,
+      1.6
+     ],
+     "farthest_nm": [
+      4.6,
+      2.3,
+      1.7
+     ],
+     "radius_of_gyration_nm": 1.52
+    },
+    {
+     "chain": "F",
+     "entity": "2",
+     "description": "DNA (5'-D(P*GP*AP*GP*AP*GP*TP*CP*A)-3')",
+     "atoms": 169,
+     "centre_nm": [
+      -1.75,
+      1.57,
+      0.04
+     ],
+     "axes": [
+      [
+       -0.5414,
+       0.7952,
+       -0.273
+      ],
+      [
+       0.2909,
+       0.4818,
+       0.8266
+      ],
+      [
+       0.7888,
+       0.3681,
+       -0.4922
+      ]
+     ],
+     "across_nm": [
+      4.5,
+      1.6,
+      1.1
+     ],
+     "farthest_nm": [
+      3.4,
+      1.7,
+      1.1
+     ],
+     "radius_of_gyration_nm": 1.09
+    },
+    {
+     "chain": "A",
+     "entity": "3",
+     "description": "INTRON 3 (I-PPO) ENCODED ENDONUCLEASE",
+     "atoms": 1245,
+     "centre_nm": [
+      -1.4,
+      -0.47,
+      -0.06
+     ],
+     "axes": [
+      [
+       0.9011,
+       -0.4064,
+       -0.1512
+      ],
+      [
+       0.3737,
+       0.5512,
+       0.746
+      ],
+      [
+       -0.2198,
+       -0.7287,
+       0.6485
+      ]
+     ],
+     "across_nm": [
+      7.2,
+      3.9,
+      3.1
+     ],
+     "farthest_nm": [
+      7.8,
+      4.0,
+      3.3
+     ],
+     "radius_of_gyration_nm": 1.97
+    },
+    {
+     "chain": "B",
+     "entity": "3",
+     "description": "INTRON 3 (I-PPO) ENCODED ENDONUCLEASE",
+     "atoms": 1245,
+     "centre_nm": [
+      1.41,
+      -0.46,
+      0.05
+     ],
+     "axes": [
+      [
+       0.8998,
+       0.4091,
+       -0.1517
+      ],
+      [
+       0.3744,
+       -0.5452,
+       0.7501
+      ],
+      [
+       0.2242,
+       -0.7317,
+       -0.6437
+      ]
+     ],
+     "across_nm": [
+      7.2,
+      4.0,
+      3.1
+     ],
+     "farthest_nm": [
+      7.8,
+      4.0,
+      3.2
+     ],
+     "radius_of_gyration_nm": 1.97
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "DNA (5'-D(*TP*TP*GP*AP*CP*TP*CP*TP*CP*TP*TP*AP*A)-3')",
+     "copies": 2,
+     "sequence_length": 13,
+     "residues_modelled_per_copy": 13.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 19.92
+    },
+    {
+     "entity": "2",
+     "description": "DNA (5'-D(P*GP*AP*GP*AP*GP*TP*CP*A)-3')",
+     "copies": 2,
+     "sequence_length": 8,
+     "residues_modelled_per_copy": 8.0,
+     "modelled_share": 1.0,
+     "atoms_per_modelled_residue": 21.12
+    },
+    {
+     "entity": "3",
+     "description": "INTRON 3 (I-PPO) ENCODED ENDONUCLEASE",
+     "copies": 2,
+     "sequence_length": 163,
+     "residues_modelled_per_copy": 162.0,
+     "modelled_share": 0.994,
+     "atoms_per_modelled_residue": 7.69
+    }
+   ]
+  }
+ }
+}

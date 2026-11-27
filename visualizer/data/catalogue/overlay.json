@@ -13,10 +13,14 @@
     { "id": "folding", "label": "Folding proteins", "plain": "Cages and rings that give a new protein a closed space to fold in, using ATP." },
     { "id": "breaking", "label": "Breaking proteins down", "plain": "Proteases that unfold proteins and cut them, using ATP." },
     { "id": "moving", "label": "Moving, sensing and attaching", "plain": "Machines that move the cell, steer it, or hold it to a surface." },
+    { "id": "binding", "label": "Binding and stress response", "plain": "Proteins that bind ions or sugars, or are associated with a stress response." },
+    { "id": "redox", "label": "Electron transfer", "plain": "Proteins that pass electrons between molecules." },
+    { "id": "cleavage", "label": "Cutting DNA", "plain": "Endonucleases and their deposited complexes." },
     { "id": "traffic", "label": "Carrying cargo", "plain": "Motors that walk along the cell's filaments, carrying cargo from place to place." },
     { "id": "unknown", "label": "Particles whose job is not known", "plain": "Large particles whose function has not been found.", "stands": "behind", "stands_why": "Decided 19 November 2026: this group's tray stands at the back of the bench, behind the tray of the law inventory's units. Its one particle, the vault, is the largest shape on a bench; in the row before that tray it stood in front of the units' small shapes at the opening view and hid them." },
     { "id": "organelles", "label": "Organelles", "plain": "The cell's own compartments, each far larger than any machine: they stand on a shelf behind the bench, at the bench's one scale.", "stands": "shelf", "stands_why": "Asked for on 20 November 2026: the organelles stand in the Machines view as the machines do, on a shelf above the bench, drawn with the Cell view's own models at the bench's one scale, and travelled to. They are no machines: in no tray and no count of machines." }
   ],
+  "structure_benches": {"physarum": "data/catalogue/structures/physarum.json"},
   "records": {
     "fr13": {
       "label": "FR-13, Molecular machines, individually and in aggregate",

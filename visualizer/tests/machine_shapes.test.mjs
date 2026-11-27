@@ -18,7 +18,7 @@ const TOOL = path.join(ROOT, "tools", "shape_particle.py");
 const SHAPES = path.join(ROOT, "data", "catalogue", "shapes");
 const VOLUME = { protein: 0.135, nucleic: 0.32 };
 // Each shape file's call (schema/MACHINE_SHAPES.md): its entry as saved under the datasets' folder, the measure whose
-// parts, frame and left-out entities it takes, the width where it is coarser than the setting, and any other option.
+// parts, frame and left-out entities it takes, the width where it differs from the standard setting, and any other option.
 const CALLS = {
   "ecoli.ribosome.json": ["ecoli/wwpdb-ribosome/7K00.cif.gz", "data/measures/ecoli.ribosome.json"],
   "ecoli.atp-synthase.json": ["ecoli/wwpdb-atp-synthase/6OQR.cif.gz", "data/catalogue/measures/ecoli.atp-synthase.json"],
@@ -42,6 +42,15 @@ const CALLS = {
   "animals.kv1-2.json": ["human/wwpdb-kv-channel/3LUT-assembly1.cif.gz", "data/catalogue/measures/animals.kv1-2.json"],
   "animals.connexin-channel.json": ["human/wwpdb-gap-junction-cx43/7Z22.cif.gz", "data/catalogue/measures/animals.connexin-channel.json"],
   "animals.innexin-channel.json": ["planarian/wwpdb-innexin-channel/5H1R.cif.gz", "data/catalogue/measures/animals.innexin-channel.json"],
+  "physarum.actin-fragmin-complex.json": ["visualizer/physarum-pdb/7W51-assembly1.cif.gz", "data/catalogue/measures/physarum.actin-fragmin-complex.json", 0.48],
+  "physarum.actin-fragmin-kinase.json": ["visualizer/physarum-pdb/1CJA-assembly1.cif.gz", "data/catalogue/measures/physarum.actin-fragmin-kinase.json", 0.48],
+  "physarum.cbp40.json": ["visualizer/physarum-pdb/1IJ5-assembly1.cif.gz", "data/catalogue/measures/physarum.cbp40.json", 0.48],
+  "physarum.cytochrome-b5-reductase.json": ["visualizer/physarum-pdb/2EIX-assembly1.cif.gz", "data/catalogue/measures/physarum.cytochrome-b5-reductase.json", 0.44],
+  "physarum.fragmin-p.json": ["visualizer/physarum-pdb/6LJC-assembly1.cif.gz", "data/catalogue/measures/physarum.fragmin-p.json", 0.40],
+  "physarum.haemagglutinin-i.json": ["visualizer/physarum-pdb/3A5P-assembly1.cif.gz", "data/catalogue/measures/physarum.haemagglutinin-i.json", 0.32],
+  "physarum.i-ppoi.json": ["visualizer/physarum-pdb/1A73-assembly1.cif.gz", "data/catalogue/measures/physarum.i-ppoi.json", 0.44],
+  "physarum.myosin-ii-regulatory-domain.json": ["visualizer/physarum-pdb/2BL0-assembly1.cif.gz", "data/catalogue/measures/physarum.myosin-ii-regulatory-domain.json", 0.40],
+  "physarum.spherulin-3a.json": ["visualizer/physarum-pdb/1HDF-assembly1.cif.gz", "data/catalogue/measures/physarum.spherulin-3a.json", 0.32],
 };
 const run = (...args) => spawnSync("python3", ["-I", TOOL, ...args], { encoding: "utf8" });
 
@@ -282,10 +291,14 @@ test("every shape file holds to the contract and sits where its measure's bodies
     const drawnToned = [...shape.meshes.filter((mesh) => !toned.has(mesh.id)), ...tones].reduce((sum, mesh) => sum + mesh.triangles.length / 3, 0);
     assert.ok(statSync(file).size <= 250000, `${name}: ${statSync(file).size} bytes`);
     assert.ok(shape.counts.triangles <= 12000 && drawnToned <= 12000, `${name}: ${shape.counts.triangles} and ${drawnToned} triangles drawn`);
-    // At the setting the user chose, or coarser where the setting would break the budget, as the file says.
+    // A change from the standard setting is stated explicitly.
     const setting = shape.parameters.by === "parts" ? 1.6 : 1.0;
     assert.equal(shape.parameters.width_nm, (CALLS[name][2] || setting), `${name}: its width`);
-    if (shape.parameters.width_nm !== setting) assert.ok(shape.parameters.setting_width_nm === setting && shape.definition.includes(`coarser than the setting's ${setting} nm, to hold the budget`), `${name}: says it is coarser`);
+    if (shape.parameters.width_nm !== setting) {
+      const description = shape.parameters.width_nm < setting ? `finer than the standard ${setting} nm setting` : `coarser than the setting's ${setting} nm, to hold the budget`;
+      assert.equal(shape.parameters.setting_width_nm, setting);
+      assert.ok(shape.definition.includes(description), `${name}: states the change of width`);
+    }
     assert.equal(shape.format, "cells.visualizer.machine-shape@1");
     assert.equal(shape.tool, "tools/shape_particle.py");
     assert.equal(shape.entry, measured.entry, name);

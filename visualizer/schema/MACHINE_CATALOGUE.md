@@ -23,6 +23,7 @@ same in both views (`machine:<id>`).
 | `data/catalogue/measures/*.json` | `tools/measure_particle.py`, run by the viewer | The tool's own output for an entry, as written |
 | `data/catalogue/overlay.json` | Hand | The groups; the units of the law inventory left out, with why; the measures it reads and the entries they rest on; the kinds of machine (id, label, group, a plain line, the record lines of what Cells models of it); for each species, the kinds its records name and where each is named, counted and sized |
 | `data/catalogue/gather.json`, `data/catalogue/dossiers/<species>.json` | Hand, and `tools/gather_machines.py` (`schema/MACHINE_DOSSIERS.md`) | The kinds looked for, and for each species with a dossier file its machines, their proteins by tier, counts per cell from open papers, the entry the gathering would measure each from, and `by_protein`; read here, never written |
+| `data/catalogue/structures/<species>.json` | Curated RCSB PDB search results | An experimental structure bench linked through `overlay.structure_benches`, with the taxonomy search, related depositions, the reference assembly and source annotations for its polymer entities |
 | `data/catalogue/catalogue.json` | `tools/build_catalogue.py` (generated: do not edit) | The catalogue's core, which the page carries: the groups, the kinds (each with the species that have it), the records, the sources, the units' sizes, and `benches`, an index of the species' benches |
 | `data/catalogue/benches/<species>.json` | `tools/build_catalogue.py` (generated: do not edit) | One species' bench (`cells.visualizer.machine_bench@1`): an entry for each of its machines, with what its records give and their sources; `by_protein`, its proteins' machines; and `none_found`, the machines its dossier looked for by family and found no candidate for (each with its reference, its rows part by part, the dossier's sentence and its sources); published beside the page at `catalogue/<species>.json` |
 
@@ -52,6 +53,12 @@ names gene products). A unit that is no protein assembly (a leak, a permeability
 conductance, or a law that names no protein) is no machine: the overlay's `units_left_out` names
 each with its reason, and the catalogue never holds it. The atlas keeps all its units, and the
 catalogue never says their count.
+
+A model system can supply a `view.machine_bench` in place of the last selected species' bench.
+Each structure bench card describes a representative biological assembly and links its related
+PDB entries. The first record in `structures` provides the measured assembly and its selectable
+surface. Its chains carry the deposited entity's source organism and UniProt accession where
+the archive has them. The Protein atlas cross-links only species-matched accessions held on its shelf.
 
 ## Rules
 
