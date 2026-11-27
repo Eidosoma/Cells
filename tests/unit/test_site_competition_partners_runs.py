@@ -1,10 +1,10 @@
 """FR-45's shared site sets beside the design note's §15 partners, compiled through the runner (D327,
 the lead's ruling 2 of 27 November 2026; invented values only, FR-45's first-run rule).
 
-Seconds and reason (D224): about 47 s on two cores, measured at landing (the passivity row's two runs 27 s,
-the omnibus row 18 s). Each admitted partner is enabled with its check, and these are the checks that need a
-run. test_site_competition_runs.py holds the wash, the run paths and the batch paths; test_site_occupancy.py
-holds the parse rows and every refusal by name.
+Seconds and reason (D224): about 69 s on one core, measured at landing (about 47 s on two). Each admitted
+partner is enabled with its check, and these are the checks that need a run. test_site_competition_runs.py
+holds the wash and the run paths, test_site_competition_batch_runs.py the batch paths, and
+test_site_occupancy.py the parse rows and every refusal by name.
 
 * The omnibus row: turnover (Q2 made in the cell and cleared at the set's node), exchange (Q2 exported
   through the set's patch), D152's reactions (Q1 <-> Q3 at the set's node) and a face at the set's node,

@@ -1,16 +1,17 @@
 """FR-45's shared site sets compiled, through the runner (D327; the design note's §16.2, on invented
 values only, FR-45's first-run rule).
 
-Seconds and reason (D224): about 64 s on two cores, measured at landing (the batch and vector row 31 s,
-the windows 20 s, the run 12 s). It is the only compiled path through the shared-set half-step and its
-bookings; the paths FR-45's runs take (runner.run, windows of one step, a resume) and the batch paths
-(run_batch, run_vector_windowed) are asserted bitwise against each other; and the wash's compiled event
-map is checked alone on a set world.
+Seconds and reason (D224): about 36 s on one core, measured at landing (the run 16 s, the windows 17 s).
+It is the only compiled path through the shared-set half-step and its bookings; the paths FR-45's runs take
+(runner.run, windows of one step, a resume) are asserted bitwise against each other, and the wash's
+compiled event map is checked alone on a set world. The batch paths are test_site_competition_batch_runs.py's,
+split from here to keep each file under the tier cap on one core.
 
-The world: a 0.75 uL node's own sites, a set of 18 fmol shared by Q1, bound at its own equilibrium with Q2
-at its trace, and Q2. At 0.36 s 0.4 of the liquid is washed for a buffer holding Q2 at a chase
-concentration and Q1 at its trace; Q2 then binds and displaces Q1 to the free-site root of the post-wash
-totals. Every row passes the runner's host checks (each ledger, the moiety per set, the dissipation check).
+The world (site_occupancy_fixtures.chase_world): ecs_0's own sites, a set of 18 fmol shared by Q1, bound at
+its own equilibrium with Q2 at its trace, and Q2. At 0.36 s 0.4 of the liquid is washed for a buffer
+holding Q2 at a chase concentration and Q1 at its trace; Q2 then binds and displaces Q1 to the free-site
+root of the post-wash totals. Every row passes the runner's host checks (each ledger, the moiety per set,
+the dissipation check).
 """
 
 from decimal import Decimal, getcontext
@@ -21,34 +22,15 @@ import pytest
 
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import parse_spec
-from cells.execution.batch import BatchSpec, WorldSpec, run_batch
 from cells.execution.runner import run
-from cells.execution.vector_windows import run_vector_windowed
 from cells.execution.windows import WindowPolicy, iter_windows
-from cells.operators import site_occupancy as so
 from cells.operators import wash_schedule as wash
 from cells.registry.models import get_model
 from validation.tissue import site_occupancy_fixtures as sfx
-from validation.tissue import wash_schedule_fixtures as wfx
 
 jax.config.update("jax_enable_x64", True)
 
-V, S_FMOL, DT, T_E, END, F = 7.5e5, 18.0, 0.06, 0.36, 18.0, 0.4
-RATES = {"bait": (4e4, 1.7), "chase": (6e4, 0.35)}  # k_on per mM per s, k_off per s.
-THETA = 0.4  # Q1's start, at its own equilibrium with Q2 at its trace.
-CHASE_mM = 1.5e-4
-
-
-def world(chase_mM=CHASE_mM):
-    k1, d1 = RATES["bait"]
-    pops = [sfx.member("bait", ligand="Q1", k_on=k1, k_off=d1, theta0=THETA),
-            sfx.member("chase", ligand="Q2", k_on=RATES["chase"][0], k_off=RATES["chase"][1])]  # fmt: skip
-    copies = S_FMOL * so.SITES_PER_FMOL / 0.5
-    raw = sfx.set_world(pops, [sfx.site_set(node="ecs_0", copies=copies)],
-                        node_mM={"Q1": (d1 / k1) * THETA / (1 - THETA)}, volume=V, dt=DT, end=END,
-                        observation_times=[0.0, T_E, END])  # fmt: skip
-    buffer = {wfx.TRACER: 3e-12, "Q1": sfx.SET_TRACE_mM, "Q2": chase_mM}
-    return wfx.with_wash(raw, ["ecs_0"], [(T_E, "ecs_0", F, buffer)])
+V, T_E, RATES = sfx.CHASE_VOLUME_pL, sfx.CHASE_WASH_S, sfx.CHASE_RATES
 
 
 def _fields(history, k):
@@ -69,7 +51,7 @@ def _root(totals, K, S):
 
 @pytest.fixture(scope="module")
 def ran():
-    spec = parse_spec(world())
+    spec = parse_spec(sfx.chase_world())
     result = run(spec)  # Its host checks run on every accepted row; a failure raises.
     return spec, result
 
@@ -128,49 +110,36 @@ def test_the_compiled_event_map_keeps_every_set_bit_for_bit(ran):
     assert np.asarray(after.wash_collected_fmol)[:, node].sum() > 0
 
 
-def test_windows_of_one_step_and_a_resume_are_the_runs_bits(ran):
-    spec, result = ran
-    names = type(result.history)._fields
+def _one_step_windows(spec, start, stop):
+    """{step: [field rows]} of windows of one step from `start` (a checkpoint, or None for the
+    definition's start) until the window ending at step `stop`, and the checkpoint at step MID."""
     rows, mid = {}, None
-    for window in iter_windows(spec, WindowPolicy(1, "full")):
+    for window in iter_windows(spec, WindowPolicy(1, "full"), start):
         for i in range(len(window.times)):
             rows[window.start_step + i] = [np.asarray(v)[i] for v in window.history]
-        if window.final.step_index == 150:
+        if window.final.step_index == MID:
             mid = window.final
+        if window.final.step_index == STOP:
+            break  # The rest of the run takes the same code path as these steps.
+    return rows, mid
+
+
+MID, STOP = 3, 40  # The wash is at step 6 (0.36 s): both passes cross it.
+
+
+def test_windows_of_one_step_and_a_resume_are_the_runs_bits(ran):
+    """Windows of one step through the wash (steps 0 to 40), and a resume from the checkpoint at
+    step 3 over the same steps, each against runner.run's rows, bit for bit."""
+    spec, result = ran
+    names = type(result.history)._fields
     history = [np.asarray(v) for v in result.history]
+    rows, mid = _one_step_windows(spec, None, STOP)
+    assert min(rows) == 0 and max(rows) == STOP and mid is not None
     for step, fields in rows.items():
         for name, a, b in zip(names, fields, (v[step] for v in history), strict=True):
             assert a.tobytes() == b.tobytes(), (step, name)
-    resumed = {}
-    for window in iter_windows(spec, WindowPolicy(1, "full"), mid):
-        for i in range(len(window.times)):
-            resumed[window.start_step + i] = [np.asarray(v)[i] for v in window.history]
-    assert min(resumed) == 150 and max(resumed) == len(result.times) - 1
+    resumed, _ = _one_step_windows(spec, mid, STOP)
+    assert min(resumed) == MID and max(resumed) == STOP
     for step, fields in resumed.items():
         for name, a, b in zip(names, fields, rows[step], strict=True):
             assert a.tobytes() == b.tobytes(), (step, name)
-
-
-def test_a_two_world_batch_and_vector_windows_are_the_scalar_runs_bits(ran):
-    """The batch paths (D327's ruling 2): the world beside a second world of another chase,
-    through run_batch and run_vector_windowed; the first is the scalar run's bits on every row,
-    the second the same on both paths and its own (its books are the paths' host checks)."""
-    spec, result = ran
-    other = parse_spec(world(chase_mM=2.6e-4))
-    batch = BatchSpec((WorldSpec(1, spec), WorldSpec(2, other)), 2, 2**53 - 1, 2**53 - 1)
-    batched = run_batch(batch)
-    names = type(result.history)._fields
-    for name in names:
-        a, b = (
-            np.asarray(getattr(batched.worlds[1].history, name)),
-            np.asarray(getattr(result.history, name)),
-        )
-        assert a.tobytes() == b.tobytes(), name
-    bound = [np.asarray(batched.worlds[w].final.state.site_bound_increment_fmol) for w in (1, 2)]
-    assert not np.array_equal(*bound)  # Two worlds, not one copied.
-    vector = run_vector_windowed(batch, WindowPolicy(64, "checkpoints"))
-    for w, reference in ((1, result.final), (2, batched.worlds[2].final)):
-        final = vector.worlds[w].final
-        assert final.step_index == reference.step_index
-        for name, a, b in zip(names, final.state, reference.state, strict=True):
-            assert np.asarray(a).tobytes() == np.asarray(b).tobytes(), (w, name)

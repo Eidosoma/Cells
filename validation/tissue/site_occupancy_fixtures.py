@@ -257,3 +257,33 @@ def two_cell_set_world(*, on_slot=False, replaced=True, dt=1e-3, end=0.01, obser
     sets = [site_set(patch="contact_1" if on_slot else "contact_0")]
     species = [ligand(trace_mM=SET_TRACE_mM, species=g) for g in ("Q1", "Q2")]
     return with_site_occupancy(raw, pops, ligands=species, site_sets=sets)
+
+
+# ------------------------------------------------------------------ FR-45's compiled world
+
+CHASE_VOLUME_pL = 7.5e5  # A 0.75 uL node.
+CHASE_SITES_fmol = 18.0
+CHASE_DT, CHASE_WASH_S, CHASE_END_S, CHASE_FRACTION = 0.06, 0.36, 18.0, 0.4
+CHASE_RATES = {"bait": (4e4, 1.7), "chase": (6e4, 0.35)}  # k_on per mM per s, k_off per s.
+CHASE_THETA = 0.4  # Q1's start, at its own equilibrium with Q2 at its trace.
+CHASE_mM = 1.5e-4
+
+
+def chase_world(chase_mM=CHASE_mM):
+    """FR-45's compiled world (tests/unit/test_site_competition_runs.py and
+    test_site_competition_batch_runs.py; invented values): ecs_0's own sites, a set of 18 fmol shared
+    by Q1, bound at its own equilibrium with Q2 at its trace, and Q2. At 0.36 s, 0.4 of the liquid
+    is washed for a buffer holding Q2 at chase_mM and Q1 at its trace; Q2 then binds and displaces
+    Q1 to the free-site root of the post-wash totals."""
+    from cells.operators.site_occupancy import SITES_PER_FMOL
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    (k1, d1), (k2, d2) = CHASE_RATES["bait"], CHASE_RATES["chase"]
+    pops = [member("bait", ligand="Q1", k_on=k1, k_off=d1, theta0=CHASE_THETA),
+            member("chase", ligand="Q2", k_on=k2, k_off=d2)]  # fmt: skip
+    raw = set_world(pops, [site_set(node="ecs_0", copies=CHASE_SITES_fmol * SITES_PER_FMOL / 0.5)],
+                    node_mM={"Q1": (d1 / k1) * CHASE_THETA / (1 - CHASE_THETA)},
+                    volume=CHASE_VOLUME_pL, dt=CHASE_DT, end=CHASE_END_S,
+                    observation_times=[0.0, CHASE_WASH_S, CHASE_END_S])  # fmt: skip
+    buffer = {wfx.TRACER: 3e-12, "Q1": SET_TRACE_mM, "Q2": chase_mM}
+    return wfx.with_wash(raw, ["ecs_0"], [(CHASE_WASH_S, "ecs_0", CHASE_FRACTION, buffer)])

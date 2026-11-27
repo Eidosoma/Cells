@@ -1663,6 +1663,7 @@ the stage condition.
 **Evidence:**
 - `tests/unit/test_site_occupancy.py`: the FR-45 rows;
 - `tests/unit/test_site_competition_runs.py`;
+- `tests/unit/test_site_competition_batch_runs.py`;
 - `tests/unit/test_site_competition_partners_runs.py`;
 - `tests/unit/test_species_regulated_availability.py`: θ on a shared set;
 - D148's first probe: `/mnt/workspaces/Cells/fr45-build-20261127/probe/`.

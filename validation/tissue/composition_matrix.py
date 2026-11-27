@@ -1889,8 +1889,9 @@ RULES = (
         test=TESTS + "test_site_occupancy.py::test_fr45_the_partners_beside_sets_parse",
         tag=REAL,
         why="D327: each combination is enabled with its check (the lead's ruling 2 of 27 November "
-        "2026). The wash's books and event map, the run paths and the batch paths are in "
-        "test_site_competition_runs.py; turnover, exchange, the reactions and a face at a set's "
+        "2026). The wash's books and event map and the run paths are in "
+        "test_site_competition_runs.py, the batch paths in test_site_competition_batch_runs.py "
+        "(run_batch_windowed in the D148 round); turnover, exchange, the reactions and a face at a set's "
         "node writing its ligands, and the bath schedule's and replacement@1's passivity, in "
         "test_site_competition_partners_runs.py; @2's θ on a shared set in "
         "test_species_regulated_availability.py. Every other operator law is refused by name "

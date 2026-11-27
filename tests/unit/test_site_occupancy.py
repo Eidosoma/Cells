@@ -1357,7 +1357,7 @@ def test_fr45_the_wash_leaves_every_set_bit_for_bit():
 )
 def test_fr45_the_partners_beside_sets_parse(partner):
     """D327, the lead's ruling 2: the design note's §15 partners parse beside a site set (their
-    runs are checked in test_site_competition_runs.py); every other operator law is refused by
+    runs are checked in test_site_competition_*runs.py); every other operator law is refused by
     name (the REFUSALS rows)."""
     from validation.tissue import wash_schedule_fixtures as wfx
 
