@@ -1,8 +1,8 @@
 """Predict Kir2.1 spermine block at a second K level in the compiled FR-51 clamp.
 
-Run with the FR-51 engine snapshot on PYTHONPATH. Each lab's first external-K
-curve supplies every fit parameter. The absolute-voltage control and the two
-reversal predictions share those parameters.
+Use the FR-64 engine checkout and its src/ on PYTHONPATH. Each lab's first
+external-K curve supplies every fit parameter. The absolute-voltage control
+and the two reversal predictions share those parameters.
 """
 
 import json
@@ -15,13 +15,13 @@ import jax.numpy as jnp
 import numpy as np
 from scipy.optimize import least_squares
 from scipy.special import expit
-from validation.fr51.engine import raw_world
 
 from cells.definitions.specs import parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.laws.channels import open_channel_block as block
-from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R, reversal_potential
 from cells.registry.models import get_model
+from validation.fr51.engine import raw_world
 
 DATA = Path(__file__).with_name("data") / "kir_spermine_potassium.json"
 
@@ -85,7 +85,7 @@ def clamp_ratios(ci, co, temp, blocker, params, anchor_root, voltage_mV):
     weight, mid1, mid2, z1, z2 = params
     thermal = 1000 * R * temp / F
 
-    def declaration(reference, training_reference):
+    def declaration(training_reference):
         modes = [
             dict(
                 weight=float(w),
@@ -98,15 +98,19 @@ def clamp_ratios(ci, co, temp, blocker, params, anchor_root, voltage_mV):
         return dict(
             law=block.LAW_ID,
             blocker=dict(id="spermine", valence=4, side="inside", concentration_mM=blocker),
-            reference=reference,
             modes=modes,
         )
 
     ch = dict(m["channels"][0], kinetic_law="cells.channel.kir2p1_mh2@1", initial_gate=[0.7, 0.6])
     m["channels"] = [
-        dict(ch, id="blocked", block=declaration({"reversal_of": "K"}, anchor_root)),
+        dict(
+            ch,
+            id="blocked",
+            block=declaration(anchor_root),
+            voltage_shift={"block": {"reversal_of": "K"}},
+        ),
         dict(ch, id="free"),
-        dict(ch, id="voltage", block=declaration(block.MEMBRANE_VOLTAGE, 0.0)),
+        dict(ch, id="voltage", block=declaration(0.0)),
     ]
     raw["experiment"]["channel_controls"] = [
         dict(channel_id=ch["id"], schedule=[dict(time=0, availability=1.0)]) for ch in m["channels"]
@@ -135,7 +139,7 @@ def external(study):
     blocker = study["declared_spermine_mM"]
     thermal = 1000 * R * temp / F
     params = fit_anchor(anchor, thermal)
-    anchor_root = 1000 * block.reversal_potential(ci, anchor["external_K_mM"], 1, temp)
+    anchor_root = 1000 * reversal_potential(ci, anchor["external_K_mM"], 1, temp)
     anchor_v = np.asarray(anchor["voltage_mV"])
     anchor_half, anchor_bracket = half_crossing(anchor)
     anchor_y = np.asarray(anchor["relative"])
@@ -147,7 +151,7 @@ def external(study):
     results = []
     for row in evaluations:
         co = row["external_K_mM"]
-        root = 1000 * block.reversal_potential(ci, co, 1, temp)
+        root = 1000 * reversal_potential(ci, co, 1, temp)
         native_shift = root - anchor_root
         measured_shift = row["measured_reversal_mV"] - anchor["measured_reversal_mV"]
         voltages, obs = np.asarray(row["voltage_mV"]), np.asarray(row["relative"])
@@ -211,7 +215,7 @@ def external(study):
 def internal(study):
     ci1, ci2 = study["internal_K_mM"]
     co, temp = study["external_K_mM"], study["temperature_K"]
-    roots = 1000 * block.reversal_potential(np.array([ci1, ci2]), co, 1, temp)
+    roots = 1000 * reversal_potential(np.array([ci1, ci2]), co, 1, temp)
     shift = float(roots[1] - roots[0])
     e1, e2 = study["figure_reversal_mV"]
     v1, v2 = study["figure_half_block_mV"]
