@@ -22,7 +22,8 @@ The first-run rule: `run` refuses a world whose name does not begin `INVENTED-` 
 Usage (PYTHONPATH at a snapshot, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr45.driver run SPEC_JSON RECORD_JSON
 SPEC_JSON: {"run", "inputs", "plant" (a module of validation/fr45/plants, or null), "start" (W1eq's start file, or
-null), "time_limit_step" (a harness condition for development, or null), "judged" (false)}.
+null), "time_limit_step" (a harness condition for development, or null), "judged" (false)}; an invented world's
+job may add "map_at_start" (its event map applied to the start as well, as W7's is).
 """
 
 import argparse
@@ -377,7 +378,8 @@ def run(job, out):
     map_steps = set()
     if world.washed_node is not None:
         wash_step = int(round(world.inputs["wash"]["time_s"] / dt))
-        map_steps = {wash_step} | ({0} if world_shape in MAP_AT_START else set())
+        at_start = job.get("map_at_start", world_shape in MAP_AT_START)  # An invented world may name it.
+        map_steps = {wash_step} | ({0} if at_start else set())
     # The start, row 0: the state every window run begins from (TABLE §5: the start, before any step), so a
     # refusal at step 1 keeps it, and the stage condition is read on it.
     from cells.execution.state import initialise

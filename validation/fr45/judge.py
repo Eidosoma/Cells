@@ -380,8 +380,8 @@ REGISTERED = dict(
           "W7": _saved(0.0025, (0.0, 0), (0.5, 200), (1.0, 400), (1.0025, 401), (1.5, 600), (2.0, 800), (3.0, 1200),
                        (5.0, 2000), (8.0, 3200), (12.0, 4800)),
           "W7s": _saved(0.0025, (0.0, 0), (0.25, 100), (0.5, 200), (1.0, 400), (1.5, 600), (2.0, 800))},
-    wash={"W2": dict(step=320, time_s=4.0), "W7": dict(step=400, time_s=1.0)},
-    maps={"W2": [320], "W7": [0, 400]},
+    wash={"W2": dict(time_s=4.0), "W7": dict(time_s=1.0)},  # Steps 320 and 400 (§5.1).
+    maps={"W2": [4.0], "W7": [0.0, 1.0]},  # The saved states the map acts on, by time: steps 320; 0 and 400 (§6).
     files={**{w: w for w in _WORLDS}, "W3p": "W3"},
     heat_nodes={**{w: ["well"] for w in ("W1", "W1eq", "W1p", "W2", "W5", "W6", "W7", "W7s")},
                 "W3": ["specimen", "well"], "W3p": ["specimen", "well"], "W4": ["vat"]},
@@ -947,8 +947,10 @@ class Env:
         return self.refs.get(self.reg.data["files"][world])
 
     def honest_name(self, world, dt=None):
-        """The world's honest run by its dt, or its one run where the pair holds no dt."""
+        """The world's honest run by its dt, or its one run where the pair holds no dt (an invented registration
+        may name a world's default dt; the registered worlds' pairs need none)."""
         runs = self.reg.honest(world)
+        dt = dt if dt is not None else self.reg.data.get("default_dt", {}).get(world)
         if dt is not None:
             found = [n for n, s in runs.items() if _same_number(s["dt_s"], dt)]
             return found[0] if found else None
@@ -1097,7 +1099,7 @@ def _identity_run(env, name, spec, run, fault):
             fault(4, f"capacity of {sid}")
         if run["free_sites"].get(sid) not in ("state", "derived"):
             fault(4, f"free_sites of {sid}")
-    _events(reg, world, run, inputs, refusal, steps, fault)
+    _events(reg, world, spec["dt_s"], run, inputs, refusal, steps, fault)
     if (world == "W5") != (report is not None):
         fault(7, "step_report present exactly in W5's runs")
     if report is not None:
@@ -1159,13 +1161,13 @@ def _rows(reg, world, spec, run, inputs, steps, fault):
             fault(3, f"row {k}: site_heat_pJ or site_occupied_fraction not complete")
 
 
-def _events(reg, world, run, inputs, refusal, steps, fault):
+def _events(reg, world, dt, run, inputs, refusal, steps, fault):
     wash, events, entries = reg.data["wash"].get(world), run["events"], run["event_map"]
     if wash is None:
         if events or entries:
             fault(5 if events else 6, "an event or map entry in a world without a wash")
         return
-    ws = wash["step"]
+    ws = reg.step(world, dt, wash["time_s"])
     if refusal is None:
         count = (1,)
     elif refusal.get("step") is None or refusal["step"] <= ws:
@@ -1189,7 +1191,7 @@ def _events(reg, world, run, inputs, refusal, steps, fault):
     seen = [(m.get("state_step"), m.get("variant")) for m in entries]
     allowed = {
         (k, v)
-        for k in reg.data["maps"][world]
+        for k in (reg.step(world, dt, t) for t in reg.data["maps"][world])
         for v in ("numpy", "compiled")
         if refusal is None or k <= steps
     }

@@ -73,7 +73,7 @@ REGISTRATION = dict(
     runs={"W2": dict(world="W2", plant=None, dt_s=0.01), "W5": dict(world="W5", plant=None, dt_s=0.1)},
     rows={"W2": {"0.01": [[0.0, 0], [0.04, 4], [0.08, 8], [0.09, 9], [0.12, 12]]},
           "W5": {"0.1": [[0.0, 0], [1.0, 10]]}},
-    wash={"W2": dict(step=8, time_s=0.08)}, maps={"W2": [8]}, files={"W2": "W2", "W5": "W5"},
+    wash={"W2": dict(time_s=0.08)}, maps={"W2": [0.08]}, files={"W2": "W2", "W5": "W5"},
     heat_nodes={"W2": ["pool"], "W5": ["cup"]},
     operators={"W2": [*OPERATORS, "cells.operator.scheduled_compartment_wash@1"], "W5": OPERATORS}, plants=[],
 )  # fmt: skip

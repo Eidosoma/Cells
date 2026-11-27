@@ -2,14 +2,19 @@
 and SciPy reference for invented worlds, written in the references' format (the format note,
 validation/fr45/spec/rulings/REFERENCE-FORMAT-NOTE-2026-11-27.txt), so that the engine's runs of the same worlds
 (driver, exporter) drive the judge's whole scoring path end to end. It is never in the judged run: the judged run
-reads the references' own files and their own G. Nothing here reads them.
+reads the references' own files and their own G. Nothing here reads them but their invented format sample, under
+`--invented-reference` below.
 
-The worlds are the format sample's invented worlds, re-timed so that each relaxes within its horizon at a step
-with dt max L about 0.03, as the registered worlds are sized (CRITERIA, amendment 3); W1eq and W7 start at the root
-of their own totals. The reference: the binding network's ODE (DOP853 at rtol 1e-12 and 1e-13, the gap between
+The worlds are the format sample's invented worlds with the engine's constants, re-timed so that each relaxes
+within its horizon (the wash worlds again after the wash, at the post-wash rate) at a step with dt max L about 0.06,
+in at most 6000 steps (W3 does not relax in that, so it keeps no C2a); W1eq and W7 start at the root of their own
+totals; W1p takes its first six times, and W3p is W3's inputs at W3's first five times, reading W3's file. The reference: the binding network's ODE (DOP853 at rtol 1e-12 and 1e-13, the gap between
 them the convergence record), the wash's map at its time, the equilibrium's root, and SPEC §1.3's free energy G as
 a stand-in (`stand_in_G`, ruling 6: in self-tests and this rehearsal only). Its pairs follow CRITERIA's tests; the
 plants' entries follow its table, each judged over its run.
+
+`--invented-reference` instead judges the references' own invented file (`format_sample_INVENTED.json`,
+which ruling 5a lets the builder read), its world run at each of its dt; no other file of the references is read.
 
 Usage (PYTHONPATH at a snapshot, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr45.rehearsal SAMPLE_DIR OUT --cpus 6,7
@@ -341,11 +346,10 @@ def registration(worlds):
         )
         rows[world] = {repr(dt): [[t, round(t / dt)] for t in times] for dt in dts}
         if inputs.get("wash"):
-            wash[world] = dict(
-                step=round(inputs["wash"]["time_s"] / inputs["dt_s"]),
-                time_s=inputs["wash"]["time_s"],
+            wash[world] = dict(time_s=inputs["wash"]["time_s"])
+            maps[world] = (
+                [inputs["wash"]["time_s"]] if world == "W2" else [0.0, inputs["wash"]["time_s"]]
             )
-            maps[world] = [wash[world]["step"]] if world == "W2" else [0, wash[world]["step"]]
     for world, plant, _ in PLANTS:
         runs[f"{world}-{plant}"] = dict(world=world, plant=plant, dt_s=worlds[world]["dt_s"])
     base = ["cells.model.resolved_pump_composite@1", "cells.model.resolved_pump_tissue@3",
@@ -772,9 +776,14 @@ def main(argv=None):
     parser.add_argument("out")
     parser.add_argument("--cpus", default="6,7")
     parser.add_argument("--stage", choices=("all", "runs", "judge"), default="all")
+    parser.add_argument(
+        "--invented-reference", help="judge against the references' own invented file instead"
+    )
     args = parser.parse_args(argv)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
+    if args.invented_reference:
+        return invented_check(args.invented_reference, out, [int(c) for c in args.cpus.split(",")])
     sample = json.loads((Path(args.sample) / "table" / "table.json").read_text())
     worlds, notes = design(sample["runs"])
     folder = out / "references"
@@ -805,6 +814,138 @@ def main(argv=None):
     (out / "judge.log").write_text(done.stdout + done.stderr)
     print(done.stdout[-6000:], done.stderr[-3000:])
     return done.returncode
+
+
+# ------------------------------------------------------------------ the references' own invented file (ruling 5a)
+
+
+def invented_world(ref):
+    """§4.1 inputs for the references' invented format-sample world (`format_sample_INVENTED.json`, which ruling 5a
+    lets the builder read): its echo in W3's bath form (the registered cell walled on the bath), every amount it
+    does not declare at its trace 1e-12 V, invented host values."""
+    from collections import Counter
+
+    echo = ref["world"]
+    c = echo["constants"]
+    cell = next(n["id"] for n in echo["nodes"] if n["kind"] == "cell")
+    node = next(n["id"] for n in echo["nodes"] if n["kind"] == "node")
+    nodes = [
+        dict(id=n["id"], kind=n["kind"], volume_pL=n["V"], registered=True) for n in echo["nodes"]
+    ]
+    nodes.append(dict(id="bath", kind="node", volume_pL=140.0, registered=False))
+    patches = [dict(p) for p in echo["patches"]] + [
+        dict(id="host_wall", inside=cell, outside="bath")
+    ]
+    declared = {(a["ligand"], a["node"]): a["n"] for a in echo["free_amounts"]}
+    free = [dict(ligand=g, node=n["id"], n_fmol=declared.get((g, n["id"]), 1e-12 * n["volume_pL"]),
+                 declared=(g, n["id"]) in declared) for g in echo["ligands"] for n in nodes]  # fmt: skip
+    members = Counter(p["set"] for p in echo["populations"])
+    sets = []
+    for s in echo["sets"]:
+        kind, _, rest = s["owner"].partition(" ")
+        owner, face = (
+            (rest, None)
+            if kind == "node"
+            else (rest.split(",")[0], "inside" if "inside" in rest else "outside")
+        )
+        sets.append(dict(id=s["id"], shared=members[s["id"]] > 1, owner=owner, face=face, faces=s["faces"],
+                         copies=s["copies"], sites_per_copy=s["sites_per_copy"],
+                         accessible_fraction=s["accessible_fraction"]))  # fmt: skip
+    pops = [
+        {k: p[k] for k in ("id", "set", "ligand", "k_on", "k_off", "initial_occupancy")}
+        for p in echo["populations"]
+    ]
+    ids = [p["id"] for p in patches]
+    w = echo["wash"]
+    return dict(
+        world="INVENTED-X",
+        constants=dict(sites_per_fmol=float(c["N_f_sites_per_fmol"]), temperature_K=c["T_K"],
+                       RT_pJ_per_fmol=c["RT_pJ_per_fmol"]),
+        nodes=nodes, patches=patches, ligands=list(echo["ligands"]), free_amounts=free, sets=sets, populations=pops,
+        wash=dict(time_s=w["t"], node=w["node"], fraction=w["f"], buffer_mM=dict(w["buffer"])),
+        permeabilities=[dict(patch=p, ligand=g, value=0.0) for p in ids for g in echo["ligands"]],
+        ion_permeabilities={p: {"IA": 0.0, "IB": 0.0} for p in ids},
+        multipliers=[dict(of=p["id"], name="site_binding_multiplier", value=1.0) for p in pops],
+        charges={g: 0 for g in echo["ligands"]},
+        capacitor_components=[dict(members=["bath", cell, node], held_by="bath")],
+        host_values=dict(areas={p: 20.0 for p in ids}, capacitances={p: 0.2 for p in ids},
+                         ion_amounts={n["id"]: dict(IA=0.03, IB=0.003) for n in nodes}),
+        dt_s=echo["dt"][0], observation_times_s=list(echo["observation_times"]), horizon_s=echo["horizon"],
+    )  # fmt: skip
+
+
+def invented_check(path, out, cpus):
+    """The judge's criteria against the references' own invented file (the lead's instruction of 27 November 2026,
+    ruling 6's stand-in G): its world through the driver at each of its dt, the table judged against the file as
+    written. Some of its pairs are there for their format only (the file says which: C2b against its own root, C7,
+    C8), so those criteria are information here."""
+    ref = json.loads(Path(path).read_text())
+    inputs = invented_world(ref)
+    dts = list(ref["world"]["dt"])
+    todo = []
+    for dt in dts:
+        one = copy.deepcopy(inputs)
+        one["dt_s"] = dt
+        name = f"INVENTED-X-dt{dt!r}"
+        todo.append(
+            (
+                name,
+                dict(
+                    run=name,
+                    inputs=one,
+                    plant=None,
+                    start=None,
+                    time_limit_step=None,
+                    map_at_start=True,
+                ),
+            )
+        )
+    results = run_jobs(todo, out, cpus)
+    print("driver failures:", [n for n, rc in results if rc])
+    from validation.fr45 import exporter
+
+    table = exporter.export(
+        out / "records",
+        out / "table",
+        [n for n, _ in todo],
+        invented="INVENTED: the references' file",
+    )
+    folder = out / "references"
+    (folder / "outputs").mkdir(parents=True, exist_ok=True)
+    (folder / "fr45ref_free_energy.py").write_text(stand_in_module())
+    (folder / "outputs" / "reference_X.json").write_text(Path(path).read_text())
+    times = [0.0, *inputs["observation_times_s"]]
+    base = ["cells.model.resolved_pump_composite@1", "cells.model.resolved_pump_tissue@3",
+            "cells.operator.site_occupancy@1", "cells.operator.scheduled_compartment_wash@1"]  # fmt: skip
+    reg = dict(runs={f"X-dt{dt!r}": dict(world="X", plant=None, dt_s=dt) for dt in dts},
+               rows={"X": {repr(dt): [[t, round(t / dt)] for t in times] for dt in dts}},
+               wash={"X": dict(time_s=inputs["wash"]["time_s"])}, maps={"X": [0.0, inputs["wash"]["time_s"]]},
+               files={"X": "X"}, heat_nodes={"X": sorted({s["faces"] for s in inputs["sets"]})},
+               operators={"X": base}, plants=[], default_dt={"X": dts[0]})  # fmt: skip
+    expected = {}
+    for name, job in todo:
+        want = copy.deepcopy(job["inputs"])
+        want["constants"]["RT_pJ_per_fmol"] = None
+        want["host_values"] = MARKERS["host_values"]
+        for n in want["nodes"]:
+            n["volume_pL"] = n["volume_pL"] if n["registered"] else MARKERS["volume"]
+        want["ion_permeabilities"] = {p: {"each_ion": 0.0} for p in want["ion_permeabilities"]}
+        expected[name.removeprefix("INVENTED-")] = want
+    for label, value in (("registration", reg), ("addendum", addendum(table)),
+                         ("expected_inputs", dict(runs=expected, plant_inputs_changed={},
+                                                  host=dict(markers=dict(MARKERS))))):  # fmt: skip
+        (out / f"{label}.json").write_text(json.dumps(value, indent=1) + "\n")
+    root = Path(__file__).resolve().parents[2]
+    import subprocess
+
+    command = [sys.executable, "-B", str(root / "validation" / "fr45" / "judge.py"), "judge", "--table",
+               str(out / "table"), "--references", str(folder), "--expected", str(out / "expected_inputs.json"),
+               "--registration", str(out / "registration.json"), "--addendum", str(out / "addendum.json"),
+               "--out", str(out / "judgement")]  # fmt: skip
+    done = subprocess.run(command, capture_output=True, text=True)
+    (out / "judge.log").write_text(done.stdout + done.stderr)
+    print(done.stdout[-6000:], done.stderr[-3000:])
+    return 0
 
 
 if __name__ == "__main__":
