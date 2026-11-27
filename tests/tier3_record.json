@@ -84,9 +84,18 @@
    ],
    "note": "FR-65's coupling step (the coupling's reads of the current cell volume, version 1.1; docs/TURNOVER_CHANGING_VOLUME_DESIGN.md \u00a711 and \u00a712): test_shared_inventory_volume.py gains the coupling's compiled rows (test_fr65_coupling_the_water_door_holds_its_identities_at_every_row, test_fr65_coupling_the_water_door_follows_its_reference_at_second_order, test_fr65_coupling_version_1_beside_water and test_fr65_coupling_arm_b_labels_beside_water_leave_the_physics_bitwise), and its A1 row is re-parametrized: test_fr65_a1_without_the_coupling_runs_in_a_swelling_cell is now test_fr65_a1_runs_in_a_swelling_cell[without the coupling], beside the added [with it] (the earlier ID removed as declared). The coupling's three other tier-3 files keep their test IDs and outcomes. The four entries are refrozen from the D148 round's tier-3 run of 7cce9790 (main 7149f90a merged; cap 1800 s, lane B's eight CPUs under its lock): 801.71, 179.50, 265.23 and 65.33 s. Those seconds carry the lane's load: 13 files ran at once on both threads of its four cores, and the run's other files took 1.23 to 1.60 times their recorded seconds (test_cell_replacement_vector.py 0.76). test_shared_inventory_volume.py's 801.71 s against 380.02 s is that load with five more tests (9 to 14); it took about 612 s in two halves on CPUs 6 and 7",
    "evidence": "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/"
+  },
+  {
+   "decision": "D410",
+   "files": [
+    "tests/unit/test_site_competition_batch_runs.py",
+    "tests/unit/test_site_competition_partners_runs.py"
+   ],
+   "note": "FR-45's engine (shared site sets in cells.operator.site_occupancy@1; docs/SITE_OCCUPANCY_DESIGN.md \u00a714): two new compiled files the lead placed in tier 3 under D224's cost rule, since they qualify the combinations D327 admits beside site sets: test_site_competition_batch_runs.py (1 test: run_batch and run_vector_windowed against the scalar run on a set world) and test_site_competition_partners_runs.py (2 tests: the omnibus row, with turnover, exchange, D152's reactions and a face writing a set's ligands, and the passivity row, with the bath schedule and replacement@1 off the slot). Their entries are frozen from the D148 round's tier-3 run of c968a22f (main c7ba9fd8; cap 1800 s, CPUs 8 and 9 with their siblings idle under lane B's lock, the two files alone): 64.76 and 70.12 s",
+   "evidence": "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run/"
   }
  ],
- "frozen_utc": "2026-11-27T04:05:12+00:00",
+ "frozen_utc": "2026-11-27T10:54:46+00:00",
  "cap_seconds": 1800.0,
  "runs": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc",
@@ -96,7 +105,8 @@
   "/mnt/workspaces/Cells/tier3-records/slimming-20261126/fc/timing2/after",
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run",
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-diagnostic",
-  "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run"
+  "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run",
+  "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run"
  ],
  "collected": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/collected.json",
@@ -106,7 +116,8 @@
   "/mnt/workspaces/Cells/tier3-records/slimming-20261126/fc/timing2/after/collected.json",
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run/collected.json",
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-diagnostic/collected.json",
-  "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/collected.json"
+  "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/collected.json",
+  "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run/collected.json"
  ],
  "time": "file wall seconds only: the -q logs carry no per-test times",
  "outcomes": [
@@ -848,6 +859,13 @@
    ["test_fr65_coupling_the_water_door_follows_its_reference_at_second_order", "passed"],
    ["test_fr65_coupling_version_1_beside_water", "passed"],
    ["test_fr65_coupling_arm_b_labels_beside_water_leave_the_physics_bitwise", "passed"]
+  ]},
+  "tests/unit/test_site_competition_batch_runs.py": {"run": "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run/logs/tests__unit__test_site_competition_batch_runs.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 1}, "seconds": 64.76, "collected": 1, "reached": 1, "aligned": true, "tests": [
+   ["test_a_two_world_batch_and_vector_windows_are_the_scalar_runs_bits", "passed"]
+  ]},
+  "tests/unit/test_site_competition_partners_runs.py": {"run": "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run/logs/tests__unit__test_site_competition_partners_runs.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 2}, "seconds": 70.12, "collected": 2, "reached": 2, "aligned": true, "tests": [
+   ["test_turnover_exchange_reactions_and_a_face_write_a_sets_ligands_with_every_book_closed", "passed"],
+   ["test_the_bath_schedule_and_a_replacement_off_the_slot_leave_the_set_bit_for_bit", "passed"]
   ]},
   "tests/unit/test_source_order_diagnostic.py": {"run": "/mnt/workspaces/Cells/tier3-records/slimming-20261126/job1/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/slimming-20261126/job1/tier3-run/logs/tests__unit__test_source_order_diagnostic.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 11}, "seconds": 3.02, "collected": 11, "reached": 11, "aligned": true, "tests": [
    ["test_both_label_collision_is_distinct_from_single_task_separation", "passed"],

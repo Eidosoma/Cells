@@ -7866,6 +7866,18 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_site_competition_batch_runs.py",
+    "seconds": 69.67,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_site_competition_partners_runs.py",
+    "seconds": 81.59,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/unit/test_source_order_diagnostic.py",
     "seconds": 6.34,
     "exit_code": 0,
