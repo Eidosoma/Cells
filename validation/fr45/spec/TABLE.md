@@ -1,6 +1,6 @@
 # FR-45's engine table: the contract
 
-**Dated 26 November 2026, and changed six times on 27 November 2026** (the next six sections), before the binding
+**Dated 26 November 2026, and changed seven times on 27 November 2026** (the next seven sections), before the binding
 tag and before any engine run of a registered world. The registration never defines the engine's table, so the lead
 ruled that a dated contract fixes it before the binding tag, from the spec's text (the lead's first rulings, Q5:
 `/mnt/workspaces/Cells/fr45-readings-20261126/RULINGS-1-2026-11-26.md`). The lead's second rulings,
@@ -243,6 +243,17 @@ accepts them.
 - **The expected-inputs file:** `ion_permeabilities` per world, 0.0 for each ion on every patch, and its statement and
   rules [§10.2].
 
+## Seventh dated change, 27 November 2026
+
+Made before the binding tag, by the same agent, applying RULINGS-2's §11, "Amendment of 27 November, after the sixth
+read" (`/mnt/workspaces/Cells/fr45-contract-review-20261127/REVIEW-6.md`). [§11.1] to [§11.3] are its items, and [B6-1],
+[W6-1] and [W6-2] the sixth read's findings. No criterion, band, plant, tolerance or class changes.
+
+**What changed:** §12.3's step 5 tries §4's plant rule on the exporter's invented plant runs [§11.1, B6-1]; the
+execution record states the one floor value the driver passes to the species helper, and N2's reviewer confirms it, in
+§4 and §14.1 [§11.2, W6-1]; §4.1 says what "no host check for ion drift" rests on [§11.3, W6-2]; and §15's disclosure.
+The format sample, its README and the expected-inputs file are unchanged.
+
 ## 1. Files and number form
 
 - **The table** is `table/table.json`, one file for the judged run, with `table/SHA256SUMS` (one line: the sha256, two
@@ -397,7 +408,8 @@ Every entry holds every key below, for honest, plant and refused runs alike.
     species' `material_balance_atol_fmol`; and `driver.window_steps`. The engine's computed rounding allowances
     (2.5·ε·k·M) are the engine's own, formed from each run's state, and are never compared. The source check
     confirms that no declared bound depends on a world's amounts or start: the helper's floor is the caller's
-    argument, positive and at most 1e-10 fmol.
+    argument, positive and at most 1e-10 fmol. The caller is the driver: the record states the one floor value the
+    driver passes to the species helper for every species, and N2's reviewer confirms that value [§11.2, W6-1].
   - *W1eq* [§9.2, WF5; §10.1]: no parse-only pass of W1eq is made before the judged run. Its declared keys are
     compared with W1's record, and equal W1's, its start apart [E22].
   - *The literal fields* [§9.1, N4]: in every run the judge also checks these against this file: `execution.solver`,
@@ -497,6 +509,9 @@ Exactly these keys:
   - *What holds them:* no ion moves through any patch, since every ion's permeability is 0.0 on every patch; and the
     wash's exchange is ion-matched, its collected amount equal to its supplied one, which `wash_ions` checks. So ions
     stay at their fixed amounts.
+  - *No host check for ion drift* [§11.3, W6-2]: none is needed, and that rests on the bath form having no ion route
+    besides its patches. The source check found every ion increment exactly 0.0 at every row in W2's and W5's
+    shapes.
   - *The source check ran this form,* on invented worlds in every registered world's shape: a parse and
     `runner.timeline` at every registered size; W5's shape at dt 0.1, refused at step 1 by the stage condition at
     load 0.6, and admitted at 0.3; and W2's shape through a wash, with every check closed and every ion increment
@@ -1168,7 +1183,10 @@ The judge checks each of these in every run. A departure is a fault (§11.2).
      before anything is scored;
   4. the structure-only pass over the format sample (§12.1), if it has not been made at this snapshot;
   5. the lead's comparison of the builder's exporter output on the sample's invented worlds with the sample, key by
-     key and type by type (§12.1) [W-c];
+     key and type by type (§12.1) [W-c]. The judge also applies §4's plant rule to the exporter's invented plant runs
+     against their invented honest twins, with the execution record's exclusion list and the B6 addendum's paths. It
+     must find no departure, and a departure is corrected in the record or the addendum before any registered run
+     [§11.1, B6-1];
   6. the runs, each registered world's first;
   7. the table's sha256 (§1), and then the judgement.
 - **A parse-only pass** of a registered world, a definition check with no step, is not a run, and is allowed before
@@ -1252,7 +1270,8 @@ unchanged.
 - the execution record, the honest runs' `definition` execution block and bounds: from a parse-only pass of every
   registered world but W1eq, made after the build and before any registered run; confirmed by N2's reviewer
   against `src/` (the default `field_solver`, and each species' `material_balance_atol_fmol` at the species
-  helper's floor); and hashed by the lead (§4) [§8.2, N3; §9.1, N4]. It lists by path the fields of `definition`
+  helper's floor, the one value the driver passes, which the record states [§11.2, W6-1]); and hashed by the lead
+  (§4) [§8.2, N3; §9.1, N4]. It lists by path the fields of `definition`
   that name the run or its record, which no comparison reads [§10.3, R5-4];
 - the lead records the runs' inputs and revision (§4, §10).
 
@@ -1412,3 +1431,12 @@ unchanged.
   and the expected file's facts check. The structure reader and the facts check were first made to require
   `ion_permeabilities` at 0.0 on every patch and no ion permeability in `host_values`, and they failed on the earlier
   files.
+
+### 27 November 2026, the seventh dated change
+
+- **What it applies:** RULINGS-2's §11, which accepts every finding of the sixth read.
+- **What it read besides the earlier files:** RULINGS-2's §11, and the sixth read's three findings, in `REVIEW-6.md`.
+- **What it did not open:** any file under `validation/fr45/references/` beyond the invented file, any FR-45 judge folder
+  or script, `src/`, and the readings folder's cross-check files.
+- **What it ran:** the structure reader, the README's path check and the expected file's facts check, on the unchanged
+  sample and expected-inputs file.
