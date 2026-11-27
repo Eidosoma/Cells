@@ -1,0 +1,575 @@
+{
+ "schema": "fr45-reference/1",
+ "invented": false,
+ "world": {
+  "id": "W1eq",
+  "title": "W1 started at its equilibrium",
+  "constants": {
+   "N_f_sites_per_fmol": 602214076,
+   "N_A_per_mol": 6.02214076e+23,
+   "k_B_J_per_K": 1.380649e-23,
+   "T_K": 310.0,
+   "RT_pJ_per_fmol": 2.5774834116275045,
+   "standard_concentration_mM": 1.0,
+   "trace_mM": 1e-12,
+   "epsilon": 2.220446049250313e-16
+  },
+  "nodes": [
+   {
+    "id": "well",
+    "kind": "node",
+    "V": 1.0
+   }
+  ],
+  "ligands": [
+   "L1",
+   "L2"
+  ],
+  "free_amounts": [
+   {
+    "ligand": "L1",
+    "node": "well",
+    "n": 0.0007403234641102556,
+    "declared": true
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "n": 0.00023058927291703387,
+    "declared": true
+   }
+  ],
+  "sets": [
+   {
+    "id": "matrix",
+    "owner": "node well",
+    "faces": "well",
+    "copies": 1445314.0,
+    "sites_per_copy": 1,
+    "accessible_fraction": 1.0,
+    "S": 0.002400000361333301
+   }
+  ],
+  "populations": [
+   {
+    "id": "matrix_L1",
+    "set": "matrix",
+    "ligand": "L1",
+    "faces": "well",
+    "k_on": 1200.0,
+    "k_off": 0.9,
+    "initial_occupancy": 0.3581985026919571
+   },
+   {
+    "id": "matrix_L2",
+    "set": "matrix",
+    "ligand": "L2",
+    "faces": "well",
+    "k_on": 500.0,
+    "k_off": 0.15,
+    "initial_occupancy": 0.2789210942914526
+   }
+  ],
+  "start": [
+   {
+    "observable": "n:L1@well",
+    "value": 0.0007403234641102556
+   },
+   {
+    "observable": "n:L2@well",
+    "value": 0.00023058927291703387
+   },
+   {
+    "observable": "R:matrix",
+    "value": 0.0008709130983605907
+   },
+   {
+    "observable": "B:matrix_L1",
+    "value": 0.0008596765358897444
+   },
+   {
+    "observable": "B:matrix_L2",
+    "value": 0.000669410727082966
+   }
+  ],
+  "dt": [
+   0.008
+  ],
+  "observation_times": [
+   0.8,
+   4.0,
+   8.0
+  ],
+  "horizon": 8.0,
+  "start_source": "written from W1's R-eq root: initial occupancy B_b/S_s and free amount N_l - sum B_b, each the binary64 nearest to the exact value"
+ },
+ "units": {
+  "copies": "count (the one declared count)",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM",
+  "k_on": "per mM per s",
+  "k_off": "per s",
+  "time": "s",
+  "free_energy_and_heat": "pJ",
+  "tolerance_gap": "the observable's own unit",
+  "distance_in_bounds": "multiples of the criterion's bound"
+ },
+ "equilibrium": {
+  "totals": "the start's totals (the written start below)",
+  "sets": {
+   "matrix": 0.0008709130983605907
+  },
+  "populations": {
+   "matrix_L1": 0.0008596765358897444,
+   "matrix_L2": 0.000669410727082966
+  },
+  "pools": {
+   "L1@well": 0.0007403234641102556,
+   "L2@well": 0.00023058927291703387
+  },
+  "residual": 8.04559426757521e-20,
+  "residual_definition": "largest |residual| in fmol of the ligand totals, set moieties and detailed balance B_b = R_s c_l / K_b, at the written binary64 values",
+  "wang": {
+   "matrix": {
+    "gap": 2.777e-70
+   }
+  }
+ },
+ "trajectory": [
+  {
+   "observable": "n:L1@well",
+   "time_s": 0.8,
+   "value": 0.0007403234641102556,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 0.8,
+   "value": 0.00023058927291703387,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 0.8,
+   "value": 0.0008709130983605907,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 0.8,
+   "value": 0.0008596765358897444,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 0.8,
+   "value": 0.000669410727082966,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 4.0,
+   "value": 0.0007403234641102556,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 4.0,
+   "value": 0.00023058927291703387,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 4.0,
+   "value": 0.0008709130983605907,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 4.0,
+   "value": 0.0008596765358897444,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 4.0,
+   "value": 0.000669410727082966,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 8.0,
+   "value": 0.0007403234641102556,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 8.0,
+   "value": 0.00023058927291703387,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 8.0,
+   "value": 0.0008709130983605907,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 8.0,
+   "value": 0.0008596765358897444,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 8.0,
+   "value": 0.000669410727082966,
+   "tolerance_gap": 0.0
+  }
+ ],
+ "balances": {
+  "ligands": [
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 0.8,
+    "total": 0.0016
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 0.8,
+    "total": 0.0009
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 4.0,
+    "total": 0.0016
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 4.0,
+    "total": 0.0009
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 8.0,
+    "total": 0.0016
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 8.0,
+    "total": 0.0009
+   }
+  ],
+  "sets": [
+   {
+    "set": "matrix",
+    "time_s": 0.8,
+    "sites": 0.002400000361333301
+   },
+   {
+    "set": "matrix",
+    "time_s": 4.0,
+    "sites": 0.002400000361333301
+   },
+   {
+    "set": "matrix",
+    "time_s": 8.0,
+    "sites": 0.002400000361333301
+   }
+  ]
+ },
+ "heats": {
+  "intervals": [
+   {
+    "node": "well",
+    "start_s": 0.0,
+    "end_s": 0.8,
+    "heat": 2.831180886042806e-36,
+    "bound": 3.520475836167356e-07,
+    "tolerance_gap": 0.0
+   },
+   {
+    "node": "well",
+    "start_s": 0.8,
+    "end_s": 4.0,
+    "heat": 1.1899814758771091e-37,
+    "bound": 3.520475836167356e-07,
+    "tolerance_gap": 0.0
+   },
+   {
+    "node": "well",
+    "start_s": 4.0,
+    "end_s": 8.0,
+    "heat": 1.4195790183941399e-39,
+    "bound": 3.520475836167356e-07,
+    "tolerance_gap": 0.0
+   }
+  ],
+  "G": [
+   {
+    "node": "well",
+    "time_s": 0.0,
+    "G": -0.057927940677168374
+   },
+   {
+    "node": "well",
+    "time_s": 0.8,
+    "G": -0.057927940677168374
+   },
+   {
+    "node": "well",
+    "time_s": 4.0,
+    "G": -0.057927940677168374
+   },
+   {
+    "node": "well",
+    "time_s": 8.0,
+    "G": -0.057927940677168374
+   }
+  ]
+ },
+ "pairs": [
+  {
+   "criterion": "C2b",
+   "observable": "n:L1@well",
+   "time_s": 0.8,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.0007403234641102556,
+   "tolerance": 2.1397084877085564e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:L2@well",
+   "time_s": 0.8,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.00023058927291703387,
+   "tolerance": 6.664570938975958e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:matrix",
+   "time_s": 0.8,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.0008709130983605907,
+   "tolerance": 2.5171431664108155e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:matrix_L1",
+   "time_s": 0.8,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.0008596765358897444,
+   "tolerance": 2.48466686482495e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:matrix_L2",
+   "time_s": 0.8,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.000669410727082966,
+   "tolerance": 1.9347540419025013e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:L1@well",
+   "time_s": 4.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.0007403234641102556,
+   "tolerance": 5.438227843179827e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:L2@well",
+   "time_s": 4.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.00023058927291703387,
+   "tolerance": 1.693850141333963e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:matrix",
+   "time_s": 4.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.0008709130983605907,
+   "tolerance": 6.397506076869684e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:matrix_L1",
+   "time_s": 4.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.0008596765358897444,
+   "tolerance": 6.314965147326101e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:matrix_L2",
+   "time_s": 4.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.000669410727082966,
+   "tolerance": 4.917320915825621e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:L1@well",
+   "time_s": 8.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.0007403234641102556,
+   "tolerance": 9.561377037518916e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:L2@well",
+   "time_s": 8.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.00023058927291703387,
+   "tolerance": 2.978091450629422e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:matrix",
+   "time_s": 8.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.0008709130983605907,
+   "tolerance": 1.1247959714943269e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:matrix_L1",
+   "time_s": 8.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.0008596765358897444,
+   "tolerance": 1.110283800045254e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:matrix_L2",
+   "time_s": 8.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.000669410727082966,
+   "tolerance": 8.64552950822952e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 8.526514112834964e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.8,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 8.611779253963313e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 4.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 4.271783570530317e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 8.0,
+   "dt_s": 0.008,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 8.535040626947798e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C10",
+   "observable": "run",
+   "time_s": 8.0,
+   "dt_s": 0.008,
+   "class": "constant",
+   "value": "completes",
+   "tolerance": null,
+   "against": "engine: the run completes and closes its ledgers on every row"
+  }
+ ],
+ "spread": "none",
+ "spread_note": "No pair is spread: nothing is drawn (SPEC.md \u00a73.4). Trajectory pairs carry integration error and are class band, judged by their criterion's band directly, never by agreement.judge.",
+ "distance_at_horizon": {
+  "n:L1@well": 1.2167919463959972e-23,
+  "n:L2@well": 2.9854846083343995e-23,
+  "R:matrix": 1.7686926619384023e-23,
+  "B:matrix_L1": 1.2167919463959972e-23,
+  "B:matrix_L2": 2.9854846083343995e-23
+ },
+ "plants": [],
+ "provenance": {
+  "references_revision": "78ff6be4a4d35399775efcf77150b4eab8ae6d44",
+  "tree_clean": true,
+  "writer_version": "fr45-references-writer 2",
+  "regeneration_hash_seeds": [
+   0,
+   1,
+   2
+  ],
+  "spec": {
+   "label": "fr45-site-competition-v1, amendment 3 of 2026-11-24 (98cd33db)",
+   "files": [
+    "docs/FR45_SITE_COMPETITION_PROTOCOL.md",
+    "validation/fr45/spec/AMENDMENT-2-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-3-2026-11-24.md",
+    "validation/fr45/spec/CRITERIA.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
+    "validation/fr45/spec/SPEC.md"
+   ],
+   "verified_against": "SHA256SUMS-fr45-spec-98cd33db.txt",
+   "rows_matched": 106
+  },
+  "profile": "reference"
+ }
+}

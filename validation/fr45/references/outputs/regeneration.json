@@ -1,0 +1,286 @@
+{
+ "schema": "fr45-reference-regeneration/1",
+ "compared": [
+  "accuracy.json",
+  "reference_W1.json",
+  "reference_W1eq.json",
+  "reference_W1p.json",
+  "reference_W2.json",
+  "reference_W3.json",
+  "reference_W4.json",
+  "reference_W5.json",
+  "reference_W6.json",
+  "reference_W7.json",
+  "reference_W7s.json"
+ ],
+ "excluded": [
+  "run.log (seed, CPU and timings)"
+ ],
+ "runs": [
+  {
+   "hash_seed": 0,
+   "cpu": 4,
+   "sha256": {
+    "accuracy.json": "d1e024c7d1c46fc2381eac60bd18c24224412f11ca952a9418e12f7e86e61466",
+    "reference_W1.json": "bd6c0ec8053bd48c5ab0c76a0a509335019b5a1a62357bd7f225b5ba1aadd21c",
+    "reference_W1eq.json": "fe5bdd59d374feff254dbd4c527b3226bc02f0b5a9544cddb642bfc3495d6262",
+    "reference_W1p.json": "08ec9a8a2414c7171471a31614d3db3f5da6b54550e6e57e94fff6ac03ade3e0",
+    "reference_W2.json": "a527bc20a9bd8fbc066586417c6928dbbfef562cc55b130280c3a0c929420d61",
+    "reference_W3.json": "272cc7c4bfe08d7dda6c7b88858f5f344871825d46a93765ce11767c3ed9bc81",
+    "reference_W4.json": "71d8fcd6051f794f1d3ff162548ee4f9d5fbd0b48734150c6f78075e900cac51",
+    "reference_W5.json": "54ccab196f0ab8b946709777f19cee160acc736aeb1cd673bd79b9b1b65c96ee",
+    "reference_W6.json": "facce399dcb7d3d4369c2424a4f025bcdf21e70c0a230a2535747be870d621cf",
+    "reference_W7.json": "642400effdaf3d123d5aa21522b725404e9d55dd1a44e12028bc639e2a52833c",
+    "reference_W7s.json": "680ad3fc59db35edcd30321026ad09844d11ba16258f4def2f513cfc78006609"
+   },
+   "references_revision": "78ff6be4a4d35399775efcf77150b4eab8ae6d44",
+   "tree_clean": true
+  },
+  {
+   "hash_seed": 1,
+   "cpu": 4,
+   "sha256": {
+    "accuracy.json": "d1e024c7d1c46fc2381eac60bd18c24224412f11ca952a9418e12f7e86e61466",
+    "reference_W1.json": "bd6c0ec8053bd48c5ab0c76a0a509335019b5a1a62357bd7f225b5ba1aadd21c",
+    "reference_W1eq.json": "fe5bdd59d374feff254dbd4c527b3226bc02f0b5a9544cddb642bfc3495d6262",
+    "reference_W1p.json": "08ec9a8a2414c7171471a31614d3db3f5da6b54550e6e57e94fff6ac03ade3e0",
+    "reference_W2.json": "a527bc20a9bd8fbc066586417c6928dbbfef562cc55b130280c3a0c929420d61",
+    "reference_W3.json": "272cc7c4bfe08d7dda6c7b88858f5f344871825d46a93765ce11767c3ed9bc81",
+    "reference_W4.json": "71d8fcd6051f794f1d3ff162548ee4f9d5fbd0b48734150c6f78075e900cac51",
+    "reference_W5.json": "54ccab196f0ab8b946709777f19cee160acc736aeb1cd673bd79b9b1b65c96ee",
+    "reference_W6.json": "facce399dcb7d3d4369c2424a4f025bcdf21e70c0a230a2535747be870d621cf",
+    "reference_W7.json": "642400effdaf3d123d5aa21522b725404e9d55dd1a44e12028bc639e2a52833c",
+    "reference_W7s.json": "680ad3fc59db35edcd30321026ad09844d11ba16258f4def2f513cfc78006609"
+   },
+   "references_revision": "78ff6be4a4d35399775efcf77150b4eab8ae6d44",
+   "tree_clean": true
+  },
+  {
+   "hash_seed": 2,
+   "cpu": 4,
+   "sha256": {
+    "accuracy.json": "d1e024c7d1c46fc2381eac60bd18c24224412f11ca952a9418e12f7e86e61466",
+    "reference_W1.json": "bd6c0ec8053bd48c5ab0c76a0a509335019b5a1a62357bd7f225b5ba1aadd21c",
+    "reference_W1eq.json": "fe5bdd59d374feff254dbd4c527b3226bc02f0b5a9544cddb642bfc3495d6262",
+    "reference_W1p.json": "08ec9a8a2414c7171471a31614d3db3f5da6b54550e6e57e94fff6ac03ade3e0",
+    "reference_W2.json": "a527bc20a9bd8fbc066586417c6928dbbfef562cc55b130280c3a0c929420d61",
+    "reference_W3.json": "272cc7c4bfe08d7dda6c7b88858f5f344871825d46a93765ce11767c3ed9bc81",
+    "reference_W4.json": "71d8fcd6051f794f1d3ff162548ee4f9d5fbd0b48734150c6f78075e900cac51",
+    "reference_W5.json": "54ccab196f0ab8b946709777f19cee160acc736aeb1cd673bd79b9b1b65c96ee",
+    "reference_W6.json": "facce399dcb7d3d4369c2424a4f025bcdf21e70c0a230a2535747be870d621cf",
+    "reference_W7.json": "642400effdaf3d123d5aa21522b725404e9d55dd1a44e12028bc639e2a52833c",
+    "reference_W7s.json": "680ad3fc59db35edcd30321026ad09844d11ba16258f4def2f513cfc78006609"
+   },
+   "references_revision": "78ff6be4a4d35399775efcf77150b4eab8ae6d44",
+   "tree_clean": true
+  },
+  {
+   "hash_seed": 0,
+   "cpu": 4,
+   "sha256": {
+    "accuracy.json": "d1e024c7d1c46fc2381eac60bd18c24224412f11ca952a9418e12f7e86e61466",
+    "reference_W1.json": "bd6c0ec8053bd48c5ab0c76a0a509335019b5a1a62357bd7f225b5ba1aadd21c",
+    "reference_W1eq.json": "fe5bdd59d374feff254dbd4c527b3226bc02f0b5a9544cddb642bfc3495d6262",
+    "reference_W1p.json": "08ec9a8a2414c7171471a31614d3db3f5da6b54550e6e57e94fff6ac03ade3e0",
+    "reference_W2.json": "a527bc20a9bd8fbc066586417c6928dbbfef562cc55b130280c3a0c929420d61",
+    "reference_W3.json": "272cc7c4bfe08d7dda6c7b88858f5f344871825d46a93765ce11767c3ed9bc81",
+    "reference_W4.json": "71d8fcd6051f794f1d3ff162548ee4f9d5fbd0b48734150c6f78075e900cac51",
+    "reference_W5.json": "54ccab196f0ab8b946709777f19cee160acc736aeb1cd673bd79b9b1b65c96ee",
+    "reference_W6.json": "facce399dcb7d3d4369c2424a4f025bcdf21e70c0a230a2535747be870d621cf",
+    "reference_W7.json": "642400effdaf3d123d5aa21522b725404e9d55dd1a44e12028bc639e2a52833c",
+    "reference_W7s.json": "680ad3fc59db35edcd30321026ad09844d11ba16258f4def2f513cfc78006609"
+   },
+   "references_revision": "78ff6be4a4d35399775efcf77150b4eab8ae6d44",
+   "tree_clean": true
+  }
+ ],
+ "bitwise_identical": true,
+ "one_clean_revision": true,
+ "precision_50_vs_70_digits": {
+  "compared": "every value of the reference files but provenance",
+  "differing_count": 31,
+  "differing": [
+   {
+    "file": "reference_W1.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 7.95102628736046e+19
+   },
+   {
+    "file": "reference_W1eq.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 7.95102628736046e+19
+   },
+   {
+    "file": "reference_W1eq.json",
+    "path": "heats/intervals/0/heat",
+    "relative_difference": 3.5401721282651356e-16
+   },
+   {
+    "file": "reference_W1eq.json",
+    "path": "heats/intervals/1/heat",
+    "relative_difference": 7.01892414995935e-16
+   },
+   {
+    "file": "reference_W1eq.json",
+    "path": "heats/intervals/2/heat",
+    "relative_difference": 9.859809071910847e-14
+   },
+   {
+    "file": "reference_W1p.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 7.95102628736046e+19
+   },
+   {
+    "file": "reference_W2.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 1.936941964285714e+20
+   },
+   {
+    "file": "reference_W3.json",
+    "path": "equilibrium/wang/C/gap",
+    "relative_difference": 1e+20
+   },
+   {
+    "file": "reference_W4.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 6.963486736076284e+19
+   },
+   {
+    "file": "reference_W6.json",
+    "path": "equilibrium/wang/D/gap",
+    "relative_difference": 1.0653357531760435e+20
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "equilibrium/wang/matrix/gap",
+    "relative_difference": 1.5416666666666666e+20
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "equilibrium/theta/matrix_L1/gap",
+    "relative_difference": 1.5476190476190476e+20
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "equilibrium/theta/matrix_L2/gap",
+    "relative_difference": 1.5454545454545453e+20
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "heats/intervals/0/heat",
+    "relative_difference": 1.2950778126789587e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "heats/intervals/1/heat",
+    "relative_difference": 4.7598035827864884e-14
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/60/value",
+    "relative_difference": 1.2950778126789587e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/63/value",
+    "relative_difference": 4.7598035827864884e-14
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/137/tolerance_terms/moiety_term_information",
+    "relative_difference": null
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/137/tolerance_information",
+    "relative_difference": 0.02083333333333326
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/138/tolerance_terms/moiety_term_information",
+    "relative_difference": null
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "pairs/138/tolerance_information",
+    "relative_difference": 0.02083333333333326
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/n:L1@well",
+    "relative_difference": 2.425213672068492e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/n:L2@well",
+    "relative_difference": 1.5074616155008686e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/R:matrix",
+    "relative_difference": 2.1872294344595192e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/B:matrix_L1",
+    "relative_difference": 2.425213672068492e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "distance_at_horizon/B:matrix_L2",
+    "relative_difference": 1.5074616155008686e-16
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "plants/0/compared/observable",
+    "relative_difference": null
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "plants/0/honest",
+    "relative_difference": 0.5
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "plants/0/planted",
+    "relative_difference": 0.5
+   },
+   {
+    "file": "reference_W7.json",
+    "path": "plants/0/distance_in_bounds",
+    "relative_difference": 0.9999999999999998
+   },
+   {
+    "file": "reference_W7s.json",
+    "path": "equilibrium/theta/matrix_L1/gap",
+    "relative_difference": 5.905797101449276e+19
+   }
+  ]
+ },
+ "format_sample": {
+  "committed_sha256": "42603daa377ca87c9375fa069cac94740eab46fcd8fb0b74cb5a26004c9b52ec",
+  "runs": [
+   {
+    "hash_seed": 0,
+    "cpu": 4,
+    "sha256": "42603daa377ca87c9375fa069cac94740eab46fcd8fb0b74cb5a26004c9b52ec"
+   },
+   {
+    "hash_seed": 1,
+    "cpu": 4,
+    "sha256": "42603daa377ca87c9375fa069cac94740eab46fcd8fb0b74cb5a26004c9b52ec"
+   },
+   {
+    "hash_seed": 2,
+    "cpu": 4,
+    "sha256": "42603daa377ca87c9375fa069cac94740eab46fcd8fb0b74cb5a26004c9b52ec"
+   },
+   {
+    "hash_seed": 0,
+    "cpu": 4,
+    "sha256": "42603daa377ca87c9375fa069cac94740eab46fcd8fb0b74cb5a26004c9b52ec"
+   }
+  ],
+  "bitwise_identical_to_committed": true
+ }
+}
