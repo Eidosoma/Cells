@@ -1164,6 +1164,68 @@ def kir_versus_twin():
     return (shifted, after), (twin, twin_after)
 
 
+@pytest.mark.parametrize("solver", ["n2", "rk4"])
+def test_the_twin_holds_under_n2_and_rk4_and_in_the_clamp(solver):
+    """FR-64's test double beyond ARS(2,2,2) (§9.2; host, about 1 s each): under N2 on B4's
+    world, and under RK4 (25 us, the gated laws' bound) without kinds, which RK4 refuses, the
+    shifted population's start readouts, one step and its clamped flux and current at -30 mV are
+    bit for bit its twin's. The clamp reads the state's gates, so the gate's shift reaches it only
+    through them, and never through permeation."""
+    shift = {"gates": {"m": ph_shift(side="outside", reference_ph=PH_REF, shift_V_per_ph=SIGMA,
+                                    ph_window=[6.8, 7.5])}}  # fmt: skip
+
+    def world(shift, law=None):
+        raw = kir_shifted(shift, declare=solver == "n2")
+        if law is not None:
+            raw["model"]["channels"][0]["kinetic_law"] = law
+        if solver == "n2":
+            raw["execution"]["solver"] = imex.IMPLICIT_CONDUCTANCE_IDS[0]
+        else:
+            raw["execution"].update(solver="rk4", dt=2.5e-5)
+        return raw
+
+    def evaluate(raw):
+        spec = parse_spec(raw)
+        impl, state, p, control = bound(spec)
+        dt = raw["execution"]["dt"]
+        if solver == "rk4":
+            after, valid = impl.checked_step(state, dt, control, p, p.active)
+        else:
+            after, valid = impl.imex_step(state, dt, control, p, xp=np)
+        assert bool(valid)
+        clamp = impl.clamped_channel_flux(state, control, p, -0.030, xp=np)
+        return impl.readouts(state, control, p, xp=np), after, clamp, p
+
+    shifted, after, clamp, p = evaluate(world(shift))
+    law = twin_law(bath_shift_V(p, list(parse_spec(world(None)).model.species_ids)))
+    with law_registry.scope(law_registry.BUILTIN.extended(law)):
+        twin, twin_after, twin_clamp, _ = evaluate(world(None, law.law_id))
+    assert same_bits(shifted, twin) and same_bits(after, twin_after)
+    assert same_bits(clamp, twin_clamp)
+
+
+def test_a_reversal_at_equal_concentrations_is_no_shift():
+    """§9.1's zero size for the reversal (host, about 0.5 s): nav_0's m reads V - E_Na with the
+    cell's Na set to the bath's, so E is 0 and the start's readouts and explicit rates are bit for
+    bit the unshifted world's."""
+
+    def world(shift):
+        raw = kir_shifted(None, nav=shift)
+        cell, bath = raw["model"]["cells"][0], raw["model"]["extracellular"][0]
+        equal = bath["initial_amount_fmol"]["Na"] / bath["volume_pL"] * cell["volume_pL"]
+        cell["fixed_charge_equivalent_fmol"] -= equal - cell["initial_amount_fmol"]["Na"]
+        cell["initial_amount_fmol"]["Na"] = equal
+        spec = parse_spec(raw)
+        impl, state, p, control = bound(spec)
+        values = impl.readouts(state, control, p, xp=np)
+        rates = impl.explicit_rates(state, values.field.potential_V, control, p, xp=np)
+        return values, rates
+
+    shifted = world({"gates": {"m": {"reversal_of": "Na"}}})
+    plain = world(None)
+    assert same_bits(shifted[0], plain[0]) and same_bits(shifted[1], plain[1])
+
+
 def potential_kinetics_at_v(original):
     def planted(potential, p, *, xp=jnp, structure=None, read=None):
         return original(potential, p, xp=xp, structure=structure)
@@ -1201,7 +1263,20 @@ def shift_h_too(fields):
         fields[f"channel_shift_{name}"][1, 0] = fields[f"channel_shift_{name}"][0, 0]
 
 
+def permeation_leak(original):
+    """The shift leaking into permeation: a shifted world's channel voltage moved by 1 mV."""
+
+    def planted(membrane_voltage, p, *, xp=jnp):
+        voltage = original(membrane_voltage, p, xp=xp)
+        if "channel_shift_ph" in type(p)._fields:
+            voltage = voltage - xp.where(xp.any(p.channel_shift_ph, axis=0), 1e-3, 0.0)
+        return voltage
+
+    return planted
+
+
 FR64_GATE_PLANTS = {  # name: (owner, attribute, a function of the original)
+    "the shift leaking into permeation": (v3, "channel_voltage", permeation_leak),
     "the stage gate at V": (v3, "potential_kinetics", potential_kinetics_at_v),
     "tau read at V": (v3, "channel_kinetics", kinetics_tau_at_v),
     "the other side read": (v3, "shift_initial_values", lambda _: shift_layout(flip_side)),
@@ -1227,7 +1302,8 @@ def test_a_gate_on_ph_is_its_twin_bit_for_bit_and_each_plant_breaks_it(plant, mo
     assert equal if plant is None else not equal, plant
 
 
-def test_the_stage_gates_read_each_stage_s_state(monkeypatch):
+@pytest.mark.parametrize("declare", [True, False], ids=["B4", "no kinds"])
+def test_the_stage_gates_read_each_stage_s_state(declare, monkeypatch):
     """FR-64's stage-state row (§9.1; host, about 1 s): nav_0's m reads V - E_Na at its own cell,
     whose Na its own flux moves, so E moves within the step. In one host ARS(2,2,2) step on B4's
     world, every stage's kinetics are bit for bit NaV1.2's law at V - E of that stage's read (m)
@@ -1246,7 +1322,7 @@ def test_the_stage_gates_read_each_stage_s_state(monkeypatch):
             return out
 
         monkeypatch.setattr(v3, "potential_kinetics", capturing)
-        stepped(kir_shifted(None, nav={"gates": {"m": {"reversal_of": "Na"}}}))
+        stepped(kir_shifted(None, declare=declare, nav={"gates": {"m": {"reversal_of": "Na"}}}))
         monkeypatch.undo()
         return captured
 
@@ -1464,20 +1540,33 @@ def test_a_ph_off_its_window_or_a_v_r_off_its_law_s_domain_is_refused():
         parse_spec(kir_shifted({"gates": {"m": {"reversal_of": "K"}}}))
 
 
-@pytest.mark.parametrize("law", list(FR51_SLOT_WRITERS))
+FR64_SLOT_WRITERS = FR51_SLOT_WRITERS | {
+    "cells.model.resolved_pump_replacement@1": lambda: replacement_fixtures.with_replacement(
+        replacement_fixtures.heredity_sheet(radius=1)
+    ),  # The standalone model: it runs the composite's check (cell_replacement.check_definition).
+}
+
+
+@pytest.mark.parametrize("law", list(FR64_SLOT_WRITERS))
 def test_a_gate_shift_beside_an_operator_that_rewrites_channel_slots_is_refused(law, monkeypatch):
     """FR-64's widened slot refusal (parse only, about 1 s each): a gate's shift, with no block,
     beside replacement, partition or insertion is refused by name in the composite form, and with
-    the refusal planted away it is admitted, its shift kept."""
-    raw = FR51_SLOT_WRITERS[law]()
+    the refusal planted away it is admitted, its shift kept. The standalone replacement model
+    meets the same refusal through the composite's check; with it planted away, it fails closed
+    at @3's structure, which it builds without, as FR-51's block does there (D364)."""
+    raw = FR64_SLOT_WRITERS[law]()
     entry = raw["model"]["channels"][0]
     gates = spec_v3.channel_laws()[entry["kinetic_law"]].gates
     assert gates
     ion = next(i["species_id"] for i in entry["permeant_ions"] if i["relative_permeability"])
     entry["voltage_shift"] = {"gates": {gates[0]: {"reversal_of": ion}}}
-    with pytest.raises(ConfigError, match=f"{law} rewrites channel slots but not a voltage shift"):
+    with pytest.raises(ConfigError, match="rewrites channel slots but not a voltage shift"):
         parse_spec(raw)
     monkeypatch.setattr(pump_composite, "block_slot_errors", lambda pairs, spec: [])  # The plant.
+    if law == "cells.model.resolved_pump_replacement@1":  # It then fails closed at the structure.
+        with pytest.raises(ConfigError, match="voltage_shift runs in @3 through its structure"):
+            parse_spec(raw)
+        return
     assert parse_spec(raw).model.channels[0].voltage_shift is not None
 
 
