@@ -25,7 +25,9 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - The nightly of main 7149f90a passed: 497 files, none changed.
   - FR-45 is bound by its protocol's tag, `fr45-protocol-registered-2026-11-27` (D408), after six reads of its contract by a reviewer who has seen no reference value.
   - FR-45's engine: shared site sets in `cells.operator.site_occupancy@1` (D411, de72e530), its D148 round passing.
-  - Next: FR-45's tooling for the registered comparison; FR-64's build (D410); the `results_baseline` fix. X2 (D224) is with the user (D410).
+  - The `results_baseline` fix, with G1's c1 renewed additively (D413).
+  - FR-45's tooling (D415), and its registration merged into main.
+  - Next: FR-45's addenda, then its judged run; FR-64's build (D410). The user has D414's refinement of the X2 rule.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).

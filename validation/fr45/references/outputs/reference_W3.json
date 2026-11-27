@@ -1,0 +1,4850 @@
+{
+ "schema": "fr45-reference/1",
+ "invented": false,
+ "world": {
+  "id": "W3",
+  "title": "a set with three ligands, a second set at the same node, and a set inside a cell",
+  "constants": {
+   "N_f_sites_per_fmol": 602214076,
+   "N_A_per_mol": 6.02214076e+23,
+   "k_B_J_per_K": 1.380649e-23,
+   "T_K": 310.0,
+   "RT_pJ_per_fmol": 2.5774834116275045,
+   "standard_concentration_mM": 1.0,
+   "trace_mM": 1e-12,
+   "epsilon": 2.220446049250313e-16
+  },
+  "nodes": [
+   {
+    "id": "well",
+    "kind": "node",
+    "V": 1.0
+   },
+   {
+    "id": "specimen",
+    "kind": "cell",
+    "V": 1.0
+   }
+  ],
+  "patches": [
+   {
+    "id": "specimen_face",
+    "inside": "specimen",
+    "outside": "well"
+   }
+  ],
+  "ligands": [
+   "L1",
+   "L2",
+   "L3",
+   "L4",
+   "L5"
+  ],
+  "free_amounts": [
+   {
+    "ligand": "L1",
+    "node": "well",
+    "n": 0.002,
+    "declared": true
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "n": 0.0015,
+    "declared": true
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "n": 0.001,
+    "declared": true
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "n": 0.001,
+    "declared": true
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "n": 0.002,
+    "declared": true
+   }
+  ],
+  "sets": [
+   {
+    "id": "A",
+    "owner": "node well",
+    "faces": "well",
+    "copies": 2000000.0,
+    "sites_per_copy": 2,
+    "accessible_fraction": 0.75,
+    "S": 0.00498161720152154
+   },
+   {
+    "id": "B",
+    "owner": "node well",
+    "faces": "well",
+    "copies": 1000000.0,
+    "sites_per_copy": 1,
+    "accessible_fraction": 0.6,
+    "S": 0.000996323440304308
+   },
+   {
+    "id": "C",
+    "owner": "patch specimen_face, inside face",
+    "faces": "specimen",
+    "copies": 1500000.0,
+    "sites_per_copy": 1,
+    "accessible_fraction": 1.0,
+    "S": 0.00249080860076077
+   }
+  ],
+  "populations": [
+   {
+    "id": "A_L1",
+    "set": "A",
+    "ligand": "L1",
+    "faces": "well",
+    "k_on": 2000.0,
+    "k_off": 2.0,
+    "initial_occupancy": 0.2
+   },
+   {
+    "id": "A_L2",
+    "set": "A",
+    "ligand": "L2",
+    "faces": "well",
+    "k_on": 1000.0,
+    "k_off": 0.5,
+    "initial_occupancy": 0.1
+   },
+   {
+    "id": "A_L3",
+    "set": "A",
+    "ligand": "L3",
+    "faces": "well",
+    "k_on": 2000.0,
+    "k_off": 0.4,
+    "initial_occupancy": 0.0
+   },
+   {
+    "id": "B_L2",
+    "set": "B",
+    "ligand": "L2",
+    "faces": "well",
+    "k_on": 3000.0,
+    "k_off": 0.3,
+    "initial_occupancy": 0.05
+   },
+   {
+    "id": "C_L4",
+    "set": "C",
+    "ligand": "L4",
+    "faces": "specimen",
+    "k_on": 1000.0,
+    "k_off": 1.0,
+    "initial_occupancy": 0.0
+   },
+   {
+    "id": "C_L5",
+    "set": "C",
+    "ligand": "L5",
+    "faces": "specimen",
+    "k_on": 2000.0,
+    "k_off": 0.4,
+    "initial_occupancy": 0.0
+   }
+  ],
+  "start": [
+   {
+    "observable": "n:L1@well",
+    "value": 0.002
+   },
+   {
+    "observable": "n:L2@well",
+    "value": 0.0015
+   },
+   {
+    "observable": "n:L3@well",
+    "value": 0.001
+   },
+   {
+    "observable": "n:L4@specimen",
+    "value": 0.001
+   },
+   {
+    "observable": "n:L5@specimen",
+    "value": 0.002
+   },
+   {
+    "observable": "R:A",
+    "value": 0.0034871320410650775
+   },
+   {
+    "observable": "R:B",
+    "value": 0.0009465072682890925
+   },
+   {
+    "observable": "R:C",
+    "value": 0.00249080860076077
+   },
+   {
+    "observable": "B:A_L1",
+    "value": 0.000996323440304308
+   },
+   {
+    "observable": "B:A_L2",
+    "value": 0.000498161720152154
+   },
+   {
+    "observable": "B:A_L3",
+    "value": 0.0
+   },
+   {
+    "observable": "B:B_L2",
+    "value": 4.98161720152154e-05
+   },
+   {
+    "observable": "B:C_L4",
+    "value": 0.0
+   },
+   {
+    "observable": "B:C_L5",
+    "value": 0.0
+   }
+  ],
+  "dt": [
+   0.004
+  ],
+  "observation_times": [
+   0.1,
+   0.2,
+   0.5,
+   1.0,
+   2.0,
+   4.0,
+   8.0,
+   16.0,
+   30.0
+  ],
+  "horizon": 30.0
+ },
+ "units": {
+  "copies": "count (the one declared count)",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM",
+  "k_on": "per mM per s",
+  "k_off": "per s",
+  "time": "s",
+  "free_energy_and_heat": "pJ",
+  "tolerance_gap": "the observable's own unit",
+  "distance_in_bounds": "multiples of the criterion's bound"
+ },
+ "equilibrium": {
+  "totals": "the start's totals",
+  "sets": {
+   "A": 0.0014086111934123273,
+   "B": 0.00022880676224212363,
+   "C": 0.0006078742987357649
+  },
+  "populations": {
+   "A_L1": 0.0017523188253214484,
+   "A_L2": 0.0009450180346549218,
+   "A_L3": 0.0008756691481328422,
+   "B_L2": 0.0007675166780621843,
+   "C_L4": 0.0003780608342416585,
+   "C_L5": 0.0015048734677833465
+  },
+  "pools": {
+   "L1@well": 0.0012440046149828595,
+   "L2@well": 0.00033544317945026334,
+   "L3@well": 0.0001243308518671578,
+   "L4@specimen": 0.0006219391657583416,
+   "L5@specimen": 0.0004951265322166535
+  },
+  "residual": 1.0842021724855044e-19,
+  "residual_definition": "largest |residual| in fmol of the ligand totals, set moieties and detailed balance B_b = R_s c_l / K_b, at the written binary64 values",
+  "wang": {
+   "C": {
+    "gap": 5e-73
+   }
+  }
+ },
+ "trajectory": [
+  {
+   "observable": "n:L1@well",
+   "time_s": 0.1,
+   "value": 0.0013869795671079895,
+   "tolerance_gap": 8.543513119185775e-17
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 0.1,
+   "value": 0.0009362089134711172,
+   "tolerance_gap": 2.3744027577432547e-17
+  },
+  {
+   "observable": "n:L3@well",
+   "time_s": 0.1,
+   "value": 0.0005911253070403844,
+   "tolerance_gap": 2.5912431922403556e-17
+  },
+  {
+   "observable": "n:L4@specimen",
+   "time_s": 0.1,
+   "value": 0.0008261409146627155,
+   "tolerance_gap": 8.673617379884035e-19
+  },
+  {
+   "observable": "n:L5@specimen",
+   "time_s": 0.1,
+   "value": 0.0013480942762718992,
+   "tolerance_gap": 4.336808689942018e-18
+  },
+  {
+   "observable": "R:A",
+   "time_s": 0.1,
+   "value": 0.0021765328097349823,
+   "tolerance_gap": 1.2923689896027213e-16
+  },
+  {
+   "observable": "R:B",
+   "time_s": 0.1,
+   "value": 0.0006714202872386786,
+   "tolerance_gap": 7.047314121155779e-18
+  },
+  {
+   "observable": "R:C",
+   "time_s": 0.1,
+   "value": 0.0016650437916953845,
+   "tolerance_gap": 4.9873299934333204e-18
+  },
+  {
+   "observable": "B:A_L1",
+   "time_s": 0.1,
+   "value": 0.0016093438731963185,
+   "tolerance_gap": 8.543513119185775e-17
+  },
+  {
+   "observable": "B:A_L2",
+   "time_s": 0.1,
+   "value": 0.000786865825630623,
+   "tolerance_gap": 1.6479873021779667e-17
+  },
+  {
+   "observable": "B:A_L3",
+   "time_s": 0.1,
+   "value": 0.0004088746929596157,
+   "tolerance_gap": 2.5804011705155006e-17
+  },
+  {
+   "observable": "B:B_L2",
+   "time_s": 0.1,
+   "value": 0.00032490315306562927,
+   "tolerance_gap": 6.7220534694101275e-18
+  },
+  {
+   "observable": "B:C_L4",
+   "time_s": 0.1,
+   "value": 0.0001738590853372845,
+   "tolerance_gap": 1.1655173354219173e-18
+  },
+  {
+   "observable": "B:C_L5",
+   "time_s": 0.1,
+   "value": 0.0006519057237281009,
+   "tolerance_gap": 4.119968255444917e-18
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 0.2,
+   "value": 0.0012301297249276636,
+   "tolerance_gap": 1.201296007113939e-16
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 0.2,
+   "value": 0.0006915280797335623,
+   "tolerance_gap": 2.938187887435717e-17
+  },
+  {
+   "observable": "n:L3@well",
+   "time_s": 0.2,
+   "value": 0.0004194856552620627,
+   "tolerance_gap": 3.030345072096985e-17
+  },
+  {
+   "observable": "n:L4@specimen",
+   "time_s": 0.2,
+   "value": 0.0007359752810128083,
+   "tolerance_gap": 2.168404344971009e-18
+  },
+  {
+   "observable": "n:L5@specimen",
+   "time_s": 0.2,
+   "value": 0.0010388320930665995,
+   "tolerance_gap": 8.456776945386935e-18
+  },
+  {
+   "observable": "R:A",
+   "time_s": 0.2,
+   "value": 0.001735879063812467,
+   "tolerance_gap": 1.723881454251952e-16
+  },
+  {
+   "observable": "R:B",
+   "time_s": 0.2,
+   "value": 0.0005389037054649917,
+   "tolerance_gap": 8.998878031629687e-18
+  },
+  {
+   "observable": "R:C",
+   "time_s": 0.2,
+   "value": 0.0012656159748401776,
+   "tolerance_gap": 1.0842021724855044e-17
+  },
+  {
+   "observable": "B:A_L1",
+   "time_s": 0.2,
+   "value": 0.0017661937153766443,
+   "tolerance_gap": 1.201296007113939e-16
+  },
+  {
+   "observable": "B:A_L2",
+   "time_s": 0.2,
+   "value": 0.0008990300775944909,
+   "tolerance_gap": 2.0383000842727483e-17
+  },
+  {
+   "observable": "B:A_L3",
+   "time_s": 0.2,
+   "value": 0.0005805143447379373,
+   "tolerance_gap": 3.0357660829594124e-17
+  },
+  {
+   "observable": "B:B_L2",
+   "time_s": 0.2,
+   "value": 0.0004574197348393162,
+   "tolerance_gap": 8.72782748850831e-18
+  },
+  {
+   "observable": "B:C_L4",
+   "time_s": 0.2,
+   "value": 0.0002640247189871917,
+   "tolerance_gap": 2.5478751053409354e-18
+  },
+  {
+   "observable": "B:C_L5",
+   "time_s": 0.2,
+   "value": 0.0009611679069334004,
+   "tolerance_gap": 8.348356728138384e-18
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 0.5,
+   "value": 0.0012089180540023653,
+   "tolerance_gap": 1.975416358268589e-16
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 0.5,
+   "value": 0.00042883416149481726,
+   "tolerance_gap": 3.881443777498106e-17
+  },
+  {
+   "observable": "n:L3@well",
+   "time_s": 0.5,
+   "value": 0.00022490400630490674,
+   "tolerance_gap": 3.42336835962298e-17
+  },
+  {
+   "observable": "n:L4@specimen",
+   "time_s": 0.5,
+   "value": 0.0006339946227221703,
+   "tolerance_gap": 7.589415207398531e-18
+  },
+  {
+   "observable": "n:L5@specimen",
+   "time_s": 0.5,
+   "value": 0.0006851643293769185,
+   "tolerance_gap": 1.984089975648473e-17
+  },
+  {
+   "observable": "R:A",
+   "time_s": 0.5,
+   "value": 0.0014206855246872848,
+   "tolerance_gap": 2.5977484052752686e-16
+  },
+  {
+   "observable": "R:B",
+   "time_s": 0.5,
+   "value": 0.00037561000646897457,
+   "tolerance_gap": 1.1980434005964824e-17
+  },
+  {
+   "observable": "R:C",
+   "time_s": 0.5,
+   "value": 0.0008099675528598586,
+   "tolerance_gap": 2.7972416050126014e-17
+  },
+  {
+   "observable": "B:A_L1",
+   "time_s": 0.5,
+   "value": 0.0017874053863019426,
+   "tolerance_gap": 1.975416358268589e-16
+  },
+  {
+   "observable": "B:A_L2",
+   "time_s": 0.5,
+   "value": 0.0009984302968372189,
+   "tolerance_gap": 2.710505431213761e-17
+  },
+  {
+   "observable": "B:A_L3",
+   "time_s": 0.5,
+   "value": 0.0007750959936950933,
+   "tolerance_gap": 3.404394821604484e-17
+  },
+  {
+   "observable": "B:B_L2",
+   "time_s": 0.5,
+   "value": 0.0006207134338353333,
+   "tolerance_gap": 1.1926223897340549e-17
+  },
+  {
+   "observable": "B:C_L4",
+   "time_s": 0.5,
+   "value": 0.0003660053772778298,
+   "tolerance_gap": 7.643625316022806e-18
+  },
+  {
+   "observable": "B:C_L5",
+   "time_s": 0.5,
+   "value": 0.0013148356706230815,
+   "tolerance_gap": 2.0383000842727483e-17
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 1.0,
+   "value": 0.001252578200928889,
+   "tolerance_gap": 3.896622607912903e-16
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 1.0,
+   "value": 0.0003405655755926617,
+   "tolerance_gap": 6.69494841509799e-17
+  },
+  {
+   "observable": "n:L3@well",
+   "time_s": 1.0,
+   "value": 0.00014631286398458283,
+   "tolerance_gap": 4.971066960846038e-17
+  },
+  {
+   "observable": "n:L4@specimen",
+   "time_s": 1.0,
+   "value": 0.0006092057206209407,
+   "tolerance_gap": 2.168404344971009e-17
+  },
+  {
+   "observable": "n:L5@specimen",
+   "time_s": 1.0,
+   "value": 0.0005443034989448033,
+   "tolerance_gap": 4.586175189613684e-17
+  },
+  {
+   "observable": "R:A",
+   "time_s": 1.0,
+   "value": 0.0013795669895499973,
+   "tolerance_gap": 4.87890977618477e-16
+  },
+  {
+   "observable": "R:B",
+   "time_s": 1.0,
+   "value": 0.0002935289603103065,
+   "tolerance_gap": 1.973247953923618e-17
+  },
+  {
+   "observable": "R:C",
+   "time_s": 1.0,
+   "value": 0.0006443178203265139,
+   "tolerance_gap": 6.862999751833243e-17
+  },
+  {
+   "observable": "B:A_L1",
+   "time_s": 1.0,
+   "value": 0.001743745239375419,
+   "tolerance_gap": 3.896622607912903e-16
+  },
+  {
+   "observable": "B:A_L2",
+   "time_s": 1.0,
+   "value": 0.0010046178365807064,
+   "tolerance_gap": 4.7488055154865094e-17
+  },
+  {
+   "observable": "B:A_L3",
+   "time_s": 1.0,
+   "value": 0.0008536871360154172,
+   "tolerance_gap": 4.954803928258755e-17
+  },
+  {
+   "observable": "B:B_L2",
+   "time_s": 1.0,
+   "value": 0.0007027944799940014,
+   "tolerance_gap": 1.9949319973733282e-17
+  },
+  {
+   "observable": "B:C_L4",
+   "time_s": 1.0,
+   "value": 0.0003907942793790593,
+   "tolerance_gap": 2.2063514210080015e-17
+  },
+  {
+   "observable": "B:C_L5",
+   "time_s": 1.0,
+   "value": 0.0014556965010551967,
+   "tolerance_gap": 4.618701254788249e-17
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 2.0,
+   "value": 0.0012529459980026945,
+   "tolerance_gap": 3.3176586478056436e-17
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 2.0,
+   "value": 0.00032983911457814836,
+   "tolerance_gap": 7.26415455565288e-17
+  },
+  {
+   "observable": "n:L3@well",
+   "time_s": 2.0,
+   "value": 0.00012662555200280875,
+   "tolerance_gap": 6.266688556966216e-17
+  },
+  {
+   "observable": "n:L4@specimen",
+   "time_s": 2.0,
+   "value": 0.0006172205379851469,
+   "tolerance_gap": 4.228388472693467e-17
+  },
+  {
+   "observable": "n:L5@specimen",
+   "time_s": 2.0,
+   "value": 0.0005012302991136238,
+   "tolerance_gap": 7.741203511546502e-17
+  },
+  {
+   "observable": "R:A",
+   "time_s": 2.0,
+   "value": 0.0013945038925849943,
+   "tolerance_gap": 1.4137996329210978e-16
+  },
+  {
+   "observable": "R:B",
+   "time_s": 2.0,
+   "value": 0.0002485460813528274,
+   "tolerance_gap": 2.8080836267374565e-17
+  },
+  {
+   "observable": "R:C",
+   "time_s": 2.0,
+   "value": 0.0006092594378595405,
+   "tolerance_gap": 1.20346441145891e-16
+  },
+  {
+   "observable": "B:A_L1",
+   "time_s": 2.0,
+   "value": 0.0017433774423016135,
+   "tolerance_gap": 3.3176586478056436e-17
+  },
+  {
+   "observable": "B:A_L2",
+   "time_s": 2.0,
+   "value": 0.0009703614186377406,
+   "tolerance_gap": 4.4994390158148434e-17
+  },
+  {
+   "observable": "B:A_L3",
+   "time_s": 2.0,
+   "value": 0.0008733744479971913,
+   "tolerance_gap": 6.245004513516506e-17
+  },
+  {
+   "observable": "B:B_L2",
+   "time_s": 2.0,
+   "value": 0.0007477773589514804,
+   "tolerance_gap": 2.8297676701871666e-17
+  },
+  {
+   "observable": "B:C_L4",
+   "time_s": 2.0,
+   "value": 0.00038277946201485316,
+   "tolerance_gap": 4.26633554873046e-17
+  },
+  {
+   "observable": "B:C_L5",
+   "time_s": 2.0,
+   "value": 0.0014987697008863763,
+   "tolerance_gap": 7.806255641895632e-17
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 4.0,
+   "value": 0.001245181490635265,
+   "tolerance_gap": 4.844215306665234e-16
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 4.0,
+   "value": 0.0003346160437247249,
+   "tolerance_gap": 1.2132222310112795e-16
+  },
+  {
+   "observable": "n:L3@well",
+   "time_s": 4.0,
+   "value": 0.00012453664713760215,
+   "tolerance_gap": 8.977193988179977e-17
+  },
+  {
+   "observable": "n:L4@specimen",
+   "time_s": 4.0,
+   "value": 0.0006217303128813053,
+   "tolerance_gap": 2.3418766925686896e-17
+  },
+  {
+   "observable": "n:L5@specimen",
+   "time_s": 4.0,
+   "value": 0.000495336585987916,
+   "tolerance_gap": 8.380882793312949e-17
+  },
+  {
+   "observable": "R:A",
+   "time_s": 4.0,
+   "value": 0.001406833624161611,
+   "tolerance_gap": 6.561591547882273e-16
+  },
+  {
+   "observable": "R:B",
+   "time_s": 4.0,
+   "value": 0.00023113986669015123,
+   "tolerance_gap": 4.025100565352435e-17
+  },
+  {
+   "observable": "R:C",
+   "time_s": 4.0,
+   "value": 0.0006078754996299912,
+   "tolerance_gap": 1.0809495659680479e-16
+  },
+  {
+   "observable": "B:A_L1",
+   "time_s": 4.0,
+   "value": 0.001751141949669043,
+   "tolerance_gap": 4.844215306665234e-16
+  },
+  {
+   "observable": "B:A_L2",
+   "time_s": 4.0,
+   "value": 0.0009481782748284879,
+   "tolerance_gap": 8.164042358815848e-17
+  },
+  {
+   "observable": "B:A_L3",
+   "time_s": 4.0,
+   "value": 0.0008754633528623979,
+   "tolerance_gap": 8.955509944730267e-17
+  },
+  {
+   "observable": "B:B_L2",
+   "time_s": 4.0,
+   "value": 0.0007651835736141567,
+   "tolerance_gap": 4.0332320816460765e-17
+  },
+  {
+   "observable": "B:C_L4",
+   "time_s": 4.0,
+   "value": 0.00037826968711869466,
+   "tolerance_gap": 2.3852447794681098e-17
+  },
+  {
+   "observable": "B:C_L5",
+   "time_s": 4.0,
+   "value": 0.001504663414012084,
+   "tolerance_gap": 8.478460988836645e-17
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 8.0,
+   "value": 0.00124402160517935,
+   "tolerance_gap": 1.496198998029996e-17
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 8.0,
+   "value": 0.0003354311493826177,
+   "tolerance_gap": 1.4094628242311558e-17
+  },
+  {
+   "observable": "n:L3@well",
+   "time_s": 8.0,
+   "value": 0.00012433380959645852,
+   "tolerance_gap": 3.957337929572091e-18
+  },
+  {
+   "observable": "n:L4@specimen",
+   "time_s": 8.0,
+   "value": 0.00062193883218889,
+   "tolerance_gap": 2.1467203015212988e-17
+  },
+  {
+   "observable": "n:L5@specimen",
+   "time_s": 8.0,
+   "value": 0.0004951268641673051,
+   "tolerance_gap": 2.0708261494473135e-17
+  },
+  {
+   "observable": "R:A",
+   "time_s": 8.0,
+   "value": 0.0014085855383587456,
+   "tolerance_gap": 4.163336342344337e-17
+  },
+  {
+   "observable": "R:B",
+   "time_s": 8.0,
+   "value": 0.00022884033515385097,
+   "tolerance_gap": 4.686463890568593e-17
+  },
+  {
+   "observable": "R:C",
+   "time_s": 8.0,
+   "value": 0.0006078742971169649,
+   "tolerance_gap": 1.0842021724855044e-19
+  },
+  {
+   "observable": "B:A_L1",
+   "time_s": 8.0,
+   "value": 0.0017523018351249578,
+   "tolerance_gap": 1.496198998029996e-17
+  },
+  {
+   "observable": "B:A_L2",
+   "time_s": 8.0,
+   "value": 0.0009450636376342949,
+   "tolerance_gap": 6.071532165918825e-17
+  },
+  {
+   "observable": "B:A_L3",
+   "time_s": 8.0,
+   "value": 0.0008756661904035414,
+   "tolerance_gap": 3.7947076036992655e-18
+  },
+  {
+   "observable": "B:B_L2",
+   "time_s": 8.0,
+   "value": 0.0007674831051504569,
+   "tolerance_gap": 4.672911363412524e-17
+  },
+  {
+   "observable": "B:C_L4",
+   "time_s": 8.0,
+   "value": 0.00037806116781110996,
+   "tolerance_gap": 2.108773225484306e-17
+  },
+  {
+   "observable": "B:C_L5",
+   "time_s": 8.0,
+   "value": 0.001504873135832695,
+   "tolerance_gap": 2.211772431870429e-17
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 16.0,
+   "value": 0.0012440046185002967,
+   "tolerance_gap": 1.2758891165809416e-15
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 16.0,
+   "value": 0.0003354431769594821,
+   "tolerance_gap": 9.730714498057402e-17
+  },
+  {
+   "observable": "n:L3@well",
+   "time_s": 16.0,
+   "value": 0.00012433085247948584,
+   "tolerance_gap": 8.229094489164979e-17
+  },
+  {
+   "observable": "n:L4@specimen",
+   "time_s": 16.0,
+   "value": 0.0006219391657574975,
+   "tolerance_gap": 1.0842021724855044e-18
+  },
+  {
+   "observable": "n:L5@specimen",
+   "time_s": 16.0,
+   "value": 0.0004951265322174934,
+   "tolerance_gap": 1.6263032587282567e-18
+  },
+  {
+   "observable": "R:A",
+   "time_s": 16.0,
+   "value": 0.001408611188101009,
+   "tolerance_gap": 1.4424225702747151e-15
+  },
+  {
+   "observable": "R:B",
+   "time_s": 16.0,
+   "value": 0.00022880676919242575,
+   "tolerance_gap": 1.3145951341386741e-17
+  },
+  {
+   "observable": "R:C",
+   "time_s": 16.0,
+   "value": 0.0006078742987357607,
+   "tolerance_gap": 1.8431436932253575e-18
+  },
+  {
+   "observable": "B:A_L1",
+   "time_s": 16.0,
+   "value": 0.0017523188218040112,
+   "tolerance_gap": 1.2758891165809416e-15
+  },
+  {
+   "observable": "B:A_L2",
+   "time_s": 16.0,
+   "value": 0.0009450180440960051,
+   "tolerance_gap": 8.413408858487514e-17
+  },
+  {
+   "observable": "B:A_L3",
+   "time_s": 16.0,
+   "value": 0.0008756691475205142,
+   "tolerance_gap": 8.196568423990414e-17
+  },
+  {
+   "observable": "B:B_L2",
+   "time_s": 16.0,
+   "value": 0.0007675166711118822,
+   "tolerance_gap": 1.3118846287074604e-17
+  },
+  {
+   "observable": "B:C_L4",
+   "time_s": 16.0,
+   "value": 0.0003780608342425025,
+   "tolerance_gap": 7.047314121155779e-19
+  },
+  {
+   "observable": "B:C_L5",
+   "time_s": 16.0,
+   "value": 0.0015048734677825066,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L1@well",
+   "time_s": 30.0,
+   "value": 0.0012440046149828608,
+   "tolerance_gap": 3.148523108897905e-16
+  },
+  {
+   "observable": "n:L2@well",
+   "time_s": 30.0,
+   "value": 0.0003354431794502625,
+   "tolerance_gap": 2.4340338772299575e-17
+  },
+  {
+   "observable": "n:L3@well",
+   "time_s": 30.0,
+   "value": 0.00012433085186715803,
+   "tolerance_gap": 2.0139055353918245e-17
+  },
+  {
+   "observable": "n:L4@specimen",
+   "time_s": 30.0,
+   "value": 0.0006219391657583416,
+   "tolerance_gap": 4.336808689942018e-19
+  },
+  {
+   "observable": "n:L5@specimen",
+   "time_s": 30.0,
+   "value": 0.0004951265322166535,
+   "tolerance_gap": 4.336808689942018e-19
+  },
+  {
+   "observable": "R:A",
+   "time_s": 30.0,
+   "value": 0.0014086111934123254,
+   "tolerance_gap": 3.5626883387873676e-16
+  },
+  {
+   "observable": "R:B",
+   "time_s": 30.0,
+   "value": 0.00022880676224212613,
+   "tolerance_gap": 2.710505431213761e-18
+  },
+  {
+   "observable": "R:C",
+   "time_s": 30.0,
+   "value": 0.0006078742987357649,
+   "tolerance_gap": 1.0842021724855044e-19
+  },
+  {
+   "observable": "B:A_L1",
+   "time_s": 30.0,
+   "value": 0.0017523188253214471,
+   "tolerance_gap": 3.148523108897905e-16
+  },
+  {
+   "observable": "B:A_L2",
+   "time_s": 30.0,
+   "value": 0.0009450180346549251,
+   "tolerance_gap": 2.179246366695864e-17
+  },
+  {
+   "observable": "B:A_L3",
+   "time_s": 30.0,
+   "value": 0.000875669148132842,
+   "tolerance_gap": 1.9949319973733282e-17
+  },
+  {
+   "observable": "B:B_L2",
+   "time_s": 30.0,
+   "value": 0.0007675166780621818,
+   "tolerance_gap": 2.710505431213761e-18
+  },
+  {
+   "observable": "B:C_L4",
+   "time_s": 30.0,
+   "value": 0.0003780608342416585,
+   "tolerance_gap": 1.0842021724855044e-19
+  },
+  {
+   "observable": "B:C_L5",
+   "time_s": 30.0,
+   "value": 0.0015048734677833465,
+   "tolerance_gap": 1.3010426069826053e-18
+  }
+ ],
+ "balances": {
+  "ligands": [
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 0.1,
+    "total": 0.002996323440304308
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 0.1,
+    "total": 0.0020479778921673694
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "time_s": 0.1,
+    "total": 0.001
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "time_s": 0.1,
+    "total": 0.001
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "time_s": 0.1,
+    "total": 0.002
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 0.2,
+    "total": 0.002996323440304308
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 0.2,
+    "total": 0.0020479778921673694
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "time_s": 0.2,
+    "total": 0.001
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "time_s": 0.2,
+    "total": 0.001
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "time_s": 0.2,
+    "total": 0.002
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 0.5,
+    "total": 0.002996323440304308
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 0.5,
+    "total": 0.0020479778921673694
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "time_s": 0.5,
+    "total": 0.001
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "time_s": 0.5,
+    "total": 0.001
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "time_s": 0.5,
+    "total": 0.002
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 1.0,
+    "total": 0.002996323440304308
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 1.0,
+    "total": 0.0020479778921673694
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "time_s": 1.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "time_s": 1.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "time_s": 1.0,
+    "total": 0.002
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 2.0,
+    "total": 0.002996323440304308
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 2.0,
+    "total": 0.0020479778921673694
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "time_s": 2.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "time_s": 2.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "time_s": 2.0,
+    "total": 0.002
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 4.0,
+    "total": 0.002996323440304308
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 4.0,
+    "total": 0.0020479778921673694
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "time_s": 4.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "time_s": 4.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "time_s": 4.0,
+    "total": 0.002
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 8.0,
+    "total": 0.002996323440304308
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 8.0,
+    "total": 0.0020479778921673694
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "time_s": 8.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "time_s": 8.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "time_s": 8.0,
+    "total": 0.002
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 16.0,
+    "total": 0.002996323440304308
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 16.0,
+    "total": 0.0020479778921673694
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "time_s": 16.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "time_s": 16.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "time_s": 16.0,
+    "total": 0.002
+   },
+   {
+    "ligand": "L1",
+    "node": "well",
+    "time_s": 30.0,
+    "total": 0.002996323440304308
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "time_s": 30.0,
+    "total": 0.0020479778921673694
+   },
+   {
+    "ligand": "L3",
+    "node": "well",
+    "time_s": 30.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L4",
+    "node": "specimen",
+    "time_s": 30.0,
+    "total": 0.001
+   },
+   {
+    "ligand": "L5",
+    "node": "specimen",
+    "time_s": 30.0,
+    "total": 0.002
+   }
+  ],
+  "sets": [
+   {
+    "set": "A",
+    "time_s": 0.1,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "B",
+    "time_s": 0.1,
+    "sites": 0.000996323440304308
+   },
+   {
+    "set": "C",
+    "time_s": 0.1,
+    "sites": 0.00249080860076077
+   },
+   {
+    "set": "A",
+    "time_s": 0.2,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "B",
+    "time_s": 0.2,
+    "sites": 0.000996323440304308
+   },
+   {
+    "set": "C",
+    "time_s": 0.2,
+    "sites": 0.00249080860076077
+   },
+   {
+    "set": "A",
+    "time_s": 0.5,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "B",
+    "time_s": 0.5,
+    "sites": 0.000996323440304308
+   },
+   {
+    "set": "C",
+    "time_s": 0.5,
+    "sites": 0.00249080860076077
+   },
+   {
+    "set": "A",
+    "time_s": 1.0,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "B",
+    "time_s": 1.0,
+    "sites": 0.000996323440304308
+   },
+   {
+    "set": "C",
+    "time_s": 1.0,
+    "sites": 0.00249080860076077
+   },
+   {
+    "set": "A",
+    "time_s": 2.0,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "B",
+    "time_s": 2.0,
+    "sites": 0.000996323440304308
+   },
+   {
+    "set": "C",
+    "time_s": 2.0,
+    "sites": 0.00249080860076077
+   },
+   {
+    "set": "A",
+    "time_s": 4.0,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "B",
+    "time_s": 4.0,
+    "sites": 0.000996323440304308
+   },
+   {
+    "set": "C",
+    "time_s": 4.0,
+    "sites": 0.00249080860076077
+   },
+   {
+    "set": "A",
+    "time_s": 8.0,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "B",
+    "time_s": 8.0,
+    "sites": 0.000996323440304308
+   },
+   {
+    "set": "C",
+    "time_s": 8.0,
+    "sites": 0.00249080860076077
+   },
+   {
+    "set": "A",
+    "time_s": 16.0,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "B",
+    "time_s": 16.0,
+    "sites": 0.000996323440304308
+   },
+   {
+    "set": "C",
+    "time_s": 16.0,
+    "sites": 0.00249080860076077
+   },
+   {
+    "set": "A",
+    "time_s": 30.0,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "B",
+    "time_s": 30.0,
+    "sites": 0.000996323440304308
+   },
+   {
+    "set": "C",
+    "time_s": 30.0,
+    "sites": 0.00249080860076077
+   }
+  ]
+ },
+ "heats": {
+  "intervals": [
+   {
+    "node": "well",
+    "start_s": 0.0,
+    "end_s": 0.1,
+    "heat": 0.0112148510030845,
+    "bound": 2.7393963333525683e-06,
+    "tolerance_gap": 4.323517811380498e-16
+   },
+   {
+    "node": "well",
+    "start_s": 0.1,
+    "end_s": 0.2,
+    "heat": 0.002432417272045141,
+    "bound": 2.5234522703792378e-06,
+    "tolerance_gap": 1.350629046605556e-16
+   },
+   {
+    "node": "well",
+    "start_s": 0.2,
+    "end_s": 0.5,
+    "heat": 0.0014686089273655148,
+    "bound": 2.5461376370135874e-06,
+    "tolerance_gap": 2.113939157860554e-16
+   },
+   {
+    "node": "well",
+    "start_s": 0.5,
+    "end_s": 1.0,
+    "heat": 0.00023692166094249544,
+    "bound": 2.5761114580665667e-06,
+    "tolerance_gap": 5.809095697520014e-17
+   },
+   {
+    "node": "well",
+    "start_s": 1.0,
+    "end_s": 2.0,
+    "heat": 3.5916724330568296e-05,
+    "bound": 2.593736975113387e-06,
+    "tolerance_gap": 1.7243260045896768e-17
+   },
+   {
+    "node": "well",
+    "start_s": 2.0,
+    "end_s": 4.0,
+    "heat": 4.107980280022922e-06,
+    "bound": 2.599982260854491e-06,
+    "tolerance_gap": 2.2265484148414417e-18
+   },
+   {
+    "node": "well",
+    "start_s": 4.0,
+    "end_s": 8.0,
+    "heat": 6.17737956438804e-08,
+    "bound": 2.6013095384772028e-06,
+    "tolerance_gap": 1.0218275860719814e-17
+   },
+   {
+    "node": "well",
+    "start_s": 8.0,
+    "end_s": 16.0,
+    "heat": 1.2849947855590817e-11,
+    "bound": 2.6014605418522417e-06,
+    "tolerance_gap": 7.099753869502457e-18
+   },
+   {
+    "node": "well",
+    "start_s": 16.0,
+    "end_s": 30.0,
+    "heat": 5.507504617405167e-19,
+    "bound": 2.601462726433963e-06,
+    "tolerance_gap": 8.160165783511933e-18
+   },
+   {
+    "node": "specimen",
+    "start_s": 0.0,
+    "end_s": 0.1,
+    "heat": 0.008691650369514541,
+    "bound": 1.2803624729458384e-06,
+    "tolerance_gap": 3.7736486968680347e-17
+   },
+   {
+    "node": "specimen",
+    "start_s": 0.1,
+    "end_s": 0.2,
+    "heat": 0.002285236443170298,
+    "bound": 9.876631978522285e-07,
+    "tolerance_gap": 1.7006242925883135e-17
+   },
+   {
+    "node": "specimen",
+    "start_s": 0.2,
+    "end_s": 0.5,
+    "heat": 0.001450210967802488,
+    "bound": 9.904386485717522e-07,
+    "tolerance_gap": 2.3931804528648633e-18
+   },
+   {
+    "node": "specimen",
+    "start_s": 0.5,
+    "end_s": 1.0,
+    "heat": 0.0001834659313895591,
+    "bound": 9.99468773611463e-07,
+    "tolerance_gap": 2.1527835201762615e-17
+   },
+   {
+    "node": "specimen",
+    "start_s": 1.0,
+    "end_s": 2.0,
+    "heat": 1.1581594558728378e-05,
+    "bound": 1.00522641579953e-06,
+    "tolerance_gap": 1.345048373614243e-17
+   },
+   {
+    "node": "specimen",
+    "start_s": 2.0,
+    "end_s": 4.0,
+    "heat": 2.5403631571933547e-07,
+    "bound": 1.006916552817635e-06,
+    "tolerance_gap": 5.878046463760106e-18
+   },
+   {
+    "node": "specimen",
+    "start_s": 4.0,
+    "end_s": 8.0,
+    "heat": 3.9167727731736876e-10,
+    "bound": 1.0071123806899938e-06,
+    "tolerance_gap": 7.808801416063529e-18
+   },
+   {
+    "node": "specimen",
+    "start_s": 8.0,
+    "end_s": 16.0,
+    "heat": 9.910406255284403e-16,
+    "bound": 1.0071188385851755e-06,
+    "tolerance_gap": 4.482883235674768e-18
+   },
+   {
+    "node": "specimen",
+    "start_s": 16.0,
+    "end_s": 30.0,
+    "heat": 6.3444180369338254e-27,
+    "bound": 1.0071188487694746e-06,
+    "tolerance_gap": 5.3934917597804635e-18
+   }
+  ],
+  "G": [
+   {
+    "node": "well",
+    "time_s": 0.0,
+    "G": -0.12606524530672092
+   },
+   {
+    "node": "well",
+    "time_s": 0.1,
+    "G": -0.1372800963098054
+   },
+   {
+    "node": "well",
+    "time_s": 0.2,
+    "G": -0.13971251358185055
+   },
+   {
+    "node": "well",
+    "time_s": 0.5,
+    "G": -0.14118112250921605
+   },
+   {
+    "node": "well",
+    "time_s": 1.0,
+    "G": -0.14141804417015855
+   },
+   {
+    "node": "well",
+    "time_s": 2.0,
+    "G": -0.1414539608944891
+   },
+   {
+    "node": "well",
+    "time_s": 4.0,
+    "G": -0.14145806887476914
+   },
+   {
+    "node": "well",
+    "time_s": 8.0,
+    "G": -0.1414581306485648
+   },
+   {
+    "node": "well",
+    "time_s": 16.0,
+    "G": -0.14145813066141474
+   },
+   {
+    "node": "well",
+    "time_s": 30.0,
+    "G": -0.14145813066141474
+   },
+   {
+    "node": "specimen",
+    "time_s": 0.0,
+    "G": -0.05757317344493959
+   },
+   {
+    "node": "specimen",
+    "time_s": 0.1,
+    "G": -0.06626482381445413
+   },
+   {
+    "node": "specimen",
+    "time_s": 0.2,
+    "G": -0.06855006025762443
+   },
+   {
+    "node": "specimen",
+    "time_s": 0.5,
+    "G": -0.07000027122542692
+   },
+   {
+    "node": "specimen",
+    "time_s": 1.0,
+    "G": -0.07018373715681647
+   },
+   {
+    "node": "specimen",
+    "time_s": 2.0,
+    "G": -0.0701953187513752
+   },
+   {
+    "node": "specimen",
+    "time_s": 4.0,
+    "G": -0.07019557278769092
+   },
+   {
+    "node": "specimen",
+    "time_s": 8.0,
+    "G": -0.0701955731793682
+   },
+   {
+    "node": "specimen",
+    "time_s": 16.0,
+    "G": -0.0701955731793692
+   },
+   {
+    "node": "specimen",
+    "time_s": 30.0,
+    "G": -0.0701955731793692
+   }
+  ]
+ },
+ "pairs": [
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0013869795671079895,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L2@well",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0009362089134711172,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L3@well",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0005911253070403844,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L4@specimen",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0008261409146627155,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L5@specimen",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0013480942762718992,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:A",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0021765328097349823,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:B",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0006714202872386786,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:C",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0016650437916953845,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L1",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0016093438731963185,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L2",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.000786865825630623,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L3",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0004088746929596157,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:B_L2",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.00032490315306562927,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L4",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0001738590853372845,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L5",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0006519057237281009,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0012301297249276636,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L2@well",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0006915280797335623,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L3@well",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0004194856552620627,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L4@specimen",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0007359752810128083,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L5@specimen",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0010388320930665995,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:A",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.001735879063812467,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:B",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0005389037054649917,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:C",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0012656159748401776,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L1",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0017661937153766443,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L2",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0008990300775944909,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L3",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0005805143447379373,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:B_L2",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0004574197348393162,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L4",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0002640247189871917,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L5",
+   "time_s": 0.2,
+   "class": "band",
+   "value": 0.0009611679069334004,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0012089180540023653,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L2@well",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00042883416149481726,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L3@well",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00022490400630490674,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L4@specimen",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0006339946227221703,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L5@specimen",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0006851643293769185,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:A",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0014206855246872848,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:B",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00037561000646897457,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:C",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0008099675528598586,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L1",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0017874053863019426,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L2",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0009984302968372189,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L3",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0007750959936950933,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:B_L2",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0006207134338353333,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L4",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0003660053772778298,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L5",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0013148356706230815,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.001252578200928889,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L2@well",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0003405655755926617,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L3@well",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.00014631286398458283,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L4@specimen",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0006092057206209407,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L5@specimen",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0005443034989448033,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:A",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0013795669895499973,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:B",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0002935289603103065,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:C",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0006443178203265139,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L1",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.001743745239375419,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L2",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0010046178365807064,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L3",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0008536871360154172,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:B_L2",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0007027944799940014,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L4",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0003907942793790593,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L5",
+   "time_s": 1.0,
+   "class": "band",
+   "value": 0.0014556965010551967,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0012529459980026945,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L2@well",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.00032983911457814836,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L3@well",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.00012662555200280875,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L4@specimen",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0006172205379851469,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L5@specimen",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0005012302991136238,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:A",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0013945038925849943,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:B",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0002485460813528274,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:C",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0006092594378595405,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L1",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0017433774423016135,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L2",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0009703614186377406,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L3",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0008733744479971913,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:B_L2",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0007477773589514804,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L4",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.00038277946201485316,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L5",
+   "time_s": 2.0,
+   "class": "band",
+   "value": 0.0014987697008863763,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.001245181490635265,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L2@well",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.0003346160437247249,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L3@well",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.00012453664713760215,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L4@specimen",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.0006217303128813053,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L5@specimen",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.000495336585987916,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:A",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.001406833624161611,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:B",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.00023113986669015123,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:C",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.0006078754996299912,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L1",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.001751141949669043,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L2",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.0009481782748284879,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L3",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.0008754633528623979,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:B_L2",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.0007651835736141567,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L4",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.00037826968711869466,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L5",
+   "time_s": 4.0,
+   "class": "band",
+   "value": 0.001504663414012084,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.00124402160517935,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L2@well",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.0003354311493826177,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L3@well",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.00012433380959645852,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L4@specimen",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.00062193883218889,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L5@specimen",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.0004951268641673051,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:A",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.0014085855383587456,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:B",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.00022884033515385097,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:C",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.0006078742971169649,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L1",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.0017523018351249578,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L2",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.0009450636376342949,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L3",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.0008756661904035414,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:B_L2",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.0007674831051504569,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L4",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.00037806116781110996,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L5",
+   "time_s": 8.0,
+   "class": "band",
+   "value": 0.001504873135832695,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0012440046185002967,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L2@well",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0003354431769594821,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L3@well",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.00012433085247948584,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L4@specimen",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0006219391657574975,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L5@specimen",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0004951265322174934,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:A",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.001408611188101009,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:B",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.00022880676919242575,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:C",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0006078742987357607,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L1",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0017523188218040112,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L2",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0009450180440960051,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L3",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0008756691475205142,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:B_L2",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0007675166711118822,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L4",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0003780608342425025,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L5",
+   "time_s": 16.0,
+   "class": "band",
+   "value": 0.0015048734677825066,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L1@well",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0012440046149828608,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L2@well",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0003354431794502625,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L3@well",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.00012433085186715803,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L4@specimen",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0006219391657583416,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:L5@specimen",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0004951265322166535,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:A",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0014086111934123254,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:B",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.00022880676224212613,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:C",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0006078742987357649,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L1",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0017523188253214471,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L2",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0009450180346549251,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:A_L3",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.000875669148132842,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:B_L2",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0007675166780621818,
+   "tolerance": 3.4871320410650775e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L4",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0003780608342416585,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:C_L5",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0015048734677833465,
+   "tolerance": 2.49080860076077e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:L1@well",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0012440046149828595,
+   "tolerance": 3.4871320410650776e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:L2@well",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.00033544317945026334,
+   "tolerance": 3.4871320410650776e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:L3@well",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0001243308518671578,
+   "tolerance": 3.4871320410650776e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:L4@specimen",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0006219391657583416,
+   "tolerance": 2.49080860076077e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:L5@specimen",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0004951265322166535,
+   "tolerance": 2.49080860076077e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "R:A",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0014086111934123273,
+   "tolerance": 3.4871320410650776e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "R:B",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.00022880676224212363,
+   "tolerance": 3.4871320410650776e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "R:C",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0006078742987357649,
+   "tolerance": 2.49080860076077e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:A_L1",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0017523188253214484,
+   "tolerance": 3.4871320410650776e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:A_L2",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0009450180346549218,
+   "tolerance": 3.4871320410650776e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:A_L3",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0008756691481328422,
+   "tolerance": 3.4871320410650776e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:B_L2",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0007675166780621843,
+   "tolerance": 3.4871320410650776e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:C_L4",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0003780608342416585,
+   "tolerance": 2.49080860076077e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:C_L5",
+   "time_s": 30.0,
+   "class": "band",
+   "value": 0.0015048734677833465,
+   "tolerance": 2.49080860076077e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "class": "band",
+   "value": 0.0112148510030845,
+   "tolerance": 2.7393963333525683e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.3389764935235596e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": 9.35590597409424e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 0.2,
+   "start_s": 0.1,
+   "end_s": 0.2,
+   "class": "band",
+   "value": 0.002432417272045141,
+   "tolerance": 2.5234522703792378e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 0.2,
+   "start_s": 0.1,
+   "end_s": 0.2,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.4601885852218425e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 0.2,
+   "start_s": 0.1,
+   "end_s": 0.2,
+   "class": "derived",
+   "value": null,
+   "tolerance": 9.840754340887371e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 0.5,
+   "start_s": 0.2,
+   "end_s": 0.5,
+   "class": "band",
+   "value": 0.0014686089273655148,
+   "tolerance": 2.5461376370135874e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 0.5,
+   "start_s": 0.2,
+   "end_s": 0.5,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 7.484509974215568e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 0.5,
+   "start_s": 0.2,
+   "end_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": 9.979346632287424e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 1.0,
+   "start_s": 0.5,
+   "end_s": 1.0,
+   "class": "band",
+   "value": 0.00023692166094249544,
+   "tolerance": 2.5761114580665667e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 1.0,
+   "start_s": 0.5,
+   "end_s": 1.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.254992406349296e-13,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 1.0,
+   "start_s": 0.5,
+   "end_s": 1.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.003993925079437e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 2.0,
+   "start_s": 1.0,
+   "end_s": 2.0,
+   "class": "band",
+   "value": 3.5916724330568296e-05,
+   "tolerance": 2.593736975113387e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 2.0,
+   "start_s": 1.0,
+   "end_s": 2.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.512408104357246e-13,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 2.0,
+   "start_s": 1.0,
+   "end_s": 2.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0049632417428983e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 4.0,
+   "start_s": 2.0,
+   "end_s": 4.0,
+   "class": "band",
+   "value": 4.107980280022922e-06,
+   "tolerance": 2.599982260854491e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 4.0,
+   "start_s": 2.0,
+   "end_s": 4.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 5.025527190292292e-13,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 4.0,
+   "start_s": 2.0,
+   "end_s": 4.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0051054380584584e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 8.0,
+   "start_s": 4.0,
+   "end_s": 8.0,
+   "class": "band",
+   "value": 6.17737956438804e-08,
+   "tolerance": 2.6013095384772028e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 8.0,
+   "start_s": 4.0,
+   "end_s": 8.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0051202520008003e-12,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 8.0,
+   "start_s": 4.0,
+   "end_s": 8.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0051202520008003e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 16.0,
+   "start_s": 8.0,
+   "end_s": 16.0,
+   "class": "band",
+   "value": 1.2849947855590817e-11,
+   "tolerance": 2.6014605418522417e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 16.0,
+   "start_s": 8.0,
+   "end_s": 16.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.0102409430221223e-12,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 16.0,
+   "start_s": 8.0,
+   "end_s": 16.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0051204715110613e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:well",
+   "time_s": 30.0,
+   "start_s": 16.0,
+   "end_s": 30.0,
+   "class": "band",
+   "value": 5.507504617405167e-19,
+   "tolerance": 2.601462726433963e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:well",
+   "time_s": 30.0,
+   "start_s": 16.0,
+   "end_s": 30.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 3.517921650448497e-12,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:well",
+   "time_s": 30.0,
+   "start_s": 16.0,
+   "end_s": 30.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0051204715567134e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:specimen",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "class": "band",
+   "value": 0.008691650369514541,
+   "tolerance": 1.2803624729458384e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:specimen",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0999023670467676e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:specimen",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.39960946818707e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:specimen",
+   "time_s": 0.2,
+   "start_s": 0.1,
+   "end_s": 0.2,
+   "class": "band",
+   "value": 0.002285236443170298,
+   "tolerance": 9.876631978522285e-07,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:specimen",
+   "time_s": 0.2,
+   "start_s": 0.1,
+   "end_s": 0.2,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.1973967068719433e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:specimen",
+   "time_s": 0.2,
+   "start_s": 0.1,
+   "end_s": 0.2,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.789586827487773e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:specimen",
+   "time_s": 0.5,
+   "start_s": 0.2,
+   "end_s": 0.5,
+   "class": "band",
+   "value": 0.001450210967802488,
+   "tolerance": 9.904386485717522e-07,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:specimen",
+   "time_s": 0.5,
+   "start_s": 0.2,
+   "end_s": 0.5,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 3.6917224339663516e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:specimen",
+   "time_s": 0.5,
+   "start_s": 0.2,
+   "end_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.922296578621802e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:specimen",
+   "time_s": 1.0,
+   "start_s": 0.5,
+   "end_s": 1.0,
+   "class": "band",
+   "value": 0.0001834659313895591,
+   "tolerance": 9.99468773611463e-07,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:specimen",
+   "time_s": 1.0,
+   "start_s": 0.5,
+   "end_s": 1.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 6.225420551608503e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:specimen",
+   "time_s": 1.0,
+   "start_s": 0.5,
+   "end_s": 1.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.980336441286802e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:specimen",
+   "time_s": 2.0,
+   "start_s": 1.0,
+   "end_s": 2.0,
+   "class": "band",
+   "value": 1.1581594558728378e-05,
+   "tolerance": 1.00522641579953e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:specimen",
+   "time_s": 2.0,
+   "start_s": 1.0,
+   "end_s": 2.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.246816480355332e-13,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:specimen",
+   "time_s": 2.0,
+   "start_s": 1.0,
+   "end_s": 2.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.987265921421329e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:specimen",
+   "time_s": 4.0,
+   "start_s": 2.0,
+   "end_s": 4.0,
+   "class": "band",
+   "value": 2.5403631571933547e-07,
+   "tolerance": 1.006916552817635e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:specimen",
+   "time_s": 4.0,
+   "start_s": 2.0,
+   "end_s": 4.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.493843203749189e-13,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:specimen",
+   "time_s": 4.0,
+   "start_s": 2.0,
+   "end_s": 4.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.987686407498378e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:specimen",
+   "time_s": 8.0,
+   "start_s": 4.0,
+   "end_s": 8.0,
+   "class": "band",
+   "value": 3.9167727731736876e-10,
+   "tolerance": 1.0071123806899938e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:specimen",
+   "time_s": 8.0,
+   "start_s": 4.0,
+   "end_s": 8.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.987695446596487e-13,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:specimen",
+   "time_s": 8.0,
+   "start_s": 4.0,
+   "end_s": 8.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.987695446596487e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:specimen",
+   "time_s": 16.0,
+   "start_s": 8.0,
+   "end_s": 16.0,
+   "class": "band",
+   "value": 9.910406255284403e-16,
+   "tolerance": 1.0071188385851755e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:specimen",
+   "time_s": 16.0,
+   "start_s": 8.0,
+   "end_s": 16.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 9.97539092102339e-13,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:specimen",
+   "time_s": 16.0,
+   "start_s": 8.0,
+   "end_s": 16.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.987695460511695e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:specimen",
+   "time_s": 30.0,
+   "start_s": 16.0,
+   "end_s": 30.0,
+   "class": "band",
+   "value": 6.3444180369338254e-27,
+   "tolerance": 1.0071188487694746e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:specimen",
+   "time_s": 30.0,
+   "start_s": 16.0,
+   "end_s": 30.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.7456934111791056e-12,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:specimen",
+   "time_s": 30.0,
+   "start_s": 16.0,
+   "end_s": 30.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.98769546051173e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 0.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 1.7698259574393446e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 0.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 3.539651914878689e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 0.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 8.849129787196723e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 0.1,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 4.601547489342296e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 0.1,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 9.203094978684592e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 0.1,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 2.300773744671148e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 0.2,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 9.026112382940657e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 0.2,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 1.8052224765881314e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 0.2,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 4.513056191470328e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 0.5,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 2.2299807063735743e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 0.5,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 4.459961412747148e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 0.5,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 1.1149903531867872e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 1.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 4.442263153172755e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 1.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 8.88452630634551e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 1.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 2.2211315765863776e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 2.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 8.866828046771116e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 2.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 1.7733656093542231e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 2.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 4.433414023385558e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 4.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 1.771595783396784e-14,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 4.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 3.5431915667935676e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 4.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 8.85797891698392e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 8.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 3.5414217408361284e-14,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 8.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 7.0828434816722564e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 8.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 1.7707108704180642e-14,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 16.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 7.081073655714818e-14,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 16.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 1.4162147311429635e-14,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 16.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 3.540536827857409e-14,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:A",
+   "time_s": 30.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 1.3275464506752524e-13,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:B",
+   "time_s": 30.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.000996323440304308,
+   "tolerance": 2.6550929013505047e-14,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:C",
+   "time_s": 30.0,
+   "dt_s": 0.004,
+   "class": "derived",
+   "value": 0.00249080860076077,
+   "tolerance": 6.637732253376262e-14,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 1.360253769792814e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.017809573980534e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 4.352812063337005e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.317065403334952e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 4.352812063337005e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.317065403334952e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 0.2,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 0.2,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 0.2,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 0.2,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 0.2,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 4.352812063337005e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.317065403334952e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 0.2,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 4.352812063337005e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.317065403334952e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 1.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 1.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 1.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 1.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 1.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 1.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 2.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 2.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 2.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 2.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 2.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 2.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 6.529218095005507e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.534706006501803e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 4.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 4.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 4.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 4.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 4.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 4.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 8.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 8.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 8.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 8.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 8.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 8.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 16.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 16.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 16.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 16.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 16.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 16.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L1",
+   "time_s": 30.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L2",
+   "time_s": 30.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:A_L3",
+   "time_s": 30.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:B_L2",
+   "time_s": 30.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.720507539585628e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.153834950959816e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L4",
+   "time_s": 30.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:C_L5",
+   "time_s": 30.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.1764060316685025e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.099424800168103e-16
+  },
+  {
+   "criterion": "C10",
+   "observable": "run",
+   "time_s": 30.0,
+   "dt_s": 0.004,
+   "class": "constant",
+   "value": "completes",
+   "tolerance": null,
+   "against": "engine: the run completes and closes its ledgers on every row"
+  }
+ ],
+ "spread": "none",
+ "spread_note": "No pair is spread: nothing is drawn (SPEC.md \u00a73.4). Trajectory pairs carry integration error and are class band, judged by their criterion's band directly, never by agreement.judge.",
+ "distance_at_horizon": {
+  "n:L1@well": 1.2567461148760408e-18,
+  "n:L2@well": 8.899319410740561e-19,
+  "n:L3@well": 2.1877885379475e-19,
+  "n:L4@specimen": 1.3547274560689872e-25,
+  "n:L5@specimen": 1.3481304997475783e-25,
+  "R:A": 1.8976823402933984e-18,
+  "R:B": 2.4832753678901334e-18,
+  "R:C": 6.59695632140878e-28,
+  "B:A_L1": 1.2567461148760408e-18,
+  "B:A_L2": 3.3732073089641893e-18,
+  "B:A_L3": 2.1877885379475e-19,
+  "B:B_L2": 2.4832753678901334e-18,
+  "B:C_L4": 1.3547274560689872e-25,
+  "B:C_L5": 1.3481304997475783e-25
+ },
+ "plants": [
+  {
+   "plant": "P7",
+   "criterion": "C5",
+   "world": "W3p",
+   "time_s": null,
+   "compared": {
+    "observable": "sites:C",
+    "time_s": 0.1
+   },
+   "honest": 0.00249080860076077,
+   "planted": 0.00323493984213586,
+   "distance_in_bounds": 3234265181870.1523
+  },
+  {
+   "plant": "P7",
+   "criterion": "C1",
+   "world": "W3p",
+   "time_s": null,
+   "compared": {
+    "observable": "R:C",
+    "time_s": 2.0
+   },
+   "honest": 0.0006092594378595405,
+   "planted": 0.001843505011750809,
+   "distance_in_bounds": 495520.03855868004
+  }
+ ],
+ "provenance": {
+  "references_revision": "78ff6be4a4d35399775efcf77150b4eab8ae6d44",
+  "tree_clean": true,
+  "writer_version": "fr45-references-writer 2",
+  "regeneration_hash_seeds": [
+   0,
+   1,
+   2
+  ],
+  "spec": {
+   "label": "fr45-site-competition-v1, amendment 3 of 2026-11-24 (98cd33db)",
+   "files": [
+    "docs/FR45_SITE_COMPETITION_PROTOCOL.md",
+    "validation/fr45/spec/AMENDMENT-2-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-3-2026-11-24.md",
+    "validation/fr45/spec/CRITERIA.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
+    "validation/fr45/spec/SPEC.md"
+   ],
+   "verified_against": "SHA256SUMS-fr45-spec-98cd33db.txt",
+   "rows_matched": 106
+  },
+  "profile": "reference"
+ }
+}

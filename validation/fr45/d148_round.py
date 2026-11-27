@@ -151,13 +151,17 @@ def set_world(out):
     return 0
 
 
-# results_baseline saves no final state for runner.run, run_windowed or run_batch: their checkpoints hold
-# jax arrays, which its flatten does not descend into (a jax array has a __dict__, so it reads
-# vars(), which is empty), and only their step index and time are kept. runner.run's final state is the
-# last row of its history, which is saved. The batch-windowed and vector-windowed checkpoints are host
-# arrays, saved whole. So: these final states against runner.run's last history row; run_batch's
-# histories against runner.run's history; every path's final step index against runner.run's.
+# results_baseline saves every path's final state: runner.run's, run_windowed's and run_batch's
+# checkpoints, held as jax arrays, are saved whole since its flatten reads an array-like as one
+# array (3961cafb, D410), as the batch-windowed and vector-windowed checkpoints' host arrays always
+# were. So: every path's final state, runner.run's own included, against runner.run's last history
+# row; run_batch's histories against runner.run's history; and every path's final step index
+# against runner.run's.
 FINAL_STATES = (
+    "run:final.state",
+    "run_windowed:final.state",
+    "run_batch:world1.final.state",
+    "run_batch:world2.final.state",
     "run_batch_windowed:world1.final.state",
     "run_batch_windowed:world2.final.state",
     "run_vector_windowed:world1.final.state",
@@ -191,11 +195,12 @@ def _unequal(saved, reference, key):
 
 def paths_agree(saved, out):
     """Each world saved by results_baseline's run paths (SAVED/run-paths/*.npz) against itself, bit
-    for bit (dtype, shape and bytes): the batch-windowed and vector-windowed paths' final states (both
-    worlds) against runner.run's last history row, run_batch's two histories against runner.run's
-    history, and every path's final step index against runner.run's. run_windowed's state is not
-    saved (FINAL_STATES' note); the pair check's full-recording windows hold that path. Writes
-    OUT_JSON; exit 0 when all agree."""
+    for bit (dtype, shape and bytes): every path's final state (runner.run's, run_windowed's, and both
+    worlds' of run_batch, the batch-windowed and the vector-windowed paths) against runner.run's last
+    history row, run_batch's two histories against runner.run's history, and every path's final step
+    index against runner.run's. A baseline saved before results_baseline kept those final states
+    (3961cafb, D410) lacks their keys, and they are reported missing. Writes OUT_JSON; exit 0 when all
+    agree."""
     import numpy as np
 
     rows = {}

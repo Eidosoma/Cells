@@ -14010,3 +14010,73 @@ It is a port check: it shows that the live engine computes legacy's written equa
    - The folder was made writable for the copy, then read-only again.
    - Its four npz files differ only by one added layout key, and all their arrays are bit-identical.
    - Every set of the record now equals main's crossrev output, FR-45's landing renewal included.
+
+## D413: the results_baseline fix is landed, and G1's c1 is renewed additively
+
+2026-11-27, written at 12:55 UTC.
+
+- **Landed** at 8381f54f (tag `results-baseline-final-state-landed-2026-11-27`), from 3961cafb. The landing's trial passed 307 tests.
+- **The fix** (D410): `validation/results_baseline.py` now saves a checkpoint held as jax arrays.
+  - Every G1 world had lost its final state, as had run-paths' `run`, `run_windowed` and `run_batch`. Histories were saved and compared all along.
+  - A planted row fails before the fix and passes after.
+- **G1's c1 is renewed** by D307's sequence on lane A: `global-charge-bound-20261122/c1-813dd072/`, read-only, with a renewal record.
+  - Rule A: all 13,902 old arrays are byte-identical. Rule B: all 3,733 added final states equal their run's last history row, bit for bit.
+    Rule C: the scalar paths are equal. No exception.
+  - `gate.sh` and `cache_qualify.sh` point to it.
+  - The additive check enters the checkout as `scripts/gates/c1_additive_check.py`, with a row of five planted faults.
+- **The final gate** at the pointer commit: G1 113 of 113, with final states compared, and the full tiers (498 files, none changed).
+- **Noted:**
+  - `channel_activity` is now filled. No gate passes `--padding`.
+  - `legacy_port`'s compare takes the union of keys, so across tool versions compare only the old keys.
+  - `cache_qualify`'s default trees predate D305 (pre-existing).
+  - The workspace tool `final-gate-20261126/tools/g1_run.sh` still names the old c1. Rounds copy it with the new path; the original is cited
+    evidence and stays.
+  - `test_results_baseline.py`'s row (11 to 13 tests) is folded by the next measurement.
+  - The scope map is refreshed by the nightly, and heads in flight merge main before their gate.
+
+## D414: the X2 confirmation of FR-38 v2 and FR-43 part 2; a refinement of D412's X2 rule for the user
+
+2026-11-27, written at 13:17 UTC.
+
+- **The confirmation** (D412): FR-38 v2's and FR-43 part 2's judged worlds were run with X2 on and off, at one revision (a clean snapshot of main
+  4fd3d042), as development runs.
+  - The cap was 2e-3, FR-8's. Nothing was tagged or re-judged.
+  - The evidence is in `/mnt/workspaces/Cells/x2-confirmation-20261127/`.
+- **No honest result changes.**
+  - Every honest value is bit-identical with X2 on, and every honest criterion's verdict is unchanged.
+  - No run is refused by the cap. The largest Σ|a|/F on an admitted run is 2.67e-7, and on most runs X2 counts no step at all.
+  - The X2-off runs reproduce D381 and D324 in every number.
+- **X2 refuses planted runs.** Six plant runs are refused by its whole-run order condition, because a plant breaks the integrator's error order.
+  - **FR-38 v2:** P9 is caught by that refusal instead of in amounts, and the verdict is unchanged. Its judge leaves the refusal to the checker to
+    confirm.
+  - **FR-43 part 2:** C2.8's rule requires the V0 plants' miss to show in amounts, not only in energy. X2's refusal pre-empts that, so C2.8 would
+    turn from pass to fail on plant scoring alone. With X2 on the honest runs only, it would pass.
+- **For the user, a refinement of D412's rule:** where a registration must select X2, it applies to the honest runs. Plant runs follow the
+  registration's own plant rule, unless the registration states otherwise.
+- **A separate finding:** FR-38 v2's frozen builder no longer runs on main as registered.
+  - The ID move rewrote its shared helper, so its definitions mix spellings, and main refuses the old ones (D345).
+  - The confirmation translated them at the parse (D371 Q7) and restored the registered spelling in the records. All 86 equal the registered
+    definitions.
+  - D381 stands at its own revision.
+
+## D415: FR-45's tooling is landed, and its registration is merged into main
+
+2026-11-27, written at 13:23 UTC.
+
+- **The tooling landed** at 60b276ef (tag `fr45-tooling-landed-2026-11-27`), from d09b6544, with no `src/` change. The landing's trial passed 140
+  tests.
+  - **What it adds:** `validation/fr45/`'s worlds, driver, exporter, plants and judge, built to the contract.
+  - **The contract's §12.3 step 5:** the exporter's output matches the format sample in structure, and the plant rule finds no departure.
+  - **The dress rehearsal,** on 23 invented runs: all 15 criteria pass and all nine plants are caught, and a damaged copy fails as it should.
+  - **The lead's readings for the edge cases** are in `fr45-build-rulings-20261127.md`, among them G's call form. The lead smoke-tested it as a
+    non-builder, with invented amounts.
+  - **Tests:** `test_fr45_judge.py` in tier 1 (0.62 s), and `test_fr45_driver.py` in tier 2 (37.9 s), both measured cold on the timed cores.
+- **The registration is merged** into main at b3a5ec0b, from the tag `fr45-protocol-registered-2026-11-27`: 44 files, each equal to the tag's
+  blob. The build's tree held none of them until both landings were in (D408).
+- **Next:**
+  1. the parse-only passes, for the execution record and the host-entity values, never of W1eq;
+  2. the contract's addenda: the refusal mapping, the checks list, the execution record, the plants' changes and patches, the host values and
+     the floors;
+  3. their confirmation by a reviewer who is not the builder (N1, N2, B4);
+  4. the lead's hashes;
+  5. the judged run.

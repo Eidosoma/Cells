@@ -1,0 +1,5662 @@
+{
+ "INVENTED": "INVENTED INPUTS. This file is the writer's format sample for the judge, written on invented volumes, constants, counts and times. It is not a reference for any registered world and none of its numbers belongs to FR-45. It carries every section and every criterion's pairs, so some (C2b against this world's own root, C7, C8 on every set) are there for their format only. A refusal world (W5) differs: its equilibrium and distance_at_horizon are null and its trajectory, balances' and heats' lists are empty.",
+ "schema": "fr45-reference/1",
+ "invented": true,
+ "world": {
+  "id": "INVENTED-X",
+  "title": "INVENTED format-sample world (not FR-45's)",
+  "constants": {
+   "N_f_sites_per_fmol": 602214076,
+   "N_A_per_mol": 6.02214076e+23,
+   "k_B_J_per_K": 1.380649e-23,
+   "T_K": 310.0,
+   "RT_pJ_per_fmol": 2.5774834116275045,
+   "standard_concentration_mM": 1.0,
+   "trace_mM": 1e-12,
+   "epsilon": 2.220446049250313e-16
+  },
+  "nodes": [
+   {
+    "id": "vessel",
+    "kind": "node",
+    "V": 2.5
+   },
+   {
+    "id": "pod",
+    "kind": "cell",
+    "V": 0.4
+   }
+  ],
+  "patches": [
+   {
+    "id": "pod_face",
+    "inside": "pod",
+    "outside": "vessel"
+   }
+  ],
+  "ligands": [
+   "Q1",
+   "Q2",
+   "Q3",
+   "Q4",
+   "Q5"
+  ],
+  "free_amounts": [
+   {
+    "ligand": "Q1",
+    "node": "vessel",
+    "n": 0.003,
+    "declared": true
+   },
+   {
+    "ligand": "Q2",
+    "node": "vessel",
+    "n": 0.002,
+    "declared": true
+   },
+   {
+    "ligand": "Q3",
+    "node": "vessel",
+    "n": 0.0005,
+    "declared": true
+   },
+   {
+    "ligand": "Q4",
+    "node": "pod",
+    "n": 0.0006,
+    "declared": true
+   },
+   {
+    "ligand": "Q5",
+    "node": "pod",
+    "n": 0.0003,
+    "declared": true
+   }
+  ],
+  "sets": [
+   {
+    "id": "lattice",
+    "owner": "node vessel",
+    "faces": "vessel",
+    "copies": 3000000.0,
+    "sites_per_copy": 2,
+    "accessible_fraction": 0.5,
+    "S": 0.00498161720152154
+   },
+   {
+    "id": "sheet",
+    "owner": "node vessel",
+    "faces": "vessel",
+    "copies": 800000.0,
+    "sites_per_copy": 1,
+    "accessible_fraction": 0.9,
+    "S": 0.0011955881283651697
+   },
+   {
+    "id": "liner",
+    "owner": "patch pod_face, inside face",
+    "faces": "pod",
+    "copies": 500000.0,
+    "sites_per_copy": 3,
+    "accessible_fraction": 0.4,
+    "S": 0.0009963234403043081
+   }
+  ],
+  "populations": [
+   {
+    "id": "lattice_Q1",
+    "set": "lattice",
+    "ligand": "Q1",
+    "faces": "vessel",
+    "k_on": 900.0,
+    "k_off": 0.45,
+    "initial_occupancy": 0.15
+   },
+   {
+    "id": "lattice_Q2",
+    "set": "lattice",
+    "ligand": "Q2",
+    "faces": "vessel",
+    "k_on": 2500.0,
+    "k_off": 0.2,
+    "initial_occupancy": 0.0
+   },
+   {
+    "id": "lattice_Q3",
+    "set": "lattice",
+    "ligand": "Q3",
+    "faces": "vessel",
+    "k_on": 1200.0,
+    "k_off": 0.6,
+    "initial_occupancy": 0.05
+   },
+   {
+    "id": "sheet_Q2",
+    "set": "sheet",
+    "ligand": "Q2",
+    "faces": "vessel",
+    "k_on": 1100.0,
+    "k_off": 0.35,
+    "initial_occupancy": 0.1
+   },
+   {
+    "id": "liner_Q4",
+    "set": "liner",
+    "ligand": "Q4",
+    "faces": "pod",
+    "k_on": 1800.0,
+    "k_off": 0.6,
+    "initial_occupancy": 0.0
+   },
+   {
+    "id": "liner_Q5",
+    "set": "liner",
+    "ligand": "Q5",
+    "faces": "pod",
+    "k_on": 700.0,
+    "k_off": 0.25,
+    "initial_occupancy": 0.2
+   }
+  ],
+  "start": [
+   {
+    "observable": "n:Q1@vessel",
+    "value": 0.003
+   },
+   {
+    "observable": "n:Q2@vessel",
+    "value": 0.002
+   },
+   {
+    "observable": "n:Q3@vessel",
+    "value": 0.0005
+   },
+   {
+    "observable": "n:Q4@pod",
+    "value": 0.0006
+   },
+   {
+    "observable": "n:Q5@pod",
+    "value": 0.0003
+   },
+   {
+    "observable": "R:lattice",
+    "value": 0.003985293761217232
+   },
+   {
+    "observable": "R:sheet",
+    "value": 0.0010760293155286527
+   },
+   {
+    "observable": "R:liner",
+    "value": 0.0007970587522434465
+   },
+   {
+    "observable": "B:lattice_Q1",
+    "value": 0.000747242580228231
+   },
+   {
+    "observable": "B:lattice_Q2",
+    "value": 0.0
+   },
+   {
+    "observable": "B:lattice_Q3",
+    "value": 0.000249080860076077
+   },
+   {
+    "observable": "B:sheet_Q2",
+    "value": 0.00011955881283651698
+   },
+   {
+    "observable": "B:liner_Q4",
+    "value": 0.0
+   },
+   {
+    "observable": "B:liner_Q5",
+    "value": 0.00019926468806086165
+   }
+  ],
+  "dt": [
+   0.01,
+   0.005
+  ],
+  "observation_times": [
+   0.1,
+   0.25,
+   0.26,
+   0.5
+  ],
+  "horizon": 0.5,
+  "wash": {
+   "t": 0.25,
+   "node": "vessel",
+   "f": 0.25,
+   "buffer": {
+    "Q1": 1e-12,
+    "Q2": 0.0004,
+    "Q3": 1e-12
+   }
+  }
+ },
+ "units": {
+  "copies": "count (the one declared count)",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM",
+  "k_on": "per mM per s",
+  "k_off": "per s",
+  "time": "s",
+  "free_energy_and_heat": "pJ",
+  "tolerance_gap": "the observable's own unit",
+  "distance_in_bounds": "multiples of the criterion's bound"
+ },
+ "equilibrium": {
+  "totals": "INVENTED: the post-wash totals",
+  "sets": {
+   "lattice": 0.0013666080767822503,
+   "sheet": 0.000919482680955859,
+   "liner": 0.00026903878350992353
+  },
+  "populations": {
+   "lattice_Q1": 0.0016426954834735743,
+   "lattice_Q2": 0.0016321526594259132,
+   "lattice_Q3": 0.0003401609818398019,
+   "sheet_Q2": 0.00027610544740931073,
+   "liner_Q4": 0.0004011790662145612,
+   "liner_Q5": 0.0003261055905798234
+  },
+  "pools": {
+   "Q1@vessel": 0.0015025297956505078,
+   "Q2@vessel": 0.0002388618488585113,
+   "Q3@vessel": 0.0003111361878534413,
+   "Q4@pod": 0.00019882093378543875,
+   "Q5@pod": 0.0001731590974810382
+  },
+  "residual": 1.6301418040500033e-19,
+  "residual_definition": "largest |residual| in fmol of the ligand totals, set moieties and detailed balance B_b = R_s c_l / K_b, at the written binary64 values",
+  "wang": {
+   "liner": {
+    "gap": 1.28e-51
+   }
+  },
+  "theta": {
+   "lattice_Q1": {
+    "formula": 0.3297514475764706,
+    "root": 0.3297514475764706,
+    "gap": 5.4e-49
+   },
+   "lattice_Q2": {
+    "formula": 0.3276351018957064,
+    "root": 0.3276351018957064,
+    "gap": 5.3e-49
+   },
+   "lattice_Q3": {
+    "formula": 0.0682832437899697,
+    "root": 0.0682832437899697,
+    "gap": 1.13e-49
+   },
+   "sheet_Q2": {
+    "formula": 0.23093692623633977,
+    "root": 0.23093692623633977,
+    "gap": 1.4e-49
+   },
+   "liner_Q4": {
+    "formula": 0.4026594677849079,
+    "root": 0.4026594677849079,
+    "gap": 9.9e-49
+   },
+   "liner_Q5": {
+    "formula": 0.32730896151577105,
+    "root": 0.32730896151577105,
+    "gap": 7.8e-49
+   }
+  }
+ },
+ "trajectory": [
+  {
+   "observable": "n:Q1@vessel",
+   "time_s": 0.1,
+   "value": 0.002687048703422901,
+   "tolerance_gap": 1.214306433183765e-17
+  },
+  {
+   "observable": "n:Q2@vessel",
+   "time_s": 0.1,
+   "value": 0.0013612305984577815,
+   "tolerance_gap": 3.0140820395097023e-17
+  },
+  {
+   "observable": "n:Q3@vessel",
+   "time_s": 0.1,
+   "value": 0.00043907575449857384,
+   "tolerance_gap": 2.656295322589486e-18
+  },
+  {
+   "observable": "n:Q4@pod",
+   "time_s": 0.1,
+   "value": 0.0004436155954270059,
+   "tolerance_gap": 7.318364664277155e-18
+  },
+  {
+   "observable": "n:Q5@pod",
+   "time_s": 0.1,
+   "value": 0.0002707392399441413,
+   "tolerance_gap": 1.0842021724855044e-18
+  },
+  {
+   "observable": "R:lattice",
+   "time_s": 0.1,
+   "value": 0.0030424518332071663,
+   "tolerance_gap": 4.0332320816460765e-17
+  },
+  {
+   "observable": "R:sheet",
+   "time_s": 0.1,
+   "value": 0.0010062262999179748,
+   "tolerance_gap": 4.119968255444917e-18
+  },
+  {
+   "observable": "R:liner",
+   "time_s": 0.1,
+   "value": 0.0006114135876145938,
+   "tolerance_gap": 8.239936510889834e-18
+  },
+  {
+   "observable": "B:lattice_Q1",
+   "time_s": 0.1,
+   "value": 0.0010601938768053298,
+   "tolerance_gap": 1.1709383462843448e-17
+  },
+  {
+   "observable": "B:lattice_Q2",
+   "time_s": 0.1,
+   "value": 0.0005689663859315407,
+   "tolerance_gap": 2.6454533008646308e-17
+  },
+  {
+   "observable": "B:lattice_Q3",
+   "time_s": 0.1,
+   "value": 0.0003100051055775032,
+   "tolerance_gap": 2.6020852139652106e-18
+  },
+  {
+   "observable": "B:sheet_Q2",
+   "time_s": 0.1,
+   "value": 0.00018936182844719472,
+   "tolerance_gap": 3.957337929572091e-18
+  },
+  {
+   "observable": "B:liner_Q4",
+   "time_s": 0.1,
+   "value": 0.00015638440457299406,
+   "tolerance_gap": 7.128629284092192e-18
+  },
+  {
+   "observable": "B:liner_Q5",
+   "time_s": 0.1,
+   "value": 0.00022852544811672028,
+   "tolerance_gap": 1.0570971181733668e-18
+  },
+  {
+   "observable": "n:Q1@vessel",
+   "time_s": 0.25,
+   "value": 0.002408069206916596,
+   "tolerance_gap": 2.1250362580715887e-17
+  },
+  {
+   "observable": "n:Q2@vessel",
+   "time_s": 0.25,
+   "value": 0.000889755428571127,
+   "tolerance_gap": 4.672911363412524e-17
+  },
+  {
+   "observable": "n:Q3@vessel",
+   "time_s": 0.25,
+   "value": 0.00039113476403133534,
+   "tolerance_gap": 4.933119884809045e-18
+  },
+  {
+   "observable": "n:Q4@pod",
+   "time_s": 0.25,
+   "value": 0.00032711370568717056,
+   "tolerance_gap": 1.22514845490862e-17
+  },
+  {
+   "observable": "n:Q5@pod",
+   "time_s": 0.25,
+   "value": 0.00024404179526012266,
+   "tolerance_gap": 2.032879073410321e-18
+  },
+  {
+   "observable": "R:lattice",
+   "time_s": 0.25,
+   "value": 0.0023029763406142993,
+   "tolerance_gap": 6.591949208711867e-17
+  },
+  {
+   "observable": "R:sheet",
+   "time_s": 0.25,
+   "value": 0.0009473061356506433,
+   "tolerance_gap": 7.589415207398531e-18
+  },
+  {
+   "observable": "R:liner",
+   "time_s": 0.25,
+   "value": 0.00046821425319073975,
+   "tolerance_gap": 1.4094628242311558e-17
+  },
+  {
+   "observable": "B:lattice_Q1",
+   "time_s": 0.25,
+   "value": 0.0013391733733116352,
+   "tolerance_gap": 2.0166160408230382e-17
+  },
+  {
+   "observable": "B:lattice_Q2",
+   "time_s": 0.25,
+   "value": 0.0009815213915508635,
+   "tolerance_gap": 4.0332320816460765e-17
+  },
+  {
+   "observable": "B:lattice_Q3",
+   "time_s": 0.25,
+   "value": 0.0003579460960447417,
+   "tolerance_gap": 4.87890977618477e-18
+  },
+  {
+   "observable": "B:sheet_Q2",
+   "time_s": 0.25,
+   "value": 0.0002482819927145264,
+   "tolerance_gap": 7.209944447028604e-18
+  },
+  {
+   "observable": "B:liner_Q4",
+   "time_s": 0.25,
+   "value": 0.0002728862943128294,
+   "tolerance_gap": 1.1980434005964824e-17
+  },
+  {
+   "observable": "B:liner_Q5",
+   "time_s": 0.25,
+   "value": 0.00025522289280073893,
+   "tolerance_gap": 1.951563910473908e-18
+  },
+  {
+   "observable": "n:Q1@vessel",
+   "time_s": 0.26,
+   "value": 0.001797254678766734,
+   "tolerance_gap": 1.5178830414797062e-17
+  },
+  {
+   "observable": "n:Q2@vessel",
+   "time_s": 0.26,
+   "value": 0.0008956559935691565,
+   "tolerance_gap": 3.350184712980209e-17
+  },
+  {
+   "observable": "n:Q3@vessel",
+   "time_s": 0.26,
+   "value": 0.00029228537257749195,
+   "tolerance_gap": 3.5236570605778894e-18
+  },
+  {
+   "observable": "n:Q4@pod",
+   "time_s": 0.26,
+   "value": 0.00032197642164683157,
+   "tolerance_gap": 1.1763593571467723e-17
+  },
+  {
+   "observable": "n:Q5@pod",
+   "time_s": 0.26,
+   "value": 0.0002427013188706592,
+   "tolerance_gap": 1.951563910473908e-18
+  },
+  {
+   "observable": "R:lattice",
+   "time_s": 0.26,
+   "value": 0.002274351003731061,
+   "tolerance_gap": 6.375108774214766e-17
+  },
+  {
+   "observable": "R:sheet",
+   "time_s": 0.26,
+   "value": 0.0009444079665579704,
+   "tolerance_gap": 7.37257477290143e-18
+  },
+  {
+   "observable": "R:liner",
+   "time_s": 0.26,
+   "value": 0.0004617364927609374,
+   "tolerance_gap": 1.349831704744453e-17
+  },
+  {
+   "observable": "B:lattice_Q1",
+   "time_s": 0.26,
+   "value": 0.001347970600357348,
+   "tolerance_gap": 1.951563910473908e-17
+  },
+  {
+   "observable": "B:lattice_Q2",
+   "time_s": 0.26,
+   "value": 0.0010002838003173795,
+   "tolerance_gap": 3.881443777498106e-17
+  },
+  {
+   "observable": "B:lattice_Q3",
+   "time_s": 0.26,
+   "value": 0.00035901179711575124,
+   "tolerance_gap": 4.716279450311944e-18
+  },
+  {
+   "observable": "B:sheet_Q2",
+   "time_s": 0.26,
+   "value": 0.0002511801618071993,
+   "tolerance_gap": 6.993104012531504e-18
+  },
+  {
+   "observable": "B:liner_Q4",
+   "time_s": 0.26,
+   "value": 0.0002780235783531684,
+   "tolerance_gap": 1.1492543028346347e-17
+  },
+  {
+   "observable": "B:liner_Q5",
+   "time_s": 0.26,
+   "value": 0.0002565633691902024,
+   "tolerance_gap": 1.8431436932253575e-18
+  },
+  {
+   "observable": "n:Q1@vessel",
+   "time_s": 0.5,
+   "value": 0.0016518243347219178,
+   "tolerance_gap": 2.0816681711721685e-17
+  },
+  {
+   "observable": "n:Q2@vessel",
+   "time_s": 0.5,
+   "value": 0.0005618750583096347,
+   "tolerance_gap": 5.2692225582795515e-17
+  },
+  {
+   "observable": "n:Q3@vessel",
+   "time_s": 0.5,
+   "value": 0.00027903134756595606,
+   "tolerance_gap": 5.149960319306146e-18
+  },
+  {
+   "observable": "n:Q4@pod",
+   "time_s": 0.5,
+   "value": 0.000246112976766153,
+   "tolerance_gap": 1.9949319973733282e-17
+  },
+  {
+   "observable": "n:Q5@pod",
+   "time_s": 0.5,
+   "value": 0.00021966682161820206,
+   "tolerance_gap": 3.469446951953614e-18
+  },
+  {
+   "observable": "R:lattice",
+   "time_s": 0.5,
+   "value": 0.0018271034783440335,
+   "tolerance_gap": 8.543513119185775e-17
+  },
+  {
+   "observable": "R:sheet",
+   "time_s": 0.5,
+   "value": 0.0008991901876291241,
+   "tolerance_gap": 1.1709383462843448e-17
+  },
+  {
+   "observable": "R:liner",
+   "time_s": 0.5,
+   "value": 0.0003628385506278016,
+   "tolerance_gap": 2.325613659981407e-17
+  },
+  {
+   "observable": "B:lattice_Q1",
+   "time_s": 0.5,
+   "value": 0.0014934009444021643,
+   "tolerance_gap": 2.4936649967166602e-17
+  },
+  {
+   "observable": "B:lattice_Q2",
+   "time_s": 0.5,
+   "value": 0.001288846956648055,
+   "tolerance_gap": 5.355958732078392e-17
+  },
+  {
+   "observable": "B:lattice_Q3",
+   "time_s": 0.5,
+   "value": 0.0003722658221272871,
+   "tolerance_gap": 6.342582709040201e-18
+  },
+  {
+   "observable": "B:sheet_Q2",
+   "time_s": 0.5,
+   "value": 0.0002963979407360456,
+   "tolerance_gap": 1.1438332919722072e-17
+  },
+  {
+   "observable": "B:liner_Q4",
+   "time_s": 0.5,
+   "value": 0.00035388702323384697,
+   "tolerance_gap": 1.973247953923618e-17
+  },
+  {
+   "observable": "B:liner_Q5",
+   "time_s": 0.5,
+   "value": 0.00027959786644265956,
+   "tolerance_gap": 3.3068166260807885e-18
+  }
+ ],
+ "balances": {
+  "ligands": [
+   {
+    "ligand": "Q1",
+    "node": "vessel",
+    "time_s": 0.1,
+    "total": 0.003747242580228231
+   },
+   {
+    "ligand": "Q2",
+    "node": "vessel",
+    "time_s": 0.1,
+    "total": 0.002119558812836517
+   },
+   {
+    "ligand": "Q3",
+    "node": "vessel",
+    "time_s": 0.1,
+    "total": 0.000749080860076077
+   },
+   {
+    "ligand": "Q4",
+    "node": "pod",
+    "time_s": 0.1,
+    "total": 0.0006
+   },
+   {
+    "ligand": "Q5",
+    "node": "pod",
+    "time_s": 0.1,
+    "total": 0.0004992646880608616
+   },
+   {
+    "ligand": "Q1",
+    "node": "vessel",
+    "time_s": 0.25,
+    "total": 0.003747242580228231
+   },
+   {
+    "ligand": "Q2",
+    "node": "vessel",
+    "time_s": 0.25,
+    "total": 0.002119558812836517
+   },
+   {
+    "ligand": "Q3",
+    "node": "vessel",
+    "time_s": 0.25,
+    "total": 0.000749080860076077
+   },
+   {
+    "ligand": "Q4",
+    "node": "pod",
+    "time_s": 0.25,
+    "total": 0.0006
+   },
+   {
+    "ligand": "Q5",
+    "node": "pod",
+    "time_s": 0.25,
+    "total": 0.0004992646880608616
+   },
+   {
+    "ligand": "Q1",
+    "node": "vessel",
+    "time_s": 0.26,
+    "total": 0.003145225279124082
+   },
+   {
+    "ligand": "Q2",
+    "node": "vessel",
+    "time_s": 0.26,
+    "total": 0.0021471199556937354
+   },
+   {
+    "ligand": "Q3",
+    "node": "vessel",
+    "time_s": 0.26,
+    "total": 0.0006512971696932432
+   },
+   {
+    "ligand": "Q4",
+    "node": "pod",
+    "time_s": 0.26,
+    "total": 0.0006
+   },
+   {
+    "ligand": "Q5",
+    "node": "pod",
+    "time_s": 0.26,
+    "total": 0.0004992646880608616
+   },
+   {
+    "ligand": "Q1",
+    "node": "vessel",
+    "time_s": 0.5,
+    "total": 0.003145225279124082
+   },
+   {
+    "ligand": "Q2",
+    "node": "vessel",
+    "time_s": 0.5,
+    "total": 0.0021471199556937354
+   },
+   {
+    "ligand": "Q3",
+    "node": "vessel",
+    "time_s": 0.5,
+    "total": 0.0006512971696932432
+   },
+   {
+    "ligand": "Q4",
+    "node": "pod",
+    "time_s": 0.5,
+    "total": 0.0006
+   },
+   {
+    "ligand": "Q5",
+    "node": "pod",
+    "time_s": 0.5,
+    "total": 0.0004992646880608616
+   }
+  ],
+  "sets": [
+   {
+    "set": "lattice",
+    "time_s": 0.1,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "sheet",
+    "time_s": 0.1,
+    "sites": 0.0011955881283651697
+   },
+   {
+    "set": "liner",
+    "time_s": 0.1,
+    "sites": 0.0009963234403043081
+   },
+   {
+    "set": "lattice",
+    "time_s": 0.25,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "sheet",
+    "time_s": 0.25,
+    "sites": 0.0011955881283651697
+   },
+   {
+    "set": "liner",
+    "time_s": 0.25,
+    "sites": 0.0009963234403043081
+   },
+   {
+    "set": "lattice",
+    "time_s": 0.26,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "sheet",
+    "time_s": 0.26,
+    "sites": 0.0011955881283651697
+   },
+   {
+    "set": "liner",
+    "time_s": 0.26,
+    "sites": 0.0009963234403043081
+   },
+   {
+    "set": "lattice",
+    "time_s": 0.5,
+    "sites": 0.00498161720152154
+   },
+   {
+    "set": "sheet",
+    "time_s": 0.5,
+    "sites": 0.0011955881283651697
+   },
+   {
+    "set": "liner",
+    "time_s": 0.5,
+    "sites": 0.0009963234403043081
+   }
+  ]
+ },
+ "wash": {
+  "Q1": {
+   "removed": 0.000602017301729149,
+   "supplied": 6.25e-13
+  },
+  "Q2": {
+   "removed": 0.00022243885714278176,
+   "supplied": 0.00025
+  },
+  "Q3": {
+   "removed": 9.778369100783383e-05,
+   "supplied": 6.25e-13
+  }
+ },
+ "heats": {
+  "intervals": [
+   {
+    "node": "vessel",
+    "start_s": 0.0,
+    "end_s": 0.1,
+    "heat": 0.009726066090116397,
+    "bound": 3.272936014379599e-06,
+    "tolerance_gap": 3.270030914888262e-16
+   },
+   {
+    "node": "vessel",
+    "start_s": 0.1,
+    "end_s": 0.25,
+    "heat": 0.004641281534854946,
+    "bound": 3.023533021337174e-06,
+    "tolerance_gap": 1.1929993377001476e-17
+   },
+   {
+    "node": "vessel",
+    "start_s": 0.26,
+    "end_s": 0.5,
+    "heat": 0.0017856555220998028,
+    "bound": 3.0483628531093665e-06,
+    "tolerance_gap": 5.0775359403860797e-17
+   },
+   {
+    "node": "pod",
+    "start_s": 0.0,
+    "end_s": 0.1,
+    "heat": 0.0016987792022155979,
+    "bound": 3.672096141232699e-07,
+    "tolerance_gap": 4.7796831122517716e-17
+   },
+   {
+    "node": "pod",
+    "start_s": 0.1,
+    "end_s": 0.25,
+    "heat": 0.0006929366745825008,
+    "bound": 3.1935809469419167e-07,
+    "tolerance_gap": 4.082471859170855e-18
+   },
+   {
+    "node": "pod",
+    "start_s": 0.26,
+    "end_s": 0.5,
+    "heat": 0.00025331869689877213,
+    "bound": 3.206443257020468e-07,
+    "tolerance_gap": 8.452369641197352e-18
+   }
+  ],
+  "G": [
+   {
+    "node": "vessel",
+    "time_s": 0.0,
+    "G": -0.14478804995028047
+   },
+   {
+    "node": "vessel",
+    "time_s": 0.1,
+    "G": -0.15451411604039686
+   },
+   {
+    "node": "vessel",
+    "time_s": 0.25,
+    "G": -0.1591553975752518
+   },
+   {
+    "node": "vessel",
+    "time_s": 0.26,
+    "G": -0.14663199464273455
+   },
+   {
+    "node": "vessel",
+    "time_s": 0.5,
+    "G": -0.14841765016483435
+   },
+   {
+    "node": "pod",
+    "time_s": 0.0,
+    "G": -0.02330098220113216
+   },
+   {
+    "node": "pod",
+    "time_s": 0.1,
+    "G": -0.02499976140334776
+   },
+   {
+    "node": "pod",
+    "time_s": 0.25,
+    "G": -0.02569269807793026
+   },
+   {
+    "node": "pod",
+    "time_s": 0.26,
+    "G": -0.02571531376255967
+   },
+   {
+    "node": "pod",
+    "time_s": 0.5,
+    "G": -0.025968632459458445
+   }
+  ],
+  "wash_free_energy_change": [
+   {
+    "node": "vessel",
+    "time_s": 0.25,
+    "free_energy_change": 0.012669364243409031,
+    "sets_part": 0.0
+   },
+   {
+    "node": "pod",
+    "time_s": 0.25,
+    "free_energy_change": 0.0,
+    "sets_part": 0.0
+   }
+  ]
+ },
+ "pairs": [
+  {
+   "criterion": "C1",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.002687048703422901,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0013612305984577815,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.00043907575449857384,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q4@pod",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0004436155954270059,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q5@pod",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0002707392399441413,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:lattice",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0030424518332071663,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:sheet",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0010062262999179748,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:liner",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0006114135876145938,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0010601938768053298,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0005689663859315407,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.0003100051055775032,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.00018936182844719472,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:liner_Q4",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.00015638440457299406,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:liner_Q5",
+   "time_s": 0.1,
+   "class": "band",
+   "value": 0.00022852544811672028,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.002408069206916596,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.000889755428571127,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.00039113476403133534,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q4@pod",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.00032711370568717056,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q5@pod",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.00024404179526012266,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:lattice",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.0023029763406142993,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:sheet",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.0009473061356506433,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:liner",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.00046821425319073975,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.0013391733733116352,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.0009815213915508635,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.0003579460960447417,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.0002482819927145264,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:liner_Q4",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.0002728862943128294,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:liner_Q5",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.00025522289280073893,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.001797254678766734,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.0008956559935691565,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.00029228537257749195,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q4@pod",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.00032197642164683157,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q5@pod",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.0002427013188706592,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:lattice",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.002274351003731061,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:sheet",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.0009444079665579704,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:liner",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.0004617364927609374,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.001347970600357348,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.0010002838003173795,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.00035901179711575124,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.0002511801618071993,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:liner_Q4",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.0002780235783531684,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:liner_Q5",
+   "time_s": 0.26,
+   "class": "band",
+   "value": 0.0002565633691902024,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0016518243347219178,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0005618750583096347,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00027903134756595606,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q4@pod",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.000246112976766153,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "n:Q5@pod",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00021966682161820206,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:lattice",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0018271034783440335,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:sheet",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0008991901876291241,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "R:liner",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0003628385506278016,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0014934009444021643,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.001288846956648055,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0003722658221272871,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0002963979407360456,
+   "tolerance": 3.985293761217232e-09,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:liner_Q4",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00035388702323384697,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C1",
+   "observable": "B:liner_Q5",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00027959786644265956,
+   "tolerance": 7.970587522434464e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0015025297956505078,
+   "tolerance": 3.985293761217232e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0002388618488585113,
+   "tolerance": 3.985293761217232e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0003111361878534413,
+   "tolerance": 3.985293761217232e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:Q4@pod",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00019882093378543875,
+   "tolerance": 7.970587522434464e-13,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "n:Q5@pod",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0001731590974810382,
+   "tolerance": 7.970587522434464e-13,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "R:lattice",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0013666080767822503,
+   "tolerance": 3.985293761217232e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "R:sheet",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.000919482680955859,
+   "tolerance": 3.985293761217232e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "R:liner",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00026903878350992353,
+   "tolerance": 7.970587522434464e-13,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0016426954834735743,
+   "tolerance": 3.985293761217232e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0016321526594259132,
+   "tolerance": 3.985293761217232e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0003401609818398019,
+   "tolerance": 3.985293761217232e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.00027610544740931073,
+   "tolerance": 3.985293761217232e-12,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:liner_Q4",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0004011790662145612,
+   "tolerance": 7.970587522434464e-13,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2a",
+   "observable": "B:liner_Q5",
+   "time_s": 0.5,
+   "class": "band",
+   "value": 0.0003261055905798234,
+   "tolerance": 7.970587522434464e-13,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0015025297956505078,
+   "tolerance": 7.111143671265576e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0002388618488585113,
+   "tolerance": 4.740762447510384e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003111361878534413,
+   "tolerance": 1.185190611877596e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q4@pod",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00019882093378543875,
+   "tolerance": 1.4222287342531152e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q5@pod",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0001731590974810382,
+   "tolerance": 7.111143671265576e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:lattice",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0013666080767822503,
+   "tolerance": 9.446665502738034e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:sheet",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.000919482680955859,
+   "tolerance": 2.5505996857392696e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:liner",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00026903878350992353,
+   "tolerance": 1.889333100547607e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0016426954834735743,
+   "tolerance": 3.893814530373218e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0016321526594259132,
+   "tolerance": 3.868824018205288e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003401609818398019,
+   "tolerance": 8.063112044071972e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00027610544740931073,
+   "tolerance": 6.544751683155568e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q4",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0004011790662145612,
+   "tolerance": 9.509473259186369e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q5",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003261055905798234,
+   "tolerance": 7.7299456887201145e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0015025297956505078,
+   "tolerance": 9.784253400862813e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0002388618488585113,
+   "tolerance": 6.5228356005752095e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003111361878534413,
+   "tolerance": 1.6307089001438024e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q4@pod",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00019882093378543875,
+   "tolerance": 1.9568506801725627e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q5@pod",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0001731590974810382,
+   "tolerance": 9.784253400862813e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:lattice",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0013666080767822503,
+   "tolerance": 1.2997708012209017e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:sheet",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.000919482680955859,
+   "tolerance": 3.509381163296435e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:liner",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00026903878350992353,
+   "tolerance": 2.599541602441804e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0016426954834735743,
+   "tolerance": 5.3575162902527674e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0016321526594259132,
+   "tolerance": 5.323131736238426e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003401609818398019,
+   "tolerance": 1.1094070811356384e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00027610544740931073,
+   "tolerance": 9.00495220937099e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q4",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0004011790662145612,
+   "tolerance": 1.3084125476549293e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q5",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003261055905798234,
+   "tolerance": 1.0635665778903378e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0015025297956505078,
+   "tolerance": 9.962460716169296e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0002388618488585113,
+   "tolerance": 6.6416404774461975e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003111361878534413,
+   "tolerance": 1.6604101193615494e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q4@pod",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00019882093378543875,
+   "tolerance": 1.992492143233859e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q5@pod",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0001731590974810382,
+   "tolerance": 9.962460716169295e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:lattice",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0013666080767822503,
+   "tolerance": 1.3234444179507083e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:sheet",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.000919482680955859,
+   "tolerance": 3.573299928466913e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:liner",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00026903878350992353,
+   "tolerance": 2.646888835901417e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0016426954834735743,
+   "tolerance": 5.455096407578071e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0016321526594259132,
+   "tolerance": 5.4200855841073015e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003401609818398019,
+   "tolerance": 1.1296134729175345e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00027610544740931073,
+   "tolerance": 9.168965577785351e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q4",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0004011790662145612,
+   "tolerance": 1.3322435624373489e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q5",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003261055905798234,
+   "tolerance": 1.0829380451582264e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0015025297956505078,
+   "tolerance": 1.4239436283524876e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0002388618488585113,
+   "tolerance": 9.492957522349918e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003111361878534413,
+   "tolerance": 2.3732393805874795e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q4@pod",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00019882093378543875,
+   "tolerance": 2.847887256704975e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q5@pod",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0001731590974810382,
+   "tolerance": 1.4239436283524875e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:lattice",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0013666080767822503,
+   "tolerance": 1.8916112194660658e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:sheet",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.000919482680955859,
+   "tolerance": 5.107350292558378e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:liner",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00026903878350992353,
+   "tolerance": 3.7832224389321324e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0016426954834735743,
+   "tolerance": 7.79701922338535e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0016321526594259132,
+   "tolerance": 7.746977932960323e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003401609818398019,
+   "tolerance": 1.6145668756830405e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00027610544740931073,
+   "tolerance": 1.3105286419730027e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q4",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0004011790662145612,
+   "tolerance": 1.904187917215417e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q5",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0003261055905798234,
+   "tolerance": 1.5478532595875485e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0015025297956505078,
+   "tolerance": 7.111143671265576e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0002388618488585113,
+   "tolerance": 4.740762447510384e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003111361878534413,
+   "tolerance": 1.185190611877596e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q4@pod",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00019882093378543875,
+   "tolerance": 1.4222287342531152e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q5@pod",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0001731590974810382,
+   "tolerance": 7.111143671265576e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:lattice",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0013666080767822503,
+   "tolerance": 9.446665502738034e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:sheet",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.000919482680955859,
+   "tolerance": 2.5505996857392696e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:liner",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00026903878350992353,
+   "tolerance": 1.889333100547607e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0016426954834735743,
+   "tolerance": 3.893814530373218e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0016321526594259132,
+   "tolerance": 3.868824018205288e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003401609818398019,
+   "tolerance": 8.063112044071972e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00027610544740931073,
+   "tolerance": 6.544751683155568e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q4",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0004011790662145612,
+   "tolerance": 9.509473259186369e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q5",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003261055905798234,
+   "tolerance": 7.7299456887201145e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0015025297956505078,
+   "tolerance": 9.784253400862813e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0002388618488585113,
+   "tolerance": 6.5228356005752095e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003111361878534413,
+   "tolerance": 1.6307089001438024e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q4@pod",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00019882093378543875,
+   "tolerance": 1.9568506801725627e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q5@pod",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0001731590974810382,
+   "tolerance": 9.784253400862813e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:lattice",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0013666080767822503,
+   "tolerance": 1.2997708012209017e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:sheet",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.000919482680955859,
+   "tolerance": 3.509381163296435e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:liner",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00026903878350992353,
+   "tolerance": 2.599541602441804e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0016426954834735743,
+   "tolerance": 5.3575162902527674e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0016321526594259132,
+   "tolerance": 5.323131736238426e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003401609818398019,
+   "tolerance": 1.1094070811356384e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00027610544740931073,
+   "tolerance": 9.00495220937099e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q4",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0004011790662145612,
+   "tolerance": 1.3084125476549293e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q5",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003261055905798234,
+   "tolerance": 1.0635665778903378e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0015025297956505078,
+   "tolerance": 9.962460716169296e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0002388618488585113,
+   "tolerance": 6.6416404774461975e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003111361878534413,
+   "tolerance": 1.6604101193615494e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q4@pod",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00019882093378543875,
+   "tolerance": 1.992492143233859e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q5@pod",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0001731590974810382,
+   "tolerance": 9.962460716169295e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:lattice",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0013666080767822503,
+   "tolerance": 1.3234444179507083e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:sheet",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.000919482680955859,
+   "tolerance": 3.573299928466913e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:liner",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00026903878350992353,
+   "tolerance": 2.646888835901417e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0016426954834735743,
+   "tolerance": 5.455096407578071e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0016321526594259132,
+   "tolerance": 5.4200855841073015e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003401609818398019,
+   "tolerance": 1.1296134729175345e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00027610544740931073,
+   "tolerance": 9.168965577785351e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q4",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0004011790662145612,
+   "tolerance": 1.3322435624373489e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q5",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003261055905798234,
+   "tolerance": 1.0829380451582264e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0015025297956505078,
+   "tolerance": 1.4239436283524876e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0002388618488585113,
+   "tolerance": 9.492957522349918e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003111361878534413,
+   "tolerance": 2.3732393805874795e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q4@pod",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00019882093378543875,
+   "tolerance": 2.847887256704975e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "n:Q5@pod",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0001731590974810382,
+   "tolerance": 1.4239436283524875e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:lattice",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0013666080767822503,
+   "tolerance": 1.8916112194660658e-17,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:sheet",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.000919482680955859,
+   "tolerance": 5.107350292558378e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "R:liner",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00026903878350992353,
+   "tolerance": 3.7832224389321324e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0016426954834735743,
+   "tolerance": 7.79701922338535e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0016321526594259132,
+   "tolerance": 7.746977932960323e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003401609818398019,
+   "tolerance": 1.6145668756830405e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00027610544740931073,
+   "tolerance": 1.3105286419730027e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q4",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0004011790662145612,
+   "tolerance": 1.904187917215417e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C2b",
+   "observable": "B:liner_Q5",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0003261055905798234,
+   "tolerance": 1.5478532595875485e-18,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:vessel",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "class": "band",
+   "value": 0.009726066090116397,
+   "tolerance": 3.272936014379599e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:vessel",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0633348992096975e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:vessel",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.126669798419395e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:vessel",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0633348992096974e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:vessel",
+   "time_s": 0.25,
+   "start_s": 0.1,
+   "end_s": 0.25,
+   "class": "band",
+   "value": 0.004641281534854946,
+   "tolerance": 3.023533021337174e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:vessel",
+   "time_s": 0.25,
+   "start_s": 0.1,
+   "end_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.6715669574675224e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:vessel",
+   "time_s": 0.25,
+   "start_s": 0.1,
+   "end_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": null,
+   "tolerance": 3.343133914935045e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:vessel",
+   "time_s": 0.25,
+   "start_s": 0.1,
+   "end_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.114377971645015e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:vessel",
+   "time_s": 0.26,
+   "start_s": 0.25,
+   "end_s": 0.26,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0413644274883087e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance",
+   "spans_wash": true
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:vessel",
+   "time_s": 0.5,
+   "start_s": 0.26,
+   "end_s": 0.5,
+   "class": "band",
+   "value": 0.0017856555220998028,
+   "tolerance": 3.0483628531093665e-06,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:vessel",
+   "time_s": 0.5,
+   "start_s": 0.26,
+   "end_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.51574458167939e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:vessel",
+   "time_s": 0.5,
+   "start_s": 0.26,
+   "end_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": null,
+   "tolerance": 5.03148916335878e-14,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:vessel",
+   "time_s": 0.5,
+   "start_s": 0.26,
+   "end_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.0482269090330792e-15,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:pod",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "class": "band",
+   "value": 0.0016987792022155979,
+   "tolerance": 3.672096141232699e-07,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:pod",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.7159871249987162e-15,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:pod",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": null,
+   "tolerance": 3.4319742499974323e-15,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:pod",
+   "time_s": 0.1,
+   "start_s": 0.0,
+   "end_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.7159871249987162e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:pod",
+   "time_s": 0.25,
+   "start_s": 0.1,
+   "end_s": 0.25,
+   "class": "band",
+   "value": 0.0006929366745825008,
+   "tolerance": 3.1935809469419167e-07,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:pod",
+   "time_s": 0.25,
+   "start_s": 0.1,
+   "end_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": null,
+   "tolerance": 2.7014369131676486e-15,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:pod",
+   "time_s": 0.25,
+   "start_s": 0.1,
+   "end_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": null,
+   "tolerance": 5.402873826335297e-15,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:pod",
+   "time_s": 0.25,
+   "start_s": 0.1,
+   "end_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.8009579421117657e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:pod",
+   "time_s": 0.26,
+   "start_s": 0.25,
+   "end_s": 0.26,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.826379468656467e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance",
+   "spans_wash": true
+  },
+  {
+   "criterion": "C3a",
+   "observable": "H:pod",
+   "time_s": 0.5,
+   "start_s": 0.26,
+   "end_s": 0.5,
+   "class": "band",
+   "value": 0.00025331869689877213,
+   "tolerance": 3.206443257020468e-07,
+   "against": "reference"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:pod",
+   "time_s": 0.5,
+   "start_s": 0.26,
+   "end_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": null,
+   "tolerance": 4.4068383052164776e-15,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3b",
+   "observable": "H:pod",
+   "time_s": 0.5,
+   "start_s": 0.26,
+   "end_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": null,
+   "tolerance": 8.813676610432955e-15,
+   "against": "engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC \u00a71.3; AMENDMENT \u00a72.2)"
+  },
+  {
+   "criterion": "C3c",
+   "observable": "cumulative_site_heat:pod",
+   "time_s": 0.5,
+   "start_s": 0.26,
+   "end_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": 1.8361826271735325e-16,
+   "against": "engine: its own cumulative site heat may not fall by more than the tolerance"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.0,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 1.331287997256052e-17,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.0,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 7.530185587386445e-18,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.0,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 2.661269818119923e-18,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 1.464416796981657e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 8.28320414612509e-17,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 2.927396799931915e-17,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 3.461348792865735e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 1.9578482527204757e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 6.919301527111799e-17,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 3.5944775937903814e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 2.5127664552324076e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 7.1854285209142e-17,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 6.78956878827072e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 4.746336637661215e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 1.3572476095060157e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.0,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 1.331287997256052e-17,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.0,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 7.530185587386445e-18,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.0,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 2.661269818119923e-18,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 2.795704794237709e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 1.5813389733511533e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 5.588666618051838e-17,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 6.789568786005866e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 3.8403946495670867e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 1.3572476072411605e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 7.055826387810748e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 4.932467486196948e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 1.410473005957232e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q1@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.003747242580228231,
+   "tolerance": 1.3446008776771427e-15,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q2@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.002119558812836517,
+   "tolerance": 9.399607851054562e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4a",
+   "observable": "books:Q3@vessel",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.000749080860076077,
+   "tolerance": 2.687882520786423e-16,
+   "against": "reference: the declared total N_l"
+  },
+  {
+   "criterion": "C4b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: (1 - f) n + f V c_buf of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 8.881784197001252e-16,
+    "f_V_c_buf": 6.25e-13,
+    "a_n_information": 0.003,
+    "n_information": 0.003,
+    "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n the engine's anchor and amount at the event"
+   },
+   "tolerance_information": 5.329070518755863e-18
+  },
+  {
+   "criterion": "C4b",
+   "observable": "removed:Q1@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: f n of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 4.440892098500626e-16,
+    "f": 0.25,
+    "n_information": 0.003,
+    "formula": "eps_factor * f * |n|, with n the engine's amount at the event"
+   },
+   "tolerance_information": 3.3306690738754697e-19
+  },
+  {
+   "criterion": "C4b",
+   "observable": "supplied:Q1@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": 6.25e-13,
+   "tolerance": 2.775557561562891e-28,
+   "against": "reference: f V c_buf"
+  },
+  {
+   "criterion": "C4b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: (1 - f) n + f V c_buf of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 8.881784197001252e-16,
+    "f_V_c_buf": 0.00025,
+    "a_n_information": 0.002,
+    "n_information": 0.002,
+    "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n the engine's anchor and amount at the event"
+   },
+   "tolerance_information": 3.7747582837255325e-18
+  },
+  {
+   "criterion": "C4b",
+   "observable": "removed:Q2@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: f n of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 4.440892098500626e-16,
+    "f": 0.25,
+    "n_information": 0.002,
+    "formula": "eps_factor * f * |n|, with n the engine's amount at the event"
+   },
+   "tolerance_information": 2.220446049250313e-19
+  },
+  {
+   "criterion": "C4b",
+   "observable": "supplied:Q2@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": 0.00025,
+   "tolerance": 1.1102230246251566e-19,
+   "against": "reference: f V c_buf"
+  },
+  {
+   "criterion": "C4b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: (1 - f) n + f V c_buf of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 8.881784197001252e-16,
+    "f_V_c_buf": 6.25e-13,
+    "a_n_information": 0.0005,
+    "n_information": 0.0005,
+    "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n the engine's anchor and amount at the event"
+   },
+   "tolerance_information": 8.881784202552368e-19
+  },
+  {
+   "criterion": "C4b",
+   "observable": "removed:Q3@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: f n of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 4.440892098500626e-16,
+    "f": 0.25,
+    "n_information": 0.0005,
+    "formula": "eps_factor * f * |n|, with n the engine's amount at the event"
+   },
+   "tolerance_information": 5.551115123125783e-20
+  },
+  {
+   "criterion": "C4b",
+   "observable": "supplied:Q3@vessel",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": 6.25e-13,
+   "tolerance": 2.775557561562891e-28,
+   "against": "reference: f V c_buf"
+  },
+  {
+   "criterion": "C4b",
+   "observable": "n:Q1@vessel",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: (1 - f) n + f V c_buf of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 8.881784197001252e-16,
+    "f_V_c_buf": 6.25e-13,
+    "a_n_information": 0.003,
+    "n_information": 0.002408069206916596,
+    "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n the engine's anchor and amount at the event"
+   },
+   "tolerance_information": 4.803330362383203e-18
+  },
+  {
+   "criterion": "C4b",
+   "observable": "removed:Q1@vessel",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: f n of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 4.440892098500626e-16,
+    "f": 0.25,
+    "n_information": 0.002408069206916596,
+    "formula": "eps_factor * f * |n|, with n the engine's amount at the event"
+   },
+   "tolerance_information": 2.673493878409645e-19
+  },
+  {
+   "criterion": "C4b",
+   "observable": "supplied:Q1@vessel",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": 6.25e-13,
+   "tolerance": 2.775557561562891e-28,
+   "against": "reference: f V c_buf"
+  },
+  {
+   "criterion": "C4b",
+   "observable": "n:Q2@vessel",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: (1 - f) n + f V c_buf of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 8.881784197001252e-16,
+    "f_V_c_buf": 0.00025,
+    "a_n_information": 0.002,
+    "n_information": 0.000889755428571127,
+    "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n the engine's anchor and amount at the event"
+   },
+   "tolerance_information": 2.788663014793193e-18
+  },
+  {
+   "criterion": "C4b",
+   "observable": "removed:Q2@vessel",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: f n of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 4.440892098500626e-16,
+    "f": 0.25,
+    "n_information": 0.000889755428571127,
+    "formula": "eps_factor * f * |n|, with n the engine's amount at the event"
+   },
+   "tolerance_information": 9.878269630848891e-20
+  },
+  {
+   "criterion": "C4b",
+   "observable": "supplied:Q2@vessel",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": 0.00025,
+   "tolerance": 1.1102230246251566e-19,
+   "against": "reference: f V c_buf"
+  },
+  {
+   "criterion": "C4b",
+   "observable": "n:Q3@vessel",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: (1 - f) n + f V c_buf of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 8.881784197001252e-16,
+    "f_V_c_buf": 6.25e-13,
+    "a_n_information": 0.0005,
+    "n_information": 0.00039113476403133534,
+    "formula": "eps_factor * (|a_n| + |n| + f_V_c_buf), with a_n and n the engine's anchor and amount at the event"
+   },
+   "tolerance_information": 7.914866670123069e-19
+  },
+  {
+   "criterion": "C4b",
+   "observable": "removed:Q3@vessel",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: f n of its own state at the event",
+   "tolerance_terms": {
+    "eps_factor": 4.440892098500626e-16,
+    "f": 0.25,
+    "n_information": 0.00039113476403133534,
+    "formula": "eps_factor * f * |n|, with n the engine's amount at the event"
+   },
+   "tolerance_information": 4.34246820758916e-20
+  },
+  {
+   "criterion": "C4b",
+   "observable": "supplied:Q3@vessel",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": 6.25e-13,
+   "tolerance": 2.775557561562891e-28,
+   "against": "reference: f V c_buf"
+  },
+  {
+   "criterion": "C4c",
+   "observable": "removed:Q1@vessel",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.000602017301729149,
+   "tolerance": 9.96323440304308e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C4c",
+   "observable": "supplied:Q1@vessel",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 6.25e-13,
+   "tolerance": 2.775557561562891e-28,
+   "against": "reference"
+  },
+  {
+   "criterion": "C4c",
+   "observable": "removed:Q2@vessel",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.00022243885714278176,
+   "tolerance": 9.96323440304308e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C4c",
+   "observable": "supplied:Q2@vessel",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 0.00025,
+   "tolerance": 1.1102230246251566e-19,
+   "against": "reference"
+  },
+  {
+   "criterion": "C4c",
+   "observable": "removed:Q3@vessel",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 9.778369100783383e-05,
+   "tolerance": 9.96323440304308e-10,
+   "against": "reference"
+  },
+  {
+   "criterion": "C4c",
+   "observable": "supplied:Q3@vessel",
+   "time_s": 0.25,
+   "class": "band",
+   "value": 6.25e-13,
+   "tolerance": 2.775557561562891e-28,
+   "against": "reference"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.0,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 1.7698259574393446e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.0,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 4.2475822978544274e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.0,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 3.53965191487869e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 1.946808553183279e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 4.67234052763987e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 3.893617106366559e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 4.601547489342296e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 1.1043713974421512e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 9.203094978684593e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 4.778530085086231e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 1.1468472204206953e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 9.557060170172463e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 9.026112382940657e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 2.166266971905758e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 1.8052224765881317e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.0,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 1.7698259574393446e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.0,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 4.2475822978544274e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.0,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 3.53965191487869e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 3.7166345106226237e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 8.919922825494297e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 7.433269021245248e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 9.026112382940657e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 2.166266971905758e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 1.8052224765881317e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 9.380077574428526e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 2.2512186178628466e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 1.8760155148857057e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:lattice",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.00498161720152154,
+   "tolerance": 1.787524217013738e-15,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:sheet",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0011955881283651697,
+   "tolerance": 4.2900581208329715e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:liner",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "derived",
+   "value": 0.0009963234403043081,
+   "tolerance": 3.575048434027477e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C6",
+   "observable": "R:lattice",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "R:sheet",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "R:lattice",
+   "time_s": 0.25,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.25,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.25,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.25,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "R:sheet",
+   "time_s": 0.25,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C6",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.25,
+   "class": "constant",
+   "value": "unchanged",
+   "tolerance": null,
+   "against": "engine: its own value before the event map"
+  },
+  {
+   "criterion": "C7",
+   "observable": "stage:first_step",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "refused",
+   "tolerance": null,
+   "against": "engine: its step report gives h*max L above 1/2"
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:lattice",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0030424518332071663,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:sheet",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0010062262999179748,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:liner",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0006114135876145938,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0010601938768053298,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0005689663859315407,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0003100051055775032,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.00018936182844719472,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q4",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.00015638440457299406,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q5",
+   "time_s": 0.1,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.00022852544811672028,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:lattice",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0023029763406142993,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:sheet",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0009473061356506433,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:liner",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.00046821425319073975,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0013391733733116352,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0009815213915508635,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0003579460960447417,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0002482819927145264,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q4",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0002728862943128294,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q5",
+   "time_s": 0.25,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.00025522289280073893,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:lattice",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.002274351003731061,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:sheet",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0009444079665579704,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:liner",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0004617364927609374,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.001347970600357348,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0010002838003173795,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.00035901179711575124,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0002511801618071993,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q4",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0002780235783531684,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q5",
+   "time_s": 0.26,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0002565633691902024,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:lattice",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0018271034783440335,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:sheet",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0008991901876291241,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:liner",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0003628385506278016,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0014934009444021643,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.001288846956648055,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0003722658221272871,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.0002963979407360456,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q4",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.00035388702323384697,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q5",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "band",
+   "value": 0.00027959786644265956,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:lattice",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0030424518332071663,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:sheet",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0010062262999179748,
+   "tolerance": 1.1955881283651697e-09,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:liner",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0006114135876145938,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0010601938768053298,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0005689663859315407,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0003100051055775032,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.00018936182844719472,
+   "tolerance": 1.1955881283651697e-09,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q4",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.00015638440457299406,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q5",
+   "time_s": 0.1,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.00022852544811672028,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:lattice",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0023029763406142993,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:sheet",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0009473061356506433,
+   "tolerance": 1.1955881283651697e-09,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:liner",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.00046821425319073975,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0013391733733116352,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0009815213915508635,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0003579460960447417,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0002482819927145264,
+   "tolerance": 1.1955881283651697e-09,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q4",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0002728862943128294,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q5",
+   "time_s": 0.25,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.00025522289280073893,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:lattice",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.002274351003731061,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:sheet",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0009444079665579704,
+   "tolerance": 1.1955881283651697e-09,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:liner",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0004617364927609374,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.001347970600357348,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0010002838003173795,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.00035901179711575124,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0002511801618071993,
+   "tolerance": 1.1955881283651697e-09,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q4",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0002780235783531684,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q5",
+   "time_s": 0.26,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0002565633691902024,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:lattice",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0018271034783440335,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:sheet",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0008991901876291241,
+   "tolerance": 1.1955881283651697e-09,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:liner",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0003628385506278016,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q1",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0014934009444021643,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q2",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.001288846956648055,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:lattice_Q3",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0003722658221272871,
+   "tolerance": 4.98161720152154e-09,
+   "against": "reference",
+   "scale": 0.00498161720152154
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:sheet_Q2",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.0002963979407360456,
+   "tolerance": 1.1955881283651697e-09,
+   "against": "reference",
+   "scale": 0.0011955881283651697
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q4",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.00035388702323384697,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:liner_Q5",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "band",
+   "value": 0.00027959786644265956,
+   "tolerance": 9.963234403043081e-10,
+   "against": "reference",
+   "scale": 0.0009963234403043081
+  },
+  {
+   "criterion": "C8",
+   "observable": "ratio:e(0.01)/e(0.005)",
+   "time_s": null,
+   "class": "band",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: e(dt) = max |y_e - y_ref| / S over R and the B_b at its times",
+   "minimum": 6.0
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q1",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 3.264609047502753e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.208245101751528e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q2",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 3.264609047502753e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.208245101751528e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q3",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 3.264609047502753e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.208245101751528e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:sheet_Q2",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 4.534179232642713e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.335202120265523e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q4",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q5",
+   "time_s": 0.0,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q1",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q2",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q3",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171256e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:sheet_Q2",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 9.068358465285426e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.788620043529796e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q4",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.7205075395856274e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.153834950959816e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q5",
+   "time_s": 0.1,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 2.7205075395856274e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.153834950959816e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q1",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 1.0882030158342512e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.990604498584677e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q2",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 1.0882030158342512e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.990604498584677e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q3",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 1.0882030158342512e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.990604498584677e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:sheet_Q2",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q4",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171255e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q5",
+   "time_s": 0.25,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171255e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q1",
+   "time_s": 0.26,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q2",
+   "time_s": 0.26,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q3",
+   "time_s": 0.26,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:sheet_Q2",
+   "time_s": 0.26,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q4",
+   "time_s": 0.26,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171255e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q5",
+   "time_s": 0.26,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 5.441015079171255e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.425885704918379e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q1",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 3.264609047502753e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.208245101751528e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q2",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 3.264609047502753e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.208245101751528e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:lattice_Q3",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 3.264609047502753e-17,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 9.208245101751528e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:sheet_Q2",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q4",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C9",
+   "observable": "theta:liner_Q5",
+   "time_s": 0.5,
+   "class": "derived",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: B_b / S_s of its own saved state",
+   "tolerance_terms": {
+    "eps_term": 8.881784197001252e-16,
+    "moiety_term_information": 0.0,
+    "formula": "eps_term + |R_s + sum B - S_s| / S_s, the moiety term from the engine's same saved state"
+   },
+   "tolerance_information": 8.881784197001252e-16
+  },
+  {
+   "criterion": "C10",
+   "observable": "run",
+   "time_s": 0.5,
+   "dt_s": 0.01,
+   "class": "constant",
+   "value": "completes",
+   "tolerance": null,
+   "against": "engine: the run completes and closes its ledgers on every row"
+  },
+  {
+   "criterion": "C10",
+   "observable": "run",
+   "time_s": 0.5,
+   "dt_s": 0.005,
+   "class": "constant",
+   "value": "completes",
+   "tolerance": null,
+   "against": "engine: the run completes and closes its ledgers on every row"
+  }
+ ],
+ "spread": "none",
+ "spread_note": "No pair is spread: nothing is drawn (SPEC.md \u00a73.4). Trajectory pairs carry integration error and are class band, judged by their criterion's band directly, never by agreement.judge.",
+ "distance_at_horizon": {
+  "n:Q1@vessel": 0.00014929453907141005,
+  "n:Q2@vessel": 0.00032301320945112336,
+  "n:Q3@vessel": 3.210484028748521e-05,
+  "n:Q4@pod": 4.729204298071421e-05,
+  "n:Q5@pod": 4.650772413716386e-05,
+  "R:lattice": 0.0004604954015617831,
+  "R:sheet": 2.02924933267349e-05,
+  "R:liner": 9.379976711787806e-05,
+  "B:lattice_Q1": 0.00014929453907141005,
+  "B:lattice_Q2": 0.0003433057027778582,
+  "B:lattice_Q3": 3.210484028748521e-05,
+  "B:sheet_Q2": 2.02924933267349e-05,
+  "B:liner_Q4": 4.729204298071421e-05,
+  "B:liner_Q5": 4.650772413716386e-05
+ },
+ "closed_form": [
+  {
+   "observable": "B:liner_Q4",
+   "time_s": 0.1,
+   "value": 0.0001793646075542457,
+   "gap_from_ode": 2.2980202981251653e-05
+  },
+  {
+   "observable": "B:liner_Q5",
+   "time_s": 0.1,
+   "value": 0.00022986424454802455,
+   "gap_from_ode": 1.3387964313042484e-06
+  },
+  {
+   "observable": "R:liner",
+   "time_s": 0.1,
+   "value": 0.0005870945882020379,
+   "gap_from_ode": 2.4318999412555904e-05
+  },
+  {
+   "observable": "B:liner_Q4",
+   "time_s": 0.25,
+   "value": 0.0003488110887100867,
+   "gap_from_ode": 7.592479439725733e-05
+  },
+  {
+   "observable": "B:liner_Q5",
+   "time_s": 0.25,
+   "value": 0.000258366029961572,
+   "gap_from_ode": 3.143137160833057e-06
+  },
+  {
+   "observable": "R:liner",
+   "time_s": 0.25,
+   "value": 0.0003891463216326494,
+   "gap_from_ode": 7.906793155809039e-05
+  },
+  {
+   "observable": "B:liner_Q4",
+   "time_s": 0.26,
+   "value": 0.00035706944315945456,
+   "gap_from_ode": 7.90458648062862e-05
+  },
+  {
+   "observable": "B:liner_Q5",
+   "time_s": 0.26,
+   "value": 0.00025973597608728346,
+   "gap_from_ode": 3.1726068970811037e-06
+  },
+  {
+   "observable": "R:liner",
+   "time_s": 0.26,
+   "value": 0.0003795180210575701,
+   "gap_from_ode": 8.22184717033673e-05
+  },
+  {
+   "observable": "B:liner_Q4",
+   "time_s": 0.5,
+   "value": 0.000485460124590713,
+   "gap_from_ode": 0.00013157310135686602
+  },
+  {
+   "observable": "B:liner_Q5",
+   "time_s": 0.5,
+   "value": 0.0002804566577923981,
+   "gap_from_ode": 8.587913497385415e-07
+  },
+  {
+   "observable": "R:liner",
+   "time_s": 0.5,
+   "value": 0.00023040665792119702,
+   "gap_from_ode": 0.00013243189270660457
+  }
+ ],
+ "stage": {
+  "h_s": 0.005,
+  "loads_times_h": {
+   "L_n": {
+    "Q1@vessel": 0.007173528770191017,
+    "Q2@vessel": 0.022293733300249197,
+    "Q3@vessel": 0.009564705026921357,
+    "Q4@pod": 0.017933821925477544,
+    "Q5@pod": 0.006974264082130157
+   },
+   "L_R_summed": {
+    "lattice": 0.0166,
+    "sheet": 0.0044,
+    "liner": 0.016124999999999997
+   },
+   "L_R_per_population": {
+    "lattice_Q1": 0.0054,
+    "lattice_Q2": 0.01,
+    "lattice_Q3": 0.0012000000000000001,
+    "sheet_Q2": 0.0044,
+    "liner_Q4": 0.013499999999999998,
+    "liner_Q5": 0.0026249999999999997
+   },
+   "L_B": {
+    "lattice_Q1": 0.0022500000000000003,
+    "lattice_Q2": 0.001,
+    "lattice_Q3": 0.003,
+    "sheet_Q2": 0.0017499999999999998,
+    "liner_Q4": 0.003,
+    "liner_Q5": 0.00125
+   }
+  },
+  "max_hL_summed": 0.022293733300249197,
+  "max_hL_per_population": 0.022293733300249197,
+  "threshold": 0.5,
+  "verdict_summed": "admitted",
+  "verdict_per_population": "admitted"
+ },
+ "plants": [
+  {
+   "plant": "P1",
+   "criterion": "C1",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "n:Q4@pod",
+    "time_s": 0.5
+   },
+   "honest": 0.000246112976766153,
+   "planted": 0.00017799348275799858,
+   "distance_in_bounds": 85463.57946189212,
+   "assumption": "ranked over the free and bound amounts only: the plant gives each population S_s - B_b as its free sites and does not say what the set's R_s does"
+  },
+  {
+   "plant": "P2",
+   "criterion": "C1",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "B:lattice_Q1",
+    "time_s": 0.5
+   },
+   "honest": 0.0014934009444021643,
+   "planted": 0.0016167476115055482,
+   "distance_in_bounds": 30950.45798222664
+  },
+  {
+   "plant": "P3",
+   "criterion": "C3b",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "H:pod",
+    "start_s": 0.0,
+    "end_s": 0.1
+   },
+   "honest": 0.0016987792022155979,
+   "planted": 0.0018145270725122755,
+   "distance_in_bounds": 67452644958.95576
+  },
+  {
+   "plant": "P3",
+   "criterion": "C3a",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "H:pod",
+    "start_s": 0.1,
+    "end_s": 0.25
+   },
+   "honest": 0.0006929366745825008,
+   "planted": 0.000827952198450387,
+   "distance_in_bounds": 422.7715724480797,
+   "information": true
+  },
+  {
+   "plant": "P6",
+   "criterion": "C3b",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "H:vessel",
+    "start_s": 0.0,
+    "end_s": 0.1
+   },
+   "honest": 0.009726066090116397,
+   "planted": 0.01287530026272293,
+   "distance_in_bounds": 296165786992.145
+  },
+  {
+   "plant": "P6",
+   "criterion": "C3a",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "H:vessel",
+    "start_s": 0.0,
+    "end_s": 0.1
+   },
+   "honest": 0.009726066090116397,
+   "planted": 0.01287530026272293,
+   "distance_in_bounds": 962.2046256848333,
+   "information": true
+  },
+  {
+   "plant": "P4",
+   "criterion": "C7",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "stage:h*max_L",
+    "time_s": 0.0
+   },
+   "honest": 0.022293733300249197,
+   "planted": 0.022293733300249197,
+   "distance_in_bounds": 0.0,
+   "bound_used": "the stage condition's 1/2",
+   "verdict_honest": "admitted",
+   "verdict_planted": "admitted"
+  },
+  {
+   "plant": "P5",
+   "criterion": "C6",
+   "world": "INVENTED-X",
+   "time_s": 0.0,
+   "compared": {
+    "observable": "B:sheet_Q2",
+    "time_s": 0.0
+   },
+   "honest": 0.00011955881283651698,
+   "planted": 8.966910962738773e-05,
+   "distance_in_bounds": 2205470822151769.0,
+   "bound_used": "ulps of the honest value (bit for bit)",
+   "assumption": "the planted map scales every B_b facing the washed node by (1 - f) and leaves R_s unchanged"
+  },
+  {
+   "plant": "P5",
+   "criterion": "C6",
+   "world": "INVENTED-X",
+   "time_s": 0.25,
+   "compared": {
+    "observable": "B:lattice_Q3",
+    "time_s": 0.25
+   },
+   "honest": 0.0003579460960447417,
+   "planted": 0.00026845957203355624,
+   "distance_in_bounds": 1650735006480203.0,
+   "bound_used": "ulps of the honest value (bit for bit)",
+   "assumption": "the planted map scales every B_b facing the washed node by (1 - f) and leaves R_s unchanged"
+  },
+  {
+   "plant": "P5",
+   "criterion": "C4a",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "books:Q3@vessel",
+    "time_s": 0.26
+   },
+   "honest": 0.000749080860076077,
+   "planted": 0.0006595943360648916,
+   "distance_in_bounds": 1414349521898.6433,
+   "assumption": "the planted map scales every B_b facing the washed node by (1 - f) and leaves R_s unchanged"
+  },
+  {
+   "plant": "P7",
+   "criterion": "C5",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "sites:lattice",
+    "time_s": 0.1
+   },
+   "honest": 0.00498161720152154,
+   "planted": 0.005663939326769535,
+   "distance_in_bounds": 3504823954735.1064
+  },
+  {
+   "plant": "P7",
+   "criterion": "C1",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "R:lattice",
+    "time_s": 0.5
+   },
+   "honest": 0.0018271034783440335,
+   "planted": 0.0030078639371910352,
+   "distance_in_bounds": 296279.40362578473
+  },
+  {
+   "plant": "P8",
+   "criterion": "C10",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "R:lattice+B:lattice_Q3",
+    "time_s": 0.1
+   },
+   "honest": 0.00498161720152154,
+   "planted": 0.003352456938784669,
+   "distance_in_bounds": 8368364008227.654,
+   "bound_used": "C5's moiety tolerance 16 eps (k_t + 1) S_s, as the ledger's own"
+  },
+  {
+   "plant": "P9",
+   "criterion": "C9",
+   "world": "INVENTED-X",
+   "time_s": null,
+   "compared": {
+    "observable": "theta:liner_Q5",
+    "time_s": 0.5
+   },
+   "honest": 0.2806296179855627,
+   "planted": 0.43521484619075357,
+   "distance_in_bounds": 174047494035470.2
+  }
+ ],
+ "provenance": {
+  "references_revision": "INVENTED (a format sample has no generating revision)",
+  "tree_clean": true,
+  "writer_version": "fr45-references-writer 2",
+  "regeneration_hash_seeds": [
+   0,
+   1,
+   2
+  ],
+  "spec": {
+   "note": "invented inputs; SPEC.md \u00a75's format"
+  },
+  "profile": "sample"
+ }
+}

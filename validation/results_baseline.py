@@ -205,7 +205,11 @@ PATHS = ("run", "run_windowed", "run_batch", "run_batch_windowed", "run_vector_w
 
 
 def flatten(value, prefix=""):
-    """{dotted key: array} of a result tree (namedtuples, dataclasses, dicts, arrays, scalars)."""
+    """{dotted key: array} of a result tree (namedtuples, dataclasses, dicts, arrays, scalars).
+
+    An array-like (NumPy's, jax's or anything with __array__) is one array, with its dtype and
+    shape. A jax array has an empty attribute dict: reading that instead saved nothing, so a
+    checkpoint held as jax arrays kept only its time and step (D410)."""
     out = {}
     if value is None:
         return out
@@ -215,7 +219,7 @@ def flatten(value, prefix=""):
         items = ((f.name, getattr(value, f.name)) for f in dataclasses.fields(value))
     elif isinstance(value, dict):
         items = value.items()
-    elif hasattr(value, "__dict__") and not isinstance(value, np.ndarray | np.generic):
+    elif hasattr(value, "__dict__") and not hasattr(value, "__array__"):
         items = vars(value).items()
     else:
         array = np.asarray(value)
