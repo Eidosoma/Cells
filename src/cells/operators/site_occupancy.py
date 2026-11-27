@@ -150,6 +150,69 @@ POPULATION_KEYS = {
     "initial_occupancy",
     "internalisation",
 }
+# FR-45 (D327): a shared site set, and a population that binds on one. The member takes its owner,
+# functional unit, catalogue, copies, sites per copy and accessible fraction from its set.
+SITE_SETS_KEY = "site_sets"
+SET_KEYS = {
+    "id",
+    "functional_unit",
+    "catalogue",
+    "owner",
+    "copies",
+    "sites_per_copy",
+    "accessible_fraction",
+}
+MEMBER_KEYS = {
+    "id",
+    "sites",
+    "ligand",
+    "association_rate_per_mM_per_s",
+    "dissociation_rate_per_s",
+    "initial_occupancy",
+    "internalisation",
+}
+# Version 1's refusals beside site sets, by name (FR-45's protocol §1): each message starts
+# "<LAW_ID>: <name>: ", so a reader of the refusal names it from the engine's own list.
+INTERNALISATION_BESIDE_SETS = "internalisation beside site sets"
+OCCUPANT_BESIDE_SETS = "the occupant-replacement operator beside site sets"
+SET_TOO_FEW = "a set named by fewer than two populations"
+SET_LIGAND_TWICE = "two populations of one set binding one ligand"
+SET_OVERFULL = "initial occupancies over 1 on a set"
+SET_UNKNOWN = "a population on an undeclared site set"
+SET_NAMED_TWICE = "a site set ID declared twice or taken by a population"
+SET_ON_REPLACED_SLOT = "a shared site set on a replaced slot"
+PARTNER_BESIDE_SETS = "an operator not admitted beside site sets"
+OPTION_BESIDE_SETS = "an inner-model option not admitted beside site sets"
+REFUSALS = (
+    INTERNALISATION_BESIDE_SETS,
+    OCCUPANT_BESIDE_SETS,
+    SET_TOO_FEW,
+    SET_LIGAND_TWICE,
+    SET_OVERFULL,
+    SET_UNKNOWN,
+    SET_NAMED_TWICE,
+    SET_ON_REPLACED_SLOT,
+    PARTNER_BESIDE_SETS,
+    OPTION_BESIDE_SETS,
+)
+DOMAIN_REFUSALS = (SET_OVERFULL,)  # A value outside its declared domain, not a structure refused.
+# The operators version 1 admits beside site sets (FR-45, D327 and the lead's rulings of 27
+# November 2026): the design note's §15 partners, each with its own check. Every other operator
+# law is refused by name in a world that declares site sets (fail closed).
+TURNOVER_LAW = "cells.operator.scheduled_species_turnover@1"
+EXCHANGE_LAW = "cells.operator.scheduled_species_exchange@1"
+REACTIONS_LAW = "cells.operator.local_species_reactions@1"
+COUPLING_V2_LAW = "cells.operator.species_regulated_availability@2"
+SET_PARTNERS = (
+    WASH_LAW,
+    COUPLING_V2_LAW,
+    BATH_LAW,
+    "cells.operator.scheduled_cell_replacement@1",
+    TURNOVER_LAW,
+    EXCHANGE_LAW,
+    REACTIONS_LAW,
+)
+STAGE_CONDITION = "stage condition"  # The engine's name of the stage condition's refusal.
 
 
 @dataclass(frozen=True)
@@ -175,6 +238,22 @@ class Population:
     initial_occupancy: float
     internalisation_rate: float | None  # per s; None without the route.
     destination: str | None
+    site_set: str | None = None  # FR-45: its shared set's ID; None for its own sites.
+
+
+@dataclass(frozen=True)
+class SiteSet:
+    """FR-45: a shared site set on one owner; its populations compete for its free sites."""
+
+    id: str
+    functional_unit: str
+    catalogue: tuple | None
+    owner_kind: str  # "patch", "contact" or "node", as a population's.
+    owner_id: str
+    facing: str
+    copies: float
+    sites_per_copy: int
+    accessible_fraction: float
 
 
 @dataclass(frozen=True)
@@ -182,6 +261,7 @@ class Occupancy:
     law: str
     species: tuple  # Ligand, in declared order.
     populations: tuple  # Population, in declared order.
+    site_sets: tuple = ()  # FR-45: SiteSet, in declared order; () without the key.
 
 
 @dataclass(frozen=True)
@@ -215,9 +295,10 @@ def parse_ligands(raw, base):
     return tuple(Ligand(i, t) for i, t in zip(identities, traces, strict=True))
 
 
-def _owner(raw, m, pid):
+def _owner(raw, m, pid, what="population"):
+    """(kind, owner id, facing) of a population's owner, or of a site set's (FR-45: what="site set")."""
     if not isinstance(raw, dict):
-        raise ConfigError(f"{LAW_ID}: population {pid}'s owner is an object")
+        raise ConfigError(f"{LAW_ID}: {what} {pid}'s owner is an object")
     patches = {p.id: p for p in m.membranes}
     contacts = {j.id for j in m.junctions}
     if set(raw) == {"node"}:  # FR-28 (D268, option A): a finite outside node's own surface.
@@ -228,24 +309,24 @@ def _owner(raw, m, pid):
                 if node in {c.id for c in m.cells}
                 else "unknown"
             )
-            raise ConfigError(f"{LAW_ID}: population {pid}'s node {node!r} is {where}")
+            raise ConfigError(f"{LAW_ID}: {what} {pid}'s node {node!r} is {where}")
         return "node", node, SURFACE
     if set(raw) == {"patch", "face"}:
         patch = identifier(raw["patch"])
         if patch not in patches:
-            raise ConfigError(f"{LAW_ID}: population {pid} names an unknown patch {patch!r}")
+            raise ConfigError(f"{LAW_ID}: {what} {pid} names an unknown patch {patch!r}")
         if raw["face"] not in FACES:
             raise ConfigError(f"{LAW_ID}: a patch population faces one of {FACES}")
         return "patch", patch, raw["face"]
     if set(raw) == {"contact", "side"}:
         contact = identifier(raw["contact"])
         if contact not in contacts:
-            raise ConfigError(f"{LAW_ID}: population {pid} names an unknown contact {contact!r}")
+            raise ConfigError(f"{LAW_ID}: {what} {pid} names an unknown contact {contact!r}")
         if raw["side"] not in SIDES:
             raise ConfigError(f"{LAW_ID}: a contact population faces one of its sides {SIDES}")
         return "contact", contact, raw["side"]
     raise ConfigError(
-        f"{LAW_ID}: population {pid}'s owner is {{patch, face}}, {{contact, side}} or {{node}} (a "
+        f"{LAW_ID}: {what} {pid}'s owner is {{patch, face}}, {{contact, side}} or {{node}} (a "
         "node's own sites face only the node: no face or side beside it)"
     )
 
@@ -301,9 +382,179 @@ def _internalisation(raw, pid, kind, facing):
     return rate, raw["destination"]
 
 
-def parse_population(raw, m, ligands):
+def refusal(name, detail):
+    """A refusal by one of REFUSALS' names (FR-45): "<LAW_ID>: <name>: <detail>"."""
+    return ConfigError(f"{LAW_ID}: {name}: {detail}")
+
+
+def _facing_held_bath(m, entity):
+    kind, node = facing_node(m, entity)
+    return kind == OUTSIDE and next(c for c in m.extracellular if c.id == node).reservoir
+
+
+def parse_site_set(raw, m):
+    """FR-45: one shared site set, its owner and its counts, as a population declares its own."""
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{LAW_ID}: each site set is an object")
+    _fields(raw, SET_KEYS, f"{LAW_ID} site set")
+    sid = identifier(raw["id"])
+    unit = identifier(raw["functional_unit"])
+    catalogue = parse_catalogue(raw["catalogue"])
+    kind, owner, facing = _owner(raw["owner"], m, sid, what="site set")
+    copies = _number(raw["copies"], f"site set {sid}'s copies", low=0.0, strict=True)
+    nu = raw["sites_per_copy"]
+    if type(nu) is not int or nu < 1:
+        raise ConfigError(f"{LAW_ID}: site set {sid}'s sites per copy is a positive integer")
+    alpha = _number(raw["accessible_fraction"], f"site set {sid}'s accessible fraction")
+    if not 0.0 < alpha <= 1.0:
+        raise ConfigError(f"{LAW_ID}: site set {sid}'s accessible fraction lies in (0, 1]")
+    site_set = SiteSet(sid, unit, catalogue, kind, owner, facing, copies, nu, alpha)
+    if _facing_held_bath(m, site_set):
+        raise ConfigError(
+            f"{LAW_ID}: site set {sid} faces a held bath; binding from a chemostat, booked as "
+            "reservoir supply, is a door (§6.2)"
+        )
+    return site_set
+
+
+def parse_member(raw, m, ligands, sets):
+    """FR-45: a population binding one ligand on a shared site set, which gives it its owner and
+    counts; version 1 binds only beside site sets."""
+    _fields(raw, MEMBER_KEYS, f"{LAW_ID} population on a site set")
+    pid = identifier(raw["id"])
+    sid = identifier(raw["sites"])
+    if sid not in sets:
+        raise refusal(
+            SET_UNKNOWN, f"population {pid} names {sid!r}, which site_sets does not declare"
+        )
+    s = sets[sid]
+    ligand = identifier(raw["ligand"])
+    if ligand not in ligands:
+        raise ConfigError(f"{LAW_ID}: population {pid} binds an unlisted ligand {ligand!r}")
+    k_on = _number(
+        raw["association_rate_per_mM_per_s"], f"population {pid}'s k_on", low=0.0, strict=True
+    )
+    k_off = _number(
+        raw["dissociation_rate_per_s"], f"population {pid}'s k_off", low=0.0, strict=True
+    )
+    theta = _number(raw["initial_occupancy"], f"population {pid}'s initial occupancy")
+    if not 0.0 <= theta <= 1.0:
+        raise ConfigError(f"{LAW_ID}: population {pid}'s initial occupancy lies in [0, 1]")
+    if raw["internalisation"] is not None:
+        raise refusal(
+            INTERNALISATION_BESIDE_SETS,
+            f"population {pid} on site set {sid} declares internalisation; version 1 binds only "
+            "beside site sets (FR-45's protocol §1)",
+        )
+    return Population(
+        pid,
+        s.functional_unit,
+        s.catalogue,
+        s.owner_kind,
+        s.owner_id,
+        s.facing,
+        s.copies,
+        s.sites_per_copy,
+        s.accessible_fraction,
+        ligand,
+        k_on,
+        k_off,
+        theta,
+        None,
+        None,
+        sid,
+    )
+
+
+def set_capacity(entity):
+    """S = alpha nu N / N_f (fmol) of a site set or of a population's own sites, as bind forms it."""
+    return entity.accessible_fraction * entity.sites_per_copy * entity.copies / SITES_PER_FMOL
+
+
+def set_axis(declaration):
+    """FR-45's set axis: ((set ID, the SiteSet or the private population, member indices), ...) in
+    order of each set's first population; a private population's set is itself, under its ID."""
+    shared = {s.id: s for s in declaration.site_sets}
+    order, members = [], {}
+    for k, p in enumerate(declaration.populations):
+        key = p.site_set if p.site_set is not None else p.id
+        if key not in members:
+            order.append((key, shared[key] if p.site_set is not None else p))
+            members[key] = []
+        members[key].append(k)
+    return tuple((key, entity, tuple(members[key])) for key, entity in order)
+
+
+def set_anchors(declaration):
+    """(S per set, B0 per population, R0 = S - sum B0 per set), as bind binds them: each member's
+    B0 = theta0 S of its set; a private set's R0 = S - B0, a shared set's S - fsum(B0)."""
+    axis = set_axis(declaration)
+    capacity = [set_capacity(entity) for _, entity, _ in axis]
+    of = {k: j for j, (_, _, members) in enumerate(axis) for k in members}
+    bound = [p.initial_occupancy * capacity[of[k]] for k, p in enumerate(declaration.populations)]
+    free = []
+    for j, (_, entity, members) in enumerate(axis):
+        if isinstance(entity, SiteSet):
+            free.append(capacity[j] - math.fsum(bound[k] for k in members))
+        else:
+            free.append(capacity[j] - bound[members[0]])
+    return capacity, bound, free
+
+
+def check_site_sets(declaration):
+    """FR-45's refusals of a declaration with site sets, by name (its protocol §1)."""
+    private = {p.id for p in declaration.populations if p.site_set is None}
+    ids = [s.id for s in declaration.site_sets]
+    taken = sorted({i for i in ids if ids.count(i) > 1} | (set(ids) & private))
+    if taken:
+        raise refusal(SET_NAMED_TWICE, f"{taken[0]!r} (a set's ID names its entry on the set axis)")
+    for p in declaration.populations:
+        if p.internalisation_rate is not None:
+            raise refusal(
+                INTERNALISATION_BESIDE_SETS,
+                f"population {p.id} internalises in a world that declares site sets; version 1 "
+                "binds only beside site sets, anywhere in the world (FR-45's protocol §1)",
+            )
+    for s in declaration.site_sets:
+        members = [p for p in declaration.populations if p.site_set == s.id]
+        if len(members) < 2:
+            raise refusal(
+                SET_TOO_FEW,
+                f"site set {s.id} has {len(members)}; a population's own sites are declared "
+                "inline, without a set",
+            )
+        ligands = [p.ligand for p in members]
+        twice = sorted({g for g in ligands if ligands.count(g) > 1})
+        if twice:
+            raise refusal(
+                SET_LIGAND_TWICE,
+                f"site set {s.id} binds {twice[0]} twice; one binding per ligand per set (two "
+                "would be one population split in two)",
+            )
+    capacity, _, free = set_anchors(declaration)
+    for (key, entity, members), s, r0 in zip(set_axis(declaration), capacity, free, strict=True):
+        if not isinstance(entity, SiteSet):
+            continue
+        total = math.fsum(declaration.populations[k].initial_occupancy for k in members)
+        if total > 1.0 or r0 < 0.0:
+            raise refusal(
+                SET_OVERFULL,
+                f"site set {key}'s initial occupancies sum to {total!r}, leaving {r0!r} fmol of "
+                f"its {s!r} fmol free; they sum to at most 1, and the free sites are not negative",
+            )
+
+
+def parse_population(raw, m, ligands, sets=None):
     if not isinstance(raw, dict):
         raise ConfigError(f"{LAW_ID}: each population is an object")
+    if "sites" in raw:  # FR-45: a population on a shared site set.
+        if sets is None:
+            raise refusal(
+                SET_UNKNOWN,
+                f"population {raw.get('id')!r} names a site set, but the declaration has no "
+                "site_sets",
+            )
+        return parse_member(raw, m, ligands, sets)
     _fields(raw, POPULATION_KEYS, f"{LAW_ID} population")
     pid = identifier(raw["id"])
     unit = identifier(raw["functional_unit"])
@@ -387,19 +638,34 @@ def check_traces(m, ligands, populations, extra=()):
 
 
 def parse_occupancy(raw, base):
-    _fields(raw, {"law", "species", "populations"}, "site occupancy")
+    keys = {"law", "species", "populations"}
+    if isinstance(raw, dict) and SITE_SETS_KEY in raw:  # FR-45: omitted without shared sets.
+        keys = keys | {SITE_SETS_KEY}
+    _fields(raw, keys, "site occupancy")
     if raw["law"] != LAW_ID:
         raise ConfigError("A site occupancy requires law " + LAW_ID)
     m = base.model
     ligands = parse_ligands(raw["species"], base)
     names = {ligand.identity.id for ligand in ligands}
+    sets = None
+    if SITE_SETS_KEY in raw:
+        if type(raw[SITE_SETS_KEY]) is not list or not raw[SITE_SETS_KEY]:
+            raise ConfigError(
+                f"{LAW_ID} declares its site sets in a non-empty list; a declaration without "
+                "shared sets leaves site_sets out (omission is the only spelling)"
+            )
+        parsed = tuple(parse_site_set(entry, m) for entry in raw[SITE_SETS_KEY])
+        sets = {s.id: s for s in parsed}
     if type(raw["populations"]) is not list:
         raise ConfigError(f"{LAW_ID} declares its populations in an explicit list")
-    populations = tuple(parse_population(entry, m, names) for entry in raw["populations"])
+    populations = tuple(parse_population(entry, m, names, sets) for entry in raw["populations"])
     if len({p.id for p in populations}) != len(populations):
         raise ConfigError(f"{LAW_ID} lists a population twice")
+    declaration = Occupancy(LAW_ID, ligands, populations, parsed if sets is not None else ())
+    if sets is not None:
+        check_site_sets(declaration)
     check_traces(m, ligands, populations)
-    return Occupancy(LAW_ID, ligands, populations)
+    return declaration
 
 
 def occupancy_to_dict(declaration):
@@ -416,7 +682,35 @@ def occupancy_to_dict(declaration):
     def catalogue(value):
         return None if value is None else dict(catalogue=value[0], entry=value[1])
 
-    return dict(
+    def population(p):
+        if p.site_set is not None:  # FR-45: a member takes its owner and counts from its set.
+            return dict(
+                id=p.id,
+                sites=p.site_set,
+                ligand=p.ligand,
+                association_rate_per_mM_per_s=p.k_on,
+                dissociation_rate_per_s=p.k_off,
+                initial_occupancy=p.initial_occupancy,
+                internalisation=None,
+            )
+        return dict(
+            id=p.id,
+            functional_unit=p.functional_unit,
+            catalogue=catalogue(p.catalogue),
+            owner=owner(p),
+            copies=p.copies,
+            sites_per_copy=p.sites_per_copy,
+            accessible_fraction=p.accessible_fraction,
+            ligand=p.ligand,
+            association_rate_per_mM_per_s=p.k_on,
+            dissociation_rate_per_s=p.k_off,
+            initial_occupancy=p.initial_occupancy,
+            internalisation=None
+            if p.internalisation_rate is None
+            else dict(rate_per_s=p.internalisation_rate, destination=p.destination),
+        )
+
+    out = dict(
         law=declaration.law,
         species=[
             dict(
@@ -427,26 +721,22 @@ def occupancy_to_dict(declaration):
             )
             for ligand in declaration.species
         ],
-        populations=[
-            dict(
-                id=p.id,
-                functional_unit=p.functional_unit,
-                catalogue=catalogue(p.catalogue),
-                owner=owner(p),
-                copies=p.copies,
-                sites_per_copy=p.sites_per_copy,
-                accessible_fraction=p.accessible_fraction,
-                ligand=p.ligand,
-                association_rate_per_mM_per_s=p.k_on,
-                dissociation_rate_per_s=p.k_off,
-                initial_occupancy=p.initial_occupancy,
-                internalisation=None
-                if p.internalisation_rate is None
-                else dict(rate_per_s=p.internalisation_rate, destination=p.destination),
-            )
-            for p in declaration.populations
-        ],
     )
+    if declaration.site_sets:  # FR-45: written only where declared, so other worlds keep bytes.
+        out[SITE_SETS_KEY] = [
+            dict(
+                id=s.id,
+                functional_unit=s.functional_unit,
+                catalogue=catalogue(s.catalogue),
+                owner=owner(s),
+                copies=s.copies,
+                sites_per_copy=s.sites_per_copy,
+                accessible_fraction=s.accessible_fraction,
+            )
+            for s in declaration.site_sets
+        ]
+    out["populations"] = [population(p) for p in declaration.populations]
+    return out
 
 
 # ------------------------------------------------------------------ schedules
@@ -563,6 +853,13 @@ def check_slots(spec, declaration):
             cells = {junction.sender, junction.receiver}
         if not cells & slots:
             continue
+        if p.site_set is not None:  # FR-45: W, which resets a slot's sites, is refused beside sets.
+            raise refusal(
+                SET_ON_REPLACED_SLOT,
+                f"site set {p.site_set} sits on {p.owner_kind} {p.owner_id} of a slot "
+                f"{common.REPLACEMENT_LAW} replaces; its occupants would need {OCCUPANT_LAW}, "
+                "refused beside site sets in version 1",
+            )
         if p.owner_kind == "contact":
             raise ConfigError(
                 f"{LAW_ID}: population {p.id} sits on contact {p.owner_id}, incident to a slot "
@@ -662,10 +959,53 @@ def check_definition(spec, declaration):
         )
     common.check_species_cap(spec, LAW_ID)
     check_identities(spec, declaration)
+    check_set_composition(spec, declaration)
     check_slots(spec, declaration)
     check_compartments(spec, declaration)
     check_template_traces(spec, declaration)
     check_schedule_traces(spec, declaration)
+
+
+def check_set_composition(spec, declaration):
+    """FR-45, version 1 (D327): beside site sets, only the design note's §15 partners (SET_PARTNERS),
+    each qualified by its own check; W, every other operator law, and the inner model's later
+    options (@3's own one-way records, FR-50; a blocked channel population, FR-51; the sparse field
+    solver, FR-17; the step-doubled energy check, X2) are refused by name until a world qualifies
+    each beside them. A world without site sets is not read here."""
+    if not declaration.site_sets:
+        return
+    for op, _, _ in composite_spec.entries(spec):
+        law = op.LAW_ID
+        if law == OCCUPANT_LAW:
+            raise refusal(
+                OCCUPANT_BESIDE_SETS,
+                f"{OCCUPANT_LAW} writes each population's free sites as S - B, on the population "
+                "axis, which a shared set's free sites no longer equal",
+            )
+        if law != LAW_ID and law not in SET_PARTNERS:
+            raise refusal(
+                PARTNER_BESIDE_SETS,
+                f"{law}; version 1 admits beside site sets only {', '.join(SET_PARTNERS)}, each "
+                "with its own check (D327)",
+            )
+    from cells.numerics.surface_field import SPARSE_SOLVER_ID
+
+    m = spec.model
+    options = (
+        (bool(getattr(m, "one_way_records", ())), "@3's own one_way records (FR-50 phase 2)"),
+        (
+            any(getattr(c, "block", None) is not None for c in getattr(m, "channels", ())),
+            "a blocked channel population (FR-51)",
+        ),
+        (spec.execution.field_solver == SPARSE_SOLVER_ID, f"the field solver {SPARSE_SOLVER_ID}"),
+        (getattr(spec, "energy_check", None) is not None, "execution.energy_check (X2, D224)"),
+    )
+    for present, what in options:
+        if present:
+            raise refusal(
+                OPTION_BESIDE_SETS,
+                f"{what}; refused beside site sets until a world qualifies the pair (D327)",
+            )
 
 
 # ------------------------------------------------------------------ binding
@@ -772,15 +1112,34 @@ def bind(spec, declaration):
         site_pool_component=np.asarray(pool_component, dtype=np.int64).reshape(len(pools)),
         site_facing_pool=np.asarray(facing_pool, dtype=np.int64).reshape(n),
         site_receiving_pool=np.asarray(receiving_pool, dtype=np.int64).reshape(n),
-        # FR-45: no site_sets declared, so every set is private and these are zero-size.
+        # FR-45: without site_sets every set is private, and these are zero-size (the static switch).
         site_set_of=np.zeros(0, dtype=np.int64),
         site_set_capacity_fmol=np.zeros(0),
         site_set_facing_kind=np.zeros(0, dtype=np.int64),
         site_set_facing_node=np.zeros(0, dtype=np.int64),
     )
+    sets = n  # The set axis is the population axis without site_sets.
+    if declaration.site_sets:  # FR-45: R and its anchor on the set axis, beside the set map.
+        axis = set_axis(declaration)
+        sets = len(axis)
+        set_capacity_fmol, _, free = set_anchors(declaration)
+        of = np.zeros(n, dtype=np.int64)
+        facing_kind, facing_index = [], []
+        for j, (_, entity, members) in enumerate(axis):
+            of[list(members)] = j
+            kind, node = facing_node(m, entity)
+            facing_kind.append(kind)
+            facing_index.append((cells if kind == CELL else outside).index(node))
+        layout.update(
+            site_free_anchor_fmol=np.asarray(free, dtype=np.float64).reshape(sets),
+            site_set_of=of,
+            site_set_capacity_fmol=np.asarray(set_capacity_fmol, dtype=np.float64).reshape(sets),
+            site_set_facing_kind=np.asarray(facing_kind, dtype=np.int64).reshape(sets),
+            site_set_facing_node=np.asarray(facing_index, dtype=np.int64).reshape(sets),
+        )
     x = spec.execution
     state = {
-        "site_free_increment_fmol": np.zeros(n),
+        "site_free_increment_fmol": np.zeros(sets),
         "site_bound_increment_fmol": np.zeros(n),
         "site_bound_net_fmol": np.zeros(n),
         "site_internalised_fmol": np.zeros(n),
@@ -818,6 +1177,22 @@ def identity_block(declaration):
             )
             for p in declaration.populations
         ],
+    ) | (
+        # FR-45: each shared set and its populations, only where sets are declared.
+        dict(
+            site_sets=[
+                dict(
+                    id=s.id,
+                    functional_unit=s.functional_unit,
+                    catalogue=None if s.catalogue is None else list(s.catalogue),
+                    owner=dict(kind=s.owner_kind, id=s.owner_id, facing=s.facing),
+                    populations=[p.id for p in declaration.populations if p.site_set == s.id],
+                )
+                for s in declaration.site_sets
+            ]
+        )
+        if declaration.site_sets
+        else {}
     )
 
 
@@ -1098,9 +1473,278 @@ def site_domain_valid(state, p, *, xp):
     return valid & xp.all(R >= 0) & xp.all(B >= 0)
 
 
+# ------------------------------------------------------------------ FR-45: shared site sets
+#
+# The general path (the design note's §13.3), run only where site sets are declared: the static
+# switch is p.site_set_of's shape, zero-size in every world without them, which keeps today's path
+# above, its programs and fields bit for bit. Version 1 binds only beside site sets (internalisation
+# is refused anywhere in such a world), so every component here is passive. Each function below is
+# one seam of the law, which FR-45's plants replace, each alone, in their own processes.
+
+
+def site_rt(temperature):
+    """RT in pJ per fmol: 1e-3 R T (the site note §3.3)."""
+    return 1e-3 * R_GAS * temperature
+
+
+def free_sites(state, p, *, xp):
+    """[set] each set's free sites R (fmol), its anchor plus its increment (R is state)."""
+    return p.site_free_anchor_fmol + state.site_free_increment_fmol
+
+
+def bound_sites(state, p, *, xp):
+    """[population] each population's bound amount B (fmol)."""
+    return p.site_bound_anchor_fmol + state.site_bound_increment_fmol
+
+
+def member_free_sites(R, B, p, *, xp):
+    """[population] the free sites each population binds: its set's R."""
+    return R[p.site_set_of]
+
+
+def stage_loads(n, member_free, c, vol, mb, p, *, xp):
+    """(L_n [pool], L_R [set], L_B [population]), per s: the unidirectional loads of the stage
+    condition (SPEC's §1.2): a pool's summed over the populations binding from it, a set's free-site
+    load summed over its populations, and each population's dissociation."""
+    load_n = (
+        _scatter(mb * p.site_on_rate * member_free, p.site_facing_pool, n.shape[0], xp=xp) / vol
+    )
+    load_r = _scatter(
+        mb * p.site_on_rate * c, p.site_set_of, p.site_set_capacity_fmol.shape[0], xp=xp
+    )
+    return load_n, load_r, mb * p.site_off_rate
+
+
+def set_free_change(dbound, p, *, xp):
+    """[set] the change of each set's free sites: minus its populations' bound changes."""
+    return -_scatter(dbound, p.site_set_of, p.site_set_capacity_fmol.shape[0], xp=xp)
+
+
+def site_lattice_terms(B, dB, R, dR, p, *, xp):
+    """(dG_B [population], its terms, dG_R [set], its terms), pJ: the lattice free energy's change
+    from (B, R) by (dB, dR), each set's free sites once (the stable increments, site_free_energy)."""
+    rt = site_rt(p.temperature)
+    dg_b, terms_b = site_free_energy(
+        B, dB, rt * p.site_standard_RT, p.site_capacity_fmol, rt, xp=xp
+    )
+    dg_r, terms_r = site_free_energy(R, dR, 0.0, p.site_set_capacity_fmol, rt, xp=xp)
+    return dg_b, terms_b, dg_r, terms_r
+
+
+def node_booking(pool_dg, dg_b, dg_r, pool_on, on, set_on, p, cells, outsides, *, xp):
+    """(heat at cells, heat at outside nodes, which of each a route heats), pJ: each facing node's
+    closed passive sub-system books H = -(its pools' dG + its populations' dG_B + its sets' dG_R),
+    every set's free-site term once (the design note's §13.3)."""
+
+    def at(values, kind, node, mask, size, which):
+        here = mask & (kind == which)
+        return _scatter(xp.where(here, values, 0.0), xp.where(here, node, 0), size, xp=xp), (
+            _scatter(xp.where(here, 1.0, 0.0), xp.where(here, node, 0), size, xp=xp) > 0
+        )
+
+    parts = (
+        (pool_dg, p.site_pool_kind, p.site_pool_node, pool_on),
+        (dg_b, p.site_facing_kind, p.site_facing_node, on),
+        (dg_r, p.site_set_facing_kind, p.site_set_facing_node, set_on),
+    )
+    heat, heated = [], []
+    for which, size in ((CELL, cells), (OUTSIDE, outsides)):
+        dg, touched = 0.0, False
+        for values, kind, node, mask in parts:
+            part, hit = at(values, kind, node, mask, size, which)
+            dg, touched = dg + part, touched | hit
+        heat.append(-dg)
+        heated.append(touched)
+    return heat[0], heat[1], heated[0], heated[1]
+
+
+def moiety_residuals(row, p, *, xp):
+    """[set] each set's moiety R + sum B - S, in increments: its free increment plus its
+    populations' bound increments (the anchors sum to S)."""
+    return row.site_free_increment_fmol + _scatter(
+        row.site_bound_increment_fmol, p.site_set_of, p.site_set_capacity_fmol.shape[0], xp=xp
+    )
+
+
+def occupied_fraction(B, R, p, *, xp):
+    """[population] theta_b = B_b / (R_s + sum_q B_q) of its set: B_b / S_s to the moiety's
+    rounding, and in [0, 1] exactly by the domain's signs (the design note's §13.4; the lead's
+    ruling 1 of 27 November 2026)."""
+    total = R + _scatter(B, p.site_set_of, p.site_set_capacity_fmol.shape[0], xp=xp)
+    held = total[p.site_set_of]
+    return B / xp.where(held > 0, held, 1.0)
+
+
+class SetStep(NamedTuple):
+    """One half-step of a world with site sets: everything its update reads."""
+
+    dn: object  # [pool]
+    dbound: object  # [population]
+    dfree: object  # [set]
+    on: object  # [population] a binding route with a positive multiplier.
+    pool_on: object  # [pool]
+    set_on: object  # [set] a set with such a population.
+    heat_cell: object
+    heat_outside: object
+    heated_cell: object
+    heated_outside: object
+    magnitude: object  # [population] pJ.
+    rates: object  # (J at Y1, Y2, Y3), fmol/s.
+    max_hl: object
+    stage_ok: object  # The stage condition at the three stages.
+    domain_ok: object  # Positivity and finiteness at every stage and the end.
+    valid: object
+
+
+def _set_stage(n, R, B, vol, mb, h, p, *, xp):
+    """(J, the stage condition h max L <= THETA, h max L) at these amounts, with sets."""
+    member_free = member_free_sites(R, B, p, xp=xp)
+    f = p.site_facing_pool
+    c = n[f] / vol[f]
+    J = mb * (p.site_on_rate * c * member_free - p.site_off_rate * B)
+    hl = h * xp.concatenate(stage_loads(n, member_free, c, vol, mb, p, xp=xp))
+    worst = xp.max(hl, initial=0.0)
+    return J, worst <= THETA, worst
+
+
+def set_half_step_terms(state, mb, h, p, *, xp):
+    """SSPRK(3,3) over h on the site network with sets (§4.2, generalised to a shared R), and its
+    passive bookings per facing node: a SetStep."""
+    n = pool_amounts(state, p, xp=xp)
+    vol = pool_volumes(p, xp=xp)
+    R = free_sites(state, p, xp=xp)
+    B = bound_sites(state, p, xp=xp)
+    size = n.shape[0]
+    f = p.site_facing_pool
+    J1, ok1, l1 = _set_stage(n, R, B, vol, mb, h, p, xp=xp)
+    dn1, dr1 = -_scatter(J1, f, size, xp=xp), set_free_change(J1, p, xp=xp)
+    n2, B2, R2 = n + h * dn1, B + h * J1, R + h * dr1
+    J2, ok2, l2 = _set_stage(n2, R2, B2, vol, mb, h, p, xp=xp)
+    dn2, dr2 = -_scatter(J2, f, size, xp=xp), set_free_change(J2, p, xp=xp)
+    n3 = n + 0.25 * h * (dn1 + dn2)
+    B3 = B + 0.25 * h * (J1 + J2)
+    R3 = R + 0.25 * h * (dr1 + dr2)
+    J3, ok3, l3 = _set_stage(n3, R3, B3, vol, mb, h, p, xp=xp)
+    dbound = h * (J1 + J2 + 4.0 * J3) / 6.0
+    dn = -_scatter(dbound, f, size, xp=xp)
+    dfree = set_free_change(dbound, p, xp=xp)
+    end_n, end_b, end_r = n + dn, B + dbound, R + dfree
+    stage_ok = ok1 & ok2 & ok3
+    domain_ok = xp.asarray(True)  # Positivity and finiteness, apart from the stage condition.
+    for pools, sites_b, sites_r in ((n2, B2, R2), (n3, B3, R3), (end_n, end_b, end_r)):
+        domain_ok &= xp.all(xp.isfinite(pools) & (pools > 0))
+        domain_ok &= xp.all(xp.isfinite(sites_b) & (sites_b >= 0))
+        domain_ok &= xp.all(xp.isfinite(sites_r) & (sites_r >= 0))
+    on = mb > 0
+    count = p.site_set_capacity_fmol.shape[0]
+    pool_on = _scatter(xp.where(on, 1.0, 0.0), f, size, xp=xp) > 0
+    set_on = _scatter(xp.where(on, 1.0, 0.0), p.site_set_of, count, xp=xp) > 0
+    change = xp.where(pool_on, dn, 0.0)
+    pool_dg = adapter.species_chemical_free_energy_pJ(n, change, vol, p.temperature, xp=xp)
+    pool_terms = adapter.species_chemical_magnitude_pJ(n, change, vol, p.temperature, xp=xp)
+    dg_b, terms_b, dg_r, terms_r = site_lattice_terms(B, dbound, R, dfree, p, xp=xp)
+    heat_cell, heat_outside, heated_cell, heated_outside = node_booking(
+        pool_dg,
+        dg_b,
+        dg_r,
+        pool_on,
+        on,
+        set_on,
+        p,
+        state.site_dissipated_energy_pJ.shape[0],
+        state.site_outside_dissipated_energy_pJ.shape[0],
+        xp=xp,
+    )
+    # A shared term's magnitude is carried by every population that reads it, as today's facing
+    # pool's is: an allowance at rounding scale, never the booking.
+    magnitude = terms_b + pool_terms[f] + terms_r[p.site_set_of]
+    for value in (heat_cell, heat_outside, magnitude):
+        domain_ok &= xp.all(xp.isfinite(value))
+    worst = xp.maximum(xp.maximum(l1, l2), l3)
+    return SetStep(
+        dn,
+        dbound,
+        dfree,
+        on,
+        pool_on,
+        set_on,
+        heat_cell,
+        heat_outside,
+        heated_cell,
+        heated_outside,
+        magnitude,
+        (J1, J2, J3),
+        worst,
+        stage_ok,
+        domain_ok,
+        stage_ok & domain_ok,
+    )
+
+
+def set_half_step(state, mb, h, p, *, xp=jnp):
+    """(state after h with site sets, validity): each entry selected where a route with a
+    positive multiplier writes it, else its start value (§4.8)."""
+    step = set_half_step_terms(state, mb, h, p, xp=xp)
+    on, set_on = step.on, step.set_on
+    is_cell = p.site_pool_kind == CELL
+    rows, nodes = p.site_pool_row, p.site_pool_node
+    dn = xp.where(step.pool_on, step.dn, 0.0)
+    cells, outsides = state.amount_increment.shape, state.extracellular_amount_increment.shape
+    cell_dn = _scatter2(xp.where(is_cell, dn, 0.0), rows, xp.where(is_cell, nodes, 0), cells, xp=xp)
+    outside_dn = _scatter2(
+        xp.where(is_cell, 0.0, dn), rows, xp.where(is_cell, 0, nodes), outsides, xp=xp
+    )
+    written = [
+        _scatter2(
+            xp.where(where & step.pool_on, 1.0, 0.0),
+            rows,
+            xp.where(where, nodes, 0),
+            shape,
+            xp=xp,
+        )
+        > 0
+        for where, shape in ((is_cell, cells), (~is_cell, outsides))
+    ]
+    new = state._replace(
+        amount_increment=xp.where(
+            written[0], state.amount_increment + cell_dn, state.amount_increment
+        ),
+        extracellular_amount_increment=xp.where(
+            written[1],
+            state.extracellular_amount_increment + outside_dn,
+            state.extracellular_amount_increment,
+        ),
+        site_free_increment_fmol=xp.where(
+            set_on, state.site_free_increment_fmol + step.dfree, state.site_free_increment_fmol
+        ),
+        site_bound_increment_fmol=xp.where(
+            on, state.site_bound_increment_fmol + step.dbound, state.site_bound_increment_fmol
+        ),
+        site_bound_net_fmol=xp.where(
+            on, state.site_bound_net_fmol + step.dbound, state.site_bound_net_fmol
+        ),
+        site_dissipated_energy_pJ=xp.where(
+            step.heated_cell,
+            state.site_dissipated_energy_pJ + step.heat_cell,
+            state.site_dissipated_energy_pJ,
+        ),
+        site_outside_dissipated_energy_pJ=xp.where(
+            step.heated_outside,
+            state.site_outside_dissipated_energy_pJ + step.heat_outside,
+            state.site_outside_dissipated_energy_pJ,
+        ),
+        site_energy_magnitude_pJ=xp.where(
+            on, state.site_energy_magnitude_pJ + step.magnitude, state.site_energy_magnitude_pJ
+        ),
+    )
+    return new, step.valid & site_domain_valid(new, p, xp=xp)
+
+
 def site_half_step(state, mb, mi, h, p, *, xp=jnp):
     """(state after h of the site network, validity). Each entry is selected where a route with a
     positive multiplier writes it, else its start value (never offset by a computed zero, §4.8)."""
+    if p.site_set_of.shape[0]:  # FR-45, static: a world with site sets takes the general path.
+        return set_half_step(state, mb, h, p, xp=xp)
     step = half_step_terms(state, mb, mi, h, p, xp=xp)
     on = step.on
     is_cell = p.site_pool_kind == CELL
@@ -1211,7 +1855,20 @@ def site_half_step(state, mb, mi, h, p, *, xp=jnp):
 
 def site_energy(row, p, *, xp):
     """(G_site(now) - G_site(declared), its absolute terms), pJ, summed over the populations: the
-    owner's endpoint free energy relative to the declared reference (§3.3)."""
+    owner's endpoint free energy relative to the declared reference (§3.3). With site sets (FR-45),
+    each set's free sites enter once (site_lattice_terms)."""
+    if p.site_set_of.shape[0]:  # FR-45, static.
+        dg_b, terms_b, dg_r, terms_r = site_lattice_terms(
+            p.site_bound_anchor_fmol,
+            row.site_bound_increment_fmol,
+            p.site_free_anchor_fmol,
+            row.site_free_increment_fmol,
+            p,
+            xp=xp,
+        )
+        return entity_sum(dg_b, axis=None, xp=xp) + entity_sum(dg_r, axis=None, xp=xp), (
+            entity_sum(terms_b, axis=None, xp=xp) + entity_sum(terms_r, axis=None, xp=xp)
+        )
     rt = 1e-3 * R_GAS * p.temperature
     capacity = p.site_capacity_fmol
     dg_b, terms_b = site_free_energy(
@@ -1291,6 +1948,8 @@ def readouts(row, control, p):
     vol = pool_volumes(p, xp=np)
     R = np.asarray(p.site_free_anchor_fmol) + np.asarray(row.site_free_increment_fmol)
     B = np.asarray(p.site_bound_anchor_fmol) + np.asarray(row.site_bound_increment_fmol)
+    if np.asarray(p.site_set_of).shape[0]:  # FR-45: each population binds its set's free sites.
+        R = member_free_sites(R, B, p, xp=np)
     J, U, _ = _route_rates(n, R, B, vol, mb, mi, p, xp=np)
     return B / np.asarray(p.site_capacity_fmol), J, U
 
@@ -1298,16 +1957,110 @@ def readouts(row, control, p):
 def stage_report(state, control, p, dt):
     """Host-side diagnosis of a refused step (§4.2): the largest h L over the three stages and the
     condition's verdict, as D152's stage_report."""
-    step = half_step_terms(
-        state,
-        np.asarray(control.site_binding_multiplier),
-        np.asarray(control.site_internalisation_multiplier),
-        0.5 * dt,
-        p,
-        xp=np,
-    )
+    mb = np.asarray(control.site_binding_multiplier)
+    if np.asarray(p.site_set_of).shape[0]:  # FR-45: the general path's stages.
+        step = set_half_step_terms(state, mb, 0.5 * dt, p, xp=np)
+    else:
+        step = half_step_terms(
+            state, mb, np.asarray(control.site_internalisation_multiplier), 0.5 * dt, p, xp=np
+        )
     return dict(
         max_hL=float(step.max_hl), admitted=bool(step.max_hl <= THETA), valid=bool(step.valid)
+    )
+
+
+def _host(tree):
+    return type(tree)(*(np.asarray(v) for v in tree))
+
+
+def first_stage_loads(state, control, p, dt):
+    """(h, L_n [pool], L_R [set], L_B [population]) at the first stage of a step's first site
+    half-step, on the state it receives (host side, NumPy): the loads its stage condition
+    evaluates there (FR-45; SPEC's §1.2 and §3.5)."""
+    state, control, p = _host(state), _host(control), _host(p)
+    h = 0.5 * dt  # The composite's half-step, h = dt / 2 (pump_composite.split_step).
+    mb = np.asarray(control.site_binding_multiplier)
+    mi = np.where(p.site_internalises, control.site_internalisation_multiplier, 0.0)
+    n = pool_amounts(state, p, xp=np)
+    vol = pool_volumes(p, xp=np)
+    R = free_sites(state, p, xp=np)
+    B = bound_sites(state, p, xp=np)
+    f = p.site_facing_pool
+    c = n[f] / vol[f]
+    if p.site_set_of.shape[0]:
+        member = member_free_sites(R, B, p, xp=np)
+        return (h, *stage_loads(n, member, c, vol, mb, p, xp=np))
+    load_n = _scatter(mb * p.site_on_rate * R, f, n.shape[0], xp=np) / vol
+    return (
+        h,
+        load_n,
+        mb * p.site_on_rate * c,
+        mb * p.site_off_rate + mi * p.site_internalisation_rate,
+    )
+
+
+def step_report(spec, declaration, state, control, p, dt):
+    """The engine's report of a step's first site half-step, host side (FR-45; the contract's
+    step_report): every load the stage condition evaluates at its first stage on the state it
+    receives, by kind, the engine's ID and the populations it sums, the largest, h max L, the limit,
+    the first stage's verdict, and the three stages' stage verdict and domain apart. Pools are
+    named <ligand>@<node>, sets by the set axis' IDs, populations by theirs."""
+    h, load_n, load_r, load_b = first_stage_loads(state, control, p, dt)
+    m = spec.model
+    ids = list(m.species_ids)
+    cells = [c.id for c in m.cells]
+    outside = [c.id for c in m.extracellular]
+    q = _host(p)
+    pops = [x.id for x in declaration.populations]
+    pools = [
+        f"{ids[int(row)]}@{(cells if int(kind) == CELL else outside)[int(node)]}"
+        for kind, node, row in zip(q.site_pool_kind, q.site_pool_node, q.site_pool_row, strict=True)
+    ]
+    axis = (
+        set_axis(declaration)
+        if declaration.site_sets
+        else tuple((x.id, x, (k,)) for k, x in enumerate(declaration.populations))
+    )
+    loads = []
+    for j, name in enumerate(pools):
+        sums = [pops[k] for k in range(len(pops)) if int(q.site_facing_pool[k]) == j]
+        loads.append(dict(kind="L_n", id=name, sums=sums, per_s=float(load_n[j])))
+    for j, (key, _, members) in enumerate(axis):
+        loads.append(
+            dict(kind="L_R", id=key, sums=[pops[k] for k in members], per_s=float(load_r[j]))
+        )
+    for k, name in enumerate(pops):
+        loads.append(dict(kind="L_B", id=name, sums=[name], per_s=float(load_b[k])))
+    worst = max(loads, key=lambda x: x["per_s"]) if loads else None
+    h_max = h * worst["per_s"] if worst else 0.0
+    whole = stage_report(state, control, p, dt)
+    stages = (
+        set_half_step_terms(_host(state), np.asarray(control.site_binding_multiplier), h, q, xp=np)
+        if q.site_set_of.shape[0]
+        else None
+    )
+    return dict(
+        step=1,
+        h_s=h,
+        loads=loads,
+        max_load=None if worst is None else dict(worst),
+        h_max_load=h_max,
+        limit=THETA,
+        first_stage_verdict="admitted" if h_max <= THETA else "refused",
+        stage_admitted=whole["admitted"],
+        domain_valid=bool(stages.domain_ok) if stages is not None else None,
+    )
+
+
+def refusal_condition(state, control, p, dt):
+    """The engine's name of the condition that refuses a step's first site half-step on the state
+    it receives: STAGE_CONDITION when its stage condition refuses at one of its three stages, None
+    otherwise (host side; FR-45's stage identification). A refusal it does not name is another
+    domain failure, or one beyond the first half-step."""
+    return (
+        None
+        if stage_report(_host(state), _host(control), _host(p), dt)["admitted"]
+        else STAGE_CONDITION
     )
 
 
@@ -1445,20 +2198,58 @@ class SiteOccupancy(Operator):
                 )
                 for p in declaration.populations
             ),
+        ) + (
+            # FR-45: which populations share which set, only where sets are declared.
+            (tuple((key, tuple(members)) for key, _, members in set_axis(declaration)),)
+            if declaration.site_sets
+            else ()
         )
 
     def working_size(self, spec):
         """Stored values per accepted step plus a margin, the inner model's convention
         (surface_pump.working_size): each row holds six arrays per population (the free and bound
         increments, the bound net, the internalised amount, the work and the energy magnitude)
-        and the two node-indexed dissipation arrays. The stage arrays are transient, so the
-        margin is 2 (the lead's ruling on the external review's finding 1, 18 November 2026)."""
+        and the two node-indexed dissipation arrays; with site sets (FR-45), the free increment is
+        one per set. The stage arrays are transient, so the margin is 2 (the lead's ruling on the
+        external review's finding 1, 18 November 2026)."""
         (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
         x = spec.execution
-        return 2 * (6 * len(declaration.populations) + x.capacity + x.extracellular_capacity)
+        n = len(declaration.populations)
+        per_row = 6 * n
+        if declaration.site_sets:
+            per_row = 5 * n + len(set_axis(declaration))
+        return 2 * (per_row + x.capacity + x.extracellular_capacity)
 
     def summary(self, spec, declaration, schedule, history):
         return {"site_occupancy_law": LAW_ID, **identity_block(declaration)}
+
+    def view_sets(self, spec, declaration):
+        """The run view's sets of its two own axes (cells/records/run_view.py; FR-45, the lead's
+        ruling on the first probe): its populations, each at its owner (a patch, a contact or a
+        node) with the ligand it binds, and its sites' sets in the set axis' order (a private
+        population's set is itself, under its ID), each at its owner."""
+        where = {"patch": "membrane", "contact": "junction", "node": "outside"}
+        pops = declaration.populations
+        axis = (
+            set_axis(declaration)
+            if declaration.site_sets
+            else tuple((x.id, x, (k,)) for k, x in enumerate(pops))
+        )
+        return {
+            "site_population": {
+                "id": "site_population",
+                "ids": tuple(x.id for x in pops),
+                "holds": "site population",
+                "at": tuple({where[x.owner_kind]: x.owner_id} for x in pops),
+                "carries": tuple(x.ligand for x in pops),
+            },
+            "site_set": {
+                "id": "site_set",
+                "ids": tuple(key for key, _, _ in axis),
+                "holds": "site set",
+                "at": tuple({where[e.owner_kind]: e.owner_id} for _, e, _ in axis),
+            },
+        }
 
     # ------------------------------------------------------------ binding
 
@@ -1506,9 +2297,16 @@ class SiteOccupancy(Operator):
     def quantities(self, state, p, *, xp):
         """R3: per population its occupied fraction theta = B / (B + R), which the domain's B >= 0
         and R >= 0 keep in [0, 1] exactly (B + R is S to the moiety's rounding); its occupied amount
-        B; and its accessible capacity S (fmol)."""
+        B; and its accessible capacity S (fmol). With site sets (FR-45), theta = B_b / (R_s + sum
+        B_q) of its set (occupied_fraction), and S its set's."""
         free = p.site_free_anchor_fmol + state.site_free_increment_fmol
         bound = p.site_bound_anchor_fmol + state.site_bound_increment_fmol
+        if p.site_set_of.shape[0]:  # FR-45, static.
+            return dict(
+                site_occupied_fraction=occupied_fraction(bound, free, p, xp=xp),
+                site_occupied_fmol=bound,
+                site_capacity_fmol=p.site_capacity_fmol,
+            )
         total = free + bound
         return dict(
             site_occupied_fraction=bound / xp.where(total > 0, total, 1.0),
@@ -1541,6 +2339,12 @@ class SiteOccupancy(Operator):
         return result, self.own_ledgers(row, p, xp=xp)
 
     def own_ledgers(self, row, p, *, xp):
+        if p.site_set_of.shape[0]:  # FR-45, static: the moiety per set.
+            return {
+                "site_bound_entity": row.site_bound_increment_fmol
+                - (row.site_bound_net_fmol - row.site_internalised_fmol),
+                "site_moiety_entity": moiety_residuals(row, p, xp=xp),
+            }
         return {
             "site_bound_entity": row.site_bound_increment_fmol
             - (row.site_bound_net_fmol - row.site_internalised_fmol),
@@ -1548,6 +2352,15 @@ class SiteOccupancy(Operator):
         }
 
     def own_magnitudes(self, row, p, *, xp):
+        if p.site_set_of.shape[0]:  # FR-45, static: each set's moiety terms.
+            count = p.site_set_capacity_fmol.shape[0]
+            moved = _scatter(xp.abs(row.site_bound_increment_fmol), p.site_set_of, count, xp=xp)
+            return (
+                xp.abs(row.site_bound_increment_fmol)
+                + xp.abs(row.site_bound_net_fmol)
+                + xp.abs(row.site_internalised_fmol),
+                xp.abs(row.site_free_increment_fmol) + moved,
+            )
         return (
             xp.abs(row.site_bound_increment_fmol)
             + xp.abs(row.site_bound_net_fmol)

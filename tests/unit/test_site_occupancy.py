@@ -293,6 +293,163 @@ REFUSALS.update(
 )
 
 
+# FR-45: shared site sets (D327; FR-45's protocol §1; the lead's rulings of 27 November 2026).
+# Invented worlds only. Every refusal of version 1 is named by the engine's own REFUSALS entry.
+
+
+def set_world(populations=None, site_sets=None, **kwargs):
+    """Q1 and Q2 competing for one set on contact_0's outside face (ecs_0, 1 pL)."""
+    pops = (
+        [sfx.member("m1", ligand="Q1"), sfx.member("m2", ligand="Q2", k_on=1.1e3, k_off=0.25)]
+        if populations is None
+        else populations
+    )
+    kwargs.setdefault("node_mM", {"Q1": 2.4e-3, "Q2": 1.3e-3})
+    return sfx.set_world(pops, [sfx.site_set()] if site_sets is None else site_sets, **kwargs)
+
+
+def _replaced_set_world(*, on_slot, occupant=False):
+    """sfx.two_cell_set_world: cell_1 replaced at 5 ms, the set on its slot or off it; W too."""
+    raw = sfx.two_cell_set_world(on_slot=on_slot)
+    return sfx.with_occupant(raw, {"T": {"m1": (0.35, 1.0, None)}}) if occupant else raw
+
+
+def _sets(edit):
+    def build():
+        raw = set_world()
+        edit(block(raw))
+        return raw
+
+    return build
+
+
+def _private_q2_internalising():
+    pop = sfx.population("i0", patch="contact_0", k_int=0.5)
+    pop["ligand"] = "Q2"
+    return set_world([sfx.member("m1", ligand="Q1"), sfx.member("m2", ligand="Q2"), pop])
+
+
+def _sparse_field():
+    raw = set_world()
+    raw["execution"]["field_solver"] = (
+        "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
+    )
+    return raw
+
+
+REFUSALS.update(
+    {
+        "FR-45: an empty site_sets list": (
+            _sets(lambda b: b.update(site_sets=[])),
+            "non-empty list; a declaration without shared sets leaves site_sets out",
+        ),
+        "FR-45: a member on an undeclared set": (
+            lambda: set_world([sfx.member("m1", ligand="Q1"), sfx.member("m2", "nowhere")]),
+            so.SET_UNKNOWN,
+        ),
+        "FR-45: a member without site_sets": (
+            _sets(lambda b: b.pop("site_sets")),
+            so.SET_UNKNOWN,
+        ),
+        "FR-45: a member that internalises": (
+            lambda: set_world(
+                [sfx.member("m1", ligand="Q1"), sfx.member("m2", ligand="Q2", k_int=0.3)]
+            ),
+            so.INTERNALISATION_BESIDE_SETS,
+        ),
+        "FR-45: internalisation elsewhere beside a set": (
+            _private_q2_internalising,
+            f"{so.INTERNALISATION_BESIDE_SETS}: population i0 internalises",
+        ),
+        "FR-45: a set of one population": (
+            lambda: set_world([sfx.member("m1", ligand="Q1")]),
+            so.SET_TOO_FEW,
+        ),
+        "FR-45: a set no population names": (
+            lambda: set_world(None, [sfx.site_set(), sfx.site_set("spare")]),
+            so.SET_TOO_FEW,
+        ),
+        "FR-45: one ligand twice on a set": (
+            lambda: set_world([sfx.member("m1", ligand="Q1"), sfx.member("m2", ligand="Q1")]),
+            so.SET_LIGAND_TWICE,
+        ),
+        "FR-45: initial occupancies over 1 on a set": (
+            lambda: set_world(
+                [
+                    sfx.member("m1", ligand="Q1", theta0=0.7),
+                    sfx.member("m2", ligand="Q2", theta0=0.45),
+                ]
+            ),  # fmt: skip
+            so.SET_OVERFULL,
+        ),
+        "FR-45: a set ID declared twice": (
+            lambda: set_world(None, [sfx.site_set(), sfx.site_set()]),
+            so.SET_NAMED_TWICE,
+        ),
+        "FR-45: a set ID a private population takes": (
+            lambda: set_world(
+                [
+                    sfx.member("m1", ligand="Q1"),
+                    sfx.member("m2", ligand="Q2"),
+                    dict(sfx.population("lattice", face="inside"), ligand="Q2"),
+                ]
+            ),  # fmt: skip
+            so.SET_NAMED_TWICE,
+        ),
+        "FR-45: a set facing the held bath": (
+            lambda: set_world(None, [sfx.site_set(patch="wall_cell_0")]),
+            "site set lattice faces a held bath",
+        ),
+        "FR-45: a shared set on a replaced slot": (
+            lambda: _replaced_set_world(on_slot=True),
+            so.SET_ON_REPLACED_SLOT,
+        ),
+        "FR-45: W beside site sets": (
+            lambda: _replaced_set_world(on_slot=False, occupant=True),
+            so.OCCUPANT_BESIDE_SETS,
+        ),
+        "FR-45: an operator not admitted beside sets": (
+            lambda: rcfx_with_coupling_v1(set_world()),
+            f"{so.PARTNER_BESIDE_SETS}: cells.operator.species_regulated_availability@1",
+        ),
+        "FR-45: the sparse field beside sets": (
+            _sparse_field,
+            f"{so.OPTION_BESIDE_SETS}: the field solver",
+        ),
+        # The trace rule per ligand (the note's §15): the second member's ligand dosed or washed
+        # below its trace, each a step its own operator admits.
+        "FR-45: a scheduled dose of a member's ligand below its trace": (
+            lambda: bfx.with_bath_schedule(
+                set_world(dt=1e-3),
+                ["bath"],
+                {"q2": {"Q2": 1}},
+                [(bfx.on_grid(0.008, 1e-3), ["bath"], {"q2": -1e-12})],
+            ),  # fmt: skip
+            "scheduled bath bath from 0.008 s, below its declared trace",
+        ),
+        "FR-45: a wash buffer with a member's ligand below its trace": (
+            lambda: _wash(set_world(), {"Q1": sfx.SET_TRACE_mM, "Q2": 1e-12}),
+            "the buffer of the wash of ecs_0 at 0.01 s, below its declared trace",
+        ),
+    }
+)
+
+
+def _wash(raw, ligands_mM):
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    return wfx.with_wash(
+        raw, ["ecs_0"], [(0.01, "ecs_0", 0.4, {wfx.TRACER: sfx.TRACE_mM, **ligands_mM})]
+    )
+
+
+def rcfx_with_coupling_v1(raw):
+    """An empty coupling @1 block: an operator law the sets do not admit (FR-45, D327)."""
+    from validation.tissue import regulated_availability_fixtures as rf
+
+    return rf.with_coupling(raw, species=[], couplings=[])
+
+
 @pytest.mark.parametrize("name", sorted(REFUSALS))
 def test_definition_refusals(name):
     build, message = REFUSALS[name]
@@ -810,3 +967,392 @@ def test_a_nodes_own_sites_are_left_by_a_replacement_at_cell_0(monkeypatch):
     for op in model.events:
         again, _ = op.event(again, control, planted, xp=np)
     assert np.asarray(again.site_departed_fmol)[w_index] == bound0[w_index] != 0.0
+
+
+# ------------------------------------------------------------------ FR-45: shared site sets
+#
+# The design note's §16.1 rows (fr44-45-design-20261123/DESIGN.md), on invented worlds only, in
+# NumPy with no compile: the static switch, the set axis, the two paths' twin, the free-site root
+# as the scheme's fixed point and its relaxation, third order at fixed concentrations, the summed
+# stage condition and its report, the booked heat against a 50-digit -dG, and the wash's event map.
+
+
+def _numpy(tree):
+    return type(tree)(*(np.asarray(v) for v in tree))
+
+
+def _bound(raw, time=0.0):
+    """(spec, state, layout, control at `time`), host side."""
+    spec = parse_spec(raw)
+    state, p = get_model(spec.model).initial_values(spec)
+    controls = cs.control_values(spec, [time])
+    return spec, _numpy(state), _numpy(p), type(controls)(*(np.asarray(v[0]) for v in controls))
+
+
+def _sets_of(spec):
+    return next(d for op, d, _ in cs.entries(spec) if op.LAW_ID == so.LAW_ID)
+
+
+def test_fr45_a_world_without_sets_keeps_its_declaration_layout_and_fraction():
+    spec, state, p, _ = _bound(world())
+    declaration = _sets_of(spec)
+    assert declaration.site_sets == () and so.SITE_SETS_KEY not in so.occupancy_to_dict(declaration)
+    for name in (
+        "site_set_of",
+        "site_set_capacity_fmol",
+        "site_set_facing_kind",
+        "site_set_facing_node",
+    ):
+        assert getattr(p, name).shape == (0,), name  # The static switch: today's path.
+    assert state.site_free_increment_fmol.shape == p.site_capacity_fmol.shape
+    q = OPERATORS[so.LAW_ID].quantities(state, p, xp=np)
+    free = p.site_free_anchor_fmol + state.site_free_increment_fmol
+    bound = p.site_bound_anchor_fmol + state.site_bound_increment_fmol
+    assert np.array_equal(q["site_occupied_fraction"], bound / (free + bound))
+
+
+def test_fr45_the_set_axis_its_layout_and_its_round_trip():
+    pops = [sfx.member("m1", ligand="Q1", theta0=0.25), sfx.member("m2", ligand="Q2", theta0=0.45),
+            dict(sfx.population("own", patch="contact_0", face="inside", copies=2e5), ligand="Q3")]  # fmt: skip
+    raw = set_world(pops, ligands=("Q1", "Q2", "Q3"), cell_mM={"Q3": 3e-3})
+    spec, state, p, _ = _bound(raw)
+    declaration = _sets_of(spec)
+    assert [key for key, _, _ in so.set_axis(declaration)] == ["lattice", "own"]
+    assert p.site_set_of.tolist() == [0, 0, 1]
+    s = 0.5 * 1 * 3e5 / so.SITES_PER_FMOL
+    s_own = 0.5 * 1 * 2e5 / so.SITES_PER_FMOL
+    assert p.site_set_capacity_fmol.tolist() == [s, s_own]
+    assert p.site_capacity_fmol.tolist() == [s, s, s_own]
+    assert p.site_bound_anchor_fmol.tolist() == [0.25 * s, 0.45 * s, 0.0]
+    assert p.site_free_anchor_fmol.tolist() == [s - math.fsum([0.25 * s, 0.45 * s]), s_own]
+    assert p.site_set_facing_kind.tolist() == [so.OUTSIDE, so.CELL]
+    assert state.site_free_increment_fmol.shape == (2,)
+    again = parse_spec(spec.to_dict())
+    assert again.to_dict() == spec.to_dict() and _sets_of(again) == declaration
+    op = OPERATORS[so.LAW_ID]
+    assert op.batch_signature(declaration)[-1] == (("lattice", (0, 1)), ("own", (2,)))
+    assert op.summary(spec, declaration, None, None)["site_sets"][0]["populations"] == ["m1", "m2"]
+    sets = op.view_sets(spec, declaration)
+    assert sets["site_set"]["ids"] == ("lattice", "own")
+    assert sets["site_set"]["at"] == ({"membrane": "contact_0"}, {"membrane": "contact_0"})
+
+
+def test_fr45_the_general_path_on_private_sets_is_todays_within_two_ulps():
+    """The two paths' twin: today's half-step against the general one, its set map forced on a
+    world whose sets are all private (two populations of one ligand, from a disequilibrium)."""
+    pops = [sfx.population("a", copies=1e5, theta0=0.1), sfx.population("b", patch="contact_0",
+            face="inside", copies=2e5, theta0=0.6, k_on=3.2e3, k_off=2.2)]  # fmt: skip
+    spec, state, p, control = _bound(world(pops))
+    n = p.site_capacity_fmol.shape[0]
+    forced = p._replace(site_set_of=np.arange(n, dtype=np.int64),
+                        site_set_capacity_fmol=p.site_capacity_fmol,
+                        site_set_facing_kind=p.site_facing_kind,
+                        site_set_facing_node=p.site_facing_node)  # fmt: skip
+    mb, mi = control.site_binding_multiplier, control.site_internalisation_multiplier
+    today, general = state, state
+    for _ in range(5):
+        today, ok = so.site_half_step(today, mb, mi, 5e-4, p, xp=np)
+        general, ok2 = so.site_half_step(general, mb, mi, 5e-4, forced, xp=np)
+        assert bool(ok) and bool(ok2)
+    for name in ("amount_increment", "extracellular_amount_increment", "site_free_increment_fmol",
+                 "site_bound_increment_fmol"):  # fmt: skip
+        a, b = np.asarray(getattr(today, name)), np.asarray(getattr(general, name))
+        scale = np.maximum(np.abs(a), np.finfo(float).tiny)
+        assert np.all(np.abs(a - b) <= 2 * np.spacing(scale)), name
+    # The heat is a short sum of larger terms booked in another order (per node, not per pool):
+    # within 2 ulps of the terms' summed magnitude, which the step books beside it.
+    terms = float(np.sum(today.site_energy_magnitude_pJ))
+    for name in ("site_dissipated_energy_pJ", "site_outside_dissipated_energy_pJ"):
+        a, b = np.asarray(getattr(today, name)), np.asarray(getattr(general, name))
+        assert np.all(np.abs(a - b) <= 2 * np.spacing(terms)), name
+
+
+def _root(totals, K, S, V):
+    """The free-site root of one set with ligands that bind it once, at 50 digits (SPEC's §3.1):
+    R + sum N_l R / (K_l V + R) = S, by bisection."""
+    from decimal import Decimal, getcontext
+
+    getcontext().prec = 50
+    totals, K = [Decimal(x) for x in totals], [Decimal(x) for x in K]
+    S, V, lo, hi = Decimal(S), Decimal(V), Decimal(0), Decimal(S)
+    for _ in range(200):
+        r = (lo + hi) / 2
+        if r + sum(n * r / (k * V + r) for n, k in zip(totals, K, strict=True)) > S:
+            hi = r
+        else:
+            lo = r
+    r = (lo + hi) / 2
+    return r, [n * r / (k * V + r) for n, k in zip(totals, K, strict=True)]
+
+
+def test_fr45_the_free_site_root_is_the_fixed_point_and_the_relaxation_meets_it():
+    k_on, k_off, V = (2e5, 1e5), (40.0, 25.0), 1.3
+    K = [b / a for a, b in zip(k_on, k_off, strict=True)]
+    concentrations = (2.2e-4, 1.4e-4)  # mM in the 1.3 pL node.
+    totals = [c * V for c in concentrations]
+    pops = [sfx.member("m1", ligand="Q1", k_on=k_on[0], k_off=k_off[0]),
+            sfx.member("m2", ligand="Q2", k_on=k_on[1], k_off=k_off[1])]  # fmt: skip
+    raw = set_world(pops, node_mM={"Q1": concentrations[0], "Q2": concentrations[1]})
+    spec, state, p, control = _bound(raw)
+    S = float(p.site_set_capacity_fmol[0])
+    totals = [float(x) for x in so.pool_amounts(state, p, xp=np)]  # The declared amounts, as bound.
+    r, bound = _root(totals, K, S, V)
+    # From empty sites, half-steps of 2 ms relax the closed node to its root.
+    x = state
+    for _ in range(1000):
+        x, ok = so.site_half_step(x, control.site_binding_multiplier,
+                                  control.site_internalisation_multiplier, 2e-3, p, xp=np)  # fmt: skip
+        assert bool(ok)
+    R = float(so.free_sites(x, p, xp=np)[0])
+    B = so.bound_sites(x, p, xp=np)
+    assert abs(R - float(r)) <= 1e-12 * S
+    assert np.all(np.abs(B - np.asarray([float(b) for b in bound])) <= 1e-12 * S)
+    # Started at the root (the declared start rounded once), one half-step moves no pool or site
+    # by more than 2 ulps of its own size.
+    from decimal import Decimal
+
+    theta = [float(b / Decimal(S)) for b in bound]
+    pops = [dict(pops[0], initial_occupancy=theta[0]), dict(pops[1], initial_occupancy=theta[1])]
+    free = {
+        g: float((Decimal(t) - b) / Decimal(V))
+        for g, t, b in zip(("Q1", "Q2"), totals, bound, strict=True)
+    }
+    spec, state, p, control = _bound(set_world(pops, node_mM=free))
+    moved, ok = so.site_half_step(state, control.site_binding_multiplier,
+                                  control.site_internalisation_multiplier, 2e-3, p, xp=np)  # fmt: skip
+    assert bool(ok)
+    before = (
+        so.pool_amounts(state, p, xp=np),
+        so.bound_sites(state, p, xp=np),
+        so.free_sites(state, p, xp=np),
+    )
+    after = (
+        so.pool_amounts(moved, p, xp=np),
+        so.bound_sites(moved, p, xp=np),
+        so.free_sites(moved, p, xp=np),
+    )
+    for a, b in zip(before, after, strict=True):
+        assert np.all(np.abs(b - a) <= 2 * np.spacing(np.abs(a))), (a, b)
+
+
+def test_fr45_third_order_at_fixed_concentrations():
+    """Two ligands at fixed concentrations (a 1 mL node, depletion about 1e-9) against the 2x2
+    matrix exponential (SPEC's §3.2): the error falls by 7 to 10 per halving of h."""
+    from scipy.linalg import expm
+
+    k_on, k_off, c = (1.4e3, 4e2), (0.8, 0.11), (1.1e-3, 0.7e-3)
+    pops = [sfx.member("m1", ligand="Q1", k_on=k_on[0], k_off=k_off[0]),
+            sfx.member("m2", ligand="Q2", k_on=k_on[1], k_off=k_off[1])]  # fmt: skip
+    raw = set_world(pops, node_mM={"Q1": c[0], "Q2": c[1]}, volume=1e9, dt=0.2, end=2.0)
+    spec, state, p, control = _bound(raw)
+    S, T = float(p.site_set_capacity_fmol[0]), 1.6
+    A = np.array([[-(k_on[0] * c[0] + k_off[0]), -k_on[0] * c[0]],
+                  [-k_on[1] * c[1], -(k_on[1] * c[1] + k_off[1])]])  # fmt: skip
+    b = S * np.array([k_on[0] * c[0], k_on[1] * c[1]])
+    eq = -np.linalg.solve(A, b)
+    exact = eq + expm(A * T) @ (np.zeros(2) - eq)
+    errors = []
+    for h in (0.1, 0.05, 0.025):
+        x = state
+        for _ in range(int(round(T / h))):
+            x, ok = so.site_half_step(x, control.site_binding_multiplier,
+                                      control.site_internalisation_multiplier, h, p, xp=np)  # fmt: skip
+            assert bool(ok)
+        errors.append(np.max(np.abs(so.bound_sites(x, p, xp=np) - exact)) / S)
+    ratios = errors[0] / errors[1], errors[1] / errors[2]
+    assert all(7.0 <= r <= 10.0 for r in ratios), (errors, ratios)
+
+
+def test_fr45_the_stage_condition_sums_a_sets_free_site_load_and_reports_it(monkeypatch):
+    """Two members, each at h k_on c = 0.3, sum to 0.6 at their set: refused, named, and reported
+    with every first-stage load; the free-site load taken per population (plant P4's form)
+    admits them."""
+    pops = [sfx.member("m1", ligand="Q1", k_on=4e2, k_off=0.05),
+            sfx.member("m2", ligand="Q2", k_on=2.5e2, k_off=0.05)]  # fmt: skip
+    raw = set_world(pops, node_mM={"Q1": 1.25e-2, "Q2": 2e-2}, dt=0.12, end=1.2)
+    spec, state, p, control = _bound(raw)
+    report = so.step_report(spec, _sets_of(spec), state, control, p, 0.12)
+    assert report["step"] == 1 and report["h_s"] == 0.06 and report["limit"] == so.THETA
+    loads = {(x["kind"], x["id"]): x for x in report["loads"]}
+    assert loads[("L_R", "lattice")]["sums"] == ["m1", "m2"]
+    assert loads[("L_R", "lattice")]["per_s"] == pytest.approx(10.0, rel=1e-12)
+    assert report["max_load"] == loads[("L_R", "lattice")]
+    assert report["h_max_load"] == pytest.approx(0.6, rel=1e-12)
+    assert report["first_stage_verdict"] == "refused" and not report["stage_admitted"]
+    assert so.refusal_condition(state, control, p, 0.12) == so.STAGE_CONDITION
+    step = so.set_half_step_terms(state, control.site_binding_multiplier, 0.06, p, xp=np)
+    assert not bool(step.stage_ok) and bool(step.domain_ok)
+    honest = so.stage_loads
+
+    def per_population(n, member_free, c, vol, mb, p, *, xp):  # Plant P4's form.
+        load_n, _, load_b = honest(n, member_free, c, vol, mb, p, xp=xp)
+        return load_n, mb * p.site_on_rate * c, load_b
+
+    monkeypatch.setattr(so, "stage_loads", per_population)
+    step = so.set_half_step_terms(state, control.site_binding_multiplier, 0.06, p, xp=np)
+    assert bool(step.stage_ok)
+    assert so.refusal_condition(state, control, p, 0.12) is None
+
+
+def _site_G(n, V, B, R, S_pop, S_set, K, rt):
+    """SPEC's §1.3 G of one node's pools and the sets facing it, at 50 digits (pJ)."""
+    from decimal import Decimal as D
+
+    def xlnx(x, s):
+        return D(0) if x == 0 else x * (x / s).ln()
+
+    g = sum(D(rt) * D(a) * ((D(a) / D(v)).ln() - 1) for a, v in zip(n, V, strict=True))
+    g += sum(
+        D(b) * D(rt) * D(k).ln() + D(rt) * xlnx(D(b), D(s))
+        for b, s, k in zip(B, S_pop, K, strict=True)
+    )
+    g += sum(D(rt) * xlnx(D(r), D(s)) for r, s in zip(R, S_set, strict=True))
+    return g
+
+
+@pytest.mark.parametrize("planted", [False, True])
+def test_fr45_the_booked_heat_is_minus_the_lattice_free_energy_change(planted, monkeypatch):
+    """200 random admitted half-steps of three members on two sets at one node: the node's
+    booked heat equals -dG of its pools and sets at 50 digits, within the rounding floor 16 eps
+    RT sum |x| (|ln x| + 1), and never falls below it. Plant P3's lattice (each member's free
+    sites S - B_b) breaks the equality on some half-steps."""
+    from decimal import getcontext
+
+    getcontext().prec = 50
+    pops = [sfx.member("m1", ligand="Q1"), sfx.member("m2", ligand="Q2", k_on=1.1e3, k_off=0.25),
+            sfx.member("w1", "wall", ligand="Q3", k_on=4.5e2, k_off=0.13),
+            sfx.member("w2", "wall", ligand="Q1", k_on=7e2, k_off=0.35)]  # fmt: skip
+    sets = [sfx.site_set(), sfx.site_set("wall", copies=1e5)]
+    spec, state, p, control = _bound(set_world(pops, sets, ligands=("Q1", "Q2", "Q3"),
+                                               node_mM={"Q1": 2.4e-3, "Q2": 1.3e-3, "Q3": 5e-4}))  # fmt: skip
+    if planted:
+        honest = so.site_lattice_terms
+
+        def p3(B, dB, R, dR, p, *, xp):  # Plant P3's lattice: each member's free sites S - B_b.
+            dg_b, terms_b, _, terms_r = honest(B, dB, R, dR, p, xp=xp)
+            own = p.site_capacity_fmol - B
+            rt = so.site_rt(p.temperature)
+            dg_own, _ = so.site_free_energy(own, -dB, 0.0, p.site_capacity_fmol, rt, xp=xp)
+            return dg_b, terms_b, so._scatter(dg_own, p.site_set_of, R.shape[0], xp=xp), terms_r
+
+        monkeypatch.setattr(so, "site_lattice_terms", p3)
+    rng = np.random.default_rng(45)
+    rt = float(so.site_rt(p.temperature))
+    K = (p.site_off_rate / p.site_on_rate).tolist()
+    node = [c.id for c in spec.model.extracellular].index("ecs_0")
+    rows = [list(spec.model.species_ids).index(g) for g in ("Q1", "Q2", "Q3")]
+    eps, misses, worst = np.finfo(float).eps, 0, 0.0
+    for _ in range(200):
+        theta = rng.uniform(0.0, 1.0, 4)  # m1, m2 on the lattice; w1, w2 on the wall.
+        theta[:2] *= rng.uniform(0.0, 1.0) / max(theta[:2].sum(), 1e-12)
+        theta[2:] *= rng.uniform(0.0, 1.0) / max(theta[2:].sum(), 1e-12)
+        B = theta * p.site_capacity_fmol
+        R = p.site_set_capacity_fmol - np.array([B[0] + B[1], B[2] + B[3]])
+        amounts = rng.uniform(1e-4, 3e-3, 3)
+        x = state._replace(
+            site_bound_increment_fmol=B - p.site_bound_anchor_fmol,
+            site_free_increment_fmol=R - p.site_free_anchor_fmol,
+            extracellular_amount_increment=state.extracellular_amount_increment.copy(),
+        )
+        x.extracellular_amount_increment[rows, node] = (
+            amounts - p.extracellular_amount_reference[rows, node]
+        )
+        h = float(rng.uniform(1e-4, 2e-2))
+        moved, ok = so.site_half_step(x, control.site_binding_multiplier,
+                                      control.site_internalisation_multiplier, h, p, xp=np)  # fmt: skip
+        if not bool(ok):
+            continue
+        heat = float(
+            moved.site_outside_dissipated_energy_pJ[node]
+            - x.site_outside_dissipated_energy_pJ[node]
+        )
+        before = (
+            so.pool_amounts(x, p, xp=np),
+            so.bound_sites(x, p, xp=np),
+            so.free_sites(x, p, xp=np),
+        )
+        after = (
+            so.pool_amounts(moved, p, xp=np),
+            so.bound_sites(moved, p, xp=np),
+            so.free_sites(moved, p, xp=np),
+        )
+        V = so.pool_volumes(p, xp=np).tolist()
+        g0 = _site_G(before[0].tolist(), V, before[1].tolist(), before[2].tolist(),
+                     p.site_capacity_fmol.tolist(), p.site_set_capacity_fmol.tolist(), K, rt)  # fmt: skip
+        g1 = _site_G(after[0].tolist(), V, after[1].tolist(), after[2].tolist(),
+                     p.site_capacity_fmol.tolist(), p.site_set_capacity_fmol.tolist(), K, rt)  # fmt: skip
+        values = np.concatenate([before[0], before[1], before[2]])
+        floor = (
+            16
+            * eps
+            * rt
+            * float(
+                np.sum(np.abs(values) * (np.abs(np.log(np.where(values > 0, values, 1.0))) + 1))
+            )
+        )
+        gap = abs(heat - float(g0 - g1))
+        worst = max(worst, gap / floor)
+        misses += gap > floor or heat < -floor
+    if planted:
+        assert misses > 0
+    else:
+        assert misses == 0, worst
+
+
+def test_fr45_the_wash_leaves_every_set_bit_for_bit():
+    """The compartment wash's event map alone (NumPy) on a set world at a nonzero occupancy: every
+    set's R and every member's B keep their bits; the liquid's ligands change."""
+    from cells.operators import wash_schedule as wash
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    pops = [sfx.member("m1", ligand="Q1", theta0=0.3), sfx.member("m2", ligand="Q2", theta0=0.2)]
+    buffer = {wfx.TRACER: sfx.TRACE_mM, "Q1": sfx.SET_TRACE_mM, "Q2": 4e-3}
+    raw = wfx.with_wash(set_world(pops), ["ecs_0"], [(0.01, "ecs_0", 0.4, buffer)])
+    spec, state, p, control = _bound(raw, time=0.01)
+    after, ok = wash.apply_events(state, control, p, xp=np)
+    assert bool(ok)
+    for name in ("site_free_increment_fmol", "site_bound_increment_fmol"):
+        assert (
+            np.asarray(getattr(after, name)).tobytes() == np.asarray(getattr(state, name)).tobytes()
+        )
+    assert not np.array_equal(
+        after.extracellular_amount_increment, state.extracellular_amount_increment
+    )
+
+
+@pytest.mark.parametrize(
+    "partner",
+    ["turnover", "exchange", "reactions", "bath", "wash", "replacement"],
+)
+def test_fr45_the_partners_beside_sets_parse(partner):
+    """D327, the lead's ruling 2: the design note's §15 partners parse beside a site set (their
+    runs are checked in test_site_competition_runs.py); every other operator law is refused by
+    name (the REFUSALS rows)."""
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    raw = set_world()
+    if partner == "turnover":
+        raw = fx.with_turnover(
+            raw, [("make", "cell_0", "production")], [("make", "cell_0", [(0.0, 1e-6)])]
+        )
+    elif partner == "exchange":
+        raw = fx.with_exchange(raw, [("out", "contact_0", "export", "first_order")],
+                               [("out", "cell_0", [(0.0, 1e-3)])])  # fmt: skip
+    elif partner == "reactions":  # D152 converting a set's ligand at the set's node.
+        raw = set_world(ligands=("Q1", "Q2", "Q3"))
+        moiety = {"M": 1}
+        raw = rfx.with_reactions(
+            raw,
+            [rfx.species("Q1", moieties=moiety), rfx.species("Q3", moieties=moiety)],
+            [rfx.passive("conv", {"outside": ["ecs_0"]}, {"Q1": 1}, {"Q3": 1}, 0.3)],
+            [("conv", None, [(0.0, 1.0)])],
+        )
+    elif partner == "bath":
+        raw = bfx.with_bath_schedule(set_world(dt=1e-3), ["bath"], bfx.CARGO,
+                                     [(bfx.on_grid(0.01, 1e-3), ["bath"], {"cargo": 9e-12})])  # fmt: skip
+    elif partner == "wash":
+        buffer = {wfx.TRACER: sfx.TRACE_mM, "Q1": sfx.SET_TRACE_mM, "Q2": sfx.SET_TRACE_mM}
+        raw = wfx.with_wash(raw, ["ecs_0"], [(0.01, "ecs_0", 0.4, buffer)])
+    else:
+        raw = _replaced_set_world(on_slot=False)
+    parse_spec(raw)

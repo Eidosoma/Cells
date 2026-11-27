@@ -42,14 +42,19 @@ def _site_routed():
     from validation.tissue import site_occupancy_fixtures as sfx
 
     raw = sfx.face_free_sites([sfx.population("r0", theta0=0.4)], end=0.02)
-    raw = add_inventory_species(raw, "X0", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20)
+    raw = add_inventory_species(
+        raw, "X0", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    )
     target = dict(operator=fx.TURNOVER, control="turnover_rate", ids=["make_x0"],
                   evaluation="target_half_steps", operating_range=[0.0, 1.0])  # fmt: skip
     entry = dict(id="c_site", target=target, law="site_fraction", basal=0.1,
                  source={"site_population": "r0", "quantity": "occupied_fraction"})  # fmt: skip
     raw = rf.with_coupling(raw, species=[], couplings=[entry])
-    coupling = next(b for b in raw["model"]["operators"] if b["law"].startswith(
-        "cells.operator.species_regulated_availability@"))
+    coupling = next(
+        b
+        for b in raw["model"]["operators"]
+        if b["law"].startswith("cells.operator.species_regulated_availability@")
+    )
     coupling["law"] = "cells.operator.species_regulated_availability@2"
     raw["model"]["operators"].append(dict(
         law=fx.TURNOVER, species=rf.identities(["X0"]), templates=[],
