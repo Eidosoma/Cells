@@ -2277,10 +2277,12 @@
     ],
     "host_values": {
      "areas": {
-      "host_wall": 21.842105263157897
+      "vesicle_wall": 21.842105263157897,
+      "host_wall": 14.310344827586208
      },
      "capacitances": {
-      "host_wall": 0.21842105263157896
+      "vesicle_wall": 0.21842105263157896,
+      "host_wall": 0.14310344827586208
      },
      "ion_permeabilities": {
       "host_wall": {
@@ -4139,10 +4141,12 @@
     ],
     "host_values": {
      "areas": {
-      "host_wall": 21.842105263157897
+      "shell_face": 21.842105263157897,
+      "host_wall": 14.310344827586208
      },
      "capacitances": {
-      "host_wall": 0.21842105263157896
+      "shell_face": 0.21842105263157896,
+      "host_wall": 0.14310344827586208
      },
      "ion_permeabilities": {
       "host_wall": {
@@ -10107,10 +10111,12 @@
     ],
     "host_values": {
      "areas": {
-      "host_wall": 21.842105263157897
+      "vesicle_wall": 21.842105263157897,
+      "host_wall": 14.310344827586208
      },
      "capacitances": {
-      "host_wall": 0.21842105263157896
+      "vesicle_wall": 0.21842105263157896,
+      "host_wall": 0.14310344827586208
      },
      "ion_permeabilities": {
       "host_wall": {
@@ -10627,10 +10633,12 @@
     ],
     "host_values": {
      "areas": {
-      "host_wall": 21.842105263157897
+      "vesicle_wall": 21.842105263157897,
+      "host_wall": 14.310344827586208
      },
      "capacitances": {
-      "host_wall": 0.21842105263157896
+      "vesicle_wall": 0.21842105263157896,
+      "host_wall": 0.14310344827586208
      },
      "ion_permeabilities": {
       "host_wall": {

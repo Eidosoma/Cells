@@ -18,6 +18,8 @@ from it:** no number, list length, order of keys or entries, or equality between
 - **The fourth dated change** (RULINGS-2 §9) wrote the solver as `cells.solver.imex_ars222_face_electromigration@1`
   [§9.3], gave every run a `driver` record with `window_steps` 1 [§9.5], and moved the host's values out of
   `definition` into `inputs.host_values` [§9.6].
+- **The fifth dated change** keys `host_values`' areas and capacitances by every patch, the registered `vesicle_wall`
+  and `shell_face` included, since SPEC registers no patch's area or capacitance [§9.6+].
 - **What reads it.** The judge reads `table/table.json` in its structure-only mode, with the code that will read the
   table, before the judged run, and must find no fault. At the judged run's snapshot, the builder's exporter writes a
   table on these invented worlds, and the lead compares it with this sample, key by key and type by type. The
@@ -349,9 +351,9 @@ non-finite value would also be written as null at a number (TABLE.md §1), but t
 | `runs.<run>.inputs.capacitor_components[].members[]` | string: a compartment |
 | `runs.<run>.inputs.capacitor_components[].held_by` | string: `bath` |
 | `runs.<run>.inputs.host_values` | object: the host-entity addendum's values |
-| `runs.<run>.inputs.host_values.areas` | object: every host patch |
+| `runs.<run>.inputs.host_values.areas` | object: every patch, registered and host [§9.6+] |
 | `runs.<run>.inputs.host_values.areas.<patch>` | number: the engine's own value |
-| `runs.<run>.inputs.host_values.capacitances` | object: every host patch |
+| `runs.<run>.inputs.host_values.capacitances` | object: every patch, registered and host [§9.6+] |
 | `runs.<run>.inputs.host_values.capacitances.<patch>` | number: the engine's own value |
 | `runs.<run>.inputs.host_values.ion_permeabilities` | object: every host patch |
 | `runs.<run>.inputs.host_values.ion_permeabilities.<patch>` | object: every ion |

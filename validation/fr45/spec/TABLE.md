@@ -1,6 +1,6 @@
 # FR-45's engine table: the contract
 
-**Dated 26 November 2026, and changed four times on 27 November 2026** (the next four sections), before the binding
+**Dated 26 November 2026, and changed five times on 27 November 2026** (the next five sections), before the binding
 tag and before any engine run of a registered world. The registration never defines the engine's table, so the lead
 ruled that a dated contract fixes it before the binding tag, from the spec's text (the lead's first rulings, Q5:
 `/mnt/workspaces/Cells/fr45-readings-20261126/RULINGS-1-2026-11-26.md`). The lead's second rulings,
@@ -204,6 +204,18 @@ findings, as §9 accepts them. [E22] to [E27] mark this change's own format sent
 - **The expected-inputs file:** each host volume, host trace and `host_values` marked "from the host-entity addendum"
   in place of a literal; the matching keys [§9.6, WD2].
 
+## Fifth dated change, 27 November 2026
+
+Made before the binding tag, by the same agent, applying the lead's addition to RULINGS-2 §9.6, marked [§9.6+]. SPEC
+registers no area or capacitance for any patch: not `specimen_face`, and not the host patches. So every patch's area
+and capacitance joins the host-entity addendum, registered patches included, which covers `specimen_face` in W3, W3p
+and W6. They are recorded in `inputs.host_values`, compared with the addendum in every run, and a plant run takes its
+honest run's. No criterion, band, plant, tolerance or class changes.
+
+**What changed:** §4.1's `host_values` and the addendum's values; a new line in the exception list; §14.1's item 6; E25
+in §15; the format sample's `host_values`, its README, and its `SHA256SUMS`; and the expected-inputs file's
+statement of the addendum's values [§9.6+].
+
 ## 1. Files and number form
 
 - **The table** is `table/table.json`, one file for the judged run, with `table/SHA256SUMS` (one line: the sha256, two
@@ -394,7 +406,7 @@ Exactly these keys:
 | `multipliers` | list of `{"of", "name", "value"}`: exactly each population's binding multiplier, with `of` the population, `name` `"site_binding_multiplier"` and `value` its value; registered 1.0 (SPEC:62). The accessible fraction α and the internalisation control are not multipliers [S6; §8.5] |
 | `charges` | object, ligand → integer: each ligand's valence, for every ligand of `ligands`; registered 0 (SPEC:59) [S6] |
 | `capacitor_components` | list of `{"members", "held_by"}`: the host's capacitor components, as the engine's checker forms them: each one's compartments (`members`, compared as a set) and the held node that holds it. In every world there is one, `{bath, <its cell>, <its registered node>}`, held by `bath` [§8.1, E17] |
-| `host_values` | `{"areas", "capacitances", "ion_permeabilities", "ion_amounts"}`: the host-entity addendum's values, as the engine parsed them, each the engine's own value. `areas`, `capacitances` and `ion_permeabilities` are keyed by host patch, `ion_permeabilities` then by ion; `ion_amounts` is keyed by compartment, every one, then by ion [§9.6, E25] |
+| `host_values` | `{"areas", "capacitances", "ion_permeabilities", "ion_amounts"}`: the host-entity addendum's values, as the engine parsed them, each the engine's own value. `areas` and `capacitances` are keyed by every patch, registered and host [§9.6+]; `ion_permeabilities` by host patch, then by ion; `ion_amounts` by compartment, every one, then by ion [§9.6, E25] |
 | `dt_s`, `observation_times_s`, `horizon_s` | number, list of numbers, number |
 
 - **`multipliers` and `permeabilities`** are checked against more than the exporter's word: before the judged run, a
@@ -437,8 +449,10 @@ Exactly these keys:
     typed literal [W-f].
   - *Nothing else:* a world holds no compartment or patch beyond its registered ones and these, unless the lead
     names one by a dated addendum before any registered run (§14.1) [item 7].
-  - *The host-entity addendum's values* [§9.6, WF2, WF3]: the host compartments' volumes, the host patches' areas and
-    capacitances, the ions' amounts in every compartment, and the ions' permeabilities on the host patches. The
+  - *The host-entity addendum's values* [§9.6, WF2, WF3]: the host compartments' volumes; every patch's area and
+    capacitance, registered patches included, since SPEC registers none: `specimen_face`'s in W3, W3p and W6 as well
+    as the host patches' [§9.6+]; the ions' amounts in every compartment; and the ions' permeabilities on the host
+    patches. The
     addendum is "Who c" kind (1): recorded after the build and before any registered run, confirmed by the
     non-builder reviewer against the wash fixtures' form, and hashed by the lead (§14.1). It is kept per honest
     run, its values copied by machine from the parse-only pass (§4); W1eq takes W1's, and a plant run its honest
@@ -472,6 +486,8 @@ Exactly these keys:
       compared with the host-entity addendum, and the expected-inputs file marks each so [§9.6]. W6's cell, which
       the 26 November text left to the engine's own name and volume, now has this file's name [W10, item 7; §8.1],
       and its volume is the addendum's [§9.6].
+    - `specimen_face`'s area and capacitance in W3, W3p and W6, which SPEC does not register: compared with the
+      host-entity addendum, in `host_values`, in every run; a plant run takes its honest run's [§9.6+].
     - W7s's L2, if the engine holds it (above): its `ligands` entry, its `free_amounts` entries, its
       `permeabilities` entries, each 0.0, and its `charges` member, which must be 0 [S11; S-g; §8.1].
     - A key path that a plant run's `plant.inputs_changed` names, whose value is checked as §8.1 says [B6].
@@ -1168,8 +1184,9 @@ before any run of a registered world:
    by declaration, P2's included, where each changed value sits in `definition` (§4) [§9.4, E24];
 5. any compartment or patch beyond the registered ones and the bath form's (§4.1), and any operator the host tissue
    requires (§9) [item 7, S7];
-6. the host-entity addendum: the host compartments' volumes, the host patches' areas and capacitances, the ions'
-   amounts in every compartment and the ions' permeabilities on the host patches, kept per honest run (§4.1). It is
+6. the host-entity addendum: the host compartments' volumes, every patch's area and capacitance, registered patches
+   included [§9.6+], the ions' amounts in every compartment and the ions' permeabilities on the host patches, kept per
+   honest run (§4.1). It is
    recorded after the build and before any registered run, confirmed against the wash fixtures' form by the
    non-builder reviewer, and hashed by the lead [§8.1; §9.6].
 
@@ -1322,8 +1339,16 @@ unchanged.
   - [E24] The B6 addendum names where each declared change sits in `definition`, P2's included, so that the judge can
     apply `inputs_changed` to `definition` from the table and the addenda alone (§4, §14.1).
   - [E25] The host values' key, `inputs.host_values`, and its form: `areas`, `capacitances` and `ion_permeabilities` by
-    host patch, `ion_amounts` by compartment, each the engine's own value with no unit suffix (§4.1).
+    host patch, `ion_amounts` by compartment, each the engine's own value with no unit suffix (§4.1). Amended by §9.6+:
+    `areas` and `capacitances` are keyed by every patch, registered and host.
   - [E26] In W3 and W3p the wall's inside is `specimen`, the world's own cell. §9.6 says that each host patch's inside is
     `host_cell`, which those two worlds do not hold (§4.1).
   - [E27] The host-entity addendum is kept per honest run, its values copied by machine from the parse-only pass; W1eq
     takes W1's, and a plant run its honest run's (§4.1).
+
+### 27 November 2026, the fifth dated change
+
+- **What it applies:** the lead's addition to RULINGS-2 §9.6, ruled on 27 November [§9.6+].
+- **What it ran:** the sample's writer, the structure reader, the README's path check and the expected file's facts
+  check. The structure reader was first made to require every patch's area and capacitance, and it failed on the
+  earlier sample's runs that hold a registered patch.
