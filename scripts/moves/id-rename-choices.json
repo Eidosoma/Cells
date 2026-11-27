@@ -1,7 +1,7 @@
 {
  "kind": "cells.id_moves.choices@1",
  "move": "id-rename",
- "description": "The scripted ID rename's choices (D345, D346, D371, D380, D383; docs/ID_HIERARCHY_DESIGN.md, sections 2, 5, 6 and 11), read by scripts/id_moves.py and edited by hand. A seed names a module's constant (or, with keys, a lookup table whose keys are the IDs that no registry holds), and its family is one of registry/ids.py's words, which have no other home. Nothing waits for a word: the user's are D383's. An entry that the tree has overtaken is refused by `check` and by `table`.",
+ "description": "The scripted ID rename's choices (D345, D346, D371, D380, D383; docs/ID_HIERARCHY_DESIGN.md, sections 2, 5, 6 and 11), read by scripts/id_moves.py and edited by hand. A seed names a module's constant (or, with keys, a lookup table whose keys are the IDs that no registry holds), and its family is one of registry/ids.py's words, which have no other home. Nothing waits for a word: the user's are D383's. An entry that the tree has overtaken is refused by `check` and by `table`. After the move (d6d46d2d), the entries it spent are taken out: the plants' families, which the map's plant rows hold, and the rows of the four files it re-spelled, whose hash pins went stale as section 11 of the design note decided (D380).",
  "scope": {
   "dirs": [
    "src/",
@@ -589,39 +589,6 @@
    ]
   },
   {
-   "path": "src/cells/assembly/__init__.py",
-   "kind": "src",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell"
-   ],
-   "pinned_by": [
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json"
-   ]
-  },
-  {
-   "path": "src/cells/assembly/graph.py",
-   "kind": "src",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell"
-   ],
-   "pinned_by": [
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json"
-   ]
-  },
-  {
-   "path": "src/cells/assembly_pool/__init__.py",
-   "kind": "src",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell"
-   ],
-   "pinned_by": [
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json"
-   ]
-  },
-  {
    "path": "validation/betse/protocols/physical_p3_k_mem_dense.json",
    "kind": "data",
    "choice": "leave",
@@ -754,24 +721,6 @@
     "validation/geometry/stable_seed_partition_physiology_bridge_protocol.json",
     "validation/geometry/stable_seed_partition_trajectory_callers.json",
     "validation/geometry/stable_seed_partition_trajectory_protocol.json"
-   ]
-  },
-  {
-   "path": "validation/tissue/surface_dynamics_fixtures.py",
-   "kind": "python",
-   "choice": "re-spell",
-   "choices": [
-    "re-spell",
-    "leave"
-   ],
-   "pinned_by": [
-    "validation/geometry/geometry_tissue_preparation_protocol.json",
-    "validation/tissue/joint_water_hcn_protocol.json",
-    "validation/topology/joint_water_profile_interventions_protocol.json",
-    "validation/topology/joint_water_profile_phase_handoff_protocol.json",
-    "validation/topology/owned_calcium_profile_interventions_protocol.json",
-    "validation/topology/owned_calcium_profile_phase_handoff_protocol.json",
-    "validation/topology/tissue_profile_composition_protocol.json"
    ]
   },
   {
@@ -1584,87 +1533,8 @@
  },
  "plants": {
   "apply": true,
-  "note": "D371 Q8: a plant takes the three-part shape, its family by its declaring type; those whose type the tool does not see are named here, read by hand",
-  "families": {
-   "cells.planted@1": "route",
-   "tests.second@1": "channel",
-   "tests.elsewhere@1": "cycle",
-   "seamtest.edge_pump@1": "cycle",
-   "seamtest.nowhere@1": "cycle",
-   "seamtest.synthase_cited@1": "cycle",
-   "seamtest.synthase_shifted@1": "cycle",
-   "seamtest.ref_law@1": "cycle",
-   "tests.kv_planted@1": "channel",
-   "tests.planted_view_channel@1": "channel",
-   "tests.limit_off_by_a_constant@1": "reaction",
-   "validation.ol6_plant_power_off_by_one@1": "reaction",
-   "tests.steep_fuel@1": "cycle",
-   "tests.unregistered@1": "cycle",
-   "seamtest.monomial_hydrolysis@1": "cycle",
-   "seamtest.monomial_off@1": "cycle",
-   "seamtest.monomial_total@1": "cycle",
-   "seamtest.monomial_mg@1": "cycle",
-   "seamtest.signed_basis@1": "cycle",
-   "seamtest.wrong_sign_basis@1": "cycle",
-   "tests.alpha@1": "kind",
-   "tests.beta@1": "kind",
-   "tests.b@1": "kind",
-   "tests.factor@1": "kind",
-   "tests.factor_b@1": "kind",
-   "tests.non_mover@1": "kind",
-   "tests.claimant@1": "operator",
-   "tests.event@1": "operator",
-   "tests.pools@1": "operator",
-   "tests.swap@1": "operator",
-   "tests.existing_operator@1": "operator",
-   "tests.new_operator@1": "operator",
-   "tests.newer_operator@1": "operator",
-   "tests.not_an_operator@1": "operator",
-   "tests.loose@1": "operator",
-   "tests.planted_reaction@1": "operator",
-   "tests.law_a@1": "binding",
-   "tests.law_b@1": "binding",
-   "tests.literal_last_molecule@1": "reaction",
-   "tests.one_sided@1": "reaction",
-   "tests.power_propensity@1": "reaction",
-   "tests.planted_ensemble@1": "model",
-   "tests.planted_exchange@1": "exchange",
-   "tests.planted_home_route@1": "route",
-   "tests.planted_inert_route@1": "route",
-   "tests.twice@1": "route",
-   "tests.x@1": "route",
-   "tests.y@1": "route",
-   "tests.planted_move@1": "planted",
-   "tests.pretender@1": "route",
-   "tests.undeclared@1": {
-    "tests/unit/test_model_table.py": "exchange",
-    "*": "kind"
-   },
-   "test_add0@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_add1@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_multiply0@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_multiply1@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_r0@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "test_r1@1": {
-    "tests/unit/test_door_s.py": "operator"
-   },
-   "elementless@1": {
-    "tests/unit/test_pump_composite_contract.py": "operator"
-   },
-   "planted_author@1": {
-    "tests/unit/test_population_unit_turnover.py": "operator"
-   }
-  },
+  "note": "D371 Q8: a plant takes the three-part shape, its family by its declaring type; those whose type the tool does not see are named here, read by hand. The move (d6d46d2d) placed the 59 named here, and the plant rows of its map, scripts/moves/id-rename-map.json, hold them, so none is named now",
+  "families": {},
   "not_plants": {
    "tests.planted_ensemble_kind@1": "a plan document's kind",
    "tests.planted_law@1": "an outside interface's ID",

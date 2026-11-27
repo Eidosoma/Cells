@@ -107,8 +107,8 @@ operator's; a turnover route on a (species, node) a reaction writes (one local-k
 row, §1.1); a cell route on a slot that cells.operator.scheduled_cell_replacement@1 replaces (§2.1); RK4 (§4.6);
 every provider or closer of the masks and outside anchors (CONFLICTS_VIEW: insertion@1 and @2, the
 partition and the bridge); and a volume changer other than water (the lumens, replacement@2 by its
-water: check_volume_changers). The stationary analysis refuses the composite by its own ID check
-(§4.6).
+water: species_common.check_volume_changers, at every finite node it reads). The stationary
+analysis refuses the composite by its own ID check (§4.6).
 
 Volumes (FR-43 / D315; composition option A, D152 §7.3's volume door). The cell and outside volumes
 are current reads at the split (SCOPED_READS). Where water changes them, each half-step takes the
@@ -907,25 +907,6 @@ def bind(spec, declaration):
 # ------------------------------------------------------------------ definition checks
 
 
-WATER = "cells.operator.ideal_osmosis_linear_compliance_water@1"  # The one volume changer admitted (FR-43).
-
-
-def check_volume_changers(spec, law=LAW_ID):
-    """FR-43 / D315: `law` reads the volumes current at the split, and water is the one changer of
-    them admitted beside it. A restricted lumen (its lumen volumes) and replacement@2 (a newcomer's
-    volume written into water's state) stay refused until a probe covers them."""
-    for op, _, _ in composite_spec.entries(spec):
-        if op.LAW_ID in (law, WATER):
-            continue
-        if {"volume", "extracellular_volume"} & set(op.VIEW_FIELDS) or (
-            "volume_increment_pL" in op.ENTITY_WRITES
-        ):
-            raise ConfigError(
-                f"{law}: {op.LAW_ID} changes the volumes it reads; water is the one volume "
-                "changer admitted beside it (FR-43 / D315)"
-            )
-
-
 def row_volumes(op, view, model):
     """The (cell, outside) volumes at an observed row: the view's where op reads them current (the
     composite passes it views, FR-43), else None: the declared ones (network())."""
@@ -1509,8 +1490,9 @@ class LocalSpeciesReactions(Operator):
     # volume door): where water changes them, each half-step's concentrations, rates, stage
     # condition and bookings take the view's, held over the half-step; where no operator changes
     # them the part receives no view and reads the declared ones (C1's fallback, today's program).
-    # Water is the one changer admitted (check_volume_changers). A closer counts as a mask's
-    # provider (S5), and insertion@1 provides the outside mask and anchors (§1.4): refused.
+    # Water is the one changer admitted (species_common.check_volume_changers). A closer counts
+    # as a mask's provider (S5), and insertion@1 provides the outside mask and anchors (§1.4):
+    # refused.
     CONFLICTS_VIEW = ("active", "outside_active", "extracellular_amount_reference")
     VIEW_READS = ("volume", "extracellular_volume")
     # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §5): its outside reads are at finite nodes only
@@ -1675,7 +1657,7 @@ class LocalSpeciesReactions(Operator):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, tuple(s.identity for s in declaration.species))
         check_turnover_rows(spec, declaration)
-        check_volume_changers(spec)
+        common.check_volume_changers(spec, LAW_ID, common.finite_nodes(spec))
         common.registry.check_shared_rows(spec, LAW_ID)
         check_replaced_slots(spec, declaration)
         route_tables(declaration, schedule, spec)  # FR-26: a founder's change after its death.

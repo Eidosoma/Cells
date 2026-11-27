@@ -284,8 +284,11 @@ for source roles, existing evidence and the path to independent experimental tes
 - **Fuel and cell volume:** finite ATP supplies and osmotic water flow, including
   a [combined calcium/ER, ATP and water model](TISSUE_RETURN_CURRENT.md#owned-calcium-finite-fuel-and-compliant-water)
   with [prescribed injury and resealing](TISSUE_RETURN_CURRENT.md#prescribed-repair-with-owned-calcium-finite-fuel-and-water).
-- **Regulatory cell state:** BITSEY-based isolated regulation and a bounded
-  [two-cell regulatory/ionic model](SOURCE_EMT_PAIR.md).
+- **Regulatory cell state:** a one-gene expression unit with its RNA released into
+  two pools, and regulatory states that set a channel's availability. The
+  BITSEY-based isolated regulation and the bounded
+  [two-cell regulatory/ionic model](SOURCE_EMT_PAIR.md) left with the legacy code
+  on 26 November 2026.
 - **Protein assembly:** stochastic cage formation, finite material pools,
   breakable bonds and experimental coupling to cell models.
 - **Repeatable experiments:** checkpoints, restart, branching and independent

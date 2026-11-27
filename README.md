@@ -172,13 +172,13 @@ believe progress in AI and in mathematics can bring that goal closer than it
 seems today. As a first whole cell we have taken up the minimal bacterium
 JCVI-syn3A as a [track](docs/SYN3A_MINIMAL_CELL_TRACK.md): it holds an evidence
 audit, capability probes, and general engine features motivated by whole-cell
-renewal (neutral origin labels and 1,024-species inventories on `main`, with
-shared-pool coupling and low-count integer units in progress), while no
+renewal (neutral origin labels, 1,024-species inventories, shared-pool coupling
+and low-count integer units, all on `main`), while no
 organism-specific code lives in the engine. Beyond it, the organisms in view are
 the mouse, the planarian and the human, beginning with the human heart's muscle
 cells and their mitochondria.
 
-## Where things stand (17 November 2026)
+## Where things stand (26 November 2026)
 
 Plain-language summary. Details, numbers and evidence are in
 [Progress](PROGRESS.md), the order of work is in the
@@ -193,19 +193,19 @@ judged results.
 
 | Track | In simple terms | State |
 | --- | --- | --- |
-| **Checking the physics against BETSE** | We run the established BETSE simulator separately and compare its saved outputs with Cells' own physics, under rules fixed before each run. | Passes for every mechanism tested so far (one rung only after a revised method): BETSE's default tissue, calcium and its pump, extracellular barriers, scheduled interventions (pump block, sodium and potassium permeability, junction block), and voltage-gated channels including the heredity channels NaV1.2 and Kir2.1. These later rungs also pass on the L4 GPU. Still open: several intervention types, noise, networks and channel time constants. See the [current results](PROGRESS.md#plan-betse-parity-on-cpu-and-l4-then-jupiter-from-8-november), the [coverage map](docs/BETSE_CAPABILITY_ROADMAP.md) (which also records the earlier, superseded comparison track) and the [comparison tools](validation/betse/README.md) |
+| **Checking the physics against BETSE** | We run the established BETSE simulator separately and compare its saved outputs with Cells' own physics, under rules fixed before each run. | Passes for every mechanism tested so far (one rung only after a revised method): BETSE's default tissue, calcium and its pump, extracellular barriers, scheduled interventions (pump block, sodium and potassium permeability, junction block), and voltage-gated channels including the heredity channels NaV1.2 and Kir2.1. These later rungs also pass on the L4 GPU, and parity stays on the live pump-tissue model's three versions. Still open: several intervention types, noise, networks and channel time constants. See the [current results](PROGRESS.md#plan-betse-parity-on-cpu-and-l4-then-jupiter-from-8-november), the [coverage map](docs/BETSE_CAPABILITY_ROADMAP.md) (which also records the earlier, superseded comparison track) and the [comparison tools](validation/betse/README.md) |
 | **First heredity experiment** | Can a brief signal write a voltage pattern into a tissue, and does the pattern survive while its cells are replaced? | **Judged (13–14 November): when its cells were replaced one at a time by copies of neighbours, the written disc did not renew.** The pattern followed neutral copying closely, and 8 of 15 scored predictions held. In earlier development runs a brief cue wrote a depolarised disc and freshly written discs held for 70 minutes, but no disc renewed when newcomers arrived uncoupled and formed junctions over time, as the literature describes. A successor that writes, clears and then challenges the pattern is proposed. See the [registered design](docs/E07_V1_DESIGN.md), the [results](PROGRESS.md#runs) and the [proposal](docs/E07_V2_DESIGN.md) |
-| **New biology in the engine** | Mechanisms that experiments showed were missing, and requested features, each added as a general model. | Qualified and on main from 11 November: osmotic water and cell volume, and cell replacement in which new cells form junctions over time. Volume regulation is on main with its stationary states judged. Numerically qualified since, on the composite tissue model: membrane added during cleavage, current injection and the partition of a dividing cell (division is prescribed, not yet set off by the cell's own state; [plan](docs/CELL_DIVISION_PLAN.md)); the transport of secreted species outside cells, with decay and clearance (their production and exchange across membranes are guarded only); and, on CPU only, reactions on the shared species inventory and species that regulate a channel's availability. Landed for development, not judged: a closed internal compartment, binding to sites, and scheduled changes of bath composition. In development: conduction in excitable tissue. Planned and on hold: gene regulation coupled to tissue. See the [feature requests](docs/FEATURE_REQUESTS.md) |
-| **Engine restructure** | One tissue model whose laws, transporters and fuel are declared modules, compiled only where a world declares them; declared solvers follow with their first users. | **Landed on 16 November** (tag `d172-landed-2026-11-16`) in one merge. It passed a results gate (existing worlds' outputs unchanged, bit for bit or within a stated rounding), crossrev of the compiled programs, the test tiers (no changed outcome in tiers 1 and 2; in tier 3, every file that did not pass was classified, none as a fault of the restructure), the affected registered protocols and a block of GPU runs. The compartment pH model's pieces (a proton pump, a pH buffer and passive routes) landed with it. The pieces for transfer across a damaged internal membrane (the damage and pH-condition kinds, and the refusals' new versions) merged the same evening. Both passed their judged runs on 17 November (FR-4 21 of 21 criteria, FR-5 51 of 51), qualified within their registered scope. Also on 17 November: the law and operator registries, a static model table, the declarations manifest (`cells.declarations@2`) and the first plain-language pages. A separately installed external module (stage 1 of the module system) is not built yet. See the [design](docs/INNER_MODEL_V4_DESIGN.md) |
-| **Long-run time modes** | Faster ways to study hours to months, all optional. | A fixed-point and continuation analysis is qualified. Projective time-stepping failed its qualification. A quasi-steady electrical mode is planned |
+| **New biology in the engine** | Mechanisms that experiments showed were missing, and requested features, each added as a general model. | Qualified and on main from 11 November: osmotic water and cell volume, and cell replacement in which new cells form junctions over time. Volume regulation is on main with its stationary states judged. Numerically qualified since, on the composite tissue model: membrane added during cleavage, current injection and the partition of a dividing cell (division is prescribed, not yet set off by the cell's own state; [plan](docs/CELL_DIVISION_PLAN.md)); the transport of secreted species outside cells, with decay and clearance (their production and exchange across membranes are guarded only); and, on CPU only, reactions on the shared species inventory and species that regulate a channel's availability. Judged on CPU from 17 to 24 November, each within its registered scope: a closed internal compartment with its pH and transfer across its damaged membrane, binding to sites, scheduled bath changes, abundance setting a cell's function in a closed loop, a pool shared by separate processes, low-count integer units on continuous chemistry, one-way transfer records and two blocking modes on one channel population. Gene expression: a one-gene unit scored inconclusive (30 of 32 pass, none failed), and its RNA release passed a second registered comparison, beside the first one's fail. Landed for development, not judged: membrane taken into the cell (its comparison passed on a second run, after a failed first), inventories of up to 1,024 species, a calcium store, and turnover beside a changing volume. In development: conduction in excitable tissue. See the [feature requests](docs/FEATURE_REQUESTS.md) |
+| **Engine restructure** | One tissue model whose laws, transporters and fuel are declared modules, compiled only where a world declares them; declared solvers follow with their first users. | **Landed on 16 November** (tag `d172-landed-2026-11-16`) in one merge, after a results gate, crossrev of the compiled programs, the test tiers, the affected registered protocols and a block of GPU runs. The law and operator registries, a static model table, the declarations manifest (now `cells.declarations@3`) and the first plain-language pages followed on 17 November. **The legacy cleanup landed on 26 November** (tag `legacy-cleanup-landed-2026-11-26`): the older legacy code was deleted whole once the live engine no longer needed it; the calcium ensemble was re-expressed in the live engine on CPUs, and the first part of its port check, which validates no physics, passed on 25 November; and every live piece's ID now has the form `cells.<family>.<name>@major`. In its one full gate, crossrev, tiers 1 and 2 and G1 passed, and two defects of the ID move that tier 3 found were fixed. A separately installed external module (stage 1 of the module system) is not built yet. See the [design](docs/INNER_MODEL_V4_DESIGN.md) and the [ID note](docs/ID_HIERARCHY_DESIGN.md) |
+| **Long-run time modes** | Faster ways to study hours to months, all optional. | A fixed-point and continuation analysis is qualified. Projective time-stepping failed its qualification. A long-duration mode is being qualified rung by rung: a fine-window executor passed on 20 November (about 20 times fewer steps than 1 ms steps over a simulated hour), as did implicit conductances with it at a 100 ms step on 21 November. A quasi-steady electrical mode is planned |
 | **Morphogenesis** | How tissues take and repair shape. | A morphogen gradient and a bistable voltage domain wall passed, and Turing patterning at its predicted wavelength passed on CPU (15 November). 2-D cell mechanics (a vertex model) is qualified and on main, after a revised second judged run. See the [morphogenesis plan](docs/MORPHOGENESIS_PLAN.md) |
-| **Origin of life** | Cells' own engine for molecular assemblies that grow, split and pass on their composition, with the published GARD model alongside for comparison. | GARD runs on Cells' stochastic assembly family and is registered as a model (17 November): development runs, not judged. Independent references pass all ten of their checks on its final runs. The first-principles engine's first stage, its laws (OL1), landed on 18 November, verified against independent references, and the second (OL2: lipid exchange, geometry and the lumen) is being built. See the [engine design](docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md) and [GARD's design](docs/GARD_DESIGN.md) |
-| **Replications** | Published experiments rebuilt in Cells and compared with what the papers report. | The gap-junction study of Grodstein, Mathews and Levin (bioRxiv, 2026): its linear model runs as written, and its exact circuit equivalent serves as the check. This is development work, not judged. The paper's tissue tables need new junction features. See the [note](docs/GAP_JUNCTION_CANCER_REPLICATION.md) |
-| **Papers to test** | Published models we review and test in Cells. | Nine reviewed: three with test plans (Cortés-Poza, Deb et al., Shin et al.); the Myc–cyclin T1 heart papers, at high priority, which led to species regulating channels and to an excitable-tissue track; and five as notes (partial reprogramming, granzyme K and tissue ageing, kinetochore protein counts, bone mechanosensing and ageing, and a whole-cell model of the minimal cell). Secreted-species transport was promoted from the granzyme K review. A track of gene-network models validated against wet-lab experiments is logged for the coming gene-regulation layer. See the [paper backlog](docs/PAPER_BACKLOG.md) and [GRN wet-lab validations](docs/GRN_WETLAB_VALIDATION.md) |
+| **Origin of life** | Cells' own engine for molecular assemblies that grow, split and pass on their composition, with the published GARD model alongside for comparison. | GARD runs on Cells' stochastic assembly family and is registered as a model (17 November): development runs, not judged. Independent references pass all ten of their checks on its final runs. The first-principles engine's laws (OL1) landed on 18 November, verified against independent references, followed by geometry, an osmotic lumen and division (OL2 and OL3), and by vesicle pores and rupture under tension, whose blind test passed on 22 November (one set one-sided and weak). A deterministic representation (OL6) runs beside the exact events: its GARD limit passed on 23 November, and its comparison with exact events passed in version 2 on 24 November, after the first registration failed on one criterion. See the [engine design](docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md) and [GARD's design](docs/GARD_DESIGN.md) |
+| **Replications** | Published experiments rebuilt in Cells and compared with what the papers report. | The gap-junction study of Grodstein, Mathews and Levin (bioRxiv, 2026): its linear model passed its registered comparison (57 of 57 entries, 23 November), and the "neither" threshold of the preprint's model passed on a line and a 2-D field against a code-blind integration (25 November), an indication for that model on those geometries. The 3-D field was not run, and the paper's tissue tables need new junction features. A Cx43 junction law's registered benchmark on Revilla et al. (1999) failed, 4 of 6, and the law stays development-only. See the [note](docs/GAP_JUNCTION_CANCER_REPLICATION.md) |
+| **Papers to test** | Published models we review and test in Cells. | Nine reviewed: three with test plans (Cortés-Poza, Deb et al., Shin et al.); the Myc–cyclin T1 heart papers, at high priority, which led to species regulating channels and to an excitable-tissue track; and five as notes (partial reprogramming, granzyme K and tissue ageing, kinetochore protein counts, bone mechanosensing and ageing, and a whole-cell model of the minimal cell). Secreted-species transport was promoted from the granzyme K review. A track of gene-network models validated against wet-lab experiments is logged for the gene-regulation layer. See the [paper backlog](docs/PAPER_BACKLOG.md) and [GRN wet-lab validations](docs/GRN_WETLAB_VALIDATION.md) |
 | **Seeing the runs** | A 3D viewer of the engine, the proteins it models and replays of saved runs. | The viewer and its reader of saved runs are on main under `visualizer/`, and so are the engine's run-view writer and its relationship tables (`cells.relations@1`). The viewer's Experiments show GARD and the gap-junction replication as development runs. See [the visualizer and its replays](#the-visualizer-and-its-replays) |
-| **Computing** | Where it runs. | Local CPUs and one NVIDIA L4 GPU, with many independent worlds batched on the GPU. JUPITER (GH200) throughput is not yet measured. See [GPU execution](docs/GPU_ENSEMBLES.md) and the [JUPITER runbook](docs/JUPITER_RUNBOOK.md) |
+| **Computing** | Where it runs. | Local CPUs and one NVIDIA L4 GPU, with many independent worlds batched on the GPU. The composite tissue model's own device checks failed their GPU qualification (24 November), so it runs on a GPU only through the plain runner, with host checks; the re-expressed calcium ensemble runs on CPUs until a GPU qualification passes. JUPITER (GH200) throughput is not yet measured. See [GPU execution](docs/GPU_ENSEMBLES.md) and the [JUPITER runbook](docs/JUPITER_RUNBOOK.md) |
 
-## What Cells can do (as of 17 November 2026)
+## What Cells can do (as of 26 November 2026)
 
 ![Cells today, 11 November 2026: cell electricity; tissue preparation and interventions; calcium, reactions, fuel and water; simple gene control circuits; protein cage assembly; and saving, restarting and comparing runs. Material, charge and energy checks, with CPU and L4 GPU execution. Capabilities vary by model; whole-cell integration is ongoing.](docs/assets/cells-current.png)
 
@@ -213,30 +213,38 @@ The picture is of 11 November 2026; the list below is current.
 
 - **Electrical cells and tissues:**
   - ion transport, membrane voltage and pumps;
-  - voltage-gated and leak channels;
-  - gap junctions and extracellular fields;
+  - voltage-gated and leak channels, with voltage-dependent block;
+  - gap junctions and extracellular fields, with a sparse solver for large fields;
   - all with material, charge and energy accounting.
 - **Tissue preparation and interventions:** tissue geometry, timed changes to pump,
-  channel and junction availability, scheduled bath composition, current
-  injection and cell removal, in selected model families.
+  channel and junction availability, scheduled bath composition, compartment
+  washes, current injection and cell removal, in selected model families.
 - **Cell lifecycle:** cell replacement in which newcomers form junctions over
-  time, and prescribed cell division that partitions a cell with closed ledgers.
-- **Cell chemistry:** calcium and IP3 signalling, internal compartments,
-  reactions, fuel, and osmotic water and cell volume in selected families; on
-  the composite tissue model, secreted species, reactions on a shared species
-  inventory and species that regulate a channel's availability.
+  time, at fixed volume or with water, and prescribed cell division that
+  partitions a cell with closed ledgers.
+- **Cell chemistry:** calcium and IP3 signalling with a calcium store, closed
+  internal compartments with their pH, reactions, binding to sites, fuel, and
+  osmotic water and cell volume in selected families; on the composite tissue
+  model, secreted species, a shared inventory of up to 1,024 species with shared
+  pools and low-count integer units, turnover beside a changing volume, and
+  species that regulate a channel's availability.
 - **Tissue mechanics:** 2-D vertex mechanics of a cell sheet.
-- **Regulatory cell state:** isolated regulatory circuits and a bounded two-cell
-  regulatory and ionic model.
+- **Regulatory cell state:** a one-gene expression unit with its RNA released into
+  two pools, and regulatory states that set a channel's availability; the
+  BITSEY-based regulation models left with the legacy code (26 November).
 - **Molecular assembly:** stochastic formation of a protein cage from folded
   subunits, with finite material pools. Folding itself is out of scope.
 - **Assembly lineages:** exact stochastic simulation of molecular assemblies that
-  grow, split and are followed through generations, with keyed random streams. The
+  grow, split and are followed through generations, with keyed random streams.
+  Cells' own origin-of-life laws run on it (vesicles that exchange lipids, hold an
+  osmotic lumen, divide and rupture), also as deterministic rate equations. The
   GARD model runs on it for comparison, for development.
 - **Relationships and declarations:** tables of descent, events and material
   sources, written by the assembly family and, through an adapter, by tissue
-  division and replacement worlds. A versioned manifest lists every declared law,
-  kind and operator, and plain-language pages for them have begun.
+  division and replacement worlds, and neutral labels that follow where molecules
+  came from. A versioned manifest (`cells.declarations@3`) lists every declared
+  law, kind and operator by its `cells.<family>.<name>@major` ID, and
+  plain-language pages for them have begun.
 - **Repeatable experiments:**
   - checkpoints, restart and branching into alternative futures, including,
     when recorded, resumption across a change of source code or runtime;
@@ -402,7 +410,7 @@ priorities, the [current plan](docs/CURRENT_PLAN.md) for the order of work and
 | Part of Cells | Reference and role |
 | --- | --- |
 | Bioelectric layer | [BETSE](docs/BETSE_CAPABILITY_ROADMAP.md): an external reference, run out of process, for electrical transport, channels, pumps, junctions and fields |
-| Regulation and cellular-state transmission | [BITSEY](docs/ROADMAP.md#bitsey-replication): regulatory and ionic reference models |
+| Regulation and cellular-state transmission | [BITSEY](docs/ROADMAP.md#bitsey-replication): regulatory and ionic reference models; in the gap-junction replication, its pinned run is reported beside the verdicts and never judged. The engine's BITSEY-based regulation models left with the legacy code on 26 November 2026 |
 | Protein-cage assembly | [Asor et al.'s measurements and stochastic model](docs/CAPSID_ASSEMBLY.md) |
 | Physical chemistry and electrodiffusion | [Thermodynamic and electrodiffusion references](docs/SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack) |
 

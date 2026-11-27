@@ -41,6 +41,18 @@ fingerprint and its structure. The water and replacement families run @3 through
 inner carries the structure, so they book what is picked as well (the lead, 19 November 2026); a
 caller that checks @3 without its structure refuses a booking rather than ignore it.
 
+FR-50 phase 2 (D327; the registered protocol fr50-one-way-records-v1 §3): an optional model key
+``one_way_records``, a list of ``{"entity", "id", "species"}`` entries, asks for one-way cumulative
+records of @3's own routes: each entry names one entity that books a net record (``membrane``, a
+patch's own permeability, membrane_transferred; ``junction``, junction_transferred; ``face``, a face
+of today's law, face_transferred, uncharged rows only; ``channel``, a population,
+channel_transferred) and the species it records. Each (entity, species) pair keeps a forward and a
+backward record in its net record's orientation and the step rule's relative gap
+(models/surface_pump_v3.own_one_way_records). Refused, each by name: a pump, a forms face, a charged
+face row, a kind's route (its own one_way key), an unknown entity or species, a pair declared twice;
+RK4, projective execution and the families with fixed internals at their own checks. The key is
+omitted where none is declared, so every definition of today's keeps its form and fingerprint.
+
 The gate laws are the existing Cells kinetics under neutral IDs (the stage-B
 proposals in stage-b-plan-20261108-01): Kv1.5 m*h (laws/channels/voltage_gates.py),
 Kir2.1 m*h^2 (laws/channels/potassium_channels.py) and NaV1.2 m^3*h
@@ -185,6 +197,12 @@ BLOCK_N2_REFUSAL = (
     "An implicit-conductance solver (N2) beside a blocked channel population is refused: a "
     "negative slope in its operator could make it indefinite (FR-51, ruling 5)"
 )
+# FR-50 phase 2 (D327; fr50-one-way-records-v1 §3): @3's own one-way records (module docstring), an
+# optional model key popped before the base's strict parse, as heat_bookings is. The entity kinds
+# are sorted, the structure's order of its pairs (InnerStructure.one_way_records).
+ONE_WAY_RECORDS_KEY = "one_way_records"
+ONE_WAY_ENTITIES = ("channel", "face", "junction", "membrane")
+ONE_WAY_ENTRY_KEYS = {"entity", "id", "species"}
 # The model fields @3's parse sets itself; the others are the @2 base's.
 OWN_FIELDS = (
     "channels",
@@ -193,6 +211,7 @@ OWN_FIELDS = (
     "kinds",
     "heat_bookings",
     "forms_faces",
+    ONE_WAY_RECORDS_KEY,
 )
 HEAT_BOOKINGS_KEY = "heat_bookings"  # Seam D's model key (module docstring).
 Control = second.Control  # The channel field is filled; absent slots stay zero.
@@ -227,6 +246,9 @@ class SurfacePumpChannelModel:
     # entity set, never in `faces` or its arrays; () for every definition of today's, and then
     # to_dict writes nothing, so fingerprints are unchanged.
     forms_faces: tuple = ()
+    # FR-50 phase 2: the one_way_records entries (OneWayRecords), in declared order; () for every
+    # definition of today's, and then to_dict writes nothing, so fingerprints are unchanged.
+    one_way_records: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -453,6 +475,101 @@ def channel_blocks(model):
     )
 
 
+@dataclass(frozen=True)
+class OneWayRecords:
+    """One entry of one_way_records (FR-50 phase 2): an entity of @3's, its kind (one of
+    ONE_WAY_ENTITIES) and its ID, and the species, in declared order, whose one-way records it
+    keeps."""
+
+    entity: str
+    entity_id: str
+    species: tuple[str, ...]
+
+
+def one_way_pairs(model):
+    """((entity kind, entity ID, species ID), ...), sorted: the model's declared one-way record
+    pairs (FR-50 phase 2), () for every definition of today's (InnerStructure.one_way_records)."""
+    return tuple(
+        sorted(
+            (entry.entity, entry.entity_id, species)
+            for entry in getattr(model, ONE_WAY_RECORDS_KEY, ())
+            for species in entry.species
+        )
+    )
+
+
+def parse_one_way_records(given, model, channels, forms_faces):
+    """The model's one_way_records key (FR-50 phase 2) as OneWayRecords entries, in declared
+    order, from the base model's entities, its parsed channel populations and its forms faces. Each
+    refusal names the key and its reason (fr50-one-way-records-v1 §3, E5): a pump's cycles, a forms
+    face's movers and a charged face row have no one-way form in version 1."""
+    if type(given) is not list or not given:
+        raise ConfigError(
+            f"{ONE_WAY_RECORDS_KEY} is a non-empty list of {{entity, id, species}} entries (omit "
+            "it for none)"
+        )
+    pumps = {p.pump.id for p in model.membranes if p.pump is not None}
+    pumps |= {p.calcium_pump.id for p in model.membranes if p.calcium_pump is not None}
+    forms = {f.id for f in forms_faces}
+    entities = dict(
+        channel={c.id for c in channels},
+        face={f.id for f in model.faces},
+        junction={j.id for j in model.junctions},
+        membrane={p.id for p in model.membranes},
+    )
+    valence = dict(zip(model.species_ids, model.valence, strict=True))
+    parsed, seen = [], set()
+    for k, raw in enumerate(given):
+        name = f"{ONE_WAY_RECORDS_KEY}[{k}]"
+        _fields(raw, ONE_WAY_ENTRY_KEYS, name)
+        entity, entity_id, species = raw["entity"], raw["id"], raw["species"]
+        if not isinstance(entity, str) or not isinstance(entity_id, str) or not entity_id:
+            raise ConfigError(f"{name}: entity and id are names")
+        if entity in ("pump", "calcium_pump") or entity_id in pumps:
+            raise ConfigError(
+                f"{name}: {entity_id!r} is a pump, whose cycles have no one-way form, so "
+                "one_way records are refused on a pump (FR-50, version 1)"
+            )
+        if entity_id in forms:
+            raise ConfigError(
+                f"{name}: {entity_id!r} is a forms face ({forms_law.LAW_ID}), whose movers have no "
+                "one-way term, so one_way records are refused on it (FR-50, version 1)"
+            )
+        if entity not in ONE_WAY_ENTITIES:
+            raise ConfigError(
+                f"{name}: entity is one of {', '.join(ONE_WAY_ENTITIES)}; a declared kind's routes "
+                "keep their own one_way records, by their own key"
+            )
+        if entity_id not in entities[entity]:
+            raise ConfigError(f"{name}: {entity_id!r} names no {entity} of the model")
+        if (
+            type(species) is not list
+            or not species
+            or len(set(species)) != len(species)
+            or any(not isinstance(s, str) or s not in valence for s in species)
+        ):
+            raise ConfigError(f"{name}: species is a non-empty list of distinct species rows")
+        charged = [s for s in species if valence[s] != 0]
+        if entity == "face" and charged:
+            raise ConfigError(
+                f"{name}: face {entity_id} would record the charged species "
+                f"{', '.join(charged)}, whose face flux is implicit electromigration with no "
+                "one-way form, so one_way records are refused for a charged face row (FR-50, "
+                "version 1)"
+            )
+        for s in species:
+            if (entity, entity_id, s) in seen:
+                raise ConfigError(f"{name}: ({entity}, {entity_id}, {s}) is declared twice")
+            seen.add((entity, entity_id, s))
+        parsed.append(OneWayRecords(entity, entity_id, tuple(species)))
+    return tuple(parsed)
+
+
+def one_way_records_to_dict(entries):
+    """The one_way_records entries as their declaration (FR-50 phase 2)."""
+    return [dict(entity=e.entity, id=e.entity_id, species=list(e.species)) for e in entries]
+
+
 def _real(value, name):
     """A finite real number, an int or a float (never a bool), its sign kept."""
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
@@ -658,6 +775,8 @@ def to_dict(spec):
         raw["model"]["junction_heat_booking"] = m.junction_heat_booking
     if m.heat_bookings:  # Seam D: omitted at its default, so fingerprints are unchanged.
         raw["model"][HEAT_BOOKINGS_KEY] = dict(m.heat_bookings)
+    if m.one_way_records:  # FR-50 phase 2: written only where declared.
+        raw["model"][ONE_WAY_RECORDS_KEY] = one_way_records_to_dict(m.one_way_records)
     if m.species_registry is not None:  # The registry's keys, back on their entries.
         species, keys = registry.to_entries(m.species_registry)
         for entry in raw["model"]["species"]:
@@ -849,6 +968,7 @@ def parse(data):
     if booking != DEFAULT_JUNCTION_HEAT and x.get("solver") == "rk4":
         raise ConfigError("A junction-heat booking option requires an IMEX solver")
     heat_bookings = _heat_bookings(m.pop(HEAT_BOOKINGS_KEY, {}), x.get("solver"))
+    one_way = m.pop(ONE_WAY_RECORDS_KEY, _NONE)  # FR-50 phase 2: parsed with the channels below.
     if type(channels) is not list:
         raise ConfigError("channels requires an explicit list")
     # B1's door: each entry's factors leave this copy before the strict channel parse; so does
@@ -952,6 +1072,7 @@ def parse(data):
     ]
     if len(names) != len(set(names)):
         raise ConfigError("Owner, route, pump and channel IDs must be globally unique")
+    one_way = () if one_way is _NONE else parse_one_way_records(one_way, model, parsed, forms_faces)
     schedules = first._schedules(
         controls, "channel", [c.id for c in parsed], base.experiment.end_time
     )
@@ -965,6 +1086,7 @@ def parse(data):
         junction_heat_booking=booking,
         heat_bookings=heat_bookings,
         forms_faces=forms_faces,
+        one_way_records=one_way,
         species_registry=declared,
         kinds=tuple(
             sorted(
@@ -1016,6 +1138,7 @@ def parse(data):
             or spec.model.heat_bookings  # Seam D: the structure holds the picks.
             or any(isinstance(j, kinetic.SeriesJunction) for j in spec.model.junctions)  # FR-30.
             or spec.model.forms_faces  # The forms law: their own entity set (the structure's).
+            or spec.model.one_way_records  # FR-50 phase 2: the structure holds the pairs.
         )
         check_definition(spec, structure=structure(spec.model) if declared else None)
     except (ArithmeticError, ValueError) as error:

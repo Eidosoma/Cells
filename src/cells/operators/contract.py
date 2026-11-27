@@ -52,11 +52,20 @@ Declarations (class attributes):
   current read at stage ``inner`` (``SCOPED_READS``) is a read at the control view, the state the
   inner step starts from, where its ``control_factors``, ``factor_valid`` and ``factor_record``
   are evaluated, so the contract admits that stage for a factor operator without an in-step
-  process. The composite passes those three hooks ``view=``, a function of state giving its
-  reader view of those fields (C4: the merged view's fields without the field refresh), only
-  where such a read is declared (``factor_reads``; static), so every other call is unchanged; a
-  factor operator that declares one takes ``view=None`` in each of those hooks it defines (a
-  routed half-step's ``factor_record`` passes none).
+  process. The composite passes those three hooks ``view=``, a ``ViewFunction``: a function of
+  state giving its reader view (C4: the merged view's fields without the field refresh) of the
+  fields it names, ``fields``. Those are the declared reads (``factor_reads``) that some operator
+  of the composition changes, C1's fallback per field (R2′, FR-65's coupling step,
+  docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §11.3). Where none is changed no view is passed, so
+  every other call is unchanged (static). A hook reads a field from the view only where ``fields``
+  names it, and from the declared layout otherwise. A factor operator that declares one takes
+  ``view=None`` in each of those hooks it defines.
+* A routed half-step's reads (R2′): where a rate-route source is a door S current reader (it reads
+  a field current at stage split, and the composition changes it: C1), the composite passes its
+  routed ``rate_factors`` and ``factor_record`` ``view=``, a ``ViewFunction`` of the source's own
+  reader view (the fields its split part reads, as its half-step receives them), at the state the
+  target's half-step receives; elsewhere none (static). Such a source takes ``view=None`` in both
+  hooks.
 * Readable quantities (R3, FR-24; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §3.3): an owner's
   ``QUANTITIES`` ({name: (entity axis, unit)}), each computed by its own ``quantities(state, p)``
   from its state, so its representation stays its own, with its entities' IDs and cells on each
@@ -317,6 +326,7 @@ Defaults below are the idle answers: no parts, no terms, no columns.
 
 import inspect
 from collections.abc import Mapping
+from dataclasses import dataclass
 from types import MappingProxyType
 from typing import NamedTuple
 
@@ -372,6 +382,21 @@ class Read(NamedTuple):
     scoped: bool = False
 
 
+@dataclass(frozen=True)
+class Occupant:
+    """One carrier's life in a slot (D150 §5.2, the occupant rule; FR-65 §3.4): an operator that
+    decides who occupies its slots gives them through slot_occupants, and the readers of carriers'
+    rates build their per-world controls from them (species_common.occupants and route_tables),
+    without importing that operator."""
+
+    carrier_id: str
+    birth: float
+    death: float  # math.inf for the last occupant.
+    kind: str  # "founder", a replacement's newcomer kind, or "daughter".
+    template: str | None
+    donor: str | None
+
+
 class LiquidExchange(NamedTuple):
     """An exchanging event's report to the label owner (FR-44; module docstring), in fmol, each
     [labelled species, outside node] and >= 0, zero at every node not exchanged in the step.
@@ -383,6 +408,36 @@ class LiquidExchange(NamedTuple):
     supplied: object
 
 
+class ViewFunction:
+    """R2′ (module docstring): a reader view as a function of state, naming the fields it carries.
+
+    fields: the view fields it gives, in declared order (static). Called with a state, it gives the
+    reader view at that state (C4). A hook reads a field from it only where `fields` names it, and
+    from the declared layout otherwise (C1's fallback, per field; `carried`)."""
+
+    __slots__ = ("fields", "_of")
+
+    def __init__(self, fields, of):
+        self.fields = tuple(fields)
+        self._of = of
+
+    def __call__(self, state):
+        return self._of(state)
+
+    def __repr__(self):
+        return f"ViewFunction({', '.join(self.fields)})"
+
+
+def carried(view, field, state):
+    """R2′: `field` of the reader view `view` (a ViewFunction, or None) at `state` where it carries
+    that field, else None, so the reader keeps the declared layout's value (static: a view that
+    does not carry the field is never called for it). A plain function of state names no fields,
+    so it carries none."""
+    if view is None or field not in getattr(view, "fields", ()):
+        return None
+    return getattr(view(state), field)
+
+
 def reads_of(operator, field):
     """Door S: every Read of `field` by `operator`, in declared order (C3: one per stage), from
     SCOPED_READS, else its default read (Operator.scoped_read's), or ()."""
@@ -391,6 +446,17 @@ def reads_of(operator, field):
         return (declared,) if isinstance(declared, Read) else tuple(declared)
     read = operator.scoped_read(field)
     return () if read is None else (read,)
+
+
+def part_reads(operator):
+    """The fields an operator's event map or half-step reads current, in declared order: door S's
+    SCOPED_READS at stage event or split, its opt-in to receive the merged view (a VIEW_READS
+    default does not opt in)."""
+    return tuple(
+        k
+        for k in operator.SCOPED_READS
+        if any(r.mode == "current" and r.stage in ("event", "split") for r in reads_of(operator, k))
+    )
 
 
 def factor_reads(operator):
@@ -677,6 +743,24 @@ class Operator:
         as above)."""
         return {}
 
+    def slot_occupants(self, spec, declaration, schedule):
+        """{cell id: (Occupant, ...)} for the slots whose occupants this operator decides (host
+        side, as above), each slot's carriers in time order from its first: a founder from time 0,
+        or a daughter from its birth (a pending slot has no occupant before it). The readers of
+        carriers' rates merge them over the founders (species_common.occupants), and a slot two
+        operators fill is refused. {}: it decides none."""
+        return {}
+
+    def changed_volume_nodes(self, spec, declaration):
+        """The outside nodes, by index into the definition's extracellular list, whose volume
+        this operator changes where it provides extracellular_volume (host side, as above), or
+        None: every node. The shared volume rule of the current-volume readers reads it
+        (species_common.check_volume_changers; FR-65's route B,
+        docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §3.5): a changer other than water is refused only
+        at a node its reader reads. A provider that changes the volume at its own nodes alone
+        names them, as a restricted lumen does; no program reads it."""
+        return None
+
     def charged_compartments(self, spec, declaration):
         """The compartments, by their declared IDs (operators/compartments.py), into which its
         routes move charge (host side, as above). Refusal 5 version 1.2 admits a nonzero charge
@@ -811,12 +895,12 @@ class Operator:
         as layout data, checked when the composition binds)."""
         return {}
 
-    def control_factors(self, state, p, *, xp):
+    def control_factors(self, state, p, *, xp, view=None):
         """{inner control field: multiplier} for CONTROL_FACTORS. An operator with factor_reads
-        also takes view=, the function of state giving its reader view (R2)."""
+        also takes view=, the ViewFunction of its reader view at the control view (R2′)."""
         return {}
 
-    def rate_factors(self, state, p, target, field, *, xp):
+    def rate_factors(self, state, p, target, field, *, xp, view=None):
         """(factor, valid) for one of RATE_ROUTES, (target law, field): the factor shaped as the
         target's control field, from the state the target's half-step receives, and its validity
         (None: nothing to check); None where the definition declares no route on it (static)."""
@@ -862,17 +946,18 @@ class Operator:
         evaluate it, or None, a read at the control view."""
         return ()
 
-    def factor_valid(self, state, p, *, xp):
+    def factor_valid(self, state, p, *, xp, view=None):
         """The validity of its CONTROL_FACTORS' sources at the control view, where the composite
         evaluates them (B1′: a declared operating range), or None: nothing to check. With
-        factor_reads it also takes view= (R2)."""
+        factor_reads it also takes view= (R2′)."""
         return None
 
-    def factor_record(self, state, p, target, field, *, xp):
+    def factor_record(self, state, p, target, field, *, xp, view=None):
         """(values, mask) [route] for FACTOR_RECORD: each route's factor from `state` and the
         routes evaluated there, at the control view (target None) or at a target's half-step
         (target, field) (B1′'s exact record of the factor applied). With factor_reads it also
-        takes view= at the control view (R2); a target's half-step passes none."""
+        takes view= at the control view, and a door S current reader at a target's half-step
+        (R2′)."""
         raise NotImplementedError
 
     def divide_owned(self, state, maps, masks, p, *, xp):
@@ -1502,8 +1587,14 @@ def _check_scopes(operator):
         for hook in ("control_factors", "factor_valid", "factor_record"):
             if _defined_below_operator(operator, hook) and not _takes_view(getattr(operator, hook)):
                 raise ValueError(
-                    f"{name}: it reads at the control view, so its {hook} takes view=None (R2: "
-                    "a routed half-step's factor_record passes none)"
+                    f"{name}: it reads at the control view, so its {hook} takes view=None (R2′)"
+                )
+    if operator.RATE_ROUTES and part_reads(operator):  # R2′: a routed half-step passes view=.
+        for hook in ("rate_factors", "factor_record"):
+            if _defined_below_operator(operator, hook) and not _takes_view(getattr(operator, hook)):
+                raise ValueError(
+                    f"{name}: a rate-route source that reads current at the split takes "
+                    f"view=None in its {hook} (R2′: a routed half-step passes its reader view)"
                 )
 
 

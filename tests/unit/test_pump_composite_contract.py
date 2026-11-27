@@ -18,7 +18,7 @@
 
 import copy
 import math
-from types import MappingProxyType
+from types import MappingProxyType, SimpleNamespace
 
 import jax
 import numpy as np
@@ -39,7 +39,14 @@ from cells.models import (
 from cells.models import pump_composite_adapter as pump3
 from cells.numerics.clock_instants import on_grid
 from cells.operators import OPERATORS
-from cells.operators.contract import Operator, Read, check_declarations, factor_reads
+from cells.operators.contract import (
+    Operator,
+    Read,
+    ViewFunction,
+    carried,
+    check_declarations,
+    factor_reads,
+)
 from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import pump_water_fixtures as wfx
@@ -301,9 +308,11 @@ def test_operator_declarations_are_checked():
     )
     coupling = type(OPERATORS["cells.operator.species_regulated_availability@2"])
     check_declarations(type("Reader", (coupling,), reader))
-    # The one registered reader: @2's population source (FR-7's part (b)).
+    # The registered readers: both versions' volume (FR-65's coupling step), and @2's population
+    # source (FR-7's part (b)).
     assert [op.LAW_ID for op in OPERATORS.values() if factor_reads(op)] == [
-        "cells.operator.species_regulated_availability@2"
+        "cells.operator.species_regulated_availability@1",
+        "cells.operator.species_regulated_availability@2",
     ]
     for changes, words in (
         (dict(reader, CONTROL_FACTORS=()), "which none of its parts runs at"),
@@ -318,8 +327,53 @@ def test_operator_declarations_are_checked():
     ):
         with pytest.raises(ValueError, match=words):
             check_declarations(type("Reader", (coupling,), changes))
+    # R2′ (FR-65's coupling step): a rate-route source that reads current at the split receives its
+    # reader view at a routed half-step, so its rate_factors and factor_record take view=None.
+    split_reader = dict(
+        SCOPED_READS=MappingProxyType({"volume": Read("current", "split")}),
+        VIEW_READS=("volume",),
+        rate_factors=lambda self, state, p, target, field, *, xp, view=None: None,
+    )
+    check_declarations(type("SplitReader", (RateSource,), split_reader))
+    recorded = dict(
+        split_reader,
+        STATE_AXES={"rec": ["one"]},
+        FACTOR_RECORD="rec",
+        factor_record=lambda self, state, p, target, field, *, xp, view=None: None,
+    )
+    check_declarations(type("SplitReader", (RateSource,), recorded))
+    for changes, words in (
+        (
+            dict(split_reader, rate_factors=lambda self, state, p, target, field, *, xp: None),
+            "view=None in its rate_factors",
+        ),
+        (
+            dict(recorded, factor_record=lambda self, state, p, target, field, *, xp: None),
+            "view=None in its factor_record",
+        ),
+    ):
+        with pytest.raises(ValueError, match=words):
+            check_declarations(type("SplitReader", (RateSource,), changes))
     assert dict(OPERATORS[TURNOVER].ROUTABLE_CONTROLS) == {"turnover_rate": "rate"}
     assert dict(OPERATORS[REACTIONS].ROUTABLE_CONTROLS) == {"reaction_multiplier": "rate"}
+
+
+def test_a_view_function_names_its_fields_and_is_called_only_for_them():
+    """R2′'s ViewFunction (contract; FR-65's coupling step): carried gives a field of the view at a
+    state where the function names that field, and None otherwise, without calling it; a plain
+    function of state names none. Planted: a view that raises when called, which carried calls
+    only for a field it names. Host only, under 0.1 s."""
+
+    def raising(state):
+        raise AssertionError("called")
+
+    assert carried(None, "volume", 0.0) is None
+    assert carried(raising, "volume", 0.0) is None  # A plain function of state names no fields.
+    assert carried(ViewFunction(("channel_abundance",), raising), "volume", 0.0) is None
+    view = ViewFunction(("volume",), lambda state: SimpleNamespace(volume=2.0 * state))
+    assert view.fields == ("volume",) and carried(view, "volume", 3.0) == 6.0
+    with pytest.raises(AssertionError, match="called"):
+        carried(ViewFunction(("volume",), raising), "volume", 0.0)
 
 
 class Routed(Operator):

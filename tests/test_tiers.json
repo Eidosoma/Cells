@@ -403,11 +403,20 @@
   "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure/measured-41.json",
   "/mnt/workspaces/Cells/final-gate-20261126/tier-rows/measure-fixes/measured.json",
   "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148/measure-2/measured.json",
-  "/mnt/workspaces/Cells/test-slimming-20261126/job1/measure/measured-placed.json",
-  "/mnt/workspaces/Cells/test-slimming-20261126/job2/gates-row/measure/measured.json",
-  "/mnt/workspaces/Cells/test-slimming-20261126/regen/measure/measured-placed.json",
-  "/mnt/workspaces/Cells/test-slimming-20261126/split/so_idle/m1/measured.json",
-  "/mnt/workspaces/Cells/betse-cleanup-20261126/c3/measure/measured.json"
+  "/mnt/workspaces/Cells/tier3-records/slimming-20261126/job1/measure/measured-placed.json",
+  "/mnt/workspaces/Cells/tier3-records/slimming-20261126/job2/gates-row/measure/measured.json",
+  "/mnt/workspaces/Cells/tier3-records/slimming-20261126/regen/measure/measured-placed.json",
+  "/mnt/workspaces/Cells/tier3-records/slimming-20261126/split/so_idle/m1/measured.json",
+  "/mnt/workspaces/Cells/betse-cleanup-20261126/c3/measure/measured.json",
+  "/mnt/workspaces/Cells/fr65-build-20261126/round/measured.json/measured.json",
+  "/mnt/workspaces/Cells/small-fixes-20261126/measured2-assembly/measured.json",
+  "/mnt/workspaces/Cells/small-fixes-20261126/measured3/measured.json",
+  "/mnt/workspaces/Cells/small-fixes-20261126/measured4/measured.json",
+  "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148-counts/lane-a/measure/measured.json",
+  "/mnt/workspaces/Cells/fr52-build-20261126/d148/lane-a/measure/measured.json",
+  "/mnt/workspaces/Cells/fr50-phase2-20261126/timed-319d2c23/measure/measured.json",
+  "/mnt/workspaces/Cells/fr65-coupling-20261126/round/measure/measured.json",
+  "/mnt/workspaces/Cells/fr45-build-20261127/round/measure/measured-tiers-1-2.json"
  ],
  "measured_provenance": [
   {
@@ -3484,6 +3493,75 @@
    "root": "/mnt/workspaces/Cells/betse-cleanup-20261126/c3/snapshot",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-26T17:49:50+00:00"
+  },
+  {
+   "git_revision": "b4372df9451761a20d893be4317021a356b8f79c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr65-build-20261126/round/snap-head-b4372df9",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T18:10:18+00:00"
+  },
+  {
+   "git_revision": "d0b75e5b2240eafe797fd9a13b0711c036e585a9",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/small-fixes-20261126/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T16:38:06+00:00"
+  },
+  {
+   "git_revision": "799f8f74f5445f99e17b2c9e88686f119a19df77",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/small-fixes-20261126/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T16:41:46+00:00"
+  },
+  {
+   "git_revision": "c574cc41521e7a6c9600f38c025da942296c73e9",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/small-fixes-20261126/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T17:07:07+00:00"
+  },
+  {
+   "git_revision": "b926d62c86c028ee7b464e16dd191298fc6cf2ba",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/snap-tc-head-b926d62c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T19:44:11+00:00"
+  },
+  {
+   "git_revision": "56502459cec16ee5efac7c3e811574f933485b50",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr52-build-20261126/snap-head-56502459",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T23:23:52+00:00"
+  },
+  {
+   "git_revision": "319d2c237a06d3eb1a2dc205a6055d2dc55d2760",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr50-phase2-20261126/snap-319d2c23",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T23:31:00+00:00"
+  },
+  {
+   "git_revision": "7cce9790453c2b0dab23facfc7e546e6cadd3b44",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr65-coupling-20261126/round/snap-head-7cce9790",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-27T03:05:04+00:00"
+  },
+  {
+   "git_revision": "c968a22fe5ea9c5e97b2d949a4bc277d34ac927d",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr45-build-20261127/round/snap-head-c968a22f",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-27T07:52:13+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3492,11 +3570,10 @@
   "1": [
    {
     "file": "tests/integration/test_assembly_cli.py",
-    "seconds": 9.38,
-    "exit_code": 1,
+    "seconds": 19.54,
+    "exit_code": 0,
     "counts": {
-     "failed": 4,
-     "passed": 2
+     "passed": 6
     }
    },
    {
@@ -4006,7 +4083,7 @@
    },
    {
     "file": "tests/unit/test_composition_matrix.py",
-    "seconds": 6.38,
+    "seconds": 5.68,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -4014,7 +4091,7 @@
    },
    {
     "file": "tests/unit/test_composition_order.py",
-    "seconds": 3.62,
+    "seconds": 2.57,
     "exit_code": 0,
     "counts": {
      "passed": 29
@@ -5175,11 +5252,10 @@
    },
    {
     "file": "tests/unit/test_native_multi_cell_environment_native.py",
-    "seconds": 10.93,
-    "exit_code": 1,
+    "seconds": 9.64,
+    "exit_code": 0,
     "counts": {
-     "failed": 1,
-     "passed": 39
+     "passed": 40
     }
    },
    {
@@ -5424,10 +5500,10 @@
    },
    {
     "file": "tests/unit/test_pump_composite_contract.py",
-    "seconds": 13.55,
+    "seconds": 15.3,
     "exit_code": 0,
     "counts": {
-     "passed": 39
+     "passed": 40
     }
    },
    {
@@ -5624,7 +5700,7 @@
    },
    {
     "file": "tests/unit/test_secreted_species.py",
-    "seconds": 5.43,
+    "seconds": 4.47,
     "exit_code": 0,
     "counts": {
      "passed": 20
@@ -5656,10 +5732,10 @@
    },
    {
     "file": "tests/unit/test_site_occupancy.py",
-    "seconds": 6.18,
+    "seconds": 8.28,
     "exit_code": 0,
     "counts": {
-     "passed": 69
+     "passed": 107
     }
    },
    {
@@ -5736,7 +5812,7 @@
    },
    {
     "file": "tests/unit/test_species_reactions_refusals.py",
-    "seconds": 5.03,
+    "seconds": 5.22,
     "exit_code": 0,
     "counts": {
      "passed": 93
@@ -5792,10 +5868,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 13.96,
+    "seconds": 15.51,
     "exit_code": 0,
     "counts": {
-     "passed": 115
+     "passed": 131
     }
    },
    {
@@ -5832,10 +5908,10 @@
    },
    {
     "file": "tests/unit/test_species_turnover.py",
-    "seconds": 8.34,
+    "seconds": 10.09,
     "exit_code": 0,
     "counts": {
-     "passed": 23
+     "passed": 51
     }
    },
    {
@@ -6226,11 +6302,10 @@
    },
    {
     "file": "tests/unit/test_assembly_pool.py",
-    "seconds": 27.9,
-    "exit_code": 1,
+    "seconds": 36.21,
+    "exit_code": 0,
     "counts": {
-     "failed": 1,
-     "passed": 20,
+     "passed": 25,
      "skipped": 1
     }
    },
@@ -6645,11 +6720,19 @@
     }
    },
    {
-    "file": "tests/unit/test_integer_unit_population.py",
-    "seconds": 63.87,
+    "file": "tests/unit/test_integer_unit_cohorts.py",
+    "seconds": 57.85,
     "exit_code": 0,
     "counts": {
-     "passed": 68
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_integer_unit_population.py",
+    "seconds": 65.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 140
     }
    },
    {
@@ -6822,7 +6905,7 @@
    },
    {
     "file": "tests/unit/test_neutral_labels_events.py",
-    "seconds": 69.75,
+    "seconds": 62.58,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -6830,10 +6913,10 @@
    },
    {
     "file": "tests/unit/test_neutral_labels_kinds.py",
-    "seconds": 64.18,
+    "seconds": 61.5,
     "exit_code": 0,
     "counts": {
-     "passed": 27
+     "passed": 29
     }
    },
    {
@@ -6858,6 +6941,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_one_way_records_own.py",
+    "seconds": 57.44,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_one_way_records_own_composite.py",
+    "seconds": 27.13,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
@@ -7038,10 +7137,10 @@
    },
    {
     "file": "tests/unit/test_run_view.py",
-    "seconds": 57.61,
+    "seconds": 54.44,
     "exit_code": 0,
     "counts": {
-     "passed": 43
+     "passed": 46
     }
    },
    {
@@ -7095,6 +7194,14 @@
    {
     "file": "tests/unit/test_shared_inventory_writers_runs.py",
     "seconds": 69.03,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_site_competition_runs.py",
+    "seconds": 41.71,
     "exit_code": 0,
     "counts": {
      "passed": 3
@@ -7343,10 +7450,10 @@
    },
    {
     "file": "tests/unit/test_surface_pump_v3_populations.py",
-    "seconds": 23.5,
+    "seconds": 23.41,
     "exit_code": 0,
     "counts": {
-     "passed": 62
+     "passed": 84
     }
    },
    {
@@ -7360,7 +7467,7 @@
    },
    {
     "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 24.83,
+    "seconds": 24.22,
     "exit_code": 0,
     "counts": {
      "passed": 59
@@ -7776,6 +7883,18 @@
     "counts": {}
    },
    {
+    "file": "tests/unit/test_site_competition_batch_runs.py",
+    "seconds": 69.67,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_site_competition_partners_runs.py",
+    "seconds": 81.59,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
     "file": "tests/unit/test_source_order_diagnostic.py",
     "seconds": 6.34,
     "exit_code": 0,
@@ -7987,11 +8106,10 @@
    },
    {
     "file": "tests/unit/test_unstimulated_diagnostic.py",
-    "seconds": 2.92,
-    "exit_code": 1,
+    "seconds": 3.58,
+    "exit_code": 0,
     "counts": {
-     "failed": 1,
-     "passed": 6
+     "passed": 7
     }
    },
    {

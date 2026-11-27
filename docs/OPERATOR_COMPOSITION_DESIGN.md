@@ -292,7 +292,7 @@ which is option B. That is the ruling this note asks for.
 
 | # | Refinement | Where | Why |
 | --- | --- | --- | --- |
-| C1 | **The fallback.** A current read with no changer reads the declared value. Static: no `view=` is passed | `pump_composite.structure_errors`, `Composition.view_readers` | §2.4's third row. D150 §5.1 designed it |
+| C1 | **The fallback.** A current read with no changer reads the declared value. Static: no `view=` is passed. At the control view it applies per field (R2′, FR-65's coupling step, TURNOVER_CHANGING_VOLUME_DESIGN §11.3): the view carries only the fields some operator changes, and names them | `pump_composite.structure_errors`, `Composition.view_readers`, `Composition.factor_fields` | §2.4's third row. D150 §5.1 designed it |
 | C2 | **The stage-aware order rule.** A reader sees every change made at an earlier stage of the step whatever the declared order. Same-stage pairs keep door S's rule 3, and a writer of a provider's state counts as a changer at its stage | `structure_errors` (the "reads before a closer" and "no earlier operator provides it" rules) | §2.4's circular order (§5) |
 | C3 | **Per-stage read modes** | `contract._check_scopes` | §3's two-mode fields |
 | C4 | **Scoped views.** A current reader receives its read fields only, merged to its stage, without `refresh_field` or the padding of unread fields | `pump_composite_adapter` | Fast (§11) |
@@ -760,6 +760,10 @@ The lead's two checks, read on main at 7c8bfa47.
 **A's cost here.**
 - Q5 is amended, or its test is split. The version-1 refusals stay in Q5's file for the static-tissue scope its verdict covers, and A's admissions are tested in a file outside Q5's list. The verdict judged at f7f0592 stands.
 - Q5's scope line already limits any qualified statement to a static tissue.
+- **Done for turnover by FR-65 (26 November 2026):** Q5's first two cases are amended in place and
+  disclosed in the test (turnover beside water is admitted; a lumen at the node it clears stays
+  refused by the shared volume rule, and insertion@1 at the node it clears by the anchor guard), and
+  the admissions are tested in `tests/unit/test_species_turnover.py`, outside Q5's list.
 - `test_membrane_state.py`, `test_pump_composite_contract.py` and `test_door_s.py` change their
   assertions to the admissions.
 - `test_composition_matrix.py` passes again once the matrix is regenerated and the lifted tags are

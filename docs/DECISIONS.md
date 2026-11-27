@@ -13462,3 +13462,551 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - It gets its own round after FR-65, and every existing field must stay bit for bit. Crossrev's and G1's records for the co-writer world
     are renewed.
   - The rehearsal and the registration tag wait for it.
+
+## D398: FR-65 is landed, with the small fixes stacked; tier 3's record refrozen for four files
+
+2026-11-26, written at 19:14 UTC.
+
+- **Landed** at ae349721 (tag `fr65-landed-2026-11-26`), from e69b618f.
+  - e69b618f adds only the design note's section 10 to the gated head b4372df9, which is main 4be34f74 merged with `small-fixes-20261126`
+    (c574cc41).
+  - The landing's trial ran the twelve changed tier-1 and tier-2 files with the guard set: 649 passed, 1 skipped.
+- **FR-65** (D375): turnover reads the current volume and its masks beside water, partition and insertion.
+  - The occupant hook, its tables and the founder rule move to the definition.
+  - `scheduled_cell_replacement@2` gives no hook, so the volume rule refuses it beside turnover.
+  - Exactly the design note's 19 of 5,559 sequences newly parse, and nothing that parsed before is lost.
+- **The small fixes** (D393, D394):
+  - FR-47's and Protocol D v2's run-record status follows D373 and D393, and the GPU refusal message follows D380.
+  - The assembly command-line and pool tests run under `CELLS_OUTPUT_ROOT`, with the guard still tested.
+  - The native environment test checks its import in a fresh process.
+  - The unstimulated diagnostic compares at a stated tolerance.
+  - Of the ten failures D393 found, these settle the last seven. The other three left with the BETSE references (D397).
+- **The D148 round** on b4372df9, against 4be34f74:
+  - crossrev: 11 of 11 sets identical;
+  - G1: 113 of 113, identical for base and head;
+  - FR's set passes (quick 9, windowed T and R);
+  - the judges' derivative programs: 257 files identical;
+  - turnover's pair check: 24 of 24 program texts, constants and bindings identical;
+  - tiers 1 and 2: 516 of 520 files as recorded. The other four are the small fixes' files, which now pass.
+  - The small fixes' text changes surfaced in none of the compared sets.
+- **Tier 3, run on a trial merge onto 4f4a4c34** (frozen as `snap-trial-67e96e21`; its worktree is kept because the record cites it):
+  - FR-65's three files pass: shared inventory, 9 tests in 380.0 s; partition, 16 in 493.7 s; insertion, 13 in 448.9 s;
+  - the two slimmed frozen=composite files pass on this code: 258.5 and 538.5 s;
+  - `test_unstimulated_diagnostic.py`, which the slimming moved to tier 3, passes, 7 of 7.
+- **`tests/tier3_record.json` is refrozen for those four files** (D398 in its `refrozen` header). It was built from main's runs plus the two new run
+  folders under `/mnt/workspaces/Cells/tier3-records/fr65-20261126/`, and changes nothing else.
+- **Next:** the per-event counts fix's D148 round starts on main ae349721.
+
+## D399: FR-63 is checked by a calibration report, not a registered comparison (the user); FR-64's new design note
+
+2026-11-26, written at 19:44 UTC. The user: "sounds good as you suggest".
+
+- **FR-64's new design note.** It is `docs/FR64_VOLTAGE_SHIFT_DESIGN.md`, on branch `fr64-design-20261126`.
+  - It builds on the note D361 decided (`docs/VOLTAGE_SHIFT_DESIGN.md` on `fr64-design`, 377a1b34) and on the lead's rulings at fc899d3d, and
+    changes none of them.
+  - The lead's brief for it was written from a stale index row and missed the earlier note; the error is the lead's.
+  - **Its three gaps are not live defects.** In the stage path, the stored against free amounts, and the domain check, the new note found
+    places the shift must reach. No world on main reaches them today, FR-51's landed block included. The earlier note had already listed all
+    three.
+  - The designer did not open FR-51's reserved material (D391).
+- **FR-63, the user's decision.** FR-63 becomes a declared pH shift on Kv1.5's activation gate. Each preparation's shift per pH unit is a two-point
+  secant through that preparation's own points, so judging the engine against those points would be circular.
+  - FR-63 gets a calibration report: the shift each study implies, with its sources. There is no registered comparison.
+  - A registered comparison follows only if a held-out quantity exists. The lead asks the Lean track whether any of the three studies holds an
+    unscored third pH level, or another unscored readout.
+  - D361 labelled the pH gate pair "claimed". It stays an indication, unjudged, until such a quantity is found.
+- **Still the lead's to rule, before FR-64's build is briefed:** the new note's questions 1, 4 and 5, its options O1 to O4, and the retired 20-row
+  fallback. FR-64's build keeps its place in the queue (D393).
+
+## D400: the per-event counts in `integer_unit_population@1` are landed; crossrev's record renewed for the co-writer world
+
+2026-11-26, written at 20:19 UTC.
+
+- **Landed** at 7f98d838 (tag `fr43-trace-counts-landed-2026-11-26`), from bec67c3f. The landing's trial ran the guard set and the changed test
+  file: 136 passed.
+- **What it builds** (the user's choice in D397):
+  - `integer_trace_counts`, a write-only trace field, in place under @1 (MODULE_SYSTEM §2.3). It holds the counts the event loop carries after
+    each event, never the counts before plus the declared jump.
+  - A planted lost jump is recorded as carried and breaks the channel rule.
+  - No rate, draw or ledger reads the field. The composite's finiteness check over owned fields covers it, and is always true for an integer
+    field.
+  - Every world of the operator changes its state layout and program text, so checkpoints from before do not load.
+  - Trace storage grows by sites × trace length × states. Part 3's many-site world now runs its statistics in windows of 10 steps, beside the 2^31
+    cap, with statistics byte-identical to the evidence's.
+- **The D148 round** on b926d62c (main ae349721 merged), against ae349721:
+  - crossrev: 10 of 11 sets identical. In reactions, only `reactions_integer_source`'s four program texts and its bindings differ.
+  - G1: 113 of 113, base equal to head.
+  - FR's set passes.
+  - The judges' derivative programs: 257 files identical.
+  - The pair check over the operator's nine worlds: every existing field is equal at every step, and the new field equals the carried counts in
+    2,622 checks.
+  - Tiers 1 and 2: 495 files, none changed.
+  - Part 3's evidence is reproduced. Its 11 traces and verdict equal evidence-52935908's, its statistics are byte-identical, and the tier-3
+    statistics file passes 12 of 12.
+- **Crossrev's record** (`record-cda5dc82`): the world's five changed files are renewed, with the old five kept in `reactions-superseded-20261126/`.
+  The renewal is dated in `RENEWAL-20261126-reactions-trace-counts.txt`. The renewed G1 save of that world stays beside G1's record.
+- **Next:** the co-writers' exporter copies the field, and the final format sample is made from it. Then come the judge's structure read and its
+  tag, the registration tag, the rehearsal and the registered comparison.
+
+## D401: the docs refresh and two record tidy-ups are landed; FR-43 part 3's judge is tagged; the two-version check; FR-52 and FR-65's coupling start
+
+2026-11-26, written at 20:50 UTC. The user: "1. push 2. yes and as you and adviser see fit".
+
+- **Landed, with no src change:**
+  - **The docs refresh** (4b2ee019, tag `docs-refresh-landed-2026-11-26`):
+    - The README's status sections are brought up to 26 November from PROGRESS and DECISIONS only. They keep every failure and caveat, so
+      they are about a quarter longer, as the user saw in the diff.
+    - FR-55 is retitled as closed until a same-patch record exists.
+    - Seven feature-index rows are brought up to date, with a dated correction of D347's GPU label in D380's words.
+    - `docs/README.md`'s regulation entry is updated.
+  - **The rename record's tidy-up** (8b93b968, tag `id-record-tidy-landed-2026-11-26`). The move's records lagged the tree, so `id_moves.py check` had
+    69 problems; it now has 0.
+    - Removed: the 59 plant rows that the move rewrote, and the four re-spell pin rows whose pins went stale by decision.
+    - `verify` still holds, and the landing's trial passed (76).
+    - The tool's `choices_problems` lacks a guard for a completed move. That is a tooling note for later.
+  - **The tier records' run folders** (d5ec298f, tag `tier3-folders-landed-2026-11-26`):
+    - They are copied byte for byte to `/mnt/workspaces/Cells/tier3-records/slimming-20261126/`, and both records are repointed by exact string
+      replacement.
+    - The landing's trial passed (109).
+    - Four `measured_provenance` roots still name the slimming's snapshots, as records of where the measurements ran.
+- **FR-43 part 3's judge is tagged:** `fr43-part3-cowriters-judge-2026-11-26`, on 995e6222. The tag covers:
+  - the rulings of D394;
+  - the scorer that implements them;
+  - the lead's three dated notes of the format samples;
+  - the final sample's structure read, with no departure;
+  - the rehearsal's planter (53 of CRITERIA §4's faults) and its perturbed coarsest rung, which the protocol makes the judge's;
+  - 152 self-tests;
+  - C0 with no fault.
+
+  No contract change was needed. No criterion reads a refusal's message, only its kind. The rehearsal's engine runs have started.
+- **The two-version check** (D397 item 4): all seven older majors are still live, so none is retired. Their uses include judged worlds, G1 and
+  crossrev, FR's set, the replacement model and the GARD default. Retiring any of them waits on a move the user would decide:
+  - FR-50's held-fuel worlds to the transporter's @2;
+  - S3's egg after S5's Q7(b);
+  - the availability law's judged worlds requalified on @2;
+  - GARD's default to @2.
+
+  The check's agent was refused writing its report as a file. The lead did not write it on its behalf.
+- **FR-52's build starts** (the user's yes). A fresh builder first amends its note for D400, then builds on its own branch. It lands only after the
+  co-writers' registration tag, because it changes the operator that comparison runs.
+- **FR-65's coupling step** (D375 Q1 (b)) shares `contract.py` and the composition table with FR-52, so for now it is a design section only. Its code
+  starts once FR-52 lands.
+
+## D402: FR-43 part 3's co-writers comparison is registered; a late build tag disclosed; a run-view defect in FR-51's block; FR-45's first rulings and contract; FR-52, FR-50 phase 2 and FR-65's coupling decided
+
+2026-11-26, written at 21:41 UTC, before any registered table of FR-43 part 3 exists.
+
+- **FR-43 part 3, the co-writers' registration** (its protocol's §5 and §6):
+  - **The judge's tag** `fr43-part3-cowriters-judge-2026-11-26` (995e6222) covers:
+    - the lead's rulings of D394;
+    - the scorer;
+    - the lead's three dated notes of the format samples, the last from the exporter after D400;
+    - the final sample's structure read, with no departure;
+    - the rehearsal's tools;
+    - 152 self-tests;
+    - C0 with no fault.
+  - **The build tag** `fr43-part3-cowriters-build-2026-11-26` (458302ba) was made after the judge's tag, against the protocol's order (step 4
+    before step 5). Its commit predates the judge's tag, and its sample was hashed and read before it. The slip is the lead's.
+  - **The rehearsal** (CRITERIA §10) ran all 132 invented runs from a clean snapshot of 458302ba. The lead hashed the tables before the judge
+    opened them.
+    - 2,646 of 2,646 honest entries pass, as do all 6 families and all 3 arms.
+    - 20 of 20 plants are caught, and 53 of 53 planted faults are flagged as §4 says.
+    - The perturbed coarsest rung owes the retry, and passes after it.
+  - **The registration tag** `fr43-part3-cowriters-registered-2026-11-26` is on 2421e9e9, the lead's merge of the build and judge tags.
+    - All four tags are its ancestors.
+    - Nothing differs from the build tag under src, tests, scripts or the builder's files.
+    - The spec is the criteria tag's plus the three notes, and the references are their tag's.
+    - Its message carries five disclosures made before any table: the late build tag; the lead's hash record made after the judge's first C0
+      pass; the trace counts added after the criteria tag (D397, D400); the builder's reading of the two invented files; the rehearsal's result.
+    - The runs' snapshot is the lead's (`snap-2421e9e9`, clean, empty patch). Its SNAPSHOT.json records 2421e9e9.
+  - **The strings note** (c6549cd1, tag `fr43-part3-cowriters-strings-2026-11-26`) follows the registration tag.
+    - It was parsed from the snapshot first: 282 runs, none refused.
+    - It equals the rehearsal's list, and the protocol's §3 models through the rename map.
+  - The 250 registered runs are running from the snapshot. No retry run is made before the judge's `retry_owed.json` exists and the lead has hashed
+    it.
+  - A fresh, independent checker is building its own recomputation (step 9).
+- **A defect in FR-51's landed block, metadata only.** `run_view.prepare` refuses to write a run view for any blocked world that declares no kind:
+  "declares no axes, unit or layer for its field channel_unblocked_fraction". `InnerImplementation` folds `view_declarations()` only where kinds are
+  declared.
+  - No program, number or record is touched, and FR-51's judged result stands.
+  - FR-50 phase 2 found it by a probe and confirmed it by running the writer. The fix lands with that build, with one row.
+  - FR-30's series-gate refusal is by design (D262).
+- **FR-45, the lead's first rulings** (`/mnt/workspaces/Cells/fr45-readings-20261126/RULINGS-1-2026-11-26.md`):
+  - **Q7:** the registration binds at the protocol's own tag, still to be made at a head that merges the amendment-3 spec, references v2 and
+    main's `agreement.py`. The 23 November tag 6e92d0ec is a waypoint.
+  - **Q8:** P5 on W7 is scored on C6 and C4a (CRITERIA:125, D371). The references hold both.
+  - **Reading 2:** P5 and P7 are caught only when both their named criteria fail; P3 and P6 are caught by either.
+  - **The engine-table contract** the registration lacked is written as `validation/fr45/spec/TABLE.md` on branch `fr45-contract`. Its author, who
+    is not the builder, printed reference values from four files once by mistake. That is disclosed in the contract's §15.
+    - The authorship stands, because only the references agent is bound to blindness, the contract fixes formats, and no number in it comes from
+      those values.
+    - A fresh reviewer who has seen no value reads it before the binding tag.
+  - The remaining readings and the contract's eight decisions come before that tag.
+- **FR-52's build** started at the user's word. Its note gains §9 for D400.
+  - The qualification world joins crossrev's `qualification` set.
+  - At a division, the partition's finiteness check reads the cohort record. That is stated, and it refuses only after an engine fault.
+  - It lands after the co-writers' registered comparison.
+- **FR-50 phase 2's plan is approved:** one-way records for @3's routes, faces and channels, the channel split built from `channel_rates`' own factors.
+  - No new registration is needed: `fr50-one-way-records-v1` §3 and the tagged judge's `--phase 2` cover it.
+  - The kinds' records are refused under `execution.projective`.
+  - The price is 3.25 to 3.75 agent-days. FR-64 waits for it.
+- **FR-65's coupling step** is designed (§11 of its note, branch `fr65-coupling`). The user left its two questions to the lead and the adviser.
+  - **Every read site,** each with a row planted at the starting volume; a site with no such row stays refused.
+  - **Both versions,** with @1's program unchanged as a claim until the round's pair check.
+  - D244's Q2 was the user's, so the site source's concentration beside water stays as declared, and refused.
+  - The price is 2.1 to 3.05 agent-days, against D375's 2 to 2.5. Its code waits for FR-52's landing, since the two share `contract.py`.
+- **Five stale watcher shells,** left by agents of 25 November and polling for files that will never appear, were stopped.
+
+## D403: FR-43 part 3's co-writers registered comparison passes; the judge and the independent checker agree
+
+2026-11-26, written at 22:22 UTC.
+
+- **The verdict: pass.** The registration is `fr43-part3-cowriters-registered-2026-11-26` (2421e9e9), with its strings note
+  `fr43-part3-cowriters-strings-2026-11-26`.
+  - All three arms pass: W5, second order beside the reactions; W5-exact, exact event times at constant rates; W6, second order beside the gene unit.
+  - All six families pass, in both declared orders of each arm.
+  - All 20 plants are caught, and no retry was owed.
+  - The judge's first pass (from the registration snapshot, `fr43-cowriters-judge-20261126/registered-2421e9e9/first/record.json`, sha256
+    f93041e6…) scores 5,230 entries, all passing, with no flag.
+  - C0 finds no fault in the references.
+- **The independent checker agrees.** Its own code was frozen before it read the table (`fr43-checker-20261126/MANIFEST-before-table.json`), and it
+  recomputed from the hashed table and the references alone. It then compared entry by entry with the judge's record, with no disagreement.
+  - The judge's 5,230 entries cover the checker's 5,206 one to one. The other 24 are the Lie runs' D entries, which the checker applies as P3's
+    scorability condition (ruling 6d), with the same outcome.
+  - The S entries, pairs, rungs, R entries and plant statistics are equal to the last bit.
+  - Two differences decide nothing. P4's recorded planted distance differs by about 2e-10 relative: the published shift against an RMS of the
+    shifted times, both caught. Identity residuals differ at rounding level: rationals against floats, with a worst ratio of 0.0024 of the bound.
+- **The order of work kept** (D394, D401, D402):
+  - the lead hashed the references, every format sample and the table before the judge opened them, and hashed `retry_owed.json`;
+  - the 250 runs ran cold and one-threaded from the lead's clean snapshot of the registration commit, 21:33–22:08 UTC;
+  - every record names that commit;
+  - the strings note was parsed from the snapshot before it was committed.
+- **Disclosed:**
+  - the build tag was made after the judge's tag (D402);
+  - the lead's references hash record was made after the judge's first C0 pass;
+  - the trace counts were added to the engine after the criteria tag (D397, D400), so the counts check tests the engine's own record;
+  - the builder read the two invented input files that its SPEC requires;
+  - the lead's hash file showed the checker the judge's empty retry list before its run, and it opened neither file.
+- **What this pass does not show** (CRITERIA §11, protocol §9):
+  - the choice of a channel, since each site's two subunits alternate;
+  - a timing or amount error below τ;
+  - the order of `made` and `exits`, judged by size alone;
+  - books formed from rows;
+  - the order of W5's reactions' own half-step;
+  - an engine's error above the registered ladder, or at λ·dt of order one;
+  - W5-exact's amounts;
+  - anything the engine records but the table does not.
+
+  The claim holds for the registered worlds and ladders on CPU.
+- **A follow-up for the exporter, which decided nothing here.** A row-check failure is classed `check` only when a frame named `check_values` is in
+  the traceback; otherwise it becomes `domain`, a refusal instead of a D fail. No run was refused. The builder fixes it before the exporter is reused.
+- **Landed with this entry:** the registration branch, which carries the builder's worlds, exporter and Lie patch, the judge's reader and scorer
+  with the lead's rulings, the references, the spec with the lead's three dated notes, and the strings note, under `validation/fr43_part3_cowriters/`.
+  It changes no src file.
+- **Next:** FR-52 may land after its own D148 round, now that this comparison is judged (D401).
+
+## D404: FR-52 is landed; crossrev's record renewed for it
+
+2026-11-27, written at 00:13 UTC.
+
+- **Landed** at ab8b599c (tag `fr52-landed-2026-11-27`), from 56502459, after the co-writers' registered comparison was judged (D403, D401). The
+  landing's trial ran the three changed test files and the guard set: 292 passed.
+- **What it builds** (D371, D375, D377; the note `docs/PASSIVE_COHORT_DESIGN.md` with its §9 for D400 and §10 as built):
+  - `cells.operator.integer_unit_population@1` gains, in place, an optional `cohorts` key. Its engine record, kept at each event, holds the expected
+    surviving initial and newly assembled units per label, and a host readout reads it.
+  - The kernel is `src/cells/numerics/unit_cohorts.py`.
+  - The independent reference, `validation/fr52_cohorts/`, never imports the kernel. It rebuilds counts from the declared stoichiometry and
+    checks them against `integer_trace_counts` at every event.
+  - The world `FR52_cohorts` joins crossrev's qualification set.
+  - D400's pair check is now a committed tool, `validation/fr43_part3/pair_check.py`.
+  - Where no cohort is declared, the record is zero-size and every value is unchanged. At a division, the partition's finiteness check reads the
+    record; that is stated, and it refuses only after an engine fault.
+- **The D148 round** on 56502459 (main 10225759 merged), against 10225759:
+  - the derivative programs: every program file identical;
+  - the pair check: every field equal at every step in D400's nine worlds, and the eliminated programs identical in eight. The dividing world's
+    step adds only that finiteness test;
+  - FR's set passes;
+  - crossrev: identical apart from the co-writer world's four program texts and bindings, and `FR52_cohorts`'s nine new files;
+  - G1: 113 of 113;
+  - tiers 1 and 2: 495 files, none changed;
+  - FR-43 part 3's evidence is byte-identical, the twins hold, and the tier-3 statistics file passes;
+  - test IDs: 79 added, none removed.
+- **The builder stopped one of its own lane-A units.** At 23:23 the unit was running tiers on a tier record that would have skipped FR-52's two
+  test files, so its result could not have been used. The lead rules the stop right: it ended a gate run with a wrong record, not a science run.
+  The correct run followed at once.
+- **Crossrev's record** (`record-cda5dc82`): the co-writer world's five changed files are renewed, with the old ones kept in
+  `reactions-superseded-20261127/`, and `FR52_cohorts` adds nine files to `qualification/`. The renewal is dated in
+  `RENEWAL-20261127-fr52-cohorts.txt`. The renewal's 18 files are byte-identical to the round's own crossrev output, as the lead checked. The renewed
+  G1 saves stay beside G1's record.
+- **Next:** FR-65's coupling step, whose code is built, reruns D327's sequence probe with FR-52 landed, then takes its D148 round. FR-50 phase 2's
+  round is running.
+
+## D405: FR-50 phase 2 is landed, its judged comparison passing; FR-45's second rulings, after a fresh review of the contract
+
+2026-11-27, written at 01:47 UTC.
+
+- **FR-50 phase 2 landed** at d92403cc (tag `fr50-phase2-landed-2026-11-27`), from aede3147. The landing's trial passed 239 tests.
+  - **What it builds:** an optional `one_way_records` key on `cells.model.resolved_pump_tissue@3`, for membrane routes, junctions, uncharged faces
+    and channels. The channel split comes from `channel_rates`' own factors. D402's plan and rulings 1 to 7 apply.
+  - **D402's run-view fix:** wherever the run-view declarations add something, they are folded in.
+  - **Disclosed:** two water spec files each carry the new model field, so that water worlds parse.
+  - **The D148 round** at 42d9719c, against 10225759, passes: crossrev 11 of 11 identical, G1 113 of 113, tiers 1 and 2 with 0 changed, and
+    tier 3's water and replacement files.
+  - **Stacked on main with FR-52** (D229 rule 2), at 070720ac:
+    - crossrev and G1 identical;
+    - tiers 1 and 2 had one failure: the old-spelling guard caught a bare ID in the new D327 rows;
+    - the test-only fix, aede3147, passes that guard, its file and the guard set;
+    - beside `cohorts`, the new records are refused by name: they stand next to `cells.operator.integer_unit_population@1` until a world
+      qualifies the pair (D327).
+  - **The judged run** of `fr50-one-way-records-v1 --phase 2` ran once, at aede3147, from a clean snapshot, on the timed cores, in phase 1's
+    form (D363). It used the tagged judge and erratum 1, and took the references by `git archive`. It **passes**: E1 to E6 are inside their
+    bands, all four plants are caught, and all four E5 refusals pass. The verdict's sha256 is ad6f2505…, as the lead hashed it.
+  - **Next:** FR-64's build follows, once the lead has ruled its new note's questions (D399). FR-65's coupling step merges main and reruns
+    D327's probe against the new records. Its D148 round runs after tonight's nightly.
+- **FR-45's contract had a fresh review** by an agent that has seen no reference value (`/mnt/workspaces/Cells/fr45-contract-review-20261127/`).
+  It found 7 blocking problems, 14 should-fix and 14 wording points, and it confirmed that it never saw a draft of the rulings.
+- **FR-45's second rulings** are `/mnt/workspaces/Cells/fr45-readings-20261126/RULINGS-2-2026-11-27.md`, hashed with their census at
+  01:08 UTC.
+  - **Coverage:** the remaining readings, the contract's eight open items, and every review finding. 34 of the 35 findings are accepted; S1
+    is not needed.
+  - **A census** of the tagged reference files records keys, types, counts and words, never a result. It shows:
+    - no compared pair or heat is above the convergence threshold;
+    - every catching plant entry is sized above one bound (P4 is caught by its verdict);
+    - the invented sample shares no result with the registered files.
+  - **The two rules:** on an honest run, a missing or faulty entry fails its criterion. On a plant run, it is not caught.
+  - **Plants:** each registered entry, and each variant, must fail. Only a named `check` refusal catches. The honest run's same entry must
+    pass.
+  - **New for the user to know:** a registered world first runs in the judged run itself. The builder develops and tests on invented worlds
+    only.
+  - **Next:**
+    - an editor that has seen no value applies the rulings to the contract, and writes the format sample and the expected-inputs file;
+    - the reviewer then reads the whole final contract;
+    - then come the binding tag and the build.
+
+## D406: FR-64's rulings and its note on main, its build held for the queue; FR-45's contract after three reads and a source check; questions for the user
+
+2026-11-27, written at 03:00 UTC.
+
+- **FR-64.** The lead's rulings are `/mnt/workspaces/Cells/d172-restructure-20261115-01/fr64-rulings-20261127.md`.
+  - **The note's rulings:** questions 1, 4 and 5, options O1 to O4 and the retired fallback are ruled as the note recommends.
+  - **Added by the lead:** a D327 check for FR-50 phase 2's channel records on a shifted population, and port checks of FR-51's and FR-50's
+    judges on the translated drivers. Those port checks compare rows byte for byte, base against head; the registered verdicts stay D363, D377 and
+    D405.
+  - **The plan step** re-read the note against main 7149f90a. Its seven questions are ruled.
+  - **The note is on main** (9664c46f, `docs/FR64_VOLTAGE_SHIFT_DESIGN.md` §17), replacing the earlier one.
+  - **The price** moves to 5.45 to 6.7 agent-days, for the pair's check, the port-check harness and the shared matrix files.
+  - **The build is held before any code.** D393's queue puts liquid routing before FR-64.
+- **FR-45's contract** (branch `fr45-contract`) had three reads by an agent that has seen no reference value. Each finding is ruled in RULINGS-2 §7
+  and §8 (`/mnt/workspaces/Cells/fr45-readings-20261126/`).
+  - **A source check** confirmed from `src/` that the engine holds SPEC's units natively. It was made by a reviewer who is not the builder.
+  - **It found what the contract lacked:**
+    - every world needs host entities: a held bath, a walled cell and contact patches, the form main's wash fixtures run;
+    - three declarable keys move a check's bound (the material tolerance, the solver, `energy_check`), so the run's execution record is fixed and
+      compared;
+    - two one-population set names need a fixed map.
+  - **The lead's cross-check** compared the expected-inputs file with the references' own echo of the inputs, printing key paths only: 444
+    comparisons, no real problem. The reviewer typed SPEC's inputs again independently: no difference.
+  - **The binding tag** waits for the third round of edits and its read. It is not made tonight.
+- **The first-run rule (RULINGS-2, Who c):** a registered world first runs in the judged run itself. The builder develops and tests on invented
+  worlds, and a parse-only pass is not a run.
+- **For the user:**
+  1. **FR-64's question 2.** Keep `cells.model.resolved_pump_tissue@3` and the block law's @1 when FR-51's `reference` key moves, refusing the old
+     key by name? The lead recommends yes: it changes a spelling, not a meaning, as the rename did. The landing waits for the answer.
+  2. **The queue.** May FR-64 build in parallel with liquid routing, which is ahead of it (D393) and not yet started? Or should it wait?
+  3. **X2 (D224).** D224 makes X2 a check that registered and judged runs must select, each with its own cap.
+     - Since D224, only FR-8's and XC0's runs selected it; ten other registrations did not.
+     - On FR-45's path X2 would count nothing, since the ligand bookings are exact.
+     - The choice: amend FR-45 with a cap and re-tag it before any registered run, or waive X2 for it. Then there is the wider question of the
+       other registrations.
+     - X2 blocks FR-45's judged run, not its tag.
+  4. **A refused write.** The harness refused a subagent's report file ("subagents should return findings as text"). The lead did not write it
+     for the agent; its findings came back as text and are in the lead's log. The lead holds this for the user's word.
+
+## D407: FR-65's coupling step is landed; tier 3's record refrozen for its four files; FR-45's contract nears its tag
+
+2026-11-27, written at 04:09 UTC.
+
+- **The coupling step landed** at 00cfbda1 (tag `fr65-coupling-landed-2026-11-27`), from ae26d6e6. The landing's trial passed 318 tests.
+  - **What it builds** (D375, D402): R2′ in the operator contract, and the coupling's version 1.1 in both versions. These read the current cell
+    volume beside water, with their refusals by name. Every read site has a row planted at the starting volume.
+  - **Sequences:** 32 are newly admitted, and none is lost.
+  - **D327, as the change that lands second:**
+    - nothing newly parses beside FR-52's `cohorts`;
+    - beside FR-50 phase 2's records, the coupling with water and @3's own records is refused by name.
+  - **The D148 round** at 7cce9790, against 7149f90a, ran after tonight's nightly passed:
+    - crossrev 11 of 11;
+    - G1 113 of 113;
+    - tiers 1 and 2: 497 files, none changed;
+    - FR's set passes;
+    - tier 3: 13 files exit 0;
+    - the derivative programs are identical;
+    - the pair check of 21 coupling worlds is identical against main and against 10225759;
+    - the planted controls are caught as recorded, with records bit for bit those of 10225759.
+  - **Disclosed:**
+    - the controls file's signature change under R2′;
+    - the timed cores' idle-check sample. Contention only adds time, and every file stays in tier 1;
+    - a docs commit after the round;
+    - tier 3's record refrozen for the step's four files (this decision): one renamed ID, six added, seconds under lane load, and 4 of 90
+      entries changed. The evidence is in `/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/`.
+- **FR-45's contract** (`fr45-contract`) had a fifth read with no blocking finding. RULINGS-2 §10 settles its six should-fix points, from the
+  source check's answers:
+  - the execution record compares declared keys only, never the engine's computed allowances, which follow each run's state;
+  - every ion's permeability is fixed at 0.0 on every patch. The source check ran this bath form at every registered size, and W2's shape
+    through a wash keeps every ion amount exactly constant;
+  - the solver is spelled `cells.solver.imex_ars222_face_electromigration@1`, as `definition` records it.
+
+  The editor applies §10, and the binding tag follows its read.
+
+## D408: FR-45 is bound by its protocol's tag
+
+2026-11-27, written at 04:27 UTC.
+
+- **The tag:** `fr45-protocol-registered-2026-11-27`, an annotated tag (object 8e26dff4) on f30b1512. It is pushed with branch `fr45-contract`.
+- **What it binds:**
+  - the amendment-3 spec (98cd33db);
+  - references v2 (b62ce23c);
+  - main's `agreement.py` (blob c29f2771);
+  - the engine-table contract `validation/fr45/spec/TABLE.md` (dated 26 November and changed seven times on 27 November), with its
+    expected-inputs file, an engine-table format sample written by an agent that is not the builder, and byte copies of the lead's rulings in
+    `validation/fr45/spec/rulings/`.
+- **The tag of 23 November** (6e92d0ec) was a waypoint (RULINGS-1, Q7).
+- **Before the tag:**
+  - **Six reads** of the contract were made by a reviewer who has seen no reference value. Each finding was ruled in RULINGS-2 §7 to §11. The
+    reviewer twice typed SPEC's inputs again independently, with no difference.
+  - **A source check** was made against `src/` by a reviewer who is not the builder (D406, D407).
+  - **The lead's census and cross-check** printed no value.
+  - **A trial merge onto main** e008df81 was clean, and its guards, `test_model_table.py` and `test_declarations.py` passed (81).
+  - **The lead's hash record** is `/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45-binding-tag-hashes-20261127.json`.
+- **What follows:**
+  - **The build.** A registered world first runs in the judged run; the builder works on invented worlds. The build's tree holds none of
+    `validation/fr45/references/`.
+  - **The registration reaches main** by the lead's merge of this tag after the build lands, before the judged run.
+  - **Before any registered run,** the contract's addenda: the refusal mapping, the list of checks, the execution record, the plants' changes, and
+    the host-entity values. Each is confirmed where the contract says so, and hashed.
+  - **The judged run.**
+  - **X2** (D224) is the user's to settle before the judged run: a cap and a re-tag, or a waiver.
+
+## D409: FR-45's build: the plan's questions ruled, the engine built and its D148 round passing; a stale crossrev record renewed; a gap in results_baseline
+
+2026-11-27, written at 09:14 UTC.
+
+- **FR-45's build plan** (`/mnt/workspaces/Cells/fr45-build-20261127/PLAN.md`) re-read the design note after three landings.
+  - **The lead's rulings** are `/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45-build-rulings-20261127.md`.
+    - θ on a shared set takes the note's form. It differs from B_b/S_s only by the moiety residual, which C9 carries.
+    - D327's admissions are the note's §15 partners, each with its check. Everything else beside site sets is refused by name, internalisation
+      anywhere in the world included.
+    - The stage name is host-side, with the stricter verdict.
+    - The host values are the wash fixtures' form.
+    - There is a dress rehearsal before the addenda.
+  - **The price** is about 10.25 to 12.75 agent-days, against the design's "about 4". Most of the difference is the registered comparison's
+    tooling. It is reported to the user.
+- **The engine part** is built on branch `fr45-build` (a225d106; the round ran on c968a22f).
+  - **It adds:** shared site sets in `cells.operator.site_occupancy@1`, widened in place behind a static switch, with the first-stage step report,
+    the stage identification and a per-set free-site readout.
+  - **X2 beside sets** is refused at binding. The user's open X2 question (D406) may reverse that.
+  - **Three new compiled files:**
+    - `test_site_competition_runs.py`, in tier 2 (42 s);
+    - the batch file (70 s) and the partners file (82 s), placed in tier 3 by the lead's ruling, to keep the routine gate's cost down (D224).
+  - **Its D148 round passes,** main c7ba9fd8 against the head:
+    - the first probe: all 31 site worlds have identical programs after dead-code elimination, and equal fields at every step;
+    - crossrev: exactly the 10 declared files of FR-3's two site worlds differ (the bindings' four zero-size leaves);
+    - G1: 113 of 113;
+    - tiers 1 and 2: 498 files, none changed;
+    - FR's set passes;
+    - the 31 site worlds' run paths are identical at both revisions;
+    - the invented set world's five paths agree;
+    - the two tier-3 files pass;
+    - test IDs: 46 added, none removed.
+  - **The judges' derivative programs step,** which D327 asks for before the renewal, is held. The plan step's one search for the tool was refused,
+    and that is with the user (D406). The engine's landing waits for it.
+- **A stale crossrev record, renewed by the lead.** `record-cda5dc82`'s acceptances held two checked-step files from before the cleanup's charge
+  rule (e7871b95; D387 step 0; D390's eight programs): `fr1_load_and_degrade` and `fr1_load_and_react`.
+  - They are renewed from main c7ba9fd8's own crossrev output, with the superseded files kept. The note is `RENEWAL-20261127-acceptances-charge-rule.txt`.
+  - Every other file of the two worlds already equalled the record.
+- **A gap in `validation/results_baseline.py`.** Its `flatten` saves nothing for checkpoints held as jax arrays.
+  - **What was never compared:** `runner.run`'s, `run_windowed`'s and `run_batch`'s final states, in every run-paths comparison it makes, G1's
+    included.
+  - **What still covers those paths:** their histories are saved and compared, and the pair check's full-recording windows cover `run_windowed`.
+  - **The fix:** save jax arrays as arrays, then renew G1's c1 at a known revision. It is proposed to the user.
+
+## D410: the user's answers on the seven questions (D406, D409), with the adviser; the crossrev record re-baselined
+
+2026-11-27, written at 10:53 UTC. The user: "Sounds good on your suggestions for all 7 but please get adviser also in on it". The adviser was in.
+
+1. **FR-64's question 2:** keep `cells.model.resolved_pump_tissue@3` and the block law's @1, and refuse FR-51's old `reference` key by name. FR-64's
+   note (§17.1) and its index row now say so.
+2. **The queue:** FR-64 builds now, in parallel. Liquid routing's proposal is still owed, and this does not start it.
+   - FR-45's engine lands first and also changes the matrix files, so FR-64 takes `pump_composite.py`, `composition_matrix.py` and
+     `PUMP_COMPOSITE.md` only after it.
+   - FR-64's D327 list gains "a declared shift beside site sets".
+3. **X2 (D224) had no suggestion to approve, so it is asked again with one.**
+   - **The recommendation:** waive X2 for FR-45. It fits what is tagged and built: the contract fixes "no `energy_check`", and the engine refuses X2
+     beside sets. On FR-45's path X2 counts nothing.
+   - **The alternative:** select X2. That needs a cap, a contract change, a re-tag and X2 qualified beside sets.
+   - **The ten other registrations** that did not select X2 are a separate question. They are being listed with their solvers and judged dates,
+     since X2 covers ARS(2,2,2) only.
+   - X2 blocks only FR-45's judged run.
+4. **Refused actions.**
+   - **(a)** A subagent's report file refused by the harness: its findings as text are enough, as the user agreed.
+   - **(b)** The derivative-program tool: the lead read its path from FR-65's round scripts (`final-gate-20261126/tools/derivative_programs.py`,
+     through `derivative_side.sh`). It traces only through the stationary analysis, which refuses composite worlds. And no file of FR-3's judges
+     (`validation/fr3/`) uses the stationary analysis or a derivative program. So D327's clause "whether FR-3's judges take derivative programs" is
+     answered no, and D148's derivative criterion holds with nothing of FR-45's to compare. The step runs for the record.
+5. **FR-45's price:** continue at about 10.25 to 12.75 agent-days. The tooling reaches the contract's §12.3 step 5 early, where contract errors
+   surface while an erratum is still allowed.
+6. **FR-64's price:** 5.45 to 6.7 agent-days.
+7. **`results_baseline`'s gap:** fixed and landed on its own, after FR-45's engine.
+   - Checkpoints held as jax arrays are saved as arrays, with a planted row in the existing test.
+   - G1's c1 is renewed additively: every existing array byte-identical, with new keys only.
+   - The lead confirmed the gap on c1: a world's `final` holds only `final.time` and `final.step_index`.
+- **The crossrev record, re-baselined** (`record-cda5dc82`, `RENEWAL-20261127-full-rebaseline.txt`).
+  - **Why:** the adviser asked for the whole record to be compared with main's own output. It had fallen behind in about 222 files across ten
+    sets: device-check and step-program texts, rhs texts, and one layout key. Earlier renewals patched only each landing's changed worlds.
+  - **No value changed:** in the four differing replication npz files, all 153 arrays are bit-identical, and one layout key is added.
+  - **Done:** 195 files in ten sets now equal main c7ba9fd8's output, with the whole previous record kept in
+    `record-cda5dc82-superseded-20261127-full/`.
+  - **What the gate uses:** only the record's listing, which is unchanged. Rounds compare main against the head afresh.
+  - **Not done:** `replication/` (27 files) is read-only since 18 November and was left untouched. Whether to renew it is the user's.
+  - **A correction:** D409's two-file renewal and its attribution to e7871b95 rested on the builder's reading. The whole-record comparison
+    supersedes both, and no file-by-landing attribution is claimed.
+
+## D411: FR-45's engine is landed
+
+2026-11-27, written at 11:02 UTC.
+
+- **The landing:** de72e530 (tag `fr45-engine-landed-2026-11-27`), from 465cc836. The landing's trial passed 384 tests.
+- **What it builds** (the design note approved in D327; the build rulings, D409):
+  - shared site sets in `cells.operator.site_occupancy@1`, widened in place under D148 behind a static switch;
+  - one free-site count per set as state, the stage condition summed per set, heat booked once per set at each facing node, and a moiety ledger
+    per set;
+  - W5's first-stage report, the stage identification and a free-site readout.
+- **The D148 round passes** (D409, and the derivative step since):
+  - the judges' derivative programs: 261 files identical. FR-3's site worlds are refused by the stationary analysis at both revisions, and FR-3's
+    judges take no derivative program (D410).
+- **Crossrev's record:** FR-3's two site worlds are renewed (10 files) at this landing, with the superseded files kept.
+- **Tier 3:** its record gains the two qualifying compiled files, placed there by the lead's ruling. Tiers 1 and 2 fold the four other files.
+- **Next:**
+  - FR-45's registered-comparison tooling, on a new branch from main, reaching the contract's §12.3 step 5 first.
+  - FR-64 may now merge main and take the matrix files.
+  - The `results_baseline` fix lands on its own.
+
+## D412: X2 is waived for FR-45, and D224's X2 rule is narrowed; the crossrev record's replication set is renewed
+
+2026-11-27, written at 11:09 UTC. The user: "1. As yoiu suggest 2. as you suggest".
+
+1. **X2 (D224).**
+   - **FR-45 waives X2.**
+     - This fits what is tagged and built: the contract fixes "no `energy_check`", and the engine refuses X2 beside sets.
+     - On FR-45's path X2 would count nothing, since the site heat is booked exactly and no ion moves.
+     - No re-tag is needed, and FR-45's judged run is no longer blocked by X2.
+   - **D224 is narrowed from here.** A registration must select X2 only when its criteria judge energy readouts (heat, free energy or an energy
+     identity) on ARS(2,2,2) worlds; elsewhere X2 is optional.
+   - **The listing behind it:** of the ten registrations since D224 that did not select X2, only FR-25 (inconclusive), FR-38's first comparison
+     (failed), FR-38 v2 (passed, D381) and FR-43 part 2 (passed, D324) judge energy readouts on ARS(2,2,2). The rest judge none, or run on other
+     solvers.
+   - **A confirmation for the two that passed:** FR-38 v2's and FR-43 part 2's judged worlds run once with X2 on, as development runs, not a
+     re-judging, against X2 off at the same revision.
+2. **The replication set.** Crossrev's record's `replication/` is renewed from main's own output: 27 files, with the previous ones kept.
+   - The folder was made writable for the copy, then read-only again.
+   - Its four npz files differ only by one added layout key, and all their arrays are bit-identical.
+   - Every set of the record now equals main's crossrev output, FR-45's landing renewal included.

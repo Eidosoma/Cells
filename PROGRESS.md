@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-26 UTC.
+Last updated: 2026-11-27 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -14,10 +14,28 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
-- **26 November, evening (D395): FR-43 part 3's co-writers engine build is landed** (4be34f74, tag
-  `fr43-part3-cowriters-landed-2026-11-26`): rules for which writers may share a row, with a clean D148 round. The registered
-  comparison is next (the judge's rulings are made, D394; the format sample comes first). FR-65 runs its round now, with
-  the small fixes stacked (D393). The BETSE file removal (D394) follows the test slimming's landing; FR-45's build starts next.
+- **26 to 27 November: seven landings.**
+  - The per-event counts in `integer_unit_population@1` (D400, 7f98d838).
+  - FR-43 part 3's co-writers registered comparison, which **passes**: the judge and the independent checker agree (D402, D403;
+    799a6070, tag `fr43-part3-cowriters-passed-2026-11-26`).
+  - FR-52, passive cohort observations for integer units (D404, ab8b599c).
+  - The Lean track's FR-51 run-view note (9506a1cc).
+  - FR-50 phase 2, one-way records on @3's own routes, faces and channels, with its judged run passing (D405, d92403cc).
+  - FR-65's coupling step: both coupling versions read the current cell volume beside water (D407, 00cfbda1).
+  - The nightly of main 7149f90a passed: 497 files, none changed.
+  - FR-45 is bound by its protocol's tag, `fr45-protocol-registered-2026-11-27` (D408), after six reads of its contract by a reviewer who has seen no reference value.
+  - FR-45's engine: shared site sets in `cells.operator.site_occupancy@1` (D411, de72e530), its D148 round passing.
+  - Next: FR-45's tooling for the registered comparison; FR-64's build (D410); the `results_baseline` fix. X2 (D224) is with the user (D410).
+  - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
+- **26 November, evening: four landings.**
+  - FR-43 part 3's co-writers engine build (D395, 4be34f74).
+  - The test slimming, with tier 3 now weekly (D396, 033bde25).
+  - The BETSE file removal, 331 files (D397, fc94f893).
+  - FR-65, turnover beside a changing volume, with the small fixes stacked (D398, ae349721).
+  - Next:
+    - the per-event counts in `integer_unit_population@1` (D397), whose D148 round is running;
+    - then the co-writers' rehearsal, the final format sample, the judge's tag and the registered comparison;
+    - FR-45's rulings before its build, FR-64's design note, and the docs refresh.
 - **26 November (D390): the legacy cleanup is landed** (805c48a4; records 67c0de27). One full gate, every difference attributed;
   tier 3 first failed on ID-move defects, fixed. Next: FR-43 part 3's co-writers (engine build, then the registered
   comparison as tagged), FR-65 alongside, the heavy tests slimmed, tier 3 weekly. The viewer is on hold today.
@@ -47,19 +65,18 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     landing, by a nightly on demand, and the nightly full run stays the backstop. Open for the user: the 28 readers of
     `SNAPSHOT.json`, and AGENTS.md's wording of D229's rule 3.
 - **Queued builds, in the order the decisions give:**
-  - **FR-52** (high; D371, D375): cohort observations for integer units; an engine record at each event, chains in
-    version 1, a split makes a new unit. Note on branch `fr52-design`; 4.25 to 5 agent-days, after the rename.
   - **FR-54 and FR-57** (high; D341, D362, D364): one `liquid_routing@1` operator that takes over the wash. Note
     `docs/LIQUID_ROUTING_DESIGN.md` (968bd182, branch `fr54-57-design`); 8.25 to 10.5 agent-days, after the
     rename. The protocol and spec are tagged (`liquid-routing-criteria-2026-11-25`), and amendment 5
     (with amendment 6, dd21509b) settles an independent audit's findings (D383). The references are tagged
     (`liquid-routing-references-2026-11-25`, D384), and the line holds. The wash retires only after FR-49's World B and C1 and FR-45's W2 and W7 have run, or those runs are
     pinned to an earlier snapshot.
-  - **FR-65** (high, part of FR-43; D365, D375): turnover beside a changing volume, with a lumen. Note `fr65-design`
-    (df473a02); about 3.1 to 4.45 agent-days for the first build, 2 to 2.5 more for the volume-reading step.
+  - **FR-65** (high, part of FR-43; D365, D375, D398): turnover beside a changing volume, with a lumen. The first build is
+    landed (ae349721). The coupling's step is built (branch `fr65-coupling`, D402); its round follows FR-50 phase 2's landing. The water worlds' run view (§9.2)
+    goes to water's owner.
   - **FR-64** (normal; D356, D361): one declared voltage shift on a channel population, with FR-63 (normal; D353)
     re-formed as a pH shift on it. Note `docs/VOLTAGE_SHIFT_DESIGN.md` (377a1b34, branch `fr64-design`); the build
-    follows FR-51's follow-up and the rename.
+    follows FR-50 phase 2's landing (D402).
   - **FR-53** (normal; D371, D370): a rounding allowance for global ledgers. Note `docs/LEDGER_ROUNDING_DESIGN.md`
     (774fdcd5); D370 corrects its premise for the pump-tissue family. FR-47's ledger limit: the
     evidence recommends keeping it, with the user to decide (D379).
@@ -73,9 +90,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     external-potassium arm stays development-only, and FR-64's build is now free.
   - **FR-38's second comparison has passed and is landed** (D381, D382; 4039dcba), beside D313's failed verdict. The three
     uncovered readout controls go to a later registration, FR-38 v3 (D354).
-  - **FR-43 part 3's co-writers** (D328, D383, D394, D395): the engine build is landed (4be34f74). The criteria and code-blind
-    references are tagged; the blind judge's scorer passes C0 under the lead's rulings (`fr43-cowriters-judge`, cd8137ed). Next:
-    the format sample, the judge's tag, then the registered comparison.
+  - **FR-43 part 3's co-writers** (D328, D383, D394, D395, D402, D403): the engine build is landed (4be34f74), and the
+    registered comparison **passes**: 3 arms, 6 families, 20 of 20 plants, 5,230 entries; the independent checker agrees.
   - **FR-45** (D327, D377, D394): its judge is the builder's own, written with its build; the build starts next, once the
     lead has ruled which tag binds its registration. W2 and W7 stay on the wash or are pinned.
   - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;

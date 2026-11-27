@@ -1,5 +1,5 @@
 {
- "_note": "A7's frozen allow-list of entity sums (tests/unit/test_species_sum_sites.py; the summation SPEC.md section 4): every entity_sum call in models/surface_pump_v3.py, operators/*.py and kinds/*.py as [module (its path under src/cells, the folders of D188 move 2), enclosing function, expression text]. Each sums entity axes only, never the species axis (the tag's site classification, operators/summation/SITES.md, regenerated on integration-d172, and the kinds' seams; the core, 16 November 2026), except the three entries of partition's summary: its host-only end-of-run figures (live, record and total) reduce each retired field whole (axis=None), so on the [species, slot] transfer fields they sum over species too, while the heat fields are [slot]. Those figures enter no ledger, check or program, and G1 compares none of them (the lead's ruling, 16 November 2026: the wording fixed, the sums kept). A full reduce over a species-leading array is entity_sum(species_sum(...)). A new entry is reviewed once before it is added. The population axis of kinds/transporter.py (seam A) sums over its own law-internal axes only (its modes, its law's rows, a net-flow mode's terms and a diagram's edge directions) and, for the kind's produced record, over nodes, never over the species axis (the kinds owner, 19 November 2026). Reviewed for calcium step 5 (25 November 2026): _material_slopes sums |nu dJ/d ln c| over the modes (cycle_mode, axis 0 of [M, K, P]) and a population's own rate over its moved rows (cycle_row, axis 0 of [K, P]), both law-internal axes of the kind (transporter.INTERNAL_AXES).",
+ "_note": "A7's frozen allow-list of entity sums (tests/unit/test_species_sum_sites.py; the summation SPEC.md section 4): every entity_sum call in models/surface_pump_v3.py, operators/*.py and kinds/*.py as [module (its path under src/cells, the folders of D188 move 2), enclosing function, expression text]. Each sums entity axes only, never the species axis (the tag's site classification, operators/summation/SITES.md, regenerated on integration-d172, and the kinds' seams; the core, 16 November 2026), except the three entries of partition's summary: its host-only end-of-run figures (live, record and total) reduce each retired field whole (axis=None), so on the [species, slot] transfer fields they sum over species too, while the heat fields are [slot]. Those figures enter no ledger, check or program, and G1 compares none of them (the lead's ruling, 16 November 2026: the wording fixed, the sums kept). A full reduce over a species-leading array is entity_sum(species_sum(...)). A new entry is reviewed once before it is added. The population axis of kinds/transporter.py (seam A) sums over its own law-internal axes only (its modes, its law's rows, a net-flow mode's terms and a diagram's edge directions) and, for the kind's produced record, over nodes, never over the species axis (the kinds owner, 19 November 2026). Reviewed for calcium step 5 (25 November 2026): _material_slopes sums |nu dJ/d ln c| over the modes (cycle_mode, axis 0 of [M, K, P]) and a population's own rate over its moved rows (cycle_row, axis 0 of [K, P]), both law-internal axes of the kind (transporter.INTERNAL_AXES). Reviewed for FR-52 (26 November 2026): cohort_readout's five host-only sums run over a site's unit states (its subunits; a route's conductance times the record), over one state's four cohort labels, or over the class's states; the record [cohort, state, label] holds no species axis, and nothing in a program, ledger or check reads them.",
  "entity_sums": [
   [
    "kinds/passive_routes.py",
@@ -415,6 +415,31 @@
    "operators/integer_unit_population.py",
    "subunits",
    "entity_sum(p.integer_weights * counts, axis=-1, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "cohort_readout",
+   "entity_sum(weights[i] * counts[i], axis=None, xp=np)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "cohort_readout",
+   "entity_sum(record[k], axis=None, xp=np)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "cohort_readout",
+   "entity_sum(g[i, x, :, None] * record, axis=0, xp=np)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "cohort_readout",
+   "entity_sum(record[conducting, cohort_kernel.INITIAL], axis=None, xp=np)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "cohort_readout",
+   "entity_sum(record[members, cohort_kernel.INSIDE], axis=None, xp=np)"
   ],
   [
    "operators/k_anion_symport.py",
@@ -840,6 +865,26 @@
    "operators/site_occupancy.py",
    "site_energy",
    "entity_sum(terms_b + terms_r, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(dg_b, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(dg_r, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(terms_b, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(terms_r, axis=None, xp=xp)"
   ],
   [
    "operators/species_exchange.py",

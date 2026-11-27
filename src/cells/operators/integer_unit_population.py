@@ -14,7 +14,8 @@ next-reaction rule (Haseltine and Rawlings 2002; Alfonsi et al. 2005; from memor
 - `species`: the species it moves, with their identity (species_common.parse_species: neutral and
   impermeant on @3's own routes); `read_species`: species rows it only reads (parse_read_species).
 - `seed`: the streams' seed, an integer in [0, 2**32) (numerics/counter_streams.py).
-- `trace_events`: the trace's capacity T >= 0 per site: the first T events are recorded.
+- `trace_events`: the trace's capacity T >= 0 per site: the first T events are recorded, each
+  with its time, its channel, the unit counts after it and the pools at it.
 - `populations`, each with:
   - `unit_states`: [{id, subunits}], each with an integer subunit weight w >= 1;
   - `channels`: [{id, reactants, products, rate_per_s, read}], integer stoichiometry over the unit
@@ -65,7 +66,29 @@ Second order holds while the transfer is slow against the step, lambda dt of abo
 world with a faster transfer shows its own halving. The pools recorded at an event
 (integer_trace_cell_fmol, integer_trace_node_fmol) are this operator's view inside the step, first
 order in dt beside a co-writer (off by up to half its kick per step): they are reported, not
-judged.
+judged. The counts recorded at an event (integer_trace_counts, FR-43 part 3's co-writers
+registration) are the counts the event loop carries on after it, written as the loop forms them
+and never formed again from the channel's declared jump, so a trace whose counts break the
+declared jump shows an engine that applied another one. No rate, draw or ledger reads it. The
+composite's finiteness check over the operator's owned fields covers it, and is always true for an
+integer field.
+
+**Cohorts** (FR-52; docs/PASSIVE_COHORT_DESIGN.md): `cohorts`, optional (omission is the only
+spelling of none; an empty list is refused), each {id, site, states, window_s} with `carries`
+optional. A cohort's states are its identity class, the unit states that are forms of one unit at
+one site; its record integer_cohort_units [cohort, state, label] holds, for each state of the
+class, the expected units whose identity began at t = 0 or at an event before, inside or after
+[start, end), conditional on the recorded events (numerics/unit_cohorts.py: the map's rule, the
+exact update and the half-open label rule). A channel's pairing resolves by rule where it is unique
+and is declared in carries where it is not; exactly min(R, P) identities go on, and a split makes
+a new unit (D375). Version 1 refuses an ambiguous, incomplete or repeated map, a class state on
+both sides of a channel, a conducting state outside the class, and a cohort at a site that divides
+or is born. The record is passive: no rate, draw or ledger reads it, and it sits outside own_valid.
+The one check that reads it is the partition's finiteness test of every field at a division
+(cells.operator.isopotential_partition@1's event map), true for every record the update can make,
+which never divides by a zero count (the lead's ruling, 26 November 2026). Where no cohort is
+declared the record and its layout are zero-size, and the event loop carries nothing of them
+(static). cohort_readout is its host readout.
 
 **Co-writers** (FR-43 part 3; the species registry's rule, check_row_writers). The operator is a
 transfer (ROW_MOVES): a moved row may have any declared split writer beside it, a reaction or the
@@ -131,6 +154,7 @@ from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.numerics import counter_streams as streams
+from cells.numerics import unit_cohorts as cohort_kernel
 from cells.numerics.species_sums import entity_sum
 from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
@@ -171,6 +195,9 @@ STATE_AXES = {
     "integer_trace_channel": ["integer_site", "integer_trace"],  # int64; -1: not recorded.
     "integer_trace_cell_fmol": ["integer_site", "integer_trace", "integer_route"],
     "integer_trace_node_fmol": ["integer_site", "integer_trace", "integer_route"],
+    "integer_trace_counts": ["integer_site", "integer_trace", "integer_state"],  # int64; -1: none.
+    # FR-52: each cohort's expected units by state and label; zero-size where none is declared.
+    "integer_cohort_units": ["integer_cohort", "integer_state", "integer_cohort_label"],
 }
 STATE_DTYPES = {
     "integer_counts": "int64",
@@ -178,6 +205,7 @@ STATE_DTYPES = {
     "integer_channel_events": "int64",
     "integer_divided_units": "int64",
     "integer_trace_channel": "int64",
+    "integer_trace_counts": "int64",
 }
 LAYOUT_FIELDS = (
     "integer_site_cell",  # [site] int64
@@ -202,6 +230,11 @@ LAYOUT_FIELDS = (
     "integer_block",  # [W]: its shape is the partition draw's block (static)
     "integer_site_stage",  # [site] int64: its stage of a half-step (stages)
     "integer_stages",  # [C]: its shape is the number of stages (static)
+    # FR-52's cohorts (zero-size where none is declared; the cohort count is static):
+    "integer_cohort_site",  # [cohort] int64
+    "integer_cohort_class",  # [cohort, state] bool: the identity class
+    "integer_cohort_pairs",  # [cohort, channel, state, state] int64: m from a to b
+    "integer_cohort_window_s",  # [cohort, 2]: [start, end), per-world data in a batch
 )
 LEDGERS = ("integer_subunits",)
 LEDGER_DIAGNOSTICS = ("integer_subunits_error",)
@@ -259,6 +292,21 @@ class SiteMap:
 
 
 @dataclass(frozen=True)
+class Carry:
+    channel: str
+    pairs: tuple  # ((consumed state, produced state), ...), as declared
+
+
+@dataclass(frozen=True)
+class Cohort:
+    id: str
+    site: str
+    states: tuple  # The identity class, in declared order.
+    window_s: tuple  # (start, end): [start, end), s.
+    carries: tuple  # (Carry, ...): the declared pairings; () where every channel resolves by rule.
+
+
+@dataclass(frozen=True)
 class IntegerUnitPopulation:
     law: str
     species: tuple
@@ -267,6 +315,7 @@ class IntegerUnitPopulation:
     trace_events: int
     populations: tuple
     divisions: tuple
+    cohorts: tuple = ()  # FR-52: optional; omission is the only spelling of none.
 
 
 def _count(value, what, *, low=0, high=None):
@@ -412,8 +461,203 @@ def parse_population(raw, base, moved, readable):
     )
 
 
+def _window(raw, name):
+    if (
+        type(raw) is not list
+        or len(raw) != 2
+        or any(type(v) not in (int, float) or not math.isfinite(v) for v in raw)
+        or not 0 <= raw[0] < raw[1]
+    ):
+        raise ConfigError(
+            f"{LAW_ID}: cohort {name}'s window_s is [start, end] in s, finite, with 0 <= start "
+            "< end"
+        )
+    return (float(raw[0]), float(raw[1]))
+
+
+def class_stoichiometry(population, members):
+    """{channel id: (r, p)}: each channel's reactants and products over the class `members`, as
+    whole numbers per unit state in the population's state order (0 outside the class)."""
+    ids = [u.id for u in population.unit_states]
+    out = {}
+    for c in population.channels:
+        r, p = dict(c.reactants), dict(c.products)
+        out[c.id] = (
+            tuple(r.get(s, 0) if s in members else 0 for s in ids),
+            tuple(p.get(s, 0) if s in members else 0 for s in ids),
+        )
+    return out
+
+
+def cohort_tables(population, cohort):
+    """{channel id: {(a, b): m}}: each channel's pairing table over state indices, resolved by
+    the rule (unit_cohorts.unique_table) or declared in the cohort's carries (FR-52 §2.3)."""
+    ids = [u.id for u in population.unit_states]
+    declared = {c.channel: c.pairs for c in cohort.carries}
+    out = {}
+    for channel, (r, p) in class_stoichiometry(population, set(cohort.states)).items():
+        if channel in declared:
+            table = {}
+            for a, b in declared[channel]:
+                key = (ids.index(a), ids.index(b))
+                table[key] = table.get(key, 0) + 1
+            out[channel] = table
+        else:
+            out[channel] = cohort_kernel.unique_table(r, p)
+    return out
+
+
+def _carries(raw, name, population, members):
+    """The cohort's declared pairings, checked against its channels (§2.6's refusals 2 and 3)."""
+    channels = {c.id for c in population.channels}
+    declared = {}
+    if raw is not None:
+        if type(raw) is not list or not raw:
+            raise ConfigError(
+                f"{LAW_ID}: cohort {name}'s carries is a non-empty list (omit it for none)"
+            )
+        for entry in raw:
+            _fields(entry, {"channel", "pairs"}, "carry")
+            channel = entry["channel"]
+            if channel not in channels:
+                raise ConfigError(
+                    f"{LAW_ID}: cohort {name} declares a pairing for an undeclared channel "
+                    f"{channel!r}"
+                )
+            if channel in declared:
+                raise ConfigError(
+                    f"{LAW_ID}: cohort {name} declares channel {channel}'s pairing twice"
+                )
+            pairs = entry["pairs"]
+            if type(pairs) is not list or any(
+                type(x) is not list or len(x) != 2 or not all(type(s) is str for s in x)
+                for x in pairs
+            ):
+                raise ConfigError(
+                    f"{LAW_ID}: cohort {name}'s pairs of {channel} are a list of [consumed state, "
+                    "produced state]"
+                )
+            declared[channel] = tuple(tuple(x) for x in pairs)
+    ids = [u.id for u in population.unit_states]
+    for channel, (r, p) in class_stoichiometry(population, members).items():
+        rule = cohort_kernel.unique_table(r, p)
+        if channel not in declared:
+            if rule is None:
+                raise ConfigError(
+                    f"{LAW_ID}: channel {channel} has two or more legal pairings for cohort "
+                    f"{name}: ambiguous: declare its pairs"
+                )
+            continue
+        if rule is not None:
+            raise ConfigError(
+                f"{LAW_ID}: cohort {name}: channel {channel}'s pairing is resolved by rule; omit it"
+            )
+        into, out_of = {}, {}
+        for a, b in declared[channel]:
+            if a not in members or b not in members:
+                raise ConfigError(
+                    f"{LAW_ID}: cohort {name}'s pair [{a}, {b}] of {channel} names a state "
+                    "outside the class"
+                )
+            if not r[ids.index(a)]:
+                raise ConfigError(
+                    f"{LAW_ID}: cohort {name}'s pair [{a}, {b}]: channel {channel} does not "
+                    f"consume {a}"
+                )
+            if not p[ids.index(b)]:
+                raise ConfigError(
+                    f"{LAW_ID}: cohort {name}'s pair [{a}, {b}]: channel {channel} does not make "
+                    f"{b}"
+                )
+            into[b] = into.get(b, 0) + 1
+            out_of[a] = out_of.get(a, 0) + 1
+        for b, count in into.items():
+            if count > p[ids.index(b)]:
+                raise ConfigError(
+                    f"{LAW_ID}: cohort {name} pairs {count} identities into {b}, more than "
+                    f"channel {channel} makes of it ({p[ids.index(b)]})"
+                )
+        for a, count in out_of.items():
+            if count > r[ids.index(a)]:
+                raise ConfigError(
+                    f"{LAW_ID}: cohort {name} pairs {count} identities from {a}, more than "
+                    f"channel {channel} consumes of it ({r[ids.index(a)]}): an identity is not "
+                    "copied (D375)"
+                )
+        need = min(sum(x for x in r), sum(x for x in p))
+        if len(declared[channel]) != need:
+            raise ConfigError(
+                f"{LAW_ID}: cohort {name}'s pairing of {channel} holds {len(declared[channel])} "
+                f"pairs, fewer than min(R, P) = {need}: incomplete"
+            )
+    return tuple(Carry(channel, pairs) for channel, pairs in declared.items())
+
+
+def parse_cohorts(raw, populations, maps):
+    """FR-52's optional cohorts (docs/PASSIVE_COHORT_DESIGN.md §2.3, §2.6): each {id, site, states,
+    window_s} with carries optional, every channel's pairing resolved by rule or declared."""
+    if type(raw) is not list or not raw:
+        raise ConfigError(f"{LAW_ID}: cohorts is a non-empty list (omit it for none)")
+    population_of = {s.id: p for p in populations for s in p.sites}
+    mapped = {m.parent for m in maps} | {d for m in maps for d in m.daughters}
+    out = []
+    for entry in raw:
+        keys = {"id", "site", "states", "window_s"}
+        if type(entry) is dict and "carries" in entry:
+            keys = keys | {"carries"}
+        _fields(entry, keys, "cohort")
+        name = identifier(entry["id"])
+        if name in {c.id for c in out}:
+            raise ConfigError(f"{LAW_ID}: cohort IDs are unique ({name} is repeated)")
+        site = entry["site"]
+        if site not in population_of:
+            raise ConfigError(f"{LAW_ID}: cohort {name} names an undeclared site {site!r}")
+        if site in mapped:
+            raise ConfigError(
+                f"{LAW_ID}: cohort {name}'s site {site} divides or is born at a division: a "
+                "cohort's map does not cross a division (version 1)"
+            )
+        population = population_of[site]
+        ids = [u.id for u in population.unit_states]
+        states = entry["states"]
+        if type(states) is not list or not states:
+            raise ConfigError(
+                f"{LAW_ID}: cohort {name} lists its states (the identity class), at least one"
+            )
+        for state in states:
+            if state not in ids:
+                raise ConfigError(
+                    f"{LAW_ID}: cohort {name} names {state!r}, not a unit state of population "
+                    f"{population.id}"
+                )
+        if len(set(states)) != len(states):
+            raise ConfigError(f"{LAW_ID}: cohort {name} lists each state once")
+        window = _window(entry["window_s"], name)
+        members = set(states)
+        for transfer in population.transfers:
+            for state, g in transfer.conductance_pL_per_s:
+                if g > 0 and state not in members:
+                    raise ConfigError(
+                        f"{LAW_ID}: cohort {name} leaves out {state}, which conducts "
+                        f"{transfer.species} (transfer {transfer.id}): a cohort holds every "
+                        "conducting state of its population"
+                    )
+        for c in population.channels:
+            both = sorted(members & {s for s, _ in c.reactants} & {s for s, _ in c.products})
+            if both:
+                raise ConfigError(
+                    f"{LAW_ID}: channel {c.id} has cohort {name}'s state {both[0]} on both "
+                    "sides, refused in version 1 (its net and gross readings differ)"
+                )
+        carries = _carries(entry.get("carries"), name, population, members)
+        out.append(Cohort(name, site, tuple(states), window, carries))
+    return tuple(out)
+
+
 def parse_declaration(raw, base):
     keys = {"law", "species", "read_species", "seed", "trace_events", "populations", "divisions"}
+    if type(raw) is dict and "cohorts" in raw:  # FR-52: optional, never empty.
+        keys = keys | {"cohorts"}
     _fields(raw, keys, "integer unit population")
     if raw["law"] != LAW_ID:
         raise ConfigError("An integer unit population requires law " + LAW_ID)
@@ -465,9 +709,21 @@ def parse_declaration(raw, base):
         raise ConfigError(
             f"{LAW_ID}: a site is the parent of one map at most and a daughter of one"
         )
+    cohorts = parse_cohorts(raw["cohorts"], populations, maps) if "cohorts" in raw else ()
     return IntegerUnitPopulation(
-        LAW_ID, species, read_species, seed, trace, populations, tuple(maps)
+        LAW_ID, species, read_species, seed, trace, populations, tuple(maps), cohorts
     )
+
+
+def cohort_to_dict(cohort):
+    out = dict(
+        id=cohort.id, site=cohort.site, states=list(cohort.states), window_s=list(cohort.window_s)
+    )
+    if cohort.carries:
+        out["carries"] = [
+            dict(channel=c.channel, pairs=[list(pair) for pair in c.pairs]) for c in cohort.carries
+        ]
+    return out
 
 
 def declaration_to_dict(declaration):
@@ -498,7 +754,7 @@ def declaration_to_dict(declaration):
             ],
         )
 
-    return dict(
+    out = dict(
         law=declaration.law,
         species=common.species_to_dict(declaration.species),
         read_species=common.species_to_dict(declaration.read_species),
@@ -509,6 +765,9 @@ def declaration_to_dict(declaration):
             dict(parent=m.parent, daughters=list(m.daughters)) for m in declaration.divisions
         ],
     )
+    if declaration.cohorts:  # Written only where declared, so no undeclared fingerprint moves.
+        out["cohorts"] = [cohort_to_dict(c) for c in declaration.cohorts]
+    return out
 
 
 def sites_of(declaration):
@@ -677,8 +936,154 @@ def bind(spec, declaration):
         integer_trace_channel=-np.ones((n, t), dtype=np.int64),
         integer_trace_cell_fmol=np.zeros((n, t, r)),
         integer_trace_node_fmol=np.zeros((n, t, r)),
+        integer_trace_counts=-np.ones((n, t, k), dtype=np.int64),
     )
-    return state, layout
+    layout_c, state_c = bind_cohorts(declaration, index, counts)
+    return state | state_c, layout | layout_c
+
+
+def bind_cohorts(declaration, index, counts):
+    """(layout, state) of FR-52's cohorts: each cohort's site, class, pairing tables (the rule's
+    readings resolved here, so the step applies one form) and window; the record starts at
+    [n_k(0), 0, 0, 0] in each state of the class, 0 elsewhere. Zero-size where none is declared."""
+    _, k, j, _, _, _ = dimensions(declaration)
+    c = len(declaration.cohorts)
+    population_of = {s.id: p for p in declaration.populations for s in p.sites}
+    layout = dict(
+        integer_cohort_site=np.zeros(c, dtype=np.int64),
+        integer_cohort_class=np.zeros((c, k), dtype=bool),
+        integer_cohort_pairs=np.zeros((c, j, k, k), dtype=np.int64),
+        integer_cohort_window_s=np.zeros((c, 2)),
+    )
+    units = np.zeros((c, k, len(cohort_kernel.LABELS)))
+    for q, cohort in enumerate(declaration.cohorts):
+        population, i = population_of[cohort.site], index[cohort.site]
+        states = [u.id for u in population.unit_states]
+        layout["integer_cohort_site"][q] = i
+        tables = cohort_tables(population, cohort)
+        for y, channel in enumerate(population.channels):
+            for (a, b), m in tables[channel.id].items():
+                layout["integer_cohort_pairs"][q, y, a, b] = m
+        for state in cohort.states:
+            layout["integer_cohort_class"][q, states.index(state)] = True
+            units[q, states.index(state), cohort_kernel.INITIAL] = counts[i, states.index(state)]
+        layout["integer_cohort_window_s"][q] = cohort.window_s
+    return layout, dict(integer_cohort_units=units)
+
+
+def cohort_summary(declaration):
+    """Each cohort as declared, its labels, and every channel's pairing table as the step applies
+    it: [[consumed state, produced state, m], ...], found by the rule or declared."""
+    population_of = {s.id: p for p in declaration.populations for s in p.sites}
+    out = []
+    for cohort in declaration.cohorts:
+        population = population_of[cohort.site]
+        ids = [u.id for u in population.unit_states]
+        declared = {c.channel for c in cohort.carries}
+        tables = {
+            channel: dict(
+                found="declared" if channel in declared else "rule",
+                pairs=[[ids[a], ids[b], m] for (a, b), m in sorted(table.items())],
+            )
+            for channel, table in cohort_tables(population, cohort).items()
+        }
+        out.append(cohort_to_dict(cohort) | dict(labels=list(cohort_kernel.LABELS), tables=tables))
+    return out
+
+
+def cohort_readout(declaration, layout, row, *, delta_c_mM=None):
+    """FR-52's outputs at one saved row, host only (docs/PASSIVE_COHORT_DESIGN.md §1, §2.3): one
+    entry per declared cohort. Every value is an expectation conditional on the recorded events,
+    never a realization:
+    - expected_units {state: {label: units}}, for each state of the class;
+    - conductance_pL_per_s {transfer: {label: Σ_k∈C g_k E_k,l}};
+    - flux_fmol_per_s {transfer: {label: conductance × Δc}}, where delta_c_mM gives a transfer's
+      driving difference Δc (cell minus node, mM);
+    - initial_conducting_units: the initial label summed over the conducting states (the original
+      units still contributing to transport); inside_units: the inside label summed over the
+      class (the units formed in the window, by assembly or by a split).
+    A unit that leaves the class and comes back is new: returns are counted gross.
+    Integrity: every entry finite and >= 0, the states outside the class at 0, and each class
+    state's labels, summed in binary64, within unit_cohorts.rounding_bound of its saved count (K
+    the site's events so far, N the most class units its subunits allow). Otherwise the cohort is
+    unresolved: its values are None, never 0 or ∞, and its problems are named."""
+    units = np.asarray(row.integer_cohort_units)
+    counts, events = np.asarray(row.integer_counts), np.asarray(row.integer_events)
+    weights = np.asarray(layout.integer_weights)
+    g = np.asarray(layout.integer_conductance_pL_per_s)
+    population_of = {s.id: p for p in declaration.populations for s in p.sites}
+    index = {site.id: i for i, (_, site) in enumerate(sites_of(declaration))}
+    labels = cohort_kernel.LABELS
+    out = []
+    for q, cohort in enumerate(declaration.cohorts):
+        population, i = population_of[cohort.site], index[cohort.site]
+        ids = [u.id for u in population.unit_states]
+        members = [ids.index(s) for s in cohort.states]
+        record = units[q]
+        subunits = int(entity_sum(weights[i] * counts[i], axis=None, xp=np))
+        most = subunits // min(int(weights[i, k]) for k in members)
+        bound = cohort_kernel.rounding_bound(int(events[i]), most)
+        problems = []
+        if not np.all(np.isfinite(record)) or np.any(record < 0):
+            problems.append("an entry is not finite or is negative")
+        outside = [k for k in range(record.shape[0]) if k not in members]
+        if np.any(record[outside] != 0):
+            problems.append("a state outside the class holds units")
+        for k in members:
+            total = float(entity_sum(record[k], axis=None, xp=np))
+            if not abs(total - int(counts[i, k])) <= bound:
+                problems.append(
+                    f"{ids[k]}'s labels sum to {total!r}, not its count {int(counts[i, k])} "
+                    f"within {bound:.3g}"
+                )
+        entry = dict(
+            cohort=cohort.id,
+            site=cohort.site,
+            states=list(cohort.states),
+            labels=list(labels),
+            reading="expected units conditional on the recorded events",
+            events=int(events[i]),
+            bound_units=bound,
+            resolved=not problems,
+            problems=problems,
+            expected_units=None,
+            conductance_pL_per_s=None,
+            flux_fmol_per_s=None,
+            initial_conducting_units=None,
+            inside_units=None,
+        )
+        if not problems:
+            routes = {t.id: x for x, t in enumerate(population.transfers)}
+            conducting = [k for k in members if np.any(g[i, : len(routes), k] > 0)]
+            conductance = {
+                tid: entity_sum(g[i, x, :, None] * record, axis=0, xp=np)
+                for tid, x in routes.items()
+            }
+            entry.update(
+                expected_units={
+                    ids[k]: dict(zip(labels, map(float, record[k]), strict=True)) for k in members
+                },
+                conductance_pL_per_s={
+                    tid: dict(zip(labels, map(float, value), strict=True))
+                    for tid, value in conductance.items()
+                },
+                initial_conducting_units=float(
+                    entity_sum(record[conducting, cohort_kernel.INITIAL], axis=None, xp=np)
+                ),
+                inside_units=float(
+                    entity_sum(record[members, cohort_kernel.INSIDE], axis=None, xp=np)
+                ),
+            )
+            if delta_c_mM is not None:  # The cohort's own transfers only.
+                entry["flux_fmol_per_s"] = {
+                    tid: dict(
+                        zip(labels, map(float, conductance[tid] * delta_c_mM[tid]), strict=True)
+                    )
+                    for tid in conductance
+                    if tid in delta_c_mM
+                }
+        out.append(entry)
+    return out
 
 
 # ------------------------------------------------------------------ the law
@@ -830,21 +1235,48 @@ def _neumaier(total, carry, h):
     return new, carry
 
 
+def _cohort_event(units, counts, chosen, event, when, p):
+    """FR-52: each cohort's record after its site's event (unit_cohorts.advance), from the counts
+    before the event, the chosen channel's declared stoichiometry and table, and the event's time
+    as the trace forms it. A cohort whose site does not fire keeps its record."""
+    site = p.integer_cohort_site
+    member = p.integer_cohort_class
+    j = chosen[site][:, None, None]
+    reactants = jnp.take_along_axis(p.integer_reactants[site], j, axis=1)[:, 0, :]
+    change = jnp.take_along_axis(p.integer_change[site], j, axis=1)[:, 0, :]
+    table = jnp.take_along_axis(p.integer_cohort_pairs, j[..., None], axis=1)[:, 0]
+    window = p.integer_cohort_window_s
+    label = cohort_kernel.label_of(when[site], window[:, 0], window[:, 1], xp=jnp)
+    after = cohort_kernel.advance(
+        units,
+        counts[site],
+        jnp.where(member, reactants, 0),
+        jnp.where(member, reactants + change, 0),
+        table,
+        label,
+        xp=jnp,
+    )
+    return jnp.where(event[site][:, None, None], after, units)
+
+
 def _run_stage(state, length, offset, member, p, *, view):
     """(state, ok [site]) after `length` of the sites `member` [site] marks, every other row frozen:
     the closed-form flow between events, each event located and fired (module docstring). offset
-    [site]: each site's elapsed time in the half-step when the stage starts."""
+    [site]: each site's elapsed time in the half-step when the stage starts. FR-52's records ride
+    in the loop's carry only where a cohort is declared (static), so an undeclared world's loops
+    are unchanged."""
     live, vc, vo, nc0, no0, c_read = _gather(p, state, view)
     live = live & member
     n_sites, n_routes = nc0.shape
     trace = state.integer_trace_time_s.shape[1]
+    cohorts = p.integer_cohort_site.shape[0]  # Static (FR-52).
     t0 = state.integer_clock_s + state.integer_clock_carry_s + offset
     full = jnp.full((n_sites,), length)
     linear = p.integer_linear
 
     def segment(carry):
-        (done, counts, hz, thr, k, chan, nc, no, moved, heat, mag, tt, tc, tcell, tnode, fired,
-         ok, count) = carry  # fmt: skip
+        (done, counts, hz, thr, k, chan, nc, no, moved, heat, mag, tt, tc, tcell, tnode, tn,
+         fired, ok, count) = carry[:19]  # fmt: skip
         running = live & ok & (done < length)
         rest = jnp.where(running, length - done, 0.0)
         lam, u0, scale = _flow(nc, no, counts, vc, vo, p)
@@ -891,6 +1323,10 @@ def _run_stage(state, length, offset, member, p, *, view):
             tc = tc.at[rows, slot].set(jnp.where(record, chosen, tc[rows, slot]))
             tcell = tcell.at[rows, slot].set(jnp.where(record[:, None], nc_new, tcell[rows, slot]))
             tnode = tnode.at[rows, slot].set(jnp.where(record[:, None], no_new, tnode[rows, slot]))
+            # The counts this loop carries on after the event, as it formed them (counts_new).
+            tn = tn.at[rows, slot].set(jnp.where(record[:, None], counts_new, tn[rows, slot]))
+        if cohorts:  # FR-52: read from the counts before the event; nothing reads the record.
+            units = _cohort_event(carry[19], counts, chosen, event, t0 + done + tau, p)
         hot = jax.nn.one_hot(chosen, chan.shape[1], dtype=jnp.int64)
         chan = jnp.where(event[:, None], chan + hot, chan)
         positive = (nc_new > 0) & (no_new > 0)
@@ -899,30 +1335,33 @@ def _run_stage(state, length, offset, member, p, *, view):
         done = jnp.where(event, done + tau, jnp.where(running, full, done))
         heat = heat + entity_sum(q_heat, axis=1, xp=jnp)
         mag = mag + entity_sum(q_mag, axis=1, xp=jnp)
-        return (done, counts_new, hz_new, thr_new, jnp.where(event, k + 1, k), chan, nc_new,
-                no_new, moved + step, heat, mag, tt, tc, tcell, tnode, fired + event, ok,
-                count + 1)  # fmt: skip
+        out = (done, counts_new, hz_new, thr_new, jnp.where(event, k + 1, k), chan, nc_new,
+               no_new, moved + step, heat, mag, tt, tc, tcell, tnode, tn, fired + event, ok,
+               count + 1)  # fmt: skip
+        return (*out, units) if cohorts else out
 
     start = (
         jnp.zeros(n_sites), state.integer_counts, state.integer_hazard, state.integer_threshold,
         state.integer_events, state.integer_channel_events, nc0, no0,
         jnp.zeros((n_sites, n_routes)), jnp.zeros(n_sites), jnp.zeros(n_sites),
         state.integer_trace_time_s, state.integer_trace_channel, state.integer_trace_cell_fmol,
-        state.integer_trace_node_fmol, jnp.zeros(n_sites, dtype=jnp.int64),
-        jnp.ones(n_sites, dtype=bool), jnp.asarray(0),
+        state.integer_trace_node_fmol, state.integer_trace_counts,
+        jnp.zeros(n_sites, dtype=jnp.int64), jnp.ones(n_sites, dtype=bool), jnp.asarray(0),
     )  # fmt: skip
+    if cohorts:
+        start = (*start, state.integer_cohort_units)
 
     # A fixed trip, EVENT_CAP events and the segment that finishes the stage, so every world of a
     # batch runs in step (GPU lockstep under vmap): a site done, or not running, is an exact no-op.
     # A trip in which no site of the world runs is skipped by lax.cond, which under vmap becomes a
     # select (the lanes stay in step) and on the scalar path skips the trips after the last event.
     def trip(_, carry):
-        running = jnp.any(live & carry[16] & (carry[0] < length))
+        running = jnp.any(live & carry[17] & (carry[0] < length))
         return jax.lax.cond(running, segment, lambda unchanged: unchanged, carry)
 
     end = jax.lax.fori_loop(0, EVENT_CAP + 1, trip, start)
-    (done, counts, hz, thr, k, chan, _, _, moved, heat, mag, tt, tc, tcell, tnode, _, ok,
-     _) = end  # fmt: skip
+    (done, counts, hz, thr, k, chan, _, _, moved, heat, mag, tt, tc, tcell, tnode, tn, _, ok,
+     _) = end[:19]  # fmt: skip
     ok = ok & ~(live & (done < length))  # A site the loop could not finish: refused (the cap).
     sp, cell, node = p.integer_route_species, p.integer_site_cell, p.integer_site_node
     flowing = moved != 0
@@ -949,7 +1388,10 @@ def _run_stage(state, length, offset, member, p, *, view):
         integer_trace_channel=tc,
         integer_trace_cell_fmol=tcell,
         integer_trace_node_fmol=tnode,
+        integer_trace_counts=tn,
     )
+    if cohorts:
+        new = new._replace(integer_cohort_units=end[19])
     return new, ok
 
 
@@ -1159,6 +1601,12 @@ def check_lives(spec, declaration):
     cell_lives, maps = lives(spec), patch_maps(spec)
     by_id = {site.id: site for _, site in sites_of(declaration)}
     parents = {m.parent: m for m in declaration.divisions}
+    for cohort in declaration.cohorts:  # FR-52 §2.6 (5): divide() moves counts with no event.
+        if cell_lives.get(by_id[cohort.site].cell, (None, None)) != (None, None):
+            raise ConfigError(
+                f"{LAW_ID}: cohort {cohort.id}'s site {cohort.site} is on a cell that is born or "
+                "retires: a cohort's map does not cross a division (version 1)"
+            )
     for _, site in sites_of(declaration):
         birth, retirement = cell_lives.get(site.cell, (None, None))
         if birth is not None and any(n for _, n in site.initial_counts):
@@ -1299,6 +1747,8 @@ class IntegerUnitPopulationOperator(Operator):
             "integer_trace_channel": "level",
             "integer_trace_cell_fmol": "amount",
             "integer_trace_node_fmol": "amount",
+            "integer_trace_counts": "amount",
+            "integer_cohort_units": "amount",
         }
     )
     UNITS = MappingProxyType(
@@ -1309,7 +1759,9 @@ class IntegerUnitPopulationOperator(Operator):
             "integer_events": "events",
             "integer_channel_events": "events",
             "integer_trace_channel": "index",
+            "integer_trace_counts": "units",
             "integer_divided_units": "units",
+            "integer_cohort_units": "units",
         }
     )
     ORIENTATION = MappingProxyType(
@@ -1364,6 +1816,17 @@ class IntegerUnitPopulationOperator(Operator):
                 "ids": tuple(f"event_{i}" for i in range(t)),
                 "holds": "recorded event",
             },
+            "integer_cohort": {  # FR-52: one site's identity class and window each.
+                "id": "integer_cohort",
+                "ids": tuple(c.id for c in declaration.cohorts),
+                "holds": "unit cohort",
+            },
+            "integer_cohort_label": {
+                "id": "integer_cohort_label",
+                "ids": cohort_kernel.LABELS,
+                "holds": "when a unit's identity began: at the start, or before, inside or after "
+                "the cohort's window",
+            },
         }
 
     # ------------------------------------------------------------ definition
@@ -1400,8 +1863,10 @@ class IntegerUnitPopulationOperator(Operator):
         check_hazard_bound(spec, declaration)
 
     def batch_signature(self, declaration):
-        """The static structure; the seed, rates, conductances and counts are per-world data."""
-        return (
+        """The static structure; the seed, rates, conductances, counts and cohorts' windows are
+        per-world data. A cohort's site, class and pairings are structure (FR-52), appended only
+        where declared, so no undeclared world's signature moves."""
+        signature = (
             LAW_ID,
             tuple(s.id for s in declaration.species),
             tuple(s.id for s in declaration.read_species),
@@ -1420,24 +1885,35 @@ class IntegerUnitPopulationOperator(Operator):
             ),
             tuple((m.parent, m.daughters) for m in declaration.divisions),
         )
+        if not declaration.cohorts:
+            return signature
+        cohorts = tuple(
+            (c.id, c.site, c.states, tuple((x.channel, x.pairs) for x in c.carries))
+            for c in declaration.cohorts
+        )
+        return (*signature, cohorts)
 
     def working_size(self, spec):
         """Values per saved row (execution/resources.row_bytes): its owned fields, the trace
-        included, times a margin of 2."""
+        included, and FR-52's records (4 per state per cohort), times a margin of 2."""
         (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
         n, k, j, r, t, _ = dimensions(declaration)
-        return 2 * n * ((2 * k + j + r + 7) + t * (2 + 2 * r))
+        records = len(declaration.cohorts) * k * len(cohort_kernel.LABELS)
+        return 2 * n * ((2 * k + j + r + 7) + t * (2 + 2 * r + k)) + 2 * records
 
     def fixed_working_size(self, spec):
         """Values held once per resident copy (execution/resources.fixed_bytes): its bound
-        layout, times a margin of 2."""
+        layout, FR-52's cohort layout included, times a margin of 2."""
         (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
         n, k, j, r, _, w = dimensions(declaration)
         maps = len(declaration.divisions)
-        return 2 * (n * (12 + 2 * k + 2 * j * k + 4 * j + 2 * r + r * k) + 3 * maps + w + n)
+        cohorts = len(declaration.cohorts) * (3 + k + j * k * k)
+        return 2 * (
+            n * (12 + 2 * k + 2 * j * k + 4 * j + 2 * r + r * k) + 3 * maps + w + n + cohorts
+        )
 
     def summary(self, spec, declaration, schedule, history):
-        return {
+        out = {
             "integer_law": LAW_ID,
             "integer_step": STEP_ID,
             "integer_streams": streams.identity(declaration.seed),
@@ -1450,6 +1926,9 @@ class IntegerUnitPopulationOperator(Operator):
             "integer_event_cap_per_half_step": EVENT_CAP,
             "integer_propensity": "k_j prod_k n_k!/(n_k - r_jk)! (c/1 mM where read)",
         }
+        if declaration.cohorts:  # FR-52: written only where declared.
+            out["integer_cohorts"] = cohort_summary(declaration)
+        return out
 
     # ------------------------------------------------------------ binding
 

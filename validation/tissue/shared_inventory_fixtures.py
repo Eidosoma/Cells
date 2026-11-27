@@ -209,6 +209,45 @@ def swelling_cell(*, network_multiplier=1.0, dt=0.01, end=40.0, every=0.5, **kwa
     return with_water_first(raw, keep=(fx.SPECIES, "A", "B", "C"), **kwargs)
 
 
+# ------------------------------------------------------------------ turnover, changing volume
+
+TURNOVER_MAKE = 1.0  # fmol/s: S made in the cell, enough to move the volume (FR-65 §6.1).
+TURNOVER_CLEAR = 1e-3  # 1/s: S's first-order clearance, P/k far above S while V moves (§4.1).
+COUPLING_2 = "cells.operator.species_regulated_availability@2"
+
+
+def swelling_turnover(*, make=TURNOVER_MAKE, clear=TURNOVER_CLEAR, network_multiplier=1.0,
+                      dt=0.01, end=40.0, every=0.5, **kwargs):  # fmt: skip
+    """FR-65 (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §6.1): the swelling cell (swelling_cell, water
+    declared first, the network active unless network_multiplier 0) with
+    cells.operator.scheduled_species_turnover@1 declared last, making the tracer S at `make` fmol/s
+    and clearing it at `clear` /s in the cell from time 0. Turnover reads the cell's volume current
+    at its split, so its booked work is the free-energy change at the swelling volume."""
+    raw = swelling_cell(
+        network_multiplier=network_multiplier, dt=dt, end=end, every=every, **kwargs
+    )
+    return fx.with_turnover(
+        raw,
+        [("make_s", "cell_0", "production"), ("clear_s", "cell_0", "clearance")],
+        [("make_s", "cell_0", [(0.0, make)]), ("clear_s", "cell_0", [(0.0, clear)])],
+    )
+
+
+def swelling_a1(*, coupling=False, dt=0.5, end=None, every=60.0, **kwargs):
+    """FR-65's A1 in a swelling cell: the gene regulation sheet's A1
+    (validation/gene_regulation/worlds.a1: the gene unit, turnover of X, and the coupling's Hill
+    factor of X on transcription's initiation) under water declared first (with_water_first).
+    coupling False removes the coupling and its controls (the first build's world, X turnover's
+    alone); with it, the coupling reads the current volume (FR-65's coupling step, §11)."""
+    raw = gw.a1(dt=dt, end=end, every=every)
+    if not coupling:
+        operators = raw["model"]["operators"]
+        raw["model"]["operators"] = [o for o in operators if o["law"] != COUPLING_2]
+        for key in ("coupling_controls", "regulatory_writes"):
+            raw["experiment"].pop(key, None)
+    return with_water_first(raw, **kwargs)
+
+
 # ------------------------------------------------------------------ beside the unit producer
 
 UNIT_PRODUCER = "cells.operator.population_unit_turnover@1"
@@ -289,3 +328,189 @@ def unit_pair(*, n_R=10, dt=0.5, end=None, every=None, k_a=K_ASSEMBLY, k_r=K_REM
             {**on, "time": float(t), rate: on[rate] if i % 2 else 0.0} for i, t in enumerate(times)
         ]
     return _horizon(raw, end, every)
+
+
+# ------------------------------------------------------------------ the coupling beside water
+
+# FR-65's coupling step (docs/TURNOVER_CHANGING_VOLUME_DESIGN.md §11): the coupling's version 1.1
+# reads the current cell volume beside water declared first.
+COUPLING_1 = "cells.operator.species_regulated_availability@1"
+STATE_LAW = "cells.regulation.hill_regulated_two_state@1"
+TURNOVER = "cells.operator.scheduled_species_turnover@1"
+REACTIONS = "cells.operator.local_species_reactions@1"
+REGULATOR, REGULATOR_mM = "R", 1e-3  # The water door's conserved neutral regulator: 1 uM.
+DOOR_CHANNEL = "leak_0"  # A channel population at zero permeability: the regulation moves no ion.
+DOOR_ON, DOOR_OFF = 1.0, 0.5  # 1/s: the water door's state, which relaxes within its horizon.
+DOOR_K_S = 5.0  # mM: the self route's half-saturation of S, which turnover makes to about 10 mM.
+DOOR_BASAL = 0.1
+DOOR_HIGH = 10 * REGULATOR_mM  # mM: the operating range of a route of R, [0, DOOR_HIGH].
+
+
+def with_regulator(raw, cell="cell_0", *, mM=REGULATOR_mM):
+    """raw with the conserved neutral regulator R in `cell`: a trace species that nothing moves."""
+    return add_inventory_species(
+        raw, REGULATOR, trace_mM=fx.TRACE_mM, diffusivity_m2_per_s=fx.D_S,
+        floor_fmol=fx.FLOOR_FMOL, concentrations_mM={cell: mM},
+    )  # fmt: skip
+
+
+def hill_coupling(name, target, source, *, law="hill_activation", k=REGULATOR_mM, n=1.0,
+                  basal=DOOR_BASAL):  # fmt: skip
+    """A coupling of the species `source`'s Hill factor on `target`."""
+    return dict(
+        id=name, target=target, source={"species": source}, law=law, half_saturation_mM=k,
+        hill_coefficient=n, basal=basal,
+    )  # fmt: skip
+
+
+def inner_target(ids, *, version, high=DOOR_HIGH, control="channel"):
+    """An inner target; version 2's declares its evaluation and its source's operating range."""
+    target = dict(operator="inner", control=control, ids=list(ids), side=None)
+    if version == 2:
+        target.update(evaluation="step_view", operating_range=[0.0, high])
+    return target
+
+
+def routed_target(operator, control, ids, *, high=DOOR_HIGH):
+    """Version 2's operator target: `operator`'s routable `control` on `ids`."""
+    return dict(
+        operator=operator, control=control, ids=list(ids), evaluation="target_half_steps",
+        operating_range=[0.0, high],
+    )  # fmt: skip
+
+
+def with_coupling_block(raw, couplings, states=(), *, law=COUPLING_2, species=(REGULATOR,),
+                        before=None):  # fmt: skip
+    """raw with the coupling declared just before the first operator of law `before` (last when
+    None), its couplings enabled from 0, and no regulatory write."""
+    out = copy.deepcopy(raw)
+    ops = out["model"]["operators"]
+    block = dict(
+        law=law, species=[dict(id=k, catalogue=None, evidence=None) for k in species],
+        states=list(states), couplings=list(couplings),
+    )  # fmt: skip
+    at = len(ops) if before is None else next(i for i, o in enumerate(ops) if o["law"] == before)
+    out["model"]["operators"] = [*ops[:at], block, *ops[at:]]
+    out["experiment"]["coupling_controls"] = [
+        dict(coupling_id=c["id"], schedule=[dict(time=0.0, enabled=1)]) for c in couplings
+    ]
+    out["experiment"]["regulatory_writes"] = []
+    return out
+
+
+def water_door(*, version=2, dt=0.01, end=10.0, every=0.5, network_multiplier=1.0):
+    """FR-65's coupling step, T1 (§11.8): the swelling cell beside turnover of S
+    (swelling_turnover: water first, the passive network, S made and cleared), with the conserved
+    neutral regulator R, a K channel population at zero permeability (so the regulation moves no
+    ion), and the coupling declared after water. Its routes: an instantaneous Hill factor of R on
+    the population (the control view) and a state with a Hill input of R gating it (the split);
+    and in version 2, Hill factors of R routed onto S's production and onto the binding
+    reaction's multiplier, and S's own Hill inhibition on its production (self-moved: turnover
+    moves S, so the composite evaluates it at the midpoint)."""
+    raw = with_regulator(swelling_turnover(network_multiplier=network_multiplier, dt=dt, end=end,
+                                           every=every))  # fmt: skip
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    m["channels"] = [
+        dict(
+            id=DOOR_CHANNEL,
+            membrane_id=m["membranes"][0]["id"],
+            kinetic_law="cells.channel.kleak_always_open@1",
+            max_permeability_m_per_s=0.0,
+            abundance=1.0,
+            initial_gate=[],
+            permeant_ions=[dict(species_id="K", relative_permeability=1.0)],
+        )  # fmt: skip
+    ]
+    e["channel_controls"] = [
+        dict(channel_id=DOOR_CHANNEL, schedule=[dict(time=0.0, availability=1.0)])
+    ]
+    x["channel_capacity"] = 1
+    state = dict(
+        id="s", law=STATE_LAW, cells=["cell_0"],
+        inputs=[dict(law="hill_activation", species=REGULATOR, half_saturation_mM=REGULATOR_mM,
+                     hill_coefficient=1.0)],
+        on_rate_per_s=DOOR_ON, off_rate_per_s=DOOR_OFF, initial=0.5, crossing_level=None,
+    )  # fmt: skip
+    couplings = [
+        hill_coupling("inst", inner_target([DOOR_CHANNEL], version=version), REGULATOR),
+        dict(
+            id="gate",
+            target=inner_target([DOOR_CHANNEL], version=version, high=1.0),
+            source={"state": "s"},
+            law="state_fraction",
+            basal=0.0,
+        ),  # fmt: skip
+    ]
+    if version == 2:
+        couplings += [
+            hill_coupling("make", routed_target(TURNOVER, "turnover_rate", ["make_s"]), REGULATOR),
+            hill_coupling(
+                "bind",
+                routed_target(REACTIONS, "reaction_multiplier", ["bind"]),
+                REGULATOR,
+                law="hill_inhibition",
+            ),  # fmt: skip
+            hill_coupling(
+                "self",
+                routed_target(TURNOVER, "turnover_rate", ["make_s"], high=1e3),
+                fx.SPECIES,
+                law="hill_inhibition",
+                k=DOOR_K_S,
+            ),  # fmt: skip
+        ]
+    law = COUPLING_1 if version == 1 else COUPLING_2
+    species = (REGULATOR,) if version == 1 else (REGULATOR, fx.SPECIES)
+    return with_coupling_block(raw, couplings, [state], law=law, species=species, before=REACTIONS)
+
+
+def companion_world(kind, *, coupling=False):
+    """The first build's companion world (FR-65 §3.6): turnover making and clearing S in the cell
+    beside water and cells.operator.k_anion_symport_mass_action@1 ("symport") or
+    cells.operator.scheduled_bath_composition@1 ("bath schedule"). With `coupling`, R in the cell
+    and the coupling's Hill factor of R routed onto S's production, declared before turnover
+    (§11.6: covered by argument, with a parse row each)."""
+    from cells.definitions import pump_composite_spec as cs
+    from validation.tissue import bath_schedule_fixtures as bfx
+    from validation.tissue import pump_water_fixtures as wfx
+
+    if kind == "symport":
+        world = cs.frozen_definition(
+            wfx.with_symport(
+                wfx.with_water(wfx.heredity_cell("D", end_time=0.1), pf_m_s=5e-4), steepness=0.12
+            )
+        )
+    else:
+        world = bfx.water_world({"NaM": -10.0, "KM": 10.0})
+    world = add_inventory_species(
+        world, fx.SPECIES, trace_mM=fx.TRACE_mM, diffusivity_m2_per_s=fx.D_S,
+        floor_fmol=fx.FLOOR_FMOL,
+    )  # fmt: skip
+    cell = world["model"]["cells"][0]["id"]
+    if coupling:
+        world = with_regulator(world, cell)
+    world = fx.with_turnover(
+        world,
+        [("make_s", cell, "production"), ("clear_s", cell, "clearance")],
+        [("make_s", cell, [(0.0, COMPANION_MAKE)]), ("clear_s", cell, [(0.0, COMPANION_CLEAR)])],
+    )
+    if not coupling:
+        return world
+    route = hill_coupling("make", routed_target(TURNOVER, "turnover_rate", ["make_s"]), REGULATOR)
+    return with_coupling_block(world, [route], before=TURNOVER)
+
+
+COMPANION_MAKE, COMPANION_CLEAR = 1e-6, 0.5  # fmol/s and 1/s: S moves a hundredfold in 0.1 s.
+
+
+def swelling_arm_b(run, *, dt=0.01, end=10.0, every=2.5, window=(2.0, 4.0)):
+    """FR-38 v2's arm B (the sheet's A1 with transcription's release, labelled or not) in a
+    swelling cell (FR-65's coupling step, T2's labelled row): a short made-up B with its own
+    horizon, window and output rows and the registered inputs otherwise, water declared first, its
+    IDs translated, since its registered builders keep the IDs from before the move."""
+    from dataclasses import replace
+
+    from validation import id_table
+    from validation.gene_regulation.fr38_v2 import worlds as w2
+
+    f = replace(w2.ARM_B, horizon=float(end), window=tuple(window), every=float(every))
+    return id_table.translate(with_water_first(w2.b(run, dt=dt, f=f)))
