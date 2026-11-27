@@ -1,6 +1,6 @@
 # FR-45's engine table: the contract
 
-**Dated 26 November 2026, and changed five times on 27 November 2026** (the next five sections), before the binding
+**Dated 26 November 2026, and changed six times on 27 November 2026** (the next six sections), before the binding
 tag and before any engine run of a registered world. The registration never defines the engine's table, so the lead
 ruled that a dated contract fixes it before the binding tag, from the spec's text (the lead's first rulings, Q5:
 `/mnt/workspaces/Cells/fr45-readings-20261126/RULINGS-1-2026-11-26.md`). The lead's second rulings,
@@ -216,6 +216,33 @@ honest run's. No criterion, band, plant, tolerance or class changes.
 in §15; the format sample's `host_values`, its README, and its `SHA256SUMS`; and the expected-inputs file's
 statement of the addendum's values [§9.6+].
 
+## Sixth dated change, 27 November 2026
+
+Made before the binding tag, by the same agent, applying RULINGS-2's §10, "Amendment of 27 November, after the fifth
+read and the source check's answers". The fifth read, `/mnt/workspaces/Cells/fr45-contract-review-20261127/REVIEW-5.md`,
+has no blocking finding. No criterion, band, plant, tolerance or class changes.
+
+**The marks.** [§10.1] to [§10.6] are §10's six items, and [R5-1] to [R5-7] the fifth read's findings, as §10
+accepts them.
+
+**What changed:**
+- **§4:** the execution record compares declared keys only, never the engine's computed allowances; W1eq's declared
+  keys equal W1's, its start apart [§10.1, R5-1]; `definition`'s comparison excludes the fields that name the run or
+  its record [§10.3, R5-4].
+- **§4.1:** every ion's permeability is 0.0 on every patch, a constraint compared literally, in a new
+  `ion_permeabilities`, and no longer an addendum value; what holds the ions; how the source check ran the form; the
+  addendum's confirmation by a parse-and-timeline pass and two development runs [§10.2, R5-2, R5-3]; the host
+  patches' inside [§10.6, R5-5].
+- **§12:** the sample's constants; §12.2 points to the expected-inputs file's own marker list [§10.5, R5-7].
+- **§14.1:** item 6 and the execution record's exclusions [§10.2, §10.3].
+- **§15:** E22 and E25 amended; E26 confirmed.
+- **R5-6:** no change. `definition` records `cells.solver.imex_ars222_face_electromigration@1`, older spellings are
+  refused at parse (D345), and §9.3 stands [§10.4].
+- **The format sample:** `inputs.ion_permeabilities` at 0.0 on every patch, out of `host_values`; the README. Its
+  `SHA256SUMS` is regenerated.
+- **The expected-inputs file:** `ion_permeabilities` per world, 0.0 for each ion on every patch, and its statement and
+  rules [§10.2].
+
 ## 1. Files and number form
 
 - **The table** is `table/table.json`, one file for the judged run, with `table/SHA256SUMS` (one line: the sha256, two
@@ -365,11 +392,14 @@ Every entry holds every key below, for honest, plant and refused runs alike.
     not a run (§8.6). N2's reviewer, who is not the builder, confirms against `src/` that the record holds the
     engine's defaults: the default `field_solver`, and each species' `material_balance_atol_fmol` at the species
     helper's floor. The lead hashes it, as a record and not a change (§14.1).
-  - *W1eq* [§9.2, WF5]: no parse-only pass of W1eq is made before the judged run. Its execution block is compared with
-    W1's record, its start apart, and so is any field that `inputs` fixes differently for W1eq, its observation
-    times and horizon [E22].
-  - *What the judge compares:* every honest and planted run's `definition` execution block, and its bounds, with its
-    honest run's record.
+  - *What the judge compares* [§10.1, R5-1]: the declared keys only, in every honest and planted run, with its
+    honest run's record: the solver; `dt`, `jit`, `backend` and `field_solver`; the absence of `energy_check`; each
+    species' `material_balance_atol_fmol`; and `driver.window_steps`. The engine's computed rounding allowances
+    (2.5·ε·k·M) are the engine's own, formed from each run's state, and are never compared. The source check
+    confirms that no declared bound depends on a world's amounts or start: the helper's floor is the caller's
+    argument, positive and at most 1e-10 fmol.
+  - *W1eq* [§9.2, WF5; §10.1]: no parse-only pass of W1eq is made before the judged run. Its declared keys are
+    compared with W1's record, and equal W1's, its start apart [E22].
   - *The literal fields* [§9.1, N4]: in every run the judge also checks these against this file: `execution.solver`,
     as above; `execution.dt` equal to the run's `dt_s`; `execution.jit` true; the execution block's `backend`
     `"cpu"`; no `energy_check` in the execution block; and `driver.window_steps` 1 [§9.5].
@@ -377,6 +407,8 @@ Every entry holds every key below, for honest, plant and refused runs alike.
     `inputs_changed` (B6) is applied, as P2's crossed `k_off`, and any other difference is a fault of the run's
     identity. The B6 addendum names where each declared change sits in `definition`, P2's included (§14.1) [E24].
     A patch's change is code and lies outside `definition`; the patch review covers it (N1).
+  - *What is never compared* [§10.3, R5-4]: the fields of `definition` that name the run or its record. The
+    execution record lists them by path (§14.1); if it lists none, nothing is excluded.
   - *A departure* is a fault of the run's identity (§11.1, §11.2).
 - **A completed run** carries every registered row of its world (§5.1) and, in W2's and W7's runs, its one event and
   every event-map entry (§6) [B2].
@@ -403,10 +435,11 @@ Exactly these keys:
 | `populations` | list of `{"id", "set", "ligand", "k_on", "k_off", "initial_occupancy"}`. `k_on` and `k_off` are the values the binding routes use [S6] |
 | `wash` | null, or `{"time_s", "node", "fraction", "buffer_mM"}`, with `buffer_mM` an object ligand → mM (W2 and W7: SPEC:152, 225) |
 | `permeabilities` | list of `{"patch", "ligand", "value"}`: each ligand's permeability on each patch, registered and host, in the engine's own unit; registered 0.0 (SPEC:59-61) [S6, E9; §8.1] |
+| `ion_permeabilities` | object, patch → object, ion → number: every ion's permeability on every patch, registered and host, as the engine parsed it, each the engine's own value: 0.0 for each, a constraint fixed at the tag and compared literally. Its ions are the world's, those of `host_values.ion_amounts` [§10.2, R5-2] |
 | `multipliers` | list of `{"of", "name", "value"}`: exactly each population's binding multiplier, with `of` the population, `name` `"site_binding_multiplier"` and `value` its value; registered 1.0 (SPEC:62). The accessible fraction α and the internalisation control are not multipliers [S6; §8.5] |
 | `charges` | object, ligand → integer: each ligand's valence, for every ligand of `ligands`; registered 0 (SPEC:59) [S6] |
 | `capacitor_components` | list of `{"members", "held_by"}`: the host's capacitor components, as the engine's checker forms them: each one's compartments (`members`, compared as a set) and the held node that holds it. In every world there is one, `{bath, <its cell>, <its registered node>}`, held by `bath` [§8.1, E17] |
-| `host_values` | `{"areas", "capacitances", "ion_permeabilities", "ion_amounts"}`: the host-entity addendum's values, as the engine parsed them, each the engine's own value. `areas` and `capacitances` are keyed by every patch, registered and host [§9.6+]; `ion_permeabilities` by host patch, then by ion; `ion_amounts` by compartment, every one, then by ion [§9.6, E25] |
+| `host_values` | `{"areas", "capacitances", "ion_amounts"}`: the host-entity addendum's values, as the engine parsed them, each the engine's own value. `areas` and `capacitances` are keyed by every patch, registered and host [§9.6+]; `ion_amounts` by compartment, every one, then by ion [§9.6, E25]. The ions' permeabilities left it for `ion_permeabilities` [§10.2] |
 | `dt_s`, `observation_times_s`, `horizon_s` | number, list of numbers, number |
 
 - **`multipliers` and `permeabilities`** are checked against more than the exporter's word: before the judged run, a
@@ -438,31 +471,41 @@ Exactly these keys:
     and `host_wall` (inside `host_cell`, outside `bath`).
   - *Fixed at the tag, the structure* [§9.6, WF2]: the bath form's entities and their names; the patch orientations; and
     the capacitor component. Each host patch's inside is the world's cell: `host_cell`, or `specimen` in W3 and W3p
-    [E26]. The wall's outside is `bath`, and the contact's outside is the registered node. The one capacitor
+    [E26; §10.6, R5-5]. The wall's outside is `bath`, and the contact's outside is the registered node. The one capacitor
     component is `{bath, <its cell>, <its registered node>}`, held by `bath` (`capacitor_components`) [E17]. Each
     host compartment is in `nodes` with `registered` false, and the names are this file's choice [E18]. The source
     check ran this form, its case f, the wash fixtures' form.
   - *Fixed at the tag, the constraints* [§9.6, WF2, WF3]: every ligand has permeability 0.0 on every host patch;
-    every ligand is at its trace in every host compartment (`declared` false, and information in the rows); ions are
-    held at fixed amounts; and no ligand moves through a host entity. The trace is compared (SPEC:104-105) [item 7]: the
+    every ligand is at its trace in every host compartment (`declared` false, and information in the rows); every
+    ion's permeability is 0.0 on every patch, host and registered (`ion_permeabilities`) [§10.2]; and no ligand
+    moves through a host entity. The trace is compared (SPEC:104-105) [item 7]: the
     binary64 product 1e-12 × that compartment's `volume_pL`, which the driver declares as that product, never as a
     typed literal [W-f].
   - *Nothing else:* a world holds no compartment or patch beyond its registered ones and these, unless the lead
     names one by a dated addendum before any registered run (§14.1) [item 7].
   - *The host-entity addendum's values* [§9.6, WF2, WF3]: the host compartments' volumes; every patch's area and
     capacitance, registered patches included, since SPEC registers none: `specimen_face`'s in W3, W3p and W6 as well
-    as the host patches' [§9.6+]; the ions' amounts in every compartment; and the ions' permeabilities on the host
-    patches. The
-    addendum is "Who c" kind (1): recorded after the build and before any registered run, confirmed by the
-    non-builder reviewer against the wash fixtures' form, and hashed by the lead (§14.1). It is kept per honest
+    as the host patches' [§9.6+]; and the ions' amounts in every compartment. The ions' permeabilities are no longer
+    among them [§10.2]. The addendum is "Who c" kind (1): recorded after the build and before any registered run,
+    confirmed by the non-builder reviewer, and hashed by the lead (§14.1). The reviewer confirms it in the way the
+    source check ran the form, with the addendum's own values: a parse-and-timeline pass at every registered size,
+    and a W5-shaped and a W2-shaped development run on invented worlds [§10.2, R5-3]. It is kept per honest
     run, its values copied by machine from the parse-only pass (§4); W1eq takes W1's, and a plant run its honest
     run's [E27]. The echo carries them, in `nodes[].volume_pL` and `host_values`, and the judge compares them with
     the addendum.
-- **Ions** [§8.1]. They are held at fixed amounts in every compartment (SPEC:59-61). They are not ligands, so every
-  ligand-only key excludes them: `charges`, `free_amounts`, the rows' `amounts` and `records` (§5), and the event
-  map (§6). So do `permeabilities`, `wash.buffer_mM`, and the event's `collected` and `supplied` [E16]. Their
-  amounts in every compartment, and their permeabilities on the host patches, are the host-entity addendum's
-  values, in `host_values` (above) [§9.6].
+- **Ions** [§8.1; §10.2, R5-3]. They are held at fixed amounts in every compartment (SPEC:59-61).
+  - *What holds them:* no ion moves through any patch, since every ion's permeability is 0.0 on every patch; and the
+    wash's exchange is ion-matched, its collected amount equal to its supplied one, which `wash_ions` checks. So ions
+    stay at their fixed amounts.
+  - *The source check ran this form,* on invented worlds in every registered world's shape: a parse and
+    `runner.timeline` at every registered size; W5's shape at dt 0.1, refused at step 1 by the stage condition at
+    load 0.6, and admitted at 0.3; and W2's shape through a wash, with every check closed and every ion increment
+    exactly 0.0 at every row.
+  - *Not ligands:* every ligand-only key excludes them: `charges`, `free_amounts`, the rows' `amounts` and `records`
+    (§5), and the event map (§6). So do `permeabilities`, `wash.buffer_mM`, and the event's `collected` and
+    `supplied` [E16].
+  - *Their values:* their amounts in every compartment are the host-entity addendum's values, in `host_values`
+    (above) [§9.6]. Their permeabilities are a constraint, in `ion_permeabilities` [§10.2].
 - **The echo** [S5]. The judge compares each run's `inputs` with that run's entry in the expected-inputs file (§12.2),
   bit for bit: "Every number below is a binary64 literal as written" (SPEC:104). It never compares with a copy of its
   own.
@@ -487,7 +530,8 @@ Exactly these keys:
       the 26 November text left to the engine's own name and volume, now has this file's name [W10, item 7; §8.1],
       and its volume is the addendum's [§9.6].
     - `specimen_face`'s area and capacitance in W3, W3p and W6, which SPEC does not register: compared with the
-      host-entity addendum, in `host_values`, in every run; a plant run takes its honest run's [§9.6+].
+      host-entity addendum, in `host_values`, in every run; a plant run takes its honest run's [§9.6+]. Its ions'
+      permeabilities are no exception: 0.0, compared literally [§10.2].
     - W7s's L2, if the engine holds it (above): its `ligands` entry, its `free_amounts` entries, its
       `permeabilities` entries, each 0.0, and its `charges` member, which must be 0 [S11; S-g; §8.1].
     - A key path that a plant run's `plant.inputs_changed` names, whose value is checked as §8.1 says [B6].
@@ -1054,7 +1098,7 @@ The judge checks each of these in every run. A departure is a fault (§11.2).
 - **Its numbers** [W2, E10]. It holds none of SPEC.md's input values, except the format constants this file fixes:
   - step 0, with its clock 0.0, at the start; the cumulative heat 0.0 at the start; the records 0.0 before the wash;
   - `step_report.step` 1, `limit` 0.5 and `driver.window_steps` 1 [§9.5];
-  - the registered `permeabilities` 0.0, `multipliers` 1.0 and `charges` 0.
+  - the registered `permeabilities` and `ion_permeabilities` 0.0, `multipliers` 1.0 and `charges` 0 [§10.2].
 
   Every other number in it is invented and meaningless, including its N_f, T and traces. The step counts of its
   invented runs (`rows[].step`, `steps`, `after_step`, `state_step`, `refusal.step`, a failure's `step`) count those
@@ -1101,8 +1145,10 @@ The judge checks each of these in every run. A departure is a fault (§11.2).
     reads it at run time (§3; item 2), and RT;
   - the bath form's host entities in every world, with their structure and constraints, and each world's capacitor
     component [§8.1, §9.6];
-  - at each host volume, each host trace and `host_values`, the marker "from the host-entity addendum" in place of a
-    literal; the host traces follow the addendum's volumes [§9.6];
+  - at each host volume, each host trace and `host_values`, a marker in place of a literal, from the file's own list,
+    `host.markers`. The judge reads the markers from the file and recognises exactly those. A marked trace is the
+    binary64 product 1e-12 × the addendum's volume [§9.6; §10.5, R5-7];
+  - at every patch of every world, `ion_permeabilities` 0.0 for each ion [§10.2];
   - each population's `site_binding_multiplier`, at 1.0 [§8.5];
   - the two values of P2's crossed `k_off`, if P2 is planted by declaration (§8.1) [B6];
   - its own statement of these rules.
@@ -1185,10 +1231,10 @@ before any run of a registered world:
 5. any compartment or patch beyond the registered ones and the bath form's (§4.1), and any operator the host tissue
    requires (§9) [item 7, S7];
 6. the host-entity addendum: the host compartments' volumes, every patch's area and capacitance, registered patches
-   included [§9.6+], the ions' amounts in every compartment and the ions' permeabilities on the host patches, kept per
-   honest run (§4.1). It is
-   recorded after the build and before any registered run, confirmed against the wash fixtures' form by the
-   non-builder reviewer, and hashed by the lead [§8.1; §9.6].
+   included [§9.6+], and the ions' amounts in every compartment, kept per honest run (§4.1). The ions' permeabilities
+   are a constraint, not addendum values [§10.2]. It is recorded after the build and before any registered run,
+   confirmed by the non-builder reviewer by a parse-and-timeline pass at every registered size and a W5-shaped and
+   a W2-shaped development run on invented worlds, with its own values, and hashed by the lead [§8.1; §9.6; §10.2].
 
 **The erratum** ("Who c"'s second kind): an erratum where a judge must change (D371).
 
@@ -1206,7 +1252,8 @@ unchanged.
 - the execution record, the honest runs' `definition` execution block and bounds: from a parse-only pass of every
   registered world but W1eq, made after the build and before any registered run; confirmed by N2's reviewer
   against `src/` (the default `field_solver`, and each species' `material_balance_atol_fmol` at the species
-  helper's floor); and hashed by the lead (§4) [§8.2, N3; §9.1, N4];
+  helper's floor); and hashed by the lead (§4) [§8.2, N3; §9.1, N4]. It lists by path the fields of `definition`
+  that name the run or its record, which no comparison reads [§10.3, R5-4];
 - the lead records the runs' inputs and revision (§4, §10).
 
 **An open registration question** [§8.7]: X2 (D224), the user's. It blocks the judged run, not the binding tag.
@@ -1335,14 +1382,16 @@ unchanged.
 - **The editor's format sentences of this change** (each the reading that cannot make a pass easier):
   - [E22] W1eq's execution block is compared with W1's record apart from its start and from the fields that `inputs`
     fixes differently for W1eq, its observation times and horizon, so that an honest W1eq cannot fail on them (§4).
+    Settled by §10.1: only declared keys are compared, and W1eq's equal W1's, its start apart.
   - [E23] The run's driver record is a new key of the table, `driver`, `{"window_steps"}`, present in every run (§4).
   - [E24] The B6 addendum names where each declared change sits in `definition`, P2's included, so that the judge can
     apply `inputs_changed` to `definition` from the table and the addenda alone (§4, §14.1).
   - [E25] The host values' key, `inputs.host_values`, and its form: `areas`, `capacitances` and `ion_permeabilities` by
     host patch, `ion_amounts` by compartment, each the engine's own value with no unit suffix (§4.1). Amended by §9.6+:
-    `areas` and `capacitances` are keyed by every patch, registered and host.
+    `areas` and `capacitances` are keyed by every patch, registered and host. Amended by §10.2: the ions'
+    permeabilities left `host_values` for `ion_permeabilities`, a literal constraint.
   - [E26] In W3 and W3p the wall's inside is `specimen`, the world's own cell. §9.6 says that each host patch's inside is
-    `host_cell`, which those two worlds do not hold (§4.1).
+    `host_cell`, which those two worlds do not hold (§4.1). Confirmed by §10.6.
   - [E27] The host-entity addendum is kept per honest run, its values copied by machine from the parse-only pass; W1eq
     takes W1's, and a plant run its honest run's (§4.1).
 
@@ -1352,3 +1401,14 @@ unchanged.
 - **What it ran:** the sample's writer, the structure reader, the README's path check and the expected file's facts
   check. The structure reader was first made to require every patch's area and capacitance, and it failed on the
   earlier sample's runs that hold a registered patch.
+
+### 27 November 2026, the sixth dated change
+
+- **What it applies:** RULINGS-2's §10, which accepts every finding of the fifth read.
+- **What it read besides the earlier files:** RULINGS-2's §10, and the fifth read, `REVIEW-5.md`, whole.
+- **What it did not open:** any file under `validation/fr45/references/` beyond the invented file, any FR-45 judge folder
+  or script, `src/`, and the readings folder's cross-check files.
+- **What it ran:** the writers of the sample and the expected-inputs file, the structure reader, the README's path check
+  and the expected file's facts check. The structure reader and the facts check were first made to require
+  `ion_permeabilities` at 0.0 on every patch and no ion permeability in `host_values`, and they failed on the earlier
+  files.

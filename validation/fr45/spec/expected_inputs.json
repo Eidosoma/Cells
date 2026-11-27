@@ -4,7 +4,7 @@
  "written": "27 November 2026, before the binding tag, by the agent who wrote the engine table's format sample, who has seen no reference value. Typed by hand from SPEC.md §2 (with §0's constants and §1.1's ligands and multipliers) at tag fr45-site-competition-v1-amendment-3-2026-11-24.",
  "contract": "validation/fr45/spec/TABLE.md, §4.1 and §12.2 (the dated changes of 27 November 2026)",
  "host": {
-  "statement": "The host entities of the bath form (RULINGS-2 §8.1, §9.6) are not registered inputs. This file fixes their structure and constraints, which the binding tag fixes: their names, the patch orientations, each world's one capacitor component held by the bath, every ligand's permeability 0.0 on every host patch, every ligand at its trace in every host compartment, and ions held at fixed amounts. Their values are not here. The host compartments' volumes, every patch's area and capacitance, the registered specimen_face's included, the ions' amounts in every compartment and the ions' permeabilities on the host patches come from the host-entity addendum, recorded after the build and before any registered run (TABLE.md §4.1, §14.1). So each host volume and host_values holds the marker \"from the host-entity addendum\", and each host trace follows the addendum's volume.",
+  "statement": "The host entities of the bath form (RULINGS-2 §8.1, §9.6) are not registered inputs. This file fixes their structure and constraints, which the binding tag fixes: their names, the patch orientations, each world's one capacitor component held by the bath, every ligand's permeability 0.0 on every host patch, every ligand at its trace in every host compartment, and every ion's permeability 0.0 on every patch, host and registered, which holds the ions at their fixed amounts. Their values are not here. The host compartments' volumes, every patch's area and capacitance, the registered specimen_face's included, and the ions' amounts in every compartment come from the host-entity addendum, recorded after the build and before any registered run (TABLE.md §4.1, §14.1). So each host volume and host_values holds the marker \"from the host-entity addendum\", and each host trace follows the addendum's volume.",
   "names": {
    "bath": "the held bath node",
    "host_cell": "a host cell",
@@ -27,6 +27,7 @@
   "multipliers lists exactly each population's site_binding_multiplier, at 1.0 (SPEC:62; RULINGS-2 §8.5).",
   "A trace (declared false) is the binary64 product 1e-12 mM times its compartment's volume_pL (SPEC:104-105; TABLE.md §4.1): every ligand at a registered compartment that declares none of it, and every ligand at every host compartment, where the volume is the host-entity addendum's. At every registered volume that product equals the decimal literal.",
   "permeabilities lists every ligand on every patch, registered and host, at 0.0 (SPEC:59-61); charges every ligand at 0 (SPEC:59). Ions are in neither, nor in free_amounts (TABLE.md §4.1).",
+  "ion_permeabilities holds, at every patch of the world, registered and host, {\"each_ion\": 0.0}: every ion the world holds, those of host_values.ion_amounts, has permeability 0.0 there. It is a constraint, compared literally, and no addendum value (RULINGS-2 §10.2).",
   "capacitor_components holds each world's one component: the bath, the world's cell and its registered node, held by the bath; members are compared as a set (RULINGS-2 §8.1).",
   "plant_inputs_changed holds W1p-P2's two crossed k_off, each the other population's registered value. They apply only if P2 is planted by declaration; otherwise W1p-P2's inputs_changed is empty and its inputs equal W1p's. Every other plant's inputs_changed is empty, unless a dated addendum names a list (TABLE.md §8.1).",
   "Before any registered run the judge cross-checks this file against the references' world echo, by TABLE.md §4.1's key map. A departure stops the judge before anything is scored."
@@ -166,6 +167,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",
@@ -341,6 +350,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",
@@ -510,6 +527,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",
@@ -690,6 +715,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",
@@ -1005,6 +1038,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "specimen_face": {
+     "each_ion": 0.0
+    },
+    "host_wall": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "A_L1",
@@ -1342,6 +1383,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "specimen_face": {
+     "each_ion": 0.0
+    },
+    "host_wall": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "A_L1",
@@ -1536,6 +1585,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",
@@ -1706,6 +1763,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",
@@ -1876,6 +1941,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",
@@ -2046,6 +2119,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",
@@ -2211,6 +2292,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "specimen_face": {
+     "each_ion": 0.0
+    },
+    "host_wall": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "D_L1",
@@ -2393,6 +2482,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",
@@ -2531,6 +2628,14 @@
      "value": 0.0
     }
    ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
    "multipliers": [
     {
      "of": "matrix_L1",

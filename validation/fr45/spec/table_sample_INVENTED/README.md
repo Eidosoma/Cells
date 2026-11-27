@@ -20,6 +20,8 @@ from it:** no number, list length, order of keys or entries, or equality between
   `definition` into `inputs.host_values` [§9.6].
 - **The fifth dated change** keys `host_values`' areas and capacitances by every patch, the registered `vesicle_wall`
   and `shell_face` included, since SPEC registers no patch's area or capacitance [§9.6+].
+- **The sixth dated change** (RULINGS-2 §10) moved the ions' permeabilities out of `host_values` into
+  `inputs.ion_permeabilities`, 0.0 for every ion on every patch, a constraint compared literally [§10.2].
 - **What reads it.** The judge reads `table/table.json` in its structure-only mode, with the code that will read the
   table, before the judged run, and must find no fault. At the judged run's snapshot, the builder's exporter writes a
   table on these invented worlds, and the lead compares it with this sample, key by key and type by type. The
@@ -59,7 +61,7 @@ The lead records the sha256 of each file in a dated note in `validation/fr45/spe
 None of SPEC.md's input values appears, except the format constants that TABLE.md §12.1 lists:
 - step 0, with its clock 0.0, at the start; the cumulative heat 0.0 at the start; the records 0.0 before the wash;
 - `step_report.step` 1, `limit` 0.5 and `driver.window_steps` 1;
-- the registered `permeabilities` 0.0, `multipliers` 1.0 and `charges` 0.
+- the registered `permeabilities` and `ion_permeabilities` 0.0, `multipliers` 1.0 and `charges` 0.
 
 Every other number is invented and meaningless, including N_f, T, RT, the traces, the host's volumes and the values in
 `definition`. The step counts of the invented runs (`rows[].step`, `steps`, `after_step`, `state_step`, `refusal.step`
@@ -109,7 +111,8 @@ by `bath` [§8.1].
   `"host check: <name>"`, and null outside `check` [S-f];
 - `free_sites`: both words, for their form. The source check found that the registered runs hold free sites as state
   (RULINGS-2 §8);
-- `inputs.permeabilities`, on every patch, registered and host; `inputs.multipliers`, exactly each population's
+- `inputs.permeabilities`, on every patch, registered and host, and `inputs.ion_permeabilities`, 0.0 for every ion on
+  every patch [§10.2]; `inputs.multipliers`, exactly each population's
   `site_binding_multiplier`; `inputs.charges`, with the absent ligand's member in `INVENTED-W7s` [S-g; §8.5];
 - `inputs.capacitor_components` [§8.1], and `inputs.host_values` [§9.6];
 - `backend` `"compiled"` [§8.2], and `driver.window_steps` 1 [§9.5];
@@ -120,8 +123,8 @@ uniform set is not the list of checks: the dated addendum gives each check's wor
 "lacks a listed check" means a check listed for the run's world (TABLE.md §4, §14.1) [S-b]. No check records a mode
 (RULINGS-2 §8.3).
 
-**Ions** appear only in `inputs.host_values`, which holds their amounts and their permeabilities on the host patches.
-They are in no ligand key: not in `charges`, `free_amounts`,
+**Ions** appear only in `inputs.host_values`, which holds their amounts, and in `inputs.ion_permeabilities`, which
+holds their permeability, 0.0 on every patch [§10.2]. They are in no ligand key: not in `charges`, `free_amounts`,
 `permeabilities`, `wash.buffer_mM`, the rows' `amounts` and `records`, the event's `collected` and `supplied`, or the
 event map (TABLE.md §4.1) [§8.1].
 
@@ -338,6 +341,9 @@ non-finite value would also be written as null at a number (TABLE.md §1), but t
 | `runs.<run>.inputs.permeabilities[].patch` | string |
 | `runs.<run>.inputs.permeabilities[].ligand` | string |
 | `runs.<run>.inputs.permeabilities[].value` | number (the engine's own unit) |
+| `runs.<run>.inputs.ion_permeabilities` | object: every patch, registered and host [§10.2] |
+| `runs.<run>.inputs.ion_permeabilities.<patch>` | object: every ion the world holds |
+| `runs.<run>.inputs.ion_permeabilities.<patch>.<ion>` | number: 0.0 |
 | `runs.<run>.inputs.multipliers` | list |
 | `runs.<run>.inputs.multipliers[]` | object |
 | `runs.<run>.inputs.multipliers[].of` | string: a population |
@@ -355,9 +361,6 @@ non-finite value would also be written as null at a number (TABLE.md §1), but t
 | `runs.<run>.inputs.host_values.areas.<patch>` | number: the engine's own value |
 | `runs.<run>.inputs.host_values.capacitances` | object: every patch, registered and host [§9.6+] |
 | `runs.<run>.inputs.host_values.capacitances.<patch>` | number: the engine's own value |
-| `runs.<run>.inputs.host_values.ion_permeabilities` | object: every host patch |
-| `runs.<run>.inputs.host_values.ion_permeabilities.<patch>` | object: every ion |
-| `runs.<run>.inputs.host_values.ion_permeabilities.<patch>.<ion>` | number: the engine's own value |
 | `runs.<run>.inputs.host_values.ion_amounts` | object: every compartment |
 | `runs.<run>.inputs.host_values.ion_amounts.<node>` | object: every ion |
 | `runs.<run>.inputs.host_values.ion_amounts.<node>.<ion>` | number: the engine's own value |

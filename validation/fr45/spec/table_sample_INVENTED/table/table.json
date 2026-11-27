@@ -247,6 +247,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -281,16 +291,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -581,6 +581,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -615,16 +625,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -1134,6 +1134,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "mesh_X1",
@@ -1168,16 +1178,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "basin": {
@@ -1665,6 +1665,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "mesh_X1",
@@ -1699,16 +1709,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "basin": {
@@ -2226,6 +2226,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "vesicle_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "plate_X1",
@@ -2283,12 +2293,6 @@
      "capacitances": {
       "vesicle_wall": 0.21842105263157896,
       "host_wall": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      }
      },
      "ion_amounts": {
       "lake": {
@@ -2668,6 +2672,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "frame_X1",
@@ -2702,16 +2716,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "cask": {
@@ -3025,6 +3029,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "frame_X1",
@@ -3059,16 +3073,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "cask": {
@@ -3382,6 +3386,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "frame_X1",
@@ -3416,16 +3430,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "cask": {
@@ -3759,6 +3763,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "seat_X1",
@@ -3793,16 +3807,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "cup": {
@@ -4113,6 +4117,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "shell_face": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "skin_X1",
@@ -4147,12 +4161,6 @@
      "capacitances": {
       "shell_face": 0.21842105263157896,
       "host_wall": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      }
      },
      "ion_amounts": {
       "pond": {
@@ -4861,6 +4869,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "web_X1",
@@ -4895,16 +4913,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "bay": {
@@ -5206,6 +5214,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "web_X1",
@@ -5235,16 +5253,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "bay": {
@@ -5535,6 +5543,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -5569,16 +5587,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -5873,6 +5881,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -5907,16 +5925,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -6214,6 +6222,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -6248,16 +6266,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -6552,6 +6560,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -6586,16 +6604,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -6880,6 +6888,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -6914,16 +6932,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -7208,6 +7216,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -7242,16 +7260,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -7536,6 +7544,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -7570,16 +7588,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -7874,6 +7882,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "grid_X1",
@@ -7908,16 +7926,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "tank": {
@@ -8276,6 +8284,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "seat_X1",
@@ -8310,16 +8328,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "cup": {
@@ -8832,6 +8840,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "mesh_X1",
@@ -8866,16 +8884,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "basin": {
@@ -9536,6 +9544,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_contact": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "web_X1",
@@ -9570,16 +9588,6 @@
      "capacitances": {
       "host_wall": 0.21842105263157896,
       "host_contact": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      },
-      "host_contact": {
-       "IA": 2.0434782608695655e-09,
-       "IB": 1.074074074074074e-09
-      }
      },
      "ion_amounts": {
       "bay": {
@@ -10060,6 +10068,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "vesicle_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "plate_X1",
@@ -10117,12 +10135,6 @@
      "capacitances": {
       "vesicle_wall": 0.21842105263157896,
       "host_wall": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      }
      },
      "ion_amounts": {
       "lake": {
@@ -10582,6 +10594,16 @@
       "value": 0.0
      }
     ],
+    "ion_permeabilities": {
+     "vesicle_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     },
+     "host_wall": {
+      "IA": 0.0,
+      "IB": 0.0
+     }
+    },
     "multipliers": [
      {
       "of": "plate_X1",
@@ -10639,12 +10661,6 @@
      "capacitances": {
       "vesicle_wall": 0.21842105263157896,
       "host_wall": 0.14310344827586208
-     },
-     "ion_permeabilities": {
-      "host_wall": {
-       "IA": 3.6153846153846154e-09,
-       "IB": 1.7058823529411766e-09
-      }
      },
      "ion_amounts": {
       "lake": {
