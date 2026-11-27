@@ -10,6 +10,9 @@
    "dt_s": 0.0625,
    "steps": 17,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -270,6 +273,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625,
@@ -281,7 +318,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -296,31 +333,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -354,6 +367,9 @@
    "dt_s": 0.0625,
    "steps": 11,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -591,6 +607,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.6875
@@ -601,7 +651,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1eq",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -616,31 +666,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -674,6 +700,9 @@
    "dt_s": 0.03125,
    "steps": 27,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -1131,6 +1160,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "basin": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.03125,
     "observation_times_s": [
      0.40625,
@@ -1143,7 +1206,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W2",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.03125,
      "jit": true,
      "backend": "cpu",
@@ -1158,31 +1221,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "basin": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -1216,6 +1255,9 @@
    "dt_s": 0.03125,
    "steps": 14,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -1649,6 +1691,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "basin": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.03125,
     "observation_times_s": [
      0.40625,
@@ -1661,7 +1737,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W2",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.03125,
      "jit": true,
      "backend": "cpu",
@@ -1676,31 +1752,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "basin": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -1734,6 +1786,9 @@
    "dt_s": 0.0078125,
    "steps": 17,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -2220,6 +2275,34 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      }
+     },
+     "ion_amounts": {
+      "lake": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "vesicle": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "bath": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0078125,
     "observation_times_s": [
      0.0703125,
@@ -2231,7 +2314,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W3",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0078125,
      "jit": true,
      "backend": "cpu",
@@ -2258,29 +2341,7 @@
       "id": "X5",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896
-     },
-     "ion_amounts_fmol": {
-      "lake": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "vesicle": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "bath": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -2314,6 +2375,9 @@
    "dt_s": 0.0078125,
    "steps": 0,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [],
    "capacities": {},
    "free_sites": {},
@@ -2365,6 +2429,9 @@
    "dt_s": 0.125,
    "steps": 13,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -2625,6 +2692,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "cask": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.125,
     "observation_times_s": [
      0.875,
@@ -2636,7 +2737,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W4",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.125,
      "jit": true,
      "backend": "cpu",
@@ -2651,31 +2752,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "cask": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -2709,6 +2786,9 @@
    "dt_s": 0.0625,
    "steps": 26,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -2969,6 +3049,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "cask": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.875,
@@ -2980,7 +3094,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W4",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -2995,31 +3109,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "cask": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -3053,6 +3143,9 @@
    "dt_s": 0.03125,
    "steps": 52,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -3313,6 +3406,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "cask": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.03125,
     "observation_times_s": [
      0.875,
@@ -3324,7 +3451,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W4",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.03125,
      "jit": true,
      "backend": "cpu",
@@ -3339,31 +3466,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "cask": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -3397,6 +3500,9 @@
    "dt_s": 0.0875,
    "steps": 0,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -3677,6 +3783,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "cup": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0875,
     "observation_times_s": [],
     "horizon_s": 0.7875
@@ -3685,7 +3825,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W5",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0875,
      "jit": true,
      "backend": "cpu",
@@ -3700,31 +3840,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "cup": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -3758,6 +3874,9 @@
    "dt_s": 0.009765625,
    "steps": 21,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -4018,6 +4137,34 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      }
+     },
+     "ion_amounts": {
+      "pond": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "host_cell": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "bath": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.009765625,
     "observation_times_s": [
      0.107421875,
@@ -4029,7 +4176,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W6",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.009765625,
      "jit": true,
      "backend": "cpu",
@@ -4044,29 +4191,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896
-     },
-     "ion_amounts_fmol": {
-      "pond": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "host_cell": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "bath": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -4100,6 +4225,9 @@
    "dt_s": 0.009765625,
    "steps": 0,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [],
    "capacities": {},
    "free_sites": {},
@@ -4151,6 +4279,9 @@
    "dt_s": 0.015625,
    "steps": 37,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -4752,6 +4883,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "bay": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.015625,
     "observation_times_s": [
      0.171875,
@@ -4765,7 +4930,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W7",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.015625,
      "jit": true,
      "backend": "cpu",
@@ -4780,31 +4945,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "bay": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -4838,6 +4979,9 @@
    "dt_s": 0.015625,
    "steps": 19,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -5079,6 +5223,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "bay": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.015625,
     "observation_times_s": [
      0.171875,
@@ -5090,7 +5268,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W7s",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.015625,
      "jit": true,
      "backend": "cpu",
@@ -5105,31 +5283,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "bay": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -5163,6 +5317,9 @@
    "dt_s": 0.0625,
    "steps": 9,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -5400,6 +5557,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -5410,7 +5601,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -5425,31 +5616,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -5488,6 +5655,9 @@
    "dt_s": 0.0625,
    "steps": 9,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -5725,6 +5895,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -5735,7 +5939,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -5750,31 +5954,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -5816,6 +5996,9 @@
    "dt_s": 0.0625,
    "steps": 9,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -6053,6 +6236,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -6063,7 +6280,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -6078,31 +6295,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -6141,6 +6334,9 @@
    "dt_s": 0.0625,
    "steps": 9,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -6378,6 +6574,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -6388,7 +6618,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -6403,31 +6633,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -6466,6 +6672,9 @@
    "dt_s": 0.0625,
    "steps": 3,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -6693,6 +6902,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -6703,7 +6946,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -6718,31 +6961,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -6781,6 +7000,9 @@
    "dt_s": 0.0625,
    "steps": 1,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -7008,6 +7230,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -7018,7 +7274,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -7033,31 +7289,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -7096,6 +7328,9 @@
    "dt_s": 0.0625,
    "steps": 0,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -7323,6 +7558,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -7333,7 +7602,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -7348,31 +7617,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -7411,6 +7656,9 @@
    "dt_s": 0.0625,
    "steps": 9,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -7648,6 +7896,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -7658,7 +7940,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0625,
      "jit": true,
      "backend": "cpu",
@@ -7673,31 +7955,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "tank": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -7736,6 +7994,9 @@
    "dt_s": 0.0875,
    "steps": 9,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -8037,6 +8298,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "cup": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0875,
     "observation_times_s": [],
     "horizon_s": 0.7875
@@ -8045,7 +8340,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W5",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0875,
      "jit": true,
      "backend": "cpu",
@@ -8060,31 +8355,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "cup": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -8123,6 +8394,9 @@
    "dt_s": 0.03125,
    "steps": 27,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -8580,6 +8854,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "basin": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.03125,
     "observation_times_s": [
      0.40625,
@@ -8592,7 +8900,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W2",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.03125,
      "jit": true,
      "backend": "cpu",
@@ -8607,31 +8915,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "basin": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -8670,6 +8954,9 @@
    "dt_s": 0.015625,
    "steps": 37,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -9271,6 +9558,40 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      },
+      "host_contact": {
+       "IA": 2.0434782608695655e-09,
+       "IB": 1.074074074074074e-09
+      }
+     },
+     "ion_amounts": {
+      "bay": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.015625,
     "observation_times_s": [
      0.171875,
@@ -9284,7 +9605,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W7",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.015625,
      "jit": true,
      "backend": "cpu",
@@ -9299,31 +9620,7 @@
       "id": "X2",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897,
-      "host_contact": 14.310344827586208
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896,
-      "host_contact": 0.14310344827586208
-     },
-     "ion_amounts_fmol": {
-      "bay": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "bath": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "host_cell": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -9362,6 +9659,9 @@
    "dt_s": 0.0078125,
    "steps": 9,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -9805,6 +10105,34 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      }
+     },
+     "ion_amounts": {
+      "lake": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "vesicle": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "bath": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0078125,
     "observation_times_s": [
      0.0703125
@@ -9815,7 +10143,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W3p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0078125,
      "jit": true,
      "backend": "cpu",
@@ -9842,29 +10170,7 @@
       "id": "X5",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896
-     },
-     "ion_amounts_fmol": {
-      "lake": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "vesicle": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "bath": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
@@ -9903,6 +10209,9 @@
    "dt_s": 0.0078125,
    "steps": 5,
    "backend": "compiled",
+   "driver": {
+    "window_steps": 1
+   },
    "rows": [
     {
      "step": 0,
@@ -10316,6 +10625,34 @@
       "held_by": "bath"
      }
     ],
+    "host_values": {
+     "areas": {
+      "host_wall": 21.842105263157897
+     },
+     "capacitances": {
+      "host_wall": 0.21842105263157896
+     },
+     "ion_permeabilities": {
+      "host_wall": {
+       "IA": 3.6153846153846154e-09,
+       "IB": 1.7058823529411766e-09
+      }
+     },
+     "ion_amounts": {
+      "lake": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "vesicle": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "bath": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    },
     "dt_s": 0.0078125,
     "observation_times_s": [
      0.0703125
@@ -10326,7 +10663,7 @@
     "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W3p",
     "execution": {
-     "solver": "imex_ars222_face_electromigration@1",
+     "solver": "cells.solver.imex_ars222_face_electromigration@1",
      "dt": 0.0078125,
      "jit": true,
      "backend": "cpu",
@@ -10353,29 +10690,7 @@
       "id": "X5",
       "material_balance_atol_fmol": 2.3e-17
      }
-    ],
-    "host": {
-     "areas_um2": {
-      "host_wall": 21.842105263157897
-     },
-     "capacitances_pF": {
-      "host_wall": 0.21842105263157896
-     },
-     "ion_amounts_fmol": {
-      "lake": {
-       "IA": 0.02227,
-       "IB": 0.002231
-      },
-      "vesicle": {
-       "IA": 0.035370000000000006,
-       "IB": 0.003201
-      },
-      "bath": {
-       "IA": 0.048470000000000006,
-       "IB": 0.004171
-      }
-     }
-    }
+    ]
    },
    "source": {
     "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",

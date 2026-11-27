@@ -1,6 +1,6 @@
 # FR-45's engine table: the contract
 
-**Dated 26 November 2026, and changed three times on 27 November 2026** (the next three sections), before the binding
+**Dated 26 November 2026, and changed four times on 27 November 2026** (the next four sections), before the binding
 tag and before any engine run of a registered world. The registration never defines the engine's table, so the lead
 ruled that a dated contract fixes it before the binding tag, from the spec's text (the lead's first rulings, Q5:
 `/mnt/workspaces/Cells/fr45-readings-20261126/RULINGS-1-2026-11-26.md`). The lead's second rulings,
@@ -29,7 +29,9 @@ review (`/mnt/workspaces/Cells/fr45-contract-review-20261127/REVIEW.md`).
 - **What each side reads.**
   - The driver builds each world from SPEC.md's inputs, and W1eq's start from the references' file (§3). The exporter
     reads back only what the engine parsed and ran (§4.1) [S4]. The driver never builds a world from the
-    expected-inputs file (§12.2), so that the echo compares two transcriptions of SPEC [E1].
+    expected-inputs file (§12.2), so that the echo compares two transcriptions of SPEC [E1]. The exception is the
+    host entities' structure and constraints, which SPEC does not give: this file (§4.1) and the expected-inputs
+    file hold them, and the host-entity addendum their values [WD1; §9.6].
   - The judge reads this file, the table, the expected-inputs file (§12.2), the references' files and their G
     function (CRITERIA:76; NOTES:178-186), and `agreement.py` (CRITERIA:29).
   - The judge imports the standard library, NumPy, the registered `agreement.py` and the references' `G`, and nothing
@@ -39,11 +41,12 @@ review (`/mnt/workspaces/Cells/fr45-contract-review-20261127/REVIEW.md`).
     through the lead and added so, never taken from the other side's code. After the tag, a missing key enters only
     as "Who c"'s erratum, before any run of a registered world [W-g].
   - *After the binding tag,* only by "Who c"'s two kinds, each dated, disclosed, hashed by the lead, and made before any
-    run of a registered world: (1) the addenda this file calls for, listed in §14.1, the host entity values among them
-    [§8.1]; (2) an erratum where a judge must change (D371, DECISIONS:12279).
+    run of a registered world: (1) the addenda this file calls for, listed in §14.1, the host-entity addendum among
+    them [§8.1, §9.6]; (2) an erratum where a judge must change (D371, DECISIONS:12279).
   - *After a run,* nothing changes. A registered world's first run is in the judged run. The builder develops and
     tests on invented worlds, such as the format sample's (§12.1) [Who c]. A parse-only pass of a registered world,
-    a definition check with no step, is not a run, and is allowed before the judged run [§8.6].
+    a definition check with no step, is not a run, and is allowed before the judged run [§8.6]; but none of W1eq is
+    made, since it would read the references' W1eq start [§9.2, WF5].
 - **Extra keys** are allowed and ignored, except in `inputs` (§4.1). An object keyed by data (by observable, ligand,
   node, set or population) holds exactly the members this file names; a missing, extra or duplicated member is a fault
   (§11.2) [B2].
@@ -168,6 +171,39 @@ D224's check X2, which §8.7 calls X2. [E15] to [E21] mark this change's own for
 - **The expected-inputs file:** its host entities, host choices and capacitor components; exact multipliers; W6's cell
   named `host_cell`; X1's clause in its rules, and the W7s note's `charges` member [§8.1, §8.5, X1].
 
+## Fourth dated change, 27 November 2026
+
+Made before the binding tag, by the same agent, applying RULINGS-2's §9, "Amendment of 27 November, after the fourth
+read". The fourth read is `/mnt/workspaces/Cells/fr45-contract-review-20261127/REVIEW-4.md`. No criterion, band, plant,
+tolerance or class changes.
+
+**The marks.** [§9.1] to [§9.7] are §9's seven items. [N4], [WF1] to [WF6] and [WD1] to [WD3] are the fourth read's
+findings, as §9 accepts them. [E22] to [E27] mark this change's own format sentences, listed in §15.
+
+**What changed:**
+- **The header:** the driver's exception for the host [WD1]; no parse-only pass of W1eq [§9.2, WF5].
+- **§3:** W1eq has no parse-only pass [§9.2, WF5].
+- **§4:** the new `driver` key [§9.5, WF4, E23]; the execution record's source, its literal fields, and W1eq's
+  comparison with W1's record [§9.1, N4; §9.2, WF5; E22]; the solver in today's spelling [§9.3, WF6]; one rule for a
+  plant run's `definition` [§9.4, WF1, E24]; `definition` holds no host value the judge reads [§9.6].
+- **§4.1:** the host's structure and constraints, fixed at the tag, and its values, moved to the host-entity addendum
+  [§9.6, WF2, WF3, E25, E26, E27]; the new `host_values` [§9.6, E25]; the matching keys of `multipliers` and
+  `capacitor_components` [WD2]; the host exception [§9.6].
+- **§8.1:** a plant run's `definition` points to §4's rule [§9.4, WF1].
+- **§9:** the solver's ID [§9.3, WF6].
+- **§11:** item 10 compares the host values with the addendum; item 13 holds the literal fields and the plant rule;
+  item 14, `driver`, is new; both join the run's identity [§9.1, §9.4, §9.5, §9.6].
+- **§12:** `driver.window_steps` is a format constant; the sample covers `host_values` and `driver`; the expected file
+  marks the host's values as the addendum's; the parse-only passes feed the record and the addendum [§9.1, §9.5,
+  §9.6].
+- **§14.1:** item 4 names where a declared change sits in `definition` [E24]; item 6 is the host-entity addendum
+  [§9.6]; the execution record's source [§9.1, N4].
+- **§15:** E1, E15 and E18 amended; this change's disclosures.
+- **The format sample:** the solver in today's spelling; `driver` in every run; `inputs.host_values`; no host values in
+  `definition` [§9.3, §9.5, §9.6]; the README's note on the invented patches [WD3]. Its `SHA256SUMS` is regenerated.
+- **The expected-inputs file:** each host volume, host trace and `host_values` marked "from the host-entity addendum"
+  in place of a literal; the matching keys [§9.6, WD2].
+
 ## 1. Files and number form
 
 - **The table** is `table/table.json`, one file for the judged run, with `table/SHA256SUMS` (one line: the sha256, two
@@ -248,7 +284,8 @@ them (§8.2, §11). This table only names the runs.
   The lead confirmed these paths by key names, and the references' invented file holds a start at the same paths, so
   the builder develops the read path on that file [item 2, W8]. Everything else is W1's (SPEC:130-132). The run's
   `inputs` echo the start, and the judge compares the echo with the file bit for bit. W1eq is never run before the
-  judged run [Who c]; a parse-only pass is not a run (the header) [§8.6].
+  judged run [Who c]. No parse-only pass of it is made before the judged run either, since one would read the
+  references' start [§9.2, WF5].
 - **P5's runs** are full planted runs of W2 and W7. C4a reads their rows (NOTES:103-104), and C6 their own `event_map`
   (§6).
 
@@ -264,6 +301,7 @@ Every entry holds every key below, for honest, plant and refused runs alike.
 | `dt_s` | number: the step the engine ran, §3's dt bit for bit |
 | `steps` | integer: the steps completed: the last row's `step`, or the steps before a refused one; 0 in a run refused at parse |
 | `backend` | `"compiled"`: the engine's implementation that the run's steps used, in every run, honest and planted. RULINGS-2 §8 settles B5's value, and a run whose `backend` departs is a fault [B5; §8.2]. Its arithmetic is binary64 on the CPU (the execution record below, §10) |
+| `driver` | `{"window_steps"}`: the driver's record of how it ran the run. `window_steps` is 1 in every run, a run refused at parse included [§9.5, WF4; E23] |
 | `rows` | list of rows (§5), in step order |
 | `capacities` | object, set → fmol: each set's capacity S_s, one-population sets included. It is the engine's constant, set at parse from the declaration (SPEC:48), never from a state [S8] |
 | `free_sites` | object, set → `"state"` or `"derived"`: how the engine holds that set's free sites R_s, as a state its steps update, or formed from S_s and the bound amounts [item 6] |
@@ -274,7 +312,7 @@ Every entry holds every key below, for honest, plant and refused runs alike.
 | `checks` | object, or null before parse: every listed ledger and host check of the run, by its name (below) [B3] |
 | `operators` | list of strings: the model and operator IDs the run's definition declares, in declared order, in today's spellings (§9) |
 | `inputs` | the world as the engine parsed it (§4.1) |
-| `definition` | object, or null before parse: the engine's own declaration of the world, as run. The judge compares its execution block and bounds with the lead's record (below) [§8.2, N3], and its host entity values with their addendum (§4.1) [E15]. It records no check's mode [§8.3] |
+| `definition` | object, or null before parse: the engine's own declaration of the world, as run. The judge compares its execution block and bounds with the execution record, and checks its literal fields (below) [§8.2, N3; §9.1, N4]. It holds no host value that the judge reads, since those are in `inputs` (§4.1) [§9.6], and it records no check's mode [§8.3] |
 | `source` | provenance (§10) |
 | `record`, `record_sha256` | the run's own record file, by its path relative to `table/`, and its sha256 (64 hex digits); recorded, and checked for type only |
 
@@ -303,16 +341,30 @@ Every entry holds every key below, for honest, plant and refused runs alike.
   - *C10:* a completed honest run fails C10 if its `checks` is null, lacks a check listed for that run's world [S-b] or
     records a failure [B3; §8.3].
   - *Honest runs only:* on a plant run, a failure recorded without a refusal is not a catch [P-c].
-- **The execution record** [§8.2, N3].
-  - *Fixed now:* `execution.solver` is @3's `imex_ars222_face_electromigration@1`; there is no `energy_check` (X2 is
-    not selected, §14.1); `execution.dt` is the world's SPEC dt, `dt_s`; `field_solver` is the engine's default;
-    every species' `material_balance_atol_fmol` is as the engine's species helper sets it (`inventory_species.py`'s
-    floor), never declared otherwise; and `backend` is `"compiled"`, with `execution.jit` true, the execution's
-    `backend` `"cpu"`, float64, and `JAX_PLATFORMS=cpu` where a CUDA plugin is installed.
-  - *What the judge compares:* every honest and planted run's `definition` execution block, and its bounds, with
-    the record. The record is the honest runs' block, which the lead records before the judged run, as a record and
-    not a change (§14.1). A plant run's `definition` equals its honest run's, except for its patch's declared
-    change.
+- **The execution record** [§8.2, N3; §9.1, N4].
+  - *Fixed now:* `execution.solver` is `cells.solver.imex_ars222_face_electromigration@1`, @3's solver in today's
+    spelling [§9.3, WF6]; the execution block holds no `energy_check` (X2 is not selected, §14.1); `execution.dt` is
+    the world's SPEC dt, `dt_s`; `field_solver` is the engine's default; every species' `material_balance_atol_fmol`
+    is as the engine's species helper sets it (`inventory_species.py`'s floor), never declared otherwise; and
+    `backend` is `"compiled"`, with `execution.jit` true, the execution block's `backend` `"cpu"`, float64, and
+    `JAX_PLATFORMS=cpu` where a CUDA plugin is installed.
+  - *Its source* [§9.1, N4]: a parse-only pass of every registered world but W1eq, made after the build and before
+    any registered run, which gives one record per honest run (W4's three dt have one each). A parse-only pass is
+    not a run (§8.6). N2's reviewer, who is not the builder, confirms against `src/` that the record holds the
+    engine's defaults: the default `field_solver`, and each species' `material_balance_atol_fmol` at the species
+    helper's floor. The lead hashes it, as a record and not a change (§14.1).
+  - *W1eq* [§9.2, WF5]: no parse-only pass of W1eq is made before the judged run. Its execution block is compared with
+    W1's record, its start apart, and so is any field that `inputs` fixes differently for W1eq, its observation
+    times and horizon [E22].
+  - *What the judge compares:* every honest and planted run's `definition` execution block, and its bounds, with its
+    honest run's record.
+  - *The literal fields* [§9.1, N4]: in every run the judge also checks these against this file: `execution.solver`,
+    as above; `execution.dt` equal to the run's `dt_s`; `execution.jit` true; the execution block's `backend`
+    `"cpu"`; no `energy_check` in the execution block; and `driver.window_steps` 1 [§9.5].
+  - *A plant run's `definition`* [§9.4, WF1]: it is compared with its honest run's after the plant's declared
+    `inputs_changed` (B6) is applied, as P2's crossed `k_off`, and any other difference is a fault of the run's
+    identity. The B6 addendum names where each declared change sits in `definition`, P2's included (§14.1) [E24].
+    A patch's change is code and lies outside `definition`; the patch review covers it (N1).
   - *A departure* is a fault of the run's identity (§11.1, §11.2).
 - **A completed run** carries every registered row of its world (§5.1) and, in W2's and W7's runs, its one event and
   every event-map entry (§6) [B2].
@@ -331,7 +383,7 @@ Exactly these keys:
 | --- | --- |
 | `world` | string |
 | `constants` | `{"sites_per_fmol", "temperature_K", "RT_pJ_per_fmol"}`: N_f, T and RT as the engine uses them (SPEC:34-40) |
-| `nodes` | list of `{"id", "kind", "volume_pL", "registered"}`; `kind` is `"node"` or `"cell"`; `registered` is false for a compartment SPEC §2 does not name, a host entity (below) |
+| `nodes` | list of `{"id", "kind", "volume_pL", "registered"}`; `kind` is `"node"` or `"cell"`; `registered` is false for a compartment SPEC §2 does not name, a host entity (below). A host compartment's `volume_pL` is the host-entity addendum's [§9.6] |
 | `patches` | list of `{"id", "inside", "outside"}`: the registered `specimen_face` (W3, W3p, W6) and the host patches (below) [§8.1] |
 | `ligands` | list of strings |
 | `free_amounts` | list of `{"ligand", "node", "n_fmol", "declared"}`: every ligand of `ligands` at every node and cell, as the engine parsed it. `declared` is false for a trace (SPEC:104-106) |
@@ -342,6 +394,7 @@ Exactly these keys:
 | `multipliers` | list of `{"of", "name", "value"}`: exactly each population's binding multiplier, with `of` the population, `name` `"site_binding_multiplier"` and `value` its value; registered 1.0 (SPEC:62). The accessible fraction α and the internalisation control are not multipliers [S6; §8.5] |
 | `charges` | object, ligand → integer: each ligand's valence, for every ligand of `ligands`; registered 0 (SPEC:59) [S6] |
 | `capacitor_components` | list of `{"members", "held_by"}`: the host's capacitor components, as the engine's checker forms them: each one's compartments (`members`, compared as a set) and the held node that holds it. In every world there is one, `{bath, <its cell>, <its registered node>}`, held by `bath` [§8.1, E17] |
+| `host_values` | `{"areas", "capacitances", "ion_permeabilities", "ion_amounts"}`: the host-entity addendum's values, as the engine parsed them, each the engine's own value. `areas`, `capacitances` and `ion_permeabilities` are keyed by host patch, `ion_permeabilities` then by ion; `ion_amounts` is keyed by compartment, every one, then by ion [§9.6, E25] |
 | `dt_s`, `observation_times_s`, `horizon_s` | number, list of numbers, number |
 
 - **`multipliers` and `permeabilities`** are checked against more than the exporter's word: before the judged run, a
@@ -371,30 +424,39 @@ Exactly these keys:
   - *In W3 and W3p:* `bath`, and `host_wall` from the registered cell (inside `specimen`, outside `bath`).
   - *In W6:* `bath`; the cell inside `specimen_face`, which SPEC does not name (SPEC:210), now named `host_cell`;
     and `host_wall` (inside `host_cell`, outside `bath`).
-  - *Their form:* each host compartment is in `nodes` with `registered` false. Its volume is a host choice, fixed
-    and stated in the expected-inputs file, and not a registered input. The names are this file's choice [E18]. Each
-    world's one capacitor component is `{bath, <its cell>, <its registered node>}`, held by `bath`
-    (`capacitor_components`) [E17].
-  - *Fixed now:* every ligand has permeability 0.0 on every host patch; every ligand is at its trace in every host
-    compartment (`declared` false, and information in the rows); and no ligand moves through a host entity. The
-    trace is compared (SPEC:104-105) [item 7]: the binary64 product 1e-12 × the compartment's `volume_pL`, which
-    the driver declares as that product, never as a typed literal [W-f].
+  - *Fixed at the tag, the structure* [§9.6, WF2]: the bath form's entities and their names; the patch orientations; and
+    the capacitor component. Each host patch's inside is the world's cell: `host_cell`, or `specimen` in W3 and W3p
+    [E26]. The wall's outside is `bath`, and the contact's outside is the registered node. The one capacitor
+    component is `{bath, <its cell>, <its registered node>}`, held by `bath` (`capacitor_components`) [E17]. Each
+    host compartment is in `nodes` with `registered` false, and the names are this file's choice [E18]. The source
+    check ran this form, its case f, the wash fixtures' form.
+  - *Fixed at the tag, the constraints* [§9.6, WF2, WF3]: every ligand has permeability 0.0 on every host patch;
+    every ligand is at its trace in every host compartment (`declared` false, and information in the rows); ions are
+    held at fixed amounts; and no ligand moves through a host entity. The trace is compared (SPEC:104-105) [item 7]: the
+    binary64 product 1e-12 × that compartment's `volume_pL`, which the driver declares as that product, never as a
+    typed literal [W-f].
   - *Nothing else:* a world holds no compartment or patch beyond its registered ones and these, unless the lead
     names one by a dated addendum before any registered run (§14.1) [item 7].
-  - *The host entity values:* the host's areas, capacitances and ion amounts are values the build records, in
-    `definition`. A dated addendum before any registered run fixes them and names where `definition` holds them
-    (§14.1) [§8.1], and the judge compares them with it [E15].
+  - *The host-entity addendum's values* [§9.6, WF2, WF3]: the host compartments' volumes, the host patches' areas and
+    capacitances, the ions' amounts in every compartment, and the ions' permeabilities on the host patches. The
+    addendum is "Who c" kind (1): recorded after the build and before any registered run, confirmed by the
+    non-builder reviewer against the wash fixtures' form, and hashed by the lead (§14.1). It is kept per honest
+    run, its values copied by machine from the parse-only pass (§4); W1eq takes W1's, and a plant run its honest
+    run's [E27]. The echo carries them, in `nodes[].volume_pL` and `host_values`, and the judge compares them with
+    the addendum.
 - **Ions** [§8.1]. They are held at fixed amounts in every compartment (SPEC:59-61). They are not ligands, so every
   ligand-only key excludes them: `charges`, `free_amounts`, the rows' `amounts` and `records` (§5), and the event
   map (§6). So do `permeabilities`, `wash.buffer_mM`, and the event's `collected` and `supplied` [E16]. Their
-  amounts are host entity values (above).
+  amounts in every compartment, and their permeabilities on the host patches, are the host-entity addendum's
+  values, in `host_values` (above) [§9.6].
 - **The echo** [S5]. The judge compares each run's `inputs` with that run's entry in the expected-inputs file (§12.2),
   bit for bit: "Every number below is a binary64 literal as written" (SPEC:104). It never compares with a copy of its
   own.
   - An extra, missing or different key or value means the run is not the registered world, which is a fault (§11.2).
-  - Lists are compared as sets of members, matched by `id`, by `ligand` and `node` (free amounts) or by `patch` and
-    `ligand` (permeabilities). `ligands` and `observation_times_s` are compared as sets of values, with no member
-    twice. Numbers are compared as binary64 values.
+  - Lists are compared as sets of members, matched by `id`, by `ligand` and `node` (free amounts), by `patch` and
+    `ligand` (permeabilities), by `of` and `name` (multipliers) or by `held_by` (capacitor components) [WD2].
+    `ligands` and `observation_times_s` are compared as sets of values, with no member twice. Numbers are compared as
+    binary64 values.
   - `constants.sites_per_fmol` and `temperature_K` are compared exactly (SPEC:35, 38).
   - **A trace at a registered compartment is compared too,** against the binary64 product 1e-12 × the compartment's
     `volume_pL`, which the driver declares as that product [W11; W-f]. At every registered volume that product equals
@@ -405,10 +467,11 @@ Exactly these keys:
     - W1eq's start, its `populations[].initial_occupancy` and `free_amounts[].n_fmol`, is compared with the
       references' file instead (§3) [item 2].
     - The host entities (above) [§8.1]: `bath`, `host_cell`, `host_wall` and `host_contact`, as each world holds
-      them. They are compared with the expected-inputs file's host choices, never with SPEC, and they are not
-      cross-checked. Their ligand amounts are traces. Their areas, capacitances and ion amounts are compared with
-      their addendum instead (§14.1) [E15]. W6's cell, which the 26 November text left to the engine's own name and
-      volume, now has this file's name and volume [W10, item 7; §8.1].
+      them. Their structure and constraints are compared with the expected-inputs file, never with SPEC, and they
+      are not cross-checked. Their values, the host volumes, the traces those volumes give and `host_values`, are
+      compared with the host-entity addendum, and the expected-inputs file marks each so [§9.6]. W6's cell, which
+      the 26 November text left to the engine's own name and volume, now has this file's name [W10, item 7; §8.1],
+      and its volume is the addendum's [§9.6].
     - W7s's L2, if the engine holds it (above): its `ligands` entry, its `free_amounts` entries, its
       `permeabilities` entries, each 0.0, and its `charges` member, which must be 0 [S11; S-g; §8.1].
     - A key path that a plant run's `plant.inputs_changed` names, whose value is checked as §8.1 says [B6].
@@ -682,8 +745,8 @@ step 1 and for the event rule's 321 and 401 (§4).
   world (CRITERIA:111-112).
   - Its entry has the honest shape, and its `plant` names the plant, the patch and what it changes.
   - Its `world`, `dt_s`, `backend`, `inputs`, `operators` and `definition` equal those of its world's honest run, but
-    for what its patch changes [B5]. The judge checks the `definition`: it equals the honest run's, except for the
-    patch's declared change (§4's execution record) [§8.2].
+    for what its patch changes [B5]. The judge compares its `definition` with the honest run's as §4's execution
+    record says [§9.4, WF1].
   - **P7** runs on W3p in its own process, against W3's rows at W3p's times [7b].
 - **`plant.inputs_changed`** [B6].
   - It is empty, except where this file names it.
@@ -797,6 +860,9 @@ This is CRITERIA:113-114, as RULINGS-1's reading 2 and RULINGS-2 rule it [item 5
 | `scheduled_compartment_wash@1` | `cells.operator.scheduled_compartment_wash@1` |
 | `site_occupant_replacement@1` | `cells.operator.site_occupant_replacement@1` |
 | `species_regulated_availability@2` | `cells.operator.species_regulated_availability@2` |
+
+- **The solver** is written in today's spelling too: `cells.solver.imex_ars222_face_electromigration@1`, @3's solver,
+  which RULINGS-2 §8.2 names by its old spelling (§4) [§9.3, WF6].
 
 - **`operators`** [S7].
   - In every run it holds `cells.model.resolved_pump_composite@1`, `cells.model.resolved_pump_tissue@3` and
@@ -923,22 +989,23 @@ The judge checks each of these in every run. A departure is a fault (§11.2).
 8. **`refusal`:** `kind` and `book` as the judge's mapping gives them from `raised` and `name` [B4]; `step` and `time_s`
    null exactly at parse.
 9. **`operators`:** exactly §9's [S7].
-10. **`inputs`:** the echo of §4.1 [S5].
+10. **`inputs`:** the echo of §4.1 [S5]; its host values against the host-entity addendum [§9.6].
 11. **`source`:** every key present, of its type; `engine_revision`, `snapshot` and `external_modules` the same in every
     run; `checkout_dirty` false; `jax_enable_x64` true; `jax_platforms` `"cpu"` [B5, W9].
 12. **`record_sha256`:** 64 hex digits.
-13. **`definition`:** its execution block and bounds equal the lead's record, and a plant run's `definition` equals
-    its honest run's but for its patch's declared change [§8.2, N3]; its host entity values equal their addendum
-    [E15].
+13. **`definition`:** its execution block and bounds equal its honest run's execution record; its literal fields
+    equal this file's; and a plant run's `definition` equals its honest run's once its declared `inputs_changed` is
+    applied (§4) [§8.2, N3; §9.1, N4; §9.4, WF1].
+14. **`driver`:** `window_steps` 1 [§9.5, WF4].
 
 ### 11.2 Faults, and how they are scored [§1, item 4]
 
 - **A fault** is any departure from a type, value or equality this file fixes (§11.1), including a missing, extra or
   duplicated row, event, map entry or keyed member [item 4, B2, S13].
 - **Which entries a fault touches.** A fault touches every entry that reads the faulty key (§11's table, §8.1's). A fault
-  of the run's identity (§11.1, items 2, 3, 4, 9, 10, 11 and 13 [§8.2]) means the run is not the registered world, so
-  it touches every entry of the run [E8]. A fault of the table's top level (item 1) touches every entry of every run,
-  and a fault of a run's record hash (item 12) touches every entry of its run [S-c].
+  of the run's identity (§11.1, items 2, 3, 4, 9, 10, 11, 13 and 14 [§8.2; §9.5]) means the run is not the registered
+  world, so it touches every entry of the run [E8]. A fault of the table's top level (item 1) touches every entry of
+  every run, and a fault of a run's record hash (item 12) touches every entry of its run [S-c].
 - **On an honest run,** a criterion passes or fails, and inconclusive arises only from the references' convergence
   (CRITERIA:41-44; RULINGS-2 rows 1b, 1c). An entry that is missing, cannot be formed, or is touched by a fault cannot
   pass, and its criterion fails [§1, B1].
@@ -970,7 +1037,7 @@ The judge checks each of these in every run. A departure is a fault (§11.2).
   - The top level holds one extra key, `INVENTED`, a string, which every comparison skips.
 - **Its numbers** [W2, E10]. It holds none of SPEC.md's input values, except the format constants this file fixes:
   - step 0, with its clock 0.0, at the start; the cumulative heat 0.0 at the start; the records 0.0 before the wash;
-  - `step_report.step` 1 and `limit` 0.5;
+  - `step_report.step` 1, `limit` 0.5 and `driver.window_steps` 1 [§9.5];
   - the registered `permeabilities` 0.0, `multipliers` 1.0 and `charges` 0.
 
   Every other number in it is invented and meaningless, including its N_f, T and traces. The step counts of its
@@ -982,7 +1049,8 @@ The judge checks each of these in every run. A departure is a fault (§11.2).
     variants; a cell inside a patch, with a set on its inside face (W3's) and one on a patch's outside face (W6's);
     one world at three steps; a one-population set; W7s's absent ligand held at its trace;
   - the bath form's host entities and capacitor component in every world, `backend` `"compiled"`, `multipliers` as
-    `site_binding_multiplier`, and an execution block in `definition` [§8.1, §8.2, §8.5];
+    `site_binding_multiplier`, and an execution block in `definition` [§8.1, §8.2, §8.5]; `host_values` and `driver`
+    [§9.5, §9.6];
   - W5's two shapes, refused by the stage condition and admitted;
   - an unregistered compartment (§4.1), and a plant run whose `inputs_changed` is not empty;
   - a refused run of each kind, a plant run of each shape in §8.1, and a non-empty `missing`;
@@ -1015,8 +1083,10 @@ The judge checks each of these in every run. A departure is a fault (§11.2).
     W4 has one entry per dt. A plant run's expected inputs are its world's honest run's (§8.1);
   - a `null` wherever §4.1's exceptions leave a value unfixed: W1eq's start, which it does not hold because the driver
     reads it at run time (§3; item 2), and RT;
-  - the bath form's host entities in every world, with its own host choices of volume, stated in it, and each
-    world's capacitor component [§8.1];
+  - the bath form's host entities in every world, with their structure and constraints, and each world's capacitor
+    component [§8.1, §9.6];
+  - at each host volume, each host trace and `host_values`, the marker "from the host-entity addendum" in place of a
+    literal; the host traces follow the addendum's volumes [§9.6];
   - each population's `site_binding_multiplier`, at 1.0 [§8.5];
   - the two values of P2's crossed `k_off`, if P2 is planted by declaration (§8.1) [B6];
   - its own statement of these rules.
@@ -1040,7 +1110,8 @@ The judge checks each of these in every run. A departure is a fault (§11.2).
   6. the runs, each registered world's first;
   7. the table's sha256 (§1), and then the judgement.
 - **A parse-only pass** of a registered world, a definition check with no step, is not a run, and is allowed before
-  step 6 [§8.6].
+  step 6 [§8.6], but none of W1eq [§9.2, WF5]. The execution record and the host-entity addendum come from these
+  passes (§4, §4.1) [§9.1, §9.6].
 - No class or pair changes after a run (PROTOCOL:101; CRITERIA:66) [12b].
 
 ## 13. The readings settled here
@@ -1093,11 +1164,14 @@ before any run of a registered world:
 2. the list of ledgers and host checks, giving for each its name, the worlds or declared operators that evaluate it,
    and its cadence (§4) [B3; S-b]. No check records a mode, since E3 is withdrawn [§8.3];
 3. the backend every run uses (§4) [B5]: settled now as `"compiled"` [§8.2], so no addendum is owed;
-4. the changed inputs of any plant planted by declaration other than P2 (§8.1) [B6];
+4. the changed inputs of any plant planted by declaration other than P2 (§8.1) [B6], and, for every plant planted
+   by declaration, P2's included, where each changed value sits in `definition` (§4) [§9.4, E24];
 5. any compartment or patch beyond the registered ones and the bath form's (§4.1), and any operator the host tissue
    requires (§9) [item 7, S7];
-6. the host entity values: the host's areas, capacitances and ion amounts that the build records, with where
-   `definition` holds them (§4.1) [§8.1].
+6. the host-entity addendum: the host compartments' volumes, the host patches' areas and capacitances, the ions'
+   amounts in every compartment and the ions' permeabilities on the host patches, kept per honest run (§4.1). It is
+   recorded after the build and before any registered run, confirmed against the wash fixtures' form by the
+   non-builder reviewer, and hashed by the lead [§8.1; §9.6].
 
 **The erratum** ("Who c"'s second kind): an erratum where a judge must change (D371).
 
@@ -1112,7 +1186,10 @@ unchanged.
 - the same reviewer confirms against `src/` the list of checks, with each check's name, the worlds or operators that
   evaluate it and its cadence; the multipliers the engine applies, and where its declaration holds permeabilities;
   and the engine's form for free sites (§4, §4.1) [N2; §8.3];
-- the lead records the execution record, the honest runs' `definition` execution block and bounds (§4) [§8.2, N3];
+- the execution record, the honest runs' `definition` execution block and bounds: from a parse-only pass of every
+  registered world but W1eq, made after the build and before any registered run; confirmed by N2's reviewer
+  against `src/` (the default `field_solver`, and each species' `material_balance_atol_fmol` at the species
+  helper's floor); and hashed by the lead (§4) [§8.2, N3; §9.1, N4];
 - the lead records the runs' inputs and revision (§4, §10).
 
 **An open registration question** [§8.7]: X2 (D224), the user's. It blocks the judged run, not the binding tag.
@@ -1162,7 +1239,8 @@ unchanged.
 - **Its numbers:** every number it adds is SPEC.md's, computed from its inputs alone (§14), or a format constant of
   this file.
 - **The editor's own format sentences, for the lead** (each the reading that cannot make a pass easier):
-  - [E1] The driver never builds a world from the expected-inputs file (the header).
+  - [E1] The driver never builds a world from the expected-inputs file (the header). Amended by WD1: except the
+    host entities' structure and constraints, which SPEC does not give.
   - [E2] A value that is not finite is written as `null`, which the judge reads as such (§1).
   - [E3] `checks` is `{"failures": [...]}` per listed check; the judge also checks the raising mode that `definition`
     records, at a place the addendum names (§4). The mode's part is withdrawn by RULINGS-2 §8.3.
@@ -1212,16 +1290,40 @@ unchanged.
   structure reader was first made to require the bath form, `"compiled"`, `site_binding_multiplier`, the execution
   block and each refusing twin's visible cause, and it failed on the earlier sample.
 - **The editor's format sentences of this change** (each the reading that cannot make a pass easier):
-  - [E15] The judge compares the host entity values in `definition` with their addendum (§4.1, §11.1).
+  - [E15] The judge compares the host entity values in `definition` with their addendum (§4.1, §11.1). Superseded by
+    §9.6: the host's values are in `inputs`, and the judge compares them with the host-entity addendum.
   - [E16] Ions are also out of `permeabilities`, `wash.buffer_mM` and the event's `collected` and `supplied`, so that
     an engine's ion entry there is no extra member (§4.1, §6).
   - [E17] The capacitor component's key, `capacitor_components`, and its form, `{"members", "held_by"}` (§4.1).
   - [E18] The host's names, `bath`, `host_cell`, `host_wall` and `host_contact`, and its volumes in the expected-inputs
     file (100.0 pL for `bath`, 0.01 pL for `host_cell`): host choices that RULINGS-2 §8 does not fix, made by the
-    editor.
+    editor. The volumes are superseded by §9.6: they come from the host-entity addendum. The names stand, fixed at
+    the tag.
   - [E19] `jax_platforms` records what JAX reports, so that a CPU-only machine, where `JAX_PLATFORMS` is unset, still
     records `"cpu"` (§10).
   - [E20] The cross-check leaves out the host entities and every patch field that names one, since the references hold
     none of them (§4.1).
   - [E21] The sample's host-check refusal is a plant run with a planted patch, since no invented input can trip a host
     check while ions are held and ligands are impermeant (§12.1; the README).
+
+### 27 November 2026, the fourth dated change
+
+- **What it applies:** RULINGS-2's §9, which accepts every finding of the fourth read.
+- **What it read besides the earlier files:** RULINGS-2's §9, and the fourth read, `REVIEW-4.md`, whole.
+- **What it did not open:** any file under `validation/fr45/references/` beyond the invented file, any FR-45 judge folder
+  or script, `src/`, and the readings folder's cross-check files.
+- **What it ran,** under the same scope: the writers of the sample and the expected-inputs file, and their checks. The
+  structure reader and the expected file's check were first made to require `driver`, `host_values`, the solver's new
+  spelling and the addendum's markers, and they failed on the earlier files.
+- **The editor's format sentences of this change** (each the reading that cannot make a pass easier):
+  - [E22] W1eq's execution block is compared with W1's record apart from its start and from the fields that `inputs`
+    fixes differently for W1eq, its observation times and horizon, so that an honest W1eq cannot fail on them (§4).
+  - [E23] The run's driver record is a new key of the table, `driver`, `{"window_steps"}`, present in every run (§4).
+  - [E24] The B6 addendum names where each declared change sits in `definition`, P2's included, so that the judge can
+    apply `inputs_changed` to `definition` from the table and the addenda alone (§4, §14.1).
+  - [E25] The host values' key, `inputs.host_values`, and its form: `areas`, `capacitances` and `ion_permeabilities` by
+    host patch, `ion_amounts` by compartment, each the engine's own value with no unit suffix (§4.1).
+  - [E26] In W3 and W3p the wall's inside is `specimen`, the world's own cell. §9.6 says that each host patch's inside is
+    `host_cell`, which those two worlds do not hold (§4.1).
+  - [E27] The host-entity addendum is kept per honest run, its values copied by machine from the parse-only pass; W1eq
+    takes W1's, and a plant run its honest run's (§4.1).

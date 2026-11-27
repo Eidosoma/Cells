@@ -3,26 +3,29 @@
  "protocol": "fr45-site-competition-v1",
  "written": "27 November 2026, before the binding tag, by the agent who wrote the engine table's format sample, who has seen no reference value. Typed by hand from SPEC.md §2 (with §0's constants and §1.1's ligands and multipliers) at tag fr45-site-competition-v1-amendment-3-2026-11-24.",
  "contract": "validation/fr45/spec/TABLE.md, §4.1 and §12.2 (the dated changes of 27 November 2026)",
- "host_choices": {
-  "statement": "The host entities of RULINGS-2 §8.1's bath form, and their volumes, are host choices of this file: invented, fixed here, and not registered inputs. The bath is held, and holds each world's one capacitor component. Each host cell is kept small. A builder declares these values as written. The host's areas, capacitances and ion amounts are not here: a dated addendum fixes them after the build (TABLE.md §4.1, §14.1).",
+ "host": {
+  "statement": "The host entities of the bath form (RULINGS-2 §8.1, §9.6) are not registered inputs. This file fixes their structure and constraints, which the binding tag fixes: their names, the patch orientations, each world's one capacitor component held by the bath, every ligand's permeability 0.0 on every host patch, every ligand at its trace in every host compartment, and ions held at fixed amounts. Their values are not here. The host compartments' volumes, the host patches' areas and capacitances, the ions' amounts in every compartment and the ions' permeabilities on the host patches come from the host-entity addendum, recorded after the build and before any registered run (TABLE.md §4.1, §14.1). So each host volume and host_values holds the marker \"from the host-entity addendum\", and each host trace follows the addendum's volume.",
   "names": {
    "bath": "the held bath node",
    "host_cell": "a host cell",
    "host_wall": "a cell's wall on the bath",
    "host_contact": "a host cell's contact patch on the registered node"
   },
-  "bath_volume_pL": 100.0,
-  "host_cell_volume_pL": 0.01
+  "markers": {
+   "volume": "from the host-entity addendum",
+   "trace": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+   "host_values": "from the host-entity addendum"
+  }
  },
  "rules": [
   "Each entry of runs is one honest run's expected inputs, with exactly the keys of TABLE.md §4.1. A plant run's expected inputs are its world's honest run's (TABLE.md §8.1), but for plant_inputs_changed.",
   "Every number is SPEC.md's binary64 literal as written (SPEC:104), written in Python's repr form. The judge compares numbers as binary64 values, so 602214076 and 602214076.0 are equal.",
-  "Lists are compared as sets of members, matched by id, by ligand and node (free_amounts) or by patch and ligand (permeabilities); ligands and observation_times_s as sets of values (TABLE.md §4.1).",
+  "Lists are compared as sets of members, matched by id, by ligand and node (free_amounts), by patch and ligand (permeabilities), by of and name (multipliers) or by held_by (capacitor_components); ligands and observation_times_s as sets of values (TABLE.md §4.1).",
   "A null is a value this file does not fix, one of TABLE.md §4.1's exceptions: constants.RT_pJ_per_fmol (recorded, since SPEC gives RT as a formula), and W1eq's start. The notes say which.",
   "Where a note in this file says less than TABLE.md §4.1's exception list, that list governs (X1).",
-  "Every number but the host's is SPEC.md's literal. The host entities (host_choices) are compared with this file, never with SPEC, and are not cross-checked: the references hold none of them.",
+  "Every number is SPEC.md's literal. The host entities (host) are compared with this file for their structure and constraints, and with the host-entity addendum for their values, which this file marks; never with SPEC. They are not cross-checked: the references hold none of them.",
   "multipliers lists exactly each population's site_binding_multiplier, at 1.0 (SPEC:62; RULINGS-2 §8.5).",
-  "A trace (declared false) is the binary64 product 1e-12 mM times its compartment's volume_pL (SPEC:104-105; TABLE.md §4.1): every ligand at a registered compartment that declares none of it, and every ligand at every host compartment. At every registered volume that product equals the decimal literal.",
+  "A trace (declared false) is the binary64 product 1e-12 mM times its compartment's volume_pL (SPEC:104-105; TABLE.md §4.1): every ligand at a registered compartment that declares none of it, and every ligand at every host compartment, where the volume is the host-entity addendum's. At every registered volume that product equals the decimal literal.",
   "permeabilities lists every ligand on every patch, registered and host, at 0.0 (SPEC:59-61); charges every ligand at 0 (SPEC:59). Ions are in neither, nor in free_amounts (TABLE.md §4.1).",
   "capacitor_components holds each world's one component: the bath, the world's cell and its registered node, held by the bath; members are compared as a set (RULINGS-2 §8.1).",
   "plant_inputs_changed holds W1p-P2's two crossed k_off, each the other population's registered value. They apply only if P2 is planted by declaration; otherwise W1p-P2's inputs_changed is empty and its inputs equal W1p's. Every other plant's inputs_changed is empty, unless a dated addendum names a list (TABLE.md §8.1).",
@@ -46,13 +49,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -88,25 +91,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -189,6 +192,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.008,
    "observation_times_s": [
     0.2,
@@ -220,13 +224,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -262,25 +266,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -363,6 +367,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.008,
    "observation_times_s": [
     0.8,
@@ -388,13 +393,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -430,25 +435,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -531,6 +536,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.008,
    "observation_times_s": [
     0.2,
@@ -559,13 +565,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -601,25 +607,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -710,6 +716,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.0125,
    "observation_times_s": [
     2.0,
@@ -748,7 +755,7 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -835,31 +842,31 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L3",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L4",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L5",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -1047,6 +1054,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.004,
    "observation_times_s": [
     0.1,
@@ -1084,7 +1092,7 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -1171,31 +1179,31 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L3",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L4",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L5",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -1383,6 +1391,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.004,
    "observation_times_s": [
     0.1,
@@ -1410,13 +1419,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -1452,25 +1461,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -1553,6 +1562,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.08,
    "observation_times_s": [
     0.4,
@@ -1579,13 +1589,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -1621,25 +1631,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -1722,6 +1732,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.04,
    "observation_times_s": [
     0.4,
@@ -1748,13 +1759,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -1790,25 +1801,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -1891,6 +1902,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.02,
    "observation_times_s": [
     0.4,
@@ -1917,13 +1929,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -1959,25 +1971,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -2060,6 +2072,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.1,
    "observation_times_s": [],
    "horizon_s": 1.0
@@ -2081,13 +2094,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -2123,25 +2136,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -2224,6 +2237,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.00625,
    "observation_times_s": [
     0.25,
@@ -2254,13 +2268,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -2296,25 +2310,25 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L2",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -2405,6 +2419,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.0025,
    "observation_times_s": [
     0.5,
@@ -2436,13 +2451,13 @@
     {
      "id": "bath",
      "kind": "node",
-     "volume_pL": 100.0,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     },
     {
      "id": "host_cell",
      "kind": "cell",
-     "volume_pL": 0.01,
+     "volume_pL": "from the host-entity addendum",
      "registered": false
     }
    ],
@@ -2471,13 +2486,13 @@
     {
      "ligand": "L1",
      "node": "bath",
-     "n_fmol": 1e-10,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     },
     {
      "ligand": "L1",
      "node": "host_cell",
-     "n_fmol": 1e-14,
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
      "declared": false
     }
    ],
@@ -2536,6 +2551,7 @@
      "held_by": "bath"
     }
    ],
+   "host_values": "from the host-entity addendum",
    "dt_s": 0.0025,
    "observation_times_s": [
     0.25,
@@ -2555,7 +2571,7 @@
   "W3p": "W3's inputs with SPEC:182's observation times, 0.1, 0.2, 0.5, 1.0 and 2.0 s, and horizon 2.0 s.",
   "W4-dt0.08": "W4 has one entry per dt (SPEC:191). The three entries differ only in dt_s.",
   "W5": "SPEC gives W5 no observation time (SPEC:195-203), so observation_times_s is empty.",
-  "W6": "The cell inside specimen_face, which SPEC does not name (SPEC:210), is the host cell, named host_cell, with the host choice of volume; the bath and host_wall wall it on the bath (TABLE.md §4.1; RULINGS-2 §8.1).",
+  "W6": "The cell inside specimen_face, which SPEC does not name (SPEC:210), is the host cell, named host_cell, with its volume from the host-entity addendum; the bath and host_wall wall it on the bath (TABLE.md §4.1; RULINGS-2 §8.1, §9.6).",
   "W7s": "W7s's registered ligands is [\"L1\"] (SPEC:249). An engine that holds L2 there lists it at its trace, declared false, in every compartment. The echo treats that ligands member and those amounts as information; its permeabilities entries are each 0.0, and its charges member must be 0 (TABLE.md §4.1)."
  },
  "plant_inputs_changed": {

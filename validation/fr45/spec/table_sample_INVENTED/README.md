@@ -5,7 +5,7 @@ is written in that contract's shapes, on invented worlds. **No number in it belo
 from it:** no number, list length, order of keys or entries, or equality between its numbers (TABLE.md §12.1).
 
 - **Who wrote it, and how.** It was written on 27 November 2026, before the binding tag, by the agent who made the
-  contract's three dated changes of that day. That agent is not the builder and has seen no reference value. It wrote
+  contract's four dated changes of that day. That agent is not the builder and has seen no reference value. It wrote
   the sample by hand from the contract (RULINGS-2 §3, item 1). A small writer of the agent's own, outside the checkout,
   assembled the JSON from invented values. No engine code was run or read.
 - **The second dated change** (RULINGS-2 §7) added the run `INVENTED-W1p-P3~check` and a host-check refusal [S-f], and
@@ -15,6 +15,9 @@ from it:** no number, list length, order of keys or entries, or equality between
   §8.3], made `multipliers` exactly each population's `site_binding_multiplier` [§8.5], and gave each refusal an
   invented cause the table shows: an invented input or a planted patch, never a changed bound [§8.8]. So the honest
   host-check refusal `INVENTED-W6~check` gave way to `INVENTED-W3p-P7~check`, whose planted patch causes it.
+- **The fourth dated change** (RULINGS-2 §9) wrote the solver as `cells.solver.imex_ars222_face_electromigration@1`
+  [§9.3], gave every run a `driver` record with `window_steps` 1 [§9.5], and moved the host's values out of
+  `definition` into `inputs.host_values` [§9.6].
 - **What reads it.** The judge reads `table/table.json` in its structure-only mode, with the code that will read the
   table, before the judged run, and must find no fault. At the judged run's snapshot, the builder's exporter writes a
   table on these invented worlds, and the lead compares it with this sample, key by key and type by type. The
@@ -43,7 +46,8 @@ The lead records the sha256 of each file in a dated note in `validation/fr45/spe
   the nodes `tank`, `basin`, `lake`, `cask`, `cup`, `pond` and `bay`, the cell `vesicle`, the patches `vesicle_wall` and
   `shell_face`, the ligands `X1` to `X5`, and the sets and populations.
 - **The host entities** take the contract's own names, `bath`, `host_cell`, `host_wall` and `host_contact`
-  (TABLE.md §4.1, §9). Their volumes here are invented, and differ from the expected-inputs file's host choices.
+  (TABLE.md §4.1, §9). Their volumes here are invented. A registered run's host values come from the host-entity
+  addendum (TABLE.md §4.1, §14.1).
 - **One-population sets** (`disk`, `web`) appear under their SPEC-side names, as the exporter writes them through the
   contract's fixed name map (TABLE.md §9) [§8.4].
 - **The one extra key** is the top level's `INVENTED`, a string. Every comparison skips it (TABLE.md §12.1).
@@ -52,7 +56,7 @@ The lead records the sha256 of each file in a dated note in `validation/fr45/spe
 
 None of SPEC.md's input values appears, except the format constants that TABLE.md §12.1 lists:
 - step 0, with its clock 0.0, at the start; the cumulative heat 0.0 at the start; the records 0.0 before the wash;
-- `step_report.step` 1 and `limit` 0.5;
+- `step_report.step` 1, `limit` 0.5 and `driver.window_steps` 1;
 - the registered `permeabilities` 0.0, `multipliers` 1.0 and `charges` 0.
 
 Every other number is invented and meaningless, including N_f, T, RT, the traces, the host's volumes and the values in
@@ -64,8 +68,8 @@ number equal to a literal of SPEC.md's §0 to §2, or to a number of the expecte
 
 Every parsed run holds the bath form: in a world with no cell, `bath`, `host_cell`, `host_wall` and `host_contact`; in
 `INVENTED-W3`'s and `INVENTED-W3p`'s, `bath` and a `host_wall` from `vesicle`; in `INVENTED-W6`'s, `bath` and a
-`host_wall` from `host_cell`. Each world has one capacitor component, `{bath, <its cell>, <its registered node>}`, held by
-`bath` [§8.1].
+`host_wall` from `host_cell`. Each world has one capacitor component, `{bath, <its cell>, <its registered node>}`, held
+by `bath` [§8.1].
 
 | Run | Status | What it shows (TABLE.md §12.1) |
 | --- | --- | --- |
@@ -105,8 +109,8 @@ Every parsed run holds the bath form: in a world with no cell, `bath`, `host_cel
   (RULINGS-2 §8);
 - `inputs.permeabilities`, on every patch, registered and host; `inputs.multipliers`, exactly each population's
   `site_binding_multiplier`; `inputs.charges`, with the absent ligand's member in `INVENTED-W7s` [S-g; §8.5];
-- `inputs.capacitor_components` [§8.1];
-- `backend` `"compiled"` [§8.2];
+- `inputs.capacitor_components` [§8.1], and `inputs.host_values` [§9.6];
+- `backend` `"compiled"` [§8.2], and `driver.window_steps` 1 [§9.5];
 - `source.jax_platforms` and `source.external_modules`.
 
 **The checks.** Every parsed run lists the same four invented checks, and the refusing one records its failure. That
@@ -114,7 +118,8 @@ uniform set is not the list of checks: the dated addendum gives each check's wor
 "lacks a listed check" means a check listed for the run's world (TABLE.md §4, §14.1) [S-b]. No check records a mode
 (RULINGS-2 §8.3).
 
-**Ions** appear only in `definition`'s host values. They are in no ligand key: not in `charges`, `free_amounts`,
+**Ions** appear only in `inputs.host_values`, which holds their amounts and their permeabilities on the host patches.
+They are in no ligand key: not in `charges`, `free_amounts`,
 `permeabilities`, `wash.buffer_mM`, the rows' `amounts` and `records`, the event's `collected` and `supplied`, or the
 event map (TABLE.md §4.1) [§8.1].
 
@@ -136,21 +141,24 @@ changed bound** [§8.8, X2-r].
 | `INVENTED-W1p-P8` | P8's planted patch: the moiety checked per population, which its own moiety ledger refuses |
 | `INVENTED-W3p-P7~check` | a planted patch, `validation/fr45/plants/INVENTED_p7_host.patch`: P7's mechanism, with a host ion amount perturbed during step 6, which the host check `INVENTED ion amounts` refuses. No invented input could trip a host check while ions are held and ligands are impermeant, so a patch causes it |
 
+The two patches that cause the `~check` refusals are invented patches. On a registered world a patch changes only what
+its plant's mechanism names (N1) [WD3].
+
 A run whose outcome on the engine differs from the sample's, such as a refusal at another step, is a difference for the
 contract's author, before the judged run (TABLE.md §12.1).
 
 **`definition`** is the engine's own declaration in its own form, and the sample's paths in it are illustrative. It
-shows an execution block (`solver`, `dt`, `jit`, the execution's `backend` `"cpu"`, `field_solver`, and no
-`energy_check`), each species' `material_balance_atol_fmol`, and the host entity values (areas, capacitances and ion
-amounts). The lead's execution record and the host addendum give the real paths and values (TABLE.md §4, §4.1, §14.1).
+shows an execution block (`solver`, `dt`, `jit`, the execution block's `backend` `"cpu"`, `field_solver`, and no
+`energy_check`) and each species' `material_balance_atol_fmol`. The execution record gives the real paths and values
+(TABLE.md §4, §14.1). The host's values are not in `definition` but in `inputs.host_values` (§9.6).
 
 ## Every key and type, to the leaf
 
 **The path syntax.**
 - `runs.<run>` is any run's entry, and `[]` any member of a list.
 - `<observable>` is `n:<ligand>@<node>`, `R:<set>` or `B:<population>`.
-- `<ligand>@<node>` is a record's key, and `<node>`, `<set>`, `<population>`, `<ligand>` and `<check>` are the keys of
-  objects keyed by data.
+- `<ligand>@<node>` is a record's key, and `<node>`, `<set>`, `<population>`, `<ligand>`, `<check>`, `<patch>` and
+  `<ion>` are the keys of objects keyed by data.
 
 **The types.** "number" is a JSON number. "integer" is a JSON integer. "or null" marks the nulls TABLE.md allows. A
 non-finite value would also be written as null at a number (TABLE.md §1), but the sample has none.
@@ -186,6 +194,8 @@ non-finite value would also be written as null at a number (TABLE.md §1), but t
 | `runs.<run>.dt_s` | number |
 | `runs.<run>.steps` | integer |
 | `runs.<run>.backend` | string: `compiled` |
+| `runs.<run>.driver` | object: the driver's record |
+| `runs.<run>.driver.window_steps` | integer: 1 |
 | `runs.<run>.rows` | list, in step order |
 | `runs.<run>.rows[]` | object |
 | `runs.<run>.rows[].step` | integer |
@@ -338,11 +348,22 @@ non-finite value would also be written as null at a number (TABLE.md §1), but t
 | `runs.<run>.inputs.capacitor_components[].members` | list, compared as a set |
 | `runs.<run>.inputs.capacitor_components[].members[]` | string: a compartment |
 | `runs.<run>.inputs.capacitor_components[].held_by` | string: `bath` |
+| `runs.<run>.inputs.host_values` | object: the host-entity addendum's values |
+| `runs.<run>.inputs.host_values.areas` | object: every host patch |
+| `runs.<run>.inputs.host_values.areas.<patch>` | number: the engine's own value |
+| `runs.<run>.inputs.host_values.capacitances` | object: every host patch |
+| `runs.<run>.inputs.host_values.capacitances.<patch>` | number: the engine's own value |
+| `runs.<run>.inputs.host_values.ion_permeabilities` | object: every host patch |
+| `runs.<run>.inputs.host_values.ion_permeabilities.<patch>` | object: every ion |
+| `runs.<run>.inputs.host_values.ion_permeabilities.<patch>.<ion>` | number: the engine's own value |
+| `runs.<run>.inputs.host_values.ion_amounts` | object: every compartment |
+| `runs.<run>.inputs.host_values.ion_amounts.<node>` | object: every ion |
+| `runs.<run>.inputs.host_values.ion_amounts.<node>.<ion>` | number: the engine's own value |
 | `runs.<run>.inputs.dt_s` | number |
 | `runs.<run>.inputs.observation_times_s` | list |
 | `runs.<run>.inputs.observation_times_s[]` | number |
 | `runs.<run>.inputs.horizon_s` | number |
-| `runs.<run>.definition` | object, or null before parse: the engine's own form, not listed further; its execution block and host values are compared with the lead's record and the host addendum |
+| `runs.<run>.definition` | object, or null before parse: the engine's own form, not listed further; its execution block and bounds are compared with the execution record, and its literal fields with the contract |
 | `runs.<run>.source` | object |
 | `runs.<run>.source.engine_revision` | string: 40 hex digits |
 | `runs.<run>.source.checkout_dirty` | boolean |
