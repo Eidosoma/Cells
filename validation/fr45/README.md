@@ -81,7 +81,14 @@ take the engine's constants and are re-timed to at most 6000 steps a run.
 
 ```
 python -B -m validation.fr45.rehearsal SAMPLE_DIR OUT --cpus 6,7 [--stage runs|judge]
+python -B -m validation.fr45.rehearsal SAMPLE_DIR OUT --cpus 6,7 --invented-reference FORMAT_SAMPLE_INVENTED_JSON
 ```
+
+`--invented-reference` judges the engine against the references' own invented file (`format_sample_INVENTED.json`,
+which ruling 5a lets the builder read; no other file of the references is read): its world in W3's bath form,
+run at each of its dt, its wash's buffer completed at the trace for the ligands it leaves out (the engine's wash
+names every neutral species). The file names C2b against its own root, C7 and C8 as there for their format
+only; its world does not relax by its horizon either, so C2a's gaps are the file's own distance at the horizon.
 
 Run it from a frozen snapshot (`validation/source_snapshot.py`) of `src/cells`, `validation/fr45`,
 `validation/tissue` and `agreement.py`, so that every run's provenance is one clean revision.
