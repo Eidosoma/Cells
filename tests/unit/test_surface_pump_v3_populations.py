@@ -36,6 +36,7 @@ from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.laws import electrochemistry
 from cells.laws.channels import cav1p2_m2h, kleak_always_open, kv1p5_mh
+from cells.laws.channels import open_channel_block as block_law
 from cells.laws.channels import voltage_shift as vshift
 from cells.laws.junctions.selective import selective_flux
 from cells.models import pump_composite
@@ -59,6 +60,7 @@ from validation.fr51 import engine as fr51
 from validation.fr51 import judge as fr51_judge
 from validation.fr51 import plants as fr51_plants
 from validation.fr64 import closed_forms as fr64_laws
+from validation.fr64 import worlds as fr64_worlds
 from validation.tissue import cell_replacement_fixtures as replacement_fixtures
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as v3_fixtures
@@ -1503,6 +1505,83 @@ def test_a_world_with_every_reader_and_kind_round_trips():
     assert spec_v3.shifted_readers(spec.model) == (
         ("kir_0", "block", "ph"), ("kir_0", "m", "ph"), ("nav_0", "h", "reversal_of"),
     )  # fmt: skip
+
+
+# ------------------------------------------------------------------ FR-64: D327's pair on the host
+# FR-50 phase 2's one-way channel records on shifted populations (the lead's ruling 1), the tier-2
+# supplement to tests/unit/test_voltage_shift_compiled.py, with the pair's three plants.
+
+
+def split_u_without_shift(original):
+    """The split's u formed at V, the block's own law with no shift."""
+
+    def planted(c_in, c_out, voltage, opening, availability, u, p, *, xp):
+        k = block_law.dissociation(p.channel_block_k0_mM, p.channel_block_steepness, voltage,
+                                   p.temperature, xp=xp)  # fmt: skip
+        _, free = block_law.fractions(p.channel_block_concentration_mM, k)
+        plain = block_law.unblocked_fraction(p.channel_block_weight, free)
+        plain = xp.where(p.channel_active, plain, 1.0)
+        return original(c_in, c_out, voltage, opening, availability, plain, p, xp=xp)
+
+    return planted
+
+
+def split_at_v_ref(original):
+    """The split's permeation read at the block's V_ref (its pH shift on the inside)."""
+
+    def planted(c_in, c_out, voltage, opening, availability, u, p, *, xp):
+        row, acid = p.channel_shift_row[-1], p.channel_shift_ph[-1]
+        h = xp.where(acid, c_in[row, xp.arange(row.size)], 1000.0)
+        dv = vshift.PhShift.delta_v(h, p.channel_shift_V_per_ph[-1],
+                                    p.channel_shift_reference_ph[-1], xp=xp)  # fmt: skip
+        moved = voltage - xp.where(acid, dv, 0.0)
+        return original(c_in, c_out, moved, opening, availability, u, p, xp=xp)
+
+    return planted
+
+
+def end_view_stored(original):
+    """The step's end views read their stored rows in place of their reads."""
+
+    def planted(view, p, structure, *, xp=jnp):
+        return original(view._replace(read=view.state), p, structure, xp=xp)
+
+    return planted
+
+
+FR64_PAIR_PLANTS = {  # name: (the module function of @3's it wraps, the plant)
+    "the split's u without the shift": ("channel_one_way_split", split_u_without_shift),
+    "the split's permeation at V_ref": ("channel_one_way_split", split_at_v_ref),
+    "the end view's stored row": ("channel_one_way_fluxes", end_view_stored),
+}
+
+
+@pytest.mark.parametrize("plant", [None, *FR64_PAIR_PLANTS])
+def test_the_pair_s_records_on_the_host_and_each_plant(plant, monkeypatch):
+    """D327's pair on the host (about 1 s each): three host ARS(2,2,2) steps of
+    validation/fr64/worlds.pair_world. Each population's records meet their closed forms within
+    1e-11, and their gaps are at most 1e-12. Each plant misses the block-on-pH population's
+    absolute value, and only it: the split's u formed at V without the shift; the split's
+    permeation at V_ref; the end views' stored H_eq in place of their reads."""
+    if plant is not None:
+        name, make = FR64_PAIR_PLANTS[plant]
+        monkeypatch.setattr(v3, name, make(getattr(v3, name)))
+    raw = fr64_worlds.pair_world()
+    spec = parse_spec(raw)
+    impl, state, p, control = bound(spec)
+    dt = raw["execution"]["dt"]
+    for _ in range(3):
+        state, valid = impl.imex_step(state, dt, control, p, xp=np)
+        assert bool(valid)
+    misses = []
+    for slot, name in enumerate(("k_population", *fr64_worlds.KV)):
+        expected = fr64_laws.pair_one_way(raw, name, fr64_worlds.CELL_PH)
+        forward, backward = (float(v) * 3 * dt for v in expected)
+        f, b = state.one_way_forward_fmol[slot], state.one_way_backward_fmol[slot]
+        if abs(f - forward) > 1e-11 * forward or abs(b - backward) > 1e-11 * backward:
+            misses.append(name)
+    assert plant is not None or np.all(state.one_way_gap_relative <= 1e-12)
+    assert misses == ([] if plant is None else ["k_population"]), misses
 
 
 # ------------------------------------------------------------------ FR-50 phase 2: @3's own records
