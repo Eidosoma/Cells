@@ -29,9 +29,10 @@ beginning `INVENTED-`); the driver refuses any other name unless the call is jud
 its path, after its blob is checked) and the references' G (`fr45ref_free_energy.G`, from the references' folder
 on `sys.path`; its source is never read). It calls G as the plan writes it, `float(G(world, node, start) -
 G(world, node, end))`, with the world by its registered name (G's module knows the worlds by name, RULINGS-2 Q4a)
-and each row's amounts at the node as a mapping from their names (§9, S3); the lead confirms that form against
-the references' notes before the judged run. It imports nothing from `src/` and nothing of the driver's, exporter's or
-worlds'.
+and each row's amounts at the node as a mapping from their names, only those the reference's trajectory holds
+(§9, S3). The lead confirmed that form by a non-builder's smoke test (27 November 2026): G returns a Decimal,
+and a partial mapping raises, naming the node's required observables. It imports nothing from `src/` and nothing
+of the driver's, exporter's or worlds'.
 
 `judge` follows §12.3. Without `--table` it makes steps 1 to 3 only, as §12.3 places them before any registered
 run; with it, at the judged run, every input below is owed, and the judge scores nothing while one is absent:
@@ -58,7 +59,8 @@ Steps 4 and 5 of §12.3 use the other commands: `structure` (the structure-only 
 table against the format sample, key by key and type by type) and `plant-rule` (each plant run against its honest
 twin).
 
-**The judge's readings**, where the contract leaves the form to the build:
+**The judge's readings**, where the contract leaves the form to the build (the lead confirmed them at the dress
+rehearsal, 27 November 2026, "Readings at the dress rehearsal"):
 - the refusal mapping (§7) is the judge's own, from `raised` and `name`: a check's name gives its book (`moiety
   ledger`, `energy ledger`, `dissipation check`, else `host check: <name>`), `stage condition` gives `stage`, the
   domain names give `domain`, and anything the engine did not raise is `harness`. The dated addendum fixes it
@@ -66,8 +68,7 @@ twin).
 - a refused W2 or W7 run whose refusal is at the step that applies the wash may hold the event or not (Y2's two
   exceptions cannot be told apart from the record alone); at any other step the count is §4's;
 - an expected-inputs null is compared as a value (a set's `face` and a world's `wash` are null by §4.1's types),
-  except `constants.RT_pJ_per_fmol` (recorded) and W1eq's start (compared with the references' file); the
-  expected file's own rule calls every null unfixed, so this reading needs the contract author's word;
+  except `constants.RT_pJ_per_fmol` (recorded) and W1eq's start (compared with the references' file);
 - a refusal catches a plant only beside an honest run that completed as the registered world: an honest run
   touched by a fault of its identity, or of its status and refusal, gives no baseline (§11.2, the stricter
   reading);
@@ -80,10 +81,12 @@ twin).
 **Owed before the judged run** (§14.1), and the judge's options that take them: the host-entity addendum
 (`--addendum`, read as `{"runs": {run: {"nodes": [{"id", "volume_pL"}], "host_values": {...}}}}`), the execution
 record (`--execution-record`, read as `{"runs": {run: {"execution": {...}}}}`), the list of checks by world
-(`--checks-list`, read as `{world: [check names]}`), the refusal mapping's addendum and the B6 paths. Three of the
-judge's literals must match the addenda when they are written, or the judge changes: the refusal mapping, the
-operators list and P2's B6 path (`k_off` as the site operator's `dissociation_rate_per_s`). In an invented
-rehearsal the verdict lists every check it could not make under `unchecked`.
+(`--checks-list`, read as `{world: [check names]}`), the refusal mapping's addendum and the B6 paths; these shapes
+are accepted (27 November 2026). Three of the judge's literals must match the addenda when they are written, or the
+judge changes: the refusal mapping, the operators list and P2's B6 path (`k_off` as the site operator's
+`dissociation_rate_per_s`). Also owed: the lead's record of the table's sha256 and the format sample's
+(`--table-sha256`, `--sample-sha256`), and the binding tag (`--repo`, `--tag`). In an invented rehearsal the
+verdict lists every check it could not make under `unchecked`.
 
 ## The dress rehearsal
 
