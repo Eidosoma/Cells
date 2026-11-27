@@ -42,11 +42,6 @@ import numpy as np
 KIND = "fr45 engine run record, version 1"
 COMPOSITE, INNER = "cells.model.resolved_pump_composite@1", "cells.model.resolved_pump_tissue@3"
 WASH_LAW = "cells.operator.scheduled_compartment_wash@1"
-# The run's ledgers and host checks (the checks addendum, TABLE §14.1, fixes the list and its cadence).
-CHECKS = ("domain", "local", "outside", "total", "charge", "electrode", "global_charge", "energy",
-          "reservoir_work", "electrode_work", "metabolic_work", "site_bound_entity", "site_moiety_entity",
-          "dissipation")  # fmt: skip
-WASH_CHECKS = ("wash_ions",)
 BOOKS = {"site_moiety_entity": "moiety ledger", "energy": "energy ledger", "dissipation": "dissipation check"}
 MAP_AT_START = ("W7",)  # Worlds whose event map is applied to the start as well as to the wash row (TABLE §6).
 STEP_REPORT = ("W5",)
@@ -64,6 +59,26 @@ def shape(run_name):
 
 def book(check):
     return BOOKS.get(check, f"host check: {check}")
+
+
+def failed_check(message, checks, failure_message):
+    """The check whose failure the engine raised: its message matched exactly, since the engine raises the bare
+    message (surface_pump, pump_composite); a prefix would name electrode_work's failure electrode. None for any
+    other message."""
+    return next((c for c in checks if message == failure_message(c)), None)
+
+
+def numerical_refusal(message, checks, failure_message, stage):
+    """(the check failed or None, kind, name, book) of a NumericalError (TABLE §7; the refusal mapping addendum).
+    A listed check's failure is kind check by its book, but the host domain check's, which is kind domain (name
+    solver domain), the reading that cannot make a pass easier under P-c; any other message is kind stage where
+    `stage` (site_occupancy.refusal_condition's name) is given, else kind domain."""
+    check = failed_check(message, checks, failure_message)
+    if check is not None and check != "domain":
+        return check, "check", check, book(check)
+    if check is None and stage is not None:
+        return None, "stage", stage, None
+    return check, "domain", "solver domain", None
 
 
 def saved_steps(inputs, world_shape):
@@ -372,7 +387,7 @@ def run(job, out):
     record["definition"] = spec.to_dict()
     record["capacities"] = reader.capacities()
     record["free_sites"] = {s: "state" for s in record["capacities"]}
-    checks = CHECKS + (WASH_CHECKS if world.washed_node is not None else ())
+    checks = tuple(model.DEVICE_CHECKS)  # The engine's own list for this world (the checks addendum).
     record["checks"] = {c: dict(failures=[]) for c in checks}
     saved = saved_steps(inputs, world_shape)
     dt = float(spec.execution.dt)
@@ -412,16 +427,14 @@ def run(job, out):
         refuse("harness", None, None, "driver time limit", str(error), last[0] + 1, last[1])
     except NumericalError as error:
         message = str(error)
-        check = next((c for c in checks if message.startswith(model.device_failure_message(c))), None)
         step, t0 = last[0] + 1, last[1]
-        if check is not None and check != "domain":
-            record["checks"][check]["failures"].append(dict(step=last[0], message=message))
-            refuse("check", _qualified(error), book(check), check, message, step, t0)
-        else:
-            control = _control(spec, t0)
-            stage = so.refusal_condition(last[2], control, p, dt) if world_shape else None
-            kind = "stage" if stage == so.STAGE_CONDITION else "domain"
-            refuse(kind, _qualified(error), None, stage or "solver domain", message, step, t0)
+        stage = None
+        if failed_check(message, checks, model.device_failure_message) is None and world_shape:
+            stage = so.refusal_condition(last[2], _control(spec, t0), p, dt)  # The first half-step only.
+        failed, kind, why, book_ = numerical_refusal(message, checks, model.device_failure_message, stage)
+        if failed is not None:  # Every listed check's failure is recorded, the domain check's included (§4).
+            record["checks"][failed]["failures"].append(dict(step=last[0], message=message))
+        refuse(kind, _qualified(error), book_, why, message, step, t0)
     except ConfigError as error:  # A refusal at binding (e.g. X2 beside sets) before any step.
         kind, why = _parse_refusal(error)
         refuse(kind, _qualified(error), None, why, str(error))
@@ -576,7 +589,7 @@ def parse(job, out):
     record["inputs"] = echo(spec, world, reader)
     record["definition"] = spec.to_dict()
     record["capacities"] = reader.capacities()
-    record["checks"] = list(CHECKS + (WASH_CHECKS if world.washed_node is not None else ()))
+    record["checks"] = list(model.DEVICE_CHECKS)  # The engine's own list, in its order (the checks addendum).
     record["timeline"] = dict(points=int(grid.size), first_s=float(grid[0]), last_s=float(grid[-1]))
     return _write(record, out)
 

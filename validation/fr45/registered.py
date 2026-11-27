@@ -103,8 +103,8 @@ def _named(value, names, path=""):
 
 
 def addenda(out):
-    """The execution record and the host-entity values, copied by machine from the parse records (TABLE §4,
-    §4.1, §14.1), with the paths of `definition` that name a run or its record (R5-4)."""
+    """The execution record, the host-entity values and the checks list by world, copied by machine from the
+    parse records (TABLE §4, §4.1, §14.1), with the paths of `definition` that name a run or its record (R5-4)."""
     out = Path(out)
     records = {run: json.loads((out / "parsed" / f"{run}.json").read_text()) for run in PARSED}
     refused = {run: r["refusal"] for run, r in records.items() if r["status"] != "parsed"}
@@ -121,6 +121,11 @@ def addenda(out):
         names = {run, f"{run}.json", "records/", "INVENTED"}
         named[run] = _named(r["definition"], names)
     host["W1eq"] = copy.deepcopy(host["W1"])  # W1eq takes W1's (TABLE §4.1, E27).
+    checks = {}  # The engine's own list by world (model.DEVICE_CHECKS, in its order); W1eq takes W1's.
+    for run, r in records.items():
+        if checks.setdefault(r["world"], r["checks"]) != r["checks"]:
+            raise SystemExit(f"{run}: its checks differ from its world's other runs'")
+    checks["W1eq"] = list(checks["W1"])
     same = all(execution[run]["declared"] == execution["W1"]["declared"] for run in ("W1p",))
     sources = {json.dumps(r["source"], sort_keys=True) for r in records.values()}
     provenance = dict(made_from=sorted(str(out / "parsed" / f"{run}.json") for run in PARSED),
@@ -135,6 +140,7 @@ def addenda(out):
                     provenance=provenance)  # fmt: skip
     (out / "execution_record.json").write_text(json.dumps(record, indent=1) + "\n")
     (out / "host_entities.json").write_text(json.dumps(entities, indent=1) + "\n")
+    (out / "checks_list.json").write_text(json.dumps(dict(sorted(checks.items())), indent=1) + "\n")
     print(json.dumps(dict(runs=len(records), excluded_paths=record["excluded_paths"], named=named), indent=1))
     return 0
 

@@ -25,6 +25,23 @@ def _load(name, path):
 
 
 J = _load("fr45_judge_under_test", ROOT / "validation" / "fr45" / "judge.py")
+D = _load("fr45_driver_under_test", ROOT / "validation" / "fr45" / "driver.py")
+# The engine's checks in a world without a wash, and its failure messages (pump_composite.device_failure_message:
+# the bare message it raises, surface_pump and the operators' LEDGER_MESSAGE).
+ENGINE_CHECKS = ("domain", "local", "outside", "total", "charge", "electrode", "global_charge", "energy",
+                 "reservoir_work", "electrode_work", "metabolic_work", "site_bound_entity", "site_moiety_entity",
+                 "dissipation")  # fmt: skip
+
+
+def engine_message(check):
+    if check == "domain":
+        return "Invalid resolved pump inventory, gates or padding; no repair"
+    if check == "dissipation":
+        return "Resolved pump dissipation cannot be negative or decrease"
+    prefix = "Site occupancy" if check.startswith("site_") else "Resolved pump"
+    return f"{prefix} accounting failed: {check}"
+
+
 AGREEMENT = J.load_by_path(
     "fr45_agreement_under_test", ROOT / "validation" / "assembly_lineages_v2" / "agreement.py"
 )
@@ -296,10 +313,26 @@ def test_a_top_level_fault_touches_every_entry():
             ("definition", None),
         ),
         (dict(raised=None, name="driver time limit"), ("harness", None)),
+        # A planted electrode_work failure: the driver names it by the engine's exact message, not a prefix's
+        # (electrode), and the domain check's failure is kind domain, recorded among the checks.
+        (
+            dict(raised="cells.execution.errors.NumericalError", name="electrode_work",
+                 message="Resolved pump accounting failed: electrode_work"),
+            ("check", "host check: electrode_work"),
+        ),
+        (
+            dict(raised="cells.execution.errors.NumericalError", name="solver domain",
+                 message="Invalid resolved pump inventory, gates or padding; no repair", failed="domain"),
+            ("domain", None),
+        ),
     ],
-)
+)  # fmt: skip
 def test_the_judges_own_refusal_mapping(refusal, expected):
     assert J.mapped(refusal) == expected
+    if "message" in refusal:  # The driver forms the same name, kind and book from the engine's message.
+        failed, kind, name, book = D.numerical_refusal(refusal["message"], ENGINE_CHECKS, engine_message, None)
+        want = (refusal.get("failed", refusal["name"]), expected[0], refusal["name"], expected[1])
+        assert (failed, kind, name, book) == want
 
 
 MOIETY = dict(kind="check", raised="cells.execution.errors.NumericalError", book="moiety ledger",
