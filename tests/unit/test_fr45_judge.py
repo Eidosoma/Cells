@@ -314,9 +314,12 @@ MOIETY = dict(kind="check", raised="cells.execution.errors.NumericalError", book
       dict(status="refused", refusal=MOIETY, steps=1, rows=[row(0, 0.0)]), False),
      (dict(status="refused", refusal=dict(MOIETY, kind="stage", name="stage condition", book=None), steps=1,
            rows=[row(0, 0.0)]), {}, False),
-     (dict(rows=[row(0, 0.0), row(2, 0.2, n=1.5)], dt_s=0.2), {}, False)],
+     (dict(rows=[row(0, 0.0), row(2, 0.2, n=1.5)], dt_s=0.2), {}, False),
+     (dict(status="refused", refusal=MOIETY, steps=1, rows=[row(0, 0.0)]), dict(driver=dict(window_steps=2)),
+      False)],
     ids=["fails with a passing baseline", "no fail", "a failed baseline", "a check refusal",
-         "a check refusal with the honest run refused", "a stage refusal", "a fault on the plant run"],
+         "a check refusal with the honest run refused", "a stage refusal", "a fault on the plant run",
+         "a check refusal with a fault on the honest run"],
 )  # fmt: skip
 def test_a_plant_is_caught_by_section_8_2(planted, honest, caught):
     env = env_of(
