@@ -13782,3 +13782,42 @@ It is a port check: it shows that the live engine computes legacy's written equa
     - an editor that has seen no value applies the rulings to the contract, and writes the format sample and the expected-inputs file;
     - the reviewer then reads the whole final contract;
     - then come the binding tag and the build.
+
+## D406: FR-64's rulings and its note on main, its build held for the queue; FR-45's contract after three reads and a source check; questions for the user
+
+2026-11-27, written at 03:00 UTC.
+
+- **FR-64.** The lead's rulings are `/mnt/workspaces/Cells/d172-restructure-20261115-01/fr64-rulings-20261127.md`.
+  - **The note's rulings:** questions 1, 4 and 5, options O1 to O4 and the retired fallback are ruled as the note recommends.
+  - **Added by the lead:** a D327 check for FR-50 phase 2's channel records on a shifted population, and port checks of FR-51's and FR-50's
+    judges on the translated drivers. Those port checks compare rows byte for byte, base against head; the registered verdicts stay D363, D377 and
+    D405.
+  - **The plan step** re-read the note against main 7149f90a. Its seven questions are ruled.
+  - **The note is on main** (9664c46f, `docs/FR64_VOLTAGE_SHIFT_DESIGN.md` §17), replacing the earlier one.
+  - **The price** moves to 5.45 to 6.7 agent-days, for the pair's check, the port-check harness and the shared matrix files.
+  - **The build is held before any code.** D393's queue puts liquid routing before FR-64.
+- **FR-45's contract** (branch `fr45-contract`) had three reads by an agent that has seen no reference value. Each finding is ruled in RULINGS-2 §7
+  and §8 (`/mnt/workspaces/Cells/fr45-readings-20261126/`).
+  - **A source check** confirmed from `src/` that the engine holds SPEC's units natively. It was made by a reviewer who is not the builder.
+  - **It found what the contract lacked:**
+    - every world needs host entities: a held bath, a walled cell and contact patches, the form main's wash fixtures run;
+    - three declarable keys move a check's bound (the material tolerance, the solver, `energy_check`), so the run's execution record is fixed and
+      compared;
+    - two one-population set names need a fixed map.
+  - **The lead's cross-check** compared the expected-inputs file with the references' own echo of the inputs, printing key paths only: 444
+    comparisons, no real problem. The reviewer typed SPEC's inputs again independently: no difference.
+  - **The binding tag** waits for the third round of edits and its read. It is not made tonight.
+- **The first-run rule (RULINGS-2, Who c):** a registered world first runs in the judged run itself. The builder develops and tests on invented
+  worlds, and a parse-only pass is not a run.
+- **For the user:**
+  1. **FR-64's question 2.** Keep `cells.model.resolved_pump_tissue@3` and the block law's @1 when FR-51's `reference` key moves, refusing the old
+     key by name? The lead recommends yes: it changes a spelling, not a meaning, as the rename did. The landing waits for the answer.
+  2. **The queue.** May FR-64 build in parallel with liquid routing, which is ahead of it (D393) and not yet started? Or should it wait?
+  3. **X2 (D224).** D224 makes X2 a check that registered and judged runs must select, each with its own cap.
+     - Since D224, only FR-8's and XC0's runs selected it; ten other registrations did not.
+     - On FR-45's path X2 would count nothing, since the ligand bookings are exact.
+     - The choice: amend FR-45 with a cap and re-tag it before any registered run, or waive X2 for it. Then there is the wider question of the
+       other registrations.
+     - X2 blocks FR-45's judged run, not its tag.
+  4. **A refused write.** The harness refused a subagent's report file ("subagents should return findings as text"). The lead did not write it
+     for the agent; its findings came back as text and are in the lead's log. The lead holds this for the user's word.
