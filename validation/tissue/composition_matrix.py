@@ -1880,6 +1880,68 @@ RULES = (
             ),
         ),
     ),
+    dict(
+        rule=f"beside site_sets, {SITES} admits only the design note's §15 partners: the wash, @2, "
+        "the bath schedule, replacement@1, turnover, exchange and D152's reactions (FR-45)",
+        laws=(SITES, WASH, COUPLING_2, BATH, REPLACEMENT_1, TURNOVER, EXCHANGE, REACTIONS),
+        level="data",
+        check=OPS + "site_occupancy.py::check_set_composition",
+        test=TESTS + "test_site_occupancy.py::test_fr45_the_partners_beside_sets_parse",
+        tag=REAL,
+        why="D327: each combination is enabled with its check (the lead's ruling 2 of 27 November "
+        "2026). The wash's books and event map and the run paths are in "
+        "test_site_competition_runs.py, the batch paths in test_site_competition_batch_runs.py "
+        "(run_batch_windowed in the D148 round); turnover, exchange, the reactions and a face at a set's "
+        "node writing its ligands, and the bath schedule's and replacement@1's passivity, in "
+        "test_site_competition_partners_runs.py; @2's θ on a shared set in "
+        "test_species_regulated_availability.py. Every other operator law is refused by name "
+        "(test_site_occupancy.py::test_definition_refusals), as is a shared set on a replaced slot "
+        "(check_slots)",
+    ),
+    dict(
+        rule="cells.operator.site_occupant_replacement@1 is refused beside site_sets (FR-45)",
+        laws=(OCCUPANT, SITES),
+        level="data",
+        check=OPS + "site_occupancy.py::check_set_composition",
+        test=TESTS + "test_site_occupancy.py::test_definition_refusals",
+        tag=REAL,
+        why="W writes each population's free sites as S - B, on the population axis, which a "
+        "shared set's free sites no longer equal (the design note's ruling 11, D327)",
+    ),
+    dict(
+        rule="beside site_sets, no population internalises, on a set or off one (FR-45)",
+        laws=(SITES,),
+        level="data",
+        check=OPS + "site_occupancy.py::check_site_sets",
+        test=TESTS + "test_site_occupancy.py::test_definition_refusals",
+        tag=REAL,
+        why="Version 1 qualifies the passive path only (the design note's ruling 10, FR-45's "
+        "protocol): a set world takes the general half-step, whose mixed path is not built",
+    ),
+    dict(
+        rule="beside site_sets, the inner model's later options are refused: @3's own one-way "
+        "records, a blocked channel population, the sparse field solver and the step-doubled "
+        "energy check (FR-45)",
+        laws=(SITES,),
+        level="data",
+        check=OPS + "site_occupancy.py::check_set_composition",
+        test=TESTS + "test_site_occupancy.py::"
+        "test_fr45_the_inner_options_beside_sets_are_refused_by_name",
+        tag=REAL,
+        why="None is among the design note's §15 partners, and no world qualifies one beside a "
+        "set (D327): FR-50 phase 2, FR-51, FR-17 and X2 (D224). X2's block is attached after the "
+        "definition's checks (energy_check_spec.parse_definition), so a set world selecting it "
+        "parses, and its binding refuses it, before any step. The user's open X2 question "
+        "(D406) may reverse that refusal, with a qualification",
+        solver=(
+            SolverRefusal(
+                (SITES,),
+                SPARSE_PAIRS,
+                when="where the definition declares site_sets",
+                test=TESTS + "test_site_occupancy.py::test_definition_refusals",
+            ),
+        ),
+    ),
 )
 
 

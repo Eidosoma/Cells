@@ -867,6 +867,26 @@
    "entity_sum(terms_b + terms_r, axis=None, xp=xp)"
   ],
   [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(dg_b, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(dg_r, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(terms_b, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "site_energy",
+   "entity_sum(terms_r, axis=None, xp=xp)"
+  ],
+  [
    "operators/species_exchange.py",
    "ledger_terms",
    "entity_sum(row.exchange_work_pJ, axis=None, xp=xp)"

@@ -1595,6 +1595,79 @@ The design is [OPERATOR_FEATURES_FR23_24_26_DESIGN.md](OPERATOR_FEATURES_FR23_24
 - the flipped structure assertion, beside its still-refused twin (`tests/unit/test_door_s.py`);
 - the dosed and undosed development run, `/mnt/workspaces/Cells/operators-fr23-20261120/`.
 
+## 14. FR-45: shared site sets (27 November 2026; D327)
+
+The design is the FR-44/45 design note's Part II, widened in place under D148, as the lead's rulings
+of 27 November 2026 read it. This is development: FR-45's judged run comes with `validation/fr45/`.
+
+**The declaration:**
+- **An optional `site_sets` list.** Each set has an ID, its unit and catalogue, an owner (a patch's
+  face, a contact's side or a finite node's own surface), copies, sites per copy and an accessible
+  fraction.
+- **A member form of a population.** `sites` names the member's set, beside its ligand, rates and
+  initial occupancy. Its owner and counts are its set's.
+- **Private sites are unchanged.** A population without `sites` is a private set, declared inline
+  as before. Leaving `site_sets` out is the only spelling of "no sets", so an empty list is refused.
+
+**The law.** Competitive Langmuir binding on a shared pool of free sites. For a set s with free
+sites R_s and members b:
+- dB_b/dt = m_b k_on,b c_b R_s − k_off,b B_b, and dR_s/dt = −Σ_b dB_b/dt.
+- **R moves on the set axis.** `site_free_increment_fmol` lies on `site_set`, and the capacity
+  moiety R_s + Σ_b B_b = S_s is booked per set.
+- **The half-step is SSPRK(3,3) as before.** Its stage condition is h·max L ≤ 1/2. The loads are
+  each pool's, each set's free-site load summed over its members, and each member's dissociation
+  (`stage_loads`).
+- **The heat at each facing node** is −(ΔG of the pools + ΔG_B + ΔG_R), with each set's free sites
+  counted once (`site_lattice_terms`, `node_booking`).
+
+**The static switch.** Without `site_sets`, the new layout leaves are zero-size and the half-step is
+today's, bit for bit. D148's first probe found the programs identical after dead-code elimination,
+and every field equal.
+
+**R3's quantity:**
+- on a shared set (ruling 1): θ_b = B_b / (R_s + Σ_q B_q);
+- on private sets: B / (B + R), as before.
+
+**The step report.** `step_report` gives step 1's loads by kind, ID and sum, with the stage verdict
+and the domain verdict apart. When the first half-step's stages refuse, `refusal_condition` names
+the stage condition.
+
+**Refused by name** (`site_occupancy.REFUSALS`):
+- **Version 1's exclusions:**
+  - internalisation anywhere in a set world;
+  - W;
+  - every operator law outside the design note's §15 partners;
+  - @3's own one-way records, a blocked channel population, the sparse field solver and the
+    step-doubled energy check. The energy check's block is attached after the definition's
+    checks, so a set world that selects it parses, and its binding refuses it before any step.
+    The user's open X2 question (D406) may reverse this refusal; if the user selects X2 for
+    FR-45, it is revisited with a qualification.
+- **The set's own rules:**
+  - a set named by fewer than two populations;
+  - one ligand twice on a set;
+  - initial occupancies over 1 on a set;
+  - an unknown or twice-declared set ID;
+  - a shared set on a replaced slot;
+  - a set that faces a held bath.
+
+**Admitted, each with its check** (ruling 2):
+- **Partners:**
+  - the wash;
+  - @2's θ (a node set's member stays refused as a source);
+  - the bath schedule;
+  - replacement@1 off a replaced slot;
+  - turnover, exchange and D152's reactions;
+  - a face at a set's node.
+- **Run paths:** `runner.run`, windows, a resume, and the batch and vector paths.
+
+**Evidence:**
+- `tests/unit/test_site_occupancy.py`: the FR-45 rows;
+- `tests/unit/test_site_competition_runs.py`;
+- `tests/unit/test_site_competition_batch_runs.py`;
+- `tests/unit/test_site_competition_partners_runs.py`;
+- `tests/unit/test_species_regulated_availability.py`: θ on a shared set;
+- D148's first probe: `/mnt/workspaces/Cells/fr45-build-20261127/probe/`.
+
 ## Appendix A. Equations for the independent references
 
 The references are written from these equations, not from engine code. Units are @3's: fmol, pL, mM,

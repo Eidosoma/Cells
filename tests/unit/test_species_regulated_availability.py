@@ -2437,3 +2437,60 @@ def test_a_site_source_stays_refused_beside_water(monkeypatch):
     finally:
         monkeypatch.undo()
         pump_composite._implementation.cache_clear()
+
+
+def _shared_set_routed(antagonist_mM, node=None):
+    """FR-45 (the design note's ruling 12): @2 routes an agonist's occupied fraction on a shared
+    set (contact_0's outside face, in cell_0; or the node's own surface) to the turnover's
+    production of X0 in cell_0; the antagonist Q2 competes for the same sites. Invented values."""
+    pops = [ofx.member("agonist", ligand="Q1", theta0=0.3), ofx.member("antagonist", ligand="Q2")]
+    raw = ofx.set_world(
+        pops, [ofx.site_set(node=node)], node_mM={"Q1": 1.7e-3, "Q2": antagonist_mM}
+    )
+    raw = add_inventory_species(
+        raw, "X0", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    )
+    target = dict(operator=sfx.TURNOVER, control="turnover_rate", ids=["make_x0"],
+                  evaluation="target_half_steps", operating_range=[0.0, 1.0])  # fmt: skip
+    entry = dict(id="c_site", target=target, law="site_fraction", basal=0.1,
+                 source={"site_population": "agonist", "quantity": "occupied_fraction"})  # fmt: skip
+    raw = rf.with_coupling(raw, species=[], couplings=[entry])
+    block(raw)["law"] = LAW_V2
+    raw["model"]["operators"].append(dict(
+        law=sfx.TURNOVER, species=rf.identities(["X0"]), templates=[],
+        routes=[dict(id="make_x0", species="X0", node="cell_0", kind="production")]))  # fmt: skip
+    raw["experiment"]["turnover_controls"] = [
+        dict(route_id="make_x0", carrier_id="cell_0", schedule=[dict(time=0.0, rate=PRODUCTION)])
+    ]
+    return raw
+
+
+def test_version_2_reads_an_agonists_fraction_on_a_shared_set_and_an_antagonist_lowers_it():
+    """FR-45 (D327's ruling 12; the lead's ruling 1 of 27 November 2026), in NumPy with no world
+    compiled: on a shared set the agonist's factor is 0.1 + 0.9 theta, theta = B / (R + sum B) of
+    its set from the owner's own quantities (R3), and relaxing the closed node with the antagonist
+    present leaves the agonist's theta below its value with the antagonist at its trace. A node
+    set's member is refused as a source, as a node's own population is (FR-28)."""
+    with pytest.raises(ConfigError, match="a node's own sites, which belong to no cell"):
+        parse_spec(_shared_set_routed(2.6e-3, node="ecs_0"))
+    thetas = []
+    for antagonist_mM in (2.6e-3, ofx.SET_TRACE_mM):
+        spec, model, state, p, coupling = _site_model(_shared_set_routed(antagonist_mM))
+        state = type(state)(*(np.asarray(v) for v in state))
+        p = type(p)(*(np.asarray(v) for v in p))
+        quantities = model.quantity_reader(coupling, p, xp=np)
+        bound = np.asarray(p.site_bound_anchor_fmol) + state.site_bound_increment_fmol
+        free = np.asarray(p.site_free_anchor_fmol) + state.site_free_increment_fmol
+        theta = bound[0] / (free[0] + bound.sum())
+        factor, ok = coupling.rate_factors(
+            state, p, sfx.TURNOVER, "turnover_rate", xp=np, quantities=quantities
+        )
+        assert bool(ok) and float(factor[0]) == 0.1 + 0.9 * theta and theta == pytest.approx(0.3)
+        control = model.CONTROL_TYPE(*(np.asarray(v[0]) for v in cs.control_values(spec, [0.0])))
+        sites = next(o for o in model.operators if o.LAW_ID == ofx.LAW)
+        x = state
+        for _ in range(400):  # The closed node relaxes (2.2 ms half-steps).
+            x, ok = sites.half_step(x, 2.2e-3, control, p, xp=np)
+            assert bool(ok)
+        thetas.append(float(sites.quantities(x, p, xp=np)["site_occupied_fraction"][0]))
+    assert 0.0 < thetas[0] < thetas[1] < 1.0

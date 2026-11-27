@@ -415,7 +415,8 @@
   "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148-counts/lane-a/measure/measured.json",
   "/mnt/workspaces/Cells/fr52-build-20261126/d148/lane-a/measure/measured.json",
   "/mnt/workspaces/Cells/fr50-phase2-20261126/timed-319d2c23/measure/measured.json",
-  "/mnt/workspaces/Cells/fr65-coupling-20261126/round/measure/measured.json"
+  "/mnt/workspaces/Cells/fr65-coupling-20261126/round/measure/measured.json",
+  "/mnt/workspaces/Cells/fr45-build-20261127/round/measure/measured-tiers-1-2.json"
  ],
  "measured_provenance": [
   {
@@ -3553,6 +3554,14 @@
    "root": "/mnt/workspaces/Cells/fr65-coupling-20261126/round/snap-head-7cce9790",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-27T03:05:04+00:00"
+  },
+  {
+   "git_revision": "c968a22fe5ea9c5e97b2d949a4bc277d34ac927d",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr45-build-20261127/round/snap-head-c968a22f",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-27T07:52:13+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5723,10 +5732,10 @@
    },
    {
     "file": "tests/unit/test_site_occupancy.py",
-    "seconds": 6.18,
+    "seconds": 8.28,
     "exit_code": 0,
     "counts": {
-     "passed": 69
+     "passed": 107
     }
    },
    {
@@ -5859,10 +5868,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 16.05,
+    "seconds": 15.51,
     "exit_code": 0,
     "counts": {
-     "passed": 130
+     "passed": 131
     }
    },
    {
@@ -7128,10 +7137,10 @@
    },
    {
     "file": "tests/unit/test_run_view.py",
-    "seconds": 48.47,
+    "seconds": 54.44,
     "exit_code": 0,
     "counts": {
-     "passed": 45
+     "passed": 46
     }
    },
    {
@@ -7185,6 +7194,14 @@
    {
     "file": "tests/unit/test_shared_inventory_writers_runs.py",
     "seconds": 69.03,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_site_competition_runs.py",
+    "seconds": 41.71,
     "exit_code": 0,
     "counts": {
      "passed": 3
@@ -7862,6 +7879,18 @@
    {
     "file": "tests/unit/test_shared_inventory_volume.py",
     "seconds": 90.07,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_site_competition_batch_runs.py",
+    "seconds": 69.67,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_site_competition_partners_runs.py",
+    "seconds": 81.59,
     "exit_code": null,
     "counts": {}
    },

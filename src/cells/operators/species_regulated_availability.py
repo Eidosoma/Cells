@@ -110,7 +110,8 @@ exactly f = 1 (padding); only version 2's population kernel evaluates it, and on
 not judged): a coupling's source may be {"site_population": id, "quantity": q}, a site population
 of cells.operator.site_occupancy@1 read through its owner's readable quantities (the contract's R3: the composite
 passes quantities=, a function of state, and it is called only with a site route). q is
-occupied_fraction, theta = B / (B + R), through site_fraction (f = theta), site_complement
+occupied_fraction, theta = B / (B + R), or B_b / (R_s + sum_q B_q) for a member b of a shared
+site set s (FR-45; its capacity is its set's), through site_fraction (f = theta), site_complement
 (f = 1 - theta) or a Hill law with a dimensionless half_saturation; or occupied_mM or capacity_mM,
 B / V or S / V at the element's cell's declared volume (D244's Q2: a concentration, never a count),
 through a Hill law with half_saturation_mM. An empty site is an ordinary state: a Hill law of 0
