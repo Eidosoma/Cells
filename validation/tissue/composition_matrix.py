@@ -1237,18 +1237,20 @@ RULES = (
         solver=(SolverRefusal(_FIELD_INPUT_LAWS, SPARSE_PAIRS),),
     ),
     dict(
-        rule="no blocked channel population (cells.channel_block.open_channel_block_weighted_modes@1) beside an "
-        "operator that rewrites channel slots",
+        rule="no blocked channel population "
+        "(cells.channel_block.open_channel_block_weighted_modes@1), and no population with a "
+        "declared voltage shift, beside an operator that rewrites channel slots",
         laws=pump_composite.SLOT_WRITERS,
         level="data",
         check="src/cells/models/pump_composite.py::block_slot_errors",
         test=TESTS + "test_surface_pump_v3_populations.py::"
         "test_a_block_beside_an_operator_that_rewrites_channel_slots_is_refused",
         tag=REAL,
-        why="They rewrite a slot's law, permeability, patch or activity, never the block's "
-        "per-slot fields, so a slot they rewrite would keep its old block: refused until a world "
-        "qualifies the pair (FR-51's follow-up, D360). Without a declared block each composes as "
-        "before",
+        why="They rewrite a slot's law, permeability, patch or activity, never the block's or the "
+        "shift's per-slot fields, so a slot they rewrite would keep its old block or shift: "
+        "refused until a world qualifies the pair (FR-51's follow-up, D360; widened by FR-64 to "
+        "every declared shift, a gate's included). Without a declared block or shift each "
+        "composes as before",
     ),
     dict(
         rule="an onset node's volume is its declared anchor: its provider must declare "
@@ -1920,8 +1922,8 @@ RULES = (
     ),
     dict(
         rule="beside site_sets, the inner model's later options are refused: @3's own one-way "
-        "records, a blocked channel population, the sparse field solver and the step-doubled "
-        "energy check (FR-45)",
+        "records, a blocked channel population, a declared voltage shift, the sparse field solver "
+        "and the step-doubled energy check (FR-45; the shift's entry is FR-64's, D327)",
         laws=(SITES,),
         level="data",
         check=OPS + "site_occupancy.py::check_set_composition",
@@ -1929,10 +1931,10 @@ RULES = (
         "test_fr45_the_inner_options_beside_sets_are_refused_by_name",
         tag=REAL,
         why="None is among the design note's §15 partners, and no world qualifies one beside a "
-        "set (D327): FR-50 phase 2, FR-51, FR-17 and X2 (D224). X2's block is attached after the "
-        "definition's checks (energy_check_spec.parse_definition), so a set world selecting it "
-        "parses, and its binding refuses it, before any step. The user's open X2 question "
-        "(D406) may reverse that refusal, with a qualification",
+        "set (D327): FR-50 phase 2, FR-51, FR-64, FR-17 and X2 (D224). X2's block is attached "
+        "after the definition's checks (energy_check_spec.parse_definition), so a set world "
+        "selecting it parses, and its binding refuses it, before any step. The user's open X2 "
+        "question (D406) may reverse that refusal, with a qualification",
         solver=(
             SolverRefusal(
                 (SITES,),

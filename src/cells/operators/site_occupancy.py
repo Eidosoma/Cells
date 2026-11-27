@@ -969,11 +969,13 @@ def check_definition(spec, declaration):
 def check_set_composition(spec, declaration):
     """FR-45, version 1 (D327): beside site sets, only the design note's §15 partners (SET_PARTNERS),
     each qualified by its own check; W, every other operator law, and the inner model's later
-    options (@3's own one-way records, FR-50; a blocked channel population, FR-51; the sparse field
-    solver, FR-17; the step-doubled energy check, X2) are refused by name until a world qualifies
-    each beside them. A world without site sets is not read here. X2's block is attached after the
-    definition's checks, so its refusal comes from the binding (SiteOccupancy.initial_values); the
-    user's open X2 question (D406) may reverse it, with a qualification."""
+    options are refused by name until a world qualifies each beside them. The options are @3's own
+    one-way records (FR-50), a blocked channel population (FR-51), a declared voltage shift (FR-64,
+    which added it as the second to land beside sets, D327), the sparse field solver (FR-17) and
+    the step-doubled energy check (X2). A world without site sets is not read here. X2's block is
+    attached after the definition's checks, so its refusal comes from the binding
+    (SiteOccupancy.initial_values); the user's open X2 question (D406) may reverse it, with a
+    qualification."""
     if not declaration.site_sets:
         return
     for op, _, _ in composite_spec.entries(spec):
@@ -998,6 +1000,10 @@ def check_set_composition(spec, declaration):
         (
             any(getattr(c, "block", None) is not None for c in getattr(m, "channels", ())),
             "a blocked channel population (FR-51)",
+        ),
+        (
+            any(getattr(c, "voltage_shift", None) is not None for c in getattr(m, "channels", ())),
+            "a declared voltage shift (FR-64)",
         ),
         (spec.execution.field_solver == SPARSE_SOLVER_ID, f"the field solver {SPARSE_SOLVER_ID}"),
         (getattr(spec, "energy_check", None) is not None, "execution.energy_check (X2, D224)"),

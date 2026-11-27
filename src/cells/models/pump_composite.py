@@ -221,9 +221,10 @@ def occupant_event_times(spec):
     }
 
 
-# FR-51's follow-up (D327's operator gap). These operators repopulate, move or open channel slots:
-# they rewrite a slot's law, permeability, patch or activity, never the block's per-slot fields
-# (channel_block_*). So a slot they rewrite would keep its old block, and a blocked population
+# FR-51's follow-up (D327's operator gap), widened by FR-64 to every declared voltage shift. These
+# operators repopulate, move or open channel slots: they rewrite a slot's law, permeability, patch
+# or activity, never the block's or the shift's per-slot fields (channel_block_*, channel_shift_*).
+# So a slot they rewrite would keep its old block or shift, and a population that declares either
 # beside one is refused by name until a world qualifies the pair.
 SLOT_WRITERS = (
     "cells.operator.scheduled_cell_replacement@1",
@@ -256,17 +257,34 @@ def one_way_record_errors(pairs, spec):
 
 
 def block_slot_errors(pairs, spec):
-    """FR-51: one message per slot-rewriting operator (SLOT_WRITERS) beside a blocked population
-    (cells.channel_block.open_channel_block_weighted_modes@1); [] without a block."""
-    blocked = [c.id for c in getattr(spec.model, "channels", ()) if getattr(c, "block", None)]
-    if not blocked:
-        return []
-    return [
-        f"{op.LAW_ID} rewrites channel slots but not the block's per-slot fields, so it is refused "
-        f"beside the blocked population(s) {blocked} until a world qualifies the pair (FR-51)"
-        for op, _ in pairs
-        if op.LAW_ID in SLOT_WRITERS
+    """FR-51 and FR-64: for each slot-rewriting operator (SLOT_WRITERS), one message beside a
+    blocked population (cells.channel_block.open_channel_block_weighted_modes@1), its shift
+    included, and one beside a population whose voltage shift has no block (a gate's); [] without
+    either."""
+    channels = getattr(spec.model, "channels", ())
+    blocked = [c.id for c in channels if getattr(c, "block", None)]
+    shifted = [
+        c.id
+        for c in channels
+        if getattr(c, "voltage_shift", None) is not None and not getattr(c, "block", None)
     ]
+    out = []
+    for op, _ in pairs:
+        if op.LAW_ID not in SLOT_WRITERS:
+            continue
+        if blocked:
+            out.append(
+                f"{op.LAW_ID} rewrites channel slots but not the block's per-slot fields, so it is "
+                f"refused beside the blocked population(s) {blocked} until a world qualifies the "
+                "pair (FR-51)"
+            )
+        if shifted:
+            out.append(
+                f"{op.LAW_ID} rewrites channel slots but not a voltage shift's per-slot fields, so "
+                f"it is refused beside the shifted population(s) {shifted} until a world qualifies "
+                "the pair (FR-64)"
+            )
+    return out
 
 
 def check_definition(spec):
