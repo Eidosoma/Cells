@@ -13704,3 +13704,39 @@ It is a port check: it shows that the live engine computes legacy's written equa
   with the lead's rulings, the references, the spec with the lead's three dated notes, and the strings note, under `validation/fr43_part3_cowriters/`.
   It changes no src file.
 - **Next:** FR-52 may land after its own D148 round, now that this comparison is judged (D401).
+
+## D404: FR-52 is landed; crossrev's record renewed for it
+
+2026-11-27, written at 00:13 UTC.
+
+- **Landed** at ab8b599c (tag `fr52-landed-2026-11-27`), from 56502459, after the co-writers' registered comparison was judged (D403, D401). The
+  landing's trial ran the three changed test files and the guard set: 292 passed.
+- **What it builds** (D371, D375, D377; the note `docs/PASSIVE_COHORT_DESIGN.md` with its §9 for D400 and §10 as built):
+  - `cells.operator.integer_unit_population@1` gains, in place, an optional `cohorts` key. Its engine record, kept at each event, holds the expected
+    surviving initial and newly assembled units per label, and a host readout reads it.
+  - The kernel is `src/cells/numerics/unit_cohorts.py`.
+  - The independent reference, `validation/fr52_cohorts/`, never imports the kernel. It rebuilds counts from the declared stoichiometry and
+    checks them against `integer_trace_counts` at every event.
+  - The world `FR52_cohorts` joins crossrev's qualification set.
+  - D400's pair check is now a committed tool, `validation/fr43_part3/pair_check.py`.
+  - Where no cohort is declared, the record is zero-size and every value is unchanged. At a division, the partition's finiteness check reads the
+    record; that is stated, and it refuses only after an engine fault.
+- **The D148 round** on 56502459 (main 10225759 merged), against 10225759:
+  - the derivative programs: every program file identical;
+  - the pair check: every field equal at every step in D400's nine worlds, and the eliminated programs identical in eight. The dividing world's
+    step adds only that finiteness test;
+  - FR's set passes;
+  - crossrev: identical apart from the co-writer world's four program texts and bindings, and `FR52_cohorts`'s nine new files;
+  - G1: 113 of 113;
+  - tiers 1 and 2: 495 files, none changed;
+  - FR-43 part 3's evidence is byte-identical, the twins hold, and the tier-3 statistics file passes;
+  - test IDs: 79 added, none removed.
+- **The builder stopped one of its own lane-A units.** At 23:23 the unit was running tiers on a tier record that would have skipped FR-52's two
+  test files, so its result could not have been used. The lead rules the stop right: it ended a gate run with a wrong record, not a science run.
+  The correct run followed at once.
+- **Crossrev's record** (`record-cda5dc82`): the co-writer world's five changed files are renewed, with the old ones kept in
+  `reactions-superseded-20261127/`, and `FR52_cohorts` adds nine files to `qualification/`. The renewal is dated in
+  `RENEWAL-20261127-fr52-cohorts.txt`. The renewal's 18 files are byte-identical to the round's own crossrev output, as the lead checked. The renewed
+  G1 saves stay beside G1's record.
+- **Next:** FR-65's coupling step, whose code is built, reruns D327's sequence probe with FR-52 landed, then takes its D148 round. FR-50 phase 2's
+  round is running.
