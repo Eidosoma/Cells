@@ -21,6 +21,7 @@ The first-run rule: `run` refuses a world whose name does not begin `INVENTED-` 
 
 Usage (PYTHONPATH at a snapshot, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr45.driver run SPEC_JSON RECORD_JSON
+  python -B -m validation.fr45.driver parse SPEC_JSON PARSE_JSON     (a parse-only pass: no step; never W1eq)
 SPEC_JSON: {"run", "inputs", "plant" (a module of validation/fr45/plants, or null), "start" (W1eq's start file, or
 null), "time_limit_step" (a harness condition for development, or null), "judged" (false)}; an invented world's
 job may add "map_at_start" (its event map applied to the start as well, as W7's is).
@@ -41,11 +42,6 @@ import numpy as np
 KIND = "fr45 engine run record, version 1"
 COMPOSITE, INNER = "cells.model.resolved_pump_composite@1", "cells.model.resolved_pump_tissue@3"
 WASH_LAW = "cells.operator.scheduled_compartment_wash@1"
-# The run's ledgers and host checks (the checks addendum, TABLE §14.1, fixes the list and its cadence).
-CHECKS = ("domain", "local", "outside", "total", "charge", "electrode", "global_charge", "energy",
-          "reservoir_work", "electrode_work", "metabolic_work", "site_bound_entity", "site_moiety_entity",
-          "dissipation")  # fmt: skip
-WASH_CHECKS = ("wash_ions",)
 BOOKS = {"site_moiety_entity": "moiety ledger", "energy": "energy ledger", "dissipation": "dissipation check"}
 MAP_AT_START = ("W7",)  # Worlds whose event map is applied to the start as well as to the wash row (TABLE §6).
 STEP_REPORT = ("W5",)
@@ -63,6 +59,26 @@ def shape(run_name):
 
 def book(check):
     return BOOKS.get(check, f"host check: {check}")
+
+
+def failed_check(message, checks, failure_message):
+    """The check whose failure the engine raised: its message matched exactly, since the engine raises the bare
+    message (surface_pump, pump_composite); a prefix would name electrode_work's failure electrode. None for any
+    other message."""
+    return next((c for c in checks if message == failure_message(c)), None)
+
+
+def numerical_refusal(message, checks, failure_message, stage):
+    """(the check failed or None, kind, name, book) of a NumericalError (TABLE §7; the refusal mapping addendum).
+    A listed check's failure is kind check by its book, but the host domain check's, which is kind domain (name
+    solver domain), the reading that cannot make a pass easier under P-c; any other message is kind stage where
+    `stage` (site_occupancy.refusal_condition's name) is given, else kind domain."""
+    check = failed_check(message, checks, failure_message)
+    if check is not None and check != "domain":
+        return check, "check", check, book(check)
+    if check is None and stage is not None:
+        return None, "stage", stage, None
+    return check, "domain", "solver domain", None
 
 
 def saved_steps(inputs, world_shape):
@@ -371,7 +387,7 @@ def run(job, out):
     record["definition"] = spec.to_dict()
     record["capacities"] = reader.capacities()
     record["free_sites"] = {s: "state" for s in record["capacities"]}
-    checks = CHECKS + (WASH_CHECKS if world.washed_node is not None else ())
+    checks = tuple(model.DEVICE_CHECKS)  # The engine's own list for this world (the checks addendum).
     record["checks"] = {c: dict(failures=[]) for c in checks}
     saved = saved_steps(inputs, world_shape)
     dt = float(spec.execution.dt)
@@ -411,16 +427,14 @@ def run(job, out):
         refuse("harness", None, None, "driver time limit", str(error), last[0] + 1, last[1])
     except NumericalError as error:
         message = str(error)
-        check = next((c for c in checks if message.startswith(model.device_failure_message(c))), None)
         step, t0 = last[0] + 1, last[1]
-        if check is not None and check != "domain":
-            record["checks"][check]["failures"].append(dict(step=last[0], message=message))
-            refuse("check", _qualified(error), book(check), check, message, step, t0)
-        else:
-            control = _control(spec, t0)
-            stage = so.refusal_condition(last[2], control, p, dt) if world_shape else None
-            kind = "stage" if stage == so.STAGE_CONDITION else "domain"
-            refuse(kind, _qualified(error), None, stage or "solver domain", message, step, t0)
+        stage = None
+        if failed_check(message, checks, model.device_failure_message) is None and world_shape:
+            stage = so.refusal_condition(last[2], _control(spec, t0), p, dt)  # The first half-step only.
+        failed, kind, why, book_ = numerical_refusal(message, checks, model.device_failure_message, stage)
+        if failed is not None:  # Every listed check's failure is recorded, the domain check's included (§4).
+            record["checks"][failed]["failures"].append(dict(step=last[0], message=message))
+        refuse(kind, _qualified(error), book_, why, message, step, t0)
     except ConfigError as error:  # A refusal at binding (e.g. X2 beside sets) before any step.
         kind, why = _parse_refusal(error)
         refuse(kind, _qualified(error), None, why, str(error))
@@ -534,14 +548,61 @@ def _finite(value):
     return value
 
 
+PARSE_KIND = "fr45 parse-only record, version 1"
+
+
+def parse(job, out):
+    """A parse-only pass (TABLE §12.3, §14.1): the world built, parsed and checked (parse_spec, the model's
+    initial values with their binding checks, and runner.timeline's grid), with no step. Any registered world but
+    W1eq (§9.2, WF5). It records what the execution record and the host-entity addendum copy: the definition as
+    the engine parsed it, its execution block, and the inputs' echo with the host values (TABLE §4, §4.1)."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution import runner
+    from cells.registry.models import get_model
+    from validation.fr45 import worlds
+
+    name, inputs = job["run"], job["inputs"]
+    if shape(name) == "W1eq":
+        raise SystemExit("refused: no parse-only pass of W1eq is made before the judged run (TABLE §12.3; WF5)")
+    if job.get("plant") or job.get("start"):
+        raise SystemExit("refused: a parse-only pass takes an honest run's inputs alone (TABLE §14.1)")
+    record = dict(kind=PARSE_KIND, run=name, world=inputs["world"], dt_s=inputs["dt_s"], status="parsed",
+                  refusal=None, operators=[], inputs=None, definition=None, capacities={}, checks=None,
+                  timeline=None, source=source())  # fmt: skip
+    world = worlds.build(inputs)
+    try:
+        spec = parse_spec(world.raw)
+        model = get_model(spec.model)
+        _, p = model.initial_values(spec)
+        grid = np.asarray(runner.timeline(spec))
+    except ConfigError as error:
+        kind, why = _parse_refusal(error)
+        record["status"] = "refused"
+        record["refusal"] = dict(kind=kind, raised=_qualified(error), book=None, name=why, message=str(error),
+                                 step=None, time_s=None)  # fmt: skip
+        return _write(record, out)
+    reader = Reader(spec, world, model, p)
+    record["operators"] = [COMPOSITE, INNER, *(op.LAW_ID for op, _, _ in _entries(spec))]
+    record["inputs"] = echo(spec, world, reader)
+    record["definition"] = spec.to_dict()
+    record["capacities"] = reader.capacities()
+    record["checks"] = list(model.DEVICE_CHECKS)  # The engine's own list, in its order (the checks addendum).
+    record["timeline"] = dict(points=int(grid.size), first_s=float(grid[0]), last_s=float(grid[-1]))
+    return _write(record, out)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    one = sub.add_parser("run")
-    one.add_argument("job")
-    one.add_argument("out")
+    for command in ("run", "parse"):
+        one = sub.add_parser(command)
+        one.add_argument("job")
+        one.add_argument("out")
     args = parser.parse_args(argv)
-    run(json.loads(Path(args.job).read_text()), args.out)
+    (run if args.command == "run" else parse)(json.loads(Path(args.job).read_text()), args.out)
     return 0
 
 
