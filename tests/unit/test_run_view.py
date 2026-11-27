@@ -725,7 +725,6 @@ PENDING_UNITS = frozenset(
 PENDING_SETS = frozenset(
     {
         ("cells.operator.isopotential_partition@1", "division_slot"),
-        ("cells.operator.site_occupancy@1", "site_population"),
         ("cells.operator.species_regulated_availability@1", "coupling"),
         ("cells.operator.species_regulated_availability@1", "one"),
         ("cells.operator.species_regulated_availability@1", "regulatory_slot"),
@@ -758,3 +757,21 @@ def test_the_operators_pending_view_declarations_only_shrink():
     readouts = {(law, k) for law, op in OPERATORS.items() for k in op.READOUT_COLUMNS}
     assert axes <= readouts
     assert all(issubclass(type(op), Operator) for op in OPERATORS.values())
+
+
+def test_the_site_operators_own_axes_have_their_sets(monkeypatch):
+    """FR-45 (the lead's ruling on D148's first probe, option (a)): cells.operator.site_occupancy@1
+    declares the sets of its two own axes, site_population and site_set, each at its owners, and
+    the run view reads them with no problem of their own. Its VIEW_LAYERS are not declared yet, so
+    the writer still refuses the composition, for that and the other pending declarations alone."""
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    monkeypatch.setattr(run_view, "_engine_source", lambda root=None: None)
+    spec = parse_spec(wfx.well(wall="node", end=0.02))  # A patch's and a node's own population.
+    _, layout = get_model(spec.model).initial_values(spec)
+    with pytest.raises(run_view.ViewRefused) as refused:
+        run_view.prepare(spec, layout=layout)
+    problems = str(refused.value)
+    assert "cells.operator.site_occupancy@1 declares no VIEW_LAYERS" in problems
+    for word in ("site_population", "site_set", "lies on unknown", "acts at entities", "carries"):
+        assert word not in problems, problems

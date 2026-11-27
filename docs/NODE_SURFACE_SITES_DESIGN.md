@@ -185,7 +185,8 @@ for the @2 refusal (§7).
 - a face or side key beside the node key, since a node's own sites face only the node;
 - an internalisation route, since the population has no inward;
 - @2: a node-owned population as a coupling's site source, since it has no cell and no @2 target
-  lives at a node;
+  lives at a node. The same holds for a member of a shared set on a node's own surface (FR-45,
+  `docs/SITE_OCCUPANCY_DESIGN.md` §14);
 - option B only: a population that declares both `copies` and `copies_per_m2`, or neither, and a
   density whose owner declares no area.
 

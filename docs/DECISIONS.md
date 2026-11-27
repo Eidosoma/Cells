@@ -13928,3 +13928,85 @@ It is a port check: it shows that the live engine computes legacy's written equa
     included.
   - **What still covers those paths:** their histories are saved and compared, and the pair check's full-recording windows cover `run_windowed`.
   - **The fix:** save jax arrays as arrays, then renew G1's c1 at a known revision. It is proposed to the user.
+
+## D410: the user's answers on the seven questions (D406, D409), with the adviser; the crossrev record re-baselined
+
+2026-11-27, written at 10:53 UTC. The user: "Sounds good on your suggestions for all 7 but please get adviser also in on it". The adviser was in.
+
+1. **FR-64's question 2:** keep `cells.model.resolved_pump_tissue@3` and the block law's @1, and refuse FR-51's old `reference` key by name. FR-64's
+   note (§17.1) and its index row now say so.
+2. **The queue:** FR-64 builds now, in parallel. Liquid routing's proposal is still owed, and this does not start it.
+   - FR-45's engine lands first and also changes the matrix files, so FR-64 takes `pump_composite.py`, `composition_matrix.py` and
+     `PUMP_COMPOSITE.md` only after it.
+   - FR-64's D327 list gains "a declared shift beside site sets".
+3. **X2 (D224) had no suggestion to approve, so it is asked again with one.**
+   - **The recommendation:** waive X2 for FR-45. It fits what is tagged and built: the contract fixes "no `energy_check`", and the engine refuses X2
+     beside sets. On FR-45's path X2 counts nothing.
+   - **The alternative:** select X2. That needs a cap, a contract change, a re-tag and X2 qualified beside sets.
+   - **The ten other registrations** that did not select X2 are a separate question. They are being listed with their solvers and judged dates,
+     since X2 covers ARS(2,2,2) only.
+   - X2 blocks only FR-45's judged run.
+4. **Refused actions.**
+   - **(a)** A subagent's report file refused by the harness: its findings as text are enough, as the user agreed.
+   - **(b)** The derivative-program tool: the lead read its path from FR-65's round scripts (`final-gate-20261126/tools/derivative_programs.py`,
+     through `derivative_side.sh`). It traces only through the stationary analysis, which refuses composite worlds. And no file of FR-3's judges
+     (`validation/fr3/`) uses the stationary analysis or a derivative program. So D327's clause "whether FR-3's judges take derivative programs" is
+     answered no, and D148's derivative criterion holds with nothing of FR-45's to compare. The step runs for the record.
+5. **FR-45's price:** continue at about 10.25 to 12.75 agent-days. The tooling reaches the contract's §12.3 step 5 early, where contract errors
+   surface while an erratum is still allowed.
+6. **FR-64's price:** 5.45 to 6.7 agent-days.
+7. **`results_baseline`'s gap:** fixed and landed on its own, after FR-45's engine.
+   - Checkpoints held as jax arrays are saved as arrays, with a planted row in the existing test.
+   - G1's c1 is renewed additively: every existing array byte-identical, with new keys only.
+   - The lead confirmed the gap on c1: a world's `final` holds only `final.time` and `final.step_index`.
+- **The crossrev record, re-baselined** (`record-cda5dc82`, `RENEWAL-20261127-full-rebaseline.txt`).
+  - **Why:** the adviser asked for the whole record to be compared with main's own output. It had fallen behind in about 222 files across ten
+    sets: device-check and step-program texts, rhs texts, and one layout key. Earlier renewals patched only each landing's changed worlds.
+  - **No value changed:** in the four differing replication npz files, all 153 arrays are bit-identical, and one layout key is added.
+  - **Done:** 195 files in ten sets now equal main c7ba9fd8's output, with the whole previous record kept in
+    `record-cda5dc82-superseded-20261127-full/`.
+  - **What the gate uses:** only the record's listing, which is unchanged. Rounds compare main against the head afresh.
+  - **Not done:** `replication/` (27 files) is read-only since 18 November and was left untouched. Whether to renew it is the user's.
+  - **A correction:** D409's two-file renewal and its attribution to e7871b95 rested on the builder's reading. The whole-record comparison
+    supersedes both, and no file-by-landing attribution is claimed.
+
+## D411: FR-45's engine is landed
+
+2026-11-27, written at 11:02 UTC.
+
+- **The landing:** de72e530 (tag `fr45-engine-landed-2026-11-27`), from 465cc836. The landing's trial passed 384 tests.
+- **What it builds** (the design note approved in D327; the build rulings, D409):
+  - shared site sets in `cells.operator.site_occupancy@1`, widened in place under D148 behind a static switch;
+  - one free-site count per set as state, the stage condition summed per set, heat booked once per set at each facing node, and a moiety ledger
+    per set;
+  - W5's first-stage report, the stage identification and a free-site readout.
+- **The D148 round passes** (D409, and the derivative step since):
+  - the judges' derivative programs: 261 files identical. FR-3's site worlds are refused by the stationary analysis at both revisions, and FR-3's
+    judges take no derivative program (D410).
+- **Crossrev's record:** FR-3's two site worlds are renewed (10 files) at this landing, with the superseded files kept.
+- **Tier 3:** its record gains the two qualifying compiled files, placed there by the lead's ruling. Tiers 1 and 2 fold the four other files.
+- **Next:**
+  - FR-45's registered-comparison tooling, on a new branch from main, reaching the contract's §12.3 step 5 first.
+  - FR-64 may now merge main and take the matrix files.
+  - The `results_baseline` fix lands on its own.
+
+## D412: X2 is waived for FR-45, and D224's X2 rule is narrowed; the crossrev record's replication set is renewed
+
+2026-11-27, written at 11:09 UTC. The user: "1. As yoiu suggest 2. as you suggest".
+
+1. **X2 (D224).**
+   - **FR-45 waives X2.**
+     - This fits what is tagged and built: the contract fixes "no `energy_check`", and the engine refuses X2 beside sets.
+     - On FR-45's path X2 would count nothing, since the site heat is booked exactly and no ion moves.
+     - No re-tag is needed, and FR-45's judged run is no longer blocked by X2.
+   - **D224 is narrowed from here.** A registration must select X2 only when its criteria judge energy readouts (heat, free energy or an energy
+     identity) on ARS(2,2,2) worlds; elsewhere X2 is optional.
+   - **The listing behind it:** of the ten registrations since D224 that did not select X2, only FR-25 (inconclusive), FR-38's first comparison
+     (failed), FR-38 v2 (passed, D381) and FR-43 part 2 (passed, D324) judge energy readouts on ARS(2,2,2). The rest judge none, or run on other
+     solvers.
+   - **A confirmation for the two that passed:** FR-38 v2's and FR-43 part 2's judged worlds run once with X2 on, as development runs, not a
+     re-judging, against X2 off at the same revision.
+2. **The replication set.** Crossrev's record's `replication/` is renewed from main's own output: 27 files, with the previous ones kept.
+   - The folder was made writable for the copy, then read-only again.
+   - Its four npz files differ only by one added layout key, and all their arrays are bit-identical.
+   - Every set of the record now equals main's crossrev output, FR-45's landing renewal included.

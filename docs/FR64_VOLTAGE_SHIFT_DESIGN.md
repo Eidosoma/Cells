@@ -957,7 +957,7 @@ They stay here as written, with their recommendations.
 **The lead's rulings of 27 November** (`/mnt/workspaces/Cells/d172-restructure-20261115-01/fr64-rulings-20261127.md`):
 - **Question 1:** this note lands in place of `docs/VOLTAGE_SHIFT_DESIGN.md`. Branch `fr64-design` (377a1b34) stays
   unmerged, as history.
-- **Question 2, @3's major:** the user's, and still open.
+- **Question 2, @3's major:** decided by the user on 27 November (D410): keep `cells.model.resolved_pump_tissue@3` and the block law's @1, and refuse the old `reference` key by name.
   - The build keeps `cells.model.resolved_pump_tissue@3` and the block law's @1, and refuses the old `reference` key by
     name, naming its new place.
   - The landing waits for the user's answer. Either way the build shows D148's four criteria at its round.
