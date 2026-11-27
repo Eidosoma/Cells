@@ -12,10 +12,12 @@ operators is enumerated, with no focus, on several inners:
 - FR-65's bare adapter;
 - each catalogue world's own inner, unshifted and shifted (a twin pair).
 For the sequences the structure check admits, FR-64's slot rule (pump_composite.block_slot_errors)
-is evaluated beside each world. That is the rule counted on itself, not independent evidence.
+is evaluated beside each world: the sequences it refuses, and its messages. That is the rule
+counted on itself, not independent evidence.
 
-**The catalogue.** Every world of crossrev's seven sets (validation/tissue/composite_crossrev.py)
-is parsed as it is. A world in a frozen family's form (water@1, water@2, replacement@1) is also
+**The catalogue.** Every world of crossrev's seven sets (validation/tissue/composite_crossrev.py),
+and of the two changes landed before FR-64 (FR-65's coupling and FR-45's site sets), is parsed
+as it is. A world in a frozen family's form (water@1, water@2, replacement@1) is also
 parsed as the composition it rewrites to (pump_composite_spec.frozen_definition). Each world is
 then parsed with a shift, against an unshifted twin:
 - **a gate's shift** on a gated population: a gate on the reversal of a permeant ion. The
@@ -23,8 +25,9 @@ then parsed with a shift, against an unshifted twin:
   can move a gate's voltage off its law's domain; the twin is the world as it is;
 - **a block's shift**, where no population is gated: FR-51's B1 block on the first population that
   carries an ion, on that ion's reversal. Its twin is the same block, reading V.
-Each refusal is classified by the check that raised it. The note's own rows
-(validation/fr64/worlds.py) are parsed where the tree has them.
+Each refusal is classified by the check that raised it; a world that cannot hold a shift records
+its populations. The note's own worlds (validation/fr64/worlds.py), where the tree has them, are
+parsed and swept against their twins with every shift removed: B4's pH readers among them.
 
 Runs against either tree, a checkout or a frozen snapshot, and records its revision and its dirty
 files or the snapshot's patch:
@@ -156,7 +159,10 @@ def shifted_rows(raw, spec):
         return dict(kind="gate", label=first[0], attempts=attempts, shifted=outcome(first[1])), None
     blocked = block_pair(raw)
     if blocked is None:
-        return dict(kind="none", shifted="no population carries an ion"), None
+        channels = raw.get("model", {}).get("channels", ())
+        laws = sorted({c.get("kinetic_law", "?") for c in channels})
+        return dict(kind="none", shifted="no population carries an ion", channels=len(channels),
+                    laws=laws), None  # fmt: skip
     twin_raw, out, label = blocked
     twin_spec, twin_refusal = parse(twin_raw)
     shifted_spec, refusal = parse(out)
@@ -188,14 +194,17 @@ def admitted(inner, sequences):
 
 
 def slot_refused(sequences, spec):
-    """How many sequences the slot rule refuses beside a parsed world, by the change it names."""
+    """How many sequences the slot rule refuses beside a parsed world, and its messages by the
+    change each names (a sequence with two slot writers has two)."""
     from cells.models import pump_composite
     from cells.operators import OPERATORS
 
-    out = {}
+    out = {"sequences": 0}
     for s in sequences:
-        for message in pump_composite.block_slot_errors([(OPERATORS[k], None) for k in s], spec):
-            reason = "FR-64" if "voltage shift" in message else "FR-51"
+        messages = pump_composite.block_slot_errors([(OPERATORS[k], None) for k in s], spec)
+        out["sequences"] += bool(messages)
+        for message in messages:
+            reason = "FR-64 messages" if "voltage shift" in message else "FR-51 messages"
             out[reason] = out.get(reason, 0) + 1
     return out
 
@@ -213,6 +222,7 @@ def catalogue():
         "acceptances": crossrev.acceptances_worlds,
         "replication": crossrev.replication_worlds,
     }
+    builders["the coupling's and the site sets' worlds"] = latest_worlds
     out, failed = {}, {}
     for name, build in builders.items():
         try:
@@ -220,6 +230,29 @@ def catalogue():
         except Exception as error:  # Recorded: a set this tree cannot build.
             failed[name] = f"{type(error).__name__}: {str(error)[:300]}"
     return out, failed
+
+
+def latest_worlds():
+    """The worlds of the two changes landed before FR-64 (D327's pairing, the note's §17.7): FR-65's
+    coupling (its D327 probe's worlds, /mnt/workspaces/Cells/fr65-coupling-20261126/probe/) and
+    FR-45's site sets (validation/tissue/site_occupancy_fixtures.py)."""
+    from validation.tissue import a5pp_acceptance_fixtures as a5pp
+    from validation.tissue import regulated_availability_fixtures as rf
+    from validation.tissue import shared_inventory_fixtures as sif
+    from validation.tissue import site_occupancy_fixtures as sites
+
+    members = [sites.member("p1", ligand="Q1"), sites.member("p2", ligand="Q2")]
+    return {
+        "the pair world (@1)": rf.pair_world(),
+        "the pair world, water first": sif.with_water_first(rf.pair_world()),
+        "A5'' registered (@1)": a5pp.registered_world(),
+        "A5'' registered, water first": sif.with_water_first(a5pp.registered_world()),
+        "the water door (@2)": sif.water_door(),
+        "A1 swelling (@2)": sif.swelling_a1(coupling=True, end=60.0),
+        "site sets (FR-45's development world)": sites.set_world(members, [sites.site_set()]),
+        "site sets beside replacement@1": sites.two_cell_set_world(),
+        "site sets, the chase world": sites.chase_world(),
+    }
 
 
 def named_worlds():
@@ -234,6 +267,15 @@ def named_worlds():
         "the composed world (bath schedule, B4, every reader)": worlds.composed_world,
         "FR-51's B1 (the block on the K reversal)": lambda: fr51.raw_world("B1_two_modes_E1"),
     }, None
+
+
+def unshifted(raw):
+    """raw with every population's voltage shift removed (a block then reads V): a named world's
+    twin for the structure sweep."""
+    out = copy.deepcopy(raw)
+    for channel in out["model"].get("channels", ()):
+        channel.pop(SHIFT, None)
+    return out
 
 
 def main(checkout, out_path):
@@ -269,6 +311,19 @@ def main(checkout, out_path):
                 if pair is not None:
                     pairs_to_check[key] = pair
     record["catalogue"] = rows
+    named, absent = named_worlds()
+    record["named"] = {"absent": absent} if absent else {}
+    for name, build in named.items():
+        try:
+            raw = build()
+        except Exception as error:  # Recorded: a builder this tree cannot run.
+            record["named"][name] = ["builder failed", f"{type(error).__name__}: {error}"[:600]]
+            continue
+        spec, refusal = parse(raw)
+        twin_spec, twin_refusal = parse(unshifted(raw))
+        record["named"][name] = dict(shifted=outcome(refusal), twin=outcome(twin_refusal))
+        if spec is not None and twin_spec is not None:
+            pairs_to_check[f"named/{name}"] = (twin_spec, spec)
     pairs, seen = {}, {}
     for key, (twin_spec, shifted_spec) in pairs_to_check.items():
         twin, shifted_inner = inner_of(twin_spec), inner_of(shifted_spec)
@@ -289,15 +344,6 @@ def main(checkout, out_path):
             slot_rule_beside_shifted=slot_refused(b, shifted_spec),
         )
     record["structure_pairs"] = pairs
-    named, absent = named_worlds()
-    record["named"] = {"absent": absent} if absent else {}
-    for name, build in named.items():
-        try:
-            raw = build()
-        except Exception as error:  # Recorded: a builder this tree cannot run.
-            record["named"][name] = ["builder failed", f"{type(error).__name__}: {error}"[:600]]
-            continue
-        record["named"][name] = outcome(parse(raw)[1])
     record["seconds"] = round(time.time() - started, 1)
     with open(out_path, "w", encoding="utf-8") as handle:
         json.dump(record, handle, indent=1)

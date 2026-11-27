@@ -72,8 +72,9 @@ def kernel_closure(spec, result):
 
 
 def test_the_pair_s_records_meet_e4_s_criteria_on_every_row(pair):
-    """D327's pair, compiled (about 30 s, the compile included): each population's records against
-    its closed form at every accepted row, the gap, the closure and the kernel closure."""
+    """D327's pair, compiled (24 s on one timed core, the compile included): each population's
+    records against its closed form at every accepted row, the gap, the closure and the kernel
+    closure."""
     raw, spec, result = pair
     for name in POPULATIONS:
         rows = fr50.own_rows(result, DT, ("channel", name, "K"))
@@ -171,8 +172,9 @@ def kv_kinetics(voltage):
 
 
 def test_the_composed_world_reads_each_shift_on_every_row_and_restarts(composed, tmp_path):
-    """§9.3 (compiled; about 70 s here, the compile included, measured at landing): over 600
-    steps of ARS(2,2,2) on B4's world with a KCl-for-NaCl step at 60 ms, every host check passes,
+    """§9.3 (compiled; 47 s on one timed core: 25 s for the run's compile, then 22 s for the
+    restart's own compile and the checks): over 600 steps of ARS(2,2,2) on B4's world with a
+    KCl-for-NaCl step at 60 ms, every host check passes,
     no population's heat falls, P1's and P2's observed targets and time constants are Kv1.5's law
     at their V_r (m) and at V (h), P3's and P4's observed u is FR-51's law at their V_ref (P4's pH
     B4's recorded), and at the settled rows before the step and at the end, P1's and P2's m sit at
