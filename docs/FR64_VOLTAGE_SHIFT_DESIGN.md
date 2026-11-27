@@ -1292,6 +1292,8 @@ at the merged head 60b3d32f against main 6647cf12, both as frozen snapshots.
 | + water@1, the coupling @2, reactions and turnover | c = n/V; no other reader input | D327's row |
 | + a slot writer | It rewrites channel slots, not the shift's fields | Refused by name |
 | + FR-45's site sets | — | Refused by name. Shown by its row only, since the site-set worlds declare no channel population |
+| + the sparse field solver | The potentials V is read from | The twin test's row under that solver |
+| + X2 (`execution.energy_check`) | — | Refused by name at @3's binding, as beside site sets |
 | The stand-alone family models | @3 without its structure | Refused fail-closed, by name |
 
 - **D327's rows** (`tests/unit/test_surface_pump_v3_populations.py`): five compositions in six rows,
@@ -1311,8 +1313,12 @@ at the merged head 60b3d32f against main 6647cf12, both as frozen snapshots.
   kinds:
   - **the sparse field solver** has its row: the twin test under ARS(2,2,2) with that solver, bit for
     bit;
-  - **X2** waits for the lead's ruling. Its check needs a compiled run, so until it is qualified it
-    would be refused by name.
+  - **X2 is refused by name** beside a declared shift until a world qualifies the pair (the lead's
+    ruling (a) of 27 November).
+    - X2 is attached after the definition's checks have run, so @3's binding refuses it, before any
+      step. That is where FR-45's site sets refuse it, so the two read alike.
+    - Its row is the 22nd in FR-64's refusal table, whose test now also binds.
+    - A world without a shift is unchanged, X2 included.
 - **An operator in no parsed world** is covered by inference from the structure check and the two
   rules.
 
