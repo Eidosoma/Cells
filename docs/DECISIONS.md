@@ -13885,3 +13885,46 @@ It is a port check: it shows that the live engine computes legacy's written equa
     the host-entity values. Each is confirmed where the contract says so, and hashed.
   - **The judged run.**
   - **X2** (D224) is the user's to settle before the judged run: a cap and a re-tag, or a waiver.
+
+## D409: FR-45's build: the plan's questions ruled, the engine built and its D148 round passing; a stale crossrev record renewed; a gap in results_baseline
+
+2026-11-27, written at 09:14 UTC.
+
+- **FR-45's build plan** (`/mnt/workspaces/Cells/fr45-build-20261127/PLAN.md`) re-read the design note after three landings.
+  - **The lead's rulings** are `/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45-build-rulings-20261127.md`.
+    - θ on a shared set takes the note's form. It differs from B_b/S_s only by the moiety residual, which C9 carries.
+    - D327's admissions are the note's §15 partners, each with its check. Everything else beside site sets is refused by name, internalisation
+      anywhere in the world included.
+    - The stage name is host-side, with the stricter verdict.
+    - The host values are the wash fixtures' form.
+    - There is a dress rehearsal before the addenda.
+  - **The price** is about 10.25 to 12.75 agent-days, against the design's "about 4". Most of the difference is the registered comparison's
+    tooling. It is reported to the user.
+- **The engine part** is built on branch `fr45-build` (a225d106; the round ran on c968a22f).
+  - **It adds:** shared site sets in `cells.operator.site_occupancy@1`, widened in place behind a static switch, with the first-stage step report,
+    the stage identification and a per-set free-site readout.
+  - **X2 beside sets** is refused at binding. The user's open X2 question (D406) may reverse that.
+  - **Three new compiled files:**
+    - `test_site_competition_runs.py`, in tier 2 (42 s);
+    - the batch file (70 s) and the partners file (82 s), placed in tier 3 by the lead's ruling, to keep the routine gate's cost down (D224).
+  - **Its D148 round passes,** main c7ba9fd8 against the head:
+    - the first probe: all 31 site worlds have identical programs after dead-code elimination, and equal fields at every step;
+    - crossrev: exactly the 10 declared files of FR-3's two site worlds differ (the bindings' four zero-size leaves);
+    - G1: 113 of 113;
+    - tiers 1 and 2: 498 files, none changed;
+    - FR's set passes;
+    - the 31 site worlds' run paths are identical at both revisions;
+    - the invented set world's five paths agree;
+    - the two tier-3 files pass;
+    - test IDs: 46 added, none removed.
+  - **The judges' derivative programs step,** which D327 asks for before the renewal, is held. The plan step's one search for the tool was refused,
+    and that is with the user (D406). The engine's landing waits for it.
+- **A stale crossrev record, renewed by the lead.** `record-cda5dc82`'s acceptances held two checked-step files from before the cleanup's charge
+  rule (e7871b95; D387 step 0; D390's eight programs): `fr1_load_and_degrade` and `fr1_load_and_react`.
+  - They are renewed from main c7ba9fd8's own crossrev output, with the superseded files kept. The note is `RENEWAL-20261127-acceptances-charge-rule.txt`.
+  - Every other file of the two worlds already equalled the record.
+- **A gap in `validation/results_baseline.py`.** Its `flatten` saves nothing for checkpoints held as jax arrays.
+  - **What was never compared:** `runner.run`'s, `run_windowed`'s and `run_batch`'s final states, in every run-paths comparison it makes, G1's
+    included.
+  - **What still covers those paths:** their histories are saved and compared, and the pair check's full-recording windows cover `run_windowed`.
+  - **The fix:** save jax arrays as arrays, then renew G1's c1 at a known revision. It is proposed to the user.
