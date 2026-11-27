@@ -13969,3 +13969,23 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - **Not done:** `replication/` (27 files) is read-only since 18 November and was left untouched. Whether to renew it is the user's.
   - **A correction:** D409's two-file renewal and its attribution to e7871b95 rested on the builder's reading. The whole-record comparison
     supersedes both, and no file-by-landing attribution is claimed.
+
+## D411: FR-45's engine is landed
+
+2026-11-27, written at 11:02 UTC.
+
+- **The landing:** de72e530 (tag `fr45-engine-landed-2026-11-27`), from 465cc836. The landing's trial passed 384 tests.
+- **What it builds** (the design note approved in D327; the build rulings, D409):
+  - shared site sets in `cells.operator.site_occupancy@1`, widened in place under D148 behind a static switch;
+  - one free-site count per set as state, the stage condition summed per set, heat booked once per set at each facing node, and a moiety ledger
+    per set;
+  - W5's first-stage report, the stage identification and a free-site readout.
+- **The D148 round passes** (D409, and the derivative step since):
+  - the judges' derivative programs: 261 files identical. FR-3's site worlds are refused by the stationary analysis at both revisions, and FR-3's
+    judges take no derivative program (D410).
+- **Crossrev's record:** FR-3's two site worlds are renewed (10 files) at this landing, with the superseded files kept.
+- **Tier 3:** its record gains the two qualifying compiled files, placed there by the lead's ruling. Tiers 1 and 2 fold the four other files.
+- **Next:**
+  - FR-45's registered-comparison tooling, on a new branch from main, reaching the contract's §12.3 step 5 first.
+  - FR-64 may now merge main and take the matrix files.
+  - The `results_baseline` fix lands on its own.

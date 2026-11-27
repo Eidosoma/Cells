@@ -14,7 +14,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
-- **26 to 27 November, night: six landings.**
+- **26 to 27 November: seven landings.**
   - The per-event counts in `integer_unit_population@1` (D400, 7f98d838).
   - FR-43 part 3's co-writers registered comparison, which **passes**: the judge and the independent checker agree (D402, D403;
     799a6070, tag `fr43-part3-cowriters-passed-2026-11-26`).
@@ -24,7 +24,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - FR-65's coupling step: both coupling versions read the current cell volume beside water (D407, 00cfbda1).
   - The nightly of main 7149f90a passed: 497 files, none changed.
   - FR-45 is bound by its protocol's tag, `fr45-protocol-registered-2026-11-27` (D408), after six reads of its contract by a reviewer who has seen no reference value.
-  - Next: FR-45's build, plan first; FR-64's build waits for the user's word on the queue (D406). Four questions are with the user (D406).
+  - FR-45's engine: shared site sets in `cells.operator.site_occupancy@1` (D411, de72e530), its D148 round passing.
+  - Next: FR-45's tooling for the registered comparison; FR-64's build (D410); the `results_baseline` fix. X2 (D224) is with the user (D410).
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).
