@@ -5,8 +5,10 @@
   - Each preparation's shift per pH unit is a two-point secant through its own midpoints.
   - So judging the engine against those midpoints would be circular.
 - **No `src/` file changes.** Integration grants no acceptance (D143).
-- **Engine models it runs:** `cells.model.resolved_pump_tissue@3` alone, with the law `cells.channel.kv1p5_mh@1`
-  unchanged and FR-64's `voltage_shift` declared on its population (§2).
+- **Engine models it exercises:** `cells.model.resolved_pump_tissue@3` alone, with the law `cells.channel.kv1p5_mh@1`
+  unchanged and FR-64's `voltage_shift` declared on its population.
+  - The check parses @3 definitions and evaluates their readouts on the host, through @3's run view.
+  - No world is stepped (§2).
 - **Every measured value is the Lean track's transcription,** read and never edited (§8).
   - The papers' own pages were not read for this report: their PMC pages refused automated access.
   - What the Lean files do not record is marked "not recorded".
@@ -35,8 +37,11 @@ Kv1.5's activation positive.
 - **The sizes differ.**
   - Kehl et al.'s σ lies 2.8 and 3.4 standard errors from the other two, which agree within one.
   - That reads Kehl et al.'s ± as standard errors, which is open (§6). Read as SDs, the gaps are larger.
-  - The three secants span different acid steps, external K, cells and protocols. As the Lean register puts it, a
-    common coefficient per pH unit is unresolved, so σ is declared per preparation (D351, D361).
+  - The three secants span different acid steps, external K, cells and protocols.
+  - For Trapani and Korn and Longobardo et al., the Lean register finds a common coefficient per pH unit unresolved
+    (`pair-kv15-acid-activation-shift`). Kehl et al.'s smaller secant, from a third preparation with its own protocol,
+    does not resolve one either.
+  - So σ is declared per preparation (D351, D361).
 - **The development check meets its criteria** (§2). At each preparation's two pH levels, the engine's steady-state
   activation midpoint moves by the declared shift within 1.4e-18 V. The check records that midpoint and nothing else.
 
