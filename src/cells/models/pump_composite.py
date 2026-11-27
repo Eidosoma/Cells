@@ -232,6 +232,27 @@ SLOT_WRITERS = (
 )
 
 
+# FR-50 phase 2 beside FR-52 (D327's rule for combinations two changes create; the lead's ruling
+# of 27 November 2026): @3's own one-way records beside these operators are refused by name until
+# a world qualifies the pair. cells.operator.integer_unit_population@1 moves its routes' species
+# between its sites' cells and outside nodes in its own split half-steps, booked in its own record,
+# with or without FR-52's cohorts; no world has run @3's records beside it.
+ONE_WAY_RECORD_REFUSED = ("cells.operator.integer_unit_population@1",)
+
+
+def one_way_record_errors(pairs, spec):
+    """FR-50 phase 2: one message per operator of ONE_WAY_RECORD_REFUSED beside @3's own one_way
+    records (one_way_records), with or without its cohorts (FR-52); [] without such records."""
+    if not getattr(spec.model, "one_way_records", ()):
+        return []
+    return [
+        f"{op.LAW_ID} is refused beside @3's own one_way records (one_way_records), with or "
+        "without its cohorts, until a world qualifies the pair (FR-50 phase 2 beside FR-52, D327)"
+        for op, _ in pairs
+        if op.LAW_ID in ONE_WAY_RECORD_REFUSED
+    ]
+
+
 def block_slot_errors(pairs, spec):
     """FR-51: one message per slot-rewriting operator (SLOT_WRITERS) beside a blocked population
     (cells.channel_block.open_channel_block_weighted_modes@1); [] without a block."""
@@ -2123,6 +2144,9 @@ class Composition:
         blocked = block_slot_errors(pairs, spec)  # FR-51's follow-up.
         if blocked:
             raise ConfigError("Invalid operator composition: " + "; ".join(blocked))
+        recorded = one_way_record_errors(pairs, spec)  # FR-50 phase 2 beside FR-52 (D327).
+        if recorded:
+            raise ConfigError("Invalid operator composition: " + "; ".join(recorded))
         # The operators' in-step writers beside declared kinds (held_row_errors,
         # exact_row_errors): only with kinds and an in-step process, so no world without them
         # makes either call.

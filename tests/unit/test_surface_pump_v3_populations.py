@@ -890,6 +890,11 @@ def fr50_beside(name):
             replacement_fixtures.with_replacement(replacement_fixtures.heredity_sheet(radius=1))
         )
         reason = "today's fixed fields, which drop @3's own one_way records"
+    elif name.startswith("the integer unit population"):  # D327 beside FR-52's cohorts.
+        from validation.fr52_cohorts import worlds as fr52_worlds
+
+        raw = fr52_worlds.qualification(cohorts=name.endswith("cohorts"))
+        reason = "integer_unit_population@1 is refused beside @3's own one_way records"
     else:  # The water family, whose internals are today's fixed fields.
         raw = water_fixtures.with_water(water_fixtures.heredity_cell("D", end_time=0.004),
                                         pf_m_s=5e-4)  # fmt: skip
@@ -900,12 +905,22 @@ def fr50_beside(name):
 
 
 @pytest.mark.parametrize(
-    "name", ["a slot changer (partition)", "a fixed-field operator (replacement@1)", "water@1"]
+    "name",
+    [
+        "a slot changer (partition)",
+        "a fixed-field operator (replacement@1)",
+        "water@1",
+        "the integer unit population with its cohorts",
+        "the integer unit population without cohorts",
+    ],
 )
 def test_the_records_are_refused_where_a_path_would_drop_them(name):
     """Fails closed (parse only, about 1 s each): beside a composite operator that opens, closes or
     retires slots, or that builds the inner fields with today's fixed fields, and in a family with
-    fixed internals, @3's own records are refused by name, as are a kind's beside a closer."""
+    fixed internals, @3's own records are refused by name, as are a kind's beside a closer. Beside
+    cells.operator.integer_unit_population@1, with or without FR-52's cohorts, they are refused by
+    name until a world qualifies the pair (D327's rule for two landings' combinations); FR-52's
+    qualification world parses without them in its own tests."""
     raw, reason = fr50_beside(name)
     with pytest.raises(ConfigError, match=reason):
         parse_spec(raw)
