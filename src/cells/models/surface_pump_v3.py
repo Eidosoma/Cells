@@ -254,6 +254,13 @@ SHIFT_STRUCTURE_REFUSAL = (
     "holds the shifted readers; a path without that structure would drop the shift, so it refuses "
     "it (FR-64)"
 )
+# FR-64 beside X2 (D327; the lead's ruling of 27 November): execution.energy_check is attached after
+# the definition's checks have run (energy_check_spec.parse_definition), so the binding refuses it,
+# by name, before any step, as FR-45's site sets do (site_occupancy.check_set_composition).
+SHIFT_X2_REFUSAL = (
+    "execution.energy_check (X2, D224) is refused beside a declared voltage shift until a world "
+    "qualifies the pair (FR-64, D327)"
+)
 FORMS_STRUCTURE_REFUSAL = (
     f"{forms_law.LAW_ID} runs in @3 through its structure's implementation (registry.get_model), "
     "which holds the forms faces' own entity set; a path without that structure would drop them, "
@@ -433,6 +440,8 @@ def initial_values(spec, *, structure=None):
     shifted = shifted_readers(spec.model)  # FR-64.
     if shifted != (() if structure is None else structure.shifted_readers):
         raise ConfigError(SHIFT_STRUCTURE_REFUSAL)  # Fail closed, as the block and the records.
+    if shifted and getattr(spec, "energy_check", None) is not None:
+        raise ConfigError(SHIFT_X2_REFUSAL)  # D327: until a world qualifies the pair.
     with forms_return_paths(spec.model):  # Left before anything else runs.
         state, layout = _todays_initial_values(spec)
     if (

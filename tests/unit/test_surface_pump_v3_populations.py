@@ -756,6 +756,13 @@ def old_reference(raw):
     raw["model"]["channels"][0]["block"]["reference"] = {"reversal_of": "K"}
 
 
+def with_x2(raw):
+    """execution.energy_check (X2) selected."""
+    from cells.definitions.energy_check_spec import CHECK_ID
+
+    raw["execution"]["energy_check"] = {"check": CHECK_ID, "integration_error_cap": 3e-3}
+
+
 FR64_REFUSALS = {  # name: (kir_0's voltage_shift, a block on kir_0, a further change, the reason)
     "not a mapping": ("membrane_voltage", True, None, "omit it for none"),
     "empty": ({}, True, None, "omit it for none"),
@@ -805,18 +812,25 @@ FR64_REFUSALS = {  # name: (kir_0's voltage_shift, a block on kir_0, a further c
     "the block's old reference key": (
         None, True, old_reference, "moved to the population's voltage_shift.block",
     ),
+    "X2 beside a shift (D327)": (
+        {"gates": {"m": ph_shift()}}, True, with_x2, "refused beside a declared voltage shift",
+    ),
 }  # fmt: skip
 
 
 @pytest.mark.parametrize("name", list(FR64_REFUSALS))
 def test_each_shift_refusal_names_its_reason(name):
-    """FR-64's §5 (host, parse only, milliseconds each): each refusal of the declaration fires
+    """FR-64's §5 (host, parse and bind, milliseconds each): each refusal of the declaration fires
     with its reason. The accepted control, the block's shift on the K reversal (FR-51's, moved) in
     the same world, is the round trip's row. The refusals beside a slot writer, of a path without
-    the structure and of the stationary analysis are their sites' rows."""
+    the structure and of the stationary analysis are their sites' rows. X2's block is attached
+    after the definition's checks have run (energy_check_spec.parse_definition), so that world
+    parses, and its binding refuses it before any step, as FR-45's beside sets; every other row is
+    refused at the parse."""
     shift, block, change, reason = FR64_REFUSALS[name]
     with pytest.raises(ConfigError, match=reason):
-        parse_spec(fr64_world(shift, block=block, change=change))
+        spec = parse_spec(fr64_world(shift, block=block, change=change))
+        get_model(spec.model).initial_values(spec)
 
 
 def with_neutral(raw):
