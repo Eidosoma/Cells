@@ -611,6 +611,22 @@ def shifts_declared(structure):
     return structure is not None and bool(structure.shifted_readers)
 
 
+def shift_window_valid(state, p, structure, *, xp=jnp):
+    """FR-64 (§3.5; the lead's ruling of 27 November): whether every active shifted reader's
+    concentrations at a state's read are finite and positive and its pH in its window, the step's
+    end state's check where a block reads a pH. A gate's shift is checked at the last stage, whose
+    gates read that state; a block's alone would be checked only at the next step's start, so an
+    accepted row could hold a state outside its window. FR-51's own block domain (its K_k normal)
+    keeps its convention: checked at the stages, and at the next step's start."""
+    kinds = _kinds(structure)
+    read = _stage_read(state, p, kinds, xp=xp)[0] if kinds else state
+    ci, co = physical_amounts(read, p)
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    voltage = xp.zeros(p.channel_active.shape)  # The validity reads no voltage.
+    return reader_voltages(ci, co, voltage, p, xp=xp, structure=structure).valid
+
+
 def gate_shifts_declared(structure):
     """Whether the structure declares a shifted gate (FR-64; static)."""
     readers = () if structure is None else structure.shifted_readers
@@ -3862,6 +3878,8 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             xp=xp,
         )  # fmt: skip
         stage = stage._replace(**records)
+    if vshift.PhShift.KEY in block_shift_kinds(structure):  # FR-64 (static): the end's window.
+        valid &= shift_window_valid(stage, p, structure, xp=xp)
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))

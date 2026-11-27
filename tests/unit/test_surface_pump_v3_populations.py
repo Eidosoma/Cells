@@ -1411,6 +1411,27 @@ def test_the_block_on_ph_at_a_held_bath_adds_no_material_term(monkeypatch):
         assert np.array_equal(rates(), honest)
 
 
+def test_a_step_whose_end_leaves_a_block_s_window_is_refused_within_it(monkeypatch):
+    """§3.5, as the lead ruled on 27 November (host, about 1 s). kir_0's block reads its
+    unbuffered cell's pH, which a proton route at 1e-5 m/s lowers by 5e-4 in one step. With the
+    window's low edge half way down, the start is inside, ARS(2,2,2)'s inner stage too, and the
+    end outside: the step is refused within it, by the end-of-step check (shift_window_valid).
+    Planted: the check left out, and the step is accepted with its end state off the window."""
+    raw = ph_block_world(False)
+    for patch in raw["model"]["membranes"]:
+        patch["permeability_m_per_s"]["H"] = 1e-5
+    raw["model"]["channels"][0]["voltage_shift"]["block"]["ph"]["ph_window"] = [7.2 - 2.5e-4, 7.5]
+    spec = parse_spec(raw)
+    impl, state, p, control = bound(spec)
+    dt = raw["execution"]["dt"]
+    assert not bool(impl.imex_step(state, dt, control, p, xp=np)[1])
+    monkeypatch.setattr(v3, "shift_window_valid", lambda state, p, structure, *, xp: True)
+    after, ok = impl.imex_step(state, dt, control, p, xp=np)
+    h_row = list(spec.model.species_ids).index("H")
+    free = (p.amount_reference[h_row, 0] + after.amount_increment[h_row, 0]) / p.volume[0]
+    assert bool(ok) and -np.log10(free / 1000.0) < 7.2 - 2.5e-4 - vshift.PH_MARGIN
+
+
 def test_a_ph_off_its_window_or_a_v_r_off_its_law_s_domain_is_refused():
     """§3.5 and §4.3 at run time (host, about 1 s). kir_0's m reads the bath's pH on [6.8, 7.5]:
     with the bath moved to pH 6.79, the readers, the readouts and the step are each refused, never

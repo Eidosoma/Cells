@@ -1220,3 +1220,19 @@ operator, a combination no world has run.
    - tiers 1 and 2, crossrev, G1 and FR's baselines;
    - the landing waits for the user's answer to question 2.
 9. FR-63's calibration report.
+
+### 17.9 As built: where the build differs from this note
+
+- **A block's pH window is checked at the step's end too** (the lead's ruling of 27 November).
+  - Where a block reads a pH, a step whose end state leaves the window is refused within that step
+    (`surface_pump_v3.shift_window_valid`), so no accepted row holds a state off a window.
+  - A gate's shift is checked at the last stage, whose gates read that state.
+  - FR-51's own block domain, every K_k normal, keeps its convention: it is checked at the stages,
+    and at the next step's start.
+- **Kinetics per world, not per law.** A world with any gate shift evaluates each gated law once
+  per gate row, since the structure names channels, not laws. A row that is not shifted reads V
+  itself, so its values are unchanged.
+- **One refusal beyond §5:** a reversal of a neutral species, which has no reversal potential.
+- **D327 beside FR-45's site sets:** FR-64, landing second, adds "a declared voltage shift" to the
+  inner options that `site_occupancy.check_set_composition` refuses beside sets (an FR-45 file,
+  edited at the lead's leave).
