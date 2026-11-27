@@ -2,11 +2,15 @@
 
 The Physarum menu entry introduces the plasmodium, its branching tube network and a close view of one tube. A Lagrangian view follows a parcel of material as it moves through the organism. The drawing uses an authored network, illustrative dimensions and an optional schematic of flow reversal.
 
+The organism view traces posterior veins into a continuous advancing fan. The cutaway shows the contractile wall around streaming endoplasm. In the optional animation, pale granules and a gold parcel reverse together. The branching, substrate, particle paths and colours are illustrations. [Plasmodial streaming](https://pmc.ncbi.nlm.nih.gov/articles/PMC3746869/)
+
 The Engine catalogue marks Physarum Lagrangian as planned until the Cells registry and a shareable output identify the model. A replay needs the run's own coordinates, topology, time and provenance. The preview includes no saved run.
 
 The Protein tab lists the 43 reviewed UniProtKB entries returned for taxon 5791 in release 2026_04. It is a reviewed catalogue, with no sequences copied. The function groups help navigation. Locations come from the entries and refer to the whole cell boundary on the single shelf. The catalogue associates no protein with a Cells equation or a model parameter.
 
 The Machines tab links all 74 experimental PDB entries returned for taxon 5791 on 27 November 2026. The archive records the taxon as *Badhamia polycephala*. The bench has nine cards with one deposited biological assembly per card. Select a card to see the surface or select a chain to see its source organism. The actin–fragmin reference uses chicken skeletal actin. The vein wall links to the myosin II regulatory domain, which resolves the neck and its two light chains.
+
+The **Organelle shelf** in Machines includes the nucleus, mitochondrion, slime vesicle, endoplasmic reticulum, Golgi apparatus, vacuole and lysosome. The nucleus and mitochondrion have scaled 3D cutaways. The mitochondrial axes are an ellipsoid estimate derived from stereology of fed plasmodia. Each shelf panel gives the organism, observation, size basis and citation. [Nuclear imaging](https://doi.org/10.7554/eLife.69745) · [Mitochondrial stereology](https://doi.org/10.1007/s00709-019-01410-1) · [Slime vesicles](https://doi.org/10.1247/csf.22.279)
 
 The search uses RCSB's `rcsb_entity_source_organism.taxonomy_lineage.id` with `exact_match` on `5791`, returning experimental `polymer_entity` results. Deduplicate by PDB ID. [The search record and representative choices](../data/catalogue/structures/physarum.json) list each deposition under its bench card. The meshes use the selected assembly's polymer coordinates from the CC0 archive. They depict the resolved chains as smoothed surfaces.
 

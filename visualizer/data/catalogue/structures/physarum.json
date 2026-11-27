@@ -261,5 +261,133 @@
         {"id": "8VNU", "title": "Homing endonuclease H98A I-PpoI-DNA complex at pH6.0 (K+ MES) with 70 mM Tl+ for 1800s", "method": "X-RAY DIFFRACTION", "resolution_A": 2.2, "partner_organisms": ["synthetic construct"]}
       ]
     }
-  ]
+  ],
+  "shelf": {
+    "label": "Organelles",
+    "sources": {
+      "nuclei": {
+        "text": "Gerber et al. (2022). Whole-plasmodium imaging and single-nucleus analysis, Fig. 1D.",
+        "doi": "10.7554/eLife.69745",
+        "url": "https://doi.org/10.7554/eLife.69745",
+        "licence": "CC BY 4.0",
+        "class": "permissive",
+        "accessed": "2026-11-27"
+      },
+      "mitochondria": {
+        "text": "Oettmeier and Döbereiner (2019). Mitochondrial ultrastructure and stereology in fed and starved plasmodia, Figs. 1, 3 and Eq. 4.",
+        "doi": "10.1007/s00709-019-01410-1",
+        "url": "https://doi.org/10.1007/s00709-019-01410-1",
+        "licence": "CC BY 4.0",
+        "class": "permissive",
+        "accessed": "2026-11-27"
+      },
+      "secretion": {
+        "text": "Sesaki and Ogihara (1997). Imaging slime secretion in migrating plasmodia.",
+        "doi": "10.1247/csf.22.279",
+        "url": "https://doi.org/10.1247/csf.22.279",
+        "licence": "Bibliographic facts only",
+        "class": "permissive",
+        "accessed": "2026-11-27"
+      },
+      "endomembranes": {
+        "text": "Le Verge-Serandour and Alim (2024). Plasmodial organelles and network anatomy.",
+        "doi": "10.1146/annurev-conmatphys-040821-115312",
+        "url": "https://doi.org/10.1146/annurev-conmatphys-040821-115312",
+        "licence": "CC BY 4.0",
+        "class": "permissive",
+        "accessed": "2026-11-27"
+      },
+      "vacuoles": {
+        "text": "Daniel and Järlfors (1972). Plasmodial ultrastructure of the myxomycete Physarum polycephalum.",
+        "doi": "10.1016/S0040-8166(72)80003-X",
+        "url": "https://doi.org/10.1016/S0040-8166(72)80003-X",
+        "licence": "Bibliographic facts only",
+        "class": "permissive",
+        "accessed": "2026-11-27"
+      }
+    },
+    "entries": [
+      {
+        "id": "nucleus",
+        "label": "Nucleus",
+        "plain": "Many mobile nuclei share the cytoplasm of one plasmodium.",
+        "sources": [
+          "nuclei"
+        ],
+        "illustration": "plasmodial-nucleus",
+        "size": {
+          "shape": "sphere",
+          "across_um": [
+            5.65
+          ],
+          "text": "Whole-plasmodium fluorescence imaging gave an estimated mean nuclear diameter of 5.65 µm."
+        }
+      },
+      {
+        "id": "mitochondrion",
+        "label": "Mitochondrion",
+        "plain": "These individual mitochondria contain tubular cristae and a DNA-containing nucleoid.",
+        "sources": [
+          "mitochondria"
+        ],
+        "illustration": "tubular-mitochondrion",
+        "size": {
+          "shape": "capsule",
+          "across_um": [
+            1.2
+          ],
+          "long_um": [
+            1.4
+          ],
+          "estimated": true,
+          "text": "Illustrative axes estimated from the fed-plasmodium data. A volume fraction of about 0.04 divided by about 0.035 mitochondria/µm³ gives about 1.14 µm³. A prolate ellipsoid with the reported axis ratio of 0.86 is about 1.2 µm wide and 1.4 µm long."
+        }
+      },
+      {
+        "id": "slime-vesicle",
+        "label": "Slime vesicle",
+        "plain": "These secretory vesicles carry the material that the advancing plasmodium releases onto its substrate.",
+        "sources": [
+          "secretion"
+        ],
+        "no_size": "The archived microscopy study documents secretion at the advancing margin. This shelf has no openly licensed diameter for the illustration."
+      },
+      {
+        "id": "endoplasmic-reticulum",
+        "label": "Endoplasmic reticulum",
+        "plain": "Membranes of the endoplasmic reticulum extend through the plasmodial cytoplasm.",
+        "sources": [
+          "endomembranes"
+        ],
+        "no_size": "The plasmodial anatomy reference identifies the reticulum. Its sheet thickness is unreported here."
+      },
+      {
+        "id": "golgi-apparatus",
+        "label": "Golgi apparatus",
+        "plain": "The plasmodium contains Golgi membranes involved in processing and trafficking cellular material.",
+        "sources": [
+          "endomembranes"
+        ],
+        "no_size": "The anatomy reference identifies the Golgi apparatus. A plasmodial cisterna width is unreported here."
+      },
+      {
+        "id": "plasmodial-vacuole",
+        "label": "Vacuole",
+        "plain": "Electron microscopy resolves discrete vacuoles within plasmodial cytoplasm.",
+        "sources": [
+          "vacuoles"
+        ],
+        "no_size": "The cited observation identifies vacuoles. Their diameters are unreported here."
+      },
+      {
+        "id": "lysosome",
+        "label": "Lysosome",
+        "plain": "Lysosomes are among the larger compartments described in the migrating plasmodium.",
+        "sources": [
+          "secretion"
+        ],
+        "no_size": "The microscopy study identifies lysosomes alongside slime vesicles. It gives a diameter only for the vesicles."
+      }
+    ]
+  }
 }

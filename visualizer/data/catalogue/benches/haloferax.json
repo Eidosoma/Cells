@@ -6892,5 +6892,114 @@
     "deposited chain"
    ]
   ]
- }
+ },
+ "organelles": [
+  {
+   "id": "cell-bridge",
+   "species": "haloferax",
+   "label": "Cell–cell bridge",
+   "plain": "Two cells can share cytoplasm through an open bridge lined by continuous membrane and S-layer.",
+   "named": {
+    "file": "data/catalogue/structures/haloferax.json",
+    "where": "shelf",
+    "sources": [
+     "haloferax:bridges"
+    ]
+   },
+   "size": {
+    "shape": "capsule",
+    "across_um": [
+     0.057,
+     0.162
+    ],
+    "long_um": [
+     0.253,
+     2.144
+    ],
+    "text": "Cryotomography found widths of 57–162 nm and lengths of 253–2,144 nm. The drawing uses the midpoints of those separate ranges.",
+    "sources": [
+     "haloferax:bridges"
+    ]
+   },
+   "illustration": "cell-bridge"
+  },
+  {
+   "id": "envelope-section",
+   "species": "haloferax",
+   "label": "S-layer and membrane",
+   "plain": "An envelope section shows the protein lattice above the membrane. The gap sets the vertical scale of the drawing.",
+   "named": {
+    "file": "data/catalogue/structures/haloferax.json",
+    "where": "shelf",
+    "sources": [
+     "haloferax:bridges"
+    ]
+   },
+   "size": {
+    "shape": "sheet",
+    "thick_nm": [
+     20.4
+    ],
+    "text": "In H26 cells, the measured membrane-to-S-layer distance averaged 20.4 nm (±2.7 nm). The patch width and motif spacing are illustrative.",
+    "dimension": "Membrane-to-coat distance",
+    "sources": [
+     "haloferax:bridges"
+    ]
+   },
+   "illustration": "envelope-section"
+  },
+  {
+   "id": "extracellular-vesicle",
+   "species": "haloferax",
+   "label": "Extracellular vesicle",
+   "plain": "A membrane-enclosed particle released into the surrounding medium.",
+   "named": {
+    "file": "data/catalogue/structures/haloferax.json",
+    "where": "shelf",
+    "sources": [
+     "haloferax:vesicles"
+    ]
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.05,
+     0.15
+    ],
+    "text": "Electron microscopy of vesicles isolated from Haloferax cultures gave diameters of 50–150 nm.",
+    "sources": [
+     "haloferax:vesicles"
+    ]
+   },
+   "illustration": "extracellular-vesicle"
+  },
+  {
+   "id": "archaellum",
+   "species": "haloferax",
+   "label": "Archaellum",
+   "plain": "This rotating surface appendage propels the cell. The adhesion pilus has its own experimental assembly on the bench.",
+   "named": {
+    "file": "data/catalogue/structures/haloferax.json",
+    "where": "shelf",
+    "sources": [
+     "haloferax:bridges"
+    ]
+   },
+   "no_size": "Cryotomography identifies the swimming filament. A complete filament length for this specimen is unreported here."
+  },
+  {
+   "id": "putative-storage-granule",
+   "species": "haloferax",
+   "label": "Possible storage granule",
+   "plain": "An electron-dense body in the cytoplasm was tentatively identified as a storage granule. Its contents are unknown.",
+   "named": {
+    "file": "data/catalogue/structures/haloferax.json",
+    "where": "shelf",
+    "sources": [
+     "haloferax:bridges"
+    ]
+   },
+   "no_size": "The paper identifies a candidate granule in Fig. 1. Its diameter is unreported here."
+  }
+ ]
 }

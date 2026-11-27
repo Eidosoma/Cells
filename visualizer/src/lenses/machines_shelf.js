@@ -17,6 +17,7 @@ import structures from "./parts/structures.js";
 import mitochondria from "./parts/mitochondria.js";
 import scenery from "./parts/scenery.js";
 import { UNIT_NM } from "./machines_layout.js";
+import { seeded } from "./parts/geometry.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -47,6 +48,11 @@ const OF_STRUCTURES = new Set(["scenery:centrosome"]);
  * sphere studded with knobs for its coat; `tubules`, a sphere with short tubules; `ball`, a plain sphere.
  */
 export const SIMPLE = {
+  "plasmodial-nucleus": { make: "nucleus", hue: "bioNucleus", words: "a cutaway nucleus with a double envelope and nucleolus", choice: "pore placement, the opening and interior proportions are illustrative" },
+  "tubular-mitochondrion": { make: "tubular-cristae", hue: "bioMito", words: "a cutaway ellipsoid with tubular cristae and a central nucleoid", choice: "the arrangement of the cristae is illustrative" },
+  "extracellular-vesicle": { make: "shell", hue: "bioWater", words: "a cutaway extracellular vesicle", choice: "the membrane thickness and opening are illustrative" },
+  "envelope-section": { make: "envelope", hue:"bioFuel", words:"a membrane patch beneath a raised S-layer lattice", choice:"the lateral extent and motif spacing are illustrative" },
+  "cell-bridge": { make: "bridge", hue: "bioCell", words: "an open-ended bridge with an outer coat and inner membrane", choice: "the layer spacing and longitudinal cut are illustrative" },
   lysosome: { make: "shell", layers: 1, hue: "bioSignal", words: "a sphere of one membrane, cut open over its darker lumen", choice: "the membrane's thickness, the lumen's shade and where it is cut open are the picture's choice" },
   peroxisome: { make: "shell", layers: 1, hue: "bioFuel", words: "a sphere of one membrane, cut open over its darker lumen", choice: "the membrane's thickness, the lumen's shade and where it is cut open are the picture's choice" },
   autophagosome: { make: "shell", layers: 2, hue: "bioPump", words: "a sphere of two membranes, cut open over its darker lumen", choice: "its cargo is not drawn, and the membranes' thickness and the gap between them, the lumen's shade and where it is cut open are the picture's choice" },
@@ -215,9 +221,9 @@ export function organelleModels(cell, kinds) {
 export function simpleModel(kind, { long = 1 } = {}) {
   const spec = SIMPLE[kind] || { make: long > 1 ? "capsule" : "ball", hue: "ghost", words: long > 1 ? "a plain capsule" : "a plain sphere", choice: "" };
   const materials = [];
-  const material = (shade = 0, { side = THREE.FrontSide, roughness = 0.42 } = {}) => {
+  const material = (shade = 0, { side = THREE.FrontSide, roughness = 0.42, hue = spec.hue } = {}) => {
     const made = new THREE.MeshStandardMaterial({ roughness, metalness: 0.03, side });
-    made.userData.look = { hue: spec.hue, shade: (spec.shade || 0) + shade };
+    made.userData.look = { hue, shade: (spec.shade || 0) + shade };
     materials.push(made);
     return made;
   };
@@ -225,7 +231,68 @@ export function simpleModel(kind, { long = 1 } = {}) {
   // The wedge left out of a shell faces the bench's camera (toward +z, a little to one side, as the nucleus's is opened).
   const wedge = 1.9, open = { start: Math.PI / 2 + wedge / 2 + 0.25, length: Math.PI * 2 - wedge };
   const shell = (radius, shade) => new THREE.Mesh(new THREE.SphereGeometry(radius, 36, 20, open.start, open.length), material(shade, { side: THREE.DoubleSide }));
-  if (spec.make === "shell") {
+  if (spec.make === "envelope") {
+    const membrane=new THREE.Mesh(new THREE.BoxGeometry(3.4,.09,2.12),material(.04,{hue:"bioCell"}));
+    membrane.position.y=-.045;
+    root.add(membrane);
+    const motif=new THREE.TorusGeometry(.29,.07,8,6);
+    const coat=new THREE.InstancedMesh(motif,material(.12),20), stamp=new THREE.Object3D();
+    stamp.rotation.x=Math.PI/2;
+    for (let row=0; row<4; row++) for (let col=0; col<5; col++) {
+      stamp.position.set((col-2)*.57+(row%2-.5)*.28,1,(row-1.5)*.49);
+      stamp.updateMatrix();
+      coat.setMatrixAt(row*5+col,stamp.matrix);
+    }
+    root.add(coat);
+  } else if (spec.make === "bridge") {
+    for (const [radius, opening, hue] of [[.49, 1.85, "bioFuel"], [.41, 1.23, "bioCell"]]) {
+      const tube = new THREE.CylinderGeometry(radius,radius,long,48,1,true,opening/2,2*Math.PI-opening);
+      root.add(new THREE.Mesh(tube.rotateZ(Math.PI/2),material(-.1,{side:THREE.DoubleSide,hue})));
+    }
+    // An oblique cut exposes the inner layer. A repeated relief distinguishes
+    // the S-layer from the membrane even at the same magnification.
+    const columns=Math.max(1,Math.floor(long/.20)), rows=12, stamp=new THREE.Object3D();
+    const ridges=new THREE.InstancedMesh(new THREE.TorusGeometry(.077,.014,4,6),
+      material(.09,{hue:"bioFuel"}),columns*rows);
+    for (let col=0;col<columns;col++) for (let row=0;row<rows;row++) {
+      const angle=1.02+(row+.5*(col%2))*(2*Math.PI-2.04)/rows;
+      const normal=new THREE.Vector3(0,Math.sin(angle),Math.cos(angle));
+      stamp.position.copy(normal).multiplyScalar(.495);
+      stamp.position.x=long*((col+.5)/columns-.5);
+      stamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),normal);
+      stamp.updateMatrix();
+      ridges.setMatrixAt(col*rows+row,stamp.matrix);
+    }
+    root.add(ridges);
+  } else if (spec.make === "nucleus" || spec.make === "tubular-cristae") {
+    root.add(shell(.5,.12),shell(.46,-.22));
+    const nucleus = spec.make === "nucleus";
+    if (nucleus) {
+      const random=seeded(5791), stamp=new THREE.Object3D();
+      const pores=new THREE.InstancedMesh(new THREE.TorusGeometry(.022,.005,5,9),material(-.27),100);
+      for (let i=0; i<pores.count; i++) {
+        const a=open.start+random()*open.length, y=2*random()-1, r=Math.sqrt(1-y*y);
+        const normal=new THREE.Vector3(-r*Math.cos(a),y,r*Math.sin(a));
+        stamp.position.copy(normal).multiplyScalar(.5);
+        stamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),normal);
+        stamp.updateMatrix();
+        pores.setMatrixAt(i,stamp.matrix);
+      }
+      root.add(pores);
+    }
+    const centre = new THREE.Mesh(new THREE.SphereGeometry(nucleus ? .16 : .085,20,14), material(-.4));
+    centre.scale.set(nucleus ? 1 : 2.6,1,1);
+    root.add(centre);
+    if (!nucleus) {
+      for (let i=0;i<14;i++) {
+        const a=i*2.39996, x=(i%5-2)*.074;
+        const y=.3*Math.cos(a), z=.3*Math.sin(a);
+        const path = new THREE.QuadraticBezierCurve3(new THREE.Vector3(x,y,z),new THREE.Vector3(x+.10,y*.55,z*.55),new THREE.Vector3(x+.09,y*.35,z*.46));
+        root.add(new THREE.Mesh(new THREE.TubeGeometry(path,8,.022,6),material(.22)));
+      }
+      root.scale.x=long;
+    }
+  } else if (spec.make === "shell") {
     // Each membrane a thin shell (its outer and inner faces), the lumen a darker sphere inside, seen through the opening.
     const step = 0.075, layers = spec.layers || 1;
     for (let layer = 0; layer < layers; layer++) {
@@ -258,7 +325,7 @@ export function simpleModel(kind, { long = 1 } = {}) {
     root.add(new THREE.Mesh(new THREE.CapsuleGeometry(0.5, long - 1, 8, 24).rotateZ(Math.PI / 2), material(0)));
   } else root.add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 40, 28), material(0, { roughness: 0.3 })));
   const box = boxOf(root);
-  const measure = spec.make === "capsule" ? { across: 1, long } : { across: 1 };
+  const measure = spec.make === "envelope" ? {thick:1} : ["bridge","tubular-cristae","capsule"].includes(spec.make) ? { across: 1, long } : { across: 1 };
   return { kind, root, box, measure, planes: [], materials, words: spec.words, choice: spec.choice, simple: true };
 }
 

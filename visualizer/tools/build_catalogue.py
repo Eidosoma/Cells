@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -368,7 +369,44 @@ def shape_of(size, species, kind, where, inputs):
     return None
 
 
-def structure_bench(species, path, group_ids, kinds, sources, inputs):
+def structure_shelf(species, data, path, kinds, cite):
+    """The organism's microscopy shelf, separate from its deposited molecular assemblies."""
+    shelf = data.get("shelf") or {}
+    entries, seen = [], set()
+    for row in shelf.get("entries", []):
+        ident = row["id"]
+        where = f"{species} shelf, {ident}"
+        kind = kinds.setdefault(ident, {"id": ident, "label": row["label"], "plain": row["plain"],
+                                       "group": "organelles", "records": []})
+        if ident in seen or kind["group"] != "organelles":
+            raise Breach(f"{where}: duplicate or conflicting shelf identity")
+        seen.add(ident)
+        refs = cite(species, row.get("sources", []), shelf, where)
+        if not refs or not shelf.get("label"):
+            raise Breach(f"{where}: a shelf entry needs its source and shelf label")
+        entry = {"id": ident, "species": species, "label": row["label"], "plain": row["plain"],
+                 "named": {"file": rel(path), "where": "shelf", "sources": refs}}
+        if bool(row.get("size")) == bool(row.get("no_size")):
+            raise Breach(f"{where}: provide dimensions or explain which dimension is missing")
+        if row.get("size"):
+            size = row["size"]
+            keys = ORGANELLE_SIZES.get(size.get("shape"))
+            if not keys or not size.get("text") or not row.get("illustration"):
+                raise Breach(f"{where}: a sized entry needs its shape, basis and illustration")
+            for key in keys:
+                values = size.get(key)
+                if not isinstance(values, list) or len(values) not in (1, 2) or not all(
+                    type(v) in (float, int) and math.isfinite(v) and v > 0 for v in values
+                ) or sorted(values) != values:
+                    raise Breach(f"{where}: invalid dimension {key}")
+            entry.update(size={**size, "sources": refs}, illustration=row["illustration"])
+        else:
+            entry["no_size"] = row["no_size"]
+        entries.append(entry)
+    return entries
+
+
+def structure_bench(species, path, group_ids, kinds, sources, inputs, cite):
     """Build an experimental-structure bench for a model system without a Cell anatomy file."""
     data = read(path)
     if data["format"] != "cells.visualizer.structure_bench@1":
@@ -439,7 +477,11 @@ def structure_bench(species, path, group_ids, kinds, sources, inputs):
             "size": size,
             "structures": structures,
         })
-    return entries, by_protein, {"label": data["label"], "organism": organism, "structures": len(seen), "searched": data["searched"]}
+    shelf = structure_shelf(species, data, path, kinds, cite)
+    summary = {"label": data["label"], "organism": organism, "structures": len(seen), "searched": data["searched"]}
+    if shelf:
+        summary["shelf_label"] = data["shelf"]["label"]
+    return entries, by_protein, summary, shelf
 
 
 def build():
@@ -666,7 +708,8 @@ def build():
     for species, file in (overlay.get("structure_benches") or {}).items():
         if species in overlay["species"]:
             raise Breach(f"{species}: two ways to build the same bench")
-        added, by_protein[species], structure_benches[species] = structure_bench(species, ROOT / file, groups, kinds, sources, inputs)
+        added, by_protein[species], structure_benches[species], shelf = structure_bench(species, ROOT / file, groups, kinds, sources, inputs, cite)
+        organelles.extend(shelf)
         entries.extend(added)
     for kind in kinds.values():
         if not kind.get("plain"):

@@ -491,7 +491,8 @@
     "mouse",
     "planarian",
     "fruitfly",
-    "thalecress"
+    "thalecress",
+    "physarum"
    ]
   },
   {
@@ -509,7 +510,8 @@
     "mouse",
     "planarian",
     "fruitfly",
-    "thalecress"
+    "thalecress",
+    "physarum"
    ]
   },
   {
@@ -527,7 +529,8 @@
     "mouse",
     "planarian",
     "fruitfly",
-    "thalecress"
+    "thalecress",
+    "physarum"
    ]
   },
   {
@@ -545,7 +548,8 @@
     "mouse",
     "planarian",
     "fruitfly",
-    "thalecress"
+    "thalecress",
+    "physarum"
    ]
   },
   {
@@ -578,7 +582,8 @@
    "plain": "A sac of digestive enzymes in an acid lumen, bounded by one membrane, where the cell breaks down what it takes in and its own worn parts.",
    "records": [],
    "species": [
-    "human"
+    "human",
+    "physarum"
    ]
   },
   {
@@ -1452,6 +1457,26 @@
    ]
   },
   {
+   "id": "slime-vesicle",
+   "label": "Slime vesicle",
+   "plain": "These secretory vesicles carry the material that the advancing plasmodium releases onto its substrate.",
+   "group": "organelles",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
+   "id": "plasmodial-vacuole",
+   "label": "Vacuole",
+   "plain": "Electron microscopy resolves discrete vacuoles within plasmodial cytoplasm.",
+   "group": "organelles",
+   "records": [],
+   "species": [
+    "physarum"
+   ]
+  },
+  {
    "id": "haloferax-s-layer",
    "label": "S-layer glycoprotein",
    "group": "surface",
@@ -1626,6 +1651,56 @@
    "label": "Zinc-finger protein HVO_0758",
    "group": "binding",
    "plain": "Solution NMR structure of the small CPxCG-related zinc-finger protein HVO_0758.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "cell-bridge",
+   "label": "Cell–cell bridge",
+   "plain": "Two cells can share cytoplasm through an open bridge lined by continuous membrane and S-layer.",
+   "group": "organelles",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "envelope-section",
+   "label": "S-layer and membrane",
+   "plain": "An envelope section shows the protein lattice above the membrane. The gap sets the vertical scale of the drawing.",
+   "group": "organelles",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "extracellular-vesicle",
+   "label": "Extracellular vesicle",
+   "plain": "A membrane-enclosed particle released into the surrounding medium.",
+   "group": "organelles",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "archaellum",
+   "label": "Archaellum",
+   "plain": "This rotating surface appendage propels the cell. The adhesion pilus has its own experimental assembly on the bench.",
+   "group": "organelles",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "putative-storage-granule",
+   "label": "Possible storage granule",
+   "plain": "An electron-dense body in the cytoplasm was tentatively identified as a storage granule. Its contents are unknown.",
+   "group": "organelles",
    "records": [],
    "species": [
     "haloferax"
@@ -4655,6 +4730,22 @@
    "licence": "CC BY 4.0",
    "class": "permissive"
   },
+  "haloferax:bridges": {
+   "text": "Sivabalasarma et al. (2021). Electron cryotomography of Haloferax cell bridges, Figs. 1–4.",
+   "doi": "10.3389/fmicb.2020.612239",
+   "url": "https://doi.org/10.3389/fmicb.2020.612239",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "haloferax:vesicles": {
+   "text": "Mills et al. (2024). Extracellular vesicles isolated from Haloferax volcanii culture supernatants, Fig. 1.",
+   "doi": "10.1073/pnas.2311321121",
+   "url": "https://doi.org/10.1073/pnas.2311321121",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
   "human:lherbette2017": {
    "text": "Lherbette M and others (2017) Atomic Force Microscopy micro-rheology reveals large structural inhomogeneities in single cell-nuclei. Scientific Reports 7:8116. Table 1, the columns “HeLa (fresh)” and “HeLa” (mean ± s.e.m.; the width by light microscopy as the mean of the long and short axes, the height by atomic force microscopy), and the Methods on how the width was measured. Read on the journal's page.",
    "doi": "10.1038/s41598-017-08517-6",
@@ -5006,6 +5097,46 @@
    "class": "permissive",
    "accessed": "2026-11-27"
   },
+  "physarum:endomembranes": {
+   "text": "Le Verge-Serandour and Alim (2024). Plasmodial organelles and network anatomy.",
+   "doi": "10.1146/annurev-conmatphys-040821-115312",
+   "url": "https://doi.org/10.1146/annurev-conmatphys-040821-115312",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "physarum:mitochondria": {
+   "text": "Oettmeier and Döbereiner (2019). Mitochondrial ultrastructure and stereology in fed and starved plasmodia, Figs. 1, 3 and Eq. 4.",
+   "doi": "10.1007/s00709-019-01410-1",
+   "url": "https://doi.org/10.1007/s00709-019-01410-1",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "physarum:nuclei": {
+   "text": "Gerber et al. (2022). Whole-plasmodium imaging and single-nucleus analysis, Fig. 1D.",
+   "doi": "10.7554/eLife.69745",
+   "url": "https://doi.org/10.7554/eLife.69745",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "physarum:secretion": {
+   "text": "Sesaki and Ogihara (1997). Imaging slime secretion in migrating plasmodia.",
+   "doi": "10.1247/csf.22.279",
+   "url": "https://doi.org/10.1247/csf.22.279",
+   "licence": "Bibliographic facts only",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "physarum:vacuoles": {
+   "text": "Daniel and Järlfors (1972). Plasmodial ultrastructure of the myxomycete Physarum polycephalum.",
+   "doi": "10.1016/S0040-8166(72)80003-X",
+   "url": "https://doi.org/10.1016/S0040-8166(72)80003-X",
+   "licence": "Bibliographic facts only",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
   "planarian:dutta2025": {
    "text": "Dutta A and others (2025) Identification and characterization of planarian multinucleated cells in Schmidtea mediterranea using imaging flow cytometry. Frontiers in Cell and Developmental Biology 13:1611516. Results, 3.2; Discussion. Read as Europe PMC full text PMC12698644.",
    "doi": "10.3389/fcell.2025.1611516",
@@ -5099,18 +5230,22 @@
   "physarum": {
    "file": "catalogue/physarum.json",
    "machines": 9,
+   "organelles": 7,
    "label": "Physarum",
    "organism": "Physarum polycephalum",
    "structures": 74,
-   "searched": "2026-11-27"
+   "searched": "2026-11-27",
+   "shelf_label": "Organelles"
   },
   "haloferax": {
    "file": "catalogue/haloferax.json",
    "machines": 18,
+   "organelles": 5,
    "label": "Haloferax",
    "organism": "Haloferax volcanii",
    "structures": 32,
-   "searched": "2026-11-27"
+   "searched": "2026-11-27",
+   "shelf_label": "Cell structures"
   }
  }
 }

@@ -324,6 +324,8 @@ export class MachinesLens {
    * builders from the species' cell), or a simple model of its own where the Cell view has none, set at the size its species'
    * file states; one with no size a card. The small ones stand on a plank of their own (shelfOf).
    */
+  get shelfLabel() { return this.catalogue?.raw.benches?.[this.species]?.shelf_label || "Organelles"; }
+
   ensureShelf() {
     if (this.shelf || !this.organelles.length || !this.layout) return this.shelf;
     const file = (this.model.raw.species || []).find((item) => item.id === this.species);
@@ -341,7 +343,8 @@ export class MachinesLens {
       const drawn = drawnSize(item.size);
       // No model in the Cell view, a size in hand: a simple model of its own (machines_shelf.js, SIMPLE), an illustration; a kind
       // with none there, a plain sphere, or a capsule where its size gives a length.
-      const model = models.get(item.kind.id) || (drawn?.across && !SHELF_MODELS[item.kind.id] ? simpleModel(item.kind.id, { long: drawn.long ? drawn.long / drawn.across : 1 }) : null);
+      const illustration = item.entry?.illustration || item.kind.id;
+      const model = models.get(item.kind.id) || (drawn && !SHELF_MODELS[illustration] ? simpleModel(illustration, { long: drawn.long ? drawn.long / drawn.across : 1 }) : null);
       const scale = model ? scaleFor(model, drawn) : null;
       if (!scale) {
         placed.push({ id: item.id, item });
@@ -490,7 +493,7 @@ export class MachinesLens {
    */
   stops() {
     const { bench, small, shelf } = this.stopViews();
-    const named = [{ id: "bench", distance: bench.distance, name: "The bench" }, ...(small ? [{ id: "small", distance: small.distance, name: "Small organelles" }] : []), ...(shelf ? [{ id: "shelf", distance: shelf.distance, name: "The shelf" }] : [])].map((stop) => ({ ...stop, bar: this.barAt(stop.distance) }));
+    const named = [{ id: "bench", distance: bench.distance, name: "The bench" }, ...(small ? [{ id: "small", distance: small.distance, name: `Small ${this.shelfLabel.toLowerCase()}` }] : []), ...(shelf ? [{ id: "shelf", distance: shelf.distance, name: "The shelf" }] : [])].map((stop) => ({ ...stop, bar: this.barAt(stop.distance) }));
     const powers = POWERS.map((nm) => ({ id: `nm${nm}`, distance: this.distanceForBar(nm), bar: nm })).filter((stop) => !named.some((other) => other.bar === stop.bar));
     const chosen = this.chosenStop();
     return [...named, ...powers, ...(chosen ? [chosen] : [])].sort((a, b) => b.distance - a.distance);
@@ -524,7 +527,7 @@ export class MachinesLens {
     return this.stops().map((stop) => ({
       id: stop.id,
       label: stop.name ? `${stop.name} · ${lengthWords(stop.size ?? stop.bar)}` : lengthWords(stop.bar),
-      title: stop.id === "chosen" ? `Travel to what you chose, at its own size (${lengthWords(stop.size)} at its longest)` : stop.id === "shelf" ? `Travel up to the shelf of organelles, where the scale bar reads ${lengthWords(stop.bar)}` : stop.id === "small" ? `Travel to the small organelles on their own plank, where the scale bar reads ${lengthWords(stop.bar)}` : stop.id === "bench" ? `Travel to the bench of machines, where the scale bar reads ${lengthWords(stop.bar)}` : `Travel to where the scale bar reads ${lengthWords(stop.bar)}`,
+      title: stop.id === "chosen" ? `Travel to what you chose, at its own size (${lengthWords(stop.size)} at its longest)` : stop.id === "shelf" ? `Travel up to the ${this.shelfLabel.toLowerCase()} shelf, where the scale bar reads ${lengthWords(stop.bar)}` : stop.id === "small" ? `Travel to the small items on their own plank, where the scale bar reads ${lengthWords(stop.bar)}` : stop.id === "bench" ? `Travel to the bench of machines, where the scale bar reads ${lengthWords(stop.bar)}` : `Travel to where the scale bar reads ${lengthWords(stop.bar)}`,
     }));
   }
 
@@ -1059,7 +1062,10 @@ export class MachinesLens {
 
   /** How an organelle is drawn, in words: the Cell view's own model of it, and which of its widths the paper's size sets. */
   drawnWords(id) {
-    const item = this.item(id), model = SHELF_MODELS[item?.kind?.id], simple = SIMPLE[item?.kind?.id];
+    const item = this.item(id), illustration = item?.entry?.illustration || item?.kind?.id;
+    const model = SHELF_MODELS[illustration], simple = SIMPLE[illustration];
+    if (item?.entry?.illustration && simple) return `${simple.words[0].toUpperCase()}${simple.words.slice(1)}. The scale follows the cited dimensions and ${simple.choice}.`;
+    if (item?.entry?.named?.where === "shelf" && !item.size) return "A labelled card on the shelf.";
     const plank = item?.size && this.plankOf(id) === "small" ? " It stands on the small organelles' own plank, between the bench and the shelf." : "";
     // The Cell view has no model of it: a simple model of its own (machines_shelf.js), whose every part but the size is the picture's choice.
     if (!model && simple && item?.size) return `${simple.words.charAt(0).toUpperCase()}${simple.words.slice(1)}, at the size above: a simple model of its own, since the Cell view has none; ${simple.choice}. An illustration, at the bench's one scale.${plank}`;
@@ -1091,9 +1097,9 @@ export class MachinesLens {
     const label = speciesLabel(this.model.raw, this.species);
     const range = this.benchRange();
     const largest = this.shelf?.layout.items.filter((item) => item.type === "shape").sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h))[0];
-    const facts = [["Its machines", `${this.counts.machines.toLocaleString("en-US")} machines, ${this.counts.sized.toLocaleString("en-US")} of them drawn to scale${range ? `, from ${lengthWords(range[0])} to ${lengthWords(range[1])} at their longest` : ""}`], ["Its scale", "One scale for every shape: the scale bar etched on the bench is 100 nm, as the shelf's organelles are drawn at the same scale."]];
+    const facts = [["Its machines", `${this.counts.machines.toLocaleString("en-US")} machines, ${this.counts.sized.toLocaleString("en-US")} of them drawn to scale${range ? `, from ${lengthWords(range[0])} to ${lengthWords(range[1])} at their longest` : ""}`], ["Its scale", "One scale for every shape: the scale bar etched on the bench is 100 nm, as the shelf items are drawn at the same scale."]];
     if (largest && range) facts.push(["Beside the shelf", `The ${largest.item.label.toLowerCase()} on the shelf is about ${Math.round((Math.max(largest.w, largest.h) * UNIT_NM) / range[1]).toLocaleString("en-US")} times as wide as the largest machine here.`]);
-    return { id: BENCH_ID, label: "The bench", kind: "machines", eyebrow: `Machines · ${label}`, chips: [{ label: "Illustration", title: "Simple shapes at a size in hand, and cards: not structures" }], plain: `The machines of ${label}, in trays by what they do${this.organelles.length ? ", below the shelf of its organelles" : ""}.`, facts, sections: [], doors: [] };
+    return { id: BENCH_ID, label: "The bench", kind: "machines", eyebrow: `Machines · ${label}`, chips: [{ label: "Illustration", title: "Simple shapes at a size in hand, and cards: not structures" }], plain: `The machines of ${label}, in trays by what they do${this.organelles.length ? `, below the ${this.shelfLabel.toLowerCase()} shelf` : ""}.`, facts, sections: [], doors: [] };
   }
 
   /** The longest and shortest of the bench's shapes drawn to scale, at their longest, in nanometres; null where it has none. */
@@ -1287,9 +1293,9 @@ export class MachinesLens {
         // by rule; while its bench is read, and where it cannot be, the card says so; else whether any machine has a size in hand.
         notice: !this.catalogue.species.includes(this.species) ? `No bench of machines has been gathered for ${label} yet${counts.laws ? `: only the units of the law inventory that its atlas finds stand here${counts.sized ? "" : ", each a card"}` : ""}.` : this.catalogue.benchState(this.species)?.status === "failed" ? this.catalogue.benchState(this.species).words : this.catalogue.raw.benches?.[this.species] && !this.catalogue.hasBench(this.species) ? `Reading the machines of ${label}…` : counts.sized ? null : `No machine of ${label} has a size in hand: each is a card, not a shape.`,
         // A species whose dossier looks by family: how many machines its own records name, and how many are candidates by family.
-        stats: structural?.structures ? [[structural.machines, "3D entries"], [structural.structures, "PDB records"]] : counts.family || counts.none ? [[counts.named, "named by its own records"], [counts.family, "candidates by family"], [counts.laws, "in the law inventory"]] : [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
+        stats: structural?.structures ? [[structural.machines, "3D entries"], [structural.structures, "PDB records"], ...(structural.organelles ? [[structural.organelles, this.shelfLabel.toLowerCase()]] : [])] : counts.family || counts.none ? [[counts.named, "named by its own records"], [counts.family, "candidates by family"], [counts.laws, "in the law inventory"]] : [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
         own: () => this.cardNoneFound(),
-        text: structural?.structures ? `Choose an entry to inspect its measured surface and individual chains. Related experimental structures are listed on each card. RCSB archive search: ${structural.searched}.` : `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine.${counts.laws ? " The membrane machines in the tray of moving ions are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares." : ""}${this.organelles.length ? ` Behind the bench, a shelf holds ${label}'s organelles at the same scale, the small ones on a plank of their own: each drawn with the Cell view's model of it where there is one, else with a simple model, an illustration, at a size its panel gives with its source (a measurement in one cell type, or a general figure); one with no size in hand is a card. The rail travels between them.` : ""}`,
+        text: structural?.structures ? `Choose an entry to inspect its measured surface and individual chains. Related experimental structures are listed on each card. Use the scale rail to visit the ${this.shelfLabel.toLowerCase()} shelf.` : `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine.${counts.laws ? " The membrane machines in the tray of moving ions are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares." : ""}${this.organelles.length ? ` Behind the bench, a shelf holds ${label}'s organelles at the same scale, the small ones on a plank of their own: each drawn with the Cell view's model of it where there is one, else with a simple model, an illustration, at a size its panel gives with its source (a measurement in one cell type, or a general figure); one with no size in hand is a card. The rail travels between them.` : ""}`,
         sources: [
           { name: "The species' files and their own proteins", holds: "which machines each species has, how many, and the proteins its data marks with each (tools/build_catalogue.py)", licence: "each source's own, named in each panel; the files are the project's own, MIT" },
           { name: "Sizes", holds: "from the species' files, each with its sources (the attachment organelle's length); from the flagellar motor's own file; and the viewer's own measures from entries of the Protein Data Bank (the ribosome), each naming its entry, its definition and its tool", licence: "each source's own, named in each panel; the Protein Data Bank's entries CC0 1.0" },
@@ -1298,7 +1304,7 @@ export class MachinesLens {
       },
       legend: {
         title: "What the marks stand for",
-        items: [...shown.map((mark) => ({ id: mark.id, label: mark.label, description: mark.description, count: count[mark.id] ?? 0, swatch: mark.id })), ...groups.map((group) => ({ id: groupSwatch(group.id), label: group.label, description: group.plain, count: this.catalogue.inGroup(this.species, group.id).length, swatch: groupSwatch(group.id) }))],
+        items: [...shown.map((mark) => ({ id: mark.id, label: mark.id === SWATCH.organelle ? `On the shelf · ${this.shelfLabel.toLowerCase()}` : mark.label, description: mark.id === SWATCH.organelle ? "Use the scale rail to visit the shelf. Each item lists the evidence for its size." : mark.description, count: count[mark.id] ?? 0, swatch: mark.id })), ...groups.map((group) => ({ id: groupSwatch(group.id), label: group.label, description: group.plain, count: this.catalogue.inGroup(this.species, group.id).length, swatch: groupSwatch(group.id) }))],
         note: { swatch: "mach-room", text: MACHINES_NOTE },
       },
       stamp: "Illustration",
@@ -1714,7 +1720,7 @@ export class MachinesLens {
     if (small.length) {
       // In the free strip before the shelf's organelles, across the shelf's width: on a phone one name, with how many more.
       const z = layout.front + SHELF.front * 0.35, b = layout.bounds;
-      if (phone) this.nameRows(labels, [{ id: small[0].id, text: `↓ Small organelles: ${small[0].label}${small.length > 1 ? `, and ${small.length - 1} more` : ""}` }], new THREE.Vector3((b.minX + b.maxX) / 2, 0, z), this.viewFor(this.shelfView()), { priority: 760, fill: 0.92 * this.freeWidth() });
+      if (phone) this.nameRows(labels, [{ id: small[0].id, text: `↓ Small ${this.shelfLabel.toLowerCase()}: ${small[0].label}${small.length > 1 ? `, and ${small.length - 1} more` : ""}` }], new THREE.Vector3((b.minX + b.maxX) / 2, 0, z), this.viewFor(this.shelfView()), { priority: 760, fill: 0.92 * this.freeWidth() });
       else this.nameRows(labels, small.map((item) => ({ id: item.id, text: `↓ ${item.label}`, title: `${item.label}, ${this.sizeShort(item)}: travel to it on the small organelles' plank` })), new THREE.Vector3((b.minX + b.maxX) / 2, 0, z), this.viewFor(this.shelfView()), { priority: 760, fill: 0.86 * this.freeWidth() });
     }
     const info = this.loupeInfo;

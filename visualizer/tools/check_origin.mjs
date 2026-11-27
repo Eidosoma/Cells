@@ -291,7 +291,7 @@ try {
     await evaluate(`${L}.setMode("rod")`);
     check("the rod exposes a selectable pilus", await evaluate(`${L}.figures.rod.visible && ${L}.has("haloferax:pilus")`));
     await shot(NAME + "-rod");
-    check("the rail opens the three-layer cutaway", await level("envelope") && await evaluate(`${L}.figures.envelope.visible && ["s-layer","membrane","cytoplasm"].every(id => ${L}.has("haloferax:"+id))`));
+    check("the rail opens the three-layer cutaway", await level("envelope") && await evaluate(`${L}.figures.envelope.visible && ["s-layer","membrane","cytoplasm","ribosome"].every(id => ${L}.has("haloferax:"+id))`));
     await shot(NAME + "-envelope");
     if (PHONE) await openCard();
     await press('[data-haloferax="proteins"]');
@@ -303,6 +303,11 @@ try {
     check("the Machines bench loads 18 reference assemblies", await until(`${L}.species==="haloferax" && ${L}.counts.machines===18`, 75));
     check("the shared link displays all six chains of the S-layer hexamer", await until(`${layer}?.surface?.surfaces.length===6`, 75));
     await shot(NAME + "-s-layer");
+    await open("entry=haloferax&scale=envelope&still=1", false);
+    if (PHONE) await openCard();
+    await press('[data-haloferax="shelf"]');
+    check("the organism opens the bridge on the cell structures shelf", await until(`${L}.selected==="organelle:cell-bridge" && ${L}.shelf?.layout.items.length===5 && ${L}.shelfLabel==="Cell structures"`,75));
+    await shot(NAME+"-bridge");
   } else if (CASE === "physarum") {
     const root = V + ".shadowRoot";
     const press = async selector => {
@@ -339,6 +344,15 @@ try {
     check("reversal changes the arrows while keeping the same material parcel position",Math.abs(after.x-before.x)<1e-8 && JSON.stringify(before.d)!==JSON.stringify(after.d));
     if (PHONE && (await evaluate(`${V}.state.viewOpen`))) await press(".view-toggle");
     await shot(NAME+"-cutaway");
+    check("the same fluid grains and parcel follow a reversible displacement", await evaluate(`(() => {
+      const lens=${L}, phase=lens.phase;
+      const sample=()=>[lens.grains.instanceMatrix.array[12],lens.parcel.position.x];
+      const before=sample();
+      lens.phase+=.7; lens.sync();
+      const moved=sample();
+      lens.phase=phase; lens.sync();
+      return before.every((value,i)=>value!==moved[i] && value===sample()[i]);
+    })()`));
     if (PHONE) await openCard();
     await press('[data-physarum="proteins"]');
     check("the Physarum protein catalogue opens with its 43 reviewed entries",await until(`${L}.mounted?.shelves.id==="physarum" && ${L}.mounted.shelves.data.proteins.length===43`,65));
@@ -360,6 +374,11 @@ try {
     check("the shared link draws the two-chain experimental surface", await until(`${complex}?.surface?.surfaces.length===2`,65));
     check("the card identifies the two source organisms and its PDB entry", /Gallus gallus/.test((await state()).panel) && /Physarum polycephalum/.test((await state()).panel) && /7W51/.test((await state()).panel));
     await shot(NAME+"-actin-fragmin");
+    await open("entry=physarum&still=1",false);
+    if (PHONE) await openCard();
+    await press('[data-physarum="shelf"]');
+    check("the organism opens the nucleus on the seven-entry organelle shelf",await until(`${L}.selected==="organelle:nucleus" && ${L}.shelf?.layout.items.length===7`,75));
+    await shot(NAME+"-nucleus");
     await evaluate(`${V}.setEntry(${V}.state.species)`);
     check("leaving Physarum restores the previously selected organism's bench", await until(`${V}.state.model===null && ${L}.species===${V}.state.species`,40));
   } else if (CASE === "vesicle") {

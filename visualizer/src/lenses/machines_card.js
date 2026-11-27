@@ -41,6 +41,7 @@ const chainItem = (chain) => ({ label: chain.label, detail: chain.organism, link
  */
 export function sizeWords(catalogue, size, { organism = null } = {}) {
   if (!size) return null;
+  if (size.dimension) return size.text;
   const source = size.sources?.map((key) => citeShort(catalogue.source(key))).join(", ");
   if (size.shape === "measured") {
     const by = (list) => list.map((n) => Number(n).toFixed(1)).join(" by ");
@@ -189,6 +190,8 @@ export function recordLines(catalogue, item, scene) {
 export function doorsOf(item, scene, species) {
   const doors = [];
   if (item.organelle) {
+    const model = scene?.models?.find(entry => entry.view?.machine_bench === species);
+    if (model) return [{ label: "Return to the 3D organism view", lens: "cell", entry: model.id }];
     // (The Cell view's panel of the part offers the way back: doorsFor.)
     const part = item.kind?.map_part && (scene?.entities || []).find((entity) => entity.id === item.kind.map_part);
     return part ? [{ label: "Show where it is drawn in the cell", lens: "cell", select: part.id }] : [];
@@ -450,6 +453,7 @@ function describeVault(catalogue, species, item, scene, level) {
  */
 export function organelleSizeWords(catalogue, size) {
   if (!size) return null;
+  if (size.dimension) return size.text;
   const source = size.sources?.map((key) => citeShort(catalogue.source(key))).join(", ");
   const middle = (values) => (values.length > 1 ? (values[0] + values[values.length - 1]) / 2 : values[0]);
   const range = (values) => (values.length > 1 ? ", the middle of the range" : "");
@@ -475,28 +479,30 @@ export function organelleSizeWords(catalogue, size) {
 function describeOrganelle(catalogue, species, item, scene, { drawn = null } = {}) {
   const entry = item.entry, kind = item.kind, where = speciesLabel(scene, species);
   const group = catalogue.groupById.get(item.group);
-  const records = recordLines(catalogue, item, scene);
+  const shelfLabel = catalogue.raw.benches?.[species]?.shelf_label || group?.label || "Organelles";
+  const observed = entry.named?.where === "shelf";
+  const records = observed ? [] : recordLines(catalogue, item, scene);
   const facts = [];
   if (entry.named?.text) facts.push(["Named by", entry.named.text]);
   facts.push(["How big", organelleSizeWords(catalogue, item.size) || entry.no_size || "No size in hand: it stands on the shelf as a card, not a shape"]);
   if (drawn) facts.push(["How it is drawn", drawn]);
-  const sources = [...(item.size?.sources || [])].filter((key, index, all) => all.indexOf(key) === index);
+  const sources = [...(item.size?.sources || []), ...(entry.named?.sources || [])].filter((key, index, all) => all.indexOf(key) === index);
   return {
     id: item.id,
     label: item.label,
-    kind: "organelle",
-    eyebrow: `${group?.label || "Organelles"} · ${where}`,
+    kind: shelfLabel === "Cell structures" ? "cell structure" : "organelle",
+    eyebrow: `${shelfLabel} · ${where}`,
     swatch: item.sized ? SWATCH.organelle : SWATCH.card,
-    chips: [{ label: "Illustration", title: item.sized ? "The Cell view's model of it where there is one, else a simple model of its own, at a size this panel gives with its source (a measurement in one cell type, or a general figure): not a structure, and not a run" : "A card on the shelf: no size in hand, so not to scale; not a structure, and not a run" }, { label: item.sized ? "Drawn to scale" : "No size in hand" }],
-    plain: kind.plain,
-    note: records.length ? `What Cells models of it: ${records.map((line) => `${line.label}: ${line.detail}`).join("; ")}.` : "No part of the map stands at it, so nothing is said here of what Cells models of it.",
+    chips: [{ label: "Illustration", title: item.sized ? "The Cell view's model of it where there is one, else a simple model of its own, at a size this panel gives with its source (a measurement in one cell type, or a general figure): not a structure, and not a run" : "A card on the shelf: no size in hand, so not to scale; not a structure, and not a run" }, { label: item.size?.estimated ? "Estimated dimensions" : item.sized ? "Drawn to scale" : "No size in hand" }],
+    plain: entry.plain || kind.plain,
+    note: observed ? null : records.length ? `What Cells models of it: ${records.map((line) => `${line.label}: ${line.detail}`).join("; ")}.` : "No part of the map stands at it, so nothing is said here of what Cells models of it.",
     facts,
     sections: [
       { title: "What Cells models of it", note: "Only what the map says of the part of the Cell view it is drawn at.", items: records.map(({ label, detail, lines }) => ({ label, detail, lines })) },
       { title: "Sources and licences", items: sources.map((key) => catalogue.source(key)).filter(Boolean).map(sourceItem) },
     ].filter((section) => section.items.length),
     doors: doorsOf(item, scene, species),
-    sources: [...records.flatMap((line) => line.sources || []), item.size?.held ? { path: `visualizer/${item.size.file}`, where: "the measurement this size rests on, cited and held there" } : null, entry.named?.file ? { path: `visualizer/${entry.named.file}`, where: "cell.parts" } : null, { path: "visualizer/data/catalogue/catalogue.json", where: "generated by visualizer/tools/build_catalogue.py" }].filter(Boolean),
+    sources: [...records.flatMap((line) => line.sources || []), item.size?.held ? { path: `visualizer/${item.size.file}`, where: "the measurement this size rests on, cited and held there" } : null, entry.named?.file ? { path: `visualizer/${entry.named.file}`, where: entry.named.where || "cell.parts" } : null, { path: "visualizer/data/catalogue/catalogue.json", where: "generated by visualizer/tools/build_catalogue.py" }].filter(Boolean),
     keywords: [kind.plain, group?.label].filter(Boolean).join(" "),
   };
 }
@@ -689,6 +695,7 @@ export function shelfNote(shelf) {
     const size = item.size;
     if (!size) return `${item.label}: a card, no size in hand`;
     if (size.across_um && size.long_um) return `${item.label}: ${middle(size.across_um)} µm across and ${middle(size.long_um)} µm long`;
+    if (size.shape === "sheet" && size.dimension) return `${size.dimension} · ${middle(size.thick_nm)} nm`;
     if (size.shape === "stack") return `${item.label}: its cisternae ${middle(size.across_um)} µm across`;
     if (size.across_um) return `${item.label}: ${middle(size.across_um)} µm across`;
     return `${item.label}: its sheets ${middle(size.thick_nm)} nm thick`;
@@ -696,7 +703,7 @@ export function shelfNote(shelf) {
   // The small ones (SHELF.small.um at their longest, or less) stand on a plank of their own, with a stop of their own.
   const small = shelf.filter((item) => longestUm(item.size) !== null && longestUm(item.size) <= SHELF.small.um);
   const plank = small.length ? ` The small ones (${small.map((item) => item.label).join(", ")}) stand on a plank of their own between the bench and the shelf.` : "";
-  return `On a shelf behind the bench, at the bench's one scale (one unit, ten nanometres): ${sizes.join("; ")}. Each panel says whose cell the size is of, or that it is a general figure.${plank} The view's rail travels from the bench's stop (its bar reads about 100 nm)${small.length ? " by the small organelles' stop" : ""} to the shelf's (some micrometres), through the powers of ten between, each in the same time.`;
+  return `On a shelf behind the bench, at the bench's one scale (one unit, ten nanometres): ${sizes.join("; ")}. Each panel says whose cell the size is of, or that it is a general figure.${plank} The view's rail travels from the bench's stop (its bar reads about 100 nm)${small.length ? " by the small items' stop" : ""} to the shelf's (some micrometres), through the powers of ten between, each in the same time.`;
 }
 
 /** An organelle's size at its longest, in micrometres, by what its size states (a sheet's thickness says nothing of its length: null). */
@@ -714,7 +721,7 @@ export function sections(catalogue, species) {
   const shelf = catalogue.organellesOf(species), shelfGroup = catalogue.groups.find((group) => group.stands === "shelf");
   return [
     // The organelles on the shelf, under their own group: no machines, and first, as the shelf stands above the bench.
-    ...(shelf.length ? [{ label: shelfGroup?.label || "Organelles", note: shelfNote(shelf), entities: shelf.map((item) => ({ id: item.id, label: item.label, swatch: item.sized ? SWATCH.organelle : SWATCH.card, keywords: [shelfGroup?.label, item.kind?.plain].filter(Boolean).join(" ") })) }] : []),
+    ...(shelf.length ? [{ label: catalogue.raw.benches?.[species]?.shelf_label || shelfGroup?.label || "Organelles", note: shelfNote(shelf), entities: shelf.map((item) => ({ id: item.id, label: item.label, swatch: item.sized ? SWATCH.organelle : SWATCH.card, keywords: [shelfGroup?.label, item.kind?.plain].filter(Boolean).join(" ") })) }] : []),
     ...catalogue.groups
       .map((group) => ({
         label: group.label,

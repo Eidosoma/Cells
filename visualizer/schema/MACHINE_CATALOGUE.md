@@ -311,6 +311,8 @@ the archive has them. The Protein atlas cross-links only species-matched accessi
 - **The file holds no clock time**, so the same inputs give the same bytes, and
   `tests/machine_catalogue.test.mjs` holds the file to what the tool writes.
 
+A structure bench can also declare a microscopy shelf in its source JSON under `shelf`. Its label describes the collection, for example *Organelles* or *Cell structures*. Each row gives an id, label, species-specific description and source keys from that shelf. A sized row names its illustration and its dimensions with units and an evidence statement. A row lacking a dimension records which one in `no_size` and appears as a card. Generated shelf items use the existing `organelle:<id>` selection and scale rail. Only the deposited assemblies count toward the bench’s PDB total.
+
 ## In the page
 
 `src/lenses/machines.js`, the second tab, "Machines" (`lens=machines`).

@@ -14,6 +14,7 @@ import { ROOT } from "../tools/lib/build_page.mjs";
 import { Catalogue, CATALOGUE_FORMAT, pageId, kindOf } from "../src/lenses/machines_data.js";
 import { describe, describePart, sections, doorsFor, doorWords, textSections, textDescribe, present, recordLines, levelsOf, lookedFor } from "../src/lenses/machines_card.js";
 import { layoutOf, shapeOf, UNIT_NM, CARD } from "../src/lenses/machines_layout.js";
+import { SIMPLE } from "../src/lenses/machines_shelf.js";
 import { MachinesLens, MARKS } from "../src/lenses/machines.js";
 import { organelles as organellesOfCell } from "../src/lenses/cell_structures.js";
 
@@ -181,10 +182,11 @@ test("a species' machines: its own entries, and the law inventory's units its at
   assert.deepEqual(catalogue.of("thalecress").filter((item) => item.sized).map((item) => item.id).sort(), ["machine:ribosome", "unit.U41"]);
   // The list and the text page: every machine once, by group (what was looked for by family and not found, apart).
   for (const species of SPECIES) {
-    const listed = sections(catalogue, species).filter((section) => section.label !== "Looked for by family, no candidate found" && section.label !== "Organelles").flatMap((section) => section.entities.map((entity) => entity.id));
+    const shelfLabel = core.benches[species]?.shelf_label || "Organelles";
+    const listed = sections(catalogue, species).filter((section) => section.label !== "Looked for by family, no candidate found" && section.label !== shelfLabel).flatMap((section) => section.entities.map((entity) => entity.id));
     assert.deepEqual(listed.sort(), catalogue.of(species).map((item) => item.id).sort(), species);
     // Its organelles, on the shelf, under their own heading and in no group of machines (20 November 2026).
-    assert.deepEqual(sections(catalogue, species).find((section) => section.label === "Organelles")?.entities.map((entity) => entity.id) || [], catalogue.organellesOf(species).map((item) => item.id), `${species}: its organelles, apart`);
+    assert.deepEqual(sections(catalogue, species).find((section) => section.label === shelfLabel)?.entities.map((entity) => entity.id) || [], catalogue.organellesOf(species).map((item) => item.id), `${species}: its organelles, apart`);
     assert.deepEqual(textSections(scene, species), sections(catalogue, species));
   }
 });
@@ -1196,14 +1198,23 @@ test("the organelles on the shelf: no machines, sized by their species' file's f
     fruitfly: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     planarian: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     thalecress: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion", "chloroplast", "vacuole"],
-    ecoli: [], syn3a: [], mpneumoniae: [], xenopus: [], physarum: [], haloferax: [],
+    ecoli: [], syn3a: [], mpneumoniae: [], xenopus: [],
+    physarum: ["nucleus","mitochondrion","slime-vesicle","endoplasmic-reticulum","golgi-apparatus","plasmodial-vacuole","lysosome"],
+    haloferax: ["cell-bridge","envelope-section","extracellular-vesicle","archaellum","putative-storage-granule"],
   };
   assert.deepEqual(Object.keys(ROWS).sort(), [...SPECIES].sort());
   for (const [species, kinds] of Object.entries(ROWS)) {
     const items = catalogue.organellesOf(species);
     assert.deepEqual(items.map((item) => item.id), kinds.map((kind) => `organelle:${kind}`), species);
-    for (const item of items) assert.ok(item.size || /^Looked for on /.test(item.entry.no_size), `${species} ${item.id}: a size, or what was looked for`);
+    for (const item of items) assert.ok(item.size || (item.entry.named.where === "shelf" ? item.entry.no_size && item.entry.named.sources.length : /^Looked for on /.test(item.entry.no_size)), `${species} ${item.id}: a size, or what was looked for`);
     const shown = lensFor(species).lens;
+    for (const item of items.filter(item => item.entry.named.where === "shelf")) {
+      const entry = shown.ensureShelf().layout.items.find(row=>row.id===item.id);
+      assert.equal(entry.type, item.sized ? "shape" : "card", item.label);
+      assert.ok(item.entry.named.sources.every(key=>catalogue.source(key)?.url));
+      assert.equal(shown.describe(item.id).sections.some(section=>section.title==="What Cells models of it"),false);
+      if (item.sized) assert.ok(SIMPLE[item.entry.illustration], item.entry.illustration);
+    }
     assert.equal(Boolean(shown.chrome().rail), kinds.length > 0, `${species}: a rail only with a shelf`);
     assert.equal(shown.scaleInfo() === null, kinds.length === 0, `${species}: the page's scale bar only with a shelf`);
   }
