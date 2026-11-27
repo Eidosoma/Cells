@@ -42,6 +42,7 @@ from cells.laws.junctions.selective import selective_flux
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump_v3 as v3
+from cells.numerics import fixed_step
 from cells.numerics import surface_imex as imex
 from cells.operators import partition
 from cells.registry import kind_registry
@@ -1188,8 +1189,10 @@ def test_the_twin_holds_under_n2_and_rk4_and_in_the_clamp(solver):
         spec = parse_spec(raw)
         impl, state, p, control = bound(spec)
         dt = raw["execution"]["dt"]
-        if solver == "rk4":
-            after, valid = impl.checked_step(state, dt, control, p, p.active)
+        if solver == "rk4":  # RK4's own path, its rhs at each stage, on the host.
+            rates = partial(impl.rhs, xp=np)
+            after = fixed_step.rk4_step(rates, state, dt, control, p, p.active)
+            valid = impl.domain_valid(after, p, p.active, xp=np)
         else:
             after, valid = impl.imex_step(state, dt, control, p, xp=np)
         assert bool(valid)
