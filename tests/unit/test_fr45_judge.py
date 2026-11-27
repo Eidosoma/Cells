@@ -383,15 +383,20 @@ def test_the_echo_compares_numbers_as_binary64_and_lists_as_sets():
     assert len(J.Echo(markers).compare(got, want).departures) == 2
 
 
-def test_the_cross_check_and_the_references_structure_report_departures():
-    reg = J.Registration(REG, "INVENTED-")
-    want = copy.deepcopy(INPUTS)
+def _echoed_reference():
     ref = reference(pair("C1", "n:X@pond", 1.0, 1e-6, against="r"))
     ref["world"].update(constants=dict(N_f_sites_per_fmol=1.0, T_K=300.0), ligands=["X"],
                         free_amounts=[dict(ligand="X", node="pond", n=1.0, declared=True)],
                         sets=[dict(id="s", faces="pond", copies=1.0, sites_per_copy=1, accessible_fraction=1.0)],
                         populations=[dict(id="b", set="s", ligand="X", faces="pond", k_on=1.0, k_off=1.0,
                                           initial_occupancy=0.0)])  # fmt: skip
+    return ref
+
+
+def test_the_cross_check_and_the_references_structure_report_departures():
+    reg = J.Registration(REG, "INVENTED-")
+    want = copy.deepcopy(INPUTS)
+    ref = _echoed_reference()
     assert J.cross_check(dict(runs={"W1": want}), {"W1": ref}, reg) == []
     want["populations"][0]["k_off"] = 2.0
     assert len(J.cross_check(dict(runs={"W1": want}), {"W1": ref}, reg)) == 1
@@ -471,3 +476,42 @@ def test_the_structural_comparison_finds_types_and_lost_keys():
     lost = copy.deepcopy(table)
     del lost["runs"]["B"]["rows"][0]["records"]
     assert J.compare(lost, table)["keys"]
+
+
+def test_steps_1_to_3_run_without_a_table_and_a_registered_judgement_needs_its_owed_inputs(
+    tmp_path,
+):
+    ref = _echoed_reference()
+    ref.update(schema="x", invented=True, units={}, equilibrium={}, balances={}, heats={}, spread="none",
+               spread_note="", distance_at_horizon={}, provenance={})  # fmt: skip
+    ref["plants"] = [dict(plant="P1", criterion="C1", world="W1", time_s=None, compared={})]
+    (tmp_path / "refs" / "outputs").mkdir(parents=True)
+    (tmp_path / "refs" / "outputs" / "reference_W1.json").write_text(json.dumps(ref))
+    (tmp_path / "expected.json").write_text(json.dumps(dict(runs={"W1": INPUTS})))
+    (tmp_path / "registration.json").write_text(json.dumps(REG))
+    common = [
+        "judge",
+        "--references",
+        str(tmp_path / "refs"),
+        "--expected",
+        str(tmp_path / "expected.json"),
+    ]
+    assert (
+        J.main(
+            [
+                *common,
+                "--registration",
+                str(tmp_path / "registration.json"),
+                "--out",
+                str(tmp_path / "a"),
+            ]
+        )
+        == 0
+    )
+    verdict = json.loads((tmp_path / "a" / "verdict.json").read_text())
+    assert verdict["scope"].startswith("§12.3 steps 1 to 3") and verdict["stopped"] is None
+    assert J.main([*common, "--table", str(tmp_path), "--out", str(tmp_path / "b")]) == 2
+    stopped = json.loads((tmp_path / "b" / "verdict.json").read_text())["stopped"]
+    assert all(
+        flag in stopped for flag in ("--tag", "--table-sha256", "--addendum", "--execution-record")
+    )

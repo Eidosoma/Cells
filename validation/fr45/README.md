@@ -30,9 +30,12 @@ its path, after its blob is checked) and the references' G (`fr45ref_free_energy
 on `sys.path`; its source is never read). It imports nothing from `src/` and nothing of the driver's, exporter's or
 worlds'.
 
-At the judged run, `judge` follows §12.3:
+`judge` follows §12.3. Without `--table` it makes steps 1 to 3 only, as §12.3 places them before any registered
+run; with it, at the judged run, every input below is owed, and the judge scores nothing while one is absent:
 
 ```
+python -B validation/fr45/judge.py judge --references SNAPSHOT/validation/fr45/references \
+    --expected SNAPSHOT/validation/fr45/spec/expected_inputs.json --out OUT --repo CHECKOUT --tag BINDING_TAG
 python -B validation/fr45/judge.py judge --table TABLE_DIR --references SNAPSHOT/validation/fr45/references \
     --expected SNAPSHOT/validation/fr45/spec/expected_inputs.json --out OUT --repo CHECKOUT --tag BINDING_TAG \
     --table-sha256 LEADS_RECORD --sample-sha256 SAMPLE_SHA256 \
@@ -59,8 +62,12 @@ twin).
   before any registered run (§14.1 item 1);
 - a refused W2 or W7 run whose refusal is at the step that applies the wash may hold the event or not (Y2's two
   exceptions cannot be told apart from the record alone); at any other step the count is §4's;
-- an expected-inputs null is compared as a value, except `constants.RT_pJ_per_fmol` (recorded) and W1eq's start
-  (compared with the references' file);
+- an expected-inputs null is compared as a value (a set's `face` and a world's `wash` are null by §4.1's types),
+  except `constants.RT_pJ_per_fmol` (recorded) and W1eq's start (compared with the references' file); the
+  expected file's own rule calls every null unfixed, so this reading needs the contract author's word;
+- a refusal catches a plant only beside an honest run that completed as the registered world: an honest run
+  touched by a fault of its identity, or of its status and refusal, gives no baseline (§11.2, the stricter
+  reading);
 - C3a is inconclusive where the references' heat interval has a tolerance gap above 1e-10 of |G| at its two ends,
   a scale no larger than E; C4c's removed amount where the trajectory's gap at the wash's time is above 1e-10
   s_node; C8's ratios where any of W4's pairs is;
@@ -68,9 +75,12 @@ twin).
 - the honest W1p's C1, C3b and C9 and W3p's C1 are the plants' baselines only, not entries of their criteria (§3).
 
 **Owed before the judged run** (§14.1), and the judge's options that take them: the host-entity addendum
-(`--addendum`; until then host volumes and `host_values` are listed as unchecked), the execution record
-(`--execution-record`), the list of checks by world (`--checks-list`), the refusal mapping's addendum and the B6
-paths. The verdict lists every check it could not make under `unchecked`.
+(`--addendum`, read as `{"runs": {run: {"nodes": [{"id", "volume_pL"}], "host_values": {...}}}}`), the execution
+record (`--execution-record`, read as `{"runs": {run: {"execution": {...}}}}`), the list of checks by world
+(`--checks-list`, read as `{world: [check names]}`), the refusal mapping's addendum and the B6 paths. Three of the
+judge's literals must match the addenda when they are written, or the judge changes: the refusal mapping, the
+operators list and P2's B6 path (`k_off` as the site operator's `dissociation_rate_per_s`). In an invented
+rehearsal the verdict lists every check it could not make under `unchecked`.
 
 ## The dress rehearsal
 

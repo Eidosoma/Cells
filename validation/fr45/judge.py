@@ -19,9 +19,11 @@ Usage:
   python -B validation/fr45/judge.py compare TABLE_JSON SAMPLE_JSON [OUT_JSON]
   python -B validation/fr45/judge.py structure TABLE_JSON [OUT_JSON]
   python -B validation/fr45/judge.py plant-rule TABLE_JSON [OUT_JSON] [--exclude PATH ...]
+  python -B validation/fr45/judge.py judge --references REFERENCES_DIR --expected EXPECTED_JSON --out OUT_DIR
+      --repo CHECKOUT --tag BINDING_TAG                                   (steps 1 to 3, before any registered run)
   python -B validation/fr45/judge.py judge --table TABLE_DIR --references REFERENCES_DIR --expected EXPECTED_JSON
-      --out OUT_DIR --repo CHECKOUT --tag BINDING_TAG [--table-sha256 HEX] [--sample-sha256 HEX]
-      [--addendum JSON] [--execution-record JSON] [--checks-list JSON] [--exclude PATH ...]
+      --out OUT_DIR --repo CHECKOUT --tag BINDING_TAG --table-sha256 HEX --sample-sha256 HEX --addendum JSON
+      --execution-record JSON --checks-list JSON [--exclude PATH ...]     (the judgement; every input is owed)
 """
 
 import argparse
@@ -1848,14 +1850,25 @@ def run_judgement(args):
 
     def write(code):
         (out / "verdict.json").write_text(json.dumps(verdict, indent=1, default=str) + "\n")
-        brief = {
-            k: verdict.get(k)
-            for k in ("overall", "stopped", "criteria", "plants", "derived_sets", "unchecked")
-        }
+        keys = ("overall", "stopped", "scope", "criteria", "plants", "derived_sets", "unchecked")
+        brief = {k: verdict.get(k) for k in keys}
+        brief["references_structure"] = len(verdict.get("references_structure") or [])
         brief["faults"] = len(verdict.get("faults") or [])
         print(json.dumps(brief, indent=1, default=str))
         return code
 
+    if (
+        not invented
+    ):  # A registered judgement has every input it owes, or it scores nothing (§1, §14.1, S14).
+        owed = [flag for flag, value in (("--repo", args.repo), ("--tag", args.tag)) if not value]
+        if args.table:
+            owed += [flag for flag, value in (
+                ("--table-sha256", args.table_sha256), ("--sample-sha256", args.sample_sha256),
+                ("--addendum", args.addendum), ("--execution-record", args.execution_record),
+                ("--checks-list", args.checks_list)) if not value]  # fmt: skip
+        if owed:
+            verdict["stopped"] = f"a registered judgement needs {', '.join(owed)}"
+            return write(2)
     if args.tag:  # Step 1 [S14]: the snapshot's reference files and agreement.py against the binding tag's blobs.
         files = {f"validation/fr45/references/{p.relative_to(folder).as_posix()}": p for p in sorted(folder.rglob("*"))
                  if p.is_file() and "__pycache__" not in p.parts}  # fmt: skip
@@ -1870,11 +1883,6 @@ def run_judgement(args):
                 "the snapshot's references or agreement.py depart from the binding tag (S14)"
             )
             return write(2)
-    elif not invented:
-        verdict["stopped"] = (
-            "a registered judgement needs the binding tag (--repo, --tag) for its blobs (S14)"
-        )
-        return write(2)
     else:
         verdict["blobs"] = "not checked: an invented rehearsal"
     refs = {}
@@ -1888,6 +1896,11 @@ def run_judgement(args):
     if verdict["cross_check"]:
         verdict["stopped"] = "the expected-inputs file departs from the references' echo (S5)"
         return write(2)
+    if not args.table:  # §12.3's steps 1 to 3 come before any registered run, so before any table.
+        verdict["scope"] = (
+            "§12.3 steps 1 to 3 only: the blobs, the references' structure, the cross-check"
+        )
+        return write(1 if verdict["references_structure"] else 0)
     digest, departures = table_sha256(
         args.table, args.table_sha256, args.sample_sha256
     )  # Step 7 (§1).
@@ -1926,7 +1939,10 @@ def main(argv=None):
     r.add_argument("out", nargs="?")
     r.add_argument("--exclude", nargs="*", default=[])
     j = sub.add_parser("judge")
-    j.add_argument("--table", required=True, help="the table/ folder: table.json and SHA256SUMS")
+    j.add_argument(
+        "--table",
+        help="the table/ folder: table.json and SHA256SUMS; without it, steps 1 to 3 only",
+    )
     j.add_argument("--references", required=True, help="the snapshot's validation/fr45/references")
     j.add_argument("--expected", required=True, help="validation/fr45/spec/expected_inputs.json")
     j.add_argument("--out", required=True)
