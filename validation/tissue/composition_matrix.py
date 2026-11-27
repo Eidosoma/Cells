@@ -1924,10 +1924,13 @@ RULES = (
         laws=(SITES,),
         level="data",
         check=OPS + "site_occupancy.py::check_set_composition",
-        test=TESTS + "test_site_occupancy.py::test_definition_refusals",
+        test=TESTS + "test_site_occupancy.py::"
+        "test_fr45_the_inner_options_beside_sets_are_refused_by_name",
         tag=REAL,
         why="None is among the design note's §15 partners, and no world qualifies one beside a "
-        "set (D327): FR-50 phase 2, FR-51, FR-17 and X2 (D224)",
+        "set (D327): FR-50 phase 2, FR-51, FR-17 and X2 (D224). X2's block is attached after the "
+        "definition's checks (energy_check_spec.parse_definition), so a set world selecting it "
+        "parses, and its binding refuses it, before any step",
         solver=(
             SolverRefusal(
                 (SITES,),

@@ -2489,8 +2489,8 @@ def test_version_2_reads_an_agonists_fraction_on_a_shared_set_and_an_antagonist_
         control = model.CONTROL_TYPE(*(np.asarray(v[0]) for v in cs.control_values(spec, [0.0])))
         sites = next(o for o in model.operators if o.LAW_ID == ofx.LAW)
         x = state
-        for _ in range(400):  # The closed node relaxes (2 ms half-steps).
-            x, ok = sites.half_step(x, 2e-3, control, p, xp=np)
+        for _ in range(400):  # The closed node relaxes (2.2 ms half-steps).
+            x, ok = sites.half_step(x, 2.2e-3, control, p, xp=np)
             assert bool(ok)
         thetas.append(float(sites.quantities(x, p, xp=np)["site_occupied_fraction"][0]))
     assert 0.0 < thetas[0] < thetas[1] < 1.0

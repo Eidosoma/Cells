@@ -1,14 +1,14 @@
 """FR-45's shared site sets compiled, through the runner (D327; the design note's §16.2, on invented
 values only, FR-45's first-run rule).
 
-Seconds and reason (D224): about 60 s on two cores, measured at landing (the batch and vector row 31 s,
-the windows 15 s, the run 11 s). It is the only compiled path through the shared-set half-step and its
+Seconds and reason (D224): about 64 s on two cores, measured at landing (the batch and vector row 31 s,
+the windows 20 s, the run 12 s). It is the only compiled path through the shared-set half-step and its
 bookings; the paths FR-45's runs take (runner.run, windows of one step, a resume) and the batch paths
 (run_batch, run_vector_windowed) are asserted bitwise against each other; and the wash's compiled event
 map is checked alone on a set world.
 
 The world: a 0.75 uL node's own sites, a set of 18 fmol shared by Q1, bound at its own equilibrium with Q2
-at its trace, and Q2. At 0.4 s 0.4 of the liquid is washed for a buffer holding Q2 at a chase
+at its trace, and Q2. At 0.36 s 0.4 of the liquid is washed for a buffer holding Q2 at a chase
 concentration and Q1 at its trace; Q2 then binds and displaces Q1 to the free-site root of the post-wash
 totals. Every row passes the runner's host checks (each ledger, the moiety per set, the dissipation check).
 """
@@ -33,8 +33,8 @@ from validation.tissue import wash_schedule_fixtures as wfx
 
 jax.config.update("jax_enable_x64", True)
 
-V, S_FMOL, DT, T_E, END, F = 7.5e5, 18.0, 0.08, 0.4, 16.0, 0.4
-RATES = {"bait": (4e4, 2.0), "chase": (6e4, 0.4)}  # k_on per mM per s, k_off per s.
+V, S_FMOL, DT, T_E, END, F = 7.5e5, 18.0, 0.06, 0.36, 18.0, 0.4
+RATES = {"bait": (4e4, 1.7), "chase": (6e4, 0.35)}  # k_on per mM per s, k_off per s.
 THETA = 0.4  # Q1's start, at its own equilibrium with Q2 at its trace.
 CHASE_mM = 1.5e-4
 
@@ -47,7 +47,7 @@ def world(chase_mM=CHASE_mM):
     raw = sfx.set_world(pops, [sfx.site_set(node="ecs_0", copies=copies)],
                         node_mM={"Q1": (d1 / k1) * THETA / (1 - THETA)}, volume=V, dt=DT, end=END,
                         observation_times=[0.0, T_E, END])  # fmt: skip
-    buffer = {wfx.TRACER: sfx.TRACE_mM, "Q1": sfx.SET_TRACE_mM, "Q2": chase_mM}
+    buffer = {wfx.TRACER: 3e-12, "Q1": sfx.SET_TRACE_mM, "Q2": chase_mM}
     return wfx.with_wash(raw, ["ecs_0"], [(T_E, "ecs_0", F, buffer)])
 
 
@@ -96,8 +96,7 @@ def test_bind_wash_unbind_keeps_every_book_and_meets_the_post_wash_root(ran):
         collected = np.asarray(h.wash_collected_fmol)[:, row, node]
         supplied = np.asarray(h.wash_supplied_fmol)[:, row, node]
         books = free + B[:, j] + collected - supplied
-        scale = free + B[:, j] + collected + supplied
-        assert np.all(np.abs(books - books[0]) <= 16 * eps * (k + 1) * scale), g
+        assert np.all(np.abs(books - books[0]) <= 1e-12), g  # fmol (the plan's §4); ~2e-14 seen.
     # The end state is the free-site root of its own totals, to the relaxation's 1e-9.
     end = steps - 1
     free_end = [np.asarray(p.extracellular_amount_reference)[ids.index(g), node]

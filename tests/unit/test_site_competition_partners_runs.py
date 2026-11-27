@@ -33,8 +33,8 @@ def _identities(*names):
     return [dict(id=g, catalogue=None, evidence=None) for g in names]
 
 
-def omnibus(end=0.2, dt=2e-3):
-    pops = [sfx.member("m1", ligand="Q1", k_on=2.2e3, k_off=0.7, theta0=0.2),
+def omnibus(end=0.18, dt=2e-3):
+    pops = [sfx.member("m1", ligand="Q1", k_on=2.2e3, k_off=0.7, theta0=0.25),
             sfx.member("m2", ligand="Q2", k_on=1.3e3, k_off=0.35)]  # fmt: skip
     raw = sfx.set_world(pops, [sfx.site_set(copies=4e5)], ligands=("Q1", "Q2", "Q3"),
                         node_mM={"Q1": 1.6e-3, "Q2": 4e-4, "Q3": 3e-4}, cell_mM={"Q2": 2.1e-3},

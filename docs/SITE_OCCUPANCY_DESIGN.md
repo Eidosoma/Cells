@@ -1638,7 +1638,8 @@ the stage condition.
   - W;
   - every operator law outside the design note's §15 partners;
   - @3's own one-way records, a blocked channel population, the sparse field solver and the
-    step-doubled energy check.
+    step-doubled energy check. The energy check's block is attached after the definition's
+    checks, so a set world that selects it parses, and its binding refuses it before any step.
 - **The set's own rules:**
   - a set named by fewer than two populations;
   - one ligand twice on a set;
