@@ -1,0 +1,28 @@
+{
+ "format": "cells.visualizer.model_system@1",
+ "id": "physarum",
+ "label": "Physarum Lagrangian",
+ "is": "Plasmodial slime mould · Physarum polycephalum",
+ "plain": "Explore the veins of a multinucleate plasmodium. Look inside a vein and follow the same parcel through a reversal of shuttle streaming.",
+ "group": "Slime moulds",
+ "order": 100,
+ "made": "2026-11-27",
+ "modelled": {
+  "state": "planned",
+  "text": "Physarum Lagrangian is a planned Cells model. This 3D atlas shows the organism and illustrates shuttle streaming.",
+  "record": [{"path":"visualizer/docs/PHYSARUM.md","where":"Physarum Lagrangian"}]
+ },
+ "view": {"kind":"physarum","protein_atlas":"physarum","engine_part":"models.physarum"},
+ "levels": [
+  {"id":"network","label":"Plasmodium","shows":"A branching network with thick veins and thin advancing regions."},
+  {"id":"vein","label":"Vein cutaway","shows":"The contractile wall, streaming cytoplasm and a parcel that can be followed through a flow reversal."}
+ ],
+ "sources":{
+  "network":{"text":"Alim et al. (2013). Random network peristalsis in Physarum polycephalum organizes fluid flows across an individual.","doi":"10.1073/pnas.1305049110","accessed":"2026-11-27","licence":"Bibliographic facts only. Figures and text are not copied.","class":"permissive"},
+  "taxonomy":{"text":"NCBI Taxonomy, taxon 5791.","url":"https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=5791","accessed":"2026-11-27","licence":"Bibliographic facts only","class":"permissive"}
+ },
+ "facts":[
+  {"label":"Life stage","value":"Plasmodium, a multinucleate cell with a branched tube network","sources":["network"]},
+  {"label":"Transport","value":"Rhythmic tube contractions drive cytoplasm back and forth through the network","sources":["network"]}
+ ]
+}

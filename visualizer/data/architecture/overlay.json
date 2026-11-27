@@ -3467,6 +3467,20 @@
       ]
     },
     {
+      "id": "models.physarum",
+      "label": "Physarum Lagrangian",
+      "layer": "models",
+      "status": "planned",
+      "as_of": "2026-11-27",
+      "plain": "A planned Physarum model that follows material through the plasmodium. Open the 3D atlas for the vein network and a cutaway illustrating shuttle streaming.",
+      "sources": [
+        {
+          "path": "visualizer/docs/PHYSARUM.md",
+          "where": "Physarum Lagrangian"
+        }
+      ]
+    },
+    {
       "id": "models.gard",
       "label": "Catalytic assemblies (GARD)",
       "layer": "models",

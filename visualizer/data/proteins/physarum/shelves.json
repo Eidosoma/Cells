@@ -1,0 +1,598 @@
+{
+ "format": "cells.visualizer.species_proteins@1",
+ "species": "physarum",
+ "label": "Physarum",
+ "organism": "Physarum polycephalum",
+ "made": "2026-11-27",
+ "from": "Reviewed UniProtKB entries for taxon 5791, release 2026_04",
+ "shelves": [
+  {
+   "id": "cell",
+   "label": "Plasmodium boundary",
+   "outside": "Outside the cell",
+   "inside": "Inside the cell"
+  }
+ ],
+ "groups": [
+  {
+   "id": "actin",
+   "label": "Actin & contractility",
+   "from": "Viewer groupings based on the protein names in UniProtKB"
+  },
+  {
+   "id": "microtubules",
+   "label": "Microtubules",
+   "from": "Viewer groupings based on the protein names in UniProtKB"
+  },
+  {
+   "id": "signalling",
+   "label": "Signalling & recognition",
+   "from": "Viewer groupings based on the protein names in UniProtKB"
+  },
+  {
+   "id": "nucleic",
+   "label": "Nucleic acids & gene expression",
+   "from": "Viewer groupings based on the protein names in UniProtKB"
+  },
+  {
+   "id": "metabolism",
+   "label": "Metabolism & enzymes",
+   "from": "Viewer groupings based on the protein names in UniProtKB"
+  },
+  {
+   "id": "stages",
+   "label": "Life-stage & stress proteins",
+   "from": "Viewer groupings based on the protein names in UniProtKB"
+  }
+ ],
+ "columns": [
+  "id",
+  "label",
+  "gene",
+  "shelf",
+  "side",
+  "basis",
+  "group",
+  "length",
+  "unit",
+  "marks"
+ ],
+ "proteins": [
+  [
+   "P02576",
+   "Actin, plasmodial isoform",
+   "ARDA; ARDB; ARDC",
+   "cell",
+   "inside",
+   "stated",
+   "actin",
+   376,
+   null,
+   {}
+  ],
+  [
+   "P24263",
+   "Actin, spherule isoform",
+   "ARDD",
+   "cell",
+   "inside",
+   "stated",
+   "actin",
+   367,
+   null,
+   {}
+  ],
+  [
+   "P80197",
+   "Actin-fragmin kinase",
+   "",
+   "cell",
+   "inside",
+   "stated",
+   "actin",
+   737,
+   null,
+   {}
+  ],
+  [
+   "O96102",
+   "Calmodulin",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "actin",
+   149,
+   null,
+   {}
+  ],
+  [
+   "P08053",
+   "Myosin regulatory light chain",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "actin",
+   147,
+   null,
+   {}
+  ],
+  [
+   "P22271",
+   "Profilin-A",
+   "PROA",
+   "cell",
+   "inside",
+   "stated",
+   "actin",
+   125,
+   null,
+   {}
+  ],
+  [
+   "P18322",
+   "Profilin-P",
+   "PROP",
+   "cell",
+   "inside",
+   "stated",
+   "actin",
+   125,
+   null,
+   {}
+  ],
+  [
+   "Q07434",
+   "Cytochrome c oxidase subunit 1",
+   "COX1",
+   "cell",
+   "inside",
+   "by function",
+   "metabolism",
+   594,
+   null,
+   {}
+  ],
+  [
+   "Q8MZS4",
+   "Physarolisin",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "metabolism",
+   575,
+   null,
+   {}
+  ],
+  [
+   "P9WEY7",
+   "Terpene synthase 1",
+   "TPS1",
+   "cell",
+   "not known",
+   "none",
+   "metabolism",
+   334,
+   null,
+   {}
+  ],
+  [
+   "P9WEY6",
+   "Terpene synthase 2",
+   "TPS2",
+   "cell",
+   "not known",
+   "none",
+   "metabolism",
+   347,
+   null,
+   {}
+  ],
+  [
+   "P9WEY5",
+   "Terpene synthase 3",
+   "TPS3",
+   "cell",
+   "not known",
+   "none",
+   "metabolism",
+   353,
+   null,
+   {}
+  ],
+  [
+   "P9WEY4",
+   "Terpene synthase 4",
+   "TPS4",
+   "cell",
+   "not known",
+   "none",
+   "metabolism",
+   337,
+   null,
+   {}
+  ],
+  [
+   "A6YB01",
+   "Transketolase",
+   "tkt",
+   "cell",
+   "not known",
+   "none",
+   "metabolism",
+   661,
+   null,
+   {}
+  ],
+  [
+   "P50258",
+   "Tubulin alpha-1A chain",
+   "ALTA",
+   "cell",
+   "inside",
+   "stated",
+   "microtubules",
+   450,
+   null,
+   {}
+  ],
+  [
+   "P04105",
+   "Tubulin alpha-1B chain",
+   "ALTBN",
+   "cell",
+   "inside",
+   "stated",
+   "microtubules",
+   449,
+   null,
+   {}
+  ],
+  [
+   "P11480",
+   "Tubulin alpha-2B chain",
+   "ALTBE",
+   "cell",
+   "inside",
+   "stated",
+   "microtubules",
+   449,
+   null,
+   {}
+  ],
+  [
+   "P07436",
+   "Tubulin beta-1 chain",
+   "BETA; BETB",
+   "cell",
+   "inside",
+   "stated",
+   "microtubules",
+   467,
+   null,
+   {}
+  ],
+  [
+   "P12458",
+   "Tubulin beta-2 chain",
+   "BETC",
+   "cell",
+   "inside",
+   "stated",
+   "microtubules",
+   454,
+   null,
+   {}
+  ],
+  [
+   "P04915",
+   "Histone H4",
+   "H41; H42",
+   "cell",
+   "inside",
+   "by function",
+   "nucleic",
+   103,
+   null,
+   {}
+  ],
+  [
+   "Q94702",
+   "Intron-encoded endonuclease I-PpoI",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "nucleic",
+   163,
+   null,
+   {}
+  ],
+  [
+   "P84178",
+   "Putative isoleucine--tRNA ligase",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "nucleic",
+   64,
+   null,
+   {}
+  ],
+  [
+   "P81477",
+   "Ribonuclease Phyb",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "nucleic",
+   180,
+   null,
+   {}
+  ],
+  [
+   "C5IGN8",
+   "Serine/arginine-rich protein PSR",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "nucleic",
+   497,
+   null,
+   {}
+  ],
+  [
+   "Q45FA5",
+   "Serine/threonine-protein kinase SRPK",
+   "",
+   "cell",
+   "inside",
+   "stated",
+   "nucleic",
+   426,
+   null,
+   {}
+  ],
+  [
+   "P22508",
+   "rRNA/tRNA 2'-O-methyltransferase fibrillarin",
+   "",
+   "cell",
+   "inside",
+   "stated",
+   "nucleic",
+   27,
+   null,
+   {}
+  ],
+  [
+   "P84179",
+   "87 kDa annexin-binding protein",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "signalling",
+   112,
+   null,
+   {}
+  ],
+  [
+   "P55933",
+   "Probable cyclin-dependent kinases regulatory subunit",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "signalling",
+   84,
+   null,
+   {}
+  ],
+  [
+   "P34729",
+   "Ras-like protein 1",
+   "RAS1",
+   "cell",
+   "inside",
+   "stated",
+   "signalling",
+   189,
+   null,
+   {}
+  ],
+  [
+   "P34726",
+   "Ras-like protein 2",
+   "RAS-2",
+   "cell",
+   "inside",
+   "stated",
+   "signalling",
+   193,
+   null,
+   {}
+  ],
+  [
+   "Q94694",
+   "Ras-related protein Rap-1",
+   "RAP1",
+   "cell",
+   "not known",
+   "none",
+   "signalling",
+   188,
+   null,
+   {}
+  ],
+  [
+   "O61063",
+   "Tectonin-1",
+   "TECA",
+   "cell",
+   "not known",
+   "none",
+   "signalling",
+   217,
+   null,
+   {}
+  ],
+  [
+   "O61064",
+   "Tectonin-2",
+   "TECB",
+   "cell",
+   "not known",
+   "none",
+   "signalling",
+   353,
+   null,
+   {}
+  ],
+  [
+   "P90587",
+   "66 kDa stress protein",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "stages",
+   601,
+   null,
+   {}
+  ],
+  [
+   "P19203",
+   "Plasmin C",
+   "PLSC",
+   "cell",
+   "not known",
+   "none",
+   "stages",
+   150,
+   null,
+   {}
+  ],
+  [
+   "P14725",
+   "Plasmodial-specific protein LAV1-2",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "stages",
+   355,
+   null,
+   {}
+  ],
+  [
+   "P14163",
+   "Plasmodium-specific hydrophobic abundant protein",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "stages",
+   187,
+   null,
+   {}
+  ],
+  [
+   "P09350",
+   "Spherulin-1A",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "stages",
+   246,
+   null,
+   {}
+  ],
+  [
+   "P09351",
+   "Spherulin-1B",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "stages",
+   248,
+   null,
+   {}
+  ],
+  [
+   "P09352",
+   "Spherulin-2A",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "stages",
+   315,
+   null,
+   {}
+  ],
+  [
+   "P09353",
+   "Spherulin-3A",
+   "",
+   "cell",
+   "inside",
+   "stated",
+   "stages",
+   103,
+   null,
+   {}
+  ],
+  [
+   "P11113",
+   "Spherulin-4",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "stages",
+   332,
+   null,
+   {}
+  ],
+  [
+   "P12671",
+   "Sporulation-specific hydrophobic abundant protein",
+   "",
+   "cell",
+   "not known",
+   "none",
+   "stages",
+   163,
+   null,
+   {}
+  ]
+ ],
+ "sources": [
+  {
+   "name": "UniProtKB",
+   "cite": "UniProt Consortium. UniProtKB/Swiss-Prot release 2026_04, taxon 5791.",
+   "url": "https://www.uniprot.org/uniprotkb?query=organism_id%3A5791%20AND%20reviewed%3Atrue",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-27",
+   "holds": "Accessions, names, lengths, gene names and listed subcellular locations for the 43 reviewed records."
+  }
+ ],
+ "unit_note": "Organism reference records. Protein roles in the Physarum Lagrangian model have not been established.",
+ "method": [
+  "All reviewed entries returned for taxon 5791 are shown. UniProt also lists this taxon as Badhamia polycephala.",
+  "The catalogue includes proteins from several life stages. Locations are relative to the whole cell and come from UniProt annotations."
+ ],
+ "counts": {
+  "inside": 17,
+  "not known": 26
+ }
+}

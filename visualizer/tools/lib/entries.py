@@ -42,6 +42,12 @@ VIEW_KINDS = {
         "required": ["molecules", "assembly"],
         "labels": {"molecules": "Molecules", "assembly": "One assembly", "population": "Population", "lineage": "Lineages"},
     },
+    "physarum": {
+        "run_format": None,
+        "levels": ["network", "vein"],
+        "required": ["network", "vein"],
+        "labels": {"network": "Plasmodium", "vein": "Vein cutaway"},
+    },
     "vesicle": {
         "run_format": "cells.visualizer.assembly_run@2",
         "levels": ["vesicle", "membrane", "molecule"],
@@ -381,6 +387,13 @@ class Entries:
         problems += self.modelled(data.get("modelled"), "model system", where)
         view = data.get("view")
         kind = view.get("kind") if isinstance(view, dict) else None
+        if kind == "physarum":
+            if not ID.fullmatch(str(view.get("protein_atlas", ""))):
+                problems.append("the Physarum preview names its protein catalogue")
+            if not re.fullmatch(r"models\.[a-z0-9_]+", str(view.get("engine_part", ""))):
+                problems.append("the Physarum preview names its Engine catalogue part")
+            if data.get("runs") or data.get("clock"):
+                problems.append("the Physarum anatomy preview takes no run or clock")
         if kind not in VIEW_KINDS:
             problems.append(f"view.kind is one of {', '.join(VIEW_KINDS)}, not {kind!r}")
         else:

@@ -926,7 +926,13 @@ def main():
         declared={name for model in build.declarations["models"] if model.get("rows")
                   for name in [model["id"], *(old for old, new in build.aliases.items() if new == model["id"])]},
     )
+    protein_ids = {shelf["id"] for shelf in (build.proteins or {}).get("shelves", [])}
     for model in models:
+        view = model.get("view", {})
+        if view.get("protein_atlas") and view["protein_atlas"] not in protein_ids:
+            build.warnings.append(f"entry {model['id']}: the Protein catalogue {view['protein_atlas']!r} is absent")
+        if view.get("engine_part") and view["engine_part"] not in build.entities:
+            build.warnings.append(f"entry {model['id']}: the Engine part {view['engine_part']!r} is absent")
         for run in model.get("runs", []):
             run["path"] = f"models/{model['id']}/{Path(run['file']).name}"  # where the page fetches it (tools/lib/build_page.mjs, modelFiles)
     build.warnings.extend(breaches)

@@ -5,7 +5,7 @@
   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
  },
  "map": {
-  "revision": "4f4a4c348bd2e8e750c67051942db770a796790b"
+  "revision": "4fd3d0425a80c87eea55aa64c2a6cd365dcf5f95"
  },
  "on_main": [
   "05a8d1934e785ea9a575fbe5673569f589bdbc42",
@@ -18,7 +18,7 @@
   "3e39bcc55206832d8dbd75aae7079883bf6a21a1",
   "407ba164830d29954882c4040f8a6d422fa8f8f2",
   "4465b48dd36e095b4cd4fdf923a6c767b845b4ae",
-  "4f4a4c348bd2e8e750c67051942db770a796790b",
+  "4fd3d0425a80c87eea55aa64c2a6cd365dcf5f95",
   "537787e35a423abd2a020ba82c3317798b38ee52",
   "555d87716178774abf9725129877cbe2b2b6d67d",
   "5ab4326abbbed07f025bc5e9d1f590f19fbafd50",
@@ -126,7 +126,7 @@
    "part": "laws.inventory_coupling",
    "path": "docs/DECISIONS.md",
    "where": "D155 and D156",
-   "revision": "4f4a4c348bd2e8e750c67051942db770a796790b",
+   "revision": "4fd3d0425a80c87eea55aa64c2a6cd365dcf5f95",
    "missing": "place"
   },
   {
@@ -150,7 +150,7 @@
    "part": "exp.parity",
    "path": "PROGRESS.md",
    "where": "Plan table",
-   "revision": "4f4a4c348bd2e8e750c67051942db770a796790b",
+   "revision": "4fd3d0425a80c87eea55aa64c2a6cd365dcf5f95",
    "missing": "place"
   },
   {

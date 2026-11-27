@@ -5,16 +5,16 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-22",
-  "generated_at": "2026-11-26T18:58:52Z",
-  "revision": "4f4a4c34",
-  "revision_date": "2026-11-26",
+  "generated_at": "2026-11-27T11:28:54Z",
+  "revision": "4fd3d042",
+  "revision_date": "2026-11-27",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
-  "source_base_url": "https://github.com/Eidosoma/Cells/blob/4f4a4c348bd2e8e750c67051942db770a796790b/",
+  "source_base_url": "https://github.com/Eidosoma/Cells/blob/4fd3d0425a80c87eea55aa64c2a6cd365dcf5f95/",
   "own_source_base_url": "https://github.com/Eidosoma/Cells/blob/visualizer/",
   "declarations": {
    "kind": "cells.declarations@3",
-   "revision": "4f4a4c348bd2e8e750c67051942db770a796790b",
+   "revision": "4fd3d0425a80c87eea55aa64c2a6cd365dcf5f95",
    "pieces": {
     "kind": 6,
     "law": 63,
@@ -23,15 +23,15 @@
    "models": 14
   },
   "counts": {
-   "engine_files": 317,
-   "engine_files_placed": 317,
-   "engine_files_read": 317,
+   "engine_files": 318,
+   "engine_files_placed": 318,
+   "engine_files_read": 318,
    "engine_files_legacy": 0,
-   "parts": 276,
-   "relations": 1191,
+   "parts": 277,
+   "relations": 1192,
    "by_kind": {
     "operator": 27,
-    "component": 159,
+    "component": 160,
     "state": 6,
     "gate": 8,
     "capability": 23,
@@ -43,7 +43,7 @@
     "unstated": 72,
     "landed": 55,
     "established": 46,
-    "planned": 28,
+    "planned": 29,
     "designed": 20,
     "failed": 1,
     "external": 5
@@ -568,7 +568,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "4f4a4c34"
+   "checked_at": "4fd3d042"
   },
   "counts": {
    "units": 48,
@@ -3372,6 +3372,27 @@
     ]
    },
    {
+    "id": "physarum",
+    "file": "proteins/physarum/shelves.json",
+    "bytes": 8098,
+    "made": "2026-11-27",
+    "from": "Reviewed UniProtKB entries for taxon 5791, release 2026_04",
+    "kind": "proteins",
+    "proteins": 43,
+    "counts": {
+     "outside": 0,
+     "in": 0,
+     "inside": 17,
+     "not known": 26
+    },
+    "sources": [
+     {
+      "name": "UniProtKB",
+      "class": "permissive"
+     }
+    ]
+   },
+   {
     "id": "planarian",
     "file": "proteins/planarian/shelves.json",
     "bytes": 640492,
@@ -3912,6 +3933,12 @@
    }
   ],
   "shelf_links": {
+   "physarum": [
+    {
+     "text": "UniProtKB {id}",
+     "url": "https://www.uniprot.org/uniprotkb/{id}/entry"
+    }
+   ],
    "syn3a": [
     {
      "text": "NCBI Protein: {id}",
@@ -9272,6 +9299,75 @@
        "path": "docs/SCIENTIFIC_BASIS.md",
        "where": "The preprint's GARD catalytic matrix and reservoir are fixed environmental constraints; the GARD F12 definition"
       }
+     ]
+    }
+   ],
+   "kind": "model system"
+  },
+  {
+   "id": "physarum",
+   "label": "Physarum Lagrangian",
+   "is": "Plasmodial slime mould · Physarum polycephalum",
+   "plain": "Explore the veins of a multinucleate plasmodium. Look inside a vein and follow the same parcel through a reversal of shuttle streaming.",
+   "group": "Slime moulds",
+   "order": 100,
+   "made": "2026-11-27",
+   "modelled": {
+    "state": "planned",
+    "text": "Physarum Lagrangian is a planned Cells model. This 3D atlas shows the organism and illustrates shuttle streaming.",
+    "record": [
+     {
+      "path": "visualizer/docs/PHYSARUM.md",
+      "where": "Physarum Lagrangian"
+     }
+    ]
+   },
+   "view": {
+    "kind": "physarum",
+    "protein_atlas": "physarum",
+    "engine_part": "models.physarum"
+   },
+   "levels": [
+    {
+     "label": "Plasmodium",
+     "id": "network",
+     "shows": "A branching network with thick veins and thin advancing regions."
+    },
+    {
+     "label": "Vein cutaway",
+     "id": "vein",
+     "shows": "The contractile wall, streaming cytoplasm and a parcel that can be followed through a flow reversal."
+    }
+   ],
+   "sources": {
+    "network": {
+     "text": "Alim et al. (2013). Random network peristalsis in Physarum polycephalum organizes fluid flows across an individual.",
+     "doi": "10.1073/pnas.1305049110",
+     "accessed": "2026-11-27",
+     "licence": "Bibliographic facts only. Figures and text are not copied.",
+     "class": "permissive"
+    },
+    "taxonomy": {
+     "text": "NCBI Taxonomy, taxon 5791.",
+     "url": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=5791",
+     "accessed": "2026-11-27",
+     "licence": "Bibliographic facts only",
+     "class": "permissive"
+    }
+   },
+   "facts": [
+    {
+     "label": "Life stage",
+     "value": "Plasmodium, a multinucleate cell with a branched tube network",
+     "sources": [
+      "network"
+     ]
+    },
+    {
+     "label": "Transport",
+     "value": "Rhythmic tube contractions drive cytoplasm back and forth through the network",
+     "sources": [
+      "network"
      ]
     }
    ],
@@ -21303,7 +21399,7 @@
     ],
     [
      "State it owns",
-     "15 fields"
+     "17 fields"
     ],
     [
      "Reads as declared",
@@ -22462,7 +22558,7 @@
     ],
     [
      "Reads as declared",
-     "volume, extracellular_volume, active, outside_active, membrane_active"
+     "active, outside_active, extracellular_amount_reference, extracellular_amount_reference"
     ]
    ],
    "sources": [
@@ -22681,7 +22777,7 @@
     ],
     [
      "Reads as declared",
-     "volume, extracellular_volume, active, outside_active, membrane_active"
+     "volume, active, outside_active, membrane_active"
     ]
    ],
    "sources": [
@@ -22793,7 +22889,7 @@
     ],
     [
      "Reads as declared",
-     "volume, extracellular_volume, active, outside_active, membrane_active"
+     "volume, active, outside_active, membrane_active"
     ]
    ],
    "sources": [
@@ -23134,7 +23230,7 @@
     ],
     [
      "Lines of Python",
-     "5,885"
+     "6,010"
     ],
     [
      "Model identifiers",
@@ -23165,7 +23261,7 @@
      "where": "D188's move 2 landed on main (18 November 2026)."
     }
    ],
-   "weight": 5885
+   "weight": 6010
   },
   {
    "id": "exec.registry",
@@ -23336,7 +23432,7 @@
     ],
     [
      "Read by this map",
-     "cells.declarations@3, written at 4f4a4c34"
+     "cells.declarations@3, written at 4fd3d042"
     ],
     [
      "Laws, kinds and operators",
@@ -25076,7 +25172,7 @@
     ],
     [
      "Lines of Python",
-     "446"
+     "477"
     ],
     [
      "Laws it declares",
@@ -25113,7 +25209,7 @@
     "src/cells/laws/junctions/passive.py",
     "src/cells/laws/junctions/selective.py"
    ],
-   "weight": 446
+   "weight": 477
   },
   {
    "id": "laws.cotransport",
@@ -25619,7 +25715,7 @@
     ],
     [
      "Lines of Python",
-     "1,635"
+     "1,658"
     ],
     [
      "Model identifiers",
@@ -25785,7 +25881,7 @@
      "path": "tests/unit/test_surface_pump_v3_registry_laws.py"
     }
    ],
-   "weight": 1635
+   "weight": 1658
   },
   {
    "id": "laws.kinds",
@@ -26724,7 +26820,7 @@
     ],
     [
      "Lines of Python",
-     "8,216"
+     "8,588"
     ],
     [
      "Model identifiers",
@@ -26805,7 +26901,7 @@
     "src/cells/models/surface_pump_v2.py",
     "src/cells/models/surface_pump_v3.py"
    ],
-   "weight": 8216
+   "weight": 8588
   },
   {
    "id": "models.water",
@@ -26916,7 +27012,7 @@
     ],
     [
      "Lines of Python",
-     "3,761"
+     "3,817"
     ],
     [
      "Model identifiers",
@@ -26978,7 +27074,7 @@
     "src/cells/models/pump_composite.py",
     "src/cells/models/pump_composite_adapter.py"
    ],
-   "weight": 3761
+   "weight": 3817
   },
   {
    "id": "models.modular",
@@ -27330,6 +27426,22 @@
    "weight": 3133
   },
   {
+   "id": "models.physarum",
+   "label": "Physarum Lagrangian",
+   "kind": "component",
+   "group": "models",
+   "status": "planned",
+   "as_of": "2026-11-27",
+   "plain": "A planned Physarum model that follows material through the plasmodium. Open the 3D atlas for the vein network and a cutaway illustrating shuttle streaming.",
+   "sources": [
+    {
+     "path": "visualizer/docs/PHYSARUM.md",
+     "where": "Physarum Lagrangian"
+    }
+   ],
+   "weight": 0
+  },
+  {
    "id": "models.gard",
    "label": "Catalytic assemblies (GARD)",
    "kind": "component",
@@ -27485,7 +27597,7 @@
     ],
     [
      "Lines of Python",
-     "22,897"
+     "22,900"
     ],
     [
      "Model identifiers",
@@ -27607,7 +27719,7 @@
      "path": "tests/unit/test_assembly_lineages_v2_ledger.py"
     }
    ],
-   "weight": 22897
+   "weight": 22900
   },
   {
    "id": "models.origin_engine",
@@ -27792,7 +27904,7 @@
     ],
     [
      "Lines of Python",
-     "1,988"
+     "2,079"
     ]
    ],
    "sources": [
@@ -27845,7 +27957,7 @@
     "src/cells/operators/contract.py",
     "src/cells/registry/operators.py"
    ],
-   "weight": 1988
+   "weight": 2079
   },
   {
    "id": "op.scoped_composition",
@@ -29389,7 +29501,7 @@
     ],
     [
      "Lines of Python",
-     "51,353"
+     "51,858"
     ]
    ],
    "sources": [
@@ -29410,7 +29522,7 @@
      "where": "The FR worlds."
     }
    ],
-   "weight": 51353
+   "weight": 51858
   },
   {
    "id": "val.division",
@@ -30174,11 +30286,11 @@
    "facts": [
     [
      "Files",
-     "617"
+     "623"
     ],
     [
      "Lines of Python",
-     "159,748"
+     "164,254"
     ],
     [
      "Tier 1 test files",
@@ -30186,11 +30298,11 @@
     ],
     [
      "Tier 2 test files",
-     "182"
+     "186"
     ],
     [
      "Tier 3 test files",
-     "90"
+     "92"
     ]
    ],
    "sources": [
@@ -30248,7 +30360,7 @@
      "path": "tests/unit/test_tier_fold.py"
     }
    ],
-   "weight": 159748
+   "weight": 164254
   },
   {
    "id": "val.results_gate",
@@ -30443,11 +30555,11 @@
    "facts": [
     [
      "Files",
-     "10"
+     "11"
     ],
     [
      "Lines of Python",
-     "1,460"
+     "1,556"
     ]
    ],
    "files": [
@@ -30460,9 +30572,10 @@
     "src/cells/numerics/label_shares.py",
     "src/cells/numerics/one_way_split.py",
     "src/cells/numerics/rosenbrock_dense.py",
-    "src/cells/numerics/sparse_cholesky.py"
+    "src/cells/numerics/sparse_cholesky.py",
+    "src/cells/numerics/unit_cohorts.py"
    ],
-   "weight": 1460
+   "weight": 1556
   },
   {
    "id": "val.other",
@@ -30474,14 +30587,14 @@
    "facts": [
     [
      "Files",
-     "577"
+     "646"
     ],
     [
      "Lines of Python",
-     "104,411"
+     "118,315"
     ]
    ],
-   "weight": 104411
+   "weight": 118315
   },
   {
    "id": "state.compartment",
@@ -79724,13 +79837,6 @@
   },
   {
    "from": "op.cells.operator.ideal_osmosis_linear_compliance_water@1",
-   "to": "op.cells.operator.scheduled_species_turnover@1",
-   "kind": "conflicts",
-   "weight": 2,
-   "label": "volume, extracellular_volume"
-  },
-  {
-   "from": "op.cells.operator.ideal_osmosis_linear_compliance_water@1",
    "to": "op.cells.operator.site_occupancy@1",
    "kind": "conflicts",
    "weight": 2,
@@ -79740,15 +79846,15 @@
    "from": "op.cells.operator.ideal_osmosis_linear_compliance_water@1",
    "to": "op.cells.operator.species_regulated_availability@1",
    "kind": "conflicts",
-   "weight": 2,
-   "label": "volume, extracellular_volume"
+   "weight": 1,
+   "label": "volume"
   },
   {
    "from": "op.cells.operator.ideal_osmosis_linear_compliance_water@1",
    "to": "op.cells.operator.species_regulated_availability@2",
    "kind": "conflicts",
-   "weight": 2,
-   "label": "volume, extracellular_volume"
+   "weight": 1,
+   "label": "volume"
   },
   {
    "from": "op.cells.operator.integer_unit_population@1",
@@ -79934,28 +80040,7 @@
   },
   {
    "from": "op.cells.operator.restricted_cleft_lumen@1",
-   "to": "op.cells.operator.scheduled_species_turnover@1",
-   "kind": "conflicts",
-   "weight": 1,
-   "label": "extracellular_volume"
-  },
-  {
-   "from": "op.cells.operator.restricted_cleft_lumen@1",
    "to": "op.cells.operator.site_occupancy@1",
-   "kind": "conflicts",
-   "weight": 1,
-   "label": "extracellular_volume"
-  },
-  {
-   "from": "op.cells.operator.restricted_cleft_lumen@1",
-   "to": "op.cells.operator.species_regulated_availability@1",
-   "kind": "conflicts",
-   "weight": 1,
-   "label": "extracellular_volume"
-  },
-  {
-   "from": "op.cells.operator.restricted_cleft_lumen@1",
-   "to": "op.cells.operator.species_regulated_availability@2",
    "kind": "conflicts",
    "weight": 1,
    "label": "extracellular_volume"
@@ -79990,28 +80075,7 @@
   },
   {
    "from": "op.cells.operator.restricted_cleft_lumen@2",
-   "to": "op.cells.operator.scheduled_species_turnover@1",
-   "kind": "conflicts",
-   "weight": 1,
-   "label": "extracellular_volume"
-  },
-  {
-   "from": "op.cells.operator.restricted_cleft_lumen@2",
    "to": "op.cells.operator.site_occupancy@1",
-   "kind": "conflicts",
-   "weight": 1,
-   "label": "extracellular_volume"
-  },
-  {
-   "from": "op.cells.operator.restricted_cleft_lumen@2",
-   "to": "op.cells.operator.species_regulated_availability@1",
-   "kind": "conflicts",
-   "weight": 1,
-   "label": "extracellular_volume"
-  },
-  {
-   "from": "op.cells.operator.restricted_cleft_lumen@2",
-   "to": "op.cells.operator.species_regulated_availability@2",
    "kind": "conflicts",
    "weight": 1,
    "label": "extracellular_volume"
@@ -80035,6 +80099,13 @@
    "to": "op.cells.operator.scheduled_membrane_trafficking@1",
    "kind": "conflicts",
    "weight": 1,
+   "label": "extracellular_amount_reference"
+  },
+  {
+   "from": "op.cells.operator.scheduled_bath_composition@1",
+   "to": "op.cells.operator.scheduled_species_turnover@1",
+   "kind": "conflicts",
+   "weight": 2,
    "label": "extracellular_amount_reference"
   },
   {
@@ -80097,8 +80168,8 @@
    "from": "op.cells.operator.scheduled_membrane_insertion@1",
    "to": "op.cells.operator.scheduled_species_turnover@1",
    "kind": "conflicts",
-   "weight": 2,
-   "label": "outside_active, membrane_active"
+   "weight": 3,
+   "label": "outside_active, extracellular_amount_reference"
   },
   {
    "from": "op.cells.operator.scheduled_membrane_insertion@1",
@@ -80146,8 +80217,8 @@
    "from": "op.cells.operator.scheduled_membrane_insertion@2",
    "to": "op.cells.operator.scheduled_species_turnover@1",
    "kind": "conflicts",
-   "weight": 2,
-   "label": "outside_active, membrane_active"
+   "weight": 1,
+   "label": "outside_active"
   },
   {
    "from": "op.cells.operator.scheduled_membrane_insertion@2",
@@ -82184,6 +82255,48 @@
    "kind": "reads",
    "weight": 1,
    "label": "membrane_area"
+  },
+  {
+   "from": "op.cells.operator.scheduled_species_turnover@1",
+   "to": "op.cells.operator.ideal_osmosis_linear_compliance_water@1",
+   "kind": "reads",
+   "weight": 2,
+   "label": "volume, extracellular_volume"
+  },
+  {
+   "from": "op.cells.operator.scheduled_species_turnover@1",
+   "to": "op.cells.operator.restricted_cleft_lumen@1",
+   "kind": "reads",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.cells.operator.scheduled_species_turnover@1",
+   "to": "op.cells.operator.restricted_cleft_lumen@2",
+   "kind": "reads",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.cells.operator.scheduled_species_turnover@1",
+   "to": "op.cells.operator.scheduled_membrane_insertion@1",
+   "kind": "reads",
+   "weight": 1,
+   "label": "outside_active"
+  },
+  {
+   "from": "op.cells.operator.species_regulated_availability@1",
+   "to": "op.cells.operator.ideal_osmosis_linear_compliance_water@1",
+   "kind": "reads",
+   "weight": 2,
+   "label": "volume"
+  },
+  {
+   "from": "op.cells.operator.species_regulated_availability@2",
+   "to": "op.cells.operator.ideal_osmosis_linear_compliance_water@1",
+   "kind": "reads",
+   "weight": 2,
+   "label": "volume"
   },
   {
    "from": "op.cells.operator.species_regulated_availability@2",
@@ -85007,7 +85120,7 @@
    "from": "num.other",
    "to": "laws.species_identity",
    "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "num.other",
@@ -85349,7 +85462,7 @@
    "from": "op.cells.operator.integer_unit_population@1",
    "to": "num.other",
    "kind": "uses",
-   "weight": 2
+   "weight": 3
   },
   {
    "from": "op.cells.operator.integer_unit_population@1",
@@ -86315,7 +86428,7 @@
    "from": "op.cells.operator.scheduled_species_turnover@1",
    "to": "op.contract",
    "kind": "uses",
-   "weight": 2
+   "weight": 4
   },
   {
    "from": "op.cells.operator.site_occupancy@1",
@@ -86344,6 +86457,12 @@
   {
    "from": "op.cells.operator.site_occupancy@1",
    "to": "models.composite",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.cells.operator.site_occupancy@1",
+   "to": "num.field",
    "kind": "uses",
    "weight": 1
   },

@@ -2016,7 +2016,7 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 232,
+   "line": 234,
    "models": [
     "cells.model.assembly_lineages@2"
    ],
@@ -10643,6 +10643,7 @@
      "integer_channel_events": "cumulative",
      "integer_clock_carry_s": "level",
      "integer_clock_s": "level",
+     "integer_cohort_units": "amount",
      "integer_counts": "amount",
      "integer_divided_units": "cumulative",
      "integer_energy_magnitude_pJ": "cumulative",
@@ -10651,6 +10652,7 @@
      "integer_threshold": "level",
      "integer_trace_cell_fmol": "amount",
      "integer_trace_channel": "level",
+     "integer_trace_counts": "amount",
      "integer_trace_node_fmol": "amount",
      "integer_trace_time_s": "level",
      "integer_transfer_dissipated_energy_pJ": "cumulative",
@@ -10668,7 +10670,7 @@
    "ledgers": [
     "integer_subunits"
    ],
-   "line": 1249,
+   "line": 1697,
    "models": [
     "cells.model.resolved_pump_composite@1"
    ],
@@ -10686,6 +10688,11 @@
     ],
     "integer_clock_s": [
      "integer_site"
+    ],
+    "integer_cohort_units": [
+     "integer_cohort",
+     "integer_state",
+     "integer_cohort_label"
     ],
     "integer_counts": [
      "integer_site",
@@ -10715,6 +10722,11 @@
     "integer_trace_channel": [
      "integer_site",
      "integer_trace"
+    ],
+    "integer_trace_counts": [
+     "integer_site",
+     "integer_trace",
+     "integer_state"
     ],
     "integer_trace_node_fmol": [
      "integer_site",
@@ -10784,6 +10796,7 @@
     "integer_channel_events": "events",
     "integer_clock_carry_s": "s",
     "integer_clock_s": "s",
+    "integer_cohort_units": "units",
     "integer_counts": "units",
     "integer_divided_units": "units",
     "integer_energy_magnitude_pJ": "pJ",
@@ -10792,6 +10805,7 @@
     "integer_threshold": "1",
     "integer_trace_cell_fmol": "fmol",
     "integer_trace_channel": "index",
+    "integer_trace_counts": "units",
     "integer_trace_node_fmol": "fmol",
     "integer_trace_time_s": "s",
     "integer_transfer_dissipated_energy_pJ": "pJ",
@@ -10852,7 +10866,7 @@
     "partition_capacitance",
     "partition_units"
    ],
-   "line": 1114,
+   "line": 1115,
    "models": [
     "cells.model.resolved_pump_composite@1"
    ],
@@ -11148,7 +11162,7 @@
    "kernels": null,
    "laws": null,
    "ledgers": [],
-   "line": 1490,
+   "line": 1471,
    "models": [
     "cells.model.resolved_pump_composite@1"
    ],
@@ -12180,7 +12194,7 @@
    "kernels": null,
    "laws": null,
    "ledgers": [],
-   "line": 644,
+   "line": 645,
    "models": [
     "cells.model.resolved_pump_composite@1"
    ],
@@ -13377,7 +13391,7 @@
    "kernels": null,
    "laws": null,
    "ledgers": [],
-   "line": 481,
+   "line": 554,
    "models": [
     "cells.model.resolved_pump_composite@1"
    ],
@@ -13416,34 +13430,52 @@
    "provides": [],
    "reads": [
     {
-     "mode": "fixed",
+     "mode": "current",
      "name": "volume",
      "scoped": false,
      "stage": "split"
     },
     {
-     "mode": "fixed",
+     "mode": "current",
      "name": "extracellular_volume",
-     "scoped": false,
+     "scoped": true,
      "stage": "split"
     },
     {
-     "mode": "fixed",
+     "mode": "current",
      "name": "active",
      "scoped": false,
      "stage": "split"
     },
     {
-     "mode": "fixed",
+     "mode": "reference",
+     "name": "active",
+     "scoped": false,
+     "stage": "end"
+    },
+    {
+     "mode": "current",
      "name": "outside_active",
      "scoped": false,
      "stage": "split"
     },
     {
-     "mode": "fixed",
-     "name": "membrane_active",
+     "mode": "reference",
+     "name": "outside_active",
+     "scoped": false,
+     "stage": "end"
+    },
+    {
+     "mode": "reference",
+     "name": "extracellular_amount_reference",
      "scoped": false,
      "stage": "split"
+    },
+    {
+     "mode": "reference",
+     "name": "extracellular_amount_reference",
+     "scoped": false,
+     "stage": "end"
     }
    ],
    "requires": {
@@ -13458,8 +13490,8 @@
     "active": "1",
     "amount_increment": null,
     "extracellular_amount_increment": null,
+    "extracellular_amount_reference": "fmol",
     "extracellular_volume": "pL",
-    "membrane_active": "1",
     "outside_active": "1",
     "turnover_cleared_fmol": "fmol",
     "turnover_energy_magnitude_pJ": "pJ",
@@ -13670,7 +13702,7 @@
     "site_bound_entity",
     "site_moiety_entity"
    ],
-   "line": 1301,
+   "line": 2069,
    "models": [
     "cells.model.resolved_pump_composite@1"
    ],
@@ -13692,7 +13724,7 @@
      "site_population"
     ],
     "site_free_increment_fmol": [
-     "site_population"
+     "site_set"
     ],
     "site_internalised_fmol": [
      "site_population"
@@ -13830,7 +13862,7 @@
    "kernels": null,
    "laws": null,
    "ledgers": [],
-   "line": 1894,
+   "line": 2728,
    "models": [
     "cells.model.resolved_pump_composite@1"
    ],
@@ -14072,7 +14104,7 @@
    "kernels": null,
    "laws": null,
    "ledgers": [],
-   "line": 1739,
+   "line": 1823,
    "models": [
     "cells.model.resolved_pump_composite@1"
    ],
@@ -14107,16 +14139,22 @@
    ],
    "reads": [
     {
-     "mode": "fixed",
+     "mode": "current",
      "name": "volume",
      "scoped": false,
      "stage": "split"
     },
     {
-     "mode": "fixed",
-     "name": "extracellular_volume",
+     "mode": "current",
+     "name": "volume",
      "scoped": false,
-     "stage": "split"
+     "stage": "inner"
+    },
+    {
+     "mode": "reference",
+     "name": "volume",
+     "scoped": false,
+     "stage": "end"
     },
     {
      "mode": "fixed",
@@ -14152,7 +14190,6 @@
     "coupling_factor": null,
     "coupling_step_count": null,
     "coupling_switch": null,
-    "extracellular_volume": "pL",
     "junction": null,
     "membrane_active": "1",
     "outside_active": "1",
@@ -14215,7 +14252,7 @@
    "kernels": null,
    "laws": null,
    "ledgers": [],
-   "line": 1945,
+   "line": 2048,
    "models": [
     "cells.model.resolved_pump_composite@1"
    ],
@@ -14259,16 +14296,22 @@
      "stage": "inner"
     },
     {
-     "mode": "fixed",
+     "mode": "current",
      "name": "volume",
      "scoped": false,
      "stage": "split"
     },
     {
-     "mode": "fixed",
-     "name": "extracellular_volume",
+     "mode": "current",
+     "name": "volume",
      "scoped": false,
-     "stage": "split"
+     "stage": "inner"
+    },
+    {
+     "mode": "reference",
+     "name": "volume",
+     "scoped": false,
+     "stage": "end"
     },
     {
      "mode": "fixed",
@@ -14306,7 +14349,6 @@
     "coupling_factor": "1",
     "coupling_step_count": "1",
     "coupling_switch": null,
-    "extracellular_volume": "pL",
     "junction": null,
     "membrane_active": "1",
     "outside_active": "1",
@@ -14767,5 +14809,5 @@
    "writes": null
   }
  ],
- "revision": "4f4a4c348bd2e8e750c67051942db770a796790b"
+ "revision": "4fd3d0425a80c87eea55aa64c2a6cd365dcf5f95"
 }

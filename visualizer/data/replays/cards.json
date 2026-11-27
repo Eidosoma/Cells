@@ -3,7 +3,7 @@
  "note": "The Experiments landing's cards, built by tools/build_cards.py from data/replays/cards.source.json (what is typed), the Engine map's overlay, the catalogue's overlay and selection, the model-system entries, and data/replays/cards.readings.json (what was read from the record). Not edited by hand: schema/EXPERIMENT_CARDS.md.",
  "built_from": {
   "map": {
-   "revision": "4f4a4c348bd2e8e750c67051942db770a796790b",
+   "revision": "4fd3d0425a80c87eea55aa64c2a6cd365dcf5f95",
    "as_of": "2026-11-22"
   },
   "record": {

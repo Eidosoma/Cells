@@ -511,13 +511,13 @@ export class ProteinLens {
     let state = this.own.get(id);
     const summary = shelvesOf(this.atlas, id);
     if (state || !summary) return state || null;
-    const named = this.list.find((item) => item.id === id) || atlasOf(this.atlas, id) || { label: id };
+    const named = this.list.find((item) => item.id === id) || atlasOf(this.atlas, id);
     state = { status: "loading", error: null, shelves: null, views: new Map() };
     state.promise = loadBeside(summary.file)
       .then((data) => {
         if (data.species !== id) throw new Error(`${summary.file} holds the proteins of ${data.species}`);
         const units = new Map(this.model.inGroup("proteins").map((unit) => [unit.id.replace(/^unit\./, ""), unit.id]));
-        state.shelves = new Shelves(data, { label: named.label, organism: named.organism, links: this.atlas.shelf_links, units, found: this.atlas.product_found_by });
+        state.shelves = new Shelves(data, { label: named?.label, organism: named?.organism, links: this.atlas.shelf_links, units, found: this.atlas.product_found_by });
         state.status = "ready";
       })
       .catch((error) => {
@@ -893,7 +893,7 @@ export class ProteinLens {
    */
   ownChoice() {
     const summary = shelvesOf(this.atlas, this.page);
-    const label = (this.list.find((item) => item.id === this.page) || atlasOf(this.atlas, this.page))?.label || "This species";
+    const label = this.mounted?.shelves.label || (this.list.find((item) => item.id === this.page) || atlasOf(this.atlas, this.page))?.label || "This species";
     if (!summary) {
       // Said only in a scene that has such proteins for some species: an older scene knows none.
       return { modes: null, notice: this.atlas.shelves?.length ? `${label}'s own catalogue of proteins is not made yet: the atlas shows the units of Cells' law inventory.` : null };
@@ -1175,7 +1175,7 @@ export class ProteinLens {
     const species = atlas && !atlas.reference ? atlas : null;
     this.shown = atlas?.id ?? null;
     // The species the page shows, also where it has no atlas of its own (the inventory's is then shown).
-    const page = this.list.some((item) => item.id === id) || atlasOf(this.atlas, id) ? id : this.shown;
+    const page = this.list.some((item) => item.id === id) || atlasOf(this.atlas, id) || shelvesOf(this.atlas,id) ? id : this.shown;
     const moved = page !== this.page;
     this.page = page;
     if (species !== this.species) {

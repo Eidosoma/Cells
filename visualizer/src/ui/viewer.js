@@ -478,7 +478,7 @@ class CellsViewer extends HTMLElement {
       this.current.setSpecies?.(this.state.species);
       if (this.state.stage) this.current.setStage?.(this.state.stage);
       this.current.setCellType?.(this.state.cellType);
-      this.current.setAtlas?.(this.state.species);
+      this.current.setAtlas?.(id === "proteins" ? this.proteinAtlasId() : this.state.species);
       this.current.activate();
       this.current.setIsolate(null);
       this.current.setSelection(this.current.has(this.state.selected) ? this.state.selected : null);
@@ -519,6 +519,11 @@ class CellsViewer extends HTMLElement {
     const offered = entity ? this.views.filter((view) => view.id !== this.state.lens && view.doorsFor).flatMap((view) => view.doorsFor(entity, this.model.raw, { species: this.state.species })) : [];
     // A part is shown as the chosen species has it: a unit with that species' side of the atlas,
     // a level under the species' name for it.
+    const linkedEntry = entity && modelSystems(this.model.raw).find(item => item.view?.engine_part === entity.id);
+    if (linkedEntry && this.state.lens === "engine") entity = {...entity, doors:[...(entity.doors || []),
+      {label:"Open the 3D organism view",lens:"cell",entry:linkedEntry.id},
+      {label:"Open the organism's Protein catalogue",lens:"proteins",entry:linkedEntry.id,show:"own"},
+    ]};
     const shown = this.state.lens === "proteins" ? (this.current?.asShown ? this.current.asShown(entity) : inSpecies(entity, this.model.raw.proteins, this.state.species)) : this.state.lens === "cell" && this.current?.inSpecies ? this.current.inSpecies(entity) : entity;
     return shown && offered.length ? { ...shown, doors: [...(shown.doors || []), ...offered] } : shown;
   }
@@ -544,7 +549,7 @@ class CellsViewer extends HTMLElement {
    * ("show": which of the atlas's two drawings) with one set of them picked out (a mark and its value);
    * a structure of the cell opens it on the shelf of its membrane ("shelf"), with no set picked out.
    */
-  openDoor({ lens, show, mark, value, shelf, ids, look, machine, select, find, card }) {
+  openDoor({ lens, show, mark, value, shelf, ids, look, machine, select, find, card, entry }) {
     // A replay's card on the Experiments landing, from its detail: the view the card opens (openCard).
     if (card && this.landingView?.byId?.has(card)) {
       const opened = this.landingView.opened(card);
@@ -567,6 +572,7 @@ class CellsViewer extends HTMLElement {
       return;
     }
     if (!this.views.some((view) => view.id === lens)) return;
+    if (entry) this.setEntry(entry, { user:true });
     this.select(null);
     this.setLens(lens, true);
     const view = this.current;
@@ -637,6 +643,12 @@ class CellsViewer extends HTMLElement {
     this.state.isolate = status || null;
     this.current?.setIsolate(this.state.isolate);
     this.renderLegend();
+  }
+
+  /** A model system can link to its organism's separately sourced catalogue. */
+  proteinAtlasId() {
+    const id = modelSystemOf(this.model?.raw, this.state.model)?.view?.protein_atlas;
+    return this.model.raw.proteins?.shelves?.some(shelf => shelf.id === id) ? id : this.state.species;
   }
 
   /** The species the page can show: the scene's species, or the atlases of a scene that names none. */
@@ -828,6 +840,7 @@ class CellsViewer extends HTMLElement {
       this.setSpecies(speciesId);
       this.lenses.get("cell")?.setCellType?.(this.state.cellType);
     }
+    this.lenses.get("proteins")?.setAtlas?.(this.proteinAtlasId());
     this.nameFirstTab();
     if (this.state.selected?.startsWith("model:") || (entry && this.state.selected?.startsWith("species:"))) this.state.selected = entry ? `model:${entry.id}` : null;
     // Shown in the Cell view's place: the view follows the entry (a phone's folded card starts folded in it, as in the next view).
@@ -928,7 +941,7 @@ class CellsViewer extends HTMLElement {
     const out = { ...chrome };
     if (chrome.view?.species) out.view = { ...chrome.view, species };
     if (chrome.card) out.card = { ...chrome.card, species };
-    if (entry && this.state.lens === "proteins") out.caveat = [`${entry.label} is a model system, not an organism: it has no proteins of a species. The atlas shows the units of Cells' law inventory, as for ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}.`, chrome.caveat].filter(Boolean).join(" ");
+    if (entry && this.state.lens === "proteins" && this.proteinAtlasId() === this.state.species) out.caveat = [`${entry.label} is a model system, not an organism: it has no proteins of a species. The atlas shows the units of Cells' law inventory, as for ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}.`, chrome.caveat].filter(Boolean).join(" ");
     // At a life stage that is not its file's own, the Protein atlas and the Machines bench say that they are the organism's.
     const at = !entry ? this.stageAt() : null;
     if (at && (this.state.lens === "proteins" || this.state.lens === "machines")) {

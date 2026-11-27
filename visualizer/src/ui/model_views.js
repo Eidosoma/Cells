@@ -8,3 +8,4 @@
 
 import "../lenses/lineage_entry.js";
 import "../lenses/vesicle.js";
+import "../lenses/physarum.js";

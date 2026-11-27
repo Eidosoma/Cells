@@ -254,8 +254,8 @@ export class Shelves {
     if (problems.length) throw new Error(`the file of proteins does not follow its format: ${problems.slice(0, 3).join("; ")}`);
     this.data = data;
     this.id = data.species;
-    this.label = label || data.species;
-    this.organism = organism;
+    this.label = label || data.label || data.species;
+    this.organism = organism || data.organism || null;
     this.links = links || {};
     this.units = units || new Map(); // inventory unit id -> the scene's part for it
     // How the species' atlas found each protein it lists with a unit (schema/SPECIES_PROTEINS.md, found_by), and the

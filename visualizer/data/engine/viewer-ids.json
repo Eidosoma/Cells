@@ -1,6 +1,6 @@
 {
   "source": "scripts/moves/id-rename-map.json",
-  "revision": "4f4a4c348bd2e8e750c67051942db770a796790b",
+  "revision": "4fd3d0425a80c87eea55aa64c2a6cd365dcf5f95",
   "aliases": {
     "adenylate_kinase@1": "cells.cycle.adenylate_kinase@1",
     "apical_vertex_mechanics@1": "cells.model.apical_vertex_mechanics@1",

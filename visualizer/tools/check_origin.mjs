@@ -12,6 +12,7 @@
 //            a pair); a real press on a lipid's head chooses its type, and ] steps a fission. The
 //            Laws library and back: the view plays again as it was, and nothing of it stays on the
 //            library. The Cell view opened after it is as the Cell view opened alone.
+//   physarum  the menu, 3D network and cutaway, and the linked Protein and Engine catalogues.
 //   vesicle  the saved vesicle life, divided daughters, threshold crossing and released state, bilayer and molecular reference.
 //   phone    the same at a phone's width: the first tab's short name keeps the bar to one row, the
 //            card folds to one line that names the model system, apart from the rail's button, and
@@ -271,7 +272,44 @@ try {
   };
   const look = () => evaluate(`(() => { const v = ${V}, st = v.stage, r = st.renderer; return { sun: st.sun.position.toArray().map((x) => +x.toFixed(3)), shadow: st.sun.castShadow, limits: { ...st.rig.limits }, environment: Boolean(st.scene.environment), exposure: +r.toneMappingExposure.toFixed(3), toneMapping: r.toneMapping, bloom: st.finish?.bloom?.strength ?? 0, insets: st.insets || {}, sky: +st.sky.intensity.toFixed(3), fog: Boolean(st.scene.fog), children: st.scene.children.length }; })()`);
 
-  if (CASE === "vesicle") {
+  if (CASE === "physarum") {
+    const root = V + ".shadowRoot";
+    const press = async selector => {
+      const at = await placeOf(`root.querySelector(${JSON.stringify(selector)})`);
+      if (!at) throw Error("Control missing or covered: " + selector);
+      await click(at.x,at.y,150);
+    };
+    const openCard = () => evaluate(`if(${V}.frame.classList.contains("card-folds") && !${V}.state.viewOpen) ${V}.toggleViewCard(true)`);
+    await open("lens=cell&still=1", false);
+    if (PHONE) await openCard();
+    await press(".species-pick");
+    const row = await placeOf('Array.from(root.querySelectorAll("#species-list [role=option]")).find(el=>el.textContent.includes("Physarum Lagrangian"))');
+    if (row) await click(row.x,row.y,150);
+    check("the Physarum menu item opens the plasmodium", await until(`${L}?.id==="physarum" && ${L}.network.visible`,40));
+    check("the scene displays the illustration label",await evaluate(`${root}.querySelector(".caveat").textContent.includes("schematic")`));
+    check("the three selectable network structures have real geometry",await evaluate(`${L}.network.children.filter(x=>x.userData.pick).length===3 && ${L}.has("physarum:veins")`));
+    await shot(NAME+"-network");
+    check("the rail opens the vein cutaway",await level("vein") && (await state()).level==="vein");
+    if (PHONE) await openCard();
+    const before=await evaluate(`({x:${L}.parcel.position.x,d:${L}.arrows.children[0].quaternion.toArray()})`);
+    await press('[data-physarum="reverse"]');
+    const after=await evaluate(`({x:${L}.parcel.position.x,d:${L}.arrows.children[0].quaternion.toArray()})`);
+    check("reversal changes the arrows while keeping the same material parcel position",Math.abs(after.x-before.x)<1e-8 && JSON.stringify(before.d)!==JSON.stringify(after.d));
+    if (PHONE && (await evaluate(`${V}.state.viewOpen`))) await press(".view-toggle");
+    await shot(NAME+"-cutaway");
+    if (PHONE) await openCard();
+    await press('[data-physarum="proteins"]');
+    check("the Physarum protein catalogue opens with its 43 reviewed entries",await until(`${L}.mounted?.shelves.id==="physarum" && ${L}.mounted.shelves.data.proteins.length===43`,65));
+    check("the catalogue finds the organism's exact reviewed plasmodial actin",await evaluate(`${L}.searchOwn("P02576").then(x=>x.proteins.some(p=>p.id==="P02576"))`));
+    await shot(NAME+"-proteins");
+    await open("lens=engine&select=models.physarum&still=1",false);
+    check("Engine opens the planned Physarum entry",await until(`${V}.state.selected==="models.physarum"`,40) && /Planned/.test((await state()).panel));
+    const door = await placeOf('Array.from(root.querySelectorAll(".panel-door button")).find(el=>el.textContent.includes("3D organism"))');
+    if (door) await click(door.x,door.y,150);
+    check("Engine links back to the 3D model menu entry",await until(`${L}?.id==="physarum" && ${V}.state.model==="physarum"`,50));
+    await open("entry=physarum&scale=vein&still=1",false);
+    check("a shared link opens the cutaway",await until(`${L}?.id==="physarum" && ${L}.level==="vein"`,50));
+  } else if (CASE === "vesicle") {
     await open("entry=origin-vesicles&still=1", false);
     const ready = await until(`${L}?.id === "vesicle"`, 90);
     check("the vesicle entry opens its own saved run", ready);
