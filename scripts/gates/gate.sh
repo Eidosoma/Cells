@@ -63,10 +63,10 @@ G=$(cd "$(dirname "$0")" && pwd)
 STEPS=$G/gate_steps.py
 PY=${PY:-/mnt/workspaces/Cells/venv-cpu/bin/python}
 HOSTPY=${HOSTPY:-python3}
-# C1 renewed for D305's fix (D307): c1-b59e025c's 87 other worlds as they were, and the 26 worlds
-# whose max_global_charge_bound_ratio fell saved at 605331c2 (its manifest's renewal record, which
-# keeps fix (A)'s, D273, as its earlier record).
-C1=${C1:-/mnt/workspaces/Cells/global-charge-bound-20261122/c1-605331c2/merged}
+# C1 renewed for results_baseline's fix (D410): all 113 worlds as G1 saved them at 813dd072, each
+# array of c1-605331c2 (D307's renewal) bit for bit and each world's final state added
+# (scripts/gates/c1_additive_check.py; its manifest's renewal record keeps D307's as its earlier).
+C1=${C1:-/mnt/workspaces/Cells/global-charge-bound-20261122/c1-813dd072/merged}
 BASELINE=${BASELINE:-/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/baseline-44227075}
 REC=${REC:-/mnt/workspaces/Cells/core-fixes-20261116/record-cda5dc82}
 TIERS=${TIERS:-tests/test_tiers.json}
