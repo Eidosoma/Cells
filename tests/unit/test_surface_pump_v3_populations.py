@@ -894,7 +894,9 @@ def fr50_beside(name):
         from validation.fr52_cohorts import worlds as fr52_worlds
 
         raw = fr52_worlds.qualification(cohorts=name.endswith("cohorts"))
-        reason = "integer_unit_population@1 is refused beside @3's own one_way records"
+        reason = (
+            "cells.operator.integer_unit_population@1 is refused beside @3's own one_way records"
+        )
     else:  # The water family, whose internals are today's fixed fields.
         raw = water_fixtures.with_water(water_fixtures.heredity_cell("D", end_time=0.004),
                                         pf_m_s=5e-4)  # fmt: skip
