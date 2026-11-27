@@ -2,15 +2,29 @@
  "kind": "fr45 expected inputs, version 1",
  "protocol": "fr45-site-competition-v1",
  "written": "27 November 2026, before the binding tag, by the agent who wrote the engine table's format sample, who has seen no reference value. Typed by hand from SPEC.md §2 (with §0's constants and §1.1's ligands and multipliers) at tag fr45-site-competition-v1-amendment-3-2026-11-24.",
- "contract": "validation/fr45/spec/TABLE.md, §4.1 and §12.2 (the dated change of 27 November 2026)",
+ "contract": "validation/fr45/spec/TABLE.md, §4.1 and §12.2 (the dated changes of 27 November 2026)",
+ "host_choices": {
+  "statement": "The host entities of RULINGS-2 §8.1's bath form, and their volumes, are host choices of this file: invented, fixed here, and not registered inputs. The bath is held, and holds each world's one capacitor component. Each host cell is kept small. A builder declares these values as written. The host's areas, capacitances and ion amounts are not here: a dated addendum fixes them after the build (TABLE.md §4.1, §14.1).",
+  "names": {
+   "bath": "the held bath node",
+   "host_cell": "a host cell",
+   "host_wall": "a cell's wall on the bath",
+   "host_contact": "a host cell's contact patch on the registered node"
+  },
+  "bath_volume_pL": 100.0,
+  "host_cell_volume_pL": 0.01
+ },
  "rules": [
   "Each entry of runs is one honest run's expected inputs, with exactly the keys of TABLE.md §4.1. A plant run's expected inputs are its world's honest run's (TABLE.md §8.1), but for plant_inputs_changed.",
   "Every number is SPEC.md's binary64 literal as written (SPEC:104), written in Python's repr form. The judge compares numbers as binary64 values, so 602214076 and 602214076.0 are equal.",
   "Lists are compared as sets of members, matched by id, by ligand and node (free_amounts) or by patch and ligand (permeabilities); ligands and observation_times_s as sets of values (TABLE.md §4.1).",
-  "A null is a value this file does not fix, one of TABLE.md §4.1's exceptions: constants.RT_pJ_per_fmol (recorded, since SPEC gives RT as a formula); W1eq's start; W6's unregistered cell. The notes say which.",
-  "multipliers holds {\"each_value\": 1.0}: SPEC names no multiplier, so every member the engine lists must have that value (SPEC:62). It is the one key whose expected form differs from the echo's.",
-  "A trace (declared false) is 1e-12 mM times its compartment's volume_pL, in binary64 (SPEC:104-105; TABLE.md §4.1). At every registered volume that product is exact.",
-  "permeabilities lists every ligand on every patch at 0.0 (SPEC:59-61); charges every ligand at 0 (SPEC:59).",
+  "A null is a value this file does not fix, one of TABLE.md §4.1's exceptions: constants.RT_pJ_per_fmol (recorded, since SPEC gives RT as a formula), and W1eq's start. The notes say which.",
+  "Where a note in this file says less than TABLE.md §4.1's exception list, that list governs (X1).",
+  "Every number but the host's is SPEC.md's literal. The host entities (host_choices) are compared with this file, never with SPEC, and are not cross-checked: the references hold none of them.",
+  "multipliers lists exactly each population's site_binding_multiplier, at 1.0 (SPEC:62; RULINGS-2 §8.5).",
+  "A trace (declared false) is the binary64 product 1e-12 mM times its compartment's volume_pL (SPEC:104-105; TABLE.md §4.1): every ligand at a registered compartment that declares none of it, and every ligand at every host compartment. At every registered volume that product equals the decimal literal.",
+  "permeabilities lists every ligand on every patch, registered and host, at 0.0 (SPEC:59-61); charges every ligand at 0 (SPEC:59). Ions are in neither, nor in free_amounts (TABLE.md §4.1).",
+  "capacitor_components holds each world's one component: the bath, the world's cell and its registered node, held by the bath; members are compared as a set (RULINGS-2 §8.1).",
   "plant_inputs_changed holds W1p-P2's two crossed k_off, each the other population's registered value. They apply only if P2 is planted by declaration; otherwise W1p-P2's inputs_changed is empty and its inputs equal W1p's. Every other plant's inputs_changed is empty, unless a dated addendum names a list (TABLE.md §8.1).",
   "Before any registered run the judge cross-checks this file against the references' world echo, by TABLE.md §4.1's key map. A departure stops the judge before anything is scored."
  ],
@@ -28,9 +42,32 @@
      "kind": "node",
      "volume_pL": 1.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
    "ligands": [
     "L1",
     "L2"
@@ -47,6 +84,30 @@
      "node": "well",
      "n_fmol": 0.0009,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -80,14 +141,54 @@
     }
    ],
    "wash": null,
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.008,
    "observation_times_s": [
     0.2,
@@ -115,9 +216,32 @@
      "kind": "node",
      "volume_pL": 1.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
    "ligands": [
     "L1",
     "L2"
@@ -134,6 +258,30 @@
      "node": "well",
      "n_fmol": null,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -167,14 +315,54 @@
     }
    ],
    "wash": null,
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.008,
    "observation_times_s": [
     0.8,
@@ -196,9 +384,32 @@
      "kind": "node",
      "volume_pL": 1.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
    "ligands": [
     "L1",
     "L2"
@@ -215,6 +426,30 @@
      "node": "well",
      "n_fmol": 0.0009,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -248,14 +483,54 @@
     }
    ],
    "wash": null,
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.008,
    "observation_times_s": [
     0.2,
@@ -280,9 +555,32 @@
      "kind": "node",
      "volume_pL": 1000000.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
    "ligands": [
     "L1",
     "L2"
@@ -299,6 +597,30 @@
      "node": "well",
      "n_fmol": 1e-06,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -340,14 +662,54 @@
      "L2": 0.00016
     }
    },
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.0125,
    "observation_times_s": [
     2.0,
@@ -382,6 +744,12 @@
      "kind": "cell",
      "volume_pL": 1.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
     }
    ],
    "patches": [
@@ -389,6 +757,11 @@
      "id": "specimen_face",
      "inside": "specimen",
      "outside": "well"
+    },
+    {
+     "id": "host_wall",
+     "inside": "specimen",
+     "outside": "bath"
     }
    ],
    "ligands": [
@@ -458,6 +831,36 @@
      "node": "specimen",
      "n_fmol": 0.002,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L3",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L4",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L5",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
     }
    ],
    "sets": [
@@ -568,11 +971,65 @@
      "patch": "specimen_face",
      "ligand": "L5",
      "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L3",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L4",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L5",
+     "value": 0.0
     }
    ],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "multipliers": [
+    {
+     "of": "A_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "A_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "A_L3",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "B_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "C_L4",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "C_L5",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0,
@@ -580,6 +1037,16 @@
     "L4": 0,
     "L5": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "specimen",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.004,
    "observation_times_s": [
     0.1,
@@ -613,6 +1080,12 @@
      "kind": "cell",
      "volume_pL": 1.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
     }
    ],
    "patches": [
@@ -620,6 +1093,11 @@
      "id": "specimen_face",
      "inside": "specimen",
      "outside": "well"
+    },
+    {
+     "id": "host_wall",
+     "inside": "specimen",
+     "outside": "bath"
     }
    ],
    "ligands": [
@@ -689,6 +1167,36 @@
      "node": "specimen",
      "n_fmol": 0.002,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L3",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L4",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L5",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
     }
    ],
    "sets": [
@@ -799,11 +1307,65 @@
      "patch": "specimen_face",
      "ligand": "L5",
      "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L3",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L4",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L5",
+     "value": 0.0
     }
    ],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "multipliers": [
+    {
+     "of": "A_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "A_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "A_L3",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "B_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "C_L4",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "C_L5",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0,
@@ -811,6 +1373,16 @@
     "L4": 0,
     "L5": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "specimen",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.004,
    "observation_times_s": [
     0.1,
@@ -834,9 +1406,32 @@
      "kind": "node",
      "volume_pL": 1000000000.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "vat"
+    }
+   ],
    "ligands": [
     "L1",
     "L2"
@@ -853,6 +1448,30 @@
      "node": "vat",
      "n_fmol": 800000.0,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -886,14 +1505,54 @@
     }
    ],
    "wash": null,
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "vat"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.08,
    "observation_times_s": [
     0.4,
@@ -916,9 +1575,32 @@
      "kind": "node",
      "volume_pL": 1000000000.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "vat"
+    }
+   ],
    "ligands": [
     "L1",
     "L2"
@@ -935,6 +1617,30 @@
      "node": "vat",
      "n_fmol": 800000.0,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -968,14 +1674,54 @@
     }
    ],
    "wash": null,
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "vat"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.04,
    "observation_times_s": [
     0.4,
@@ -998,9 +1744,32 @@
      "kind": "node",
      "volume_pL": 1000000000.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "vat"
+    }
+   ],
    "ligands": [
     "L1",
     "L2"
@@ -1017,6 +1786,30 @@
      "node": "vat",
      "n_fmol": 800000.0,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -1050,14 +1843,54 @@
     }
    ],
    "wash": null,
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "vat"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.02,
    "observation_times_s": [
     0.4,
@@ -1080,9 +1913,32 @@
      "kind": "node",
      "volume_pL": 1.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
    "ligands": [
     "L1",
     "L2"
@@ -1099,6 +1955,30 @@
      "node": "well",
      "n_fmol": 0.001,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -1132,14 +2012,54 @@
     }
    ],
    "wash": null,
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.1,
    "observation_times_s": [],
    "horizon_s": 1.0
@@ -1159,17 +2079,28 @@
      "registered": true
     },
     {
-     "id": null,
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
      "kind": "cell",
-     "volume_pL": null,
+     "volume_pL": 0.01,
      "registered": false
     }
    ],
    "patches": [
     {
      "id": "specimen_face",
-     "inside": null,
+     "inside": "host_cell",
      "outside": "well"
+    },
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
     }
    ],
    "ligands": [
@@ -1191,14 +2122,26 @@
     },
     {
      "ligand": "L1",
-     "node": null,
-     "n_fmol": null,
+     "node": "bath",
+     "n_fmol": 1e-10,
      "declared": false
     },
     {
      "ligand": "L2",
-     "node": null,
-     "n_fmol": null,
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
      "declared": false
     }
    ],
@@ -1243,15 +2186,44 @@
      "patch": "specimen_face",
      "ligand": "L2",
      "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
     }
    ],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "multipliers": [
+    {
+     "of": "D_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "D_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.00625,
    "observation_times_s": [
     0.25,
@@ -1278,9 +2250,32 @@
      "kind": "node",
      "volume_pL": 1.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
    "ligands": [
     "L1",
     "L2"
@@ -1297,6 +2292,30 @@
      "node": "well",
      "n_fmol": 4.0,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -1338,14 +2357,54 @@
      "L2": 8.0
     }
    },
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0,
     "L2": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.0025,
    "observation_times_s": [
     0.5,
@@ -1373,9 +2432,32 @@
      "kind": "node",
      "volume_pL": 1.0,
      "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": 100.0,
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": 0.01,
+     "registered": false
     }
    ],
-   "patches": [],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
    "ligands": [
     "L1"
    ],
@@ -1385,6 +2467,18 @@
      "node": "well",
      "n_fmol": 8.0,
      "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": 1e-10,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": 1e-14,
+     "declared": false
     }
    ],
    "sets": [
@@ -1410,13 +2504,38 @@
     }
    ],
    "wash": null,
-   "permeabilities": [],
-   "multipliers": {
-    "each_value": 1.0
-   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    }
+   ],
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
    "charges": {
     "L1": 0
    },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
    "dt_s": 0.0025,
    "observation_times_s": [
     0.25,
@@ -1431,12 +2550,13 @@
  "notes": {
   "W1eq": "W1eq's start is not in this file. The judged run's driver reads it at run time from the tagged validation/fr45/references/outputs/reference_W1eq.json: world.populations[].initial_occupancy, matched by id, and world.free_amounts[].n, matched by ligand and node (RULINGS-2 §3, item 2). So populations[].initial_occupancy and free_amounts[].n_fmol are null here, and the judge compares the run's echo of them with that file, bit for bit. Everything else is W1's (SPEC:130-132).",
   "W2": "L2's amount is declared, 1.0e-6 fmol (SPEC:148), which equals its trace, 1e-12 mM in 1.0e6 pL (TABLE.md §4.1).",
-  "W3": "L4 and L5 at well, and L1 to L3 at specimen, are traces. No population binds them there, so they are inert (AMENDMENT-1:23-29).",
+  "W3": "L4 and L5 at well, and L1 to L3 at specimen, are traces. No population binds them there, so they are inert (AMENDMENT-1:23-29). The host is the bath and host_wall, walling specimen on it.",
+  "W1": "The node-only worlds (W1, W1eq, W1p, W2, W4, W5, W7, W7s) hold the bath form's bath, host_cell, host_wall and host_contact (RULINGS-2 §8.1).",
   "W3p": "W3's inputs with SPEC:182's observation times, 0.1, 0.2, 0.5, 1.0 and 2.0 s, and horizon 2.0 s.",
   "W4-dt0.08": "W4 has one entry per dt (SPEC:191). The three entries differ only in dt_s.",
   "W5": "SPEC gives W5 no observation time (SPEC:195-203), so observation_times_s is empty.",
-  "W6": "The cell inside specimen_face is unregistered (SPEC:210; TABLE.md §4.1, RULINGS-2 §3, item 7). Its nodes entry has id null and volume_pL null: the run gives the engine world's own name and volume, with kind cell and registered false. specimen_face's inside is null: it holds that cell's id. The cell's free_amounts entries have node null and n_fmol null: each has declared false and equals 1e-12 mM times the cell's echoed volume_pL.",
-  "W7s": "W7s's registered ligands is [\"L1\"] (SPEC:249). An engine that holds L2 there lists it at its trace, declared false, and the echo treats that ligands member and that amount as information (TABLE.md §4.1)."
+  "W6": "The cell inside specimen_face, which SPEC does not name (SPEC:210), is the host cell, named host_cell, with the host choice of volume; the bath and host_wall wall it on the bath (TABLE.md §4.1; RULINGS-2 §8.1).",
+  "W7s": "W7s's registered ligands is [\"L1\"] (SPEC:249). An engine that holds L2 there lists it at its trace, declared false, in every compartment. The echo treats that ligands member and those amounts as information; its permeabilities entries are each 0.0, and its charges member must be 0 (TABLE.md §4.1)."
  },
  "plant_inputs_changed": {
   "W1p-P2": {

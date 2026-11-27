@@ -9,7 +9,7 @@
    "plant": null,
    "dt_s": 0.0625,
    "steps": 17,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -17,6 +17,10 @@
      "amounts": {
       "n:X1@tank": 0.0042,
       "n:X2@tank": 0.0027,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01309515204862747,
       "B:grid_X1": 0.0010018149108239596,
       "B:grid_X2": 0.0002146746237479913
@@ -36,6 +40,10 @@
      "amounts": {
       "n:X1@tank": 0.0038503499999999998,
       "n:X2@tank": 0.002475225,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01252072704862747,
       "B:grid_X1": 0.0013514649108239596,
       "B:grid_X2": 0.0004394496237479913
@@ -55,6 +63,10 @@
      "amounts": {
       "n:X1@tank": 0.0036580425,
       "n:X2@tank": 0.00235159875,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01220479329862747,
       "B:grid_X1": 0.0015437724108239596,
       "B:grid_X2": 0.0005630758737479914
@@ -111,9 +123,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -130,6 +165,30 @@
       "node": "tank",
       "n_fmol": 0.0027,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -163,21 +222,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -185,6 +260,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625,
@@ -193,13 +278,48 @@
     "horizon_s": 1.0625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -233,7 +353,7 @@
    "plant": null,
    "dt_s": 0.0625,
    "steps": 11,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -241,6 +361,10 @@
      "amounts": {
       "n:X1@tank": 0.0039,
       "n:X2@tank": 0.0026,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.012680114442714687,
       "B:grid_X1": 0.0013309826672375461,
       "B:grid_X2": 0.0003005444732471879
@@ -260,6 +384,10 @@
      "amounts": {
       "n:X1@tank": 0.003575325,
       "n:X2@tank": 0.00238355,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.012138989442714687,
       "B:grid_X1": 0.001655657667237546,
       "B:grid_X2": 0.0005169944732471879
@@ -316,9 +444,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -335,6 +486,30 @@
       "node": "tank",
       "n_fmol": 0.0026,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -368,21 +543,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -390,6 +581,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.6875
@@ -397,13 +598,48 @@
     "horizon_s": 0.6875
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1eq",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -437,7 +673,7 @@
    "plant": null,
    "dt_s": 0.03125,
    "steps": 27,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -445,6 +681,10 @@
      "amounts": {
       "n:X1@basin": 36.5,
       "n:X2@basin": 2.5e-07,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 79.09013353590362,
       "B:mesh_X1": 58.37936043071971,
       "B:mesh_X2": 1.5289832493759923
@@ -473,6 +713,10 @@
      "amounts": {
       "n:X1@basin": 33.461375,
       "n:X2@basin": 2.2918750005432286e-07,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 76.05150851509111,
       "B:mesh_X1": 61.41798543071971,
       "B:mesh_X2": 1.5289832701884922
@@ -501,6 +745,10 @@
      "amounts": {
       "n:X1@basin": 29.286618534107337,
       "n:X2@basin": 69.89322908203481,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 83.70021215613639,
       "B:mesh_X1": 53.88126072273737,
       "B:mesh_X2": 1.4170043371255625
@@ -529,6 +777,10 @@
      "amounts": {
       "n:X1@basin": 27.932692444024436,
       "n:X2@basin": 69.86393768662192,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 82.31699467064058,
       "B:mesh_X1": 55.235186812820274,
       "B:mesh_X2": 1.4462957325384516
@@ -589,6 +841,10 @@
       "amounts": {
        "n:X1@basin": 33.461375,
        "n:X2@basin": 2.2918750005432286e-07,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -608,6 +864,10 @@
       "amounts": {
        "n:X1@basin": 21.749893826125,
        "n:X2@basin": 69.78125014897188,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -637,6 +897,10 @@
       "amounts": {
        "n:X1@basin": 33.461375,
        "n:X2@basin": 2.2918750005432286e-07,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -656,6 +920,10 @@
       "amounts": {
        "n:X1@basin": 21.749893826125,
        "n:X2@basin": 69.78125014897188,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -708,9 +976,32 @@
       "kind": "node",
       "volume_pL": 725000.0,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "basin"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -727,6 +1018,30 @@
       "node": "basin",
       "n_fmol": 2.5e-07,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -768,21 +1083,37 @@
       "X2": 0.000275
      }
     },
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "mesh_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "mesh_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "mesh",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -790,6 +1121,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "basin"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.03125,
     "observation_times_s": [
      0.40625,
@@ -799,13 +1140,48 @@
     "horizon_s": 0.84375
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W2",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.03125,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "basin": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -839,7 +1215,7 @@
    "plant": null,
    "dt_s": 0.03125,
    "steps": 14,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -847,6 +1223,10 @@
      "amounts": {
       "n:X1@basin": 36.5,
       "n:X2@basin": 2.5e-07,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 79.09013353590362,
       "B:mesh_X1": 58.37936043071971,
       "B:mesh_X2": 1.5289832493759923
@@ -875,6 +1255,10 @@
      "amounts": {
       "n:X1@basin": 33.461375,
       "n:X2@basin": 2.2918750005432286e-07,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 76.05150851509111,
       "B:mesh_X1": 61.41798543071971,
       "B:mesh_X2": 1.5289832701884922
@@ -903,6 +1287,10 @@
      "amounts": {
       "n:X1@basin": 29.286618534107337,
       "n:X2@basin": 69.89322908203481,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 83.70021215613639,
       "B:mesh_X1": 53.88126072273737,
       "B:mesh_X2": 1.4170043371255625
@@ -963,6 +1351,10 @@
       "amounts": {
        "n:X1@basin": 33.461375,
        "n:X2@basin": 2.2918750005432286e-07,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -982,6 +1374,10 @@
       "amounts": {
        "n:X1@basin": 21.749893826125,
        "n:X2@basin": 69.78125014897188,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -1011,6 +1407,10 @@
       "amounts": {
        "n:X1@basin": 33.461375,
        "n:X2@basin": 2.2918750005432286e-07,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -1030,6 +1430,10 @@
       "amounts": {
        "n:X1@basin": 21.749893826125,
        "n:X2@basin": 69.78125014897188,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -1090,9 +1494,32 @@
       "kind": "node",
       "volume_pL": 725000.0,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "basin"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -1109,6 +1536,30 @@
       "node": "basin",
       "n_fmol": 2.5e-07,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -1150,21 +1601,37 @@
       "X2": 0.000275
      }
     },
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "mesh_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "mesh_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "mesh",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -1172,6 +1639,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "basin"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.03125,
     "observation_times_s": [
      0.40625,
@@ -1181,13 +1658,48 @@
     "horizon_s": 0.84375
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W2",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.03125,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "basin": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -1221,7 +1733,7 @@
    "plant": null,
    "dt_s": 0.0078125,
    "steps": 17,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -1237,6 +1749,11 @@
       "n:X3@vesicle": 9.1e-13,
       "n:X4@vesicle": 0.0011,
       "n:X5@vesicle": 0.0029,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X3@bath": 1.37e-10,
+      "n:X4@bath": 1.37e-10,
+      "n:X5@bath": 1.37e-10,
       "R:plate": 0.02698205734192928,
       "R:disk": 0.005765315089254628,
       "R:lining": 0.01407832349311447,
@@ -1275,6 +1792,11 @@
       "n:X3@vesicle": 9.1e-13,
       "n:X4@vesicle": 0.001069475,
       "n:X5@vesicle": 0.002819525,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X3@bath": 1.37e-10,
+      "n:X4@bath": 1.37e-10,
+      "n:X5@bath": 1.37e-10,
       "R:plate": 0.02678780734192928,
       "R:disk": 0.005698715089254628,
       "R:lining": 0.01396732349311447,
@@ -1313,6 +1835,11 @@
       "n:X3@vesicle": 9.1e-13,
       "n:X4@vesicle": 0.00105268625,
       "n:X5@vesicle": 0.0027752637499999996,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X3@bath": 1.37e-10,
+      "n:X4@bath": 1.37e-10,
+      "n:X5@bath": 1.37e-10,
       "R:plate": 0.026680969841929282,
       "R:disk": 0.005662085089254628,
       "R:lining": 0.01390627349311447,
@@ -1390,6 +1917,12 @@
       "kind": "cell",
       "volume_pL": 0.65,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
      }
     ],
     "patches": [
@@ -1397,6 +1930,11 @@
       "id": "vesicle_wall",
       "inside": "vesicle",
       "outside": "lake"
+     },
+     {
+      "id": "host_wall",
+      "inside": "vesicle",
+      "outside": "bath"
      }
     ],
     "ligands": [
@@ -1466,6 +2004,36 @@
       "node": "vesicle",
       "n_fmol": 0.0029,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X3",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X4",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X5",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
      }
     ],
     "sets": [
@@ -1576,52 +2144,62 @@
       "patch": "vesicle_wall",
       "ligand": "X5",
       "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X3",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X4",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X5",
+      "value": 0.0
      }
     ],
     "multipliers": [
      {
       "of": "plate_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "plate_X2",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "plate_X3",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "disk_X2",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "lining_X4",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "lining_X5",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "plate",
-      "name": "INVENTED capacity multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "disk",
-      "name": "INVENTED capacity multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "lining",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -1632,6 +2210,16 @@
      "X4": 0,
      "X5": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "vesicle",
+       "lake"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0078125,
     "observation_times_s": [
      0.0703125,
@@ -1640,13 +2228,58 @@
     "horizon_s": 0.1328125
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W3",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0078125,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X3",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X4",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X5",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896
+     },
+     "ion_amounts_fmol": {
+      "lake": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "vesicle": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "bath": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -1680,7 +2313,7 @@
    "plant": null,
    "dt_s": 0.0078125,
    "steps": 0,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [],
    "capacities": {},
    "free_sites": {},
@@ -1731,7 +2364,7 @@
    "plant": null,
    "dt_s": 0.125,
    "steps": 13,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -1739,6 +2372,10 @@
      "amounts": {
       "n:X1@cask": 650000.0,
       "n:X2@cask": 325000.0,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:frame": 0.018494463192254985,
       "B:frame_X1": 0.00024889029140715815,
       "B:frame_X2": 0.00040205354765771706
@@ -1758,6 +2395,10 @@
      "amounts": {
       "n:X1@cask": 649999.9984603359,
       "n:X2@cask": 324999.99846033595,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:frame": 0.01541513507074453,
       "B:frame_X1": 0.0017885543521623855,
       "B:frame_X2": 0.0019417176084129443
@@ -1777,6 +2418,10 @@
      "amounts": {
       "n:X1@cask": 649999.9976135207,
       "n:X2@cask": 324999.9976135207,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:frame": 0.013721504603913779,
       "B:frame_X1": 0.002635369585577761,
       "B:frame_X2": 0.00278853284182832
@@ -1833,9 +2478,32 @@
       "kind": "node",
       "volume_pL": 450000000.0,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "cask"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -1852,6 +2520,30 @@
       "node": "cask",
       "n_fmol": 325000.0,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -1885,21 +2577,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "frame_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "frame_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "frame",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -1907,6 +2615,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "cask"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.125,
     "observation_times_s": [
      0.875,
@@ -1915,13 +2633,48 @@
     "horizon_s": 1.625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W4",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.125,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "cask": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -1955,7 +2708,7 @@
    "plant": null,
    "dt_s": 0.0625,
    "steps": 26,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -1963,6 +2716,10 @@
      "amounts": {
       "n:X1@cask": 650000.0,
       "n:X2@cask": 325000.0,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:frame": 0.018494463192254985,
       "B:frame_X1": 0.00024889029140715815,
       "B:frame_X2": 0.00040205354765771706
@@ -1982,6 +2739,10 @@
      "amounts": {
       "n:X1@cask": 649999.9984603359,
       "n:X2@cask": 324999.99846033595,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:frame": 0.01541513507074453,
       "B:frame_X1": 0.0017885543521623855,
       "B:frame_X2": 0.0019417176084129443
@@ -2001,6 +2762,10 @@
      "amounts": {
       "n:X1@cask": 649999.9976135207,
       "n:X2@cask": 324999.9976135207,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:frame": 0.013721504603913779,
       "B:frame_X1": 0.002635369585577761,
       "B:frame_X2": 0.00278853284182832
@@ -2057,9 +2822,32 @@
       "kind": "node",
       "volume_pL": 450000000.0,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "cask"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -2076,6 +2864,30 @@
       "node": "cask",
       "n_fmol": 325000.0,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -2109,21 +2921,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "frame_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "frame_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "frame",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -2131,6 +2959,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "cask"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.875,
@@ -2139,13 +2977,48 @@
     "horizon_s": 1.625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W4",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "cask": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -2179,7 +3052,7 @@
    "plant": null,
    "dt_s": 0.03125,
    "steps": 52,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -2187,6 +3060,10 @@
      "amounts": {
       "n:X1@cask": 650000.0,
       "n:X2@cask": 325000.0,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:frame": 0.018494463192254985,
       "B:frame_X1": 0.00024889029140715815,
       "B:frame_X2": 0.00040205354765771706
@@ -2206,6 +3083,10 @@
      "amounts": {
       "n:X1@cask": 649999.9984603359,
       "n:X2@cask": 324999.99846033595,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:frame": 0.01541513507074453,
       "B:frame_X1": 0.0017885543521623855,
       "B:frame_X2": 0.0019417176084129443
@@ -2225,6 +3106,10 @@
      "amounts": {
       "n:X1@cask": 649999.9976135207,
       "n:X2@cask": 324999.9976135207,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:frame": 0.013721504603913779,
       "B:frame_X1": 0.002635369585577761,
       "B:frame_X2": 0.00278853284182832
@@ -2281,9 +3166,32 @@
       "kind": "node",
       "volume_pL": 450000000.0,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "cask"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -2300,6 +3208,30 @@
       "node": "cask",
       "n_fmol": 325000.0,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -2333,21 +3265,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "frame_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "frame_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "frame",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -2355,6 +3303,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "cask"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.03125,
     "observation_times_s": [
      0.875,
@@ -2363,13 +3321,48 @@
     "horizon_s": 1.625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W4",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.03125,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "cask": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -2403,7 +3396,7 @@
    "plant": null,
    "dt_s": 0.0875,
    "steps": 0,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -2411,6 +3404,10 @@
      "amounts": {
       "n:X1@cup": 0.00153,
       "n:X2@cup": 0.0013,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:seat": 1.1848994602533695e-05,
       "B:seat_X1": 5.1480930373744454e-08,
       "B:seat_X2": 7.183385633545738e-08
@@ -2533,9 +3530,32 @@
       "kind": "node",
       "volume_pL": 1.25,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "cup"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -2552,6 +3572,30 @@
       "node": "cup",
       "n_fmol": 0.0013,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -2585,21 +3629,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "seat_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "seat_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "seat",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -2607,18 +3667,63 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "cup"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0875,
     "observation_times_s": [],
     "horizon_s": 0.7875
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W5",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0875,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "cup": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -2652,7 +3757,7 @@
    "plant": null,
    "dt_s": 0.009765625,
    "steps": 21,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -2660,8 +3765,10 @@
      "amounts": {
       "n:X1@pond": 0.0037,
       "n:X2@pond": 0.0017,
-      "n:X1@husk": 2.9e-12,
-      "n:X2@husk": 2.9e-12,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
       "R:skin": 0.00842980944667454,
       "B:skin_X1": 0.0017181777216151927,
       "B:skin_X2": 0.0005906235918052225
@@ -2681,8 +3788,10 @@
      "amounts": {
       "n:X1@pond": 0.003391975,
       "n:X2@pond": 0.001558475,
-      "n:X1@husk": 2.9e-12,
-      "n:X2@husk": 2.9e-12,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
       "R:skin": 0.00798025944667454,
       "B:skin_X1": 0.0020262027216151925,
       "B:skin_X2": 0.0007321485918052225
@@ -2702,8 +3811,10 @@
      "amounts": {
       "n:X1@pond": 0.00322256125,
       "n:X2@pond": 0.0014806362499999999,
-      "n:X1@husk": 2.9e-12,
-      "n:X2@husk": 2.9e-12,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
       "R:skin": 0.00773300694667454,
       "B:skin_X1": 0.0021956164716151927,
       "B:skin_X2": 0.0008099873418052225
@@ -2762,17 +3873,28 @@
       "registered": true
      },
      {
-      "id": "husk",
+      "id": "host_cell",
       "kind": "cell",
-      "volume_pL": 0.85,
+      "volume_pL": 0.007,
+      "registered": false
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
       "registered": false
      }
     ],
     "patches": [
      {
-      "id": "husk_wall",
-      "inside": "husk",
+      "id": "shell_face",
+      "inside": "host_cell",
       "outside": "pond"
+     },
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
      }
     ],
     "ligands": [
@@ -2794,14 +3916,26 @@
      },
      {
       "ligand": "X1",
-      "node": "husk",
-      "n_fmol": 2.9e-12,
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
       "declared": false
      },
      {
       "ligand": "X2",
-      "node": "husk",
-      "n_fmol": 2.9e-12,
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
       "declared": false
      }
     ],
@@ -2809,7 +3943,7 @@
      {
       "id": "skin",
       "shared": true,
-      "owner": "husk_wall",
+      "owner": "shell_face",
       "face": "outside",
       "faces": "pond",
       "copies": 1515151.0,
@@ -2838,12 +3972,22 @@
     "wash": null,
     "permeabilities": [
      {
-      "patch": "husk_wall",
+      "patch": "shell_face",
       "ligand": "X1",
       "value": 0.0
      },
      {
-      "patch": "husk_wall",
+      "patch": "shell_face",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
       "ligand": "X2",
       "value": 0.0
      }
@@ -2851,17 +3995,12 @@
     "multipliers": [
      {
       "of": "skin_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "skin_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "skin",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -2869,6 +4008,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "pond"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.009765625,
     "observation_times_s": [
      0.107421875,
@@ -2877,13 +4026,46 @@
     "horizon_s": 0.205078125
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W6",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.009765625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896
+     },
+     "ion_amounts_fmol": {
+      "pond": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "host_cell": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "bath": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -2911,270 +4093,13 @@
    "record": "records/INVENTED-W6.json",
    "record_sha256": "53ebdea763490af3abce2a9dc65517be4906e7a09cc69058b26ba409c4d23cb5"
   },
-  "INVENTED-W6~check": {
-   "status": "refused",
-   "world": "INVENTED-W6",
-   "plant": null,
-   "dt_s": 0.009765625,
-   "steps": 14,
-   "backend": "numpy",
-   "rows": [
-    {
-     "step": 0,
-     "time_s": 0.0,
-     "amounts": {
-      "n:X1@pond": 0.0037,
-      "n:X2@pond": 0.0017,
-      "n:X1@husk": 2.9e-12,
-      "n:X2@husk": 2.9e-12,
-      "R:skin": 0.00842980944667454,
-      "B:skin_X1": 0.0017181777216151927,
-      "B:skin_X2": 0.0005906235918052225
-     },
-     "records": {},
-     "site_heat_pJ": {
-      "pond": 0.0
-     },
-     "site_occupied_fraction": {
-      "skin_X1": 0.16,
-      "skin_X2": 0.055
-     }
-    },
-    {
-     "step": 11,
-     "time_s": 0.107421875,
-     "amounts": {
-      "n:X1@pond": 0.003391975,
-      "n:X2@pond": 0.001558475,
-      "n:X1@husk": 2.9e-12,
-      "n:X2@husk": 2.9e-12,
-      "R:skin": 0.00798025944667454,
-      "B:skin_X1": 0.0020262027216151925,
-      "B:skin_X2": 0.0007321485918052225
-     },
-     "records": {},
-     "site_heat_pJ": {
-      "pond": 7.124e-05
-     },
-     "site_occupied_fraction": {
-      "skin_X1": 0.1886838779132056,
-      "skin_X2": 0.06817907904120259
-     }
-    }
-   ],
-   "capacities": {
-    "skin": 0.010738610760094955
-   },
-   "free_sites": {
-    "skin": "state"
-   },
-   "events": [],
-   "event_map": [],
-   "step_report": null,
-   "refusal": {
-    "kind": "check",
-    "raised": "INVENTED.engine.host.HostCheckError",
-    "book": "host check: INVENTED ion amounts",
-    "name": "INVENTED ion amounts",
-    "message": "INVENTED: an ion amount left its host check's bound",
-    "step": 15,
-    "time_s": 0.13671875
-   },
-   "checks": {
-    "INVENTED moiety ledger": {
-     "failures": []
-    },
-    "INVENTED energy ledger": {
-     "failures": []
-    },
-    "INVENTED dissipation check": {
-     "failures": []
-    },
-    "INVENTED ion amounts": {
-     "failures": [
-      {
-       "step": 14,
-       "message": "INVENTED: an ion amount left its host check's bound"
-      }
-     ]
-    }
-   },
-   "operators": [
-    "cells.model.resolved_pump_composite@1",
-    "cells.model.resolved_pump_tissue@3",
-    "cells.operator.site_occupancy@1"
-   ],
-   "inputs": {
-    "world": "INVENTED-W6",
-    "constants": {
-     "sites_per_fmol": 543210987.0,
-     "temperature_K": 301.5,
-     "RT_pJ_per_fmol": 2.4681357
-    },
-    "nodes": [
-     {
-      "id": "pond",
-      "kind": "node",
-      "volume_pL": 2.75,
-      "registered": true
-     },
-     {
-      "id": "husk",
-      "kind": "cell",
-      "volume_pL": 0.85,
-      "registered": false
-     }
-    ],
-    "patches": [
-     {
-      "id": "husk_wall",
-      "inside": "husk",
-      "outside": "pond"
-     }
-    ],
-    "ligands": [
-     "X1",
-     "X2"
-    ],
-    "free_amounts": [
-     {
-      "ligand": "X1",
-      "node": "pond",
-      "n_fmol": 0.0037,
-      "declared": true
-     },
-     {
-      "ligand": "X2",
-      "node": "pond",
-      "n_fmol": 0.0017,
-      "declared": true
-     },
-     {
-      "ligand": "X1",
-      "node": "husk",
-      "n_fmol": 2.9e-12,
-      "declared": false
-     },
-     {
-      "ligand": "X2",
-      "node": "husk",
-      "n_fmol": 2.9e-12,
-      "declared": false
-     }
-    ],
-    "sets": [
-     {
-      "id": "skin",
-      "shared": true,
-      "owner": "husk_wall",
-      "face": "outside",
-      "faces": "pond",
-      "copies": 1515151.0,
-      "sites_per_copy": 7,
-      "accessible_fraction": 0.55
-     }
-    ],
-    "populations": [
-     {
-      "id": "skin_X1",
-      "set": "skin",
-      "ligand": "X1",
-      "k_on": 1850.0,
-      "k_off": 0.95,
-      "initial_occupancy": 0.16
-     },
-     {
-      "id": "skin_X2",
-      "set": "skin",
-      "ligand": "X2",
-      "k_on": 1250.0,
-      "k_off": 1.15,
-      "initial_occupancy": 0.055
-     }
-    ],
-    "wash": null,
-    "permeabilities": [
-     {
-      "patch": "husk_wall",
-      "ligand": "X1",
-      "value": 0.0
-     },
-     {
-      "patch": "husk_wall",
-      "ligand": "X2",
-      "value": 0.0
-     }
-    ],
-    "multipliers": [
-     {
-      "of": "skin_X1",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "skin_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "skin",
-      "name": "INVENTED capacity multiplier",
-      "value": 1.0
-     }
-    ],
-    "charges": {
-     "X1": 0,
-     "X2": 0
-    },
-    "dt_s": 0.009765625,
-    "observation_times_s": [
-     0.107421875,
-     0.205078125
-    ],
-    "horizon_s": 0.205078125
-   },
-   "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
-    "world": "INVENTED-W6",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
-    }
-   },
-   "source": {
-    "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
-    "checkout_dirty": false,
-    "snapshot": "/mnt/workspaces/Cells/INVENTED-engine-snapshot",
-    "snapshot_patch_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-    "python": "INVENTED-python",
-    "numpy": "INVENTED-numpy",
-    "scipy": "INVENTED-scipy",
-    "jax": "INVENTED-jax",
-    "jaxlib": "INVENTED-jaxlib",
-    "jax_enable_x64": true,
-    "jax_platforms": "cpu",
-    "blas_threads": 7,
-    "machine": "INVENTED-machine",
-    "external_modules": [
-     {
-      "name": "INVENTED_external_module",
-      "identity": "INVENTED identity, computed at run time",
-      "frozen": "/mnt/workspaces/Cells/INVENTED-engine-snapshot-modules/INVENTED_external_module"
-     }
-    ]
-   },
-   "record": "records/INVENTED-W6~check.json",
-   "record_sha256": "bafea569d4f0251ae807bb5fc82056f2291fe544b36ac450663b2be77aa5d52a"
-  },
   "INVENTED-W6~domain": {
    "status": "refused",
    "world": "INVENTED-W6",
    "plant": null,
    "dt_s": 0.009765625,
    "steps": 0,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [],
    "capacities": {},
    "free_sites": {},
@@ -3225,7 +4150,7 @@
    "plant": null,
    "dt_s": 0.015625,
    "steps": 37,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -3233,6 +4158,10 @@
      "amounts": {
       "n:X1@bay": 5.25,
       "n:X2@bay": 3.5,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 8.632557352894633,
       "B:web_X1": 4.316278676447316,
       "B:web_X2": 1.9348835446143142
@@ -3261,6 +4190,10 @@
      "amounts": {
       "n:X1@bay": 4.8129375,
       "n:X2@bay": 3.208625,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 7.904119852894633,
       "B:web_X1": 4.753341176447316,
       "B:web_X2": 2.226258544614314
@@ -3289,6 +4222,10 @@
      "amounts": {
       "n:X1@bay": 4.572553125,
       "n:X2@bay": 3.04836875,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 7.503479227894632,
       "B:web_X1": 4.993725551447317,
       "B:web_X2": 2.3865147946143144
@@ -3317,6 +4254,10 @@
      "amounts": {
       "n:X1@bay": 2.569243081148565,
       "n:X2@bay": 9.051572400196225,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 9.063222052988626,
       "B:web_X1": 4.024876064049548,
       "B:web_X2": 1.7956214569180893
@@ -3345,6 +4286,10 @@
      "amounts": {
       "n:X1@bay": 2.469810643058261,
       "n:X2@bay": 8.997954133226239,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 8.910171347928337,
       "B:web_X1": 4.124308502139852,
       "B:web_X2": 1.8492397238880753
@@ -3405,6 +4350,10 @@
       "amounts": {
        "n:X1@bay": 5.25,
        "n:X2@bay": 3.5,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 8.632557352894633,
        "B:web_X1": 4.316278676447316,
        "B:web_X2": 1.9348835446143142
@@ -3424,6 +4373,10 @@
       "amounts": {
        "n:X1@bay": 1.8375000000007962,
        "n:X2@bay": 8.61875,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 8.632557352894633,
        "B:web_X1": 4.316278676447316,
        "B:web_X2": 1.9348835446143142
@@ -3453,6 +4406,10 @@
       "amounts": {
        "n:X1@bay": 5.25,
        "n:X2@bay": 3.5,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 8.632557352894633,
        "B:web_X1": 4.316278676447316,
        "B:web_X2": 1.9348835446143142
@@ -3472,6 +4429,10 @@
       "amounts": {
        "n:X1@bay": 1.8375000000007962,
        "n:X2@bay": 8.61875,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 8.632557352894633,
        "B:web_X1": 4.316278676447316,
        "B:web_X2": 1.9348835446143142
@@ -3501,6 +4462,10 @@
       "amounts": {
        "n:X1@bay": 4.572553125,
        "n:X2@bay": 3.04836875,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 7.503479227894632,
        "B:web_X1": 4.993725551447317,
        "B:web_X2": 2.3865147946143144
@@ -3520,6 +4485,10 @@
       "amounts": {
        "n:X1@bay": 1.600393593750796,
        "n:X2@bay": 8.460679062499999,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 7.503479227894632,
        "B:web_X1": 4.993725551447317,
        "B:web_X2": 2.3865147946143144
@@ -3549,6 +4518,10 @@
       "amounts": {
        "n:X1@bay": 4.572553125,
        "n:X2@bay": 3.04836875,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 7.503479227894632,
        "B:web_X1": 4.993725551447317,
        "B:web_X2": 2.3865147946143144
@@ -3568,6 +4541,10 @@
       "amounts": {
        "n:X1@bay": 1.600393593750796,
        "n:X2@bay": 8.460679062499999,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 7.503479227894632,
        "B:web_X1": 4.993725551447317,
        "B:web_X2": 2.3865147946143144
@@ -3620,9 +4597,32 @@
       "kind": "node",
       "volume_pL": 1.75,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "bay"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -3639,6 +4639,30 @@
       "node": "bay",
       "n_fmol": 3.5,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -3680,21 +4704,37 @@
       "X2": 6.5
      }
     },
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "web_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "web_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "web",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -3702,6 +4742,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "bay"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.015625,
     "observation_times_s": [
      0.171875,
@@ -3712,13 +4762,48 @@
     "horizon_s": 0.578125
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W7",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.015625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "bay": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -3752,7 +4837,7 @@
    "plant": null,
    "dt_s": 0.015625,
    "steps": 19,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -3760,6 +4845,10 @@
      "amounts": {
       "n:X1@bay": 5.25,
       "n:X2@bay": 1.9e-12,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 10.567440897508947,
       "B:web_X1": 4.316278676447316
      },
@@ -3777,6 +4866,10 @@
      "amounts": {
       "n:X1@bay": 4.375875000000001,
       "n:X2@bay": 1.9e-12,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 9.693315897508947,
       "B:web_X1": 5.190403676447316
      },
@@ -3794,6 +4887,10 @@
      "amounts": {
       "n:X1@bay": 3.8951062499999995,
       "n:X2@bay": 1.9e-12,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 9.212547147508946,
       "B:web_X1": 5.671172426447317
      },
@@ -3848,9 +4945,32 @@
       "kind": "node",
       "volume_pL": 1.75,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "bay"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -3866,6 +4986,30 @@
       "ligand": "X2",
       "node": "bay",
       "n_fmol": 1.9e-12,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
       "declared": false
      }
     ],
@@ -3892,16 +5036,32 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "web_X1",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "web",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -3909,6 +5069,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "bay"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.015625,
     "observation_times_s": [
      0.171875,
@@ -3917,13 +5087,48 @@
     "horizon_s": 0.296875
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W7s",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.015625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "bay": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -3957,7 +5162,7 @@
    "plant": null,
    "dt_s": 0.0625,
    "steps": 9,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -3965,6 +5170,10 @@
      "amounts": {
       "n:X1@tank": 0.0042,
       "n:X2@tank": 0.0027,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01309515204862747,
       "B:grid_X1": 0.0010018149108239596,
       "B:grid_X2": 0.0002146746237479913
@@ -3984,6 +5193,10 @@
      "amounts": {
       "n:X1@tank": 0.0038503499999999998,
       "n:X2@tank": 0.002475225,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01252072704862747,
       "B:grid_X1": 0.0013514649108239596,
       "B:grid_X2": 0.0004394496237479913
@@ -4040,9 +5253,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -4059,6 +5295,30 @@
       "node": "tank",
       "n_fmol": 0.0027,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -4092,21 +5352,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -4114,6 +5390,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -4121,13 +5407,48 @@
     "horizon_s": 0.5625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -4166,7 +5487,7 @@
    },
    "dt_s": 0.0625,
    "steps": 9,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -4174,6 +5495,10 @@
      "amounts": {
       "n:X1@tank": 0.0042,
       "n:X2@tank": 0.0027,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01309515204862747,
       "B:grid_X1": 0.0010018149108239596,
       "B:grid_X2": 0.0002146746237479913
@@ -4193,6 +5518,10 @@
      "amounts": {
       "n:X1@tank": 0.003755747456242323,
       "n:X2@tank": 0.0024444635263376406,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.012395363031207434,
       "B:grid_X1": 0.0014460674545816368,
       "B:grid_X2": 0.00047021109741035073
@@ -4249,9 +5578,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -4268,6 +5620,30 @@
       "node": "tank",
       "n_fmol": 0.0027,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -4301,21 +5677,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -4323,6 +5715,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -4330,13 +5732,48 @@
     "horizon_s": 0.5625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -4378,7 +5815,7 @@
    },
    "dt_s": 0.0625,
    "steps": 9,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -4386,6 +5823,10 @@
      "amounts": {
       "n:X1@tank": 0.0042,
       "n:X2@tank": 0.0027,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01309515204862747,
       "B:grid_X1": 0.0010018149108239596,
       "B:grid_X2": 0.0002146746237479913
@@ -4405,6 +5846,10 @@
      "amounts": {
       "n:X1@tank": 0.0038503499999999998,
       "n:X2@tank": 0.002475225,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01252072704862747,
       "B:grid_X1": 0.0013514649108239596,
       "B:grid_X2": 0.0004394496237479913
@@ -4461,9 +5906,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -4480,6 +5948,30 @@
       "node": "tank",
       "n_fmol": 0.0027,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -4513,21 +6005,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -4535,6 +6043,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -4542,13 +6060,48 @@
     "horizon_s": 0.5625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -4587,7 +6140,7 @@
    },
    "dt_s": 0.0625,
    "steps": 9,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -4595,6 +6148,10 @@
      "amounts": {
       "n:X1@tank": 0.0042,
       "n:X2@tank": 0.0027,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01309515204862747,
       "B:grid_X1": 0.0010018149108239596,
       "B:grid_X2": 0.0002146746237479913
@@ -4614,6 +6171,10 @@
      "amounts": {
       "n:X1@tank": 0.0038503499999999998,
       "n:X2@tank": 0.002475225,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01252072704862747,
       "B:grid_X1": 0.0013514649108239596,
       "B:grid_X2": 0.0004394496237479913
@@ -4670,9 +6231,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -4689,6 +6273,30 @@
       "node": "tank",
       "n_fmol": 0.0027,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -4722,21 +6330,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -4744,6 +6368,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -4751,13 +6385,48 @@
     "horizon_s": 0.5625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -4790,13 +6459,13 @@
    "world": "INVENTED-W1p",
    "plant": {
     "id": "P3",
-    "patch": "validation/fr45/plants/INVENTED_p3.patch",
-    "change": "INVENTED: each population's free sites taken as S less its own bound",
+    "patch": "validation/fr45/plants/INVENTED_p3_dissipation.patch",
+    "change": "INVENTED: P3's mechanism, with a step's site heat booked negative during step 4",
     "inputs_changed": []
    },
    "dt_s": 0.0625,
    "steps": 3,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -4804,6 +6473,10 @@
      "amounts": {
       "n:X1@tank": 0.0042,
       "n:X2@tank": 0.0027,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01309515204862747,
       "B:grid_X1": 0.0010018149108239596,
       "B:grid_X2": 0.0002146746237479913
@@ -4873,9 +6546,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -4892,6 +6588,30 @@
       "node": "tank",
       "n_fmol": 0.0027,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -4925,21 +6645,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -4947,6 +6683,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -4954,13 +6700,48 @@
     "horizon_s": 0.5625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -4999,7 +6780,7 @@
    },
    "dt_s": 0.0625,
    "steps": 1,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -5007,6 +6788,10 @@
      "amounts": {
       "n:X1@tank": 0.0042,
       "n:X2@tank": 0.0027,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01309515204862747,
       "B:grid_X1": 0.0010018149108239596,
       "B:grid_X2": 0.0002146746237479913
@@ -5076,9 +6861,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -5095,6 +6903,30 @@
       "node": "tank",
       "n_fmol": 0.0027,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -5128,21 +6960,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -5150,6 +6998,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -5157,13 +7015,48 @@
     "horizon_s": 0.5625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -5202,7 +7095,7 @@
    },
    "dt_s": 0.0625,
    "steps": 0,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -5210,6 +7103,10 @@
      "amounts": {
       "n:X1@tank": 0.0042,
       "n:X2@tank": 0.0027,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01309515204862747,
       "B:grid_X1": 0.0010018149108239596,
       "B:grid_X2": 0.0002146746237479913
@@ -5279,9 +7176,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -5298,6 +7218,30 @@
       "node": "tank",
       "n_fmol": 0.0027,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -5331,21 +7275,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -5353,6 +7313,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -5360,13 +7330,48 @@
     "horizon_s": 0.5625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -5405,7 +7410,7 @@
    },
    "dt_s": 0.0625,
    "steps": 9,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -5413,6 +7418,10 @@
      "amounts": {
       "n:X1@tank": 0.0042,
       "n:X2@tank": 0.0027,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01309515204862747,
       "B:grid_X1": 0.0010018149108239596,
       "B:grid_X2": 0.0002146746237479913
@@ -5432,6 +7441,10 @@
      "amounts": {
       "n:X1@tank": 0.0038503499999999998,
       "n:X2@tank": 0.002475225,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:grid": 0.01252072704862747,
       "B:grid_X1": 0.0013514649108239596,
       "B:grid_X2": 0.0004394496237479913
@@ -5488,9 +7501,32 @@
       "kind": "node",
       "volume_pL": 3.5,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "tank"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -5507,6 +7543,30 @@
       "node": "tank",
       "n_fmol": 0.0027,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -5540,21 +7600,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "grid_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "grid_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "grid",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -5562,6 +7638,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "tank"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0625,
     "observation_times_s": [
      0.5625
@@ -5569,13 +7655,48 @@
     "horizon_s": 0.5625
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W1p",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "tank": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -5614,7 +7735,7 @@
    },
    "dt_s": 0.0875,
    "steps": 9,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -5622,6 +7743,10 @@
      "amounts": {
       "n:X1@cup": 0.00153,
       "n:X2@cup": 0.0013,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:seat": 1.1848994602533695e-05,
       "B:seat_X1": 5.1480930373744454e-08,
       "B:seat_X2": 7.183385633545738e-08
@@ -5641,6 +7766,10 @@
      "amounts": {
       "n:X1@cup": 0.001529013571199339,
       "n:X2@cup": 0.001299013571199339,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:seat": 9.876137001211835e-06,
       "B:seat_X1": 1.0379097310346744e-06,
       "B:seat_X2": 1.0582626569963873e-06
@@ -5761,9 +7890,32 @@
       "kind": "node",
       "volume_pL": 1.25,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "cup"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -5780,6 +7932,30 @@
       "node": "cup",
       "n_fmol": 0.0013,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -5813,21 +7989,37 @@
      }
     ],
     "wash": null,
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "seat_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "seat_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "seat",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -5835,18 +8027,63 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "cup"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0875,
     "observation_times_s": [],
     "horizon_s": 0.7875
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W5",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0875,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "cup": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -5885,7 +8122,7 @@
    },
    "dt_s": 0.03125,
    "steps": 27,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -5893,6 +8130,10 @@
      "amounts": {
       "n:X1@basin": 36.5,
       "n:X2@basin": 2.5e-07,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 79.09013353590362,
       "B:mesh_X1": 58.37936043071971,
       "B:mesh_X2": 1.5289832493759923
@@ -5921,6 +8162,10 @@
      "amounts": {
       "n:X1@basin": 33.461375,
       "n:X2@basin": 2.2918750005432286e-07,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 76.05150851509111,
       "B:mesh_X1": 61.41798543071971,
       "B:mesh_X2": 1.5289832701884922
@@ -5949,6 +8194,10 @@
      "amounts": {
       "n:X1@basin": 29.286618534107337,
       "n:X2@basin": 69.89322908203481,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 83.70021215613639,
       "B:mesh_X1": 53.88126072273737,
       "B:mesh_X2": 1.4170043371255625
@@ -5977,6 +8226,10 @@
      "amounts": {
       "n:X1@basin": 27.932692444024436,
       "n:X2@basin": 69.86393768662192,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:mesh": 82.31699467064058,
       "B:mesh_X1": 55.235186812820274,
       "B:mesh_X2": 1.4462957325384516
@@ -6037,6 +8290,10 @@
       "amounts": {
        "n:X1@basin": 33.461375,
        "n:X2@basin": 2.2918750005432286e-07,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -6056,6 +8313,10 @@
       "amounts": {
        "n:X1@basin": 21.749893826125,
        "n:X2@basin": 69.78125014897188,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 39.92169052996781,
        "B:mesh_X2": 0.99383912562252
@@ -6085,6 +8346,10 @@
       "amounts": {
        "n:X1@basin": 33.461375,
        "n:X2@basin": 2.2918750005432286e-07,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 61.41798543071971,
        "B:mesh_X2": 1.5289832701884922
@@ -6104,6 +8369,10 @@
       "amounts": {
        "n:X1@basin": 21.749893826125,
        "n:X2@basin": 69.78125014897188,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:mesh": 76.05150851509111,
        "B:mesh_X1": 39.92169052996781,
        "B:mesh_X2": 0.99383912562252
@@ -6156,9 +8425,32 @@
       "kind": "node",
       "volume_pL": 725000.0,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "basin"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -6175,6 +8467,30 @@
       "node": "basin",
       "n_fmol": 2.5e-07,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -6216,21 +8532,37 @@
       "X2": 0.000275
      }
     },
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "mesh_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "mesh_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "mesh",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -6238,6 +8570,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "basin"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.03125,
     "observation_times_s": [
      0.40625,
@@ -6247,13 +8589,48 @@
     "horizon_s": 0.84375
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W2",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.03125,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "basin": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -6292,7 +8669,7 @@
    },
    "dt_s": 0.015625,
    "steps": 37,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -6300,6 +8677,10 @@
      "amounts": {
       "n:X1@bay": 5.25,
       "n:X2@bay": 3.5,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 8.632557352894633,
       "B:web_X1": 4.316278676447316,
       "B:web_X2": 1.9348835446143142
@@ -6328,6 +8709,10 @@
      "amounts": {
       "n:X1@bay": 4.8129375,
       "n:X2@bay": 3.208625,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 7.904119852894633,
       "B:web_X1": 4.753341176447316,
       "B:web_X2": 2.226258544614314
@@ -6356,6 +8741,10 @@
      "amounts": {
       "n:X1@bay": 4.572553125,
       "n:X2@bay": 3.04836875,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 7.503479227894632,
       "B:web_X1": 4.993725551447317,
       "B:web_X2": 2.3865147946143144
@@ -6384,6 +8773,10 @@
      "amounts": {
       "n:X1@bay": 2.569243081148565,
       "n:X2@bay": 9.051572400196225,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 9.063222052988626,
       "B:web_X1": 4.024876064049548,
       "B:web_X2": 1.7956214569180893
@@ -6412,6 +8805,10 @@
      "amounts": {
       "n:X1@bay": 2.469810643058261,
       "n:X2@bay": 8.997954133226239,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X1@host_cell": 6.8e-15,
+      "n:X2@host_cell": 6.8e-15,
       "R:web": 8.910171347928337,
       "B:web_X1": 4.124308502139852,
       "B:web_X2": 1.8492397238880753
@@ -6472,6 +8869,10 @@
       "amounts": {
        "n:X1@bay": 5.25,
        "n:X2@bay": 3.5,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 8.632557352894633,
        "B:web_X1": 4.316278676447316,
        "B:web_X2": 1.9348835446143142
@@ -6491,6 +8892,10 @@
       "amounts": {
        "n:X1@bay": 1.8375000000007962,
        "n:X2@bay": 8.61875,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 8.632557352894633,
        "B:web_X1": 1.5106975367565607,
        "B:web_X2": 0.67720924061501
@@ -6520,6 +8925,10 @@
       "amounts": {
        "n:X1@bay": 5.25,
        "n:X2@bay": 3.5,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 8.632557352894633,
        "B:web_X1": 4.316278676447316,
        "B:web_X2": 1.9348835446143142
@@ -6539,6 +8948,10 @@
       "amounts": {
        "n:X1@bay": 1.8375000000007962,
        "n:X2@bay": 8.61875,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 8.632557352894633,
        "B:web_X1": 1.5106975367565607,
        "B:web_X2": 0.67720924061501
@@ -6568,6 +8981,10 @@
       "amounts": {
        "n:X1@bay": 4.572553125,
        "n:X2@bay": 3.04836875,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 7.503479227894632,
        "B:web_X1": 4.993725551447317,
        "B:web_X2": 2.3865147946143144
@@ -6587,6 +9004,10 @@
       "amounts": {
        "n:X1@bay": 1.600393593750796,
        "n:X2@bay": 8.460679062499999,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 7.503479227894632,
        "B:web_X1": 1.7478039430065608,
        "B:web_X2": 0.83528017811501
@@ -6616,6 +9037,10 @@
       "amounts": {
        "n:X1@bay": 4.572553125,
        "n:X2@bay": 3.04836875,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 7.503479227894632,
        "B:web_X1": 4.993725551447317,
        "B:web_X2": 2.3865147946143144
@@ -6635,6 +9060,10 @@
       "amounts": {
        "n:X1@bay": 1.600393593750796,
        "n:X2@bay": 8.460679062499999,
+       "n:X1@bath": 1.37e-10,
+       "n:X2@bath": 1.37e-10,
+       "n:X1@host_cell": 6.8e-15,
+       "n:X2@host_cell": 6.8e-15,
        "R:web": 7.503479227894632,
        "B:web_X1": 1.7478039430065608,
        "B:web_X2": 0.83528017811501
@@ -6687,9 +9116,32 @@
       "kind": "node",
       "volume_pL": 1.75,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     },
+     {
+      "id": "host_cell",
+      "kind": "cell",
+      "volume_pL": 0.007,
+      "registered": false
      }
     ],
-    "patches": [],
+    "patches": [
+     {
+      "id": "host_wall",
+      "inside": "host_cell",
+      "outside": "bath"
+     },
+     {
+      "id": "host_contact",
+      "inside": "host_cell",
+      "outside": "bay"
+     }
+    ],
     "ligands": [
      "X1",
      "X2"
@@ -6706,6 +9158,30 @@
       "node": "bay",
       "n_fmol": 3.5,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "host_cell",
+      "n_fmol": 6.8e-15,
+      "declared": false
      }
     ],
     "sets": [
@@ -6747,21 +9223,37 @@
       "X2": 6.5
      }
     },
-    "permeabilities": [],
+    "permeabilities": [
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_contact",
+      "ligand": "X2",
+      "value": 0.0
+     }
+    ],
     "multipliers": [
      {
       "of": "web_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "web_X2",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "web",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -6769,6 +9261,16 @@
      "X1": 0,
      "X2": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "host_cell",
+       "bay"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.015625,
     "observation_times_s": [
      0.171875,
@@ -6779,13 +9281,48 @@
     "horizon_s": 0.578125
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W7",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.015625,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897,
+      "host_contact": 14.310344827586208
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896,
+      "host_contact": 0.14310344827586208
+     },
+     "ion_amounts_fmol": {
+      "bay": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "bath": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "host_cell": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -6824,7 +9361,7 @@
    },
    "dt_s": 0.0078125,
    "steps": 9,
-   "backend": "numpy",
+   "backend": "compiled",
    "rows": [
     {
      "step": 0,
@@ -6840,6 +9377,11 @@
       "n:X3@vesicle": 9.1e-13,
       "n:X4@vesicle": 0.0011,
       "n:X5@vesicle": 0.0029,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X3@bath": 1.37e-10,
+      "n:X4@bath": 1.37e-10,
+      "n:X5@bath": 1.37e-10,
       "R:plate": 0.028331160209025746,
       "R:disk": 0.006053580843717359,
       "R:lining": 0.014782239667770194,
@@ -6878,6 +9420,11 @@
       "n:X3@vesicle": 9.1e-13,
       "n:X4@vesicle": 0.001069475,
       "n:X5@vesicle": 0.002819525,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X3@bath": 1.37e-10,
+      "n:X4@bath": 1.37e-10,
+      "n:X5@bath": 1.37e-10,
       "R:plate": 0.028127197709025744,
       "R:disk": 0.00598365084371736,
       "R:lining": 0.014665689667770194,
@@ -6955,6 +9502,12 @@
       "kind": "cell",
       "volume_pL": 0.65,
       "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
      }
     ],
     "patches": [
@@ -6962,6 +9515,11 @@
       "id": "vesicle_wall",
       "inside": "vesicle",
       "outside": "lake"
+     },
+     {
+      "id": "host_wall",
+      "inside": "vesicle",
+      "outside": "bath"
      }
     ],
     "ligands": [
@@ -7031,6 +9589,36 @@
       "node": "vesicle",
       "n_fmol": 0.0029,
       "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X3",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X4",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X5",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
      }
     ],
     "sets": [
@@ -7141,52 +9729,62 @@
       "patch": "vesicle_wall",
       "ligand": "X5",
       "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X3",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X4",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X5",
+      "value": 0.0
      }
     ],
     "multipliers": [
      {
       "of": "plate_X1",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "plate_X2",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "plate_X3",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "disk_X2",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "lining_X4",
-      "name": "INVENTED binding rate multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      },
      {
       "of": "lining_X5",
-      "name": "INVENTED binding rate multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "plate",
-      "name": "INVENTED capacity multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "disk",
-      "name": "INVENTED capacity multiplier",
-      "value": 1.0
-     },
-     {
-      "of": "lining",
-      "name": "INVENTED capacity multiplier",
+      "name": "site_binding_multiplier",
       "value": 1.0
      }
     ],
@@ -7197,6 +9795,16 @@
      "X4": 0,
      "X5": 0
     },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "vesicle",
+       "lake"
+      ],
+      "held_by": "bath"
+     }
+    ],
     "dt_s": 0.0078125,
     "observation_times_s": [
      0.0703125
@@ -7204,13 +9812,58 @@
     "horizon_s": 0.0703125
    },
    "definition": {
-    "INVENTED": "the engine's own declaration of the world, as run, in its own form",
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
     "world": "INVENTED-W3p",
-    "checks": {
-     "INVENTED moiety ledger": "raise",
-     "INVENTED energy ledger": "raise",
-     "INVENTED dissipation check": "raise",
-     "INVENTED ion amounts": "raise"
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0078125,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X3",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X4",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X5",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896
+     },
+     "ion_amounts_fmol": {
+      "lake": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "vesicle": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "bath": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
     }
    },
    "source": {
@@ -7237,6 +9890,517 @@
    },
    "record": "records/INVENTED-W3p-P7.json",
    "record_sha256": "fd39427f95b7a2aa38455b7e5147fe99294873d1820a769cb3bc1b520b0ea37f"
+  },
+  "INVENTED-W3p-P7~check": {
+   "status": "refused",
+   "world": "INVENTED-W3p",
+   "plant": {
+    "id": "P7",
+    "patch": "validation/fr45/plants/INVENTED_p7_host.patch",
+    "change": "INVENTED: P7's mechanism, with a host ion amount perturbed during step 6",
+    "inputs_changed": []
+   },
+   "dt_s": 0.0078125,
+   "steps": 5,
+   "backend": "compiled",
+   "rows": [
+    {
+     "step": 0,
+     "time_s": 0.0,
+     "amounts": {
+      "n:X1@lake": 0.0033,
+      "n:X2@lake": 0.0024,
+      "n:X3@lake": 0.0013,
+      "n:X4@lake": 3.3e-12,
+      "n:X5@lake": 3.3e-12,
+      "n:X1@vesicle": 9.1e-13,
+      "n:X2@vesicle": 9.1e-13,
+      "n:X3@vesicle": 9.1e-13,
+      "n:X4@vesicle": 0.0011,
+      "n:X5@vesicle": 0.0029,
+      "n:X1@bath": 1.37e-10,
+      "n:X2@bath": 1.37e-10,
+      "n:X3@bath": 1.37e-10,
+      "n:X4@bath": 1.37e-10,
+      "n:X5@bath": 1.37e-10,
+      "R:plate": 0.028331160209025746,
+      "R:disk": 0.006053580843717359,
+      "R:lining": 0.014782239667770194,
+      "B:plate_X1": 0.006889035917088327,
+      "B:plate_X2": 0.0034445179585441636,
+      "B:plate_X3": 0.0009568105440400454,
+      "B:disk_X2": 0.0004007973056701078,
+      "B:lining_X4": 0.0005355883937597897,
+      "B:lining_X5": 0.0006886136491197295
+     },
+     "records": {},
+     "site_heat_pJ": {
+      "lake": 0.0,
+      "vesicle": 0.0
+     },
+     "site_occupied_fraction": {
+      "plate_X1": 0.18,
+      "plate_X2": 0.09,
+      "plate_X3": 0.025,
+      "disk_X2": 0.065,
+      "lining_X4": 0.035,
+      "lining_X5": 0.045
+     }
+    }
+   ],
+   "capacities": {
+    "plate": 0.03827242176160182,
+    "disk": 0.006166112394924736,
+    "lining": 0.01530252553599399
+   },
+   "free_sites": {
+    "plate": "state",
+    "disk": "state",
+    "lining": "state"
+   },
+   "events": [],
+   "event_map": [],
+   "step_report": null,
+   "refusal": {
+    "kind": "check",
+    "raised": "INVENTED.engine.host.HostCheckError",
+    "book": "host check: INVENTED ion amounts",
+    "name": "INVENTED ion amounts",
+    "message": "INVENTED: an ion amount left its host check's bound",
+    "step": 6,
+    "time_s": 0.0390625
+   },
+   "checks": {
+    "INVENTED moiety ledger": {
+     "failures": []
+    },
+    "INVENTED energy ledger": {
+     "failures": []
+    },
+    "INVENTED dissipation check": {
+     "failures": []
+    },
+    "INVENTED ion amounts": {
+     "failures": [
+      {
+       "step": 5,
+       "message": "INVENTED: an ion amount left its host check's bound"
+      }
+     ]
+    }
+   },
+   "operators": [
+    "cells.model.resolved_pump_composite@1",
+    "cells.model.resolved_pump_tissue@3",
+    "cells.operator.site_occupancy@1"
+   ],
+   "inputs": {
+    "world": "INVENTED-W3p",
+    "constants": {
+     "sites_per_fmol": 543210987.0,
+     "temperature_K": 301.5,
+     "RT_pJ_per_fmol": 2.4681357
+    },
+    "nodes": [
+     {
+      "id": "lake",
+      "kind": "node",
+      "volume_pL": 2.25,
+      "registered": true
+     },
+     {
+      "id": "vesicle",
+      "kind": "cell",
+      "volume_pL": 0.65,
+      "registered": true
+     },
+     {
+      "id": "bath",
+      "kind": "node",
+      "volume_pL": 140.0,
+      "registered": false
+     }
+    ],
+    "patches": [
+     {
+      "id": "vesicle_wall",
+      "inside": "vesicle",
+      "outside": "lake"
+     },
+     {
+      "id": "host_wall",
+      "inside": "vesicle",
+      "outside": "bath"
+     }
+    ],
+    "ligands": [
+     "X1",
+     "X2",
+     "X3",
+     "X4",
+     "X5"
+    ],
+    "free_amounts": [
+     {
+      "ligand": "X1",
+      "node": "lake",
+      "n_fmol": 0.0033,
+      "declared": true
+     },
+     {
+      "ligand": "X2",
+      "node": "lake",
+      "n_fmol": 0.0024,
+      "declared": true
+     },
+     {
+      "ligand": "X3",
+      "node": "lake",
+      "n_fmol": 0.0013,
+      "declared": true
+     },
+     {
+      "ligand": "X4",
+      "node": "lake",
+      "n_fmol": 3.3e-12,
+      "declared": false
+     },
+     {
+      "ligand": "X5",
+      "node": "lake",
+      "n_fmol": 3.3e-12,
+      "declared": false
+     },
+     {
+      "ligand": "X1",
+      "node": "vesicle",
+      "n_fmol": 9.1e-13,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "vesicle",
+      "n_fmol": 9.1e-13,
+      "declared": false
+     },
+     {
+      "ligand": "X3",
+      "node": "vesicle",
+      "n_fmol": 9.1e-13,
+      "declared": false
+     },
+     {
+      "ligand": "X4",
+      "node": "vesicle",
+      "n_fmol": 0.0011,
+      "declared": true
+     },
+     {
+      "ligand": "X5",
+      "node": "vesicle",
+      "n_fmol": 0.0029,
+      "declared": true
+     },
+     {
+      "ligand": "X1",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X2",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X3",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X4",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     },
+     {
+      "ligand": "X5",
+      "node": "bath",
+      "n_fmol": 1.37e-10,
+      "declared": false
+     }
+    ],
+    "sets": [
+     {
+      "id": "plate",
+      "shared": true,
+      "owner": "lake",
+      "face": null,
+      "faces": "lake",
+      "copies": 3300000.0,
+      "sites_per_copy": 9,
+      "accessible_fraction": 0.7
+     },
+     {
+      "id": "disk",
+      "shared": false,
+      "owner": "lake",
+      "face": null,
+      "faces": "lake",
+      "copies": 870000.0,
+      "sites_per_copy": 11,
+      "accessible_fraction": 0.35
+     },
+     {
+      "id": "lining",
+      "shared": true,
+      "owner": "vesicle_wall",
+      "face": "inside",
+      "faces": "vesicle",
+      "copies": 1250000.0,
+      "sites_per_copy": 7,
+      "accessible_fraction": 0.95
+     }
+    ],
+    "populations": [
+     {
+      "id": "plate_X1",
+      "set": "plate",
+      "ligand": "X1",
+      "k_on": 2600.0,
+      "k_off": 1.7,
+      "initial_occupancy": 0.18
+     },
+     {
+      "id": "plate_X2",
+      "set": "plate",
+      "ligand": "X2",
+      "k_on": 1350.0,
+      "k_off": 0.65,
+      "initial_occupancy": 0.09
+     },
+     {
+      "id": "plate_X3",
+      "set": "plate",
+      "ligand": "X3",
+      "k_on": 2450.0,
+      "k_off": 0.35,
+      "initial_occupancy": 0.025
+     },
+     {
+      "id": "disk_X2",
+      "set": "disk",
+      "ligand": "X2",
+      "k_on": 3700.0,
+      "k_off": 0.45,
+      "initial_occupancy": 0.065
+     },
+     {
+      "id": "lining_X4",
+      "set": "lining",
+      "ligand": "X4",
+      "k_on": 1150.0,
+      "k_off": 1.35,
+      "initial_occupancy": 0.035
+     },
+     {
+      "id": "lining_X5",
+      "set": "lining",
+      "ligand": "X5",
+      "k_on": 2250.0,
+      "k_off": 0.55,
+      "initial_occupancy": 0.045
+     }
+    ],
+    "wash": null,
+    "permeabilities": [
+     {
+      "patch": "vesicle_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "vesicle_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "vesicle_wall",
+      "ligand": "X3",
+      "value": 0.0
+     },
+     {
+      "patch": "vesicle_wall",
+      "ligand": "X4",
+      "value": 0.0
+     },
+     {
+      "patch": "vesicle_wall",
+      "ligand": "X5",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X1",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X2",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X3",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X4",
+      "value": 0.0
+     },
+     {
+      "patch": "host_wall",
+      "ligand": "X5",
+      "value": 0.0
+     }
+    ],
+    "multipliers": [
+     {
+      "of": "plate_X1",
+      "name": "site_binding_multiplier",
+      "value": 1.0
+     },
+     {
+      "of": "plate_X2",
+      "name": "site_binding_multiplier",
+      "value": 1.0
+     },
+     {
+      "of": "plate_X3",
+      "name": "site_binding_multiplier",
+      "value": 1.0
+     },
+     {
+      "of": "disk_X2",
+      "name": "site_binding_multiplier",
+      "value": 1.0
+     },
+     {
+      "of": "lining_X4",
+      "name": "site_binding_multiplier",
+      "value": 1.0
+     },
+     {
+      "of": "lining_X5",
+      "name": "site_binding_multiplier",
+      "value": 1.0
+     }
+    ],
+    "charges": {
+     "X1": 0,
+     "X2": 0,
+     "X3": 0,
+     "X4": 0,
+     "X5": 0
+    },
+    "capacitor_components": [
+     {
+      "members": [
+       "bath",
+       "vesicle",
+       "lake"
+      ],
+      "held_by": "bath"
+     }
+    ],
+    "dt_s": 0.0078125,
+    "observation_times_s": [
+     0.0703125
+    ],
+    "horizon_s": 0.0703125
+   },
+   "definition": {
+    "INVENTED": "the engine's own declaration of the world, as run, in its own form; its paths are illustrative",
+    "world": "INVENTED-W3p",
+    "execution": {
+     "solver": "imex_ars222_face_electromigration@1",
+     "dt": 0.0078125,
+     "jit": true,
+     "backend": "cpu",
+     "field_solver": "INVENTED engine default"
+    },
+    "species": [
+     {
+      "id": "X1",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X2",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X3",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X4",
+      "material_balance_atol_fmol": 2.3e-17
+     },
+     {
+      "id": "X5",
+      "material_balance_atol_fmol": 2.3e-17
+     }
+    ],
+    "host": {
+     "areas_um2": {
+      "host_wall": 21.842105263157897
+     },
+     "capacitances_pF": {
+      "host_wall": 0.21842105263157896
+     },
+     "ion_amounts_fmol": {
+      "lake": {
+       "IA": 0.02227,
+       "IB": 0.002231
+      },
+      "vesicle": {
+       "IA": 0.035370000000000006,
+       "IB": 0.003201
+      },
+      "bath": {
+       "IA": 0.048470000000000006,
+       "IB": 0.004171
+      }
+     }
+    }
+   },
+   "source": {
+    "engine_revision": "abcdef0123456789abcdef0123456789abcdef01",
+    "checkout_dirty": false,
+    "snapshot": "/mnt/workspaces/Cells/INVENTED-engine-snapshot",
+    "snapshot_patch_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "python": "INVENTED-python",
+    "numpy": "INVENTED-numpy",
+    "scipy": "INVENTED-scipy",
+    "jax": "INVENTED-jax",
+    "jaxlib": "INVENTED-jaxlib",
+    "jax_enable_x64": true,
+    "jax_platforms": "cpu",
+    "blas_threads": 7,
+    "machine": "INVENTED-machine",
+    "external_modules": [
+     {
+      "name": "INVENTED_external_module",
+      "identity": "INVENTED identity, computed at run time",
+      "frozen": "/mnt/workspaces/Cells/INVENTED-engine-snapshot-modules/INVENTED_external_module"
+     }
+    ]
+   },
+   "record": "records/INVENTED-W3p-P7~check.json",
+   "record_sha256": "67264947dc019a059c9cb5129afc85fc4afa22dd7c357e0b7f1fc42dbc8aede5"
   }
  },
  "missing": [
