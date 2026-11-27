@@ -1984,3 +1984,210 @@ def test_the_records_are_passive_and_d327_s_planted_fault_doubles_them(solver):
                 ratio = getattr(planted, record)[channel] / getattr(recorded, record)[channel]
                 assert abs(ratio - 2.0) <= 1e-12
             assert np.all(planted.one_way_gap_relative <= 1e-12)
+
+
+# D327's rows (the coordinator's ruling of 27 November): the five compositions that D327's probe
+# found newly parsing beside a shift (validation/fr64/d327_probe.py), each with a host check that
+# the shifted reader takes that operator's modified inputs.
+D327_K_BLOCK = {"block": {"reversal_of": "K"}}
+D327_TURNOVER = (
+    "cells.operator.scheduled_species_turnover@1",
+    "cells.operator.species_regulated_availability@1",
+)
+
+
+def d327_water(symport=False):
+    """crossrev's water world (composite_crossrev.worlds: water, symport) as its composition."""
+    cell = water_fixtures.heredity_cell("D", end_time=0.1)
+    raw = water_fixtures.with_water(cell, pf_m_s=5e-4, bath_pressure_Pa=12.5)
+    if symport:
+        raw = water_fixtures.with_symport(raw, flux_mmol_L_h=15.0, steepness=0.12)
+    return composite_spec.frozen_definition(raw)
+
+
+def d327_injection():
+    """crossrev's injection_cell (composite_crossrev.injection_worlds), its current held at 1 pA."""
+    base = water_fixtures.heredity_cell("H", dt=1e-3, end_time=0.004)
+    base["experiment"]["observation_times"] = [0.0, 0.004]
+    raw = composite_spec.frozen_definition(base)
+    cell = raw["model"]["cells"][0]["id"]
+    electrode = dict(cell_id=cell, carriers={"K": 0.4912, "M": 0.5088})
+    law = "cells.operator.electrode_current_injection@1"
+    raw["model"]["operators"] = [dict(law=law, electrodes=[electrode])]
+    schedule = [dict(time=0.0, current_A=1e-12)]
+    raw["experiment"]["injection_controls"] = [dict(cell_id=cell, schedule=schedule)]
+    return raw
+
+
+def d327_a5pp(water=False):
+    """FR-6's A5'' registered world (FR-65's probe's), with water first if asked."""
+    from validation.tissue import a5pp_acceptance_fixtures as a5pp
+    from validation.tissue import shared_inventory_fixtures as sif
+
+    raw = a5pp.registered_world()
+    return sif.with_water_first(raw) if water else raw
+
+
+def d327_door():
+    """FR-65's water door, its leak made permeable (1e-9 m/s) so that a flux carries u."""
+    from validation.tissue import shared_inventory_fixtures as sif
+
+    raw = sif.water_door()
+    raw["model"]["channels"][0]["max_permeability_m_per_s"] = 1e-9
+    return raw
+
+
+D327_ROWS = {  # name: (world, population, shift, B1's block, ion, operators moved, h (s), swell)
+    "water@1": (d327_water, "nav_0", {"gates": {"m": {"reversal_of": "Na"}}}, False, "Na", (), 0.0,
+                1.25),  # fmt: skip
+    "water@1 and the K-anion symport": (
+        partial(d327_water, symport=True), "kir_0", D327_K_BLOCK, True, "K",
+        ("cells.operator.k_anion_symport_mass_action@1",), 500.0, 1.25,
+    ),  # fmt: skip
+    "the electrode injection": (
+        d327_injection, "kir_0", {"gates": {"m": {"reversal_of": "K"}}}, False, "K",
+        ("cells.operator.electrode_current_injection@1",), 0.02, 1.0,
+    ),  # fmt: skip
+    "turnover and regulated availability@1": (
+        d327_a5pp, "kleak_a", D327_K_BLOCK, True, "K", D327_TURNOVER, 0.5, 1.0,
+    ),  # fmt: skip
+    "the same, water@1 first": (
+        partial(d327_a5pp, water=True), "kleak_a", D327_K_BLOCK, True, "K", D327_TURNOVER, 0.5,
+        1.25,
+    ),  # fmt: skip
+    "water@1, the coupling @2, reactions and turnover": (
+        d327_door, "leak_0", D327_K_BLOCK, True, "K",
+        ("cells.operator.species_regulated_availability@2",
+         "cells.operator.local_species_reactions@1", "cells.operator.scheduled_species_turnover@1"),
+        0.5, 1.25,
+    ),  # fmt: skip
+}
+
+
+def d327_start(raw):
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(v[0] for v in composite_spec.control_values(spec, [0.0])))
+    return spec, model, state, p, control
+
+
+def d327_observe(spec, model, state, p):
+    history = type(state)(*(np.asarray(v)[None] for v in state))
+    return model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
+
+
+def d327_moved(model, state, p, control, laws, h, swell, cell):
+    """The state each operator moves as it does in the step: a split operator by its own half-step
+    over h, an in-step rate (the symport) by its own rates over h out of the cell, and water by a
+    swell of the cell's volume (its state, which its view provides)."""
+    from cells.numerics.extracellular_field import scatter
+    from cells.operators import k_anion_symport
+
+    for law in laws:
+        op = next(o for o in model.operators if o.LAW_ID == law)
+        if op.SPLIT:
+            state, ok = model._half_step(op, state, h, control, p, xp=np)
+        else:
+            _, ok, rates = op.rates(state, control, p, model.view(p, state, xp=np), xp=np)
+            moved = k_anion_symport.transfer(h * np.asarray(rates.cycles_fmol_s), p, xp=np)
+            amounts = np.asarray(state.amount_increment)
+            out = scatter(moved, np.zeros_like(amounts), (np.asarray(p.membrane_cell),), xp=np)
+            state = state._replace(amount_increment=amounts - out)
+        assert bool(ok), law
+    if swell != 1.0:
+        volume = np.array(state.volume_increment_pL)
+        volume[cell] += (swell - 1.0) * np.asarray(p.volume)[cell]
+        state = state._replace(volume_increment_pL=volume)
+    return state
+
+
+def d327_law(spec, p, observed, population, block, ion, state):
+    """(the reader's observed value, its closed form at V_obs - E from the state's own amounts over
+    its current volume) of `population`, a gate's m target or the block's u."""
+    slot = [c.id for c in spec.model.channels].index(population)
+    patch = int(np.asarray(p.channel_membranes)[slot])
+    cell, outside = (int(np.asarray(f)[patch]) for f in (p.membrane_cell, p.membrane_outside))
+    row = list(spec.model.species_ids).index(ion)
+    grown = getattr(state, "volume_increment_pL", np.zeros_like(np.asarray(p.volume)))
+    n_in = np.asarray(p.amount_reference)[row, cell] + np.asarray(state.amount_increment)[row, cell]
+    c_in = n_in / (np.asarray(p.volume)[cell] + np.asarray(grown)[cell])
+    held = np.asarray(p.extracellular_amount_reference)[row, outside]
+    c_out = (held + np.asarray(state.extracellular_amount_increment)[row, outside]) / np.asarray(
+        p.extracellular_volume
+    )[outside]
+    z, temperature = float(np.asarray(p.valence).reshape(-1)[row]), float(p.temperature)
+    e = electrochemistry.R * temperature / (z * electrochemistry.F) * np.log(c_out / c_in)
+    v = float(np.asarray(observed.membrane_voltage_V)[0][patch])
+    if block:
+        declared = next(c for c in spec.model.channels if c.id == population).block
+        steep = declared.steepness()
+        modes = [(m.weight, m.k0_mM, s) for m, s in zip(declared.modes, steep, strict=True)]
+        law = float(fr64_laws.unblocked(v - e, temperature, declared.concentration_mM, modes))
+        return float(np.asarray(observed.channel_unblocked_fraction)[0][slot]), law
+    from cells.laws.channels import kir2p1_mh2, nav1p2_m3h_regularized
+
+    kinetics = nav1p2_m3h_regularized.nav1p2_kinetics if ion == "Na" else kir2p1_mh2.kir2p1_kinetics
+    law = float(np.asarray(kinetics(np.asarray([v - e]), xp=np)[0])[0, 0])
+    return float(np.asarray(observed.channel_targets)[0][0, slot]), law
+
+
+@pytest.mark.parametrize("row", list(D327_ROWS))
+def test_d327_s_new_compositions_feed_the_shifted_reader_their_operators_inputs(row):
+    """D327's rows (host, about 1 to 3 s each): beside each composition D327's probe found newly
+    parsing beside a shift, the shifted reader takes that operator's modified inputs.
+    - **The moves** (d327_moved) start from the world's start, as the step makes them.
+    - **At the moved state,** the composite's observation of the reader equals its closed form at
+      V_obs - E, within 1e-12. The reader is a gate's m target, or the block's u. E comes from the
+      moved state's amounts over its current volume.
+    - **Where the operator moves an input the reader reads,** the closed form moved by more than
+      1e-6, so a reader left at the start's inputs fails. That covers water's volume, the
+      symport's K (beyond the swell alone) and the injection's V.
+    - **Turnover, reactions and the two availability operators move no reader input.**
+      - The written availability is shown live: it moved.
+      - The shifted population's flux, over a block-free twin's at the same moved state, is u.
+    - **The water door's leak** is declared at zero permeability. It is made permeable here."""
+    build, population, shift, block, ion, laws, h, swell = D327_ROWS[row]
+    raw = copy.deepcopy(build())
+    channel = next(c for c in raw["model"]["channels"] if c["id"] == population)
+    twin = copy.deepcopy(raw)  # Without the block and the shift.
+    if block:
+        channel["block"] = copy.deepcopy(fr64_probe_block())
+    channel["voltage_shift"] = shift
+    spec, model, start, p, control = d327_start(raw)
+    slot = [c.id for c in spec.model.channels].index(population)
+    cell = int(np.asarray(p.membrane_cell)[int(np.asarray(p.channel_membranes)[slot])])
+    moved = d327_moved(model, start, p, control, laws, h, swell, cell)
+    before, after = d327_observe(spec, model, start, p), d327_observe(spec, model, moved, p)
+    seen, law = d327_law(spec, p, after, population, block, ion, moved)
+    assert abs(seen - law) <= 1e-12 * (abs(law) if block else 1.0)
+    _, at_start = d327_law(spec, p, before, population, block, ion, start)
+    if laws == D327_TURNOVER and swell == 1.0:  # No reader input moves.
+        assert law == pytest.approx(at_start, rel=1e-15)
+    else:
+        assert abs(law - at_start) > 1e-6
+    if laws and laws[0].endswith("symport_mass_action@1"):  # The symport's part, beyond the swell.
+        swollen = d327_moved(model, start, p, control, (), h, swell, cell)
+        _, alone = d327_law(spec, p, d327_observe(spec, model, swollen, p), population, block,
+                            ion, swollen)  # fmt: skip
+        assert abs(law - alone) > 1e-6
+    if laws and laws[0].endswith("injection@1"):  # The injection's V.
+        voltage = (np.asarray(o.membrane_voltage_V)[0] for o in (before, after))
+        assert abs(np.subtract(*voltage)).max() > 1e-4
+    if any("regulated_availability" in law for law in laws):
+        live = (np.asarray(o.channel_availability)[0][slot] for o in (before, after))
+        assert abs(np.subtract(*live)) > 1e-3  # The written availability moved.
+        tspec, tmodel, tstart, tp, _ = d327_start(twin)
+        assert type(tstart)._fields == type(start)._fields
+        theirs = d327_observe(tspec, tmodel, moved, tp)
+        row_ion = list(spec.model.species_ids).index(ion)
+        ratio = np.asarray(after.channel_flux_fmol_s)[0][row_ion, slot] / np.asarray(
+            theirs.channel_flux_fmol_s
+        )[0][row_ion, slot]
+        assert ratio == pytest.approx(seen, rel=1e-12)
+
+
+def fr64_probe_block():
+    from validation.fr64 import d327_probe
+
+    return d327_probe.BLOCK
