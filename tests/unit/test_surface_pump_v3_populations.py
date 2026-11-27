@@ -857,7 +857,7 @@ def test_a_reversal_of_an_ion_not_moved_or_neutral_is_refused(case):
 
     named = {"reversal_of": other}
     shift = {"gates": {"m": named}} if law.gates else {"block": named}
-    reason = "a neutral species" if neutral else "carries at relative permeability 0"
+    reason = "has no reversal potential" if neutral else "carries at relative permeability 0"
     with law_registry.scope(law_registry.BUILTIN.extended(law)):
         with pytest.raises(ConfigError, match=reason):
             parse_spec(fr64_world(shift, change=beside))
@@ -893,6 +893,37 @@ def test_a_shifted_definition_round_trips_and_without_a_shift_nothing_moves():
     assert spec_v3.shifted_readers(unshifted.model) == ()
     accepted = parse_spec(fr64_world({"block": {"reversal_of": "K"}}))  # The refusals' control.
     assert accepted.model.channels[0].voltage_shift.block == vshift.ReversalShift("K")
+
+
+def test_every_kind_s_dictionary_form_round_trips_on_every_reader():
+    """FR-64's dictionary form at the spec level (host, no run): both gates and the block, each
+    kind, the pH on either side and with a proton row other than the default, parse from their
+    declaration (parse_voltage_shift on kir_0 as parsed), write it back (VoltageShift.to_dict) and
+    parse again to the same shifts, in the law's gate order. The worlds that run them are the
+    sites' rows; the closure's proton row is check_shift_protons', a refusal row."""
+    spec = parse_spec(fr64_world(None))
+    m = spec.model
+    kir = m.channels[0]
+
+    def parsed(raw):
+        return spec_v3.parse_voltage_shift(raw, kir, m.species_ids, m.valence, kir.block)
+
+    for raw in (
+        {"gates": {"h": {"reversal_of": "K"}, "m": ph_shift()}},
+        {
+            "gates": {"m": ph_shift(side="inside", proton="Na")},
+            "block": ph_shift(shift_V_per_ph=0.05),
+        },
+        {"block": {"reversal_of": "K"}},
+    ):
+        shift = parsed(raw)
+        declared = raw.get("gates", {})
+        assert [gate for gate, _ in shift.gates] == [g for g in ("m", "h") if g in declared]
+        assert shift.to_dict() == {key: value for key, value in raw.items()}
+        assert parsed(shift.to_dict()) == shift
+    written = parsed({"gates": {"m": ph_shift(proton="Na")}}).to_dict()
+    assert written["gates"]["m"]["ph"]["proton"] == "Na"
+    assert "proton" not in parsed({"gates": {"m": ph_shift()}}).to_dict()["gates"]["m"]["ph"]
 
 
 FR64_REVERSALS = (  # (c_i, c_o) in mM and z, across FR-51's admitted 1e-3 to 1e3 mM.
