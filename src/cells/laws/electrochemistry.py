@@ -6,12 +6,20 @@ laws. The engine refuses invalid trials; these functions never floor or clip the
 """
 
 import jax.numpy as jnp
+import numpy as np
 
 F = 6.02214076e23 * 1.602176634e-19
 R = 6.02214076e23 * 1.380649e-23
 MOL_PER_FMOL = 1e-15
 M3_PER_PL = 1e-15
 CHARGE_PER_FMOL = F * MOL_PER_FMOL
+
+
+def reversal_potential(inside_mM, outside_mM, valence, temperature, *, xp=np):
+    """E (V) of an ion of this valence: (R T/(z F)) ln(c_o/c_i), as a difference of logarithms
+    (Nernst 1889). FR-51's arithmetic, moved here unchanged by FR-64, whose reversal shift reads it
+    (laws/channels/voltage_shift.ReversalShift)."""
+    return R * temperature * (xp.log(outside_mM) - xp.log(inside_mM)) / (valence * F)
 
 
 def bernoulli(x, *, xp=jnp):

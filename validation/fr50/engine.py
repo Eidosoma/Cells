@@ -466,19 +466,29 @@ DIRECTION = {"E1": "outward", "E2": "sender", "E3": "sender", "E4": "outward", "
 
 def _block(block):
     """E4's and E6's declared block (cases.json) as @3's channel entry's (FR-51's form), with the
-    blocker's ID, which version 1 requires and the case leaves to the engine."""
-    blocker, reference = block["blocker"], block["reference"]
+    blocker's ID, which version 1 requires and the case leaves to the engine. Its frozen
+    `reference` is the population's voltage shift since FR-64 (_voltage_shift)."""
+    blocker = block["blocker"]
     return dict(
         law="cells.channel_block.open_channel_block_weighted_modes@1",
         blocker=dict(
             id=BLOCKER, valence=int(blocker["valence"]), side=blocker["side"],
             concentration_mM=_value(blocker["concentration_mM"]),
         ),
-        reference=reference if isinstance(reference, str) else dict(reference),
         modes=[
             {k: _value(v) for k, v in mode.items()} for mode in block["modes"]
         ],
     )  # fmt: skip
+
+
+def _voltage_shift(block):
+    """The frozen block's `reference` (cases.json, translated at this live driver; D371 Q7) as the
+    population's voltage_shift (FR-64): {"block": {"reversal_of": ion}} for a reversal, None for
+    "membrane_voltage", the engine's default. The engine refuses the old key."""
+    reference = block["reference"]
+    if reference == "membrane_voltage":
+        return None
+    return {"block": dict(reference)}
 
 
 def _valences(raw):
@@ -532,6 +542,9 @@ def world_1(e1, e4, *, dt, end, records=True, solver=None):
             block=_block(e4["block"]),
         )
     ]  # fmt: skip
+    shift = _voltage_shift(e4["block"])
+    if shift is not None:
+        m["channels"][0]["voltage_shift"] = shift
     e["channel_controls"] = [
         dict(channel_id=CHANNEL, schedule=[dict(time=0.0, availability=_value(e4["availability"]))])
     ]

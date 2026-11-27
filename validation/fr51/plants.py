@@ -22,6 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from cells.definitions import surface_pump_v3_spec as spec_v3
+from cells.laws import electrochemistry
 from cells.laws.channels import open_channel_block as block_law
 from cells.models import surface_pump_v3 as v3
 from validation.fr51 import engine, judge
@@ -62,13 +63,14 @@ def flipped_side():
 
 
 def reversal_valence_flipped():
-    """B's plant (ii): E with the wrong sign of its valence."""
-    original = block_law.reversal_potential
+    """B's plant (ii): E with the wrong sign of its valence. E is electrochemistry's since FR-64
+    moved it there, unchanged; the engine calls it through that module, so the patch is seen."""
+    original = electrochemistry.reversal_potential
 
     def planted(inside, outside, valence, temperature, *, xp=np):
         return original(inside, outside, -valence, temperature, xp=xp)
 
-    return _patched(block_law, "reversal_potential", planted)
+    return _patched(electrochemistry, "reversal_potential", planted)
 
 
 def _layout_plant(change):
@@ -184,7 +186,7 @@ def without_e():
 def e1_reversal_at_e2():
     """E's plant (ii): the terms evaluated with E1's reversal potential (B1 at E1's concentrations)
     at E2's state."""
-    original = block_law.reversal_potential
+    original = electrochemistry.reversal_potential
     case = next(c for c in engine.spec_of()["cases"] if c["id"] == "B1_two_modes_E1")
     c_i, c_o = float(case["c_i_mM"]), float(case["c_o_mM"])
 
@@ -192,7 +194,7 @@ def e1_reversal_at_e2():
         ones = xp.ones_like(inside)
         return original(c_i * ones, c_o * ones, valence, temperature, xp=xp)
 
-    return _patched(block_law, "reversal_potential", planted)
+    return _patched(electrochemistry, "reversal_potential", planted)
 
 
 # The plants judged against the references: {name: (plant, criterion, its registered cases)}.

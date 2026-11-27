@@ -18,6 +18,9 @@ engine(case_id, voltages_V) returns {name: array over the voltages}:
 - T = 310 K;
 - the block, where the case names one, as the engine declares it. cases.json's blocks carry neither
   the law ID (cells.channel_block.open_channel_block_weighted_modes@1) nor a blocker ID ("blocker"), so both are added;
+- the block's frozen `reference`, translated here (D371 Q7; FR-64): a reversal becomes the
+  population's `voltage_shift: {"block": {"reversal_of": ion}}`, and "membrane_voltage" becomes
+  nothing, the default. The engine refuses the old key, and the frozen files are never rewritten;
 - C2's units: the composite cells.model.resolved_pump_composite@1, with cells.operator.membrane_entity_state@1 declaring the
   population at its reference density. Its declared abundance a0 = N0/(A rho_ref) is 1, the 1000
   units. 2000 units are those plus a unit increment of 1000 in the state, read through the
@@ -90,9 +93,17 @@ def _block_declaration(block):
             "side": blocker["side"],
             "concentration_mM": _decimal(blocker["concentration_mM"]),
         },
-        "reference": copy.deepcopy(block["reference"]),
         "modes": modes,
     }
+
+
+def _voltage_shift(block):
+    """cases.json's frozen block `reference` as the population's voltage_shift (FR-64), or None for
+    "membrane_voltage", the engine's default."""
+    reference = block["reference"]
+    if reference == "membrane_voltage":
+        return None
+    return {"block": copy.deepcopy(reference)}
 
 
 def raw_world(case_id, *, blocked=True):
@@ -141,7 +152,11 @@ def raw_world(case_id, *, blocked=True):
         permeant_ions=[dict(species_id=ion, relative_permeability=1.0)],
     )
     if blocked and case["block"] is not None:
-        channel["block"] = _block_declaration(spec["blocks"][case["block"]])
+        block = spec["blocks"][case["block"]]
+        channel["block"] = _block_declaration(block)
+        shift = _voltage_shift(block)
+        if shift is not None:
+            channel["voltage_shift"] = shift
     m["channels"] = [channel]
     e["pump_controls"] = []
     always = [dict(time=0.0, availability=1.0)]

@@ -53,6 +53,19 @@ face row, a kind's route (its own one_way key), an unknown entity or species, a 
 RK4, projective execution and the families with fixed internals at their own checks. The key is
 omitted where none is declared, so every definition of today's keeps its form and fingerprint.
 
+FR-51 and FR-64 (D327, D356, D361): a channel population's entry may also declare these optional
+keys. Each is omitted where none is declared, so every other population keeps its form and
+fingerprint. The block's old ``reference`` key moved into ``voltage_shift.block`` with no alias, and
+is refused by name.
+- ``block``: an open-channel block
+  (cells.channel_block.open_channel_block_weighted_modes@1), with its law, its blocker and its
+  weighted modes.
+- ``voltage_shift``: ``{"gates": {gate: shift}, "block": shift}``. Each listed reader, a gate of its
+  law or its block, reads V_ref = V - dV in place of its patch voltage V. Each shift is one kind of
+  the closed set (laws/channels/voltage_shift.KINDS): ``{"reversal_of": ion}``, the reversal of an
+  ion the population moves, or ``{"ph": {...}}``, a declared slope per pH unit on one side.
+  Permeation, its heat and its charge still read V.
+
 The gate laws are the existing Cells kinetics under neutral IDs (the stage-B
 proposals in stage-b-plan-20261108-01): Kv1.5 m*h (laws/channels/voltage_gates.py),
 Kir2.1 m*h^2 (laws/channels/potassium_channels.py) and NaV1.2 m^3*h
@@ -79,6 +92,7 @@ from cells.definitions import surface_tissue_spec as tissue
 from cells.definitions.spec_values import fraction, identifier
 from cells.definitions.specs import ConfigError, ExtracellularFaceSpec, _fields, _integer, _number
 from cells.laws.channels import open_channel_block as block_law
+from cells.laws.channels import voltage_shift as vshift
 from cells.laws.junctions import junction_gate
 from cells.laws.junctions import junction_series_gates as series_gates
 from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
@@ -189,10 +203,25 @@ _NONE = object()  # A channel entry without factors, or without a block.
 # FR-51 (D327): a population's optional open-channel block, popped before the strict parse as
 # factors is. A population that declares neither stays a ChannelPopulation.
 CHANNEL_BLOCK = "block"
-BLOCK_KEYS = {"law", "blocker", "reference", "modes"}
+BLOCK_KEYS = {"law", "blocker", "modes"}
 BLOCKER_KEYS = {"id", "valence", "side", "concentration_mM"}
 STEEPNESS_KEYS = ("electrical_distance", "effective_valence")  # Exactly one per mode (ruling 7).
-REVERSAL_OF = "reversal_of"
+# FR-64 (D356, D361): a population's optional voltage shift, popped before the strict parse as
+# factors and block are: {"gates": {gate: shift}, "block": shift}, each shift one kind of the closed
+# set (laws/channels/voltage_shift.KINDS). The block's old `reference` key moved into it with no
+# alias, and is refused by name (BLOCK_REFERENCE_MOVED). A population that declares none of the
+# three optional keys stays a ChannelPopulation.
+CHANNEL_SHIFT = "voltage_shift"
+SHIFT_KEYS = ("gates", "block")
+BLOCK_READER = "block"  # The block's reader name, beside its law's gate names.
+BLOCK_REFERENCE_MOVED = (
+    "the block's reference moved to the population's voltage_shift.block (FR-64), with no alias: "
+    '{"voltage_shift": {"block": {"reversal_of": ion}}} for V - E, and nothing for the membrane '
+    "voltage, the default"
+)
+# The stage-read closure whose declared proton row a pH shift must name where it is declared: B4's,
+# or the general closure's proton_row (cells.kind.ph_condition@1's rule; check_shift_protons).
+PROTON_CLOSURE_KIND = "cells.kind.rapid_proton_buffer@1"
 BLOCK_N2_REFUSAL = (
     "An implicit-conductance solver (N2) beside a blocked channel population is refused: a "
     "negative slope in its operator could make it indefinite (FR-51, ruling 5)"
@@ -411,16 +440,16 @@ class ChannelBlock:
     """A population's open-channel blocker (FR-51, D327; cells.channel_block.open_channel_block_weighted_modes@1).
 
     The blocker has valence z_B and is held at concentration_mM (mM, constant in version 1) on its
-    side. It is referenced to the patch voltage (reversal_of None) or to V - E of the named
-    permeant ion, and binds in weighted modes. The block declares no count, and the bound blocker
-    is taken from no row (trace binding)."""
+    side, and binds in weighted modes. It reads the voltage the population's declared shift gives
+    the block (FR-64): the patch voltage where none is declared, or V less its voltage_shift.block
+    (VoltageShift). The block declares no count, and the bound blocker is taken from no row (trace
+    binding)."""
 
     law: str
     blocker_id: str
     valence: int
     side: str
     concentration_mM: float
-    reversal_of: str | None
     modes: tuple[BlockMode, ...]
 
     def steepness(self):
@@ -439,20 +468,45 @@ class ChannelBlock:
 
 
 @dataclass(frozen=True)
+class VoltageShift:
+    """A population's declared voltage shift (FR-64): ((gate name, shift), ...) in its law's gate
+    order, and its block's shift or None. Each shift is one kind of the closed set
+    (laws/channels/voltage_shift.KINDS); a reader without one reads the patch voltage."""
+
+    gates: tuple = ()
+    block: object = None
+
+    def readers(self):
+        """((reader, shift), ...): the shifted gates in their law's order, then the block."""
+        return (*self.gates, *(((BLOCK_READER, self.block),) if self.block is not None else ()))
+
+    def to_dict(self):
+        out = {}
+        if self.gates:
+            out["gates"] = {gate: shift.to_dict() for gate, shift in self.gates}
+        if self.block is not None:
+            out["block"] = self.block.to_dict()
+        return out
+
+
+@dataclass(frozen=True)
 class FactoredChannelPopulation(kinetic.ChannelPopulation):
     """A channel population whose entry declares factors (B1's door, docs/CORE_SEAMS_DESIGN.md
-    §4.3), a block (FR-51), or both: the shared ChannelPopulation with its factor-source IDs, in
-    declared order, and its block. A population with neither stays a ChannelPopulation, so its
-    form and fingerprint are today's."""
+    §4.3), a block (FR-51), a voltage shift (FR-64), or several: the shared ChannelPopulation with
+    its factor-source IDs, in declared order, its block and its shift. A population with none of
+    them stays a ChannelPopulation, so its form and fingerprint are today's."""
 
     factors: tuple[str, ...] = ()
     block: ChannelBlock | None = None
+    voltage_shift: VoltageShift | None = None
 
 
-def factored(channel, factors, block=None):
-    """The population as a FactoredChannelPopulation with these factors and this block."""
+def factored(channel, factors, block=None, voltage_shift=None):
+    """The population as a FactoredChannelPopulation with these factors, block and shift."""
     values = {f.name: getattr(channel, f.name) for f in fields(kinetic.ChannelPopulation)}
-    return FactoredChannelPopulation(**values, factors=tuple(factors), block=block)
+    return FactoredChannelPopulation(
+        **values, factors=tuple(factors), block=block, voltage_shift=voltage_shift
+    )
 
 
 def channel_factors(model):
@@ -472,6 +526,29 @@ def channel_blocks(model):
         (slot, c.id, c.block)
         for slot, c in enumerate(getattr(model, "channels", ()))
         if getattr(c, "block", None) is not None
+    )
+
+
+def channel_shifts(model):
+    """((slot, channel ID, its VoltageShift), ...) of the model's shifted populations, in channel
+    order; () for every definition without a shift (FR-64)."""
+    return tuple(
+        (slot, c.id, c.voltage_shift)
+        for slot, c in enumerate(getattr(model, "channels", ()))
+        if getattr(c, "voltage_shift", None) is not None
+    )
+
+
+def shifted_readers(model):
+    """((channel ID, reader, kind key), ...), sorted: the model's shifted readers (FR-64), each a
+    gate name or BLOCK_READER, () for every definition without a shift
+    (InnerStructure.shifted_readers)."""
+    return tuple(
+        sorted(
+            (channel_id, reader, shift.KEY)
+            for _, channel_id, declared in channel_shifts(model)
+            for reader, shift in declared.readers()
+        )
     )
 
 
@@ -579,8 +656,11 @@ def _real(value, name):
 
 def parse_block(raw, channel, species_ids):
     """A population's block (FR-51, D327). Each refusal names its reason
-    (fr51-channel-block-v1 §1.2)."""
+    (fr51-channel-block-v1 §1.2). Its reference voltage is the population's declared shift
+    (FR-64: parse_voltage_shift); the old `reference` key is refused, naming its new place."""
     name = f"Channel {channel.id}: block"
+    if isinstance(raw, dict) and "reference" in raw:
+        raise ConfigError(f"{name}: {BLOCK_REFERENCE_MOVED}")
     _fields(raw, BLOCK_KEYS, name)
     if raw["law"] != block_law.LAW_ID:
         raise ConfigError(f"{name}: law must be {block_law.LAW_ID}")
@@ -606,29 +686,6 @@ def parse_block(raw, channel, species_ids):
         raise ConfigError(
             f"{name}: the blocker concentration lies in [{low:g}, {high:g}] mM, the admitted domain"
         )
-    reference = raw["reference"]
-    if reference == block_law.MEMBRANE_VOLTAGE:
-        reversal_of = None
-    elif isinstance(reference, dict) and set(reference) == {REVERSAL_OF}:
-        reversal_of = reference[REVERSAL_OF]
-        if reversal_of not in ions:
-            raise ConfigError(
-                f"{name}: the reversal reference names {reversal_of!r}, an ion the population "
-                "does not carry"
-            )
-    else:
-        raise ConfigError(
-            f"{name}: reference is {block_law.MEMBRANE_VOLTAGE!r} or {{{REVERSAL_OF!r}: ion}}"
-        )
-    carried = [i.species_id for i in channel.permeant_ions if i.relative_permeability]
-    law = channel_laws()[channel.kinetic_law]
-    if reversal_of is not None and len(carried) > 1 and law.material_term is not None:
-        raise ConfigError(  # The stage's term through the reversal is the named ion's own flux's.
-            f"{name}: {law.law_id} carries {', '.join(carried)} and declares a material term, and "
-            f"the block reads the reversal of {reversal_of}: the material term bounds only "
-            f"{reversal_of}'s own flux through that reversal, so its other ions' have no bound "
-            "(the membrane voltage as the reference is admitted)"
-        )
     modes = raw["modes"]
     if type(modes) is not list or not modes:
         raise ConfigError(f"{name}: modes is a non-empty list")
@@ -643,8 +700,112 @@ def parse_block(raw, channel, species_ids):
             f"{name}: the modes' weights sum to 1 within {block_law.SUM_ULPS} ulps, since they are "
             "fractions of one population"
         )
-    return ChannelBlock(block_law.LAW_ID, blocker_id, valence, side, concentration, reversal_of,
-                        parsed)  # fmt: skip
+    return ChannelBlock(block_law.LAW_ID, blocker_id, valence, side, concentration, parsed)
+
+
+def parse_voltage_shift(raw, channel, species_ids, valences, block):
+    """A population's voltage_shift (FR-64): which of its readers (its law's gates, its block) read
+    a shifted voltage, and by which kind of the closed set (laws/channels/voltage_shift.KINDS).
+    `block` is the population's parsed block, or None. Each refusal names its reason
+    (docs/FR64_VOLTAGE_SHIFT_DESIGN.md §5); the proton row's closure is check_shift_protons'."""
+    name = f"Channel {channel.id}: {CHANNEL_SHIFT}"
+    if not isinstance(raw, dict) or not raw or set(raw) - set(SHIFT_KEYS):
+        raise ConfigError(
+            f'{name} is {{"gates": {{gate: shift}}, "block": shift}}; omit it for none'
+        )
+    law = channel_laws()[channel.kinetic_law]
+    gates = ()
+    if "gates" in raw:
+        given = raw["gates"]
+        if not law.gates:
+            raise ConfigError(f"{name}: no such reader: {law.law_id} has no gates")
+        if not isinstance(given, dict) or not given:
+            raise ConfigError(
+                f"{name}: gates is a non-empty {{gate: shift}} mapping of {law.law_id}'s gates "
+                f"({', '.join(law.gates)}); omit it for none"
+            )
+        unknown = [gate for gate in given if gate not in law.gates]
+        if unknown:
+            raise ConfigError(
+                f"{name}: no such reader: {unknown[0]!r} is not a gate of {law.law_id} "
+                f"({', '.join(law.gates)})"
+            )
+        gates = tuple(
+            (gate, _reader_shift(given[gate], f"{name}.gates.{gate}", channel, law, species_ids,
+                                 valences, on_block=False))  # fmt: skip
+            for gate in law.gates
+            if gate in given
+        )
+    shift = None
+    if "block" in raw:
+        if block is None:
+            raise ConfigError(f"{name}: no such reader: the population declares no block")
+        shift = _reader_shift(
+            raw["block"], f"{name}.block", channel, law, species_ids, valences, on_block=True
+        )
+    return VoltageShift(gates, shift)
+
+
+def _reader_shift(raw, where, channel, law, species_ids, valences, *, on_block):
+    """One reader's shift, with the rules that read the population and the model's species."""
+    shift = vshift.parse_shift(raw, where)
+    if isinstance(shift, vshift.ReversalShift):
+        carried = [i.species_id for i in channel.permeant_ions]
+        moved = [i.species_id for i in channel.permeant_ions if i.relative_permeability]
+        if shift.ion not in moved:
+            how = "carries at relative permeability 0" if shift.ion in carried else "does not carry"
+            raise ConfigError(
+                f"{where}: the reversal names {shift.ion!r}, an ion the population {how}. E is the "
+                "population's own moved ion's: an ion it does not move could be held by a "
+                "closure, and the per-stage rules, which read stored amounts, and the rates, which "
+                "read free ones, would then form different reversals"
+            )
+        if valences[species_ids.index(shift.ion)] == 0:
+            raise ConfigError(
+                f"{where}: the reversal names {shift.ion!r}, a neutral species, which has no "
+                "reversal potential"
+            )
+        if on_block and len(moved) > 1 and law.material_term is not None:
+            # The stage's term through the reversal is the named ion's own flux's.
+            raise ConfigError(
+                f"{where}: {law.law_id} carries {', '.join(moved)} and declares a material term, "
+                f"and the block reads the reversal of {shift.ion}: the material term bounds only "
+                f"{shift.ion}'s own flux through that reversal, so its other ions' have no bound "
+                "(the membrane voltage, the default, is admitted)"
+            )
+        return shift
+    if shift.proton not in species_ids:
+        raise ConfigError(
+            f"{where}: a pH shift needs the proton row, and the model declares no {shift.proton!r}"
+        )
+    if valences[species_ids.index(shift.proton)] != 1:
+        raise ConfigError(
+            f"{where}: a pH shift needs the proton row, of valence +1, which {shift.proton} is not"
+        )
+    if on_block and shift.largest_shift_V() > vshift.BLOCK_SHIFT_LIMIT_V:
+        raise ConfigError(
+            f"{where}: |shift_V_per_ph| times the window's reach from the reference is "
+            f"{shift.largest_shift_V():.6g} V, above {vshift.BLOCK_SHIFT_LIMIT_V} V: the block's "
+            "admitted domain allows a reversal of at most that, so its normal-number argument "
+            "holds only within it (fr51-channel-block-v1 §1.2)"
+        )
+    return shift
+
+
+def check_shift_protons(model):
+    """FR-64: where the stage-read closure is declared (PROTON_CLOSURE_KIND: B4, or the general
+    closure), each pH shift names its declared proton row, as cells.kind.ph_condition@1 requires."""
+    read = dict(getattr(model, "kinds", ())).get(PROTON_CLOSURE_KIND)
+    if read is None:
+        return
+    for _, channel_id, declared in channel_shifts(model):
+        for reader, shift in declared.readers():
+            if isinstance(shift, vshift.PhShift) and shift.proton != read.proton:
+                raise ConfigError(
+                    f"Channel {channel_id}: {CHANNEL_SHIFT} of {reader}: a pH shift needs the "
+                    f"proton row: {shift.proton} is not the closure's proton row "
+                    f"{read.proton or '(none: the closure declares no proton_row)'}"
+                )
 
 
 def _block_mode(raw, valence, name):
@@ -697,11 +858,6 @@ def block_to_dict(block):
             "side": block.side,
             "concentration_mM": block.concentration_mM,
         },
-        "reference": (
-            block_law.MEMBRANE_VOLTAGE
-            if block.reversal_of is None
-            else {REVERSAL_OF: block.reversal_of}
-        ),
         "modes": [
             {
                 "weight": m.weight,
@@ -715,6 +871,19 @@ def block_to_dict(block):
             for m in block.modes
         ],
     }
+
+
+def _factored(channel, given, block, shift, species_ids, valences):
+    """A population that declares factors, a block, a voltage shift or several, parsed in that
+    order: its shift reads its parsed block (FR-64)."""
+    factors = () if given is _NONE else _factor_sources(given, channel.id)
+    parsed_block = None if block is _NONE else parse_block(block, channel, species_ids)
+    parsed_shift = (
+        None
+        if shift is _NONE
+        else parse_voltage_shift(shift, channel, species_ids, valences, parsed_block)
+    )
+    return factored(channel, factors, parsed_block, parsed_shift)
 
 
 def _factor_sources(given, channel_id):
@@ -743,12 +912,15 @@ def channel_to_dict(p):
     }
     if type(p) is FactoredChannelPopulation:  # B1's door: its factors, in declared order.
         out.pop(CHANNEL_BLOCK)  # FR-51: written only where declared, so no fingerprint moves.
+        out.pop(CHANNEL_SHIFT)  # FR-64: the same.
         if p.factors:
             out[CHANNEL_FACTORS] = list(p.factors)
         else:
             out.pop(CHANNEL_FACTORS)
         if p.block is not None:
             out[CHANNEL_BLOCK] = block_to_dict(p.block)
+        if p.voltage_shift is not None:
+            out[CHANNEL_SHIFT] = p.voltage_shift.to_dict()
     return out
 
 
@@ -971,10 +1143,11 @@ def parse(data):
     one_way = m.pop(ONE_WAY_RECORDS_KEY, _NONE)  # FR-50 phase 2: parsed with the channels below.
     if type(channels) is not list:
         raise ConfigError("channels requires an explicit list")
-    # B1's door: each entry's factors leave this copy before the strict channel parse; so does
-    # FR-51's block.
+    # B1's door: each entry's factors leave this copy before the strict channel parse; so do
+    # FR-51's block and FR-64's voltage shift.
     popped = [c.pop(CHANNEL_FACTORS, _NONE) if isinstance(c, dict) else _NONE for c in channels]
     blocks = [c.pop(CHANNEL_BLOCK, _NONE) if isinstance(c, dict) else _NONE for c in channels]
+    shifts = [c.pop(CHANNEL_SHIFT, _NONE) if isinstance(c, dict) else _NONE for c in channels]
     # The registry hook (§7.4 (f) 7): the registry's keys leave this copy's species entries and
     # model block before @2's strict species parse; None when the model declares none.
     declared = registry.parse_entries(m)
@@ -1043,13 +1216,9 @@ def parse(data):
     parsed = tuple(parse_channel(c, ids, z, {p.id for p in base.model.membranes}) for c in channels)
     parsed = tuple(
         c
-        if given is _NONE and block is _NONE
-        else factored(
-            c,
-            () if given is _NONE else _factor_sources(given, c.id),
-            None if block is _NONE else parse_block(block, c, ids),
-        )
-        for c, given, block in zip(parsed, popped, blocks, strict=True)
+        if given is _NONE and block is _NONE and shift is _NONE
+        else _factored(c, given, block, shift, ids, z)
+        for c, given, block, shift in zip(parsed, popped, blocks, shifts, strict=True)
     )
     if solver in imex.IMPLICIT_CONDUCTANCE_IDS and any(
         getattr(c, "block", None) is not None for c in parsed
@@ -1114,6 +1283,7 @@ def parse(data):
     if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
         execution = replace(execution, solver=solver)
     spec = replace(base, model=model, experiment=experiment, execution=execution)
+    check_shift_protons(spec.model)  # FR-64: the closure's proton row, once the kinds are parsed.
     from cells.models.surface_pump_v3 import check_definition, structure
 
     if forms_faces and any(
@@ -1134,6 +1304,7 @@ def parse(data):
             spec.model.kinds
             or channel_factors(spec.model)
             or channel_blocks(spec.model)  # FR-51: the structure holds the blocked populations.
+            or channel_shifts(spec.model)  # FR-64: the structure holds the shifted readers.
             or any(c.kinetic_law not in LAW_CODES for c in spec.model.channels)
             or spec.model.heat_bookings  # Seam D: the structure holds the picks.
             or any(isinstance(j, kinetic.SeriesJunction) for j in spec.model.junctions)  # FR-30.

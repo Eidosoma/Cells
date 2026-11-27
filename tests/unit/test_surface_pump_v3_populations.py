@@ -18,7 +18,10 @@ Each claim at its cheapest level (D187), each with a planted error the check mus
 """
 
 import copy
+import dataclasses
+import math
 from dataclasses import replace
+from types import MappingProxyType
 from decimal import Decimal
 from functools import partial
 
@@ -31,6 +34,9 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions import surface_pump_v3_spec as spec_v3
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
+from cells.laws import electrochemistry
+from cells.laws.channels import cav1p2_m2h, kleak_always_open, kv1p5_mh
+from cells.laws.channels import voltage_shift as vshift
 from cells.laws.junctions.selective import selective_flux
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
@@ -38,10 +44,12 @@ from cells.models import surface_pump_v3 as v3
 from cells.numerics import surface_imex as imex
 from cells.operators import partition
 from cells.registry import kind_registry
+from cells.registry import laws as law_registry
 from cells.registry.models import get_model
 from tests import kind_fixtures as kf
 from tests import membrane_insertion_fixtures as insertion_fixtures
 from tests import partition_fixtures
+from tests.unit.test_proton_buffer_kind import buffered_world
 from validation.fr50 import closed_forms as fr50_closed
 from validation.fr50 import engine as fr50_engine
 from validation.fr50 import judge as fr50_judge
@@ -50,6 +58,7 @@ from validation.fr51 import closed_forms as fr51_laws
 from validation.fr51 import engine as fr51
 from validation.fr51 import judge as fr51_judge
 from validation.fr51 import plants as fr51_plants
+from validation.fr64 import closed_forms as fr64_laws
 from validation.tissue import cell_replacement_fixtures as replacement_fixtures
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as v3_fixtures
@@ -637,10 +646,6 @@ FR51_REFUSALS = {
         "blocker concentration lies in",
     ),
     "an unknown side": (lambda b, r: b["blocker"].update(side="through"), "outside or inside"),
-    "a reversal ion not carried": (
-        lambda b, r: b.update(reference={"reversal_of": "Na"}),
-        "does not carry",
-    ),
     "a blocker named as a row": (lambda b, r: b["blocker"].update(id="Na"), "names a species row"),
     "N2 beside a block": (
         lambda b, r: r["execution"].update(solver=imex.IMPLICIT_CONDUCTANCE_IDS[0]),
@@ -678,9 +683,7 @@ def test_a_block_beside_an_operator_that_rewrites_channel_slots_is_refused(law, 
     model meets @3's BLOCK_STRUCTURE_REFUSAL too): with it planted away, the world is admitted, its
     block kept."""
     raw = FR51_SLOT_WRITERS[law]()
-    raw["model"]["channels"][0]["block"] = fr51_block()["model"]["channels"][0]["block"] | {
-        "reference": "membrane_voltage"
-    }
+    raw["model"]["channels"][0]["block"] = fr51_block()["model"]["channels"][0]["block"]
     with pytest.raises(ConfigError, match=f"{law} rewrites channel slots"):
         parse_spec(raw)
     monkeypatch.setattr(pump_composite, "block_slot_errors", lambda pairs, spec: [])  # The plant.
@@ -703,12 +706,347 @@ def test_a_block_round_trips_alone_and_beside_factors():
         raw = heredity(("f_b", "f_c"))
         raw["model"]["channels"][0]["block"] = fr51.raw_world("B1_two_modes_E1")["model"][
             "channels"
-        ][0]["block"] | {"reference": "membrane_voltage"}
+        ][0]["block"]
         both = parse_spec(raw)
         assert parse_spec(spec_v3.to_dict(both)) == both
         assert both.model.channels[0].factors == ("f_b", "f_c")
         assert both.model.channels[0].block is not None
         assert type(both.model.channels[1]) is not spec_v3.FactoredChannelPopulation
+
+
+# ------------------------------------------------------------------ FR-64: a declared voltage shift
+# docs/FR64_VOLTAGE_SHIFT_DESIGN.md §5 and §9 (§17 at main 7149f90a). The declaration's refusals by
+# name, on B4's buffered heredity cell D (test_proton_buffer_kind.buffered_world: its Kir2.1
+# population kir_0, H and B rows, B4 at the cell) with FR-51's B1 block on kir_0; and the closed
+# set's kernels against their 50-digit closed forms (validation/fr64/closed_forms.py).
+
+FR64_PH = {
+    "side": "outside", "shift_V_per_ph": -0.0234, "reference_ph": 7.3, "ph_window": [6.8, 7.5]
+}  # fmt: skip
+
+
+def ph_shift(**changes):
+    return {"ph": FR64_PH | changes}
+
+
+def fr64_world(shift=None, *, block=True, change=None):
+    """buffered_world with FR-51's B1 block on kir_0 (read through validation/fr51/engine), and
+    `shift` as kir_0's voltage_shift where given; change(raw) edits it further."""
+    raw = buffered_world()
+    kir = raw["model"]["channels"][0]
+    if block:
+        kir["block"] = fr51.raw_world("B1_two_modes_E1")["model"]["channels"][0]["block"]
+    if shift is not None:
+        kir["voltage_shift"] = shift
+    if change is not None:
+        change(raw)
+    return raw
+
+
+def gate_free(raw):
+    """kir_0 as an always-open K leak (no gates)."""
+    kir = raw["model"]["channels"][0]
+    kir.update(kinetic_law=kleak_always_open.LAW_ID, initial_gate=[])
+
+
+def old_reference(raw):
+    raw["model"]["channels"][0]["block"]["reference"] = {"reversal_of": "K"}
+
+
+FR64_REFUSALS = {  # name: (kir_0's voltage_shift, a block on kir_0, a further change, the reason)
+    "not a mapping": ("membrane_voltage", True, None, "omit it for none"),
+    "empty": ({}, True, None, "omit it for none"),
+    "an unknown key": ({"gate": {"m": ph_shift()}}, True, None, "omit it for none"),
+    "empty gates": ({"gates": {}}, True, None, "non-empty"),
+    "a gate not the law's": ({"gates": {"n": ph_shift()}}, True, None, "no such reader"),
+    "gates on a gate-free law": ({"gates": {"m": ph_shift()}}, True, gate_free, "has no gates"),
+    "the block without a block": (
+        {"block": {"reversal_of": "K"}}, False, None, "declares no block",
+    ),
+    "an unknown kind": ({"block": {"surface_charge": 0.01}}, True, None, "no shift kind"),
+    "two kinds on one reader": (
+        {"block": {"reversal_of": "K", "ph": FR64_PH}}, True, None, "a shift is one",
+    ),
+    "the membrane voltage spelled": ({"block": "membrane_voltage"}, True, None, "omit the reader"),
+    "a reversal of an ion not carried": (
+        {"block": {"reversal_of": "Na"}}, True, None, "does not carry",
+    ),
+    "a proton row the model lacks": (
+        {"gates": {"m": ph_shift(proton="Hx")}}, True, None, "declares no 'Hx'",
+    ),
+    "a proton row not of valence +1": (
+        {"gates": {"m": ph_shift(proton="B")}}, True, None, "of valence \\+1",
+    ),
+    "not the closure's proton row": (
+        {"gates": {"m": ph_shift(proton="Na")}}, True, None, "not the closure's proton row",
+    ),
+    "an unknown side": (
+        {"gates": {"m": ph_shift(side="both")}}, True, None, "neither is a default",
+    ),
+    "a slope that is not finite": (
+        {"gates": {"m": ph_shift(shift_V_per_ph=math.nan)}}, True, None, "finite number",
+    ),
+    "a window low above high": (
+        {"gates": {"m": ph_shift(ph_window=[7.5, 6.8])}}, True, None, "lies below its high",
+    ),
+    "a reference outside the window": (
+        {"gates": {"m": ph_shift(reference_ph=7.6)}}, True, None, "inside its window",
+    ),
+    "a missing field": (
+        {"gates": {"m": {"ph": {k: v for k, v in FR64_PH.items() if k != "side"}}}},
+        True, None, "missing=\\['side'\\]",
+    ),
+    "the block's pH shift above 0.369 V": (
+        {"block": ph_shift(shift_V_per_ph=-0.8)}, True, None, "above 0.369 V",
+    ),
+    "the block's old reference key": (
+        None, True, old_reference, "moved to the population's voltage_shift.block",
+    ),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("name", list(FR64_REFUSALS))
+def test_each_shift_refusal_names_its_reason(name):
+    """FR-64's §5 (host, parse only, milliseconds each): each refusal of the declaration fires
+    with its reason. The accepted control, the block's shift on the K reversal (FR-51's, moved) in
+    the same world, is the round trip's row. The refusals beside a slot writer, of a path without
+    the structure and of the stationary analysis are their sites' rows."""
+    shift, block, change, reason = FR64_REFUSALS[name]
+    with pytest.raises(ConfigError, match=reason):
+        parse_spec(fr64_world(shift, block=block, change=change))
+
+
+def with_neutral(raw):
+    """raw with a neutral species N0 at 1 mM in every node, moved by no route."""
+    m = raw["model"]
+    m["species"].append(dict(id="N0", valence=0, standard_mu_RT=0.0))
+    for node in (*m["cells"], *m["extracellular"]):
+        node["initial_amount_fmol"]["N0"] = 1.0 * node["volume_pL"]
+    for patch in m["membranes"]:
+        patch["permeability_m_per_s"]["N0"] = 0.0
+    raw["execution"]["material_balance_atol_fmol"]["N0"] = 1e-10
+
+
+@pytest.mark.parametrize(
+    "case", ["an idle ion, on a gate", "an idle ion, on the block", "a neutral species"]
+)
+def test_a_reversal_of_an_ion_not_moved_or_neutral_is_refused(case):
+    """FR-64's question 4 (ruled), and E's own domain. A law registered at run time can carry an
+    ion at relative permeability 0, which its population does not move, so a closure could hold
+    it: a reversal of it is refused by name, on a gate or on the block. A neutral species has no
+    reversal potential (E divides by z): refused by name. No registered law has either."""
+    neutral = case == "a neutral species"
+    idle, neutral = (None, ("N0", 0, 1.0)) if neutral else (("Na", 1, 0.0), None)
+    base = kv1p5_mh.LAW if case != "an idle ion, on the block" else kleak_always_open.LAW
+    law = dataclasses.replace(
+        base, law_id="tests.channel.k_beside_another@1", code=99,
+        permeant=(("K", 1, 1.0), idle or neutral),
+        material_term=cav1p2_m2h.LAW.material_term if neutral else base.material_term,
+    )  # fmt: skip
+    other = (idle or neutral)[0]
+
+    def beside(raw):
+        if neutral:
+            with_neutral(raw)
+        kir = raw["model"]["channels"][0]
+        kir.update(
+            kinetic_law=law.law_id,
+            initial_gate=[0.5, 0.5] if law.gates else [],
+            permeant_ions=[dict(species_id=s, relative_permeability=r) for s, _, r in law.permeant],
+        )
+
+    named = {"reversal_of": other}
+    shift = {"gates": {"m": named}} if law.gates else {"block": named}
+    reason = "a neutral species" if neutral else "carries at relative permeability 0"
+    with law_registry.scope(law_registry.BUILTIN.extended(law)):
+        with pytest.raises(ConfigError, match=reason):
+            parse_spec(fr64_world(shift, change=beside))
+
+
+def test_a_shifted_definition_round_trips_and_without_a_shift_nothing_moves():
+    """FR-64's declaration (host): the block's shift on a reversal round-trips through to_dict,
+    alone (FR-51's B1, its frozen reference translated) and beside factors on heredity cell D's
+    Kir2.1. A population with neither key keeps today's type and form. The gates' and the pH's
+    round trips are the sites' rows."""
+    spec = parse_spec(fr51.raw_world("B1_two_modes_E1"))
+    assert spec.model.channels[0].voltage_shift == spec_v3.VoltageShift(
+        block=vshift.ReversalShift("K")
+    )
+    assert spec_v3.to_dict(spec)["model"]["channels"][0]["voltage_shift"] == {
+        "block": {"reversal_of": "K"}
+    }
+    assert "reference" not in spec_v3.to_dict(spec)["model"]["channels"][0]["block"]
+    assert parse_spec(spec_v3.to_dict(spec)) == spec
+    assert spec_v3.shifted_readers(spec.model) == (("population", "block", "reversal_of"),)
+    with scoped():
+        raw = heredity(("f_b", "f_c"))
+        kir = raw["model"]["channels"][0]
+        kir["block"] = fr51.raw_world("B1_two_modes_E1")["model"]["channels"][0]["block"]
+        kir["voltage_shift"] = {"block": {"reversal_of": "K"}}
+        both = parse_spec(raw)
+        assert parse_spec(spec_v3.to_dict(both)) == both
+        assert both.model.channels[0].factors == ("f_b", "f_c")
+        plain = both.model.channels[1]
+        assert type(plain) is not spec_v3.FactoredChannelPopulation
+        assert "voltage_shift" not in spec_v3.to_dict(both)["model"]["channels"][1]
+    unshifted = parse_spec(fr51.raw_world("B1_two_modes_E1", blocked=False))
+    assert spec_v3.shifted_readers(unshifted.model) == ()
+    accepted = parse_spec(fr64_world({"block": {"reversal_of": "K"}}))  # The refusals' control.
+    assert accepted.model.channels[0].voltage_shift.block == vshift.ReversalShift("K")
+
+
+FR64_REVERSALS = (  # (c_i, c_o) in mM and z, across FR-51's admitted 1e-3 to 1e3 mM.
+    ("140", "5.4", 1), ("10", "145", 1), ("5", "5", 1), ("1e-4", "2", 2), ("20", "120", -1),
+    ("1e-3", "1e3", 1), ("1e3", "1e-3", -1),
+)  # fmt: skip
+FR64_PHS = ("4", "6.4", "6.8", "7.2", "7.3", "7.4", "8.5", "10")
+FR64_SLOPES = ("-0.0234", "-0.0078", "0", "0.05", "-0.1")
+TEMPERATURE_K = 310.0
+
+
+def fr64_kernel_misfit():
+    """The largest misfit of the closed set's kernels from their 50-digit closed forms:
+    ReversalShift's E and its slope at each end, and PhShift's pH, dV and slope over the pH and
+    slope grids. Each is
+    |kernel - closed form| / (1e-13 |closed form| + floor), with floor 1e-18 V for E and its
+    slopes, 1e-15 for the pH and 1e-14 |sigma| V for dV (a few ulps of the pH), so a value at most
+    1 fits."""
+    worst = 0.0
+
+    def misfit(found, expected, floor):
+        nonlocal worst
+        found, expected = Decimal(float(found)), Decimal(expected)
+        bound = Decimal("1e-13") * abs(expected) + floor
+        worst = max(worst, float(abs(found - expected) / bound))
+
+    for c_in, c_out, z in FR64_REVERSALS:
+        ci, co = float(c_in), float(c_out)
+        e = vshift.ReversalShift.delta_v(np.float64(ci), np.float64(co), z, TEMPERATURE_K)
+        misfit(e, fr64_laws.reversal(c_in, c_out, z, TEMPERATURE_K), Decimal("1e-18"))
+        for c in (ci, co):
+            slope = vshift.ReversalShift.slope(np.float64(c), z, TEMPERATURE_K)
+            misfit(slope, fr64_laws.reversal_slope(c, z, TEMPERATURE_K), Decimal("1e-18"))
+    for ph in FR64_PHS:
+        h = 1000.0 * 10.0 ** -float(ph)
+        misfit(vshift.PhShift.ph(np.float64(h)), fr64_laws.ph(h), Decimal("1e-15"))
+        for sigma in FR64_SLOPES:
+            dv = vshift.PhShift.delta_v(np.float64(h), float(sigma), 7.3)
+            floor = Decimal("1e-14") * abs(Decimal(sigma)) + Decimal("1e-30")
+            misfit(dv, fr64_laws.ph_shift(h, float(sigma), 7.3), floor)
+            slope = vshift.PhShift.slope(np.float64(h), float(sigma))
+            misfit(slope, fr64_laws.ph_slope(h, float(sigma)), Decimal("1e-30"))
+    return worst
+
+
+def reversal_plant(change):
+    """A plant on electrochemistry.reversal_potential, which ReversalShift reads through its
+    module."""
+    original = electrochemistry.reversal_potential
+
+    def planted(inside, outside, valence, temperature, *, xp=np):
+        return change(original, inside, outside, valence, temperature, xp)
+
+    return planted
+
+
+FR64_KERNEL_PLANTS = {  # name: (owner, attribute, planted value)
+    "E's valence sign flipped": (
+        electrochemistry, "reversal_potential",
+        reversal_plant(lambda f, i, o, z, t, xp: f(i, o, -z, t, xp=xp)),
+    ),
+    "c_i and c_o exchanged": (
+        electrochemistry, "reversal_potential",
+        reversal_plant(lambda f, i, o, z, t, xp: f(o, i, z, t, xp=xp)),
+    ),
+    "h without the 1 M reference": (vshift, "PH_REFERENCE_mM", 1.0),
+    "the pH shift's sign flipped": (
+        vshift.PhShift, "delta_v",
+        staticmethod(
+            lambda h, sigma, reference, *, xp=np: -sigma * (vshift.PhShift.ph(h, xp=xp) - reference)
+        ),
+    ),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("plant", [None, *FR64_KERNEL_PLANTS])
+def test_the_shift_kernels_meet_their_closed_forms_and_each_plant_misses_them(plant, monkeypatch):
+    """FR-64's kernels (host, about 0.1 s): the reversal's E and its slope, and the pH, dV and its
+    slope, each within 1e-13 relative of the 50-digit closed forms; each plant misses them."""
+    if plant is not None:
+        monkeypatch.setattr(*FR64_KERNEL_PLANTS[plant])
+    misfit = fr64_kernel_misfit()
+    assert (misfit <= 1.0) if plant is None else (misfit > 1e3), misfit
+
+
+def test_the_ph_window_is_closed_with_its_rounding_margin_and_the_block_bound_admits_its_limit():
+    """The window (the note's §3.5, option (c)): a pH on either edge, or within PH_MARGIN beyond it,
+    is admitted; 2 PH_MARGIN beyond is refused, and so are h <= 0 and a non-finite h. The block's
+    0.369 V bound (§4.3) admits its limit and refuses just above it."""
+    low, high = 6.8, 7.5
+    for ph, admitted in (
+        (low, True), (high, True), (7.1, True), (low - 0.5e-9, True), (high + 0.5e-9, True),
+        (low - 2e-9, False), (high + 2e-9, False),
+    ):  # fmt: skip
+        h = np.float64(1000.0 * 10.0 ** -ph)
+        assert bool(vshift.PhShift.valid(h, low, high)) is admitted, ph
+    for h in (0.0, -1.0, math.inf, math.nan):
+        assert not bool(vshift.PhShift.valid(np.float64(h), low, high))
+    reach = max(7.3 - (low - vshift.PH_MARGIN), (high + vshift.PH_MARGIN) - 7.3)
+    sigma = vshift.BLOCK_SHIFT_LIMIT_V / reach
+    while vshift.PhShift("outside", sigma, 7.3, (low, high)).largest_shift_V() > 0.369:
+        sigma = math.nextafter(sigma, 0.0)
+    at_limit = fr64_world({"block": ph_shift(shift_V_per_ph=sigma, ph_window=[low, high])})
+    with pytest.raises(ConfigError, match="sites are not built yet"):  # Parsed; FR-64's sites.
+        parse_spec(at_limit)
+    steeper = ph_shift(shift_V_per_ph=sigma * (1 + 1e-6), ph_window=[low, high])
+    above = fr64_world({"block": steeper})
+    with pytest.raises(ConfigError, match="above 0.369 V"):
+        parse_spec(above)
+
+
+FR64_KIND_ROWS = {  # each kind of the closed set: its refusal rows and its kernel plants
+    "reversal_of": (
+        ("a reversal of an ion not carried", "the block without a block"),
+        ("E's valence sign flipped", "c_i and c_o exchanged"),
+    ),
+    "ph": (
+        ("a proton row not of valence +1", "not the closure's proton row", "an unknown side",
+         "the block's pH shift above 0.369 V"),
+        ("h without the 1 M reference", "the pH shift's sign flipped"),
+    ),
+}  # fmt: skip
+
+
+def closed_set_gaps(kinds):
+    """What a kind of the table lacks: a dV kernel, a slope kernel, its refusal rows, its plants."""
+    out = []
+    for key, kind in kinds.items():
+        if not all(callable(getattr(kind, name, None)) for name in ("delta_v", "slope", "parse")):
+            out.append(f"{key}: a kernel or its parse")
+        refusals, plants = FR64_KIND_ROWS.get(key, ((), ()))
+        if not refusals or any(name not in FR64_REFUSALS for name in refusals):
+            out.append(f"{key}: its refusal rows")
+        if not plants or any(name not in FR64_KERNEL_PLANTS for name in plants):
+            out.append(f"{key}: its plants")
+    return out
+
+
+def test_the_closed_set_has_its_kernels_refusals_and_plants():
+    """The closed set's guard row (milliseconds): the parse, the model and this row read one table
+    (vshift.KINDS), and each kind has its two kernels, its refusal rows and its plants. Planted: a
+    third kind added to the table alone."""
+    assert closed_set_gaps(vshift.KINDS) == []
+    assert tuple(vshift.KINDS) == ("reversal_of", "ph")
+
+    class SurfaceCharge:
+        KEY = "surface_charge"
+
+    planted = MappingProxyType(dict(vshift.KINDS) | {SurfaceCharge.KEY: SurfaceCharge})
+    assert closed_set_gaps(planted) == [
+        "surface_charge: a kernel or its parse",
+        "surface_charge: its refusal rows",
+        "surface_charge: its plants",
+    ]
 
 
 # ------------------------------------------------------------------ FR-50 phase 2: @3's own records

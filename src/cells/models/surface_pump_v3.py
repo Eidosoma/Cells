@@ -63,6 +63,7 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError
 from cells.definitions.surface_pump_v3_spec import (
+    BLOCK_READER,
     EXACT_FREE_ENERGY_HEAT,
     GATED_CODES,
     LAW_CODES,
@@ -79,9 +80,12 @@ from cells.definitions.surface_pump_v3_spec import (
     law_codes,
     one_way_pairs,
     projection,
+    shifted_readers,
 )
 from cells.execution.errors import NumericalError
+from cells.laws import electrochemistry
 from cells.laws.channels import open_channel_block as block_law
+from cells.laws.channels import voltage_shift as vshift
 from cells.laws.channels import sodium_channels, voltage_gates
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R, bernoulli
 from cells.laws.junctions import junction_gate
@@ -223,6 +227,17 @@ BLOCK_STRUCTURE_REFUSAL = (
     f"{block_law.LAW_ID} runs in @3 through its structure's implementation (registry.get_model), "
     "which holds the blocked populations' layout; a path without that structure would drop the "
     "block, so it refuses it"
+)
+SHIFT_STRUCTURE_REFUSAL = (
+    "voltage_shift runs in @3 through its structure's implementation (registry.get_model), which "
+    "holds the shifted readers; a path without that structure would drop the shift, so it refuses "
+    "it (FR-64)"
+)
+# FR-64's build, between its declaration and its sites (temporary, removed with the sites): the
+# block's reversal runs on FR-51's layout as before; every other declared shift is refused.
+SHIFT_SITES_PENDING = (
+    "voltage_shift: a gate's shift and a block's pH shift are parsed but their sites are not built "
+    "yet (FR-64's build in progress), so they are refused (fails closed)"
 )
 FORMS_STRUCTURE_REFUSAL = (
     f"{forms_law.LAW_ID} runs in @3 through its structure's implementation (registry.get_model), "
@@ -400,6 +415,13 @@ def initial_values(spec, *, structure=None):
         recorded and one_way_pairs(spec.model) != structure.one_way_records
     ):
         raise ConfigError(ONE_WAY_STRUCTURE_REFUSAL)  # Fail closed, as FR-51's block is.
+    shifted = shifted_readers(spec.model)  # FR-64.
+    if shifted != (() if structure is None else structure.shifted_readers):
+        raise ConfigError(SHIFT_STRUCTURE_REFUSAL)  # Fail closed, as the block and the records.
+    if any(
+        (reader, kind) != (BLOCK_READER, vshift.ReversalShift.KEY) for _, reader, kind in shifted
+    ):
+        raise ConfigError(SHIFT_SITES_PENDING)
     with forms_return_paths(spec.model):  # Left before anything else runs.
         state, layout = _todays_initial_values(spec)
     if (
@@ -563,8 +585,9 @@ def block_initial_values(spec, structure):
         for k, (mode, steep) in enumerate(zip(block.modes, block.steepness(), strict=True)):
             weight[k, slot], k0[k, slot], steepness[k, slot] = mode.weight, mode.k0_mM, steep
         concentration[slot] = block.concentration_mM
-        if block.reversal_of is not None:
-            reversal[slot], ion[slot] = True, m.species_ids.index(block.reversal_of)
+        shift = getattr(m.channels[slot].voltage_shift, "block", None)  # FR-64: its reader's.
+        if isinstance(shift, vshift.ReversalShift):
+            reversal[slot], ion[slot] = True, m.species_ids.index(shift.ion)
     return dict(
         channel_block_weight=weight,
         channel_block_k0_mM=k0,
@@ -844,7 +867,7 @@ def channel_block(ci, co, voltage, p, *, xp=jnp):
     inside = xp.where(named, ci[ion, p.membrane_cell[patch]], 1.0)
     outside = xp.where(named, co[ion, p.membrane_outside[patch]], 1.0)
     z = xp.where(named, xp.reshape(p.valence, (-1,))[ion], 1.0)
-    reversal = block_law.reversal_potential(inside, outside, z, p.temperature, xp=xp)
+    reversal = electrochemistry.reversal_potential(inside, outside, z, p.temperature, xp=xp)
     v_ref = xp.where(named, voltage - reversal, voltage)
     k = block_law.dissociation(
         p.channel_block_k0_mM, p.channel_block_steepness, v_ref, p.temperature, xp=xp
@@ -5975,6 +5998,7 @@ def structure(model):
         floating_nodes=bool(first.floating_nodes(model)),  # False by default (the charge rule).
         loops=_loops(model, routes),  # () by default (a factor's feedback).
         one_way_records=one_way_pairs(model),  # FR-50 phase 2: () by default.
+        shifted_readers=shifted_readers(model),  # FR-64: () by default.
     )
 
 
