@@ -6,6 +6,17 @@
       "url": "https://cells.eidosoma.ai/",
       "versions": [
         {
+          "id": "v59-anatomy",
+          "date": "2026-11-27",
+          "previous": "v58",
+          "viewer_revision": "ab7fada2bbed9bbde0da9918104500087e96ee99",
+          "engine_revision": "4fd3d042",
+          "staged_folder": "publish-v59-anatomy",
+          "staging": "https://cells.eidosoma.ai/r/v59-anatomy/",
+          "manifest": "https://cells.eidosoma.ai/r/v59-anatomy/release.json",
+          "note": "Physarum and Haloferax anatomy and their Machines shelves are live. The site check passed 92 of 93 on its first run. The remaining slow-connection check sampled too early. It passed on a focused rerun timed from the loading animation's start. The production homepage and both organism catalogues matched the approved release."
+        },
+        {
           "id": "v58",
           "date": "2026-11-23",
           "previous": "v53",

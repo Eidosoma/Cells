@@ -405,12 +405,12 @@ try {
     tab("Page.navigate", { url: `${origin}${address}` }).catch(() => null);
   };
   /** Looks at about `ms` of the page's own clock (the first one that comes), with the page not yet drawn. */
-  const lookAt = async (ms, until = 8000) => {
+  const lookAt = async (ms, until = 8000, elapsed = (seen) => seen.t) => {
     const start = Date.now();
     let seen = null;
     while (Date.now() - start < until) {
       seen = await look().catch(() => null);
-      if (seen?.here && seen.t >= ms) return seen;
+      if (seen?.here && elapsed(seen) >= ms) return seen;
       await sleep(40);
     }
     return seen;
@@ -470,8 +470,9 @@ try {
     await setMedia(false);
     await startSlow("/", slow(12 * 1024));
     // The wait is counted from the cover's first style (its animation's start, on the page's clock).
-    const before = await lookAt(COVER_WAIT * 1000 - 1500, (COVER_WAIT + 10) * 1000);
-    const through = await lookAt(Math.max(before?.waited ?? 0, 0) + COVER_WAIT * 1000 + 500, 15000);
+    const elapsedOnCover = (seen) => seen.waited >= 0 ? seen.t - seen.waited : -1;
+    const before = await lookAt(COVER_WAIT * 1000 - 1500, (COVER_WAIT + 30) * 1000, elapsedOnCover);
+    const through = await lookAt(COVER_WAIT * 1000 + 500, 15000, elapsedOnCover);
     const keys = await tabbed();
     await picture(`cover-root-wide-light-${COVER_WAIT}s`);
     check(`${label}: just before, the cover still stands, and the page has not drawn`, before && !before.drawn && before.state === "loading" && before.cover.seen && !before.text.seen && before.waited >= 0 && before.t < before.waited + COVER_WAIT * 1000, JSON.stringify(before));
