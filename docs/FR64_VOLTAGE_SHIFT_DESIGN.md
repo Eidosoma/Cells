@@ -1325,14 +1325,19 @@ at the merged head 60b3d32f against main 6647cf12, both as frozen snapshots.
 ### 17.11 Costs and tiers
 
 These were measured on the timed cores, under their lock, one thread each, cold.
-- **O2(b),** on the host rows' Kir world with B4, in 12 interleaved rounds:
-  - per step: shared 1.144 ms, unshared 1.156 ms, unshifted 1.056 ms;
+- **O2(b),** on the host rows' Kir world with B4, in 12 interleaved rounds, in development (0adae10c)
+  and again in the D148 round, from the frozen head 12e58d36:
+  - per step, shared, unshared and unshifted: 1.144, 1.156 and 1.056 ms in development; 1.146, 1.140
+    and 1.048 ms in the round;
   - stage reads traced per step: 11, 12 and 10;
-  - so sharing saves 2.6 %, and the shift costs 7.9 %;
+  - **the shift costs 7.9 %,** the same in both;
+  - **sharing's saving is not resolved:** 2.6 % in development, and none in the round, where shared was
+    0.3 % slower;
   - the compile is not resolved above noise.
 - **D142, the composed world,** in warm runs alternated with its unshifted twin: the shift costs
-  8.1 % a step (6.42 against 6.19 s per 600 steps). Its first run, with the compile, took 24.0 against
-  21.5 s, one sample each.
-- **Tiers** (the lead's ruling):
-  - `test_voltage_shift_compiled.py` goes in tier 2, at 72.8 s on one timed core;
-  - the populations file stays in tier 2, at 30.9 s for its 147 tests before D327's rows.
+  8.1 % a step in development (6.42 against 6.19 s per 600 steps) and 6.7 % in the round (5.72 against
+  5.32 s). Its first run, with the compile, took 24.0 against 21.5 s, then 24.1 against 22.0 s, one
+  sample each.
+- **Tiers** (the lead's ruling), as the round measured them, cold, one file per core:
+  - `test_voltage_shift_compiled.py` goes in tier 2, at 78.6 s;
+  - the populations file stays in tier 2, at 30.5 s for its 155 tests.
