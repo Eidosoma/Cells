@@ -13989,3 +13989,47 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - FR-45's registered-comparison tooling, on a new branch from main, reaching the contract's §12.3 step 5 first.
   - FR-64 may now merge main and take the matrix files.
   - The `results_baseline` fix lands on its own.
+
+## D412: X2 is waived for FR-45, and D224's X2 rule is narrowed; the crossrev record's replication set is renewed
+
+2026-11-27, written at 11:09 UTC. The user: "1. As yoiu suggest 2. as you suggest".
+
+1. **X2 (D224).**
+   - **FR-45 waives X2.**
+     - This fits what is tagged and built: the contract fixes "no `energy_check`", and the engine refuses X2 beside sets.
+     - On FR-45's path X2 would count nothing, since the site heat is booked exactly and no ion moves.
+     - No re-tag is needed, and FR-45's judged run is no longer blocked by X2.
+   - **D224 is narrowed from here.** A registration must select X2 only when its criteria judge energy readouts (heat, free energy or an energy
+     identity) on ARS(2,2,2) worlds; elsewhere X2 is optional.
+   - **The listing behind it:** of the ten registrations since D224 that did not select X2, only FR-25 (inconclusive), FR-38's first comparison
+     (failed), FR-38 v2 (passed, D381) and FR-43 part 2 (passed, D324) judge energy readouts on ARS(2,2,2). The rest judge none, or run on other
+     solvers.
+   - **A confirmation for the two that passed:** FR-38 v2's and FR-43 part 2's judged worlds run once with X2 on, as development runs, not a
+     re-judging, against X2 off at the same revision.
+2. **The replication set.** Crossrev's record's `replication/` is renewed from main's own output: 27 files, with the previous ones kept.
+   - The folder was made writable for the copy, then read-only again.
+   - Its four npz files differ only by one added layout key, and all their arrays are bit-identical.
+   - Every set of the record now equals main's crossrev output, FR-45's landing renewal included.
+
+## D413: the results_baseline fix is landed, and G1's c1 is renewed additively
+
+2026-11-27, written at 12:55 UTC.
+
+- **Landed** at 8381f54f (tag `results-baseline-final-state-landed-2026-11-27`), from 3961cafb. The landing's trial passed 307 tests.
+- **The fix** (D410): `validation/results_baseline.py` now saves a checkpoint held as jax arrays.
+  - Every G1 world had lost its final state, as had run-paths' `run`, `run_windowed` and `run_batch`. Histories were saved and compared all along.
+  - A planted row fails before the fix and passes after.
+- **G1's c1 is renewed** by D307's sequence on lane A: `global-charge-bound-20261122/c1-813dd072/`, read-only, with a renewal record.
+  - Rule A: all 13,902 old arrays are byte-identical. Rule B: all 3,733 added final states equal their run's last history row, bit for bit.
+    Rule C: the scalar paths are equal. No exception.
+  - `gate.sh` and `cache_qualify.sh` point to it.
+  - The additive check enters the checkout as `scripts/gates/c1_additive_check.py`, with a row of five planted faults.
+- **The final gate** at the pointer commit: G1 113 of 113, with final states compared, and the full tiers (498 files, none changed).
+- **Noted:**
+  - `channel_activity` is now filled. No gate passes `--padding`.
+  - `legacy_port`'s compare takes the union of keys, so across tool versions compare only the old keys.
+  - `cache_qualify`'s default trees predate D305 (pre-existing).
+  - The workspace tool `final-gate-20261126/tools/g1_run.sh` still names the old c1. Rounds copy it with the new path; the original is cited
+    evidence and stays.
+  - `test_results_baseline.py`'s row (11 to 13 tests) is folded by the next measurement.
+  - The scope map is refreshed by the nightly, and heads in flight merge main before their gate.
