@@ -1,0 +1,351 @@
+{
+ "kind": "fr45 execution record, version 1",
+ "dated": "27 November 2026",
+ "drafted_by": "FR-45's builder, from the parse-only passes (driver.py parse)",
+ "status": "confirmed against src/ by a reviewer who is not the builder (N2), with the corrections of 27 November 2026; to be hashed by the lead",
+ "passes": {
+  "revision": "bc201ec8d92fce8f97c2781285e60afbdea74389",
+  "snapshot_clean": true,
+  "runs": [
+   "W1",
+   "W1p",
+   "W2",
+   "W3",
+   "W3p",
+   "W4-dt0.02",
+   "W4-dt0.04",
+   "W4-dt0.08",
+   "W5",
+   "W6",
+   "W7",
+   "W7s"
+  ],
+  "not_parsed": "W1eq (TABLE \u00a712.3; \u00a79.2, WF5)"
+ },
+ "runs": {
+  "W1": {
+   "execution": {
+    "dt": 0.008,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 6408,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W1p": {
+   "execution": {
+    "dt": 0.008,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 808,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W2": {
+   "execution": {
+    "dt": 0.0125,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 6008,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W3": {
+   "execution": {
+    "dt": 0.004,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 7508,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20,
+     "L3": 1e-20,
+     "L4": 1e-20,
+     "L5": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W3p": {
+   "execution": {
+    "dt": 0.004,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 508,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20,
+     "L3": 1e-20,
+     "L4": 1e-20,
+     "L5": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W4-dt0.08": {
+   "execution": {
+    "dt": 0.08,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 28,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W4-dt0.04": {
+   "execution": {
+    "dt": 0.04,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 48,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W4-dt0.02": {
+   "execution": {
+    "dt": 0.02,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 88,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W5": {
+   "execution": {
+    "dt": 0.1,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 18,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W6": {
+   "execution": {
+    "dt": 0.00625,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 4008,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W7": {
+   "execution": {
+    "dt": 0.0025,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 4808,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20,
+     "L2": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  },
+  "W7s": {
+   "execution": {
+    "dt": 0.0025,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 808,
+    "max_trace_bytes": 2147483648,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "cells.solver.imex_ars222_face_electromigration@1",
+    "edge_capacity": 0,
+    "membrane_capacity": 2,
+    "material_balance_atol_fmol": {
+     "Na": 1e-10,
+     "K": 1e-10,
+     "Cl": 1e-10,
+     "L1": 1e-20
+    },
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "cells.solver.capacitive_reduction_gauged_damped_newton@2",
+    "channel_capacity": 0
+   }
+  }
+ },
+ "compared": [
+  "solver",
+  "dt",
+  "jit",
+  "backend",
+  "field_solver",
+  "the absence of energy_check",
+  "each species' material_balance_atol_fmol",
+  "driver.window_steps 1"
+ ],
+ "driver": {
+  "window_steps": 1
+ },
+ "takes": {
+  "W1eq": "W1, its start apart (TABLE \u00a74; \u00a79.2, WF5)",
+  "plants": "each its honest run's (TABLE \u00a78.1)"
+ },
+ "excluded_paths": [],
+ "excluded_paths_note": "no field of any parsed definition names its run, its world or a record (R5-4)"
+}
