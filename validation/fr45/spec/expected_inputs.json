@@ -1,0 +1,2688 @@
+{
+ "kind": "fr45 expected inputs, version 1",
+ "protocol": "fr45-site-competition-v1",
+ "written": "27 November 2026, before the binding tag, by the agent who wrote the engine table's format sample, who has seen no reference value. Typed by hand from SPEC.md §2 (with §0's constants and §1.1's ligands and multipliers) at tag fr45-site-competition-v1-amendment-3-2026-11-24.",
+ "contract": "validation/fr45/spec/TABLE.md, §4.1 and §12.2 (the dated changes of 27 November 2026)",
+ "host": {
+  "statement": "The host entities of the bath form (RULINGS-2 §8.1, §9.6) are not registered inputs. This file fixes their structure and constraints, which the binding tag fixes: their names, the patch orientations, each world's one capacitor component held by the bath, every ligand's permeability 0.0 on every host patch, every ligand at its trace in every host compartment, and every ion's permeability 0.0 on every patch, host and registered, which holds the ions at their fixed amounts. Their values are not here. The host compartments' volumes, every patch's area and capacitance, the registered specimen_face's included, and the ions' amounts in every compartment come from the host-entity addendum, recorded after the build and before any registered run (TABLE.md §4.1, §14.1). So each host volume and host_values holds the marker \"from the host-entity addendum\", and each host trace follows the addendum's volume.",
+  "names": {
+   "bath": "the held bath node",
+   "host_cell": "a host cell",
+   "host_wall": "a cell's wall on the bath",
+   "host_contact": "a host cell's contact patch on the registered node"
+  },
+  "markers": {
+   "volume": "from the host-entity addendum",
+   "trace": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+   "host_values": "from the host-entity addendum"
+  }
+ },
+ "rules": [
+  "Each entry of runs is one honest run's expected inputs, with exactly the keys of TABLE.md §4.1. A plant run's expected inputs are its world's honest run's (TABLE.md §8.1), but for plant_inputs_changed.",
+  "Every number is SPEC.md's binary64 literal as written (SPEC:104), written in Python's repr form. The judge compares numbers as binary64 values, so 602214076 and 602214076.0 are equal.",
+  "Lists are compared as sets of members, matched by id, by ligand and node (free_amounts), by patch and ligand (permeabilities), by of and name (multipliers) or by held_by (capacitor_components); ligands and observation_times_s as sets of values (TABLE.md §4.1).",
+  "A null is a value this file does not fix, one of TABLE.md §4.1's exceptions: constants.RT_pJ_per_fmol (recorded, since SPEC gives RT as a formula), and W1eq's start. The notes say which.",
+  "Where a note in this file says less than TABLE.md §4.1's exception list, that list governs (X1).",
+  "Every number is SPEC.md's literal. The host entities (host) are compared with this file for their structure and constraints, and with the host-entity addendum for their values, which this file marks; never with SPEC. They are not cross-checked: the references hold none of them.",
+  "multipliers lists exactly each population's site_binding_multiplier, at 1.0 (SPEC:62; RULINGS-2 §8.5).",
+  "A trace (declared false) is the binary64 product 1e-12 mM times its compartment's volume_pL (SPEC:104-105; TABLE.md §4.1): every ligand at a registered compartment that declares none of it, and every ligand at every host compartment, where the volume is the host-entity addendum's. At every registered volume that product equals the decimal literal.",
+  "permeabilities lists every ligand on every patch, registered and host, at 0.0 (SPEC:59-61); charges every ligand at 0 (SPEC:59). Ions are in neither, nor in free_amounts (TABLE.md §4.1).",
+  "ion_permeabilities holds, at every patch of the world, registered and host, {\"each_ion\": 0.0}: every ion the world holds, those of host_values.ion_amounts, has permeability 0.0 there. It is a constraint, compared literally, and no addendum value (RULINGS-2 §10.2).",
+  "capacitor_components holds each world's one component: the bath, the world's cell and its registered node, held by the bath; members are compared as a set (RULINGS-2 §8.1).",
+  "plant_inputs_changed holds W1p-P2's two crossed k_off, each the other population's registered value. They apply only if P2 is planted by declaration; otherwise W1p-P2's inputs_changed is empty and its inputs equal W1p's. Every other plant's inputs_changed is empty, unless a dated addendum names a list (TABLE.md §8.1).",
+  "Before any registered run the judge cross-checks this file against the references' world echo, by TABLE.md §4.1's key map. A departure stops the judge before anything is scored."
+ ],
+ "runs": {
+  "W1": {
+   "world": "W1",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": 0.0016,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "well",
+     "n_fmol": 0.0009,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": true,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 1445314.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 1200.0,
+     "k_off": 0.9,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "matrix_L2",
+     "set": "matrix",
+     "ligand": "L2",
+     "k_on": 500.0,
+     "k_off": 0.15,
+     "initial_occupancy": 0.0
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.008,
+   "observation_times_s": [
+    0.2,
+    0.4,
+    0.8,
+    1.6,
+    3.2,
+    6.4,
+    12.8,
+    25.6,
+    51.2
+   ],
+   "horizon_s": 51.2
+  },
+  "W1eq": {
+   "world": "W1eq",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": null,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "well",
+     "n_fmol": null,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": true,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 1445314.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 1200.0,
+     "k_off": 0.9,
+     "initial_occupancy": null
+    },
+    {
+     "id": "matrix_L2",
+     "set": "matrix",
+     "ligand": "L2",
+     "k_on": 500.0,
+     "k_off": 0.15,
+     "initial_occupancy": null
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.008,
+   "observation_times_s": [
+    0.8,
+    4.0,
+    8.0
+   ],
+   "horizon_s": 8.0
+  },
+  "W1p": {
+   "world": "W1p",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": 0.0016,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "well",
+     "n_fmol": 0.0009,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": true,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 1445314.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 1200.0,
+     "k_off": 0.9,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "matrix_L2",
+     "set": "matrix",
+     "ligand": "L2",
+     "k_on": 500.0,
+     "k_off": 0.15,
+     "initial_occupancy": 0.0
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.008,
+   "observation_times_s": [
+    0.2,
+    0.4,
+    0.8,
+    1.6,
+    3.2,
+    6.4
+   ],
+   "horizon_s": 6.4
+  },
+  "W2": {
+   "world": "W2",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1000000.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": 50.0,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "well",
+     "n_fmol": 1e-06,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": true,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 15055351900.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 12000.0,
+     "k_off": 0.6,
+     "initial_occupancy": 0.5
+    },
+    {
+     "id": "matrix_L2",
+     "set": "matrix",
+     "ligand": "L2",
+     "k_on": 15000.0,
+     "k_off": 0.12,
+     "initial_occupancy": 0.0
+    }
+   ],
+   "wash": {
+    "time_s": 4.0,
+    "node": "well",
+    "fraction": 0.5,
+    "buffer_mM": {
+     "L1": 1e-12,
+     "L2": 0.00016
+    }
+   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.0125,
+   "observation_times_s": [
+    2.0,
+    4.0,
+    4.0125,
+    5.0,
+    7.5,
+    10.0,
+    20.0,
+    40.0,
+    60.0,
+    75.0
+   ],
+   "horizon_s": 75.0
+  },
+  "W3": {
+   "world": "W3",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "specimen",
+     "kind": "cell",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "specimen_face",
+     "inside": "specimen",
+     "outside": "well"
+    },
+    {
+     "id": "host_wall",
+     "inside": "specimen",
+     "outside": "bath"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": 0.002,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "well",
+     "n_fmol": 0.0015,
+     "declared": true
+    },
+    {
+     "ligand": "L3",
+     "node": "well",
+     "n_fmol": 0.001,
+     "declared": true
+    },
+    {
+     "ligand": "L4",
+     "node": "well",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L5",
+     "node": "well",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "specimen",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "specimen",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L3",
+     "node": "specimen",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L4",
+     "node": "specimen",
+     "n_fmol": 0.001,
+     "declared": true
+    },
+    {
+     "ligand": "L5",
+     "node": "specimen",
+     "n_fmol": 0.002,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L3",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L4",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L5",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "A",
+     "shared": true,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 2000000.0,
+     "sites_per_copy": 2,
+     "accessible_fraction": 0.75
+    },
+    {
+     "id": "B",
+     "shared": false,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 1000000.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 0.6
+    },
+    {
+     "id": "C",
+     "shared": true,
+     "owner": "specimen_face",
+     "face": "inside",
+     "faces": "specimen",
+     "copies": 1500000.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "A_L1",
+     "set": "A",
+     "ligand": "L1",
+     "k_on": 2000.0,
+     "k_off": 2.0,
+     "initial_occupancy": 0.2
+    },
+    {
+     "id": "A_L2",
+     "set": "A",
+     "ligand": "L2",
+     "k_on": 1000.0,
+     "k_off": 0.5,
+     "initial_occupancy": 0.1
+    },
+    {
+     "id": "A_L3",
+     "set": "A",
+     "ligand": "L3",
+     "k_on": 2000.0,
+     "k_off": 0.4,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "B_L2",
+     "set": "B",
+     "ligand": "L2",
+     "k_on": 3000.0,
+     "k_off": 0.3,
+     "initial_occupancy": 0.05
+    },
+    {
+     "id": "C_L4",
+     "set": "C",
+     "ligand": "L4",
+     "k_on": 1000.0,
+     "k_off": 1.0,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "C_L5",
+     "set": "C",
+     "ligand": "L5",
+     "k_on": 2000.0,
+     "k_off": 0.4,
+     "initial_occupancy": 0.0
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "specimen_face",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "specimen_face",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "specimen_face",
+     "ligand": "L3",
+     "value": 0.0
+    },
+    {
+     "patch": "specimen_face",
+     "ligand": "L4",
+     "value": 0.0
+    },
+    {
+     "patch": "specimen_face",
+     "ligand": "L5",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L3",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L4",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L5",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "specimen_face": {
+     "each_ion": 0.0
+    },
+    "host_wall": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "A_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "A_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "A_L3",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "B_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "C_L4",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "C_L5",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "specimen",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.004,
+   "observation_times_s": [
+    0.1,
+    0.2,
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0,
+    30.0
+   ],
+   "horizon_s": 30.0
+  },
+  "W3p": {
+   "world": "W3p",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "specimen",
+     "kind": "cell",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "specimen_face",
+     "inside": "specimen",
+     "outside": "well"
+    },
+    {
+     "id": "host_wall",
+     "inside": "specimen",
+     "outside": "bath"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": 0.002,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "well",
+     "n_fmol": 0.0015,
+     "declared": true
+    },
+    {
+     "ligand": "L3",
+     "node": "well",
+     "n_fmol": 0.001,
+     "declared": true
+    },
+    {
+     "ligand": "L4",
+     "node": "well",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L5",
+     "node": "well",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "specimen",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "specimen",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L3",
+     "node": "specimen",
+     "n_fmol": 1e-12,
+     "declared": false
+    },
+    {
+     "ligand": "L4",
+     "node": "specimen",
+     "n_fmol": 0.001,
+     "declared": true
+    },
+    {
+     "ligand": "L5",
+     "node": "specimen",
+     "n_fmol": 0.002,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L3",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L4",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L5",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "A",
+     "shared": true,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 2000000.0,
+     "sites_per_copy": 2,
+     "accessible_fraction": 0.75
+    },
+    {
+     "id": "B",
+     "shared": false,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 1000000.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 0.6
+    },
+    {
+     "id": "C",
+     "shared": true,
+     "owner": "specimen_face",
+     "face": "inside",
+     "faces": "specimen",
+     "copies": 1500000.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "A_L1",
+     "set": "A",
+     "ligand": "L1",
+     "k_on": 2000.0,
+     "k_off": 2.0,
+     "initial_occupancy": 0.2
+    },
+    {
+     "id": "A_L2",
+     "set": "A",
+     "ligand": "L2",
+     "k_on": 1000.0,
+     "k_off": 0.5,
+     "initial_occupancy": 0.1
+    },
+    {
+     "id": "A_L3",
+     "set": "A",
+     "ligand": "L3",
+     "k_on": 2000.0,
+     "k_off": 0.4,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "B_L2",
+     "set": "B",
+     "ligand": "L2",
+     "k_on": 3000.0,
+     "k_off": 0.3,
+     "initial_occupancy": 0.05
+    },
+    {
+     "id": "C_L4",
+     "set": "C",
+     "ligand": "L4",
+     "k_on": 1000.0,
+     "k_off": 1.0,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "C_L5",
+     "set": "C",
+     "ligand": "L5",
+     "k_on": 2000.0,
+     "k_off": 0.4,
+     "initial_occupancy": 0.0
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "specimen_face",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "specimen_face",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "specimen_face",
+     "ligand": "L3",
+     "value": 0.0
+    },
+    {
+     "patch": "specimen_face",
+     "ligand": "L4",
+     "value": 0.0
+    },
+    {
+     "patch": "specimen_face",
+     "ligand": "L5",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L3",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L4",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L5",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "specimen_face": {
+     "each_ion": 0.0
+    },
+    "host_wall": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "A_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "A_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "A_L3",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "B_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "C_L4",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "C_L5",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "specimen",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.004,
+   "observation_times_s": [
+    0.1,
+    0.2,
+    0.5,
+    1.0,
+    2.0
+   ],
+   "horizon_s": 2.0
+  },
+  "W4-dt0.08": {
+   "world": "W4",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "vat",
+     "kind": "node",
+     "volume_pL": 1000000000.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "vat"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "vat",
+     "n_fmol": 1200000.0,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "vat",
+     "n_fmol": 800000.0,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": true,
+     "owner": "vat",
+     "face": null,
+     "faces": "vat",
+     "copies": 1445314.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 1200.0,
+     "k_off": 0.9,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "matrix_L2",
+     "set": "matrix",
+     "ligand": "L2",
+     "k_on": 500.0,
+     "k_off": 0.15,
+     "initial_occupancy": 0.0
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "vat"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.08,
+   "observation_times_s": [
+    0.4,
+    0.8,
+    1.2,
+    1.6
+   ],
+   "horizon_s": 1.6
+  },
+  "W4-dt0.04": {
+   "world": "W4",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "vat",
+     "kind": "node",
+     "volume_pL": 1000000000.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "vat"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "vat",
+     "n_fmol": 1200000.0,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "vat",
+     "n_fmol": 800000.0,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": true,
+     "owner": "vat",
+     "face": null,
+     "faces": "vat",
+     "copies": 1445314.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 1200.0,
+     "k_off": 0.9,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "matrix_L2",
+     "set": "matrix",
+     "ligand": "L2",
+     "k_on": 500.0,
+     "k_off": 0.15,
+     "initial_occupancy": 0.0
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "vat"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.04,
+   "observation_times_s": [
+    0.4,
+    0.8,
+    1.2,
+    1.6
+   ],
+   "horizon_s": 1.6
+  },
+  "W4-dt0.02": {
+   "world": "W4",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "vat",
+     "kind": "node",
+     "volume_pL": 1000000000.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "vat"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "vat",
+     "n_fmol": 1200000.0,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "vat",
+     "n_fmol": 800000.0,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": true,
+     "owner": "vat",
+     "face": null,
+     "faces": "vat",
+     "copies": 1445314.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 1200.0,
+     "k_off": 0.9,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "matrix_L2",
+     "set": "matrix",
+     "ligand": "L2",
+     "k_on": 500.0,
+     "k_off": 0.15,
+     "initial_occupancy": 0.0
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "vat"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.02,
+   "observation_times_s": [
+    0.4,
+    0.8,
+    1.2,
+    1.6
+   ],
+   "horizon_s": 1.6
+  },
+  "W5": {
+   "world": "W5",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": 0.001,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "well",
+     "n_fmol": 0.001,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": true,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 602.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 6000.0,
+     "k_off": 0.1,
+     "initial_occupancy": 0.0
+    },
+    {
+     "id": "matrix_L2",
+     "set": "matrix",
+     "ligand": "L2",
+     "k_on": 6000.0,
+     "k_off": 0.1,
+     "initial_occupancy": 0.0
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.1,
+   "observation_times_s": [],
+   "horizon_s": 1.0
+  },
+  "W6": {
+   "world": "W6",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "specimen_face",
+     "inside": "host_cell",
+     "outside": "well"
+    },
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": 0.0015,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "well",
+     "n_fmol": 0.001,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "D",
+     "shared": true,
+     "owner": "specimen_face",
+     "face": "outside",
+     "faces": "well",
+     "copies": 1204428.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 0.8
+    }
+   ],
+   "populations": [
+    {
+     "id": "D_L1",
+     "set": "D",
+     "ligand": "L1",
+     "k_on": 1500.0,
+     "k_off": 0.75,
+     "initial_occupancy": 0.1
+    },
+    {
+     "id": "D_L2",
+     "set": "D",
+     "ligand": "L2",
+     "k_on": 1000.0,
+     "k_off": 1.0,
+     "initial_occupancy": 0.05
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "specimen_face",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "specimen_face",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "specimen_face": {
+     "each_ion": 0.0
+    },
+    "host_wall": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "D_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "D_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.00625,
+   "observation_times_s": [
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0,
+    25.0
+   ],
+   "horizon_s": 25.0
+  },
+  "W7": {
+   "world": "W7",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
+   "ligands": [
+    "L1",
+    "L2"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": 8.0,
+     "declared": true
+    },
+    {
+     "ligand": "L2",
+     "node": "well",
+     "n_fmol": 4.0,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L2",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": true,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 3613284456.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 1.0,
+     "k_off": 12.0,
+     "initial_occupancy": 0.3333333333333333
+    },
+    {
+     "id": "matrix_L2",
+     "set": "matrix",
+     "ligand": "L2",
+     "k_on": 0.25,
+     "k_off": 3.0,
+     "initial_occupancy": 0.16666666666666666
+    }
+   ],
+   "wash": {
+    "time_s": 1.0,
+    "node": "well",
+    "fraction": 0.5,
+    "buffer_mM": {
+     "L1": 1e-12,
+     "L2": 8.0
+    }
+   },
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_wall",
+     "ligand": "L2",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L2",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    },
+    {
+     "of": "matrix_L2",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0,
+    "L2": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.0025,
+   "observation_times_s": [
+    0.5,
+    1.0,
+    1.0025,
+    1.5,
+    2.0,
+    3.0,
+    5.0,
+    8.0,
+    12.0
+   ],
+   "horizon_s": 12.0
+  },
+  "W7s": {
+   "world": "W7s",
+   "constants": {
+    "sites_per_fmol": 602214076,
+    "temperature_K": 310.0,
+    "RT_pJ_per_fmol": null
+   },
+   "nodes": [
+    {
+     "id": "well",
+     "kind": "node",
+     "volume_pL": 1.0,
+     "registered": true
+    },
+    {
+     "id": "bath",
+     "kind": "node",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    },
+    {
+     "id": "host_cell",
+     "kind": "cell",
+     "volume_pL": "from the host-entity addendum",
+     "registered": false
+    }
+   ],
+   "patches": [
+    {
+     "id": "host_wall",
+     "inside": "host_cell",
+     "outside": "bath"
+    },
+    {
+     "id": "host_contact",
+     "inside": "host_cell",
+     "outside": "well"
+    }
+   ],
+   "ligands": [
+    "L1"
+   ],
+   "free_amounts": [
+    {
+     "ligand": "L1",
+     "node": "well",
+     "n_fmol": 8.0,
+     "declared": true
+    },
+    {
+     "ligand": "L1",
+     "node": "bath",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    },
+    {
+     "ligand": "L1",
+     "node": "host_cell",
+     "n_fmol": "from the host-entity addendum: the binary64 product 1e-12 × this compartment's volume_pL there",
+     "declared": false
+    }
+   ],
+   "sets": [
+    {
+     "id": "matrix",
+     "shared": false,
+     "owner": "well",
+     "face": null,
+     "faces": "well",
+     "copies": 3613284456.0,
+     "sites_per_copy": 1,
+     "accessible_fraction": 1.0
+    }
+   ],
+   "populations": [
+    {
+     "id": "matrix_L1",
+     "set": "matrix",
+     "ligand": "L1",
+     "k_on": 1.0,
+     "k_off": 12.0,
+     "initial_occupancy": 0.3333333333333333
+    }
+   ],
+   "wash": null,
+   "permeabilities": [
+    {
+     "patch": "host_wall",
+     "ligand": "L1",
+     "value": 0.0
+    },
+    {
+     "patch": "host_contact",
+     "ligand": "L1",
+     "value": 0.0
+    }
+   ],
+   "ion_permeabilities": {
+    "host_wall": {
+     "each_ion": 0.0
+    },
+    "host_contact": {
+     "each_ion": 0.0
+    }
+   },
+   "multipliers": [
+    {
+     "of": "matrix_L1",
+     "name": "site_binding_multiplier",
+     "value": 1.0
+    }
+   ],
+   "charges": {
+    "L1": 0
+   },
+   "capacitor_components": [
+    {
+     "members": [
+      "bath",
+      "host_cell",
+      "well"
+     ],
+     "held_by": "bath"
+    }
+   ],
+   "host_values": "from the host-entity addendum",
+   "dt_s": 0.0025,
+   "observation_times_s": [
+    0.25,
+    0.5,
+    1.0,
+    1.5,
+    2.0
+   ],
+   "horizon_s": 2.0
+  }
+ },
+ "notes": {
+  "W1eq": "W1eq's start is not in this file. The judged run's driver reads it at run time from the tagged validation/fr45/references/outputs/reference_W1eq.json: world.populations[].initial_occupancy, matched by id, and world.free_amounts[].n, matched by ligand and node (RULINGS-2 §3, item 2). So populations[].initial_occupancy and free_amounts[].n_fmol are null here, and the judge compares the run's echo of them with that file, bit for bit. Everything else is W1's (SPEC:130-132).",
+  "W2": "L2's amount is declared, 1.0e-6 fmol (SPEC:148), which equals its trace, 1e-12 mM in 1.0e6 pL (TABLE.md §4.1).",
+  "W3": "L4 and L5 at well, and L1 to L3 at specimen, are traces. No population binds them there, so they are inert (AMENDMENT-1:23-29). The host is the bath and host_wall, walling specimen on it.",
+  "W1": "The node-only worlds (W1, W1eq, W1p, W2, W4, W5, W7, W7s) hold the bath form's bath, host_cell, host_wall and host_contact (RULINGS-2 §8.1).",
+  "W3p": "W3's inputs with SPEC:182's observation times, 0.1, 0.2, 0.5, 1.0 and 2.0 s, and horizon 2.0 s.",
+  "W4-dt0.08": "W4 has one entry per dt (SPEC:191). The three entries differ only in dt_s.",
+  "W5": "SPEC gives W5 no observation time (SPEC:195-203), so observation_times_s is empty.",
+  "W6": "The cell inside specimen_face, which SPEC does not name (SPEC:210), is the host cell, named host_cell, with its volume from the host-entity addendum; the bath and host_wall wall it on the bath (TABLE.md §4.1; RULINGS-2 §8.1, §9.6).",
+  "W7s": "W7s's registered ligands is [\"L1\"] (SPEC:249). An engine that holds L2 there lists it at its trace, declared false, in every compartment. The echo treats that ligands member and those amounts as information; its permeabilities entries are each 0.0, and its charges member must be 0 (TABLE.md §4.1)."
+ },
+ "plant_inputs_changed": {
+  "W1p-P2": {
+   "populations[id=matrix_L1].k_off": 0.15,
+   "populations[id=matrix_L2].k_off": 0.9
+  }
+ }
+}

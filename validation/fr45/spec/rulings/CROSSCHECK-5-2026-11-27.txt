@@ -1,0 +1,4 @@
+cross-check of fr45-contract's expected_inputs.json: 13 runs, 444 comparisons, 2 problems
+  W1eq: free_amounts[('L1', 'well')].n: one side null (expected)
+  W1eq: free_amounts[('L2', 'well')].n: one side null (expected)
+(Rerun on the sixth change. ion_permeabilities, a fixed rule with no counterpart in the references, and the host values are not cross-checked; the W1eq nulls are the contract's own exclusion.) Run at 2026-11-27T04:09Z on fr45-contract a9d35a39.

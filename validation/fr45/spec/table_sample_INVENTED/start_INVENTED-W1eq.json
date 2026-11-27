@@ -1,0 +1,27 @@
+{
+ "INVENTED": "INVENTED. The start that the format sample's INVENTED-W1eq run reads, at the paths of TABLE.md §3: world.populations[].initial_occupancy by id, world.free_amounts[].n by ligand and node. Its numbers are invented and meaningless.",
+ "world": {
+  "populations": [
+   {
+    "id": "grid_X1",
+    "initial_occupancy": 0.093
+   },
+   {
+    "id": "grid_X2",
+    "initial_occupancy": 0.021
+   }
+  ],
+  "free_amounts": [
+   {
+    "ligand": "X1",
+    "node": "tank",
+    "n": 0.0039
+   },
+   {
+    "ligand": "X2",
+    "node": "tank",
+    "n": 0.0026
+   }
+  ]
+ }
+}

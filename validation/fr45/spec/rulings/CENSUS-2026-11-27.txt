@@ -1,0 +1,217 @@
+# FR-45 references census, 2026-11-27T01:08Z: key names, types and counts of the tagged reference files (fr45-references-v2-2026-11-24), the words the constant and against fields hold, accuracy.json's integer counts, and load names. No number from any result is printed.
+
+## census.py
+== reference_W1.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C1', 'band', 'value:float', 'tolerance:float', '-', 'against') 45
+   pairs ('C10', 'constant', 'value:str', 'tolerance:null', '-', 'against,dt_s') 1
+   pairs ('C2a', 'band', 'value:float', 'tolerance:float', '-', 'against') 5
+   pairs ('C3a', 'band', 'value:float', 'tolerance:float', '-', 'against,end_s,start_s') 9
+   pairs ('C3b', 'derived', 'value:null', 'tolerance:float', '-', 'against,dt_s,end_s,start_s') 9
+   pairs ('C3c', 'derived', 'value:null', 'tolerance:float', '-', 'against,end_s,start_s') 9
+   pairs ('C5', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 10
+   pairs ('C9', 'derived', 'value:null', 'tolerance:null', 'terms', 'against,tolerance_information,tolerance_terms') 20
+   heats keys {'intervals': ('list', 9), 'G': ('list', 10)}
+   heats.intervals entry keys ['bound', 'end_s', 'heat', 'node', 'start_s', 'tolerance_gap']
+== reference_W1eq.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C10', 'constant', 'value:str', 'tolerance:null', '-', 'against,dt_s') 1
+   pairs ('C2b', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 15
+   pairs ('C5', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 4
+   heats keys {'intervals': ('list', 3), 'G': ('list', 4)}
+   heats.intervals entry keys ['bound', 'end_s', 'heat', 'node', 'start_s', 'tolerance_gap']
+== reference_W1p.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C1', 'band', 'value:float', 'tolerance:float', '-', 'against') 30
+   pairs ('C10', 'constant', 'value:str', 'tolerance:null', '-', 'against,dt_s') 1
+   pairs ('C3b', 'derived', 'value:null', 'tolerance:float', '-', 'against,dt_s,end_s,start_s') 6
+   pairs ('C5', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 7
+   pairs ('C9', 'derived', 'value:null', 'tolerance:null', 'terms', 'against,tolerance_information,tolerance_terms') 14
+   heats keys {'intervals': ('list', 6), 'G': ('list', 7)}
+   heats.intervals entry keys ['bound', 'end_s', 'heat', 'node', 'start_s', 'tolerance_gap']
+   plant ('P1', 'C1', 'W1p', 'time:null') 1
+   plant ('P2', 'C1', 'W1p', 'time:null') 1
+   plant ('P3', 'C3a', 'W1p', 'time:null') 1
+   plant ('P3', 'C3b', 'W1p', 'time:null') 1
+   plant ('P6', 'C3a', 'W1p', 'time:null') 1
+   plant ('P6', 'C3b', 'W1p', 'time:null') 1
+   plant ('P8', 'C10', 'W1p', 'time:null') 1
+   plant ('P9', 'C9', 'W1p', 'time:null') 1
+   plant entry keys ['assumption', 'compared', 'criterion', 'distance_in_bounds', 'honest', 'plant', 'planted', 'time_s', 'world']
+== reference_W2.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('wash', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C1', 'band', 'value:float', 'tolerance:float', '-', 'against') 50
+   pairs ('C10', 'constant', 'value:str', 'tolerance:null', '-', 'against,dt_s') 1
+   pairs ('C2a', 'band', 'value:float', 'tolerance:float', '-', 'against') 5
+   pairs ('C3a', 'band', 'value:float', 'tolerance:float', '-', 'against,end_s,start_s') 9
+   pairs ('C3b', 'derived', 'value:null', 'tolerance:float', '-', 'against,dt_s,end_s,start_s') 9
+   pairs ('C3c', 'derived', 'value:null', 'tolerance:float', '-', 'against,end_s,spans_wash,start_s') 1
+   pairs ('C3c', 'derived', 'value:null', 'tolerance:float', '-', 'against,end_s,start_s') 9
+   pairs ('C4a', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 22
+   pairs ('C4b', 'derived', 'value:float', 'tolerance:float', '-', 'against') 2
+   pairs ('C4b', 'derived', 'value:null', 'tolerance:null', 'terms', 'against,tolerance_information,tolerance_terms') 4
+   pairs ('C4c', 'band', 'value:float', 'tolerance:float', '-', 'against') 4
+   pairs ('C5', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 11
+   pairs ('C6', 'constant', 'value:str', 'tolerance:null', '-', 'against') 3
+   heats keys {'intervals': ('list', 9), 'G': ('list', 11), 'wash_free_energy_change': ('list', 1)}
+   heats.intervals entry keys ['bound', 'end_s', 'heat', 'node', 'start_s', 'tolerance_gap']
+   plant ('P5', 'C4a', 'W2', 'time:null') 1
+   plant ('P5', 'C6', 'W2', 'time:set') 1
+   plant entry keys ['assumption', 'bound_used', 'compared', 'criterion', 'distance_in_bounds', 'honest', 'plant', 'planted', 'time_s', 'world']
+== reference_W3.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C1', 'band', 'value:float', 'tolerance:float', '-', 'against') 126
+   pairs ('C10', 'constant', 'value:str', 'tolerance:null', '-', 'against,dt_s') 1
+   pairs ('C2a', 'band', 'value:float', 'tolerance:float', '-', 'against') 14
+   pairs ('C3a', 'band', 'value:float', 'tolerance:float', '-', 'against,end_s,start_s') 18
+   pairs ('C3b', 'derived', 'value:null', 'tolerance:float', '-', 'against,dt_s,end_s,start_s') 18
+   pairs ('C3c', 'derived', 'value:null', 'tolerance:float', '-', 'against,end_s,start_s') 18
+   pairs ('C5', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 30
+   pairs ('C9', 'derived', 'value:null', 'tolerance:null', 'terms', 'against,tolerance_information,tolerance_terms') 60
+   heats keys {'intervals': ('list', 18), 'G': ('list', 20)}
+   heats.intervals entry keys ['bound', 'end_s', 'heat', 'node', 'start_s', 'tolerance_gap']
+   plant ('P7', 'C1', 'W3p', 'time:null') 1
+   plant ('P7', 'C5', 'W3p', 'time:null') 1
+   plant entry keys ['compared', 'criterion', 'distance_in_bounds', 'honest', 'plant', 'planted', 'time_s', 'world']
+== reference_W4.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('closed_form', 'list'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C10', 'constant', 'value:str', 'tolerance:null', '-', 'against,dt_s') 3
+   pairs ('C5', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 15
+   pairs ('C8', 'band', 'value:float', 'tolerance:float', '-', 'against,dt_s,scale') 12
+   pairs ('C8', 'band', 'value:float', 'tolerance:null', '-', 'against,dt_s,scale') 24
+   pairs ('C8', 'band', 'value:null', 'tolerance:null', '-', 'against,minimum') 2
+   heats keys {'intervals': ('list', 4), 'G': ('list', 5)}
+   heats.intervals entry keys ['bound', 'end_s', 'heat', 'node', 'start_s', 'tolerance_gap']
+== reference_W5.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'null'), ('trajectory', 'list'), ('balances', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'null'), ('stage', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C7', 'constant', 'value:str', 'tolerance:null', '-', 'against') 1
+   heats keys {'intervals': ('list', 0), 'G': ('list', 0)}
+   plant ('P4', 'C7', 'W5', 'time:null') 1
+   plant entry keys ['bound_used', 'compared', 'criterion', 'distance_in_bounds', 'honest', 'plant', 'planted', 'time_s', 'verdict_honest', 'verdict_planted', 'world']
+== reference_W6.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C1', 'band', 'value:float', 'tolerance:float', '-', 'against') 40
+   pairs ('C10', 'constant', 'value:str', 'tolerance:null', '-', 'against,dt_s') 1
+   pairs ('C2a', 'band', 'value:float', 'tolerance:float', '-', 'against') 5
+   pairs ('C3a', 'band', 'value:float', 'tolerance:float', '-', 'against,end_s,start_s') 8
+   pairs ('C3b', 'derived', 'value:null', 'tolerance:float', '-', 'against,dt_s,end_s,start_s') 8
+   pairs ('C3c', 'derived', 'value:null', 'tolerance:float', '-', 'against,end_s,start_s') 8
+   pairs ('C5', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 9
+   pairs ('C9', 'derived', 'value:null', 'tolerance:null', 'terms', 'against,tolerance_information,tolerance_terms') 18
+   heats keys {'intervals': ('list', 8), 'G': ('list', 9)}
+   heats.intervals entry keys ['bound', 'end_s', 'heat', 'node', 'start_s', 'tolerance_gap']
+== reference_W7.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('wash', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C1', 'band', 'value:float', 'tolerance:float', '-', 'against') 45
+   pairs ('C10', 'constant', 'value:str', 'tolerance:null', '-', 'against,dt_s') 1
+   pairs ('C2a', 'band', 'value:float', 'tolerance:float', '-', 'against') 5
+   pairs ('C2b', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 10
+   pairs ('C3a', 'band', 'value:float', 'tolerance:float', '-', 'against,end_s,start_s') 8
+   pairs ('C3b', 'derived', 'value:null', 'tolerance:float', '-', 'against,dt_s,end_s,start_s') 8
+   pairs ('C3c', 'derived', 'value:null', 'tolerance:float', '-', 'against,end_s,spans_wash,start_s') 1
+   pairs ('C3c', 'derived', 'value:null', 'tolerance:float', '-', 'against,end_s,start_s') 8
+   pairs ('C4a', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 20
+   pairs ('C4b', 'derived', 'value:float', 'tolerance:float', '-', 'against') 4
+   pairs ('C4b', 'derived', 'value:null', 'tolerance:null', 'terms', 'against,tolerance_information,tolerance_terms') 8
+   pairs ('C4c', 'band', 'value:float', 'tolerance:float', '-', 'against') 4
+   pairs ('C5', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 10
+   pairs ('C6', 'constant', 'value:str', 'tolerance:null', '-', 'against') 6
+   pairs ('C9', 'derived', 'value:null', 'tolerance:null', 'terms', 'against,tolerance_information,tolerance_terms') 20
+   heats keys {'intervals': ('list', 8), 'G': ('list', 10), 'wash_free_energy_change': ('list', 1)}
+   heats.intervals entry keys ['bound', 'end_s', 'heat', 'node', 'start_s', 'tolerance_gap']
+   plant ('P5', 'C4a', 'W7', 'time:null') 1
+   plant ('P5', 'C6', 'W7', 'time:set') 2
+   plant entry keys ['assumption', 'bound_used', 'compared', 'criterion', 'distance_in_bounds', 'honest', 'plant', 'planted', 'time_s', 'world']
+== reference_W7s.json: top keys [('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   pairs ('C1', 'band', 'value:float', 'tolerance:float', '-', 'against') 15
+   pairs ('C10', 'constant', 'value:str', 'tolerance:null', '-', 'against,dt_s') 1
+   pairs ('C2a', 'band', 'value:float', 'tolerance:float', '-', 'against') 3
+   pairs ('C3a', 'band', 'value:float', 'tolerance:float', '-', 'against,end_s,start_s') 5
+   pairs ('C3b', 'derived', 'value:null', 'tolerance:float', '-', 'against,dt_s,end_s,start_s') 5
+   pairs ('C3c', 'derived', 'value:null', 'tolerance:float', '-', 'against,end_s,start_s') 5
+   pairs ('C5', 'derived', 'value:float', 'tolerance:float', '-', 'against,dt_s') 6
+   pairs ('C9', 'derived', 'value:null', 'tolerance:null', 'terms', 'against,tolerance_information,tolerance_terms') 6
+   heats keys {'intervals': ('list', 5), 'G': ('list', 6)}
+   heats.intervals entry keys ['bound', 'end_s', 'heat', 'node', 'start_s', 'tolerance_gap']
+== accuracy.json keys {'normalisation': ('str', None), 'worlds': ('dict', 10), 'provenance': ('dict', 6)}
+== format_sample_INVENTED.json top keys [('INVENTED', 'str'), ('schema', 'str'), ('invented', 'bool'), ('world', 'dict'), ('units', 'dict'), ('equilibrium', 'dict'), ('trajectory', 'list'), ('balances', 'dict'), ('wash', 'dict'), ('heats', 'dict'), ('pairs', 'list'), ('spread', 'str'), ('spread_note', 'str'), ('distance_at_horizon', 'dict'), ('closed_form', 'list'), ('stage', 'dict'), ('plants', 'list'), ('provenance', 'dict')]
+   floats in the invented file 466; also in a registered file 45; of those, outside {0, 1, 0.5, 2, -1}: 42
+constant words {('C10', 'completes'): 11, ('C6', 'unchanged'): 9, ('C7', 'refused'): 1}
+W3p's times (SPEC inputs) all among W3's C5 times: True
+heat intervals with a gap 70; above 1e-10 of |G(start)|+|G(end)| (a scale no larger than E): 0
+
+## census2.py
+shared non-trivial floats by where they sit in the registered files: {'registered only at input-echo or time keys': 14, 'registered also at a result key': 28}
+result keys involved (path without file name, count of floats): {'trajectory.tolerance_gap': 19, 'pairs.tolerance_terms.eps_factor': 4, 'pairs.tolerance_information': 8, 'pairs.tolerance_terms.eps_term': 6, 'pairs.value': 3, 'balances.sets.sites': 3, 'pairs.minimum': 1, 'pairs.tolerance': 3, 'stage.h_s': 1, 'balances.ligands.total': 3, 'pairs.tolerance_terms.moiety_term_information': 1}
+accuracy W1 {'equilibrium': 'dict{newton_vs_bracket:float,bracket_width:float,bracket_iterations:int,newton_iterations:int,residual_root:dict,residual_written:dict,affinity_over_RT:float,wang:dict}', 'trajectory_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'trajectory': 'dict{tolerance_gap_over_scale_max:float,pairs_with_gap_above_1e-10_of_scale:int,taylor_vs_dop853_rtol1e-13_over_scale_max:float,taylor_fine_vs_coarse_over_scale_max:float,taylor_steps:dict,dop853_nfev:dict}', 'closure': 'dict{ligand_totals_high_precision_over_s_node:float,ligand_totals_written_over_s_node:float,moieties_high_precision_over_S:float,moieties_written_over_S:float}', 'heats_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'heats_C3a_bound_over_heat': 'dict{min:float,max:float}', 'heat_pairs_with_gap_above_1e-10_of_E': 'int', 'heats': 'dict{tolerance_gap_over_E_max:float,taylor_vs_dop853_rtol1e-13_over_E_max:float,taylor_fine_vs_coarse_over_E_max:float,taylor_fine_vs_coarse_relative_to_heat_max:float,smallest_heat_over_E:float}', 'horizon_distance_over_C2a_band_max': 'float'}
+accuracy W1eq {'equilibrium': 'dict{newton_vs_bracket:float,bracket_width:float,bracket_iterations:int,newton_iterations:int,residual_root:dict,residual_written:dict,affinity_over_RT:float,wang:dict}', 'trajectory_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'trajectory': 'dict{tolerance_gap_over_scale_max:float,pairs_with_gap_above_1e-10_of_scale:int,taylor_vs_dop853_rtol1e-13_over_scale_max:float,taylor_fine_vs_coarse_over_scale_max:float,taylor_steps:dict,dop853_nfev:dict}', 'closure': 'dict{ligand_totals_high_precision_over_s_node:float,ligand_totals_written_over_s_node:float,moieties_high_precision_over_S:float,moieties_written_over_S:float}', 'heats_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'heats_C3a_bound_over_heat': 'dict{min:float,max:float}', 'heat_pairs_with_gap_above_1e-10_of_E': 'int', 'heats': 'dict{tolerance_gap_over_E_max:float,taylor_vs_dop853_rtol1e-13_over_E_max:float,taylor_fine_vs_coarse_over_E_max:float,taylor_fine_vs_coarse_relative_to_heat_max:float,smallest_heat_over_E:float}', 'C2b_reference_fraction_of_tolerance_max': 'float', 'horizon_distance_over_C2a_band_max': 'float', 'own_root_equals_W1_root_in_binary64': True, 'own_root_vs_W1_root_over_s_node': 'float'}
+accuracy W1p {'equilibrium': 'dict{newton_vs_bracket:float,bracket_width:float,bracket_iterations:int,newton_iterations:int,residual_root:dict,residual_written:dict,affinity_over_RT:float,wang:dict}', 'trajectory_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'trajectory': 'dict{tolerance_gap_over_scale_max:float,pairs_with_gap_above_1e-10_of_scale:int,taylor_vs_dop853_rtol1e-13_over_scale_max:float,taylor_fine_vs_coarse_over_scale_max:float,taylor_steps:dict,dop853_nfev:dict}', 'closure': 'dict{ligand_totals_high_precision_over_s_node:float,ligand_totals_written_over_s_node:float,moieties_high_precision_over_S:float,moieties_written_over_S:float}', 'heats_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'heats_C3a_bound_over_heat': 'dict{min:float,max:float}', 'heat_pairs_with_gap_above_1e-10_of_E': 'int', 'heats': 'dict{tolerance_gap_over_E_max:float,taylor_vs_dop853_rtol1e-13_over_E_max:float,taylor_fine_vs_coarse_over_E_max:float,taylor_fine_vs_coarse_relative_to_heat_max:float,smallest_heat_over_E:float}', 'horizon_distance_over_C2a_band_max': 'float', 'rows_bitwise_equal_W1': True, 'plants': 'dict{P1:dict,P2:dict,P3:dict,P6:dict,P8:dict,P9:dict}'}
+accuracy W2 {'equilibrium': 'dict{newton_vs_bracket:float,bracket_width:float,bracket_iterations:int,newton_iterations:int,residual_root:dict,residual_written:dict,affinity_over_RT:float,wang:dict,root_from_methodA_wash_state:float}', 'trajectory_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'trajectory': 'dict{tolerance_gap_over_scale_max:float,pairs_with_gap_above_1e-10_of_scale:int,taylor_vs_dop853_rtol1e-13_over_scale_max:float,taylor_fine_vs_coarse_over_scale_max:float,taylor_steps:dict,dop853_nfev:dict}', 'closure': 'dict{ligand_totals_high_precision_over_s_node:float,ligand_totals_written_over_s_node:float,moieties_high_precision_over_S:float,moieties_written_over_S:float,books_high_precision_over_s_node:float,books_written_over_s_node:float}', 'wash_interval_site_heat_over_E_min': 'float', 'heats_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'heats_C3a_bound_over_heat': 'dict{min:float,max:float}', 'heat_pairs_with_gap_above_1e-10_of_E': 'int', 'heats': 'dict{tolerance_gap_over_E_max:float,taylor_vs_dop853_rtol1e-13_over_E_max:float,taylor_fine_vs_coarse_over_E_max:float,taylor_fine_vs_coarse_relative_to_heat_max:float,smallest_heat_over_E:float}', 'horizon_distance_over_C2a_band_max': 'float', 'plants': 'dict{P5:dict}'}
+accuracy W3 {'equilibrium': 'dict{newton_vs_bracket:float,bracket_width:float,bracket_iterations:int,newton_iterations:int,residual_root:dict,residual_written:dict,affinity_over_RT:float,wang:dict}', 'trajectory_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'trajectory': 'dict{tolerance_gap_over_scale_max:float,pairs_with_gap_above_1e-10_of_scale:int,taylor_vs_dop853_rtol1e-13_over_scale_max:float,taylor_fine_vs_coarse_over_scale_max:float,taylor_steps:dict,dop853_nfev:dict}', 'closure': 'dict{ligand_totals_high_precision_over_s_node:float,ligand_totals_written_over_s_node:float,moieties_high_precision_over_S:float,moieties_written_over_S:float}', 'heats_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'heats_C3a_bound_over_heat': 'dict{min:float,max:float}', 'heat_pairs_with_gap_above_1e-10_of_E': 'int', 'heats': 'dict{tolerance_gap_over_E_max:float,taylor_vs_dop853_rtol1e-13_over_E_max:float,taylor_fine_vs_coarse_over_E_max:float,taylor_fine_vs_coarse_relative_to_heat_max:float,smallest_heat_over_E:float}', 'horizon_distance_over_C2a_band_max': 'float', 'W3p_rows_bitwise_equal_W3': True, 'W3p_s_node_equals_W3': True, 'plants': 'dict{P7:dict}'}
+accuracy W4 {'equilibrium': 'dict{newton_vs_bracket:float,bracket_width:float,bracket_iterations:int,newton_iterations:int,residual_root:dict,residual_written:dict,affinity_over_RT:float,wang:dict}', 'trajectory_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'trajectory': 'dict{tolerance_gap_over_scale_max:float,pairs_with_gap_above_1e-10_of_scale:int,taylor_vs_dop853_rtol1e-13_over_scale_max:float,taylor_fine_vs_coarse_over_scale_max:float,taylor_steps:dict,dop853_nfev:dict,C8_tolerance_gap_over_S_max:float,C8_pairs_with_gap_above_1e-10_of_S:int,C8_taylor_vs_dop853_rtol1e-13_over_S_max:float}', 'closure': 'dict{ligand_totals_high_precision_over_s_node:float,ligand_totals_written_over_s_node:float,moieties_high_precision_over_S:float,moieties_written_over_S:float}', 'heats_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'heats_C3a_bound_over_heat': 'dict{min:float,max:float}', 'heat_pairs_with_gap_above_1e-10_of_E': 'int', 'heats': 'dict{tolerance_gap_over_E_max:float,taylor_vs_dop853_rtol1e-13_over_E_max:float,taylor_fine_vs_coarse_over_E_max:float,taylor_fine_vs_coarse_relative_to_heat_max:float,smallest_heat_over_E:float}', 'horizon_distance_over_C2a_band_max': 'float', 'closed_form_gap_over_S_max': 'float'}
+accuracy W5 {'stage': 'dict{binary64_vs_exact_relative_max:float,verdicts_agree:bool=True}'}
+accuracy W6 {'equilibrium': 'dict{newton_vs_bracket:float,bracket_width:float,bracket_iterations:int,newton_iterations:int,residual_root:dict,residual_written:dict,affinity_over_RT:float,wang:dict}', 'trajectory_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'trajectory': 'dict{tolerance_gap_over_scale_max:float,pairs_with_gap_above_1e-10_of_scale:int,taylor_vs_dop853_rtol1e-13_over_scale_max:float,taylor_fine_vs_coarse_over_scale_max:float,taylor_steps:dict,dop853_nfev:dict}', 'closure': 'dict{ligand_totals_high_precision_over_s_node:float,ligand_totals_written_over_s_node:float,moieties_high_precision_over_S:float,moieties_written_over_S:float}', 'heats_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'heats_C3a_bound_over_heat': 'dict{min:float,max:float}', 'heat_pairs_with_gap_above_1e-10_of_E': 'int', 'heats': 'dict{tolerance_gap_over_E_max:float,taylor_vs_dop853_rtol1e-13_over_E_max:float,taylor_fine_vs_coarse_over_E_max:float,taylor_fine_vs_coarse_relative_to_heat_max:float,smallest_heat_over_E:float}', 'horizon_distance_over_C2a_band_max': 'float'}
+accuracy W7 {'equilibrium': 'dict{newton_vs_bracket:float,bracket_width:float,bracket_iterations:int,newton_iterations:int,residual_root:dict,residual_written:dict,affinity_over_RT:float,wang:dict,pooled_closed_form:dict,root_from_methodA_wash_state:float,theta:dict}', 'trajectory_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'trajectory': 'dict{tolerance_gap_over_scale_max:float,pairs_with_gap_above_1e-10_of_scale:int,taylor_vs_dop853_rtol1e-13_over_scale_max:float,taylor_fine_vs_coarse_over_scale_max:float,taylor_steps:dict,dop853_nfev:dict}', 'closure': 'dict{ligand_totals_high_precision_over_s_node:float,ligand_totals_written_over_s_node:float,moieties_high_precision_over_S:float,moieties_written_over_S:float,books_high_precision_over_s_node:float,books_written_over_s_node:float}', 'wash_interval_site_heat_over_E_min': 'float', 'heats_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'heats_C3a_bound_over_heat': 'dict{min:float,max:float}', 'heat_pairs_with_gap_above_1e-10_of_E': 'int', 'heats': 'dict{tolerance_gap_over_E_max:float,taylor_vs_dop853_rtol1e-13_over_E_max:float,taylor_fine_vs_coarse_over_E_max:float,taylor_fine_vs_coarse_relative_to_heat_max:float,smallest_heat_over_E:float}', 'C2b_reference_fraction_of_tolerance_max': 'float', 'horizon_distance_over_C2a_band_max': 'float', 'start': 'dict{stated_facts_checked:list[15],own_root_at_the_start_totals:dict,own_root_equals_declared_start_in_binary64:bool=True,own_root_vs_declared_start_over_s_node:float,root_at_declared_binary64_totals_vs_declared_start_over_s_node:float,own_root_theta_formula_equals_declared_occupancy:bool=True,rows_before_wash_equal_declared_start_in_binary64:bool=True,wash_removed_round_to_the_amounts_stated_for_the_start:bool=True}', 'plants': 'dict{P5:dict}'}
+accuracy W7s {'equilibrium': 'dict{newton_vs_bracket:float,bracket_width:float,bracket_iterations:int,newton_iterations:int,residual_root:dict,residual_written:dict,affinity_over_RT:float,wang:dict,pooled_closed_form:dict,theta:dict}', 'trajectory_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'trajectory': 'dict{tolerance_gap_over_scale_max:float,pairs_with_gap_above_1e-10_of_scale:int,taylor_vs_dop853_rtol1e-13_over_scale_max:float,taylor_fine_vs_coarse_over_scale_max:float,taylor_steps:dict,dop853_nfev:dict}', 'closure': 'dict{ligand_totals_high_precision_over_s_node:float,ligand_totals_written_over_s_node:float,moieties_high_precision_over_S:float,moieties_written_over_S:float}', 'heats_convergence_requirement': 'dict{misses:int,worst_ratio:float}', 'heats_C3a_bound_over_heat': 'dict{min:float,max:float}', 'heat_pairs_with_gap_above_1e-10_of_E': 'int', 'heats': 'dict{tolerance_gap_over_E_max:float,taylor_vs_dop853_rtol1e-13_over_E_max:float,taylor_fine_vs_coarse_over_E_max:float,taylor_fine_vs_coarse_relative_to_heat_max:float,smallest_heat_over_E:float}', 'horizon_distance_over_C2a_band_max': 'float', 'stated_horizon': 'dict{slowest_mode_per_s:float,horizon_time_constants:float,stated:int}'}
+shared at result keys: rounding-level (|x| < 1e-12) 22; equal to a registered input 6; neither 0
+
+## census3.py
+W1.trajectory_convergence_requirement.misses=0 W1.trajectory.pairs_with_gap_above_1e-10_of_scale=0 W1.heats_convergence_requirement.misses=0 W1.heat_pairs_with_gap_above_1e-10_of_E=0
+W1eq.trajectory_convergence_requirement.misses=0 W1eq.trajectory.pairs_with_gap_above_1e-10_of_scale=0 W1eq.heats_convergence_requirement.misses=0 W1eq.heat_pairs_with_gap_above_1e-10_of_E=0
+W1p.trajectory_convergence_requirement.misses=0 W1p.trajectory.pairs_with_gap_above_1e-10_of_scale=0 W1p.heats_convergence_requirement.misses=0 W1p.heat_pairs_with_gap_above_1e-10_of_E=0
+W2.trajectory_convergence_requirement.misses=0 W2.trajectory.pairs_with_gap_above_1e-10_of_scale=0 W2.heats_convergence_requirement.misses=0 W2.heat_pairs_with_gap_above_1e-10_of_E=0
+W3.trajectory_convergence_requirement.misses=0 W3.trajectory.pairs_with_gap_above_1e-10_of_scale=0 W3.heats_convergence_requirement.misses=0 W3.heat_pairs_with_gap_above_1e-10_of_E=0
+W4.trajectory_convergence_requirement.misses=0 W4.trajectory.pairs_with_gap_above_1e-10_of_scale=0 W4.trajectory.C8_pairs_with_gap_above_1e-10_of_S=0 W4.heats_convergence_requirement.misses=0 W4.heat_pairs_with_gap_above_1e-10_of_E=0
+W5.stage.verdicts_agree=True
+W6.trajectory_convergence_requirement.misses=0 W6.trajectory.pairs_with_gap_above_1e-10_of_scale=0 W6.heats_convergence_requirement.misses=0 W6.heat_pairs_with_gap_above_1e-10_of_E=0
+W7.trajectory_convergence_requirement.misses=0 W7.trajectory.pairs_with_gap_above_1e-10_of_scale=0 W7.heats_convergence_requirement.misses=0 W7.heat_pairs_with_gap_above_1e-10_of_E=0
+W7s.trajectory_convergence_requirement.misses=0 W7s.trajectory.pairs_with_gap_above_1e-10_of_scale=0 W7s.heats_convergence_requirement.misses=0 W7s.heat_pairs_with_gap_above_1e-10_of_E=0
+
+## census4.py
+W1eq world keys: ['constants', 'dt', 'free_amounts', 'horizon', 'id', 'ligands', 'nodes', 'observation_times', 'populations', 'sets', 'start', 'start_source', 'title']
+W1eq populations[] keys: ['faces', 'id', 'initial_occupancy', 'k_off', 'k_on', 'ligand', 'set']
+W1eq free_amounts[] keys: ['declared', 'ligand', 'n', 'node']
+invented world keys: ['constants', 'dt', 'free_amounts', 'horizon', 'id', 'ligands', 'nodes', 'observation_times', 'patches', 'populations', 'sets', 'start', 'title', 'wash']
+invented populations[] keys: ['faces', 'id', 'initial_occupancy', 'k_off', 'k_on', 'ligand', 'set']
+invented free_amounts[] keys: ['declared', 'ligand', 'n', 'node']
+W5 stage keys: ['h_s', 'loads_times_h', 'max_hL_per_population', 'max_hL_summed', 'threshold', 'verdict_per_population', 'verdict_summed']
+W5 loads type: NoneType None
+G's module mentions W1p: True  W3p: True  def G: True
+
+## census5.py
+load paths: ['loads_times_h.L_n.L1@well', 'loads_times_h.L_n.L2@well', 'loads_times_h.L_R_summed.matrix', 'loads_times_h.L_R_per_population.matrix_L1', 'loads_times_h.L_R_per_population.matrix_L2', 'loads_times_h.L_B.matrix_L1', 'loads_times_h.L_B.matrix_L2']
+largest load path: loads_times_h.L_R_summed.matrix
+largest equals max_hL_summed: True | summed above threshold: True | per-population max below threshold: True | verdicts: refused admitted
+
+## census6.py
+plant entry keys (union): ['assumption', 'bound_used', 'compared', 'criterion', 'distance_in_bounds', 'honest', 'information', 'plant', 'planted', 'time_s', 'verdict_honest', 'verdict_planted', 'world']
+  plant ('P1', 'C1', 'W1p', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:str') 1
+  plant ('P2', 'C1', 'W1p', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:null') 1
+  plant ('P3', 'C3a', 'W1p', 'time:null', 'distance:float', 'above 1 bound', 'information:bool=True', 'assumption:null') 1
+  plant ('P3', 'C3b', 'W1p', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:null') 1
+  plant ('P4', 'C7', 'W5', 'time:null', 'distance:float', 'NOT above 1 bound', 'information:null', 'assumption:null') 1
+  plant ('P5', 'C4a', 'W2', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:str') 1
+  plant ('P5', 'C4a', 'W7', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:str') 1
+  plant ('P5', 'C6', 'W2', 'time:set', 'distance:float', 'above 1 bound', 'information:null', 'assumption:str') 1
+  plant ('P5', 'C6', 'W7', 'time:set', 'distance:float', 'above 1 bound', 'information:null', 'assumption:str') 2
+  plant ('P6', 'C3a', 'W1p', 'time:null', 'distance:float', 'above 1 bound', 'information:bool=True', 'assumption:null') 1
+  plant ('P6', 'C3b', 'W1p', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:null') 1
+  plant ('P7', 'C1', 'W3p', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:null') 1
+  plant ('P7', 'C5', 'W3p', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:null') 1
+  plant ('P8', 'C10', 'W1p', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:null') 1
+  plant ('P9', 'C9', 'W1p', 'time:null', 'distance:float', 'above 1 bound', 'information:null', 'assumption:null') 1
+  pair key ('C1', 'against') {'reference': 351}
+  pair key ('C10', 'against') {'engine: the run completes and closes its ledgers on every row': 11}
+  pair key ('C10', 'dt_s') {'float': 11}
+  pair key ('C2a', 'against') {'reference': 37}
+  pair key ('C2b', 'against') {'reference': 25}
+  pair key ('C2b', 'dt_s') {'float': 25}
+  pair key ('C3a', 'against') {'reference': 57}
+  pair key ('C3b', 'against') {"engine: -dG of its own saved states, G by the references' fr45ref_free_energy.G (SPEC §1.3; AMENDMENT §2.2)": 63}
+  pair key ('C3b', 'dt_s') {'float': 63}
+  pair key ('C3c', 'against') {'engine: its own cumulative site heat may not fall by more than the tolerance': 59}
+  pair key ('C3c', 'spans_wash') {True: 2}
+  pair key ('C4a', 'against') {'reference: the declared total N_l': 42}
+  pair key ('C4a', 'dt_s') {'float': 42}
+  pair key ('C4b', 'against') {'engine: (1 - f) n + f V c_buf of its own state at the event': 6, 'engine: f n of its own state at the event': 6, 'reference: f V c_buf': 6}
+  pair key ('C4c', 'against') {'reference': 8}
+  pair key ('C5', 'against') {'reference: S_s': 102}
+  pair key ('C5', 'dt_s') {'float': 102}
+  pair key ('C6', 'against') {'engine: its own value before the event map': 9}
+  pair key ('C7', 'against') {'engine: its step report gives h*max L above 1/2': 1}
+  pair key ('C8', 'against') {'reference': 36, 'engine: e(dt) = max |y_e - y_ref| / S over R and the B_b at its times': 2}
+  pair key ('C8', 'dt_s') {'float': 36}
+  pair key ('C8', 'minimum') {'float': 2}
+  pair key ('C8', 'scale') {'float': 36}
+  pair key ('C9', 'against') {'engine: B_b / S_s of its own saved state': 138}

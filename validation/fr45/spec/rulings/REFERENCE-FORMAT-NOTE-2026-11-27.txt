@@ -1,0 +1,72 @@
+# The references' format note (27 November 2026): fr45ref_writer.py's module docstring, extracted verbatim from the blob at tag fr45-references-v2-2026-11-24 (NOTES:210). It holds no reference value.
+
+The writer of FR-45's reference files (SPEC.md §5) and of its invented format sample.
+
+One JSON file per world: reference_W1.json, reference_W1eq.json, reference_W1p.json,
+reference_W2.json, reference_W3.json, reference_W4.json, reference_W5.json,
+reference_W6.json and, from amendment 2 (AMENDMENT-2-2026-11-24.md), reference_W7.json and
+reference_W7s.json. Floats are written with repr (round trip exact) and times are the
+inputs' floats. Each file's keys, in order:
+
+  schema, invented, world, units, equilibrium, trajectory, balances, [wash], heats, pairs,
+  spread, spread_note, distance_at_horizon, [closed_form], [stage], plants, provenance
+
+- world: the inputs echoed (constants, nodes, patches, ligands, free amounts, sets with
+  their capacity S, populations, the declared start a_x, dt, times, horizon, wash).
+- equilibrium: {totals, sets {id: R}, populations {id: B}, pools {"L@node": n}, residual,
+  residual_definition, wang {set: {gap}}}; wang is {} where no set has two ligands alone.
+  W7's and W7s's (amendment 2) also hold theta {population: {formula, root, gap}}: the
+  user's formula (c_b/K_b) / (1 + sum_j c_j/K_j) from the root's free concentrations, B_b/S_s
+  from the root, and their gap, each rounded once from the working precision.
+- trajectory: [{observable, time_s, value, tolerance_gap}], observables n:<ligand>@<node>,
+  R:<set>, B:<population>; at every observation time. value is the high-precision Taylor
+  solution rounded once; tolerance_gap is |DOP853(rtol 1e-12) - DOP853(rtol 1e-13)|.
+- balances: {ligands: [{ligand, node, time_s, total}], sets: [{set, time_s, sites}]}.
+- Only amounts a law moves appear anywhere (AMENDMENT answer 3): a declared free amount at a
+  node no population binds it from is left out, and listed under world.inert_amounts_information
+  when a world has one (no FR-45 world does).
+- wash (W2, W7): {ligand: {removed, supplied}}, the map at the wash on R-ode's state.
+- heats: {intervals: [{node, start_s, end_s, heat, bound, tolerance_gap}],
+  G: [{node, time_s, G}], wash_free_energy_change (W2, W7): [{node, time_s,
+  free_energy_change, sets_part}]}.
+- pairs: [{criterion, observable, time_s, [start_s, end_s], [dt_s], class, value,
+  tolerance, against, [spans_wash], [tolerance_terms, tolerance_information], [scale],
+  [minimum]}]; class is constant, derived or band; a constant holds its value ("unchanged",
+  "refused", "completes") and a null tolerance; a derived or band pair holds its tolerance;
+  value null means the judge compares the engine against its own state (named in `against`).
+  - The rows of C4a, C5 and C9 are the saved rows: the start (time_s 0.0) and every
+    observation time (AMENDMENT answer 7).
+  - C2b's pairs are W1eq's at every observation time and W7's at its rows before its wash,
+    0.5 and 1.0 s (amendment 2), against "its start, its own root": R-eq at W7's start's
+    totals, which rounds to the declared start.
+  - C4b's and C6's pairs are on each state the event map alone acts on, in time_s: W2's
+    4.0 s row; W7's start (0.0 s, the user's example as declared) and its 1.0 s wash row.
+  - start_s and end_s are on heat pairs (C3a, C3b, C3c). C3c covers every interval, the
+    wash's included (spans_wash: true; its E is taken over the post-wash state and the next
+    row); C3a and C3b leave the wash's interval out. C3b's -dG is the references' own
+    fr45ref_free_energy.G on the engine's saved states (AMENDMENT §2.2).
+  - C9's and C4b's tolerances depend on the engine's own state (AMENDMENT answer 9): their
+    tolerance is null and tolerance_terms holds the terms the inputs fix (4 eps or 2 eps, and
+    f V c_buf), the state terms filled from R-ode marked _information, and the formula the
+    judge evaluates on the engine's state; tolerance_information is that formula on R-ode's
+    state.
+  - dt_s is on every pair whose tolerance counts steps (C2b, C3b, C4a, C5, C8, C10), in every
+    world; scale is on C8's pairs, whose tolerance is null except at the finest dt, and C8's
+    two ratio pairs carry minimum (time_s, value and tolerance null).
+- spread: "none" (nothing is drawn).
+- distance_at_horizon: {observable: |x(T) - x_eq|}.
+- closed_form (W4): [{observable, time_s, value, gap_from_ode}].
+- stage (W5): {h_s, loads_times_h {L_n, L_R_summed, L_R_per_population, L_B},
+  max_hL_summed, max_hL_per_population, threshold, verdict_summed, verdict_per_population}.
+- plants: [{plant, criterion, world, time_s, compared, honest, planted, distance_in_bounds,
+  [bound_used], [assumption], [information], [verdict_honest, verdict_planted]}], one entry
+  per key (plant, criterion, world, time_s) (AMENDMENT-3-2026-11-24.md): world is the plant's
+  world (P7's is W3p, in W3's file); time_s is the state's time for a plant applied to a
+  saved state (P5's event map alone under C6) and null for a plant judged over a run. compared
+  is {observable, time_s} or, for a heat, {observable, start_s, end_s}. An entry with
+  information: true is not a plant's criterion (P3's and P6's distances under C3a). P5 has
+  one C6 entry per state its map acts on (W2: 4.0 s; W7: 0.0 and 1.0 s) and one C4a entry.
+- A refusal world (W5) has no trajectory: equilibrium and distance_at_horizon are null and
+  trajectory, balances' and heats' lists are empty; it carries stage, C7 and P4.
+- provenance: {references_revision, tree_clean, writer_version, regeneration_hash_seeds,
+  spec, profile}.

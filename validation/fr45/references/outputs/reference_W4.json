@@ -1,0 +1,1107 @@
+{
+ "schema": "fr45-reference/1",
+ "invented": false,
+ "world": {
+  "id": "W4",
+  "title": "fixed concentrations, and the engine's order",
+  "constants": {
+   "N_f_sites_per_fmol": 602214076,
+   "N_A_per_mol": 6.02214076e+23,
+   "k_B_J_per_K": 1.380649e-23,
+   "T_K": 310.0,
+   "RT_pJ_per_fmol": 2.5774834116275045,
+   "standard_concentration_mM": 1.0,
+   "trace_mM": 1e-12,
+   "epsilon": 2.220446049250313e-16
+  },
+  "nodes": [
+   {
+    "id": "vat",
+    "kind": "node",
+    "V": 1000000000.0
+   }
+  ],
+  "ligands": [
+   "L1",
+   "L2"
+  ],
+  "free_amounts": [
+   {
+    "ligand": "L1",
+    "node": "vat",
+    "n": 1200000.0,
+    "declared": true
+   },
+   {
+    "ligand": "L2",
+    "node": "vat",
+    "n": 800000.0,
+    "declared": true
+   }
+  ],
+  "sets": [
+   {
+    "id": "matrix",
+    "owner": "node vat",
+    "faces": "vat",
+    "copies": 1445314.0,
+    "sites_per_copy": 1,
+    "accessible_fraction": 1.0,
+    "S": 0.002400000361333301
+   }
+  ],
+  "populations": [
+   {
+    "id": "matrix_L1",
+    "set": "matrix",
+    "ligand": "L1",
+    "faces": "vat",
+    "k_on": 1200.0,
+    "k_off": 0.9,
+    "initial_occupancy": 0.0
+   },
+   {
+    "id": "matrix_L2",
+    "set": "matrix",
+    "ligand": "L2",
+    "faces": "vat",
+    "k_on": 500.0,
+    "k_off": 0.15,
+    "initial_occupancy": 0.0
+   }
+  ],
+  "start": [
+   {
+    "observable": "n:L1@vat",
+    "value": 1200000.0
+   },
+   {
+    "observable": "n:L2@vat",
+    "value": 800000.0
+   },
+   {
+    "observable": "R:matrix",
+    "value": 0.002400000361333301
+   },
+   {
+    "observable": "B:matrix_L1",
+    "value": 0.0
+   },
+   {
+    "observable": "B:matrix_L2",
+    "value": 0.0
+   }
+  ],
+  "dt": [
+   0.08,
+   0.04,
+   0.02
+  ],
+  "observation_times": [
+   0.4,
+   0.8,
+   1.2,
+   1.6
+  ],
+  "horizon": 1.6
+ },
+ "units": {
+  "copies": "count (the one declared count)",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM",
+  "k_on": "per mM per s",
+  "k_off": "per s",
+  "time": "s",
+  "free_energy_and_heat": "pJ",
+  "tolerance_gap": "the observable's own unit",
+  "distance_in_bounds": "multiples of the criterion's bound"
+ },
+ "equilibrium": {
+  "totals": "the start's totals",
+  "sets": {
+   "matrix": 0.00045569627157382897
+  },
+  "populations": {
+   "matrix_L1": 0.0007291140340751202,
+   "matrix_L2": 0.001215190055684352
+  },
+  "pools": {
+   "L1@vat": 1199999.999270886,
+   "L2@vat": 799999.99878481
+  },
+  "residual": 1.5970489253974707e-11,
+  "residual_definition": "largest |residual| in fmol of the ligand totals, set moieties and detailed balance B_b = R_s c_l / K_b, at the written binary64 values",
+  "wang": {
+   "matrix": {
+    "gap": 2.834267356e-64
+   }
+  }
+ },
+ "trajectory": [
+  {
+   "observable": "n:L1@vat",
+   "time_s": 0.4,
+   "value": 1199999.9991666877,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L2@vat",
+   "time_s": 0.4,
+   "value": 799999.9997282953,
+   "tolerance_gap": 1.1641532182693481e-10
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 0.4,
+   "value": 0.0012949832776977272,
+   "tolerance_gap": 1.220811646218678e-16
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 0.4,
+   "value": 0.0008333123351926047,
+   "tolerance_gap": 1.0137290312739466e-16
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 0.4,
+   "value": 0.0002717047484429693,
+   "tolerance_gap": 1.951563910473908e-17
+  },
+  {
+   "observable": "n:L1@vat",
+   "time_s": 0.8,
+   "value": 1199999.9989113705,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L2@vat",
+   "time_s": 0.8,
+   "value": 799999.9995797422,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 0.8,
+   "value": 0.0008911129477058058,
+   "tolerance_gap": 1.8756697583999227e-16
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 0.8,
+   "value": 0.0010886295728101273,
+   "tolerance_gap": 1.5634195327240974e-16
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 0.8,
+   "value": 0.0004202578408173682,
+   "tolerance_gap": 3.01950305037213e-17
+  },
+  {
+   "observable": "n:L1@vat",
+   "time_s": 1.2,
+   "value": 1199999.998855031,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L2@vat",
+   "time_s": 1.2,
+   "value": 799999.9994798752,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 1.2,
+   "value": 0.0007349067300886955,
+   "tolerance_gap": 1.715207836872068e-16
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 1.2,
+   "value": 0.0011449688857998422,
+   "tolerance_gap": 1.4289784633358948e-16
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 1.2,
+   "value": 0.0005201247454447634,
+   "tolerance_gap": 2.7647155398380363e-17
+  },
+  {
+   "observable": "n:L1@vat",
+   "time_s": 1.6,
+   "value": 1199999.9988650829,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "n:L2@vat",
+   "time_s": 1.6,
+   "value": 799999.9994020043,
+   "tolerance_gap": 0.0
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 1.6,
+   "value": 0.0006670873987043314,
+   "tolerance_gap": 1.8030282128433939e-16
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 1.6,
+   "value": 0.0011349172269226647,
+   "tolerance_gap": 1.5027042110649091e-16
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 1.6,
+   "value": 0.000597995735706305,
+   "tolerance_gap": 2.905661822261152e-17
+  }
+ ],
+ "balances": {
+  "ligands": [
+   {
+    "ligand": "L1",
+    "node": "vat",
+    "time_s": 0.4,
+    "total": 1200000.0
+   },
+   {
+    "ligand": "L2",
+    "node": "vat",
+    "time_s": 0.4,
+    "total": 800000.0
+   },
+   {
+    "ligand": "L1",
+    "node": "vat",
+    "time_s": 0.8,
+    "total": 1200000.0
+   },
+   {
+    "ligand": "L2",
+    "node": "vat",
+    "time_s": 0.8,
+    "total": 800000.0
+   },
+   {
+    "ligand": "L1",
+    "node": "vat",
+    "time_s": 1.2,
+    "total": 1200000.0
+   },
+   {
+    "ligand": "L2",
+    "node": "vat",
+    "time_s": 1.2,
+    "total": 800000.0
+   },
+   {
+    "ligand": "L1",
+    "node": "vat",
+    "time_s": 1.6,
+    "total": 1200000.0
+   },
+   {
+    "ligand": "L2",
+    "node": "vat",
+    "time_s": 1.6,
+    "total": 800000.0
+   }
+  ],
+  "sets": [
+   {
+    "set": "matrix",
+    "time_s": 0.4,
+    "sites": 0.002400000361333301
+   },
+   {
+    "set": "matrix",
+    "time_s": 0.8,
+    "sites": 0.002400000361333301
+   },
+   {
+    "set": "matrix",
+    "time_s": 1.2,
+    "sites": 0.002400000361333301
+   },
+   {
+    "set": "matrix",
+    "time_s": 1.6,
+    "sites": 0.002400000361333301
+   }
+  ]
+ },
+ "heats": {
+  "intervals": [
+   {
+    "node": "vat",
+    "start_s": 0.0,
+    "end_s": 0.4,
+    "heat": 0.0075533792930280695,
+    "bound": 653.3279812461717,
+    "tolerance_gap": 2.1396847578017596e-09
+   },
+   {
+    "node": "vat",
+    "start_s": 0.4,
+    "end_s": 0.8,
+    "heat": 0.0012090018739584658,
+    "bound": 653.3279812550331,
+    "tolerance_gap": 2.139688266495281e-09
+   },
+   {
+    "node": "vat",
+    "start_s": 0.8,
+    "end_s": 1.2,
+    "heat": 0.00041545526346929555,
+    "bound": 653.3279812585606,
+    "tolerance_gap": 4.1958675465913046e-16
+   },
+   {
+    "node": "vat",
+    "start_s": 1.2,
+    "end_s": 1.6,
+    "heat": 0.00024278817394428182,
+    "bound": 653.3279812601736,
+    "tolerance_gap": 1.0700219937723945e-16
+   }
+  ],
+  "G": [
+   {
+    "node": "vat",
+    "time_s": 0.0,
+    "G": -40660418.20524957
+   },
+   {
+    "node": "vat",
+    "time_s": 0.4,
+    "G": -40660418.21280295
+   },
+   {
+    "node": "vat",
+    "time_s": 0.8,
+    "G": -40660418.21401195
+   },
+   {
+    "node": "vat",
+    "time_s": 1.2,
+    "G": -40660418.214427404
+   },
+   {
+    "node": "vat",
+    "time_s": 1.6,
+    "G": -40660418.214670196
+   }
+  ]
+ },
+ "pairs": [
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.0,
+   "dt_s": 0.08,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 8.526514112834964e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.4,
+   "dt_s": 0.08,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 5.1159084677009784e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.8,
+   "dt_s": 0.08,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 9.37916552411846e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 1.2,
+   "dt_s": 0.08,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 1.3642422580535942e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 1.6,
+   "dt_s": 0.08,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 1.7905679636953425e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.0,
+   "dt_s": 0.04,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 8.526514112834964e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.4,
+   "dt_s": 0.04,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 9.37916552411846e-17,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.8,
+   "dt_s": 0.04,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 1.7905679636953425e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 1.2,
+   "dt_s": 0.04,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 2.643219374978839e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 1.6,
+   "dt_s": 0.04,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 3.495870786262335e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.0,
+   "dt_s": 0.02,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 8.526514112834964e-18,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.4,
+   "dt_s": 0.02,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 1.7905679636953425e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 0.8,
+   "dt_s": 0.02,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 3.495870786262335e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 1.2,
+   "dt_s": 0.02,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 5.201173608829328e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C5",
+   "observable": "sites:matrix",
+   "time_s": 1.6,
+   "dt_s": 0.02,
+   "class": "derived",
+   "value": 0.002400000361333301,
+   "tolerance": 6.906476431396321e-16,
+   "against": "reference: S_s"
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 0.4,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0012949832776977272,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 0.4,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0008333123351926047,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 0.4,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0002717047484429693,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 0.8,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0008911129477058058,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 0.8,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0010886295728101273,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 0.8,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0004202578408173682,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 1.2,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0007349067300886955,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 1.2,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0011449688857998422,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 1.2,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0005201247454447634,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 1.6,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0006670873987043314,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 1.6,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.0011349172269226647,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 1.6,
+   "dt_s": 0.08,
+   "class": "band",
+   "value": 0.000597995735706305,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 0.4,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0012949832776977272,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 0.4,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0008333123351926047,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 0.4,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0002717047484429693,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 0.8,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0008911129477058058,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 0.8,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0010886295728101273,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 0.8,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0004202578408173682,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 1.2,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0007349067300886955,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 1.2,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0011449688857998422,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 1.2,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0005201247454447634,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 1.6,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0006670873987043314,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 1.6,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.0011349172269226647,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 1.6,
+   "dt_s": 0.04,
+   "class": "band",
+   "value": 0.000597995735706305,
+   "tolerance": null,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 0.4,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0012949832776977272,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 0.4,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0008333123351926047,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 0.4,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0002717047484429693,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 0.8,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0008911129477058058,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 0.8,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0010886295728101273,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 0.8,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0004202578408173682,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 1.2,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0007349067300886955,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 1.2,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0011449688857998422,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 1.2,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0005201247454447634,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "R:matrix",
+   "time_s": 1.6,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0006670873987043314,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L1",
+   "time_s": 1.6,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.0011349172269226647,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "B:matrix_L2",
+   "time_s": 1.6,
+   "dt_s": 0.02,
+   "class": "band",
+   "value": 0.000597995735706305,
+   "tolerance": 2.4000003613333013e-09,
+   "against": "reference",
+   "scale": 0.002400000361333301
+  },
+  {
+   "criterion": "C8",
+   "observable": "ratio:e(0.08)/e(0.04)",
+   "time_s": null,
+   "class": "band",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: e(dt) = max |y_e - y_ref| / S over R and the B_b at its times",
+   "minimum": 6.0
+  },
+  {
+   "criterion": "C8",
+   "observable": "ratio:e(0.04)/e(0.02)",
+   "time_s": null,
+   "class": "band",
+   "value": null,
+   "tolerance": null,
+   "against": "engine: e(dt) = max |y_e - y_ref| / S over R and the B_b at its times",
+   "minimum": 6.0
+  },
+  {
+   "criterion": "C10",
+   "observable": "run",
+   "time_s": 1.6,
+   "dt_s": 0.08,
+   "class": "constant",
+   "value": "completes",
+   "tolerance": null,
+   "against": "engine: the run completes and closes its ledgers on every row"
+  },
+  {
+   "criterion": "C10",
+   "observable": "run",
+   "time_s": 1.6,
+   "dt_s": 0.04,
+   "class": "constant",
+   "value": "completes",
+   "tolerance": null,
+   "against": "engine: the run completes and closes its ledgers on every row"
+  },
+  {
+   "criterion": "C10",
+   "observable": "run",
+   "time_s": 1.6,
+   "dt_s": 0.02,
+   "class": "constant",
+   "value": "completes",
+   "tolerance": null,
+   "against": "engine: the run completes and closes its ledgers on every row"
+  }
+ ],
+ "spread": "none",
+ "spread_note": "No pair is spread: nothing is drawn (SPEC.md \u00a73.4). Trajectory pairs carry integration error and are class band, judged by their criterion's band directly, never by agreement.judge.",
+ "distance_at_horizon": {
+  "n:L1@vat": 0.00040580319284754446,
+  "n:L2@vat": 0.0006171943199780469,
+  "R:matrix": 0.0002113911271305025,
+  "B:matrix_L1": 0.00040580319284754446,
+  "B:matrix_L2": 0.0006171943199780469
+ },
+ "closed_form": [
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 0.4,
+   "value": 0.0008333123354554552,
+   "gap_from_ode": 2.6285054660815524e-13
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 0.4,
+   "value": 0.0002717047484698558,
+   "gap_from_ode": 2.688654269139404e-14
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 0.4,
+   "value": 0.0012949832774079902,
+   "gap_from_ode": 2.897370892995493e-13
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 0.8,
+   "value": 0.0010886295732212708,
+   "gap_from_ode": 4.1114369545294164e-13
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 0.8,
+   "value": 0.00042025784085396875,
+   "gap_from_ode": 3.660052441836982e-14
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 0.8,
+   "value": 0.0008911129472580616,
+   "gap_from_ode": 4.4774421987131146e-13
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 1.2,
+   "value": 0.0011449688862254289,
+   "gap_from_ode": 4.255865484194619e-13
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 1.2,
+   "value": 0.00052012474548095,
+   "gap_from_ode": 3.618667138310251e-14
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 1.2,
+   "value": 0.0007349067296269223,
+   "gap_from_ode": 4.617732198025644e-13
+  },
+  {
+   "observable": "B:matrix_L1",
+   "time_s": 1.6,
+   "value": 0.0011349172273217212,
+   "gap_from_ode": 3.9905644684177943e-13
+  },
+  {
+   "observable": "B:matrix_L2",
+   "time_s": 1.6,
+   "value": 0.0005979957357460692,
+   "gap_from_ode": 3.9764204633719846e-14
+  },
+  {
+   "observable": "R:matrix",
+   "time_s": 1.6,
+   "value": 0.0006670873982655108,
+   "gap_from_ode": 4.388206514754993e-13
+  }
+ ],
+ "plants": [],
+ "provenance": {
+  "references_revision": "78ff6be4a4d35399775efcf77150b4eab8ae6d44",
+  "tree_clean": true,
+  "writer_version": "fr45-references-writer 2",
+  "regeneration_hash_seeds": [
+   0,
+   1,
+   2
+  ],
+  "spec": {
+   "label": "fr45-site-competition-v1, amendment 3 of 2026-11-24 (98cd33db)",
+   "files": [
+    "docs/FR45_SITE_COMPETITION_PROTOCOL.md",
+    "validation/fr45/spec/AMENDMENT-2-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-3-2026-11-24.md",
+    "validation/fr45/spec/CRITERIA.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
+    "validation/fr45/spec/SPEC.md"
+   ],
+   "verified_against": "SHA256SUMS-fr45-spec-98cd33db.txt",
+   "rows_matched": 106
+  },
+  "profile": "reference"
+ }
+}

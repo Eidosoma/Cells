@@ -1,0 +1,205 @@
+{
+ "schema": "fr45-reference/1",
+ "invented": false,
+ "world": {
+  "id": "W5",
+  "title": "the stage condition's edge",
+  "constants": {
+   "N_f_sites_per_fmol": 602214076,
+   "N_A_per_mol": 6.02214076e+23,
+   "k_B_J_per_K": 1.380649e-23,
+   "T_K": 310.0,
+   "RT_pJ_per_fmol": 2.5774834116275045,
+   "standard_concentration_mM": 1.0,
+   "trace_mM": 1e-12,
+   "epsilon": 2.220446049250313e-16
+  },
+  "nodes": [
+   {
+    "id": "well",
+    "kind": "node",
+    "V": 1.0
+   }
+  ],
+  "ligands": [
+   "L1",
+   "L2"
+  ],
+  "free_amounts": [
+   {
+    "ligand": "L1",
+    "node": "well",
+    "n": 0.001,
+    "declared": true
+   },
+   {
+    "ligand": "L2",
+    "node": "well",
+    "n": 0.001,
+    "declared": true
+   }
+  ],
+  "sets": [
+   {
+    "id": "matrix",
+    "owner": "node well",
+    "faces": "well",
+    "copies": 602.0,
+    "sites_per_copy": 1,
+    "accessible_fraction": 1.0,
+    "S": 9.996445184386558e-07
+   }
+  ],
+  "populations": [
+   {
+    "id": "matrix_L1",
+    "set": "matrix",
+    "ligand": "L1",
+    "faces": "well",
+    "k_on": 6000.0,
+    "k_off": 0.1,
+    "initial_occupancy": 0.0
+   },
+   {
+    "id": "matrix_L2",
+    "set": "matrix",
+    "ligand": "L2",
+    "faces": "well",
+    "k_on": 6000.0,
+    "k_off": 0.1,
+    "initial_occupancy": 0.0
+   }
+  ],
+  "start": [
+   {
+    "observable": "n:L1@well",
+    "value": 0.001
+   },
+   {
+    "observable": "n:L2@well",
+    "value": 0.001
+   },
+   {
+    "observable": "R:matrix",
+    "value": 9.996445184386558e-07
+   },
+   {
+    "observable": "B:matrix_L1",
+    "value": 0.0
+   },
+   {
+    "observable": "B:matrix_L2",
+    "value": 0.0
+   }
+  ],
+  "dt": [
+   0.1
+  ],
+  "observation_times": [],
+  "horizon": 1.0
+ },
+ "units": {
+  "copies": "count (the one declared count)",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM",
+  "k_on": "per mM per s",
+  "k_off": "per s",
+  "time": "s",
+  "free_energy_and_heat": "pJ",
+  "tolerance_gap": "the observable's own unit",
+  "distance_in_bounds": "multiples of the criterion's bound"
+ },
+ "equilibrium": null,
+ "trajectory": [],
+ "balances": {
+  "ligands": [],
+  "sets": []
+ },
+ "heats": {
+  "intervals": [],
+  "G": []
+ },
+ "pairs": [
+  {
+   "criterion": "C7",
+   "observable": "stage:first_step",
+   "time_s": 0.0,
+   "class": "constant",
+   "value": "refused",
+   "tolerance": null,
+   "against": "engine: its step report gives h*max L above 1/2"
+  }
+ ],
+ "spread": "none",
+ "spread_note": "No pair is spread: nothing is drawn (SPEC.md \u00a73.4). Trajectory pairs carry integration error and are class band, judged by their criterion's band directly, never by agreement.judge.",
+ "distance_at_horizon": null,
+ "stage": {
+  "h_s": 0.05,
+  "loads_times_h": {
+   "L_n": {
+    "L1@well": 0.00029989335553159675,
+    "L2@well": 0.00029989335553159675
+   },
+   "L_R_summed": {
+    "matrix": 0.6000000000000001
+   },
+   "L_R_per_population": {
+    "matrix_L1": 0.30000000000000004,
+    "matrix_L2": 0.30000000000000004
+   },
+   "L_B": {
+    "matrix_L1": 0.005000000000000001,
+    "matrix_L2": 0.005000000000000001
+   }
+  },
+  "max_hL_summed": 0.6000000000000001,
+  "max_hL_per_population": 0.30000000000000004,
+  "threshold": 0.5,
+  "verdict_summed": "refused",
+  "verdict_per_population": "admitted"
+ },
+ "plants": [
+  {
+   "plant": "P4",
+   "criterion": "C7",
+   "world": "W5",
+   "time_s": null,
+   "compared": {
+    "observable": "stage:h*max_L",
+    "time_s": 0.0
+   },
+   "honest": 0.6000000000000001,
+   "planted": 0.30000000000000004,
+   "distance_in_bounds": 0.6000000000000001,
+   "bound_used": "the stage condition's 1/2",
+   "verdict_honest": "refused",
+   "verdict_planted": "admitted"
+  }
+ ],
+ "provenance": {
+  "references_revision": "78ff6be4a4d35399775efcf77150b4eab8ae6d44",
+  "tree_clean": true,
+  "writer_version": "fr45-references-writer 2",
+  "regeneration_hash_seeds": [
+   0,
+   1,
+   2
+  ],
+  "spec": {
+   "label": "fr45-site-competition-v1, amendment 3 of 2026-11-24 (98cd33db)",
+   "files": [
+    "docs/FR45_SITE_COMPETITION_PROTOCOL.md",
+    "validation/fr45/spec/AMENDMENT-2-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-2026-11-24.md",
+    "validation/fr45/spec/AMENDMENT-3-2026-11-24.md",
+    "validation/fr45/spec/CRITERIA.md",
+    "validation/fr45/spec/NOTE-2026-11-24.md",
+    "validation/fr45/spec/SPEC.md"
+   ],
+   "verified_against": "SHA256SUMS-fr45-spec-98cd33db.txt",
+   "rows_matched": 106
+  },
+  "profile": "reference"
+ }
+}
