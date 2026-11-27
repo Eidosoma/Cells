@@ -40,7 +40,7 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     - **The gate closes at (c)** (D423). Only Longobardo et al. is countable: Trapani and Korn print no fit form, and Kehl
       et al. give no n for the midpoint. So the gap is an indication, and nothing is built.
     - Its price goes to the user before any build.
-  - Four stale tier rows of main's are folded at the next measurement (D418).
+  - The four stale tier rows (D418) are folded, at 107ca515: counts 241, 78, 60 and 13, all in tier 1.
   - D417's check is done: liquid routing needs X2 by amendment, or a reasoned waiver, before its run; FR-49 needs nothing.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
