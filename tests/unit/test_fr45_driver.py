@@ -3,8 +3,9 @@ process as the judged run runs them: a W2-shaped world through its wash, and a W
 condition at its first step. The judge then finds no fault of §11.1 in either run (but the checkout's own state),
 both variants of the wash's map leave every site amount unchanged (C6), and the refusal meets C7.
 
-Seconds and reason (D224): about 40 s on two cores, two engine runs in their own processes, each compiled once.
-The driver is the only path from a world to the table, and the dress rehearsal is too long to gate on.
+Seconds and reason (D224): 61 s measured cold on one timed core (tier 2), two engine runs in their own processes
+sharing it, each compiled once; about 25 s on two cores. The driver is the only path from a world to the table,
+and the dress rehearsal is too long to gate on.
 """
 
 import copy
