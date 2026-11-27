@@ -36,7 +36,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - **FR-64,** a declared voltage shift on a channel population (D418, ff5c5fdc). Its D148 round passes 9 of 9.
   - **FR-63's calibration report** (D420, 03d96f54) is FR-63's check. D419's rule gives no registered comparison now.
   - **The Kv1.5 control-midpoint gap** (D420, D421): the user left the choice to the lead and the adviser.
-    - The choice is a sourced law for mammalian cells, gated on a like-for-like count of the studies (the gate is running).
+    - The choice is a sourced law for mammalian cells, gated on a like-for-like count of the studies.
+    - The gate is open (D422): no study is countable yet, for missing information. The relay is with the Lean track.
     - Its price goes to the user before any build.
   - Four stale tier rows of main's are folded at the next measurement (D418).
   - D417's check is done: liquid routing needs X2 by amendment, or a reasoned waiver, before its run; FR-49 needs nothing.

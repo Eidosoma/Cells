@@ -14407,3 +14407,51 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
        - that the parity law stays untouched, and that no code or coefficients are taken from another simulator.
   5. **Fewer than two:** (c). The gap is recorded as an indication in FR-63's records. The gate reopens if new studies
      appear.
+
+## D422: the Kv1.5 like-for-like gate (D421) is open: no study is countable yet, for missing information, and the relay goes to the Lean track
+
+2026-11-27, written at 17:35 UTC.
+
+- **The result:** the gate agent counted no study.
+  - Every "no" is "not established", read from the Lean files alone, and no item is an "established no".
+  - No engine run was made, no like-for-like midpoint formed, and no 2 SE test applied.
+
+  | Study | Established | Not established |
+  | --- | --- | --- |
+  | Trapani and Korn | — | the fit form (a "modified Boltzmann" with its exponent unprinted); the prepulse range and durations |
+  | Longobardo et al. | — | the fitted equation (and whether its maximum was fixed); the holding potential and the prepulse range; independence from Kehl et al. |
+  | Kehl et al. | the protocol, inside the law's domain | the error type, n and the fit form of the control midpoint; independence from Longobardo et al. |
+- **Reading D421,** whose own two sentences conflict: "(c) only if the gate closes the gap", against "fewer than two:
+  (c)". The lead and the adviser read it so:
+  - rule 5 applies once each study is either compared, or established as uncountable;
+  - an item the paper does not print is an "established no";
+  - until then the gate is open, nothing is built, and the gap stays D420's indication.
+
+  The 2 SE test and "midpoint only" stand.
+- **The refusals,** reported to the user as they are:
+  - Longobardo et al.'s and Trapani and Korn's publisher pages returned HTTP 403;
+  - the tool refused an archived copy of Kehl et al.'s former journal site (web.archive.org).
+
+  None was retried, and no further fetch is sent; the Lean track reads these papers.
+- **The engine, corrected.** The agent's "no voltage clamp" rested on a name search.
+  - The engine has no voltage-clamp operator, but a peak tail may need none.
+  - The gates can be held at a prepulse voltage by the charge anchor, with the population closed, as check-01 did
+    through a compiled run.
+  - The clamped entry point (`clamped_channel_flux`, FR-34) gives the instantaneous current at a tail voltage, from the
+    state's gates.
+  - Whether a lab's tail needs a step inside a run is settled when a run is in sight. If a step is truly missing, it is
+    a general feature with a price for the user, and no clamp is written in `validation/`.
+- **The relay to the Lean track,** through the user, asks for rule 1's items only:
+  - per study: the fit form as printed, the error type and n of the control midpoint, and the control prepulse range;
+  - whether Longobardo et al. and Kehl et al. share authors;
+  - how the Lean track's own replay held and stepped the voltage.
+
+  The replay's fitted midpoints were not read: they are the parity law under near-lab protocols, which is the gate's
+  answer.
+- **The gate's driver** (`validation/fr63/like_for_like.py`, branch `fr63-like-for-like`, ee9d503d) runs no engine
+  model. AGENTS.md makes landing such tooling the user's approval, so it is not landed. Its record (43 citations and 4
+  absence checks) is in `/mnt/workspaces/Cells/kv15-gate-20261127/`.
+- **Disclosed:**
+  - some of the agent's reads ran outside a memory scope, unpinned;
+  - listings showed other Lean sections' headings and file names, FR-51's among them, never their content;
+  - the FR-51 figure and `kir_spermine_potassium.json` were not opened.
