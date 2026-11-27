@@ -89,7 +89,7 @@ WALL = f"wall_{CELL}"
 POPULATION = "kv15"
 TEMPERATURE_K = 298.15  # The law's fixed temperature (kv1p5_mh.TEMPERATURE_K); room temperature.
 CELL_PH = 7.3  # The cell's H row, read by nothing: every shift here reads the outside.
-# kv1p5_mh@1's m target is the sigmoid of (V_r + 6.0 mV)/6.4 mV (SPEC-006): its midpoint.
+# cells.channel.kv1p5_mh@1's m target is the sigmoid of (V_r + 6.0 mV)/6.4 mV (SPEC-006): its midpoint.
 LAW_MIDPOINT_V = D("-0.0060")
 MIDPOINT_TOLERANCE_V = D("1e-15")
 BRACKET_V = 1e-3  # The bisection starts 1 mV either side of the declared midpoint.
