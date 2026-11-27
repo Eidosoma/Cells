@@ -586,8 +586,12 @@ def reference_structure(refs, reg, invented):
         out.append(f"{world}: no reference file")
     for world, ref in sorted(refs.items()):
         keys = set(ref)
-        if not REFERENCE_TOP <= keys or keys - REFERENCE_TOP - REFERENCE_OPTIONAL:
-            out.append(f"{world}: top keys {sorted(keys ^ REFERENCE_TOP)}")
+        missing, extra = (
+            sorted(REFERENCE_TOP - keys),
+            sorted(keys - REFERENCE_TOP - REFERENCE_OPTIONAL),
+        )
+        if missing or extra:
+            out.append(f"{world}: top keys missing {missing}, beyond the census's {extra}")
         if ref.get("invented") is not invented:
             out.append(f"{world}: invented is {ref.get('invented')!r}")
         echo = ref.get("world", {})
