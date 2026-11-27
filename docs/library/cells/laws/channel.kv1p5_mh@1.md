@@ -89,6 +89,11 @@ $$\frac{dm}{dt} = \frac{m_\infty - m}{\tau_m}, \qquad \frac{dh}{dt} = \frac{h_\i
 - **Scope (D351):** the law has no pH input. Three labs agree in sign, not in size, that
   acidifying the outside shifts Kv1.5's activation (+11.7, +17.3 and +7.8 mV). Its potassium–pH
   interaction is an indication, from different readouts. The law carries neither.
+- **The acid shift is declared on the population, not in the law (D356, FR-64).** A world gives
+  its m gate a pH shift on the outside (`voltage_shift`, `{"ph": {...}}`). The gate then reads
+  V - sigma (pH - pH_ref), its target and its time constant together. Each preparation's slope is
+  a two-point secant through its own midpoints, so it is calibrated, not judged (D399). The
+  time constant's shift is unclaimed.
 
 ## Sources
 
