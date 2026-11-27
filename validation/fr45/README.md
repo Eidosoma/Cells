@@ -112,4 +112,4 @@ Run it from a frozen snapshot (`validation/source_snapshot.py`) of `src/cells`, 
 ## Tests
 
 Measured cold on one timed core at the landing: `tests/unit/test_fr45_judge.py`, 1 s, pure Python, no engine (tier
-1); `tests/unit/test_fr45_driver.py`, 61 s, two invented engine runs in their own processes (tier 2).
+1); `tests/unit/test_fr45_driver.py`, 38 to 61 s, two invented engine runs in their own processes (tier 2).
