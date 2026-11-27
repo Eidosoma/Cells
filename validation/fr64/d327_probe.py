@@ -26,7 +26,8 @@ then parsed with a shift, against an unshifted twin:
 Each refusal is classified by the check that raised it. The note's own rows
 (validation/fr64/worlds.py) are parsed where the tree has them.
 
-Runs against either tree, and records its revision and dirty files:
+Runs against either tree, a checkout or a frozen snapshot, and records its revision and its dirty
+files or the snapshot's patch:
     python validation/fr64/d327_probe.py <checkout> <out.json>
 A base tree cannot express a shift, so its shifted rows are its refusal of the key.
 """
@@ -37,6 +38,7 @@ import json
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 SHIFT = "voltage_shift"
 FROZEN_FAMILIES = (
@@ -58,6 +60,18 @@ ATTEMPTS = 8  # Gate injections tried per world before its domain refusal is rec
 def git(checkout, *args):
     result = subprocess.run(["git", "-C", checkout, *args], capture_output=True, text=True)
     return result.stdout.strip()
+
+
+def identity(checkout):
+    """The tree's revision and dirty files, or a frozen snapshot's (SNAPSHOT.json, written by
+    scripts/gates/freeze_snapshot.py), which holds no Git checkout."""
+    manifest = Path(checkout) / "SNAPSHOT.json"
+    if manifest.is_file():
+        snapshot = json.loads(manifest.read_text(encoding="utf-8"))
+        return dict(revision=snapshot["git_revision"], snapshot=str(checkout),
+                    patch_sha256=snapshot["patch_sha256"])  # fmt: skip
+    return dict(revision=git(checkout, "rev-parse", "HEAD"),
+                dirty=git(checkout, "status", "--short").splitlines())  # fmt: skip
 
 
 def classify(error):
@@ -234,8 +248,7 @@ def main(checkout, out_path):
     bare = admitted(adapter, sequences)
     bare_set = set(bare)
     record = dict(
-        revision=git(checkout, "rev-parse", "HEAD"),
-        dirty=git(checkout, "status", "--short").splitlines(),
+        **identity(checkout),
         operators=laws,
         checked=len(sequences),
         bare_adapter=dict(admitted=len(bare), sequences=[list(s) for s in bare]),
@@ -288,7 +301,8 @@ def main(checkout, out_path):
     record["seconds"] = round(time.time() - started, 1)
     with open(out_path, "w", encoding="utf-8") as handle:
         json.dump(record, handle, indent=1)
-    print(record["revision"][:8], len(record["dirty"]), "dirty;", len(sequences), "sequences,",
+    state = f"{len(record['dirty'])} dirty" if "dirty" in record else "a frozen snapshot"
+    print(record["revision"][:8], state, len(sequences), "sequences,",
           len(bare), "admitted on the bare adapter;", len(rows), "catalogue rows,", len(pairs),
           "twin pairs;", record["seconds"], "s")  # fmt: skip
 
