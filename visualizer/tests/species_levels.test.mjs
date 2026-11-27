@@ -438,12 +438,13 @@ test("shared views and controls take their species and model names from the scen
       for (const word of [data.id, data.label]) if (word && word.length > 3) words.add(word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
     }
   }
-  // The dedicated Physarum model view and its registration can name the model they provide.
-  const physarumView = new Set([path.join("src", "lenses", "physarum.js"), path.join("src", "ui", "model_views.js")]);
+  // A dedicated anatomy view and the registry can name the view they provide.
+  const anatomyViews = ["physarum", "haloferax"];
   const named = new RegExp(`\\b(${[...words].join("|")})\\b`, "gi");
   for (const file of files) {
     const code = (await readFile(path.join(ROOT, file), "utf8")).replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
-    const found = [...code.matchAll(named)].find(([name]) => !(physarumView.has(file) && name.toLowerCase() === "physarum"));
+    const permitted = anatomyViews.filter((id) => file === path.join("src", "ui", "model_views.js") || file === path.join("src", "lenses", `${id}.js`));
+    const found = [...code.matchAll(named)].find(([name]) => !permitted.includes(name.toLowerCase()));
     assert.ok(!found, `${file} names a species or one of its organs in its code: ${found?.[0]}`);
   }
 });

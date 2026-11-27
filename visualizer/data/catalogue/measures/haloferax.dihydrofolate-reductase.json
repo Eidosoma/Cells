@@ -1,0 +1,144 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "1VDR-assembly1": {
+   "entry": "1VDR",
+   "assembly": "1",
+   "title": "DIHYDROFOLATE REDUCTASE",
+   "method": "X-RAY DIFFRACTION",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 2394,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     6.7,
+     4.6,
+     3.8
+    ],
+    "farthest_nm": [
+     6.5,
+     4.6,
+     4.5
+    ],
+    "middle_98_percent_nm": [
+     5.3,
+     4.0,
+     3.6
+    ],
+    "radius_of_gyration_nm": 2.01
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "DIHYDROFOLATE REDUCTASE",
+     "atoms": 1211,
+     "centre_nm": [
+      -1.3,
+      -0.04,
+      -0.05
+     ],
+     "axes": [
+      [
+       -0.1404,
+       0.9053,
+       0.4009
+      ],
+      [
+       -0.2915,
+       -0.4248,
+       0.8571
+      ],
+      [
+       0.9462,
+       0.0034,
+       0.3235
+      ]
+     ],
+     "across_nm": [
+      4.8,
+      3.6,
+      3.1
+     ],
+     "farthest_nm": [
+      4.4,
+      3.8,
+      3.4
+     ],
+     "radius_of_gyration_nm": 1.52
+    },
+    {
+     "chain": "B",
+     "entity": "1",
+     "description": "DIHYDROFOLATE REDUCTASE",
+     "atoms": 1183,
+     "centre_nm": [
+      1.33,
+      0.04,
+      0.05
+     ],
+     "axes": [
+      [
+       -0.0268,
+       0.9182,
+       -0.3953
+      ],
+      [
+       -0.3659,
+       0.359,
+       0.8586
+      ],
+      [
+       0.9303,
+       0.1676,
+       0.3263
+      ]
+     ],
+     "across_nm": [
+      4.8,
+      3.6,
+      3.1
+     ],
+     "farthest_nm": [
+      4.4,
+      3.6,
+      3.3
+     ],
+     "radius_of_gyration_nm": 1.5
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "DIHYDROFOLATE REDUCTASE",
+     "copies": 2,
+     "sequence_length": 162,
+     "residues_modelled_per_copy": 156.0,
+     "modelled_share": 0.963,
+     "atoms_per_modelled_residue": 7.67
+    }
+   ]
+  }
+ }
+}

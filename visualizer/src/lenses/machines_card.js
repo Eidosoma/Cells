@@ -569,7 +569,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   const levels = levelsOf(item);
   const tiers = TIERS.map(([tier, title]) => ({ title, items: (entry.gathered?.proteins || []).filter((row) => row[3] === tier) }));
   const candidates = family ? gathered.proteins : [];
-  if (entry.structures) facts.push(["Source organisms", [...new Set(entry.size.chains.filter((chain) => chain.protein).map((chain) => chain.organism))].join(" · ")]);
+  if (entry.structures) facts.push(["Source organisms", [...new Set(entry.size.chains.map((chain) => chain.organism))].join(" · ")]);
   else if (entry.proteins) facts.push(["Its proteins", `${number(entry.proteins.items.length)} in ${where}'s data carry the mark “${entry.proteins.label}: ${entry.proteins.value}”. ${entry.proteins.by || ""}`.trim()]);
   else if (family) facts.push(["Its proteins", `${number(candidates.length)} of ${where}'s proteins are candidates by their family (InterPro) for parts of ${reference}'s machine: candidates, not the machine's parts${gathered.in_atlas ? "; every one is in the Protein atlas" : ""}`]);
   else if (entry.gathered) facts.push(["Its proteins", `${number(tiers[0].items.length + tiers[1].items.length)} parts and ${number(tiers[2].items.length)} named with it alone, by the Gene Ontology and UniProt (its dossier)${entry.gathered.in_atlas && entry.gathered.proteins.length ? "; every one is in the Protein atlas" : ""}`]);

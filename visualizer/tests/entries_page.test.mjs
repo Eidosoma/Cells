@@ -99,18 +99,19 @@ test("a species with two cell types: a row for each under it, the second with it
   assert.equal(cellTypeOf(species, "no-such-type").id, own.id, "an unknown type shows the default");
 });
 
-test("the switch nests eukaryote groups and leaves Archaea open to future model entries", () => {
+test("the switch nests eukaryote groups and gives the Haloferax entry its own domain heading", () => {
   const rows = switchRows(scene, options(scene));
   const sections = switchSections(rows);
-  assert.deepEqual(sections.map((section) => section.name), ["Eukarya", "Bacteria", "Origin of life"]);
+  assert.deepEqual(sections.map((section) => section.name), ["Eukarya", "Bacteria", "Archaea", "Origin of life"]);
   const eukarya = sections[0].groups;
   assert.deepEqual(eukarya.map((group) => group.name), ["Animals", "Plants", "Amoebozoa"]);
   assert.deepEqual(eukarya[2].rows.map((row) => row.id), ["physarum"]);
   assert.equal(new Set(sections.flatMap((section) => section.groups.flatMap((group) => group.rows.map((row) => row.id)))).size, rows.length);
-  const haloferax = { id: "haloferax", group: "Archaea" };
-  const expanded = switchSections([...rows, haloferax]);
-  assert.deepEqual(expanded.map((section) => section.name), ["Eukarya", "Bacteria", "Archaea", "Origin of life"]);
-  assert.deepEqual(expanded[2].groups, [{ name: "Archaea", rows: [haloferax] }]);
+  assert.deepEqual(sections[2].groups[0].rows.map((row) => row.id), ["haloferax"]);
+  const shelves = JSON.parse(readFileSync(path.join(ROOT, "data", "proteins", "haloferax", "shelves.json"), "utf8"));
+  assert.equal(shelves.proteins.length, 3922);
+  assert.equal(shelves.proteins.filter((row) => row[shelves.columns.indexOf("marks")].review === "reviewed").length, 204);
+  assert.equal(scene.proteins.shelves.find((shelf) => shelf.id === "haloferax").proteins, shelves.proteins.length);
 });
 
 test("a species with two cell types: the Cell view plans the type shown, and its panel lists both", () => {

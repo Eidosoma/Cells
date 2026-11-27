@@ -1,0 +1,231 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "6F5Z-assembly1": {
+   "entry": "6F5Z",
+   "assembly": "1",
+   "title": "Complex between the Haloferax volcanii Trm112 methyltransferase activator and the Hvo_0019 putative methyltransferase",
+   "method": "X-RAY DIFFRACTION",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 4529,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     9.3,
+     5.6,
+     4.6
+    ],
+    "farthest_nm": [
+     8.4,
+     6.4,
+     4.8
+    ],
+    "middle_98_percent_nm": [
+     7.5,
+     5.5,
+     4.0
+    ],
+    "radius_of_gyration_nm": 2.62
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "24-sterol C-methyltransferase",
+     "atoms": 1806,
+     "centre_nm": [
+      -1.44,
+      0.36,
+      0.41
+     ],
+     "axes": [
+      [
+       0.1353,
+       0.8521,
+       0.5057
+      ],
+      [
+       0.7673,
+       -0.413,
+       0.4906
+      ],
+      [
+       0.6269,
+       0.3216,
+       -0.7097
+      ]
+     ],
+     "across_nm": [
+      5.5,
+      4.1,
+      3.6
+     ],
+     "farthest_nm": [
+      5.8,
+      4.2,
+      4.3
+     ],
+     "radius_of_gyration_nm": 1.72
+    },
+    {
+     "chain": "B",
+     "entity": "1",
+     "description": "24-sterol C-methyltransferase",
+     "atoms": 1834,
+     "centre_nm": [
+      1.47,
+      0.26,
+      -0.4
+     ],
+     "axes": [
+      [
+       0.0255,
+       0.8842,
+       -0.4664
+      ],
+      [
+       0.7008,
+       0.3169,
+       0.6391
+      ],
+      [
+       0.7129,
+       -0.3432,
+       -0.6116
+      ]
+     ],
+     "across_nm": [
+      5.6,
+      4.2,
+      3.5
+     ],
+     "farthest_nm": [
+      6.1,
+      4.7,
+      4.0
+     ],
+     "radius_of_gyration_nm": 1.75
+    },
+    {
+     "chain": "C",
+     "entity": "2",
+     "description": "UPF0434 family protein",
+     "atoms": 460,
+     "centre_nm": [
+      -3.13,
+      -1.24,
+      -0.58
+     ],
+     "axes": [
+      [
+       0.1225,
+       -0.4225,
+       0.8981
+      ],
+      [
+       0.6893,
+       -0.6148,
+       -0.3833
+      ],
+      [
+       0.714,
+       0.666,
+       0.2159
+      ]
+     ],
+     "across_nm": [
+      3.8,
+      2.5,
+      2.0
+     ],
+     "farthest_nm": [
+      3.5,
+      2.5,
+      2.0
+     ],
+     "radius_of_gyration_nm": 1.1
+    },
+    {
+     "chain": "D",
+     "entity": "2",
+     "description": "UPF0434 family protein",
+     "atoms": 429,
+     "centre_nm": [
+      3.12,
+      -1.33,
+      0.62
+     ],
+     "axes": [
+      [
+       0.2068,
+       0.5048,
+       0.8381
+      ],
+      [
+       0.6753,
+       0.5461,
+       -0.4957
+      ],
+      [
+       -0.7079,
+       0.6685,
+       -0.228
+      ]
+     ],
+     "across_nm": [
+      3.6,
+      2.4,
+      2.0
+     ],
+     "farthest_nm": [
+      3.1,
+      2.5,
+      2.0
+     ],
+     "radius_of_gyration_nm": 1.07
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "24-sterol C-methyltransferase",
+     "copies": 2,
+     "sequence_length": 231,
+     "residues_modelled_per_copy": 227.0,
+     "modelled_share": 0.983,
+     "atoms_per_modelled_residue": 8.02
+    },
+    {
+     "entity": "2",
+     "description": "UPF0434 family protein",
+     "copies": 2,
+     "sequence_length": 61,
+     "residues_modelled_per_copy": 57.0,
+     "modelled_share": 0.934,
+     "atoms_per_modelled_residue": 7.8
+    }
+   ]
+  }
+ }
+}

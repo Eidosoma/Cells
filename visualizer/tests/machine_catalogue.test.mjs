@@ -128,6 +128,20 @@ test("every number stands on a permissive source the entry names, and a size is 
   assert.ok(!JSON.stringify(overlay).includes("across_nm"), "no width is written in the overlay");
 });
 
+test("the Haloferax bench holds the archive results, the DS2 matches and the mixed-species RNA experiment", () => {
+  const { entries, by_protein } = benchOf("haloferax");
+  assert.equal(entries.length, 18);
+  assert.equal(new Set(entries.flatMap((entry) => entry.structures.map((row) => row.id))).size, 32);
+  assert.ok(entries.every((entry) => entry.size.surface.entry === entry.structures[0].id));
+  assert.deepEqual(by_protein.P25062, [["haloferax-s-layer", "deposited chain"]]);
+  const ribosome = catalogue.item("haloferax", pageId("haloferax-70s-ribosome"));
+  assert.equal(ribosome.size.chains.length, 53);
+  assert.ok(ribosome.size.parts.some((part) => part.id === "hibernation-factor"));
+  const mixed = catalogue.item("haloferax", pageId("haloferax-trna-fragment"));
+  assert.ok(mixed.size.chains.some((chain) => chain.organism === "Haloferax volcanii" && chain.label.startsWith("Valine tRNA fragment")));
+  assert.ok(mixed.size.chains.filter((chain) => chain.organism.startsWith("Sulfolobus")).every((chain) => !chain.in_atlas));
+});
+
 test("what Cells models of a machine is said only as a record says it: a status line of a kind's own is the ATP synthase's alone", () => {
   for (const record of Object.values(raw.records)) if (record.revision) assert.match(record.revision, /^[0-9a-f]{40}$/, "a link at a full revision, never a branch");
   for (const kind of raw.kinds) {
@@ -1182,7 +1196,7 @@ test("the organelles on the shelf: no machines, sized by their species' file's f
     fruitfly: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     planarian: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     thalecress: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion", "chloroplast", "vacuole"],
-    ecoli: [], syn3a: [], mpneumoniae: [], xenopus: [], physarum: [], // the frog: no bench gathered yet, so no shelf
+    ecoli: [], syn3a: [], mpneumoniae: [], xenopus: [], physarum: [], haloferax: [],
   };
   assert.deepEqual(Object.keys(ROWS).sort(), [...SPECIES].sort());
   for (const [species, kinds] of Object.entries(ROWS)) {

@@ -2956,6 +2956,33 @@
     ]
    },
    {
+    "id": "haloferax",
+    "file": "proteins/haloferax/shelves.json",
+    "bytes": 815241,
+    "made": "2026-11-27",
+    "from": "UniProtKB 2026_04, DS2 reference proteome UP000008243: 3,922 entries, 204 reviewed and 3,718 unreviewed.",
+    "kind": "proteins",
+    "proteins": 3922,
+    "counts": {
+     "outside": 10,
+     "in": 343,
+     "inside": 201,
+     "not known": 3368
+    },
+    "sets": {
+     "review": [
+      "reviewed",
+      "unreviewed"
+     ]
+    },
+    "sources": [
+     {
+      "name": "UniProtKB",
+      "class": "permissive"
+     }
+    ]
+   },
+   {
     "id": "human",
     "file": "proteins/human/shelves.json",
     "bytes": 762366,
@@ -3933,6 +3960,12 @@
    }
   ],
   "shelf_links": {
+   "haloferax": [
+    {
+     "text": "UniProtKB {id}",
+     "url": "https://www.uniprot.org/uniprotkb/{id}/entry"
+    }
+   ],
    "physarum": [
     {
      "text": "UniProtKB {id}",
@@ -9369,6 +9402,89 @@
      "value": "Rhythmic tube contractions drive cytoplasm back and forth through the network",
      "sources": [
       "network"
+     ]
+    }
+   ],
+   "kind": "model system"
+  },
+  {
+   "id": "haloferax",
+   "label": "Haloferax volcanii",
+   "is": "Salt-loving archaeon · strain DS2 reference",
+   "plain": "Explore the rod and plate forms of this archaeon, then look inside its protein coat.",
+   "group": "Archaea",
+   "order": 110,
+   "made": "2026-11-27",
+   "modelled": {
+    "state": "planned",
+    "text": "Haloferax volcanii is a planned Cells model. This atlas illustrates the organism's cell forms and envelope.",
+    "record": [
+     {
+      "path": "visualizer/docs/HALOFERAX.md",
+      "where": "Haloferax volcanii"
+     }
+    ]
+   },
+   "view": {
+    "kind": "haloferax",
+    "protein_atlas": "haloferax",
+    "machine_bench": "haloferax"
+   },
+   "levels": [
+    {
+     "label": "Whole cell",
+     "id": "cell",
+     "shows": "The rod and plate forms, with the cell surface and pili."
+    },
+    {
+     "label": "Envelope cutaway",
+     "id": "envelope",
+     "shows": "An illustrated section through the outer S-layer, cytoplasmic membrane and cytoplasm."
+    }
+   ],
+   "sources": {
+    "shape": {
+     "text": "Schiller et al. (2024), Identification of structural and regulatory cell-shape determinants in Haloferax volcanii.",
+     "doi": "10.1038/s41467-024-45196-0",
+     "accessed": "2026-11-27",
+     "licence": "CC BY 4.0",
+     "class": "permissive"
+    },
+    "surface": {
+     "text": "von Kügelgen et al. (2021), Complete atomic structure of a native archaeal cell surface.",
+     "doi": "10.1016/j.celrep.2021.110052",
+     "accessed": "2026-11-27",
+     "licence": "Bibliographic facts only",
+     "class": "permissive"
+    },
+    "taxonomy": {
+     "text": "NCBI Taxonomy, Haloferax volcanii and strain DS2.",
+     "url": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=309800",
+     "accessed": "2026-11-27",
+     "licence": "Bibliographic facts only",
+     "class": "permissive"
+    }
+   },
+   "facts": [
+    {
+     "label": "Domain",
+     "value": "Archaea",
+     "sources": [
+      "taxonomy"
+     ]
+    },
+    {
+     "label": "Cell forms",
+     "value": "Rods and flat, often polygonal plates observed under different culture conditions",
+     "sources": [
+      "shape"
+     ]
+    },
+    {
+     "label": "Envelope",
+     "value": "A cytoplasmic membrane covered by a protein S-layer",
+     "sources": [
+      "surface"
      ]
     }
    ],

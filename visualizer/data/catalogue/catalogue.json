@@ -25,6 +25,24 @@
    "data/catalogue/measures/ecoli.lon.json",
    "data/catalogue/measures/ecoli.rna-polymerase.json",
    "data/catalogue/measures/ecoli.translocon.json",
+   "data/catalogue/measures/haloferax.cetz1.json",
+   "data/catalogue/measures/haloferax.cetz2.json",
+   "data/catalogue/measures/haloferax.dihydrofolate-reductase.json",
+   "data/catalogue/measures/haloferax.haloferax-70s-ribosome.json",
+   "data/catalogue/measures/haloferax.haloferax-pcna.json",
+   "data/catalogue/measures/haloferax.haloferax-s-layer.json",
+   "data/catalogue/measures/haloferax.haloferax-trna-fragment.json",
+   "data/catalogue/measures/haloferax.haloferax-type-iv-pilus.json",
+   "data/catalogue/measures/haloferax.hvo0758.json",
+   "data/catalogue/measures/haloferax.hvo2753.json",
+   "data/catalogue/measures/haloferax.hvo2922.json",
+   "data/catalogue/measures/haloferax.malate-dehydrogenase.json",
+   "data/catalogue/measures/haloferax.malate-synthase.json",
+   "data/catalogue/measures/haloferax.molybdopterin-converting-factor-1.json",
+   "data/catalogue/measures/haloferax.samp1.json",
+   "data/catalogue/measures/haloferax.samp2.json",
+   "data/catalogue/measures/haloferax.trm112-hvo0019.json",
+   "data/catalogue/measures/haloferax.wor83.json",
    "data/catalogue/measures/human.atp-synthase.json",
    "data/catalogue/measures/human.cmg-helicase.json",
    "data/catalogue/measures/human.complex-i.json",
@@ -57,6 +75,24 @@
    "data/catalogue/shapes/ecoli.ribosome.json",
    "data/catalogue/shapes/ecoli.rna-polymerase.json",
    "data/catalogue/shapes/ecoli.translocon.json",
+   "data/catalogue/shapes/haloferax.cetz1.json",
+   "data/catalogue/shapes/haloferax.cetz2.json",
+   "data/catalogue/shapes/haloferax.dihydrofolate-reductase.json",
+   "data/catalogue/shapes/haloferax.haloferax-70s-ribosome.json",
+   "data/catalogue/shapes/haloferax.haloferax-pcna.json",
+   "data/catalogue/shapes/haloferax.haloferax-s-layer.json",
+   "data/catalogue/shapes/haloferax.haloferax-trna-fragment.json",
+   "data/catalogue/shapes/haloferax.haloferax-type-iv-pilus.json",
+   "data/catalogue/shapes/haloferax.hvo0758.json",
+   "data/catalogue/shapes/haloferax.hvo2753.json",
+   "data/catalogue/shapes/haloferax.hvo2922.json",
+   "data/catalogue/shapes/haloferax.malate-dehydrogenase.json",
+   "data/catalogue/shapes/haloferax.malate-synthase.json",
+   "data/catalogue/shapes/haloferax.molybdopterin-converting-factor-1.json",
+   "data/catalogue/shapes/haloferax.samp1.json",
+   "data/catalogue/shapes/haloferax.samp2.json",
+   "data/catalogue/shapes/haloferax.trm112-hvo0019.json",
+   "data/catalogue/shapes/haloferax.wor83.json",
    "data/catalogue/shapes/human.atp-synthase.json",
    "data/catalogue/shapes/human.cmg-helicase.json",
    "data/catalogue/shapes/human.complex-i.json",
@@ -75,10 +111,12 @@
    "data/catalogue/shapes/physarum.i-ppoi.json",
    "data/catalogue/shapes/physarum.myosin-ii-regulatory-domain.json",
    "data/catalogue/shapes/physarum.spherulin-3a.json",
+   "data/catalogue/structures/haloferax.json",
    "data/catalogue/structures/physarum.json",
    "data/machines/ecoli.flagellar-motor.json",
    "data/proteins/ecoli/proteins.tsv",
    "data/proteins/ecoli/shelves.json",
+   "data/proteins/haloferax/shelves.json",
    "data/proteins/mpneumoniae/shelves.json",
    "data/proteins/physarum/shelves.json",
    "data/proteins/syn3a/shelves.json",
@@ -143,6 +181,21 @@
    "id": "moving",
    "label": "Moving, sensing and attaching",
    "plain": "Machines that move the cell, steer it, or hold it to a surface."
+  },
+  {
+   "id": "surface",
+   "label": "Cell surface",
+   "plain": "Structures that coat the cell or extend from its surface."
+  },
+  {
+   "id": "tagging",
+   "label": "Protein modification",
+   "plain": "Protein modifiers and regulatory partners."
+  },
+  {
+   "id": "metabolism",
+   "label": "Metabolism",
+   "plain": "Enzymes and their assemblies that transform small molecules."
   },
   {
    "id": "binding",
@@ -1396,6 +1449,186 @@
    "records": [],
    "species": [
     "physarum"
+   ]
+  },
+  {
+   "id": "haloferax-s-layer",
+   "label": "S-layer glycoprotein",
+   "group": "surface",
+   "plain": "The hexamer is one repeating unit of the surface coat. Related deposits show hexamers and pentamers, including structures determined in situ.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "haloferax-type-iv-pilus",
+   "label": "Type IV pilus",
+   "group": "surface",
+   "plain": "The deposited helical segment holds 20 pilin chains. It resolves a portion of the filament extending from the cell surface.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "haloferax-70s-ribosome",
+   "label": "Archaeal 70S ribosome",
+   "group": "proteins",
+   "plain": "The Haloferax DS2 ribosome has 30S and 50S subunits. This deposit resolves a bound AHA hibernation factor and E-site tRNA.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "haloferax-trna-fragment",
+   "label": "Valine tRNA fragment on a 30S subunit",
+   "group": "proteins",
+   "plain": "The short RNA comes from Haloferax volcanii. The small ribosomal subunit in this experiment comes from Sulfolobus acidocaldarius DSM 639.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "cetz1",
+   "label": "CetZ1",
+   "group": "moving",
+   "plain": "The deposited GDP-bound monomer belongs to the Haloferax tubulin superfamily. CetZ1 contributes to the rod-shaped form.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "cetz2",
+   "label": "CetZ2 protofilament segment",
+   "group": "moving",
+   "plain": "The deposit contains CetZ2 with a nucleotide analogue and a short companion segment of the same protein.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "haloferax-pcna",
+   "label": "PCNA sliding clamp",
+   "group": "dna",
+   "plain": "Three PCNA chains form the deposited DNA sliding clamp ring.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "samp1",
+   "label": "Small archaeal modifier protein 1",
+   "group": "tagging",
+   "plain": "SAMP1 is a small ubiquitin-like archaeal protein. The panel links the crystal and solution NMR depositions.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "samp2",
+   "label": "Small archaeal modifier protein 2",
+   "group": "tagging",
+   "plain": "SAMP2 is a small ubiquitin-like archaeal protein. The selected assembly is the deposited monomer.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "trm112-hvo0019",
+   "label": "Trm112–HVO_0019 complex",
+   "group": "tagging",
+   "plain": "The deposit pairs the Trm112 activator with HVO_0019, annotated as a putative methyltransferase in the deposition.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "dihydrofolate-reductase",
+   "label": "Dihydrofolate reductase",
+   "group": "metabolism",
+   "plain": "The selected crystal assembly contains two chains. Related solution structures include a folate-bound form.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "malate-synthase",
+   "label": "Malate synthase",
+   "group": "metabolism",
+   "plain": "The selected trimer contains chains of malate synthase. The related depositions capture different bound molecules.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "malate-dehydrogenase",
+   "label": "Malate dehydrogenase",
+   "group": "redox",
+   "plain": "The deposited assembly is a tetramer of malate dehydrogenase.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "molybdopterin-converting-factor-1",
+   "label": "Molybdopterin converting factor subunit 1",
+   "group": "metabolism",
+   "plain": "The solution structure resolves the small HVO_2177 protein, one subunit of molybdopterin converting factor.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "wor83",
+   "label": "Tungsten-dependent aldehyde oxidoreductase WOR83",
+   "group": "redox",
+   "plain": "The crystal structure resolves WOR83. The surface represents its deposited protein chain.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "hvo2922",
+   "label": "UPF0339 protein HVO_2922",
+   "group": "binding",
+   "plain": "Solution NMR structure of the UPF0339 family protein in Haloferax volcanii DS2.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "hvo2753",
+   "label": "Zinc-finger protein HVO_2753",
+   "group": "binding",
+   "plain": "Solution NMR structure of the small DUF1610 zinc-finger protein HVO_2753.",
+   "records": [],
+   "species": [
+    "haloferax"
+   ]
+  },
+  {
+   "id": "hvo0758",
+   "label": "Zinc-finger protein HVO_0758",
+   "group": "binding",
+   "plain": "Solution NMR structure of the small CPxCG-related zinc-finger protein HVO_0758.",
+   "records": [],
+   "species": [
+    "haloferax"
    ]
   }
  ],
@@ -4557,6 +4790,14 @@
    "class": "permissive",
    "accessed": "2026-11-15"
   },
+  "pdb:12DM": {
+   "text": "Protein Data Bank entry 12DM: AHA hibernation factor bound to the 70S ribosome of Haloferax volcanii",
+   "doi": "10.2210/pdb12DM/pdb",
+   "url": "https://www.rcsb.org/structure/12DM",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
   "pdb:1A73": {
    "text": "Protein Data Bank entry 1A73: INTRON-ENCODED ENDONUCLEASE I-PPOI COMPLEXED WITH DNA",
    "doi": "10.2210/pdb1A73/pdb",
@@ -4589,6 +4830,14 @@
    "class": "permissive",
    "accessed": "2026-11-27"
   },
+  "pdb:1VDR": {
+   "text": "Protein Data Bank entry 1VDR: DIHYDROFOLATE REDUCTASE",
+   "doi": "10.2210/pdb1VDR/pdb",
+   "url": "https://www.rcsb.org/structure/1VDR",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
   "pdb:2BL0": {
    "text": "Protein Data Bank entry 2BL0: Physarum polycephalum myosin II regulatory domain",
    "doi": "10.2210/pdb2BL0/pdb",
@@ -4605,10 +4854,82 @@
    "class": "permissive",
    "accessed": "2026-11-27"
   },
+  "pdb:2M19": {
+   "text": "Protein Data Bank entry 2M19: Solution structure of the Haloferax volcanii HVO 2177 protein",
+   "doi": "10.2210/pdb2M19/pdb",
+   "url": "https://www.rcsb.org/structure/2M19",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
   "pdb:3A5P": {
    "text": "Protein Data Bank entry 3A5P: Crystal structure of hemagglutinin",
    "doi": "10.2210/pdb3A5P/pdb",
    "url": "https://www.rcsb.org/structure/3A5P",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:3IFV": {
+   "text": "Protein Data Bank entry 3IFV: Crystal structure of the Haloferax volcanii proliferating cell nuclear antigen",
+   "doi": "10.2210/pdb3IFV/pdb",
+   "url": "https://www.rcsb.org/structure/3IFV",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:3OYZ": {
+   "text": "Protein Data Bank entry 3OYZ: Haloferax volcanii Malate Synthase Pyruvate/Acetyl-CoA Ternary Complex",
+   "doi": "10.2210/pdb3OYZ/pdb",
+   "url": "https://www.rcsb.org/structure/3OYZ",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:4B45": {
+   "text": "Protein Data Bank entry 4B45: CetZ2 from Haloferax volcanii - GTPgS bound protofilament",
+   "doi": "10.2210/pdb4B45/pdb",
+   "url": "https://www.rcsb.org/structure/4B45",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:4B46": {
+   "text": "Protein Data Bank entry 4B46: CetZ1 from Haloferax volcanii - GDP bound monomer",
+   "doi": "10.2210/pdb4B46/pdb",
+   "url": "https://www.rcsb.org/structure/4B46",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:4BGU": {
+   "text": "Protein Data Bank entry 4BGU: 1.50 A resolution structure of the malate dehydrogenase from Haloferax volcanii",
+   "doi": "10.2210/pdb4BGU/pdb",
+   "url": "https://www.rcsb.org/structure/4BGU",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:4HRO": {
+   "text": "Protein Data Bank entry 4HRO: Crystal structure of H. volcanii small archaeal modifier protein 1",
+   "doi": "10.2210/pdb4HRO/pdb",
+   "url": "https://www.rcsb.org/structure/4HRO",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:4HRS": {
+   "text": "Protein Data Bank entry 4HRS: Crystal structure of H. volcanii small archaeal modifier protein 2",
+   "doi": "10.2210/pdb4HRS/pdb",
+   "url": "https://www.rcsb.org/structure/4HRS",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:6F5Z": {
+   "text": "Protein Data Bank entry 6F5Z: Complex between the Haloferax volcanii Trm112 methyltransferase activator and the Hvo_0019 putative methyltransferase",
+   "doi": "10.2210/pdb6F5Z/pdb",
+   "url": "https://www.rcsb.org/structure/6F5Z",
    "licence": "CC0 1.0",
    "class": "permissive",
    "accessed": "2026-11-27"
@@ -4621,10 +4942,66 @@
    "class": "permissive",
    "accessed": "2026-11-27"
   },
+  "pdb:6Q2Z": {
+   "text": "Protein Data Bank entry 6Q2Z: NMR solution structure of the HVO_2922 protein from Haloferax volcanii",
+   "doi": "10.2210/pdb6Q2Z/pdb",
+   "url": "https://www.rcsb.org/structure/6Q2Z",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:6YDH": {
+   "text": "Protein Data Bank entry 6YDH: Solution structure and dynamics of Zn-Finger HVO_2753 protein",
+   "doi": "10.2210/pdb6YDH/pdb",
+   "url": "https://www.rcsb.org/structure/6YDH",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:7PTR": {
+   "text": "Protein Data Bank entry 7PTR: Structure of hexameric S-layer protein from Haloferax volcanii archaea",
+   "doi": "10.2210/pdb7PTR/pdb",
+   "url": "https://www.rcsb.org/structure/7PTR",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
   "pdb:7W51": {
    "text": "Protein Data Bank entry 7W51: Crystal structure of fragmin domain-1 in complex with actin (ADP-form)",
    "doi": "10.2210/pdb7W51/pdb",
    "url": "https://www.rcsb.org/structure/7W51",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:8FJ5": {
+   "text": "Protein Data Bank entry 8FJ5: Structure of the Haloferax volcanii archaeal type IV pilus",
+   "doi": "10.2210/pdb8FJ5/pdb",
+   "url": "https://www.rcsb.org/structure/8FJ5",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:8Q5B": {
+   "text": "Protein Data Bank entry 8Q5B: Characterization of the zinc finger u-protein HVO_0758 from Haloferax volcanii: biological roles, zinc binding, and NMR solution structure",
+   "doi": "10.2210/pdb8Q5B/pdb",
+   "url": "https://www.rcsb.org/structure/8Q5B",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:8WQ2": {
+   "text": "Protein Data Bank entry 8WQ2: Structural basis of translation inhibition by a valine tRNA-derived fragment",
+   "doi": "10.2210/pdb8WQ2/pdb",
+   "url": "https://www.rcsb.org/structure/8WQ2",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-27"
+  },
+  "pdb:9Q1T": {
+   "text": "Protein Data Bank entry 9Q1T: 1.9 Angstrom crystal structure of the tungsten-dependent aldehyde oxidoreductase WOR83 from Haloferax volcanii",
+   "doi": "10.2210/pdb9Q1T/pdb",
+   "url": "https://www.rcsb.org/structure/9Q1T",
    "licence": "CC0 1.0",
    "class": "permissive",
    "accessed": "2026-11-27"
@@ -4725,6 +5102,14 @@
    "label": "Physarum",
    "organism": "Physarum polycephalum",
    "structures": 74,
+   "searched": "2026-11-27"
+  },
+  "haloferax": {
+   "file": "catalogue/haloferax.json",
+   "machines": 18,
+   "label": "Haloferax",
+   "organism": "Haloferax volcanii",
+   "structures": 32,
    "searched": "2026-11-27"
   }
  }

@@ -31,7 +31,7 @@ import { organelleModels, simpleModel, placeModel, scaleFor, drawnSize, paintMod
 export const MACHINES_LOOK = { rich: true, filmic: true, exposure: 1.04, contact: true, reach: 0.5, shade: 0.55 };
 /** Each group's colour: a token of the page's palette (page.css), one for each thing the machines do. */
 // Each group's own colour, told apart in both themes: the three groups the dossiers brought take colours no other tray has.
-export const GROUP_HUE = { proteins: "bioRibosome", genes: "bioNucleus", dna: "bioGolgi", light: "bioChloroplast", atp: "bioFuel", ions: "bioIon", membranes: "bioEr", folding: "bioProtein", breaking: "bioSignal", moving: "bioMito", binding: "bioMembrane", redox: "bioWater", cleavage: "bioPump", traffic: "bioWound", unknown: "bioCyto" };
+export const GROUP_HUE = { proteins: "bioRibosome", genes: "bioNucleus", dna: "bioGolgi", light: "bioChloroplast", atp: "bioFuel", ions: "bioIon", membranes: "bioEr", folding: "bioProtein", breaking: "bioSignal", moving: "bioMito", surface: "bioCell", tagging: "bioSignal", metabolism: "bioFuel", binding: "bioMembrane", redox: "bioWater", cleavage: "bioPump", traffic: "bioWound", unknown: "bioCyto" };
 /** What each role of a machine file's part wears (as its closer view, machine_view.js, dresses it). */
 const ROLE_HUE = { membrane: ["bioMembrane", 0.32, true], wall: ["ghost", 0.36, true], rotor: ["bioProtein", 1], stator: ["bioMito", 1], bearing: ["edge", 1], export: ["bioIon", 1], mark: ["fg", 1], swept: ["fg", 0.3, true], arrow: ["fg", 1] };
 const VIEW = { azimuth: 0.12, polar: 0.98 };

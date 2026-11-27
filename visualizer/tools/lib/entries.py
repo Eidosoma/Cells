@@ -48,6 +48,12 @@ VIEW_KINDS = {
         "required": ["network", "vein"],
         "labels": {"network": "Plasmodium", "vein": "Vein cutaway"},
     },
+    "haloferax": {
+        "run_format": None,
+        "levels": ["cell", "envelope"],
+        "required": ["cell", "envelope"],
+        "labels": {"cell": "Whole cell", "envelope": "Envelope cutaway"},
+    },
     "vesicle": {
         "run_format": "cells.visualizer.assembly_run@2",
         "levels": ["vesicle", "membrane", "molecule"],
@@ -387,15 +393,15 @@ class Entries:
         problems += self.modelled(data.get("modelled"), "model system", where)
         view = data.get("view")
         kind = view.get("kind") if isinstance(view, dict) else None
-        if kind == "physarum":
+        if kind in ("physarum", "haloferax"):
             if not ID.fullmatch(str(view.get("protein_atlas", ""))):
-                problems.append("the Physarum preview names its protein catalogue")
+                problems.append("the anatomy preview names its protein catalogue")
             if "machine_bench" in view and not ID.fullmatch(str(view["machine_bench"])):
-                problems.append("the Physarum preview names its Machines bench by id")
-            if not re.fullmatch(r"models\.[a-z0-9_]+", str(view.get("engine_part", ""))):
+                problems.append("the anatomy preview names its Machines bench by id")
+            if kind == "physarum" and not re.fullmatch(r"models\.[a-z0-9_]+", str(view.get("engine_part", ""))):
                 problems.append("the Physarum preview names its Engine catalogue part")
             if data.get("runs") or data.get("clock"):
-                problems.append("the Physarum anatomy preview takes no run or clock")
+                problems.append("the anatomy preview takes no run or clock")
         if kind not in VIEW_KINDS:
             problems.append(f"view.kind is one of {', '.join(VIEW_KINDS)}, not {kind!r}")
         else:

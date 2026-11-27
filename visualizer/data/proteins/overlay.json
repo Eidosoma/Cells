@@ -265,6 +265,13 @@
     "contract": "visualizer/schema/SPECIES_PROTEINS.md",
     "note": "Where a protein or a family of a species' own catalogue is looked up. A species is named by its id; a pattern with a kind applies to the proteins whose mark 'kind' has that value; 'family' is for a family or a group that is an InterPro entry. Each pattern says when it was checked and what answered.",
     "links": {
+      "haloferax": [
+        {
+          "text": "UniProtKB {id}",
+          "url": "https://www.uniprot.org/uniprotkb/{id}/entry",
+          "checked": "2026-11-27: UniProtKB DS2 reference proteome UP000008243. The P25062 page lists this proteome."
+        }
+      ],
       "physarum": [
         {
           "text": "UniProtKB {id}",

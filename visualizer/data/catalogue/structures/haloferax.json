@@ -1,0 +1,765 @@
+{
+  "format": "cells.visualizer.structure_bench@1",
+  "label": "Haloferax",
+  "organism": "Haloferax volcanii",
+  "native_organisms": [
+    "Haloferax volcanii DS2"
+  ],
+  "taxonomy_id": 2246,
+  "searched": "2026-11-27",
+  "query": {
+    "attribute": "rcsb_entity_source_organism.taxonomy_lineage.id",
+    "operator": "exact_match",
+    "value": "2246",
+    "return_type": "polymer_entity",
+    "content": "experimental"
+  },
+  "items": [
+    {
+      "id": "haloferax-s-layer",
+      "label": "S-layer glycoprotein",
+      "group": "surface",
+      "plain": "The hexamer is one repeating unit of the surface coat. Related deposits show hexamers and pentamers, including structures determined in situ.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Cell surface glycoprotein",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "P25062"
+        }
+      },
+      "structures": [
+        {"id": "7PTR", "title": "Structure of hexameric S-layer protein from Haloferax volcanii archaea", "method": "ELECTRON MICROSCOPY", "resolution_A": 3.46},
+        {"id": "7PTT", "title": "In-situ structure of hexameric S-layer protein", "method": "ELECTRON MICROSCOPY", "resolution_A": 7.968},
+        {"id": "7PTU", "title": "Structure of pentameric S-layer protein from Halofaerax volcanii", "method": "ELECTRON MICROSCOPY", "resolution_A": 3.87},
+        {"id": "7PTP", "title": "In-situ structure of pentameric S-layer protein", "method": "ELECTRON MICROSCOPY", "resolution_A": 11.58}
+      ]
+    },
+    {
+      "id": "haloferax-type-iv-pilus",
+      "label": "Type IV pilus",
+      "group": "surface",
+      "plain": "The deposited helical segment holds 20 pilin chains. It resolves a portion of the filament extending from the cell surface.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Pilin_N domain-containing protein",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GU75"
+        }
+      },
+      "structures": [
+        {"id": "8FJ5", "title": "Structure of the Haloferax volcanii archaeal type IV pilus", "method": "ELECTRON MICROSCOPY", "resolution_A": 2.9}
+      ]
+    },
+    {
+      "id": "haloferax-70s-ribosome",
+      "label": "Archaeal 70S ribosome",
+      "group": "proteins",
+      "plain": "The Haloferax DS2 ribosome has 30S and 50S subunits. This deposit resolves a bound AHA hibernation factor and E-site tRNA.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "5S rRNA",
+          "organism": "Haloferax volcanii DS2"
+        },
+        "2": {
+          "label": "E-site tRNA",
+          "organism": "Haloferax volcanii DS2"
+        },
+        "3": {
+          "label": "AHA hibernation factor",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWN2"
+        },
+        "4": {
+          "label": "16S rRNA",
+          "organism": "Haloferax volcanii DS2"
+        },
+        "5": {
+          "label": "Large ribosomal subunit protein uL2",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTZ3"
+        },
+        "6": {
+          "label": "Large ribosomal subunit protein uL3",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTZ6"
+        },
+        "7": {
+          "label": "Large ribosomal subunit protein uL4",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTZ5"
+        },
+        "8": {
+          "label": "Large ribosomal subunit protein uL5",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "P50559"
+        },
+        "9": {
+          "label": "Large ribosomal subunit protein uL6",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTY0"
+        },
+        "10": {
+          "label": "Large ribosomal subunit protein eL8",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GW76"
+        },
+        "11": {
+          "label": "Large ribosomal subunit protein uL16",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GS24"
+        },
+        "12": {
+          "label": "Large ribosomal subunit protein uL13",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWY1"
+        },
+        "13": {
+          "label": "Large ribosomal subunit protein uL14",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTY6"
+        },
+        "14": {
+          "label": "Large ribosomal subunit protein uL15",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTX4"
+        },
+        "15": {
+          "label": "Large ribosomal subunit protein eL15",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GSF6"
+        },
+        "16": {
+          "label": "Large ribosomal subunit protein uL18",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "P50563"
+        },
+        "17": {
+          "label": "Large ribosomal subunit protein eL20",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GYW4"
+        },
+        "18": {
+          "label": "Large ribosomal subunit protein eL18",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWY3"
+        },
+        "19": {
+          "label": "Large ribosomal subunit protein eL19",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTX8"
+        },
+        "20": {
+          "label": "Large ribosomal subunit protein eL21",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWA6"
+        },
+        "21": {
+          "label": "Large ribosomal subunit protein uL22",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTZ1"
+        },
+        "22": {
+          "label": "Large ribosomal subunit protein uL23",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTZ4"
+        },
+        "23": {
+          "label": "Large ribosomal subunit protein uL24",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTY5"
+        },
+        "24": {
+          "label": "Large ribosomal subunit protein eL24",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GW81"
+        },
+        "25": {
+          "label": "Large ribosomal subunit protein uL29",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTY9"
+        },
+        "26": {
+          "label": "Large ribosomal subunit protein uL30",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTX5"
+        },
+        "27": {
+          "label": "Large ribosomal subunit protein eL31",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GYW2"
+        },
+        "28": {
+          "label": "Large ribosomal subunit protein eL32",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTX9"
+        },
+        "29": {
+          "label": "Large ribosomal subunit protein eL37",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GW44"
+        },
+        "30": {
+          "label": "Large ribosomal subunit protein eL39",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GYW1"
+        },
+        "31": {
+          "label": "50S ribosomal protein L37Ae",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GSR4"
+        },
+        "32": {
+          "label": "Large ribosomal subunit protein eL42",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GT50"
+        },
+        "33": {
+          "label": "Small ribosomal subunit protein eS1",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWA5"
+        },
+        "34": {
+          "label": "Small ribosomal subunit protein uS4",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWZ3"
+        },
+        "35": {
+          "label": "Small ribosomal subunit protein eS4",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTY4"
+        },
+        "36": {
+          "label": "Small ribosomal subunit protein eS6",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GST5"
+        },
+        "37": {
+          "label": "Small ribosomal subunit protein uS7",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GZY1"
+        },
+        "38": {
+          "label": "Small ribosomal subunit protein uS8",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTY1"
+        },
+        "39": {
+          "label": "Small ribosomal subunit protein eS8",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWM1"
+        },
+        "40": {
+          "label": "Small ribosomal subunit protein uS9",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWX7"
+        },
+        "41": {
+          "label": "Small ribosomal subunit protein uS10",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GZY7"
+        },
+        "42": {
+          "label": "Small ribosomal subunit protein uS11",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWZ1"
+        },
+        "43": {
+          "label": "Small ribosomal subunit protein uS12",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GZY0"
+        },
+        "44": {
+          "label": "Small ribosomal subunit protein uS13",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWZ7"
+        },
+        "45": {
+          "label": "Small ribosomal subunit protein uS14",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTY2"
+        },
+        "46": {
+          "label": "Small ribosomal subunit protein uS15",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GWB2"
+        },
+        "47": {
+          "label": "Small ribosomal subunit protein uS17",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTY7"
+        },
+        "48": {
+          "label": "Small ribosomal subunit protein uS19",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTZ2"
+        },
+        "49": {
+          "label": "Small ribosomal subunit protein eS19",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GSW1"
+        },
+        "50": {
+          "label": "Small ribosomal subunit protein eS24",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTC9"
+        },
+        "51": {
+          "label": "Small ribosomal subunit protein eS27",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GT48"
+        },
+        "52": {
+          "label": "Small ribosomal subunit protein eS28",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GW78"
+        },
+        "53": {
+          "label": "23S rRNA",
+          "organism": "Haloferax volcanii DS2"
+        }
+      },
+      "parts": {
+        "large": {
+          "label": "50S subunit",
+          "hue": "bioProtein"
+        },
+        "small": {
+          "label": "30S subunit",
+          "hue": "bioWater"
+        },
+        "trna": {
+          "label": "E-site tRNA",
+          "hue": "bioFuel"
+        },
+        "hibernation-factor": {
+          "label": "AHA hibernation factor",
+          "hue": "bioMito"
+        }
+      },
+      "structures": [
+        {"id": "12DM", "title": "AHA hibernation factor bound to the 70S ribosome of Haloferax volcanii", "method": "ELECTRON MICROSCOPY", "resolution_A": 2.4}
+      ]
+    },
+    {
+      "id": "haloferax-trna-fragment",
+      "label": "Valine tRNA fragment on a 30S subunit",
+      "group": "proteins",
+      "plain": "The short RNA comes from Haloferax volcanii. The small ribosomal subunit in this experiment comes from Sulfolobus acidocaldarius DSM 639.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "16S ribosomal RNA",
+          "organism": "Sulfolobus acidocaldarius DSM 639"
+        },
+        "2": {
+          "label": "Valine tRNA fragment",
+          "organism": "Haloferax volcanii"
+        },
+        "3": {
+          "label": "30S ribosomal protein S2",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "P39478"
+        },
+        "4": {
+          "label": "30S ribosomal protein S4e",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "O05634"
+        },
+        "5": {
+          "label": "30S ribosomal protein S4",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "P39467"
+        },
+        "6": {
+          "label": "30S ribosomal protein S5",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "O05641"
+        },
+        "7": {
+          "label": "30S ribosomal protein S6e",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JAI1"
+        },
+        "8": {
+          "label": "30S ribosomal protein S8e",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JAP5"
+        },
+        "9": {
+          "label": "30S ribosomal protein S11",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "P39469"
+        },
+        "10": {
+          "label": "30S ribosomal protein S12",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "P11524"
+        },
+        "11": {
+          "label": "30S ribosomal protein S15",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JAI3"
+        },
+        "12": {
+          "label": "30S ribosomal protein S17",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JB49"
+        },
+        "13": {
+          "label": "30S ribosomal protein S24e",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JAF9"
+        },
+        "14": {
+          "label": "30S ribosomal protein S27e",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4J9B1"
+        },
+        "15": {
+          "label": "30S ribosomal protein S3Ae",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JB17"
+        },
+        "16": {
+          "label": "30S ribosomal protein S3",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JB46"
+        },
+        "17": {
+          "label": "30S ribosomal protein S7",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "P17198"
+        },
+        "18": {
+          "label": "30S ribosomal protein S9",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "P39468"
+        },
+        "19": {
+          "label": "30S ribosomal protein S10",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "P17199"
+        },
+        "20": {
+          "label": "30S ribosomal protein S13",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "P39470"
+        },
+        "21": {
+          "label": "30S ribosomal protein S14 type Z",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "O05635"
+        },
+        "22": {
+          "label": "30S ribosomal protein S17e",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JAX5"
+        },
+        "23": {
+          "label": "30S ribosomal protein S19e",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4J8U1"
+        },
+        "24": {
+          "label": "30S ribosomal protein S19",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JB44"
+        },
+        "25": {
+          "label": "30S ribosomal protein S27ae",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JAG0"
+        },
+        "26": {
+          "label": "30S ribosomal protein S28e",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4JAV1"
+        },
+        "27": {
+          "label": "50S ribosomal protein L7Ae",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "Q4J8P1"
+        },
+        "28": {
+          "label": "Small ribosomal subunit protein uS8",
+          "organism": "Sulfolobus acidocaldarius DSM 639",
+          "protein": "O05636"
+        }
+      },
+      "parts": {
+        "small": {
+          "label": "Sulfolobus 30S subunit",
+          "hue": "bioWater"
+        },
+        "fragment": {
+          "label": "Haloferax valine tRNA fragment",
+          "hue": "bioFuel"
+        }
+      },
+      "structures": [
+        {"id": "8WQ2", "title": "Structural basis of translation inhibition by a valine tRNA-derived fragment", "method": "ELECTRON MICROSCOPY", "resolution_A": 4.1, "partner_organisms": ["Sulfolobus acidocaldarius DSM 639"]},
+        {"id": "8WQ4", "title": "Structural basis of translation inhibition by a valine tRNA-derived fragment", "method": "ELECTRON MICROSCOPY", "resolution_A": 4.53, "partner_organisms": ["Sulfolobus acidocaldarius DSM 639"]}
+      ]
+    },
+    {
+      "id": "cetz1",
+      "label": "CetZ1",
+      "group": "moving",
+      "plain": "The deposited GDP-bound monomer belongs to the Haloferax tubulin superfamily. CetZ1 contributes to the rod-shaped form.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "CetZ1",
+          "organism": "Haloferax volcanii",
+          "protein": "D4GVD7"
+        }
+      },
+      "structures": [
+        {"id": "4B46", "title": "CetZ1 from Haloferax volcanii - GDP bound monomer", "method": "X-RAY DIFFRACTION", "resolution_A": 1.9}
+      ]
+    },
+    {
+      "id": "cetz2",
+      "label": "CetZ2 protofilament segment",
+      "group": "moving",
+      "plain": "The deposit contains CetZ2 with a nucleotide analogue and a short companion segment of the same protein.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "CetZ2",
+          "organism": "Haloferax volcanii",
+          "protein": "D4GTC1"
+        },
+        "2": {
+          "label": "Short CetZ2 segment",
+          "organism": "Haloferax volcanii",
+          "protein": "D4GTC1"
+        }
+      },
+      "structures": [
+        {"id": "4B45", "title": "CetZ2 from Haloferax volcanii - GTPgS bound protofilament", "method": "X-RAY DIFFRACTION", "resolution_A": 2.1}
+      ]
+    },
+    {
+      "id": "haloferax-pcna",
+      "label": "PCNA sliding clamp",
+      "group": "dna",
+      "plain": "Three PCNA chains form the deposited DNA sliding clamp ring.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Pcna",
+          "organism": "Haloferax volcanii",
+          "protein": "D0VWY8"
+        }
+      },
+      "structures": [
+        {"id": "3IFV", "title": "Crystal structure of the Haloferax volcanii proliferating cell nuclear antigen", "method": "X-RAY DIFFRACTION", "resolution_A": 2.0},
+        {"id": "3HI8", "title": "Crystal structure of proliferating cell nuclear antigen (PCNA) from Haloferax volcanii", "method": "X-RAY DIFFRACTION", "resolution_A": 3.202}
+      ]
+    },
+    {
+      "id": "samp1",
+      "label": "Small archaeal modifier protein 1",
+      "group": "tagging",
+      "plain": "SAMP1 is a small ubiquitin-like archaeal protein. The panel links the crystal and solution NMR depositions.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Small archaeal modifier protein 1",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GUF6"
+        }
+      },
+      "structures": [
+        {"id": "4HRO", "title": "Crystal structure of H. volcanii small archaeal modifier protein 1", "method": "X-RAY DIFFRACTION", "resolution_A": 1.15},
+        {"id": "3PO0", "title": "Crystal structure of SAMP1 from Haloferax volcanii", "method": "X-RAY DIFFRACTION", "resolution_A": 1.55},
+        {"id": "2L83", "title": "A protein from Haloferax volcanii", "method": "SOLUTION NMR"}
+      ]
+    },
+    {
+      "id": "samp2",
+      "label": "Small archaeal modifier protein 2",
+      "group": "tagging",
+      "plain": "SAMP2 is a small ubiquitin-like archaeal protein. The selected assembly is the deposited monomer.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Small archaeal modifier protein 2",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GZE7"
+        }
+      },
+      "structures": [
+        {"id": "4HRS", "title": "Crystal structure of H. volcanii small archaeal modifier protein 2", "method": "X-RAY DIFFRACTION", "resolution_A": 2.3},
+        {"id": "2L32", "title": "solution structure of ubiquitin-like small archaeal modifier protein in Haloferax volcanii", "method": "SOLUTION NMR"},
+        {"id": "2LJI", "title": "Structure of a protein from Haloferax volcanii", "method": "SOLUTION NMR"}
+      ]
+    },
+    {
+      "id": "trm112-hvo0019",
+      "label": "Trm112–HVO_0019 complex",
+      "group": "tagging",
+      "plain": "The deposit pairs the Trm112 activator with HVO_0019, annotated as a putative methyltransferase in the deposition.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Putative methyltransferase HVO_0019",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GYL4"
+        },
+        "2": {
+          "label": "Trm112 activator",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GW82"
+        }
+      },
+      "structures": [
+        {"id": "6F5Z", "title": "Complex between the Haloferax volcanii Trm112 methyltransferase activator and the Hvo_0019 putative methyltransferase", "method": "X-RAY DIFFRACTION", "resolution_A": 1.35}
+      ]
+    },
+    {
+      "id": "dihydrofolate-reductase",
+      "label": "Dihydrofolate reductase",
+      "group": "metabolism",
+      "plain": "The selected crystal assembly contains two chains. Related solution structures include a folate-bound form.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Dihydrofolate reductase",
+          "organism": "Haloferax volcanii",
+          "protein": "P15093"
+        }
+      },
+      "structures": [
+        {"id": "1VDR", "title": "DIHYDROFOLATE REDUCTASE", "method": "X-RAY DIFFRACTION", "resolution_A": 2.55},
+        {"id": "2ITH", "title": "NMR Structure of Haloferax volcanii DHFR", "method": "SOLUTION NMR"},
+        {"id": "2JYB", "title": "binary hvDHFR1:folate complex", "method": "SOLUTION NMR"}
+      ]
+    },
+    {
+      "id": "malate-synthase",
+      "label": "Malate synthase",
+      "group": "metabolism",
+      "plain": "The selected trimer contains chains of malate synthase. The related depositions capture different bound molecules.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Malate Synthase",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTL2"
+        }
+      },
+      "structures": [
+        {"id": "3OYZ", "title": "Haloferax volcanii Malate Synthase Pyruvate/Acetyl-CoA Ternary Complex", "method": "X-RAY DIFFRACTION", "resolution_A": 1.95},
+        {"id": "3OYX", "title": "Haloferax volcanii Malate Synthase Magnesium/Glyoxylate Complex", "method": "X-RAY DIFFRACTION", "resolution_A": 2.51},
+        {"id": "3PUG", "title": "Haloferax volcanii Malate Synthase Native at 3mM Glyoxylate", "method": "X-RAY DIFFRACTION", "resolution_A": 2.7},
+        {"id": "5TAO", "title": "Haloferax volcanii Malate Synthase Lead(II) complex", "method": "X-RAY DIFFRACTION", "resolution_A": 2.1}
+      ]
+    },
+    {
+      "id": "malate-dehydrogenase",
+      "label": "Malate dehydrogenase",
+      "group": "redox",
+      "plain": "The deposited assembly is a tetramer of malate dehydrogenase.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Malate dehydrogenase",
+          "organism": "Haloferax volcanii",
+          "protein": "Q9P9L2"
+        }
+      },
+      "structures": [
+        {"id": "4BGU", "title": "1.50 A resolution structure of the malate dehydrogenase from Haloferax volcanii", "method": "X-RAY DIFFRACTION", "resolution_A": 1.487}
+      ]
+    },
+    {
+      "id": "molybdopterin-converting-factor-1",
+      "label": "Molybdopterin converting factor subunit 1",
+      "group": "metabolism",
+      "plain": "The solution structure resolves the small HVO_2177 protein, one subunit of molybdopterin converting factor.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Molybdopterin converting factor subunit 1",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GVB0"
+        }
+      },
+      "structures": [
+        {"id": "2M19", "title": "Solution structure of the Haloferax volcanii HVO 2177 protein", "method": "SOLUTION NMR"}
+      ]
+    },
+    {
+      "id": "wor83",
+      "label": "Tungsten-dependent aldehyde oxidoreductase WOR83",
+      "group": "redox",
+      "plain": "The crystal structure resolves WOR83. The surface represents its deposited protein chain.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Tungsten-dependent aldehyde oxidoreductase WOR83 from Haloferax volcanii",
+          "organism": "Haloferax volcanii"
+        }
+      },
+      "structures": [
+        {"id": "9Q1T", "title": "1.9 Angstrom crystal structure of the tungsten-dependent aldehyde oxidoreductase WOR83 from Haloferax volcanii", "method": "X-RAY DIFFRACTION", "resolution_A": 1.87}
+      ]
+    },
+    {
+      "id": "hvo2922",
+      "label": "UPF0339 protein HVO_2922",
+      "group": "binding",
+      "plain": "Solution NMR structure of the UPF0339 family protein in Haloferax volcanii DS2.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "UPF0339 family protein",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GXU1"
+        }
+      },
+      "structures": [
+        {"id": "6Q2Z", "title": "NMR solution structure of the HVO_2922 protein from Haloferax volcanii", "method": "SOLUTION NMR"}
+      ]
+    },
+    {
+      "id": "hvo2753",
+      "label": "Zinc-finger protein HVO_2753",
+      "group": "binding",
+      "plain": "Solution NMR structure of the small DUF1610 zinc-finger protein HVO_2753.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "DUF1610 domain-containing protein",
+          "organism": "Haloferax volcanii",
+          "protein": "D4GWB3"
+        }
+      },
+      "structures": [
+        {"id": "6YDH", "title": "Solution structure and dynamics of Zn-Finger HVO_2753 protein", "method": "SOLUTION NMR"}
+      ]
+    },
+    {
+      "id": "hvo0758",
+      "label": "Zinc-finger protein HVO_0758",
+      "group": "binding",
+      "plain": "Solution NMR structure of the small CPxCG-related zinc-finger protein HVO_0758.",
+      "assembly": "1",
+      "entities": {
+        "1": {
+          "label": "Small CPxCG-related zinc finger protein",
+          "organism": "Haloferax volcanii DS2",
+          "protein": "D4GTQ1"
+        }
+      },
+      "structures": [
+        {"id": "8Q5B", "title": "Characterization of the zinc finger u-protein HVO_0758 from Haloferax volcanii: biological roles, zinc binding, and NMR solution structure", "method": "SOLUTION NMR"}
+      ]
+    }
+  ]
+}

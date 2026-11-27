@@ -13,6 +13,7 @@
 //            Laws library and back: the view plays again as it was, and nothing of it stays on the
 //            library. The Cell view opened after it is as the Cell view opened alone.
 //   physarum  the menu, 3D network and cutaway, and the linked Protein, Machines and Engine catalogues.
+//   haloferax  the Archaea menu, rod, plate and envelope, and the DS2 Protein and Machines catalogues.
 //   vesicle  the saved vesicle life, divided daughters, threshold crossing and released state, bilayer and molecular reference.
 //   phone    the same at a phone's width: the first tab's short name keeps the bar to one row, the
 //            card folds to one line that names the model system, apart from the rail's button, and
@@ -272,7 +273,37 @@ try {
   };
   const look = () => evaluate(`(() => { const v = ${V}, st = v.stage, r = st.renderer; return { sun: st.sun.position.toArray().map((x) => +x.toFixed(3)), shadow: st.sun.castShadow, limits: { ...st.rig.limits }, environment: Boolean(st.scene.environment), exposure: +r.toneMappingExposure.toFixed(3), toneMapping: r.toneMapping, bloom: st.finish?.bloom?.strength ?? 0, insets: st.insets || {}, sky: +st.sky.intensity.toFixed(3), fog: Boolean(st.scene.fog), children: st.scene.children.length }; })()`);
 
-  if (CASE === "physarum") {
+  if (CASE === "haloferax") {
+    const root = V + ".shadowRoot";
+    const press = async (selector) => {
+      const at = await placeOf(`root.querySelector(${JSON.stringify(selector)})`);
+      if (!at) throw Error("Control missing or covered: " + selector);
+      await click(at.x, at.y, 150);
+    };
+    const openCard = () => evaluate(`if(${V}.frame.classList.contains("card-folds") && !${V}.state.viewOpen) ${V}.toggleViewCard(true)`);
+    await open("lens=cell&still=1", false);
+    if (PHONE) await openCard();
+    await press(".species-pick");
+    check("Haloferax is under Archaea", await evaluate(`${root}.querySelector('[data-entry-section="Archaea"] [data-species="haloferax"]')?.textContent.includes("Haloferax volcanii")`));
+    await press('#species-list [data-species="haloferax"]');
+    check("the menu opens the plate illustration", await until(`${L}?.id==="haloferax" && ${L}.figures.plate.visible`, 50));
+    await shot(NAME + "-plate");
+    await evaluate(`${L}.setMode("rod")`);
+    check("the rod exposes a selectable pilus", await evaluate(`${L}.figures.rod.visible && ${L}.has("haloferax:pilus")`));
+    await shot(NAME + "-rod");
+    check("the rail opens the three-layer cutaway", await level("envelope") && await evaluate(`${L}.figures.envelope.visible && ["s-layer","membrane","cytoplasm"].every(id => ${L}.has("haloferax:"+id))`));
+    await shot(NAME + "-envelope");
+    if (PHONE) await openCard();
+    await press('[data-haloferax="proteins"]');
+    check("all 3,922 DS2 proteins load from the model view", await until(`${L}.mounted?.shelves.id==="haloferax" && ${L}.mounted.shelves.data.proteins.length===3922`, 90));
+    check("the Protein atlas finds the reviewed S-layer glycoprotein", await evaluate(`${L}.searchOwn("P25062").then(result =>
+      result.proteins.some(p => p.id === "P25062") && ${L}.mounted.shelves.proteins.some(p => p.id === "P25062" && p.marks.review === "reviewed"))`));
+    await open("entry=haloferax&lens=machines&select=machine:haloferax-s-layer&still=1", false);
+    const layer = `${L}.built?.get("machine:haloferax-s-layer")`;
+    check("the Machines bench loads 18 reference assemblies", await until(`${L}.species==="haloferax" && ${L}.counts.machines===18`, 75));
+    check("the shared link displays all six chains of the S-layer hexamer", await until(`${layer}?.surface?.surfaces.length===6`, 75));
+    await shot(NAME + "-s-layer");
+  } else if (CASE === "physarum") {
     const root = V + ".shadowRoot";
     const press = async selector => {
       const at = await placeOf(`root.querySelector(${JSON.stringify(selector)})`);

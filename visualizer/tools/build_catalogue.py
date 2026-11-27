@@ -383,6 +383,7 @@ def structure_bench(species, path, group_ids, kinds, sources, inputs):
         inputs.add(rel(shelf_path))
     entries, by_protein, seen = [], {}, set()
     organism = data["organism"]
+    native_organisms = {organism, *data.get("native_organisms", [])}
     for item in data["items"]:
         kind = item["id"]
         where = f"{species}, {kind}"
@@ -410,7 +411,7 @@ def structure_bench(species, path, group_ids, kinds, sources, inputs):
         entities = {}
         for ident, annotation in item["entities"].items():
             accession = annotation.get("protein")
-            in_atlas = annotation["organism"] == organism and accession in atlas
+            in_atlas = annotation["organism"] in native_organisms and accession in atlas
             entities[ident] = {**annotation, **({"in_atlas": True} if in_atlas else {})}
             if in_atlas:
                 link = [kind, "deposited chain"]
@@ -422,6 +423,7 @@ def structure_bench(species, path, group_ids, kinds, sources, inputs):
             "entry": f"{pdb}-assembly{item['assembly']}",
             "of": " and ".join([organism, *representative.get("partner_organisms", [])]),
             "outline": "whole",
+            "parts": item.get("parts", {}),
             "chains": True,
             "entities": entities,
             "sources": [source],

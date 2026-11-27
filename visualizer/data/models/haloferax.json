@@ -1,0 +1,30 @@
+{
+ "format": "cells.visualizer.model_system@1",
+ "id": "haloferax",
+ "label": "Haloferax volcanii",
+ "is": "Salt-loving archaeon · strain DS2 reference",
+ "plain": "Explore the rod and plate forms of this archaeon, then look inside its protein coat.",
+ "group": "Archaea",
+ "order": 110,
+ "made": "2026-11-27",
+ "modelled": {
+  "state": "planned",
+  "text": "Haloferax volcanii is a planned Cells model. This atlas illustrates the organism's cell forms and envelope.",
+  "record": [{"path":"visualizer/docs/HALOFERAX.md","where":"Haloferax volcanii"}]
+ },
+ "view": {"kind":"haloferax","protein_atlas":"haloferax","machine_bench":"haloferax"},
+ "levels": [
+  {"id":"cell","label":"Whole cell","shows":"The rod and plate forms, with the cell surface and pili."},
+  {"id":"envelope","label":"Envelope cutaway","shows":"An illustrated section through the outer S-layer, cytoplasmic membrane and cytoplasm."}
+ ],
+ "sources":{
+  "shape":{"text":"Schiller et al. (2024), Identification of structural and regulatory cell-shape determinants in Haloferax volcanii.","doi":"10.1038/s41467-024-45196-0","accessed":"2026-11-27","licence":"CC BY 4.0","class":"permissive"},
+  "surface":{"text":"von Kügelgen et al. (2021), Complete atomic structure of a native archaeal cell surface.","doi":"10.1016/j.celrep.2021.110052","accessed":"2026-11-27","licence":"Bibliographic facts only","class":"permissive"},
+  "taxonomy":{"text":"NCBI Taxonomy, Haloferax volcanii and strain DS2.","url":"https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=309800","accessed":"2026-11-27","licence":"Bibliographic facts only","class":"permissive"}
+ },
+ "facts":[
+  {"label":"Domain","value":"Archaea","sources":["taxonomy"]},
+  {"label":"Cell forms","value":"Rods and flat, often polygonal plates observed under different culture conditions","sources":["shape"]},
+  {"label":"Envelope","value":"A cytoplasmic membrane covered by a protein S-layer","sources":["surface"]}
+ ]
+}
