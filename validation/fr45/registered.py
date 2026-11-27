@@ -10,9 +10,15 @@ composition). A marked trace is the binary64 product 1e-12 x its compartment's v
 `addenda` copies by machine what the execution record and the host-entity addendum hold (TABLE §4, §14.1): W1eq
 takes W1's, its start apart, and a plant run its honest run's.
 
+`jobs` writes the judged run's 23 jobs (TABLE §3), each `OUT/jobs/<run>.json`, from this tree alone: its expected
+inputs, its host-entity addendum and W1eq's start file in its references, by path only, which the driver reads at
+run time in the run's own process (TABLE §3). Every job is judged, with no `time_limit_step`; a plant run names its
+patch module (CRITERIA:119-129). Nothing here opens the start file.
+
 Usage (PYTHONPATH at a snapshot, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr45.registered passes EXPECTED_JSON OUT --cpus 6,7
   python -B -m validation.fr45.registered addenda OUT
+  python -B -m validation.fr45.registered jobs OUT
 """
 
 import argparse
@@ -145,6 +151,30 @@ def addenda(out):
     return 0
 
 
+HERE = Path(__file__).resolve().parent  # validation/fr45/ of the tree this module is in (the snapshot's).
+EXPECTED = HERE / "spec" / "expected_inputs.json"
+ADDENDUM = HERE / "addenda" / "host-entities-2026-11-27.json"
+W1EQ_START = HERE / "references" / "outputs" / "reference_W1eq.json"  # By path only; the driver reads it.
+
+
+def jobs(out):
+    """The 23 registered runs' jobs (TABLE §3), judged, from this tree alone; W1eq's start as its path."""
+    if not W1EQ_START.exists():  # Its existence only.
+        raise SystemExit(f"refused: W1eq's start file is not in this tree ({W1EQ_START})")
+    expected = json.loads(EXPECTED.read_text())
+    addendum = json.loads(ADDENDUM.read_text())
+    out = Path(out) / "jobs"
+    out.mkdir(parents=True, exist_ok=True)
+    runs = ["W1eq", *PARSED, *PLANTS]
+    for run in runs:
+        job = dict(run=run, inputs=inputs_for(run, expected, addendum),
+                   plant=f"p{run[-1]}" if run in PLANTS else None,  # W1p-P1 -> plants/p1.py, ...
+                   start=str(W1EQ_START) if run == "W1eq" else None, time_limit_step=None, judged=True)  # fmt: skip
+        (out / f"{run}.json").write_text(json.dumps(job, indent=1) + "\n")
+    print(json.dumps(dict(jobs=len(runs), honest=["W1eq", *PARSED], plants=list(PLANTS), folder=str(out))))
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -154,7 +184,11 @@ def main(argv=None):
     p.add_argument("--cpus", default="6,7")
     a = sub.add_parser("addenda")
     a.add_argument("out")
+    j = sub.add_parser("jobs")
+    j.add_argument("out")
     args = parser.parse_args(argv)
+    if args.command == "jobs":
+        return jobs(args.out)
     if args.command == "passes":
         results = passes(args.expected, args.out, [int(c) for c in args.cpus.split(",")])
         bad = [run for run, rc in results if rc]
