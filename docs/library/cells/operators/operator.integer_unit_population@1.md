@@ -69,8 +69,9 @@ changing volumes.
 | `integer_trace_cell_fmol` | Owns | integer_site, integer_trace, integer_route | fmol | Not stated |
 | `integer_trace_node_fmol` | Owns | integer_site, integer_trace, integer_route | fmol | Not stated |
 | `integer_trace_counts` | Owns | integer_site, integer_trace, integer_state | units | Not stated |
+| `integer_cohort_units` | Owns | integer_cohort, integer_state, integer_cohort_label | units | Not stated |
 
-Writes into other pieces' fields: `amount_increment`, booked in `integer_transferred_fmol` and `extracellular_amount_increment`, booked in `integer_transferred_fmol`. Ledgers: `integer_subunits`. Records: `integer_counts` (amount), `integer_hazard` (level), `integer_threshold` (level), `integer_events` (cumulative), `integer_channel_events` (cumulative), `integer_clock_s` (level), `integer_clock_carry_s` (level), `integer_transferred_fmol` (cumulative), `integer_transfer_dissipated_energy_pJ` (cumulative), `integer_energy_magnitude_pJ` (cumulative), `integer_divided_units` (cumulative), `integer_trace_time_s` (level), `integer_trace_channel` (level), `integer_trace_cell_fmol` (amount), `integer_trace_node_fmol` (amount) and `integer_trace_counts` (amount).
+Writes into other pieces' fields: `amount_increment`, booked in `integer_transferred_fmol` and `extracellular_amount_increment`, booked in `integer_transferred_fmol`. Ledgers: `integer_subunits`. Records: `integer_counts` (amount), `integer_hazard` (level), `integer_threshold` (level), `integer_events` (cumulative), `integer_channel_events` (cumulative), `integer_clock_s` (level), `integer_clock_carry_s` (level), `integer_transferred_fmol` (cumulative), `integer_transfer_dissipated_energy_pJ` (cumulative), `integer_energy_magnitude_pJ` (cumulative), `integer_divided_units` (cumulative), `integer_trace_time_s` (level), `integer_trace_channel` (level), `integer_trace_cell_fmol` (amount), `integer_trace_node_fmol` (amount), `integer_trace_counts` (amount) and `integer_cohort_units` (amount).
 
 <!-- /generated -->
 
@@ -171,6 +172,43 @@ $$J = \Big(\sum_k g_k n_k\Big)\left(\frac{n_\text{c}}{V_\text{c}} - \frac{n_\tex
   - ideal dilute pools;
   - units that carry no free energy;
   - sites sharing a pool, or other writers sharing a row, split at second order.
+- **Cohorts: which units are still the original ones (FR-52).** A declared cohort names one site,
+  its identity class $C$ (the unit states that are forms of one unit, such as dimer and
+  tetramer, or inactive and active) and a window $[t_\text{start}, t_\text{end})$. Its record
+  $E_{k,l}$ is the expected number of units in state $k \in C$ whose identity began at the start
+  ($l$ = initial) or at an event before, inside or after the window, given the events that
+  happened. It is an expectation, never one realization.
+  - **Why it is exact.** Units of one state are interchangeable under the law, so an event
+    consumes a uniformly random subset of each state's units. With $n_k$ the counts before the
+    event, $r_k$ and $p_k$ its units of the class consumed and made, $m_{ab}$ the identities going
+    on from state $a$ to state $b$, and $\lambda$ the label of the event's time:
+    $$s_{a,l} = \frac{E_{a,l}}{n_a}, \qquad E_{a,l} \leftarrow E_{a,l}\,\frac{n_a - r_a}{n_a}, \qquad E_{b,l} \leftarrow E_{b,l} + \sum_a m_{ab}\, s_{a,l}, \qquad E_{b,\lambda} \leftarrow E_{b,\lambda} + p_b - \sum_a m_{ab}$$
+  - **How many identities go on:** $\min(R, P)$, with $R = \sum_k r_k$ and $P = \sum_k p_k$. A
+    merge of two dimers into a tetramer is not a new unit; a split makes one, since one half keeps
+    the identity and the other is new. So the initial label summed over the class is a survival
+    count and never rises.
+  - **The pairing** $m$ follows from the channel where only one table is possible (a one-for-one
+    step, a merge, a split, two closed tetramers opening together). Where two or more are
+    possible, as when a dimer a and a dimer b join, the cohort declares which state's identity
+    goes on, and an undeclared one is refused.
+  - **Returns are counted gross.** A unit that leaves the class (falls apart into free subunits)
+    and comes back is a new unit, labelled by the time it came back.
+  - **What no refusal can catch.** A class that leaves out a form of the unit reads as residence:
+    with only the open state declared, a unit that closes and reopens counts as new. Naming every
+    form of the unit is the declaration's to get right.
+  - **The outputs** (its readout): the expected units per state and label, the class's
+    conductance per label $\sum_{k \in C} g_k E_{k,l}$, its flux at a declared driving
+    difference, the initial units still conducting, and the units formed inside the window.
+  - **Its integrity.** Each state's labels sum to its count within the rounding bound
+    $8(K + 1)\,u\,N$ ($K$ events, $u = 2^{-53}$, $N$ the most class units the site can hold), or
+    the readout is unresolved, never 0.
+  - **It is passive.** No rate, draw or ledger reads the record, and an observed world and its
+    unobserved twin agree bit for bit on everything else. One check reads it: at a division, the
+    partition tests every field for finiteness, and the record is finite by construction, so the
+    test refuses only after an engine fault.
+  - **Refused in version 1:** an ambiguous, incomplete or repeated pairing; a class state on both
+    sides of a channel; a conducting state outside the class; a cohort at a site that divides or
+    is born.
 
 ## Sources
 
@@ -215,6 +253,19 @@ Declared test: not yet extracted; the composite's operator contract has no test 
   - exact integer conservation;
   - the recorded draws against the spec's table;
   - a same-seed restart, bit for bit.
+- **Cohorts (FR-52).** The design note's fractions were frozen before any code, each found twice
+  by hand and by enumerating every equally likely choice of units
+  ([PASSIVE_COHORT_DESIGN.md](../../../PASSIVE_COHORT_DESIGN.md) §3).
+  - **On the host:** the frozen rows exactly in rationals and within the bound in binary64; the
+    pairing rule against brute-force counts of the legal tables of 1,296 small channels; the update
+    against enumeration on explicit and random channels; one refusal row each; and planted errors
+    (removal in age order, a split that copies its identity, one pair per channel, a wrong
+    pairing, a residence reading), each caught.
+  - **Compiled:** a world of two populations with both kinds of pairing, observed and unobserved.
+    The record meets an independent reference that rebuilds every count from the trace and the
+    declared stoichiometry (`validation/fr52_cohorts/`). The twins agree bit for bit, the record's
+    conductance closes the booked transfer, and a same-seed restart is bitwise, a reset or zeroed
+    record at the cut being caught.
 
 ## Status
 
