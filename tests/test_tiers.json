@@ -412,7 +412,8 @@
   "/mnt/workspaces/Cells/small-fixes-20261126/measured2-assembly/measured.json",
   "/mnt/workspaces/Cells/small-fixes-20261126/measured3/measured.json",
   "/mnt/workspaces/Cells/small-fixes-20261126/measured4/measured.json",
-  "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148-counts/lane-a/measure/measured.json"
+  "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/d148-counts/lane-a/measure/measured.json",
+  "/mnt/workspaces/Cells/fr52-build-20261126/d148/lane-a/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3526,6 +3527,14 @@
    "root": "/mnt/workspaces/Cells/fr43-cowriters-build-20261126/snap-tc-head-b926d62c",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-26T19:44:11+00:00"
+  },
+  {
+   "git_revision": "56502459cec16ee5efac7c3e811574f933485b50",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr52-build-20261126/snap-head-56502459",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-26T23:23:52+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6684,11 +6693,19 @@
     }
    },
    {
-    "file": "tests/unit/test_integer_unit_population.py",
-    "seconds": 61.41,
+    "file": "tests/unit/test_integer_unit_cohorts.py",
+    "seconds": 57.85,
     "exit_code": 0,
     "counts": {
-     "passed": 70
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_integer_unit_population.py",
+    "seconds": 65.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 140
     }
    },
    {

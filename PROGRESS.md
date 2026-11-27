@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-26 UTC.
+Last updated: 2026-11-27 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -14,6 +14,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/FEATURE_REQUESTS.md) and the tags of 22 to
 25 November.
 
+- **26 to 27 November, night: four landings.**
+  - The per-event counts in `integer_unit_population@1` (D400, 7f98d838).
+  - FR-43 part 3's co-writers registered comparison, which **passes**: the judge and the independent checker agree (D402, D403;
+    799a6070, tag `fr43-part3-cowriters-passed-2026-11-26`).
+  - FR-52, passive cohort observations for integer units (D404, ab8b599c).
+  - The Lean track's FR-51 run-view note (9506a1cc).
+  - Running:
+    - FR-50 phase 2's D148 round, then a rerun on its head merged with main, then its judged run;
+    - FR-65's coupling step, built, whose round follows FR-50 phase 2's landing.
+  - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).
   - The test slimming, with tier 3 now weekly (D396, 033bde25).
@@ -52,8 +62,6 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     landing, by a nightly on demand, and the nightly full run stays the backstop. Open for the user: the 28 readers of
     `SNAPSHOT.json`, and AGENTS.md's wording of D229's rule 3.
 - **Queued builds, in the order the decisions give:**
-  - **FR-52** (high; D371, D375): cohort observations for integer units; an engine record at each event, chains in
-    version 1, a split makes a new unit. Note on branch `fr52-design`; 4.25 to 5 agent-days, after the rename.
   - **FR-54 and FR-57** (high; D341, D362, D364): one `liquid_routing@1` operator that takes over the wash. Note
     `docs/LIQUID_ROUTING_DESIGN.md` (968bd182, branch `fr54-57-design`); 8.25 to 10.5 agent-days, after the
     rename. The protocol and spec are tagged (`liquid-routing-criteria-2026-11-25`), and amendment 5
@@ -61,11 +69,11 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     (`liquid-routing-references-2026-11-25`, D384), and the line holds. The wash retires only after FR-49's World B and C1 and FR-45's W2 and W7 have run, or those runs are
     pinned to an earlier snapshot.
   - **FR-65** (high, part of FR-43; D365, D375, D398): turnover beside a changing volume, with a lumen. The first build is
-    landed (ae349721). Next: the coupling's step (note §3.8, about 2 to 2.5 agent-days); the water worlds' run view (§9.2)
+    landed (ae349721). The coupling's step is built (branch `fr65-coupling`, D402); its round follows FR-50 phase 2's landing. The water worlds' run view (§9.2)
     goes to water's owner.
   - **FR-64** (normal; D356, D361): one declared voltage shift on a channel population, with FR-63 (normal; D353)
     re-formed as a pH shift on it. Note `docs/VOLTAGE_SHIFT_DESIGN.md` (377a1b34, branch `fr64-design`); the build
-    follows FR-51's follow-up and the rename.
+    follows FR-50 phase 2's landing (D402).
   - **FR-53** (normal; D371, D370): a rounding allowance for global ledgers. Note `docs/LEDGER_ROUNDING_DESIGN.md`
     (774fdcd5); D370 corrects its premise for the pump-tissue family. FR-47's ledger limit: the
     evidence recommends keeping it, with the user to decide (D379).
