@@ -14058,3 +14058,25 @@ It is a port check: it shows that the live engine computes legacy's written equa
   - The confirmation translated them at the parse (D371 Q7) and restored the registered spelling in the records. All 86 equal the registered
     definitions.
   - D381 stands at its own revision.
+
+## D415: FR-45's tooling is landed, and its registration is merged into main
+
+2026-11-27, written at 13:23 UTC.
+
+- **The tooling landed** at 60b276ef (tag `fr45-tooling-landed-2026-11-27`), from d09b6544, with no `src/` change. The landing's trial passed 140
+  tests.
+  - **What it adds:** `validation/fr45/`'s worlds, driver, exporter, plants and judge, built to the contract.
+  - **The contract's §12.3 step 5:** the exporter's output matches the format sample in structure, and the plant rule finds no departure.
+  - **The dress rehearsal,** on 23 invented runs: all 15 criteria pass and all nine plants are caught, and a damaged copy fails as it should.
+  - **The lead's readings for the edge cases** are in `fr45-build-rulings-20261127.md`, among them G's call form. The lead smoke-tested it as a
+    non-builder, with invented amounts.
+  - **Tests:** `test_fr45_judge.py` in tier 1 (0.62 s), and `test_fr45_driver.py` in tier 2 (37.9 s), both measured cold on the timed cores.
+- **The registration is merged** into main at b3a5ec0b, from the tag `fr45-protocol-registered-2026-11-27`: 44 files, each equal to the tag's
+  blob. The build's tree held none of them until both landings were in (D408).
+- **Next:**
+  1. the parse-only passes, for the execution record and the host-entity values, never of W1eq;
+  2. the contract's addenda: the refusal mapping, the checks list, the execution record, the plants' changes and patches, the host values and
+     the floors;
+  3. their confirmation by a reviewer who is not the builder (N1, N2, B4);
+  4. the lead's hashes;
+  5. the judged run.
