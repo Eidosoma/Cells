@@ -1887,8 +1887,9 @@ RULES = (
     ),
     dict(
         rule=f"beside {LABELS}, {SITES} is admitted by species: it writes no labelled species, "
-        "internalises nothing, and composes beside both only with the wash, D152's reactions, "
-        "turnover and exchange, and with none of the inner model's later options (FR-44 step 3)",
+        "binds at outside nodes only and internalises nothing, and composes beside both only with "
+        "the wash, D152's reactions, turnover and exchange, and with none of the inner model's "
+        "later options (FR-44 step 3)",
         laws=(LABELS, SITES, WASH, REACTIONS, TURNOVER, EXCHANGE),
         level="data",
         check=OPS + "species_labels.py::by_species_errors",
@@ -1900,8 +1901,8 @@ RULES = (
         "written_rows) is labelled. The site operator writes amounts only at its pools. The four "
         "partners are qualified together by test_neutral_labels_sites.py's labelled and unlabelled "
         "twins. Every other operator law is refused by name beside both, the compartments among "
-        "them as FR-49's C4, and so are an internalising population and the five later options, "
-        "X2 at binding",
+        "them as FR-49's C4, and so are an internalising population, one facing a cell, and the "
+        "five later options, X2 at binding",
     ),
     dict(
         rule=f"beside site_sets, {SITES} admits only the design note's §15 partners: the wash, @2, "

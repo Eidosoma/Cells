@@ -638,7 +638,9 @@ qualifies it:
     is C4's one home (D424). Its four-way form and its three-way form without a wash stay refused
     whatever the compartments' own list admits.
   - `cells.operator.templated_polymerisation@1`, which World L declares;
-- **an internalising population,** which no registered world needs;
+- **an internalising population,** which no registered world needs, and **a population that binds
+  from a cell** (an inward patch face or a contact). The twin qualifies binding at outside nodes
+  only, so an admitted writer writes no cell row in version 1;
 - **the inner model's later options,** FR-45's list beside sets:
   - `cells.model.resolved_pump_tissue@3`'s own one-way records;
   - a blocked channel population;
@@ -654,7 +656,7 @@ qualifies it:
 
 | File | Rows |
 | --- | --- |
-| `test_neutral_arrival_labels.py` (host) | The rule on planted declarations; the refusals by name on parsed worlds; the inner model's options; C4's four-way and three-way forms with FR-49's two list entries patched in; the site operator's pools equal to its written rows, with a plant |
+| `test_neutral_arrival_labels.py` (host) | The rule on planted declarations; the refusals by name on parsed worlds, contact and inward populations among them; the inner model's options; C4's four-way and three-way forms with FR-49's two list entries patched in; the site operator's pools equal to its written rows, with a plant |
 | `test_neutral_labels_sites.py` (compiled, new) | FR-44's twin world with the well's sites kept and Cl and Q labelled, beside the four partners. Every physical record is bit for bit the unlabelled twin's; the well's identities at each wash; in the specimen, the base gains exactly exchange's import and the cohort exactly turnover's production |
 
 **No new state:**

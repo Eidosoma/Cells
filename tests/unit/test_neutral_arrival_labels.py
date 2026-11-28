@@ -1198,7 +1198,15 @@ def _owner(*species):
 def _internalising_population():
     from types import SimpleNamespace
 
-    return SimpleNamespace(id="r_int", internalisation_rate=0.1)
+    return SimpleNamespace(
+        id="r_int", internalisation_rate=0.1, owner_kind="patch", facing="outside"
+    )
+
+
+def _cell_facing_population():
+    from types import SimpleNamespace
+
+    return SimpleNamespace(id="k0", internalisation_rate=None, owner_kind="contact", facing="first")
 
 
 BY_SPECIES_CASES = {  # (the planted entries besides the owner of S, the refusal's words or None)
@@ -1238,6 +1246,11 @@ BY_SPECIES_CASES = {  # (the planted entries besides the owner of S, the refusal
         [_writer(SITES, [("L", "n")], populations=[_internalising_population()])],
         "a variant not admitted beside labels: an internalising population (r_int)",
     ),
+    "a listed writer's population facing a cell": (
+        [_writer(SITES, [("L", "n")], populations=[_cell_facing_population()])],
+        "a variant not admitted beside labels: a population facing a cell (an inward patch face or "
+        "a contact) (k0)",
+    ),
 }
 
 
@@ -1248,7 +1261,7 @@ def test_a_split_writer_is_admitted_by_species_only_beside_its_partners(case, mo
     declared and no labelled species among its written rows (FR-43 part 3's written_rows). An
     undeclared writer and one off the list keep today's words. Beside an admitted writer every
     operator law but its four partners is refused by name, all in one message, the compartments as
-    FR-49's C4, and so is its internalising population."""
+    FR-49's C4, and so are its internalising populations and those facing a cell."""
     from types import SimpleNamespace
 
     from cells.operators import species_labels as labels
@@ -1302,6 +1315,14 @@ def _internalising_sites():
     return sfx.face_free_sites([sfx.population("r_int", k_int=0.1)])
 
 
+def _inward_sites():
+    """D150's face-free cell with one population on its contact patch's inward face, binding from
+    cell_0 (no labels)."""
+    from validation.tissue import site_occupancy_fixtures as sfx
+
+    return sfx.face_free_sites([sfx.population("r_in", face="inside")])
+
+
 def _sparse_labelled_well():
     raw = _labelled_well("Cl")
     raw["execution"]["field_solver"] = (
@@ -1318,6 +1339,14 @@ BY_SPECIES_REFUSED = {
     "an internalising population (D424)": (
         lambda: with_labels(_internalising_sites(), [("Cl", ["base", "cohort"], {})]),
         "a variant not admitted beside labels: an internalising population (r_int)",
+    ),
+    "two contact populations, each facing a cell": (
+        lambda: with_labels(_contact_world(), [("Cl", ["base", "cohort"], {})]),
+        "a population facing a cell (an inward patch face or a contact) (k0, k1)",
+    ),
+    "an inward population, facing its patch's cell": (
+        lambda: with_labels(_inward_sites(), [("Cl", ["base", "cohort"], {})]),
+        "a population facing a cell (an inward patch face or a contact) (r_in)",
     ),
     "the replacement and its occupant reset, non-partners": (
         _replaced_with_w,
@@ -1342,7 +1371,8 @@ BY_SPECIES_REFUSED = {
 def test_beside_labels_a_writer_admitted_by_species_is_refused_by_name_where_unqualified(case):
     """FR-44 step 3 (D327, D424; parses only). The site operator stays refused beside the owner
     where it writes a labelled species, and beside an admitted one these are refused by name: an
-    internalising population, every operator law but the four partners
+    internalising population, a population facing a cell (a contact's, or an inward patch face's),
+    every operator law but the four partners
     (cells.operator.scheduled_cell_replacement@1 and cells.operator.site_occupant_replacement@1
     here), and the inner model's later options (the sparse field solver here; the others are
     test_the_inner_models_later_options_are_refused_by_name). Labels beside shared site sets stay

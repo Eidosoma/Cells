@@ -789,8 +789,7 @@ class Operator:
         """((species id, node id), ...): every row its half-steps can change, by net change (a
         catalyst is not written), at cells and finite outside nodes (FR-43 part 3; module
         docstring). A split row writer that declares ROW_MOVES defines it; the species registry's
-        row rules read it (check_row_writers, check_shared_rows), and so does the label owner's
-        admission by species (species_labels.BY_SPECIES, FR-44 step 3). (): it writes none."""
+        row rules read it (check_row_writers, check_shared_rows). (): it writes none."""
         return ()
 
     def sole_rows(self, spec, declaration):

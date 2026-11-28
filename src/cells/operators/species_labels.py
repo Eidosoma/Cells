@@ -91,7 +91,9 @@ closed) until a world qualifies it:
   and exchange, qualified together by tests/unit/test_neutral_labels_sites.py's twin. Among them
   is cells.operator.cell_owned_compartments@1, FR-49's C4, registered by amendment, so its four-way
   form and its three-way form without a wash stay refused in either order of FR-49's list entries;
-- an internalising population, which no registered world needs (D424);
+- an internalising population, which no registered world needs (D424), and a population that
+  binds from a cell (an inward patch face or a contact): the twin qualifies binding at outside
+  nodes only, so version 1 writes no cell row;
 - the inner model's later options: cells.model.resolved_pump_tissue@3's own one-way records, a
   blocked channel population, a declared voltage shift, the sparse field solver, and X2, which is
   attached after the definition's checks and so is refused at binding (initial_values).
@@ -188,6 +190,17 @@ def _internalising(declaration):
     return tuple(p.id for p in declaration.populations if p.internalisation_rate is not None)
 
 
+def _cell_facing(declaration):
+    """The site operator's populations that bind from a cell, an inward patch face or a contact
+    (site_occupancy.facing_node): refused by name beside labels until a world qualifies a cell
+    pool, since the twin binds at outside nodes only."""
+    return tuple(
+        p.id
+        for p in declaration.populations
+        if p.owner_kind == "contact" or (p.owner_kind == "patch" and p.facing != "outside")
+    )
+
+
 BY_SPECIES = MappingProxyType(
     {
         SITES_LAW: BySpecies(
@@ -197,7 +210,10 @@ BY_SPECIES = MappingProxyType(
                 "cells.operator.scheduled_species_turnover@1",
                 "cells.operator.scheduled_species_exchange@1",
             ),
-            unqualified=(("an internalising population", _internalising),),
+            unqualified=(
+                ("an internalising population", _internalising),
+                ("a population facing a cell (an inward patch face or a contact)", _cell_facing),
+            ),
         ),
     }
 )
@@ -694,7 +710,8 @@ def by_species_errors(spec):
       message. cells.operator.cell_owned_compartments@1 is named there as FR-49's C4, whose
       four-way form and three-way form without a wash this keeps refused, whatever the
       compartments' own list admits;
-    - each of the writer's variants not yet qualified (an internalising population);
+    - each of the writer's variants not yet qualified (an internalising population, and one
+      facing a cell);
     - the inner model's later options (option_errors)."""
     writers = by_species_writers(spec)
     if not writers:
