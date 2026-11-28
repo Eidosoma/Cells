@@ -192,6 +192,10 @@ def test_sites_beside_labels_and_four_partners_keep_the_physics_and_follow_each_
     assert np.all(np.abs(n * shares[:, 1] - produced) <= bound)
     assert float(np.max(np.asarray(h.label_closure_relative))) <= 64 * EPS
 
+    # The sites act beside the labels: each wash lowers the free ligand, and both release.
+    net = np.asarray(h.site_bound_net_fmol)  # [row, population], bound positive.
+    assert np.all(net[-1] < 0), net[-1]
+
     # What nothing labels or moves keeps its declared shares bit for bit.
     q_well_2 = np.asarray(h.label_outside_share)[:, jq, :, w2]
     assert q_well_2.tobytes() == np.tile([1.0, 0.0], (len(steps), 1)).tobytes()
