@@ -46,9 +46,11 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     - **FR-44's admission by species is landed** (D425, c9ab3207).
     - **FR-49's pairing and narrowing is landed** (D426, f2cca425). World B, C1 and C2 pass their registered judgement,
       with every plant caught.
-    - **Liquid routing builds** (D427, D428): the judge's rules are committed (e04e16ce), and builder A (the operator) and
-      builder B (the worlds, exporter, sample and takeover files) are building.
-    - **FR-49's C4:** Amendment 2 is tagged and landed (c536bf77), and its build has started (D428).
+    - **Liquid routing builds** (D427 to D429): amendment 7 and the reading note are committed (1bba5faf) for the spec
+      auditor's re-run and their tag. Builder A's c1 to c3 are on `lr-engine`, and builder B's tooling runs. The
+      judge's agent was stopped by a safeguard, and how to continue it is with the user.
+    - **FR-49's C4** (D428, D429): built and reviewed. Plant (e) takes its own horizon by Amendment 3, and the launch
+      waits for the load bounds.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).
@@ -116,7 +118,7 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     does **FR-56** (172fce4c, D380). A digest of all their questions is with the user (28 November).
   - **FR-39** (high, D286): OL6 is finished (D368, D393), so its Phase B is unblocked; its laws sheet and plan are being
     drafted for discussion (28 November). **FR-40** (high): a metadata-only source search runs. **FR-41** (high) is
-    parked until a study with paired, tabulated data appears (D292).
+    parked until a study with paired, tabulated data appears (D292's check; the feature index).
   - **The architecture items (D299):** item 2's two cases have landed (D306, D398, D407); item 3's measurement plan is
     being drafted (28 November); item 4, the site and sink pair, waits for liquid routing.
 - **Registrations and judged runs still to come:**
