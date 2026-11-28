@@ -14688,3 +14688,36 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
   - **The note of record,** `docs/LIQUID_ROUTING_DESIGN.md` at 968bd182 (D424), lands on main first, docs only.
 - **FR-49's C4 begins with a plan step:** the amendment, the code-blind references, the judge and the engine's lifting of
   C4's refusal, written against the wash before it retires (D424, D426).
+
+## D428: FR-49's Amendment 2 (C4) is tagged and landed; C4's build and liquid routing's two builders start, after the judge's rules
+
+2026-11-28, written at 12:11 UTC.
+
+- **FR-49's Amendment 2** is tagged `fr49-compartment-compositions-v1-amendment-2-2026-11-28` (on 9273259d) and landed on
+  main (c536bf77). The adviser's view was taken.
+  - **The step:** C4 runs at 0.5 s. At C1's 2 s, World B's sites fail the site operator's stage condition at the first
+    step.
+  - **The lift:** C4's refusal is lifted for qualified sets anchored on the compartments, not by a flat partner-list
+    addition. That admits 8 new law sets, against 48 for the flat form, and each of the seven proper subsets gets a
+    host row or a refusal by name.
+  - **References: none new (R1).** C4's values are pointers into `cases.json`'s L, C1 and B entries, judged against
+    `fr49-references-2026-11-24`. Registered values and decoupling gates refuse to judge any run whose definition
+    breaks them. The registration never promised C4 a reference, so this corrects D427's line, which said "the
+    code-blind references".
+  - **The remedy:** if development shows a bitwise claim (C4-1, C4-4 or C4-7) failing, it is a dated further amendment
+    before any registered run, never a narrowed reading.
+  - **A refusal:** the planner's recursive search for a frozen list that might hold `REGISTRATION.md` was refused by
+    the permission classifier, since the walk would have entered `lean/`. No one retried it.
+    - The question was settled by the enforcement itself instead: tier 1 at the amendment's commit (314 files, none
+      changed against the record) and FR-49's tier-2 files (7 passed).
+    - The lead read L.json by structure only: its 61 sample times all lie on the 0.5 s grid.
+- **C4's build** starts on branch `fr49-c4`, by FR-49's builder. A non-builder reviews plants (d) and (e) before the
+  judge's tag. C4 holds `species_labels.py`, `composition_matrix.py`, `PUMP_COMPOSITE.md` and the labels docs until it
+  lands.
+- **Liquid routing:**
+  - **The judge's rules** are written and committed untagged (`lr-judge` at e04e16ce, 101 of 101 synthetic checks),
+    before any engine code, as the protocol's §5 step 5 requires. Its open readings and four TABLE layout gaps are the
+    lead's to rule before the judge's tag.
+  - **Builder A** builds the operator and the lift branch (`lr-engine`). **Builder B** builds the worlds, the exporter,
+    the format sample and the takeover files (`lr-tooling`).
+  - Each reads only what the protocol's Builder row allows, and edits C4's shared files only after C4 lands.
