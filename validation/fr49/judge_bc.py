@@ -37,10 +37,21 @@ criterion; only the latter is the registration's catch.
 inconclusive, not a pass, where that reference reports a cross-check difference above its declared
 accuracy. That is any `within` that is false in its `method`.
 
-**Two readings,** to be ruled before this judge's tag:
-- C1-2's "just after the wash" is the first saved row after the wash time, which is the step after
-  900 s; "just before" is the row at 900 s. W has no route, so its amounts are constant in between.
-- A plant's catch is a registered criterion's failure.
+**The readings this judge embodies,** to be ruled before its tag:
+1. C1-2's "just after the wash" is the first saved row after the wash time, which is the step after
+   900 s; "just before" is the row at 900 s. W has no route, so its amounts are constant in between.
+2. A plant's catch is a registered criterion's failure. A plant run refused by a named check is
+   reported, and is not the catch, so its part fails.
+3. "Every row" (B2, B5, C1-1 and C2-1) is every saved row. The runner saves every accepted step, so
+   that is every step, not only the observation grid (5 s, 60 s and 20 s).
+4. World B's twin is one run at 0.1 s (the literal reading of "a twin", D424). B5 compares it with
+   the honest run at 0.1 s. B1 and B2 are judged on the two honest runs and on the twin.
+5. C1-3's "the label owner's closure included": a run that completes passed the closure's host check
+   on every row; the closure diagnostic's largest value is reported.
+6. B2's L_T is the declared n_L(0) + B(0), and C2-1's L_T,j the declared totals. B4's and C2-3's
+   equilibria, and B3's and C2-2's references, are the references' values. Plant (a)'s B is formed
+   here from the declared values, in 50-digit decimal arithmetic.
+7. C2's runs are judged at both steps for C2-1 and C2-3, and C1's at its one step.
 
 **The judge's literals** (RUNS) are its own table of the registered runs. Every record's job must
 equal its row in world, step, horizon, observation interval, event and plant, or the judge refuses
