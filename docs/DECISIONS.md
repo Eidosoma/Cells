@@ -14665,3 +14665,26 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
   - FR-49's C4, by amendment, written against the wash (D424), now that admission by species has landed;
   - the wash's retirement (D364): FR-45's W2 and W7 and FR-49's World B and C1 have all run, so it waits only on liquid
     routing's takeover, which is held for the user's answer on its price and X2 (D424).
+
+## D427: the user's answers: liquid routing builds at its price, with X2 waived and two builders; FR-49's C4 plan starts
+
+2026-11-28, written at 10:41 UTC. The user: "1. yes. 2. yes".
+
+- **Liquid routing (FR-54 and FR-57) builds at its plan's price,** 15.5 to 21.5 agent-days (D424).
+  - **X2 is waived for its registration,** by the reasoned waiver D424 recommended.
+    - X2 would count only the default face heat's step error, in arms 1 and 2.
+    - T4 already bounds that error at every judged default run: by class R, equal to the declared closed form, and by
+      class B, within the law's Taylor remainder.
+    - Elsewhere, events are held steps and flow heats are exact per portion.
+
+    No amendment is made, and the engine refuses X2 beside the router by name, as beside site sets and a shift.
+  - **Two builders,** the lead's reading of "yes" to that part. They split the protocol's Builder role:
+    - one takes the operator and the lift branch;
+    - the other takes `validation/liquid_routing/worlds.py`, the exporter, the format sample, `takeover_map.json` and
+      `takeover_pairs.json` with its script.
+  - **The order is the protocol's own** (`docs/LIQUID_ROUTING_PROTOCOL.md` §5, at `liquid-routing-amendment-6-2026-11-25`).
+    - The judge writes its rules from the spec, untagged, before any engine code exists (D308's order).
+    - The builders start once those rules are committed.
+  - **The note of record,** `docs/LIQUID_ROUTING_DESIGN.md` at 968bd182 (D424), lands on main first, docs only.
+- **FR-49's C4 begins with a plan step:** the amendment, the code-blind references, the judge and the engine's lifting of
+  C4's refusal, written against the wash before it retires (D424, D426).

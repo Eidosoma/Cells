@@ -46,7 +46,9 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     - **FR-44's admission by species is landed** (D425, c9ab3207).
     - **FR-49's pairing and narrowing is landed** (D426, f2cca425). World B, C1 and C2 pass their registered judgement,
       with every plant caught.
-    - Liquid routing (15.5 to 21.5) is held for the user's answer on its price and X2.
+    - **Liquid routing builds** (D427): the price is accepted, X2 is waived by its reasoned waiver, and there are two
+      builders. The judge's rules come first, by the protocol's order.
+    - FR-49's C4 starts with a plan step (D427).
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).
