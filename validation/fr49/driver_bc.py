@@ -29,8 +29,10 @@ with its class and message, not raised.
   diagnostic, largest over the run.
 - C2: L1 and L2 at lys, each member's B, and the set's free sites R, at every row.
 
-The first-run rule: a job whose ID does not begin `dev-` runs only with `--judged`, so that no
-registered run is made by accident before the launch note.
+The first-run rule (FR-45's; the lead, 28 November 2026): a registered world first runs at its
+registered length only in a judged run. A job whose ID does not begin `dev-` runs only with
+`--judged`, and a `dev-` job runs only at a horizon other than its world's registered one
+(first_run_refusal), so that no development run is a registered run under another name.
 
 Usage (PYTHONPATH at a snapshot, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr49.driver_bc jobs OUT_DIR
@@ -213,6 +215,23 @@ def identity():
     return dict(revision=revision.stdout.strip(), dirty=dirty.stdout.splitlines())
 
 
+REGISTERED_HORIZONS = {row[1]: row[3] for row in JOBS}  # world -> its registered horizon (s).
+
+
+def first_run_refusal(entry, judged):
+    """Why the first-run rule refuses a job (the module docstring), or None: a registered job
+    without `--judged`, or a `dev-` job at its world's registered horizon."""
+    if not entry["id"].startswith("dev-"):
+        return None if judged else f"{entry['id']} is a registered run: it runs only with --judged"
+    if float(entry["horizon_s"]) == REGISTERED_HORIZONS[entry["world"]]:
+        return (
+            f"{entry['id']} is a development job at world {entry['world']}'s registered horizon "
+            f"({entry['horizon_s']:g} s): a registered world first runs at its registered length "
+            "only in a judged run"
+        )
+    return None
+
+
 def run(job_path, record_dir, *, judged=False):
     """Run one job in this process and write its record (the module docstring)."""
     import jax
@@ -227,8 +246,9 @@ def run(job_path, record_dir, *, judged=False):
     entry = json.loads(Path(job_path).read_text(encoding="utf-8"))
     if entry.get("kind") != JOB_KIND or entry.get("protocol") != PROTOCOL:
         raise SystemExit(f"{job_path}: not an FR-49 Parts B and C job")
-    if not entry["id"].startswith("dev-") and not judged:
-        raise SystemExit(f"{entry['id']} is a registered run: it runs only with --judged")
+    refusal = first_run_refusal(entry, judged)
+    if refusal:
+        raise SystemExit(refusal)
     out = Path(record_dir)
     out.mkdir(parents=True, exist_ok=True)
     record = dict(kind=KIND, protocol=PROTOCOL, job=entry, identity=identity(),

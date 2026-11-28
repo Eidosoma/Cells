@@ -301,3 +301,27 @@ def test_every_registered_job_builds_and_parses_and_each_definition_plant_change
         "c": [("lumen_sites", "dissociation_rate_per_s", 1e-3, 2e-3)],
         "c2": [("m_L2", "association_rate_per_mM_per_s", 500.0, 1000.0)],
     }
+
+
+@pytest.mark.parametrize(
+    "row, judged, refused",
+    [
+        (("B-dt0.1", "B", 0.1, 600.0, 5.0, True, None), False, "runs only with --judged"),
+        (("B-dt0.1", "B", 0.1, 600.0, 5.0, True, None), True, None),
+        (("dev-C2", "C2", 0.05, 2000.0, 20.0, None, None), False, "registered horizon"),
+        (("dev-C1", "C1", 2.0, 3600.0, 60.0, True, None), True, "registered horizon"),
+        (("dev-C2", "C2", 0.05, 200.0, 20.0, None, None), False, None),
+    ],
+    ids=[
+        "registered, not judged",
+        "registered, judged",
+        "dev at full length",
+        "dev at full length, judged",
+        "dev, shortened",
+    ],
+)
+def test_the_first_run_rule(row, judged, refused):
+    """The driver's first-run rule (the lead, 28 November 2026): a registered world first runs at
+    its registered length only in a judged run, so a dev- job at that horizon is refused."""
+    found = driver_bc.first_run_refusal(driver_bc.job(row), judged)
+    assert (found is None) if refused is None else (refused in found)
