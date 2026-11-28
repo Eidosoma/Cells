@@ -1932,8 +1932,9 @@ RULES = (
         "test_neutral_labels_sites.py's labelled and unlabelled twins, and C4's four by FR-49's "
         "C4. Beside both, a law in no set is refused by name, laws in no one set together by "
         "NOT_TOGETHER (expression with no compartment among them), expression's exports and "
-        "outside degradations by PARTNER_VARIANT, and so are an internalising population, one "
-        "facing a cell, and the five later options, X2 at binding",
+        "outside degradations by PARTNER_VARIANT, a channel population beside C4's set by CHANNEL, "
+        "and so are an internalising population, one facing a cell, and the five later options, X2 "
+        "at binding",
     ),
     dict(
         rule=f"beside site_sets, {SITES} admits only the design note's §15 partners: the wash, @2, "

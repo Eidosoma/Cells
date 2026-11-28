@@ -1174,6 +1174,10 @@ TURNOVER = "cells.operator.scheduled_species_turnover@1"
 REACTIONS = "cells.operator.local_species_reactions@1"
 NOT_TOGETHER = "operators not admitted together beside labels and a writer admitted by species"
 PARTNER_VARIANT = "a partner's variant not admitted beside labels and a writer admitted by species"
+CHANNEL = (
+    "a channel population not admitted beside labels, its qualified set and a writer admitted by "
+    "species"
+)
 CL_HALF = {"well": {"base": 0.5, "cohort": 0.5}}
 
 
@@ -1585,6 +1589,9 @@ def _c4_world(name):
         "expression, labels and the sites with no compartment declared": lambda: w4.without(
             w4.world_c4(), COMPARTMENTS
         ),
+        "C4 with a gate-free K leak on the owner's wall": lambda: __import__(
+            "validation.fr49.d327_probe", fromlist=["with_leak"]
+        ).with_leak(w4.world_c4()),
     }
     return worlds_c4[name]()
 
@@ -1603,6 +1610,7 @@ C4_ROWS = {  # world -> the refusal's words, or None where it parses.
     "C4's population at the washed well (FR-44's shape F)": None,
     "C4's population inward on the bounding patch": "a population facing a cell",
     "expression, labels and the sites with no compartment declared": NOT_TOGETHER,
+    "C4 with a gate-free K leak on the owner's wall": CHANNEL,
 }
 
 
@@ -1612,8 +1620,9 @@ def test_fr49s_c4_worlds_parse_or_are_refused_by_name(name):
     composition among them (it parsed before the lift, with no listed check: C4's unlabelled twin
     is its run). Each of C4's qualified set's seven proper subsets that hold the compartments
     parses, from C4's world with the other laws removed (A2.7's host rows). A population owned by
-    C's node, or at the washed well, parses; one inward on the bounding patch, and expression with
-    no compartment declared, are refused by name. Parses only."""
+    C's node, or at the washed well, parses; one inward on the bounding patch, expression with no
+    compartment declared, and C4 with a gate-free K leak (the lead's ruling: no registered world
+    declares a channel beside C4's composition) are refused by name. Parses only."""
     words = C4_ROWS[name]
     if words is None:
         parse_spec(_c4_world(name))
@@ -1715,26 +1724,15 @@ def _site_layout(raw):
     }
 
 
-@pytest.mark.parametrize(
-    "case", ["a population owned by C's node", "a gate-free K leak on the wall"]
-)
-def test_fr49s_c4_inherited_placements_bind_as_c4s_own_layout(case):
+def test_fr49s_c4_node_owned_population_binds_as_c4s_own_layout():
     """Amendment 2's D327 listing (host only, bound, no step). A population owned by C's node binds
     to the site layout of C4's patch population facing C, array for array, bit for bit: FR-28's
-    layout identity in C4's world, World B's B6 form. C4 with a gate-free K leak on the owner's wall
-    parses, and its site layout is C4's bit for bit: the leak enters the inner model's channels
-    only.
-    The other later options are refused by name beside C4's composition."""
-    from validation.fr49 import d327_probe
+    layout identity in C4's world, World B's B6 form."""
     from validation.fr49 import worlds as fw
     from validation.fr49 import worlds_c4 as w4
 
     facing = _site_layout(w4.world_c4())
-    if case == "a population owned by C's node":
-        variant = w4.world_c4(placement=dict(patch=None, face=None, node=fw.NODE))
-    else:
-        variant = d327_probe.with_leak(w4.world_c4())
-    other = _site_layout(variant)
+    other = _site_layout(w4.world_c4(placement=dict(patch=None, face=None, node=fw.NODE)))
     assert len(facing) > 10 and facing.keys() == other.keys()
     same = {
         f: facing[f].dtype == other[f].dtype

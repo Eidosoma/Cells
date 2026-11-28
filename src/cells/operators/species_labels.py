@@ -101,6 +101,8 @@ Each of these is refused by name (by_species_errors, fail closed) until a world 
   them (NOT_TOGETHER);
 - a partner's variant that no set's check qualifies (PARTNER_VARIANT): in version 1, an export or an
   outside degradation of cells.operator.templated_polymerisation@1 (amendment T);
+- a channel population where the set that admits the composition was qualified with none (CHANNEL):
+  in version 1, beside C4's set, whose world declares no channel;
 - an internalising population, which no registered world needs (D424), and a population that
   binds from a cell (an inward patch face or a contact): the twin qualifies binding at outside
   nodes only, so version 1 writes no cell row;
@@ -183,6 +185,10 @@ LABELLED_ROW = "a writer admitted by species writes a labelled row"
 NOT_A_PARTNER = "an operator not admitted beside labels and a writer admitted by species"
 NOT_TOGETHER = "operators not admitted together beside labels and a writer admitted by species"
 PARTNER_VARIANT = "a partner's variant not admitted beside labels and a writer admitted by species"
+CHANNEL = (
+    "a channel population not admitted beside labels, its qualified set and a writer admitted by "
+    "species"
+)
 UNQUALIFIED = "a variant not admitted beside labels"
 OPTION = "an inner-model option not admitted beside labels and a writer admitted by species"
 
@@ -196,6 +202,7 @@ class QualifiedSet:
     laws: tuple
     check: str
     anchor: str | None = None
+    channels: bool = True  # Whether its check qualified channel populations beside the set.
 
     def admits(self, others, declared):
         """Whether these other laws lie in this set, where its anchor, if any, is declared."""
@@ -283,6 +290,7 @@ BY_SPECIES = MappingProxyType(
                     ),
                     "fr49-compartment-compositions-v1, amendment 2",
                     anchor=COMPARTMENTS_LAW,
+                    channels=False,  # C4's world declares none (the lead's ruling, D327).
                 ),
             ),
             unqualified=(
@@ -790,6 +798,8 @@ def by_species_errors(spec):
       where its anchor, the compartments, is declared;
     - each partner's variant not yet qualified (PARTNER_VARIANT: expression's exports and outside
       degradations);
+    - a channel population where no set that admits the composition qualified one (CHANNEL: beside
+      C4's set);
     - each of the writer's variants not yet qualified (an internalising population, and one
       facing a cell);
     - the inner model's later options (option_errors)."""
@@ -815,6 +825,16 @@ def by_species_errors(spec):
                 f"{', '.join(others)} {where}: {NOT_TOGETHER}; version 1 admits beside both only a "
                 f"subset of one qualified set: {entry.described()} (D327)"
             )
+        else:
+            admitting = [q for q in entry.sets if q.admits(others, laws)]
+            channels = tuple(c.id for c in getattr(spec.model, "channels", ()) or ())
+            if channels and not any(q.channels for q in admitting):
+                names = " and ".join(f"{q.name}'s" for q in admitting)
+                errors.append(
+                    f"{', '.join(channels)} {where}: {CHANNEL}; {names} check qualifies its set "
+                    "with no channel population, so one is refused until a world qualifies it "
+                    "(D327)"
+                )
         for law, what, find in entry.partner_variants:
             for partner, partner_declaration, _ in entries:
                 found = find(partner_declaration) if partner.LAW_ID == law else ()

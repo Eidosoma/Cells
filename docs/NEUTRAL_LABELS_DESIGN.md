@@ -652,6 +652,9 @@ qualifies it:
   compartment by exchange, is among them;
 - **a partner's variant that no set's check qualifies** (`PARTNER_VARIANT`): in version 1, an export
   or an outside degradation of `cells.operator.templated_polymerisation@1` (amendment T);
+- **a channel population where the admitting set was qualified with none** (`CHANNEL`): in version 1,
+  beside C4's set, whose world declares no channel. No registered world declares one there (the
+  lead's ruling, D327's strict option);
 - **an internalising population,** which no registered world needs, and **a population that binds
   from a cell** (an inward patch face or a contact). The twin qualifies binding at outside nodes
   only, so an admitted writer writes no cell row in version 1;
