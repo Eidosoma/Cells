@@ -1169,6 +1169,11 @@ def test_a_labelled_definition_is_refused_where_labels_cannot_follow_it(case):
 SITES = "cells.operator.site_occupancy@1"
 WASH = "cells.operator.scheduled_compartment_wash@1"
 COMPARTMENTS = "cells.operator.cell_owned_compartments@1"
+EXPRESSION = "cells.operator.templated_polymerisation@1"
+TURNOVER = "cells.operator.scheduled_species_turnover@1"
+REACTIONS = "cells.operator.local_species_reactions@1"
+NOT_TOGETHER = "operators not admitted together beside labels and a writer admitted by species"
+PARTNER_VARIANT = "a partner's variant not admitted beside labels and a writer admitted by species"
 CL_HALF = {"well": {"base": 0.5, "cohort": 0.5}}
 
 
@@ -1209,6 +1214,17 @@ def _cell_facing_population():
     return SimpleNamespace(id="k0", internalisation_rate=None, owner_kind="contact", facing="first")
 
 
+def _exporting_expression():
+    """A planted expression with an export and an outside degradation (amendment T's routes)."""
+    from types import SimpleNamespace
+
+    declaration = SimpleNamespace(
+        exports=(SimpleNamespace(id="export_R"),),
+        outside_degradations=(SimpleNamespace(id="deg_R_space_0"),),
+    )
+    return _part(EXPRESSION), declaration
+
+
 BY_SPECIES_CASES = {  # (the planted entries besides the owner of S, the refusal's words or None)
     "a listed writer of unlabelled rows": ([_writer(SITES, [("L", "n")])], None),
     "a listed writer of a labelled row": (
@@ -1238,9 +1254,28 @@ BY_SPECIES_CASES = {  # (the planted entries besides the owner of S, the refusal
         "cells.operator.site_occupancy@1 admitted by species: an operator not admitted beside "
         "labels and a writer admitted by species",
     ),
-    "the compartments beside a listed writer (FR-49's C4)": (
+    "the compartments beside a listed writer (C4's set, anchored)": (
         [_writer(SITES, [("L", "n")]), (_part(COMPARTMENTS), None)],
-        "cells.operator.cell_owned_compartments@1 is FR-49's C4",
+        None,
+    ),
+    "C4's whole set beside a listed writer": (
+        [_writer(SITES, [("L", "n")])]
+        + [(_part(law), None) for law in (COMPARTMENTS, EXPRESSION, TURNOVER, WASH)],
+        None,
+    ),
+    "expression beside a listed writer, no compartment declared (C4's anchor)": (
+        [_writer(SITES, [("L", "n")]), (_part(EXPRESSION), None)],
+        f"cells.operator.templated_polymerisation@1 beside {LAW} and {SITES} admitted by species: "
+        f"{NOT_TOGETHER}",
+    ),
+    "the compartments with the reactions (in no one set together)": (
+        [_writer(SITES, [("L", "n")]), (_part(COMPARTMENTS), None), (_part(REACTIONS), None)],
+        f"{COMPARTMENTS}, {REACTIONS} beside {LAW} and {SITES} admitted by species: {NOT_TOGETHER}",
+    ),
+    "the compartments with expression that exports (a partner's variant)": (
+        [_writer(SITES, [("L", "n")]), (_part(COMPARTMENTS), None), _exporting_expression()],
+        f"{EXPRESSION} beside {LAW} and {SITES} admitted by species: {PARTNER_VARIANT}: an export "
+        "or an outside degradation (export_R, deg_R_space_0)",
     ),
     "a listed writer's internalising population": (
         [_writer(SITES, [("L", "n")], populations=[_internalising_population()])],
@@ -1259,9 +1294,11 @@ def test_a_split_writer_is_admitted_by_species_only_beside_its_partners(case, mo
     """FR-44 step 3 (D327, D424; planted declarations, no world). A split writer that writes
     amounts and reports nothing is admitted beside the owner only on BY_SPECIES, with ROW_MOVES
     declared and no labelled species among its written rows (FR-43 part 3's written_rows). An
-    undeclared writer and one off the list keep today's words. Beside an admitted writer every
-    operator law but its four partners is refused by name, all in one message, the compartments as
-    FR-49's C4, and so are its internalising populations and those facing a cell."""
+    undeclared writer and one off the list keep today's words. Beside an admitted writer the other
+    operator laws must lie in one qualified set (FR-44 step 3's, or FR-49's C4, anchored on the
+    compartments): a law in no set is refused by today's words, laws in no one set together by
+    NOT_TOGETHER, and expression's exports by PARTNER_VARIANT; so are its internalising populations
+    and those facing a cell."""
     from types import SimpleNamespace
 
     from cells.operators import species_labels as labels
@@ -1506,21 +1543,83 @@ def _four_way(wash, monkeypatch):
 
 
 @pytest.mark.parametrize("wash", [True, False], ids=["the four-way form", "without a wash"])
-def test_c4_stays_refused_by_name_with_fr49s_two_list_entries(wash, monkeypatch):
-    """D424: C4's one home is the partner rule. FR-49 lands two list entries, the site operator
-    and the wash, in cells.operator.cell_owned_compartments@1's admitted list. With both patched
-    in, the partner rule refuses C4's four-way form (the compartments, the owner, the wash at
-    another node and an unlabelled site population) and its three-way form without a wash, each by
-    name as FR-49's C4, registered by amendment. Parses only, on an invented compartment world."""
+def test_fr44s_invented_world_loading_the_compartment_by_exchange_is_not_together(
+    wash, monkeypatch
+):
+    """D424 and amendment 2: C4's one home is the partner rule, which admits the compartments
+    beside the owner and the sites only within C4's qualified set. FR-44's invented compartment
+    world loads its compartment by exchange, which lies in FR-44 step 3's set and not in C4's, so
+    its four-way form and its three-way form without a wash stay refused, by NOT_TOGETHER, naming
+    both laws. Parses only."""
     with pytest.raises(ConfigError) as refused:
         parse_spec(_four_way(wash, monkeypatch))
-    words = (
-        "cells.operator.cell_owned_compartments@1 beside cells.operator.neutral_arrival_labels@1 "
-        "and cells.operator.site_occupancy@1 admitted by species: an operator not admitted beside "
-        "labels and a writer admitted by species"
-    )
     message = str(refused.value)
-    assert words in message and "cells.operator.cell_owned_compartments@1 is FR-49's C4" in message
+    assert NOT_TOGETHER in message and COMPARTMENTS in message, message
+    assert "cells.operator.scheduled_species_exchange@1" in message.split(NOT_TOGETHER)[0], message
+
+
+def _c4_world(name):
+    """FR-49's C4 worlds (validation/fr49/worlds_c4.py) and their variants, for the D327 rows."""
+    from validation.fr49 import worlds as fw
+    from validation.fr49 import worlds_bc as wb
+    from validation.fr49 import worlds_c4 as w4
+
+    if name.startswith("subset:"):
+        kept = [law for law in name.split(":")[1].split("+") if law]
+        return w4.subset_world([*kept, COMPARTMENTS])
+    owner = dict(patch=None, face=None)
+    worlds_c4 = {
+        "C4": lambda: w4.world_c4(),
+        "C4's twin (no wash event)": lambda: w4.world_c4(event=False),
+        "C4's unlabelled twin": lambda: w4.world_c4(labelled=False),
+        "C4's unbound twin": lambda: w4.world_c4(bound=False),
+        "C4's population owned by C's node (FR-28)": lambda: w4.world_c4(
+            placement=dict(owner, node=fw.NODE)
+        ),
+        "C4's population at the washed well (FR-44's shape F)": lambda: w4.world_c4(
+            placement=dict(patch=wb.W_PATCH)
+        ),
+        "C4's population inward on the bounding patch": lambda: w4.world_c4(
+            placement=dict(face="inside")
+        ),
+        "expression, labels and the sites with no compartment declared": lambda: w4.without(
+            w4.world_c4(), COMPARTMENTS
+        ),
+    }
+    return worlds_c4[name]()
+
+
+C4_SUBSETS = [  # C4's qualified set's seven proper subsets that hold the compartments (A2.7).
+    "subset:" + "+".join(kept)
+    for size in (2, 1, 0)
+    for kept in __import__("itertools").combinations((EXPRESSION, TURNOVER, WASH), size)
+]
+C4_ROWS = {  # world -> the refusal's words, or None where it parses.
+    **dict.fromkeys(
+        ["C4", "C4's twin (no wash event)", "C4's unlabelled twin", "C4's unbound twin"], None
+    ),
+    **dict.fromkeys(C4_SUBSETS, None),
+    "C4's population owned by C's node (FR-28)": None,
+    "C4's population at the washed well (FR-44's shape F)": None,
+    "C4's population inward on the bounding patch": "a population facing a cell",
+    "expression, labels and the sites with no compartment declared": NOT_TOGETHER,
+}
+
+
+@pytest.mark.parametrize("name", list(C4_ROWS))
+def test_fr49s_c4_worlds_parse_or_are_refused_by_name(name):
+    """Amendment 2 (D327): C4's four registered runs' worlds parse, the unlabelled twin's
+    composition among them (it parsed before the lift, with no listed check: C4's unlabelled twin
+    is its run). Each of C4's qualified set's seven proper subsets that hold the compartments
+    parses, from C4's world with the other laws removed (A2.7's host rows). A population owned by
+    C's node, or at the washed well, parses; one inward on the bounding patch, and expression with
+    no compartment declared, are refused by name. Parses only."""
+    words = C4_ROWS[name]
+    if words is None:
+        parse_spec(_c4_world(name))
+    else:
+        with pytest.raises(ConfigError, match=re.escape(words)):
+            parse_spec(_c4_world(name))
 
 
 def _contact_world():

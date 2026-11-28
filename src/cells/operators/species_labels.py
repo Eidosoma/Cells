@@ -85,12 +85,22 @@ species of its written rows is labelled. The test is by species, not by row: a l
 shares at every cell and finite node, and an unreported change at one node would be carried onward
 by every later transfer. Version 1 lists cells.operator.site_occupancy@1 alone, whose half-steps
 write amounts only at its pools, which are its written rows, and keep every other entry bit for
-bit. Beside such a writer and the owner, each of these is refused by name (by_species_errors, fail
-closed) until a world qualifies it:
-- every operator law but the writer's partners (BY_SPECIES): the wash, D152's reactions, turnover
-  and exchange, qualified together by tests/unit/test_neutral_labels_sites.py's twin. Among them
-  is cells.operator.cell_owned_compartments@1, FR-49's C4, registered by amendment, so its four-way
-  form and its three-way form without a wash stay refused in either order of FR-49's list entries;
+bit. Beside such a writer and the owner, the other operator laws must all lie in one of the
+writer's qualified sets (BY_SPECIES), any subset of one, each set qualified together by its own
+check:
+- FR-44 step 3's: the wash, D152's reactions, turnover and exchange, qualified by
+  tests/unit/test_neutral_labels_sites.py's twin (D425);
+- FR-49's C4 (fr49-compartment-compositions-v1, amendment 2): the compartments
+  (cells.operator.cell_owned_compartments@1), expression
+  (cells.operator.templated_polymerisation@1) with its routes in cells only, turnover and the wash,
+  anchored on the compartments: it applies only where they are declared, since C4 qualifies its
+  laws in a compartment world.
+Each of these is refused by name (by_species_errors, fail closed) until a world qualifies it:
+- an operator law in no set, all named in one message (NOT_A_PARTNER);
+- laws each in some set but in no one set together, expression with no compartment declared among
+  them (NOT_TOGETHER);
+- a partner's variant that no set's check qualifies (PARTNER_VARIANT): in version 1, an export or an
+  outside degradation of cells.operator.templated_polymerisation@1 (amendment T);
 - an internalising population, which no registered world needs (D424), and a population that
   binds from a cell (an inward patch face or a contact): the twin qualifies binding at outside
   nodes only, so version 1 writes no cell row;
@@ -171,18 +181,53 @@ COMPARTMENTS_LAW = "cells.operator.cell_owned_compartments@1"
 # Its refusals by name (operator_errors, by_species_errors).
 LABELLED_ROW = "a writer admitted by species writes a labelled row"
 NOT_A_PARTNER = "an operator not admitted beside labels and a writer admitted by species"
+NOT_TOGETHER = "operators not admitted together beside labels and a writer admitted by species"
+PARTNER_VARIANT = "a partner's variant not admitted beside labels and a writer admitted by species"
 UNQUALIFIED = "a variant not admitted beside labels"
 OPTION = "an inner-model option not admitted beside labels and a writer admitted by species"
 
 
 @dataclass(frozen=True)
-class BySpecies:
-    """A split writer admitted by species: the operator laws admitted beside it and the owner, each
-    qualified by its own check, and its declaration's variants not yet qualified, each
-    (what, function(declaration) -> the IDs that declare it)."""
+class QualifiedSet:
+    """Operator laws admitted together beside a writer admitted by species and the owner, any
+    subset of them, qualified by one check; with an anchor, only where that law is declared."""
 
-    partners: tuple
+    name: str
+    laws: tuple
+    check: str
+    anchor: str | None = None
+
+    def admits(self, others, declared):
+        """Whether these other laws lie in this set, where its anchor, if any, is declared."""
+        return set(others) <= set(self.laws) and (self.anchor is None or self.anchor in declared)
+
+    def described(self):
+        where = f", where {self.anchor} is declared" if self.anchor else ""
+        return f"{self.name}'s {{{', '.join(self.laws)}}}{where} ({self.check})"
+
+
+@dataclass(frozen=True)
+class BySpecies:
+    """A split writer admitted by species: its qualified sets (QualifiedSet), its declaration's
+    variants not yet qualified, each (what, function(declaration) -> the IDs that declare it), and
+    its partners' variants not yet qualified, each (law, what, function(the partner's declaration)
+    -> the IDs that declare it)."""
+
+    sets: tuple
     unqualified: tuple
+    partner_variants: tuple = ()
+
+    @property
+    def partners(self):
+        """Every law of its sets, in order: the laws admitted beside it in some set."""
+        return tuple(dict.fromkeys(law for qualified in self.sets for law in qualified.laws))
+
+    def together(self, others, declared):
+        """Whether one set admits all these other laws together."""
+        return any(qualified.admits(others, declared) for qualified in self.sets)
+
+    def described(self):
+        return "; ".join(qualified.described() for qualified in self.sets)
 
 
 def _internalising(declaration):
@@ -201,18 +246,51 @@ def _cell_facing(declaration):
     )
 
 
+def _reaches_outside(declaration):
+    """Expression's exports and outside degradations (amendment T): C4 qualifies expression with
+    its routes in cells only, World L's form."""
+    return tuple(
+        route.id
+        for route in (
+            *getattr(declaration, "exports", ()),
+            *getattr(declaration, "outside_degradations", ()),
+        )
+    )
+
+
+EXPRESSION_LAW = "cells.operator.templated_polymerisation@1"
 BY_SPECIES = MappingProxyType(
     {
         SITES_LAW: BySpecies(
-            partners=(
-                "cells.operator.scheduled_compartment_wash@1",
-                "cells.operator.local_species_reactions@1",
-                "cells.operator.scheduled_species_turnover@1",
-                "cells.operator.scheduled_species_exchange@1",
+            sets=(
+                QualifiedSet(
+                    "FR-44 step 3",
+                    (
+                        "cells.operator.scheduled_compartment_wash@1",
+                        "cells.operator.local_species_reactions@1",
+                        "cells.operator.scheduled_species_turnover@1",
+                        "cells.operator.scheduled_species_exchange@1",
+                    ),
+                    "tests/unit/test_neutral_labels_sites.py, D425",
+                ),
+                QualifiedSet(
+                    "FR-49's C4",
+                    (
+                        COMPARTMENTS_LAW,
+                        EXPRESSION_LAW,
+                        "cells.operator.scheduled_species_turnover@1",
+                        "cells.operator.scheduled_compartment_wash@1",
+                    ),
+                    "fr49-compartment-compositions-v1, amendment 2",
+                    anchor=COMPARTMENTS_LAW,
+                ),
             ),
             unqualified=(
                 ("an internalising population", _internalising),
                 ("a population facing a cell (an inward patch face or a contact)", _cell_facing),
+            ),
+            partner_variants=(
+                (EXPRESSION_LAW, "an export or an outside degradation", _reaches_outside),
             ),
         ),
     }
@@ -706,33 +784,45 @@ def option_errors(spec, writers):
 def by_species_errors(spec):
     """FR-44 step 3's refusals by name beside a writer admitted by species (module docstring;
     D327, D424), as messages, none without such a writer:
-    - every operator law other than the owner, the writer and its partners, all named in one
-      message. cells.operator.cell_owned_compartments@1 is named there as FR-49's C4, whose
-      four-way form and three-way form without a wash this keeps refused, whatever the
-      compartments' own list admits;
+    - every operator law in none of the writer's qualified sets, all named in one message
+      (NOT_A_PARTNER, today's words);
+    - laws each in some set, but in no one set together (NOT_TOGETHER), C4's set counting only
+      where its anchor, the compartments, is declared;
+    - each partner's variant not yet qualified (PARTNER_VARIANT: expression's exports and outside
+      degradations);
     - each of the writer's variants not yet qualified (an internalising population, and one
       facing a cell);
     - the inner model's later options (option_errors)."""
     writers = by_species_writers(spec)
     if not writers:
         return []
-    laws = tuple(dict.fromkeys(op.LAW_ID for op, _, _ in composite_spec.entries(spec)))
+    entries = composite_spec.entries(spec)
+    laws = tuple(dict.fromkeys(op.LAW_ID for op, _, _ in entries))
     errors = []
     for op, declaration in writers:
         entry = BY_SPECIES[op.LAW_ID]
-        others = [law for law in laws if law not in (LAW_ID, op.LAW_ID, *entry.partners)]
-        if others:
-            c4 = (
-                f"; {COMPARTMENTS_LAW} is FR-49's C4 (fr49-compartment-compositions-v1 §5), "
-                "registered by amendment"
-                if COMPARTMENTS_LAW in others
-                else ""
-            )
+        others = [law for law in laws if law not in (LAW_ID, op.LAW_ID)]
+        outside = [law for law in others if law not in entry.partners]
+        where = f"beside {LAW_ID} and {op.LAW_ID} admitted by species"
+        if outside:
             errors.append(
-                f"{', '.join(others)} beside {LAW_ID} and {op.LAW_ID} admitted by species: "
-                f"{NOT_A_PARTNER}; version 1 admits beside both only {', '.join(entry.partners)}, "
-                f"each with its own check (D327){c4}"
+                f"{', '.join(outside)} {where}: {NOT_A_PARTNER}; version 1 admits beside both only "
+                f"a subset of one qualified set: {entry.described()}, each with its own check "
+                "(D327)"
             )
+        elif not entry.together(others, laws):
+            errors.append(
+                f"{', '.join(others)} {where}: {NOT_TOGETHER}; version 1 admits beside both only a "
+                f"subset of one qualified set: {entry.described()} (D327)"
+            )
+        for law, what, find in entry.partner_variants:
+            for partner, partner_declaration, _ in entries:
+                found = find(partner_declaration) if partner.LAW_ID == law else ()
+                if found:
+                    errors.append(
+                        f"{law} {where}: {PARTNER_VARIANT}: {what} ({', '.join(found)}); refused "
+                        "until a world qualifies it (D327)"
+                    )
         for what, find in entry.unqualified:
             found = find(declaration)
             if found:
