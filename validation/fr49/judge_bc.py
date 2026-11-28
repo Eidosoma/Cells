@@ -42,7 +42,11 @@ registered criterion; only the latter is the registration's catch.
 **The inconclusive rule** (the registration's preamble): a criterion that reads a reference value is
 inconclusive, not a pass, where that reference reports a cross-check difference above its declared
 accuracy. That is any `within` that is false in its `method`. C1-2 reads the well's own
-cross-checks (`method.well…`); a C1 file with none is refused, not read as all within.
+cross-checks, those whose name directly under `method` is exactly one of WELL_METHODS (no prefix
+match); a C1 file with none is refused, not read as all within.
+
+**One process each** (READING-2): every record names the fresh process it ran in (boot id, pid and
+start time), and a set of records in which two runs share one process is refused.
 
 **The readings this judge embodies,** ruled by the lead after a non-builder review
 (validation/fr49/READING-2-2026-11-28.md):
@@ -112,6 +116,11 @@ WELL = 1e-13  # C1-2, relative.
 CLOSURE = 64 * float(np.finfo(float).eps)
 B5_SCORED = ("d",)  # The plant whose mechanism is the wash; B5 is reported for (b) and (c).
 B5_ARRAYS = ("lys_rows", "site_free_increment_fmol", "site_bound_increment_fmol")
+# C1-2's cross-checks: those whose name directly under `method` is one of these, exactly (a bare
+# prefix would take `method.wellX`): the lead's `well`, and `well_second_route`, the name the
+# references' format sample gives the well's check (READING-2).
+WELL_METHODS = ("well", "well_second_route")
+PROCESS = ("boot_id", "pid", "start_ticks")  # A process's identity; no two runs share one.
 SITES_PER_FMOL = Decimal(602214076)
 # The references' layout (the spec README's "What to produce", as the format samples show it).
 QUANTITIES = {
@@ -191,8 +200,14 @@ def cross_checks(method, path="method"):
 
 
 def well_checks(checks):
-    """C1-2's cross-checks: the well's own (method.well...), not World L's."""
-    return [(path, ok) for path, ok in checks if path.startswith("method.well")]
+    """C1-2's cross-checks: the well's own, whose name directly under `method` is exactly one of
+    WELL_METHODS, not World L's."""
+    found = []
+    for path, ok in checks:
+        parts = path.split(".")
+        if len(parts) > 2 and parts[0] == "method" and parts[1] in WELL_METHODS:
+            found.append((path, ok))
+    return found
 
 
 def sample_times(world):
@@ -284,7 +299,8 @@ def read_reference(path, world, *, cases=SPEC, invented=False):
         raise ReaderError("method holds no cross-check")
     if world == "C1" and not well_checks(checks):
         raise ReaderError(
-            "method holds no cross-check of the well (method.well...), which C1-2 reads"
+            f"method holds no cross-check of the well (named exactly {' or '.join(WELL_METHODS)}),"
+            " which C1-2 reads"
         )
     out["cross_checks"] = checks
     return out
@@ -311,10 +327,35 @@ def grid_refusal(times, dt, end):
     return None
 
 
+def process_of(record, path):
+    """A record's process identity (PROCESS), refused unless the record names the fresh process of
+    its own that the driver ran it in."""
+    process = record.get("process")
+    if (
+        not isinstance(process, dict)
+        or process.get("fresh") is not True
+        or any(process.get(k) is None for k in PROCESS)
+    ):
+        raise ReaderError(f"{path}: the record names no fresh process of its own (process)")
+    return tuple(process[k] for k in PROCESS)
+
+
+def one_process_each(records):
+    """Refuses a set of the registered runs' records in which two runs share one process."""
+    seen = {}
+    for run_id in RUNS:
+        path = Path(records) / f"{run_id}.json"
+        identity = process_of(json.loads(path.read_text()), path)
+        if identity in seen:
+            raise ReaderError(f"{run_id} and {seen[identity]} share one process; each has its own")
+        seen[identity] = run_id
+
+
 def read_record(records, run_id):
     """(record, {q: float array}, times, npz arrays or None) of one run's record, refused unless its
-    job is the judge's own row for it (RUNS), and, once completed, unless its rows are the dt grid
-    with every quantity and array one entry per row (grid_refusal, reading 3)."""
+    job is the judge's own row for it (RUNS) and it names its fresh process (process_of), and, once
+    completed, unless its rows are the dt grid with every quantity and array one entry per row
+    (grid_refusal, reading 3)."""
     path = Path(records) / f"{run_id}.json"
     record = json.loads(path.read_text())
     if record.get("kind") != RECORD_KIND or record.get("protocol") != PROTOCOL:
@@ -322,6 +363,7 @@ def read_record(records, run_id):
     job = record.get("job", {})
     if job.get("id") != run_id or tuple(job.get(k) for k in JOB_FIELDS) != RUNS[run_id]:
         raise ReaderError(f"{path}: its job is not the registered run {run_id} (RUNS)")
+    process_of(record, path)  # Every record, whatever its outcome.
     if record.get("outcome") != "completed":
         return record, None, None, None
     quantities = {
@@ -489,7 +531,7 @@ def judge_c1(records, reference):
     # rule (World L's, also in C1.json, are World L's).
     cross = well_checks(reference["cross_checks"])
     if not cross:  # Never read as all within (READING-2).
-        raise ReaderError("C1.json's method holds no cross-check of the well (method.well...)")
+        raise ReaderError(f"C1.json's method holds no cross-check of the well ({WELL_METHODS})")
     t_wash = float(v["wash"]["time_s"])
     runs = {k: read_record(records, k) for k in RUNS if RUNS[k][0] == "C1"}
     out = {}
@@ -618,6 +660,7 @@ def part_verdict(criteria, plants):
 
 def judge(records, references):
     refs = Path(references)
+    one_process_each(records)  # Before any part reads a value.
     verdict = dict(protocol=PROTOCOL, parts={}, runs=list(RUNS))
     judges = {"B": judge_b, "C1": judge_c1, "C2": judge_c2}
     for world, judge_part in judges.items():

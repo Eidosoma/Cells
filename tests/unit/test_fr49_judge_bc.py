@@ -121,7 +121,30 @@ REFUSED = {
         lambda d: d["method"].pop("well_second_route"),
         "no cross-check of the well",
     ),
+    "C1 whose well-like check is method.wellX": (
+        "C1",
+        lambda d: d["method"].update(wellX=d["method"].pop("well_second_route")),
+        "no cross-check of the well",
+    ),
 }
+
+
+@pytest.mark.parametrize(
+    "path, matched",
+    [
+        ("method.well_second_route.within", True),
+        ("method.well.second_route.within", True),
+        ("method.wellX.within", False),
+        ("method.wells.within", False),
+        ("method.well_second_routeX.within", False),
+        ("method.world_L.second_routes.ode_radau.within", False),
+        ("method.within_declared_accuracy", False),
+    ],
+)
+def test_c1_2s_cross_checks_are_the_wells_by_exact_name(path, matched):
+    """READING-2: the well's checks are those named exactly `well` or `well_second_route` directly
+    under `method`, never by a bare prefix."""
+    assert judge_bc.well_checks([(path, True)]) == ([(path, True)] if matched else [])
 
 
 @pytest.mark.parametrize("name", sorted(REFUSED))
@@ -180,7 +203,12 @@ def _engine(profile, times, dt):
 
 def _record(records, run_id, *, quantities=None, arrays=None, refused=False, **extra):
     job = driver_bc.job((run_id, *judge_bc.RUNS[run_id]))
-    doc = dict(kind=judge_bc.RECORD_KIND, protocol=judge_bc.PROTOCOL, job=job, **extra)
+    k = list(judge_bc.RUNS).index(run_id)
+    process = dict(
+        boot_id="fabricated", pid=2000 + k, start_ticks=100 + k, parent_pid=1, fresh=True
+    )
+    doc = dict(kind=judge_bc.RECORD_KIND, protocol=judge_bc.PROTOCOL, job=job, process=process,
+               **extra)  # fmt: skip
     if refused:
         doc.update(outcome="refused", refusal=dict(cls="ConfigError", message="planted refusal"))
     else:
@@ -365,7 +393,23 @@ RECORD_REFUSED = {
         lambda d, a: d["job"].update(dt=0.025),
         "not the registered run C2-dt0.05",
     ),
+    "no process field": ("B-dt0.1", lambda d, a: d.pop("process"), "no fresh process"),
+    "a refused record with no process field": (
+        "B-plant-c-dt0.1",
+        lambda d, a: (d.update(outcome="refused", refusal={}), d.pop("process")),
+        "no fresh process",
+    ),
 }
+
+
+def test_two_runs_sharing_one_process_are_refused(fabricated, tmp_path):
+    """READING-2: the judge refuses a set of records in which two runs share one process, before
+    any part reads a value."""
+    records, refs = _copy(fabricated, tmp_path)
+    shared = json.loads((records / "C1-dt2.json").read_text())["process"]
+    _rewrite(records, "C1-twin-dt2", lambda d, a: d.update(process=shared))
+    with pytest.raises(judge_bc.ReaderError, match="C1-twin-dt2 and C1-dt2 share one process"):
+        judge_bc.judge(records, refs)
 
 
 @pytest.mark.parametrize("name", sorted(RECORD_REFUSED))
@@ -463,6 +507,7 @@ def test_every_registered_job_builds_and_parses_and_each_definition_plant_change
         (("dev-C2", "C2", 0.05, 2000.0, 20.0, None, None), False, "registered horizon"),
         (("dev-C1", "C1", 2.0, 3600.0, 60.0, True, None), True, "registered horizon"),
         (("dev-C2", "C2", 0.05, 200.0, 20.0, None, None), False, None),
+        (("dev-B", "B", 0.1, 900.0, 5.0, True, None), False, "at or beyond"),
     ],
     ids=[
         "registered, not judged",
@@ -470,11 +515,13 @@ def test_every_registered_job_builds_and_parses_and_each_definition_plant_change
         "dev at full length",
         "dev at full length, judged",
         "dev, shortened",
+        "dev beyond full length",
     ],
 )
 def test_the_first_run_rule(row, judged, refused):
     """The driver's first-run rule (the lead, 28 November 2026): a registered world first runs at
-    its registered length only in a judged run, so a dev- job at that horizon is refused."""
+    its registered length only in a judged run, so a dev- job at or beyond that horizon is
+    refused."""
     found = driver_bc.first_run_refusal(driver_bc.job(row), judged)
     assert (found is None) if refused is None else (refused in found)
 

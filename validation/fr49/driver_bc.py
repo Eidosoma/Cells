@@ -17,9 +17,11 @@ validation/fr49/plants_bc.py's.
 is compiled (READING-2). `run` checks the job and the first-run rule, then starts a new interpreter
 for it (`run-here`), which asserts before it loads the engine that it is fresh: started by `run` for
 this job and this driver file, no job run in it before, and no JAX or engine module loaded
-(fresh_process_refusal). That process enters the job's engine plant, if any, before the world is
-built, so its patch is in place for the parse, the binding and the compile; a definition plant
-changes the built definition instead (plants_bc.definition). The definition is parsed and run by
+(fresh_process_refusal). The record names that process (process_identity: boot id, pid and start
+time), and the judge refuses a set in which two runs share one. That process enters the job's
+engine plant, if any, before the world is built, so its patch is in place for the parse, the
+binding and the compile; a definition plant changes the built definition instead
+(plants_bc.definition). The definition is parsed and run by
 the runner, whose host checks run on every accepted row. It writes RECORD_DIR/<id>.json, the
 outcome, the identity and the quantities at every saved row (the dt grid, which the judge requires)
 as exact hexadecimal floats, and RECORD_DIR/<id>.npz, the arrays that the bitwise criteria compare
@@ -36,8 +38,8 @@ as exact hexadecimal floats, and RECORD_DIR/<id>.npz, the arrays that the bitwis
 
 The first-run rule (FR-45's; the lead, 28 November 2026): a registered world first runs at its
 registered length only in a judged run. A job whose ID does not begin `dev-` runs only with
-`--judged`, and a `dev-` job runs only at a horizon other than its world's registered one
-(first_run_refusal), so that no development run is a registered run under another name.
+`--judged`, and a `dev-` job runs only at a horizon short of its world's registered one
+(first_run_refusal), so that no development run reaches a registered world's full length.
 
 Usage (PYTHONPATH at a snapshot, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr49.driver_bc jobs OUT_DIR
@@ -233,14 +235,15 @@ REGISTERED_HORIZONS = {row[1]: row[3] for row in JOBS}  # world -> its registere
 
 def first_run_refusal(entry, judged):
     """Why the first-run rule refuses a job (the module docstring), or None: a registered job
-    without `--judged`, or a `dev-` job at its world's registered horizon."""
+    without `--judged`, or a `dev-` job at or beyond its world's registered horizon."""
     if not entry["id"].startswith("dev-"):
         return None if judged else f"{entry['id']} is a registered run: it runs only with --judged"
-    if float(entry["horizon_s"]) == REGISTERED_HORIZONS[entry["world"]]:
+    registered = REGISTERED_HORIZONS[entry["world"]]
+    if float(entry["horizon_s"]) >= registered:
         return (
-            f"{entry['id']} is a development job at world {entry['world']}'s registered horizon "
-            f"({entry['horizon_s']:g} s): a registered world first runs at its registered length "
-            "only in a judged run"
+            f"{entry['id']} is a development job at or beyond world {entry['world']}'s registered "
+            f"horizon ({entry['horizon_s']:g} s, the registered {registered:g} s): a registered "
+            "world first runs at its registered length only in a judged run"
         )
     return None
 
@@ -272,6 +275,17 @@ def fresh_process_refusal(job_path, environ=None, modules=None, ran=None):
     if loaded:
         return f"this process loaded {loaded[0]} and {len(loaded) - 1} more before its job"
     return None
+
+
+def process_identity():
+    """This process's identity, which no other process shares: the boot's id, its pid and its start
+    in clock ticks after boot (/proc), with its parent's pid."""
+    stat = Path("/proc/self/stat").read_text(encoding="utf-8")
+    start = int(stat.rsplit(")", 1)[1].split()[19])  # Field 22 of proc(5): starttime.
+    boot = Path("/proc/sys/kernel/random/boot_id").read_text(encoding="utf-8").strip()
+    return dict(
+        boot_id=boot, pid=os.getpid(), start_ticks=start, parent_pid=os.getppid(), fresh=True
+    )
 
 
 def run(job_path, record_dir, *, judged=False):
@@ -311,7 +325,7 @@ def run_here(job_path, record_dir, *, judged=False):
     out.mkdir(parents=True, exist_ok=True)
     record = dict(kind=KIND, protocol=PROTOCOL, job=entry, identity=identity(),
                   python=sys.version.split()[0], platform=platform.platform(),
-                  process=dict(pid=os.getpid(), parent_pid=os.getppid(), fresh=True))  # fmt: skip
+                  process=process_identity())  # fmt: skip
     started = time.perf_counter()
     engine_plant = entry["plant"] in plants_bc.ENGINE
     record["plant_kind"] = "engine" if engine_plant else ("definition" if entry["plant"] else None)
