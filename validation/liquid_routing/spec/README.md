@@ -48,7 +48,7 @@ the checker read this folder too (the protocol's roles).
 | `AMENDMENT-4-2026-11-25.md` | Arm 7's runs, retry runs, the restart and no-router runs, the spec auditor |
 | `AMENDMENT-5-2026-11-25.md` | The spec audit's findings as ruled, the layouts they give, what the references must do |
 | `AMENDMENT-6-2026-11-25.md` | The scale of `B_def`'s accuracy, `J0`'s `n_U_K`, P16's `heat`, which run a plant reads |
-| `AMENDMENT-7-2026-11-28.md` | The judge's readings that add to the text, the sample's and phase-2 notes' forms, the six pairs' worlds, a ledger's error, what counts as invented, how a refusal is named |
+| `AMENDMENT-7-2026-11-28.md` | The judge's readings that add to the text, what a refusal leaves judged (arm 7's pairs and a refused reference among them), the sample's and phase-2 notes' forms, the six pairs' worlds, a ledger's error, what counts as invented, how a refusal is named |
 | `READINGS-2026-11-28.md` | The lead's reading note: the judge's and builder B's readings that the text settles, and the lead's rulings for the build |
 | `FORMAT-SAMPLE-SHA256SUMS-<date>`, `FORMAT-SAMPLE-REGENERATED-SHA256SUMS-<date>` | The lead's notes of the format sample's sha256s, before the judge's tag and at the registration tag (amendment 7, item 9) |
 
