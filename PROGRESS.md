@@ -44,7 +44,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - D417's check is done: liquid routing needs X2 by amendment, or a reasoned waiver, before its run; FR-49 needs nothing.
   - **Three plans read together (D424):**
     - **FR-44's admission by species is landed** (D425, c9ab3207).
-    - FR-49's pairing and narrowing (3.25 to 4.0 agent-days) is at its judge's tag, with a non-builder re-check.
+    - **FR-49's pairing and narrowing is landed** (D426, f2cca425). World B, C1 and C2 pass their registered judgement,
+      with every plant caught.
     - Liquid routing (15.5 to 21.5) is held for the user's answer on its price and X2.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
@@ -89,8 +90,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     `docs/LIQUID_ROUTING_DESIGN.md` (968bd182, branch `fr54-57-design`); 8.25 to 10.5 agent-days, after the
     rename. The protocol and spec are tagged (`liquid-routing-criteria-2026-11-25`), and amendment 5
     (with amendment 6, dd21509b) settles an independent audit's findings (D383). The references are tagged
-    (`liquid-routing-references-2026-11-25`, D384), and the line holds. FR-45's W2 and W7 have run (D416). The wash retires
-    only after FR-49's World B and C1 have run too, or those runs are pinned to an earlier snapshot.
+    (`liquid-routing-references-2026-11-25`, D384), and the line holds. FR-45's W2 and W7 (D416) and FR-49's World B and C1
+    (D426) have run, so the wash's retirement waits only on liquid routing's takeover.
     **X2 (D412, D417, D424):** arms 1 to 6 judge heats on ARS(2,2,2), and the tagged spec selects no X2 (D412's listing
     missed it).
     - The plan recommends a reasoned waiver, since T4 already bounds the default heat's step error.
@@ -123,8 +124,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
   - **FR-45** (D327, D377, D394, D416): **its judged run passes,** run from 3e4635cb.
     - All 15 criteria pass on 904 entries, and the 120 baseline entries pass too.
     - All nine plants are caught.
-  - **FR-49's World B and combination checks C1 and C2** (D331): after the site pairing and the wash narrowing;
-    C4's four-way form by amendment once admission by species lands.
+  - **FR-49's World B and combination checks C1 and C2 pass** (D426, f2cca425). C4's four-way form comes next, by amendment,
+    written against the wash (D424).
   - **GJ-N1** (D330, D337, D338, D388): judged on 25 November 2026, passed on the line and on the 2D field. The references land with the next landing; the 3D field is not run.
   - **FR-30** (D343, D344, D350, D366): parked as development-only, narrowly reopened for two phases at a declared
     voltage. Ek-Vitorín 2016 is undetermined by structure (D341, D342), so nothing is fitted (D379); D366's

@@ -14596,3 +14596,72 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
 
   The landing folded the labels file's row only, since tier-3 files are never folded.
 - **Next:** FR-49 merges main and regenerates the matrix block. C4's four-way form now meets this step's partner rule.
+
+## D426: FR-49's site-occupancy pairing and wash narrowing are landed, and World B, C1 and C2 pass their registered judgement
+
+2026-11-28, written at 04:32 UTC.
+
+- **Landed** at f2cca425 (tag `fr49-bc-landed-2026-11-28`), from 4ce7d5d1. The trial passed 175 tests.
+  - **The pairing:** `cells.operator.site_occupancy@1` joins `cells.operator.cell_owned_compartments@1`'s admitted list.
+    - A population or set facing the compartment, or owned by its node, is admitted.
+    - An inward one on a bounding patch is refused by name.
+    - The compartments join the site sets' partners.
+  - **The narrowing:** `cells.operator.scheduled_compartment_wash@1` joins the list. A compartment's node among the washed
+    nodes is refused by name.
+  - **Also refused by name:** the inner model's later options in such worlds, by the builder's `refuse_later_options`,
+    kept and disclosed.
+  - **C4's four-way form** is refused by FR-44's partner rule, its one home (D424, D425).
+- **The registered judgement passes:**
+  - the judge was tagged `fr49-compartment-compositions-v1-judge-bc-2026-11-28` on 4ce7d5d1, before any registered run;
+  - the judged revision is marked by `fr49-bc-judged-2026-11-28`;
+  - the verdict is `/mnt/workspaces/Cells/fr49-judge-bc-run-20261128/judgement/verdict.json`, sha256 50c1446d….
+  - **World B:**
+    - B1, every host check on every row;
+    - B2, conservation, with a relative gap of 1.4e-16 against a 1e-10 bound;
+    - B3, the transient's order ratio, 8.20 in [7.2, 8.8];
+    - B4, the equilibrium, within 4.4e-14;
+    - B5, the wash elsewhere: no array differs from the twin, the well was washed once and lys never, and the twin had no
+      event;
+    - B6, the node-owned variant's layout, bit for bit.
+  - **C1:**
+    - C1-1: 53 arrays of O, C and their non-W patches, bit for bit the twin's;
+    - C1-2: W's amounts at 902 s are LAWS.md §4's, within 1e-13;
+    - C1-3: every host check passes, with the label closure at 1.42e-16 against 64 ε.
+  - **C2:**
+    - C2-1, conservation, within 1.1e-16;
+    - C2-2, the order ratio, 8.21;
+    - C2-3, the equilibrium, within 8.8e-13.
+  - **The plants, each caught by its registered criterion:**
+    - (a) by B4 (2.9 %);
+    - (b) by B2 and B4;
+    - (c) by B4 (1.3 %);
+    - (d) by B2, B4 and B5;
+    - C1's plant by C1-2;
+    - C2's plant by C2-3 (2.9 % and 6.1 %).
+  - **The runs:** 12, from a clean snapshot of 4ce7d5d1, each in its own process, 03:47 to 03:53 UTC, all completed.
+    - Before the judge ran, the snapshot and job files were unchanged, the records were hashed
+      (`fr49-bc-records-hashes-20261128.json`), and the references equalled their tag's blobs.
+    - The lead read the real references by structure only before the runs, with no value printed. That settled C1's
+      well-check key.
+- **The readings,** each dated before the tag:
+  - READING-1: Part H's Matrix row, read against today's numbering;
+  - READING-2: the judge's seven readings and the review's four fixes;
+  - READING-3: C1-1's entity rule, the well list and the first-run rules.
+- **The non-builder review,** four passes, by a reviewer who is not the builder: the plants, the driver and the judge.
+  - Each finding was ruled, and every ruling made the judge stricter.
+  - **Disclosed:** its first pass ran registered worlds at their registered horizons before the judge's tag. The lead's
+    brief did not forbid it, and FR-49's registration has no first-run rule. Those runs are review evidence, not
+    results, and the builder never opened them.
+- **The D148 round, 5 of 5:**
+  - IDs: 117 added and 2 removed, as declared;
+  - crossrev: 11 of 11 sets identical;
+  - tiers 1+2: 503 files, none changed;
+  - G1: 113 of 113;
+  - FR's bitwise set passes;
+  - the judges' derivative programs: 261 files identical.
+
+  Tiers: `test_fr49_world_b.py` enters tier 2 at 27 s, and `test_fr49_judge_bc.py` tier 1 at 6.7 s.
+- **What follows:**
+  - FR-49's C4, by amendment, written against the wash (D424), now that admission by species has landed;
+  - the wash's retirement (D364): FR-45's W2 and W7 and FR-49's World B and C1 have all run, so it waits only on liquid
+    routing's takeover, which is held for the user's answer on its price and X2 (D424).
