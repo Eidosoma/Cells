@@ -49,6 +49,16 @@ reads, FR-23, D244), so a change made at other nodes, such as the bath schedule'
 bath, is admitted beside it. The stationary analysis refuses the composite by its own ID check.
 A compartment wash's buffers are held to the trace rule as a scheduled bath composition is
 (FR-27, D246).
+
+Beside cells.operator.cell_owned_compartments@1 (FR-49's site pairing, D327;
+validation/fr49/REGISTRATION.md, Part H; the closed-compartment design's §4 door), on a
+compartment's bounding patch only a population or shared site set that faces the compartment is
+admitted (it binds from the compartment's node),
+and one that the compartment's node owns (FR-28; ruling 2), whose layout is the facing
+population's; one facing the owner's cytosol never reads the compartment and is refused by name
+(INWARD_ON_BOUNDING_PATCH; ruling 3), and internalisation from a compartment stays refused
+(check_compartments). FR-45's shared sets compose with the compartments, the facing rule being their
+check (SET_PARTNERS; FR-49's C2).
 """
 
 import math
@@ -183,6 +193,8 @@ SET_NAMED_TWICE = "a site set ID declared twice or taken by a population"
 SET_ON_REPLACED_SLOT = "a shared site set on a replaced slot"
 PARTNER_BESIDE_SETS = "an operator not admitted beside site sets"
 OPTION_BESIDE_SETS = "an inner-model option not admitted beside site sets"
+# FR-49's site pairing (D327; ruling 3): beside the compartments, by the same convention.
+INWARD_ON_BOUNDING_PATCH = "an inward population or site set on a compartment's bounding patch"
 REFUSALS = (
     INTERNALISATION_BESIDE_SETS,
     OCCUPANT_BESIDE_SETS,
@@ -194,11 +206,14 @@ REFUSALS = (
     SET_ON_REPLACED_SLOT,
     PARTNER_BESIDE_SETS,
     OPTION_BESIDE_SETS,
+    INWARD_ON_BOUNDING_PATCH,
 )
 DOMAIN_REFUSALS = (SET_OVERFULL,)  # A value outside its declared domain, not a structure refused.
 # The operators version 1 admits beside site sets (FR-45, D327 and the lead's rulings of 27
 # November 2026): the design note's §15 partners, each with its own check. Every other operator
-# law is refused by name in a world that declares site sets (fail closed).
+# law is refused by name in a world that declares site sets (fail closed). The compartments are
+# FR-49's partner (D327, the site pairing landing second): their check is the facing rule
+# (check_compartments), and FR-49's C2 is the pair's registered check.
 TURNOVER_LAW = "cells.operator.scheduled_species_turnover@1"
 EXCHANGE_LAW = "cells.operator.scheduled_species_exchange@1"
 REACTIONS_LAW = "cells.operator.local_species_reactions@1"
@@ -211,6 +226,7 @@ SET_PARTNERS = (
     TURNOVER_LAW,
     EXCHANGE_LAW,
     REACTIONS_LAW,
+    COMPARTMENTS_LAW,
 )
 STAGE_CONDITION = "stage condition"  # The engine's name of the stage condition's refusal.
 
@@ -875,16 +891,37 @@ def check_slots(spec, declaration):
 
 
 def check_compartments(spec, declaration):
-    """No internalisation on a patch whose outside node is a declared compartment (§2.4, §6.4)."""
-    nodes = set()
-    for op, other, _ in composite_spec.entries(spec):
-        if op.LAW_ID == COMPARTMENTS_LAW:
-            nodes |= {c.node for c in other.compartments}
+    """Beside cells.operator.cell_owned_compartments@1 (FR-49's site pairing, D327; REGISTRATION.md,
+    Part H; §6.4): on a compartment's bounding patch a population, or a shared site set, that
+    faces the owner's cytosol is refused by name (INWARD_ON_BOUNDING_PATCH; ruling 3): it never
+    reads the compartment. One that faces the compartment binds from its node, and one that the
+    node owns (FR-28) faces only the node, so both are admitted (ruling 2). A set's members take
+    its owner and facing, so the set is what is read. No internalisation on a patch whose outside
+    node is a compartment (§2.4, §6.4). A world declaring no compartment is unchanged."""
+    from cells.operators import compartments
+
+    nodes = compartments.compartment_nodes(spec)
+    if not nodes:
+        return
     m = spec.model
+    patches = {q.id: q for q in m.membranes}
+    owned = [(f"population {p.id}", p) for p in declaration.populations if p.site_set is None]
+    owned += [(f"site set {s.id}", s) for s in declaration.site_sets]
+    for what, entity in owned:
+        if entity.owner_kind != "patch" or entity.facing != "inside":
+            continue
+        patch = patches[entity.owner_id]
+        if patch.outside in nodes:
+            raise refusal(
+                INWARD_ON_BOUNDING_PATCH,
+                f"{what} faces the cytosol of {patch.inside!r} on {patch.id!r}, the bounding patch "
+                f"of compartment {nodes[patch.outside].id!r}; version 1 admits there only what "
+                "faces the compartment, and the sites its node owns (FR-49's rulings 2 and 3)",
+            )
     for p in declaration.populations:
         if p.internalisation_rate is None:
             continue
-        patch = next(q for q in m.membranes if q.id == p.owner_id)
+        patch = patches[p.owner_id]
         if patch.outside in nodes:
             raise ConfigError(
                 f"{LAW_ID}: population {p.id} internalises from compartment {patch.outside!r}; "
@@ -974,8 +1011,10 @@ def check_set_composition(spec, declaration):
     which added it as the second to land beside sets, D327), the sparse field solver (FR-17) and
     the step-doubled energy check (X2). A world without site sets is not read here. X2's block is
     attached after the definition's checks, so its refusal comes from the binding
-    (SiteOccupancy.initial_values); the user's open X2 question (D406) may reverse it, with a
-    qualification."""
+    (SiteOccupancy.initial_values). D412 waived X2 for FR-45 and narrowed D224's X2 rule (with
+    D417's readings), so the refusal stands until a world qualifies X2 beside sets.
+    The compartments are a partner from FR-49's site pairing (D327), with the facing rule
+    (check_compartments) as their check."""
     if not declaration.site_sets:
         return
     for op, _, _ in composite_spec.entries(spec):
@@ -992,10 +1031,26 @@ def check_set_composition(spec, declaration):
                 f"{law}; version 1 admits beside site sets only {', '.join(SET_PARTNERS)}, each "
                 "with its own check (D327)",
             )
+    for present, what in later_options(spec):
+        if present:
+            raise refusal(
+                OPTION_BESIDE_SETS,
+                f"{what}; refused beside site sets until a world qualifies the pair (D327)",
+            )
+
+
+def later_options(spec):
+    """((present, what), ...) of the inner model's later options and X2, in a fixed order:
+    cells.model.resolved_pump_tissue@3's own one-way records (FR-50), a blocked channel population
+    (FR-51), a declared voltage shift (FR-64), the sparse field solver (FR-17) and the
+    step-doubled energy check (X2), which is
+    present only once execution.energy_check is attached, after the definition's checks. Read by
+    each refusal of them beside a composition not yet qualified with them (D327): the site sets'
+    here, and the compartments' beside site occupancy or the wash (FR-49, D424)."""
     from cells.numerics.surface_field import SPARSE_SOLVER_ID
 
     m = spec.model
-    options = (
+    return (
         (bool(getattr(m, "one_way_records", ())), "@3's own one_way records (FR-50 phase 2)"),
         (
             any(getattr(c, "block", None) is not None for c in getattr(m, "channels", ())),
@@ -1008,12 +1063,6 @@ def check_set_composition(spec, declaration):
         (spec.execution.field_solver == SPARSE_SOLVER_ID, f"the field solver {SPARSE_SOLVER_ID}"),
         (getattr(spec, "energy_check", None) is not None, "execution.energy_check (X2, D224)"),
     )
-    for present, what in options:
-        if present:
-            raise refusal(
-                OPTION_BESIDE_SETS,
-                f"{what}; refused beside site sets until a world qualifies the pair (D327)",
-            )
 
 
 # ------------------------------------------------------------------ binding
@@ -2265,8 +2314,8 @@ class SiteOccupancy(Operator):
         # FR-45: execution.energy_check is attached after the definition's checks have run
         # (energy_check_spec.parse_definition), so they never see it. Every run binds here
         # first, so a set world refuses X2 here, by name, before its first step (the lead's
-        # ruling of 27 November 2026). The user's open X2 question (D406) may reverse this: if
-        # the user selects X2 for FR-45, this refusal is revisited with a qualification.
+        # ruling of 27 November 2026). D412 waived X2 for FR-45 and D417 narrowed D224's rule, so
+        # this refusal stands until a world qualifies X2 beside sets.
         check_set_composition(spec, declaration)
         return bind(spec, declaration)
 

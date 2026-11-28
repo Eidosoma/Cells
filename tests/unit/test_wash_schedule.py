@@ -10,9 +10,12 @@ node keep their own fractions and buffers. FR-44 (D327): the label owner beside 
 either order; with labels= the event reports its own sample and supply, in NumPy and compiled;
 a whole wash after an earlier one leaves no label behind, where the cumulative gain (plant 5)
 would; a labelled gene unit's export and a labelled exchange route at the washed node are refused,
-each parsing beside a wash of another node; and FR-49's C1 world, labels beside a compartment with
-a wash at another node, is refused by the compartments' admitted list until FR-49's wash
-narrowing. About 10 s together.
+each parsing beside a wash of another node. FR-49's wash narrowing (D327;
+validation/fr49/REGISTRATION.md, Part H's Wash row): a compartment's node among the washed nodes is
+refused by name, before the surface rule, whether or not an event names it; a wash of another
+finite node beside a compartment parses: FR-49's C1 world (labels beside a compartment and a wash
+at another node, also the inherited three-way composition) and World B, each judged by its
+registered run. About 10 s together.
 """
 
 import copy
@@ -174,6 +177,14 @@ def _c1_world():
     return wfx.with_wash(raw, ["well"], [(900.0, "well", 0.5, buffer | {fr49.S: 1e-9})])
 
 
+def _world_b_lys_declared():
+    """FR-49's World B with the compartment's node lys among the wash's nodes, its event at the
+    well only: the narrowing reads the declaration's nodes, not only the events."""
+    from validation.fr49 import worlds_bc
+
+    return worlds_bc.world_b(nodes=("well", worlds_bc.LYS))
+
+
 def _washed_at(raw, node):
     """raw with half of `node` washed at 300 s, its buffer every neutral species at the node's
     own declared concentration."""
@@ -244,12 +255,17 @@ REFUSALS = {
         lambda: washed(events=[_event(buffer={S: 1e-13})]),
         "below its declared trace",
     ),
-    # Off the compartments' admitted list, which fails closed (compartments.check_definition).
+    # FR-49's wash narrowing (ruling 5): a compartment's node is refused by name, before the
+    # surface rule that its load route would meet (the plant row below).
     "beside the compartments": (
         lambda: wfx.with_wash(
             cfx.loaded_compartment(), ["ecs_0"], [(0.01, "ecs_0", 0.5, {S: 1e-6})]
         ),
-        "cells.operator.scheduled_compartment_wash@1 is not on its admitted list",
+        f"{ws.COMPARTMENT_NODE}: 'ecs_0' is compartment 'lys_0' of 'cell_0'",
+    ),
+    "a compartment's node among the nodes, with no event there": (
+        _world_b_lys_declared,
+        f"{ws.COMPARTMENT_NODE}: 'lys' is compartment 'lys_0' of 'specimen'",
     ),
     # FR-44 (D327): the paths that FR-44's labels would follow unmeasured stay refused by name.
     "a labelled gene unit's export into the node": (
@@ -262,13 +278,6 @@ REFUSALS = {
         "S may cross node well's surface by cells.operator.scheduled_species_exchange@1's route "
         "uptake",
     ),
-    # D327, FR-44 landing second (FR-49's parts H and L first): FR-49's C1 world, also the
-    # inherited three-way composition, is refused by name until FR-49's wash narrowing and its C1
-    # judgement.
-    "FR-49's C1 world: labels beside a compartment and a wash at another node": (
-        _c1_world,
-        "cells.operator.scheduled_compartment_wash@1 is not on its admitted list",
-    ),
 }
 
 
@@ -276,6 +285,46 @@ REFUSALS = {
 def test_each_refusal_fires_with_its_reason(name):
     build, message = REFUSALS[name]
     with pytest.raises(ConfigError, match=message):
+        parse_spec(build())
+
+
+def _fr49(name, **kwargs):
+    from validation.fr49 import worlds_bc
+
+    return lambda: getattr(worlds_bc, name)(**kwargs)
+
+
+# FR-49's wash narrowing (D327): a wash of another finite node beside a compartment parses, each
+# composition judged by its registered run (validation/fr49/REGISTRATION.md §4 and §5).
+FR49_ADMITTED = {
+    "FR-49's C1 world: labels beside a compartment and a wash at another node (FR-44's shape)": (
+        _c1_world
+    ),
+    "C1, as registered": _fr49("world_c1"),
+    "C1's twin, the wash declared with no event": _fr49("world_c1", event=False),
+    "World B, lumen sites and the well washed": _fr49("world_b"),
+    "World B's twin, the wash declared with no event": _fr49("world_b", event=False),
+}
+
+
+@pytest.mark.parametrize("name", sorted(FR49_ADMITTED))
+def test_fr49_a_wash_elsewhere_beside_a_compartment_parses(name):
+    """Part H's Wash row, its admitted half: a wash of another finite node in a compartment world
+    parses, the inherited three-way composition (C1's world) included."""
+    parse_spec(FR49_ADMITTED[name]())
+
+
+def test_fr49_the_compartment_node_refusal_names_the_reason(monkeypatch):
+    """Part H's Wash plant: without the narrowing's check, the case 'beside the compartments' meets
+    the surface rule instead (its load route crosses ecs_0's surface), so the compartment's reason
+    comes from the check alone."""
+    monkeypatch.setattr(ws, "refuse_compartment_nodes", lambda spec, declaration: None)
+    build, _ = REFUSALS["beside the compartments"]
+    with pytest.raises(
+        ConfigError,
+        match="may cross node ecs_0's surface by "
+        "cells.operator.scheduled_species_exchange@1's route load",
+    ):
         parse_spec(build())
 
 

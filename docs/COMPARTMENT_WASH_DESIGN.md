@@ -252,9 +252,17 @@ At the definition, each with its reason:
   increments through `ENTITY_WRITES` and provides no view.
 - **Refused by the structure check:** water, the lumens and insertion@1 and @2, which change those
   fields on every slot. Each refusal is tagged real in the composition matrix.
-- **Refused by the compartments' admitted list:** `cell_owned_compartments@1` fails closed on an
-  operator off its list (`compartments.py`), and so does trafficking, which requires it. Admitting
-  the wash beside the compartments is the lead's call.
+- **Beside the compartments (FR-49's wash narrowing, D327, after FR-44):** the compartments'
+  admitted list names the wash, which then washes other finite nodes only.
+  - A compartment's node among its `nodes` is refused by name, `COMPARTMENT_NODE`, whether or not
+    an event names it (`refuse_compartment_nodes`, through `compartments.compartment_nodes`; ruling
+    5). A cell-owned compartment lies behind its owner's membrane, out of the liquid's reach.
+  - The check runs first, before the face and surface rules, so the reason named is the
+    compartment, not a crossing of its surface.
+  - World B (lumen sites and a wash elsewhere) and C1 (labels beside a compartment and a wash at
+    another node, the inherited three-way composition) are its registered checks.
+  - Beside a compartment, the inner model's later options are refused by name (D424).
+  - Trafficking still refuses the wash: it is off trafficking's own list.
 - **Admitted:** @3, `site_occupancy@1`, the bath schedule (its dose at a held bath meets none of the
   wash's slots), D150's turnover and exchange, D152's reactions, the coupling operator (@1 and @2),
   the unit producer, injection, membrane state, replacement@1, the partition and the bridge.

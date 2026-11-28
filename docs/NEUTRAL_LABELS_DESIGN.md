@@ -596,16 +596,19 @@ twin row checks this on every row.
 - **Site populations beside labels:** `cells.operator.site_occupancy@1` writes amounts without
   reporting them. Admission by species (§14) lifts this where the populations bind unlabelled
   ligands.
-- **A compartment beside the wash:** the compartments' admitted list refuses it until FR-49's wash
-  narrowing. FR-49's C1 world, which is also the inherited three-way composition, is a refusal
-  row.
+- **A compartment's node among the washed nodes:** the wash refuses it by name since FR-49's wash
+  narrowing, which admits `cells.operator.scheduled_compartment_wash@1` on
+  `cells.operator.cell_owned_compartments@1`'s list for a wash of other nodes only. FR-49's C1
+  world, which is also the inherited three-way composition, now parses as a host row; its
+  registered judgement is FR-49's Part C. Beside the labels and the sites together, the
+  compartments stay refused by name as FR-49's C4 (§14).
 
 **Tests (D224):**
 
 | File | Rows |
 | --- | --- |
 | `test_neutral_arrival_labels.py` (NumPy) | The map on six rows, with two plants failing; a wash and a replacement in the composite's event stage, in both orders; turnover's clearance at a washed node keeping the diluted shares; the report kinds on planted declarations; `same_physics`'s set |
-| `test_wash_schedule.py` (NumPy) | Either order parses; the labelled event's report, in NumPy and compiled; a whole wash after an earlier one, with plant 5 failing on its two cases; a labelled gene-unit export and a labelled exchange route at the washed node refused, each parsing beside a wash of another node; FR-49's C1 world refused |
+| `test_wash_schedule.py` (NumPy) | Either order parses; the labelled event's report, in NumPy and compiled; a whole wash after an earlier one, with plant 5 failing on its two cases; a labelled gene-unit export and a labelled exchange route at the washed node refused, each parsing beside a wash of another node; FR-49's C1 world parsing (a host row), and a compartment's node among the washed nodes refused |
 | `test_neutral_labels_events.py` (compiled) | The twins: five washes, three of them at 3/7 (D266's condition); every physical record bit for bit; the identities, the records and the books on every row |
 | `test_wash_schedule_resume.py` (compiled) | The resume across a wash, at the wash row through a snapshot and one step after, with the redo and skip plants |
 

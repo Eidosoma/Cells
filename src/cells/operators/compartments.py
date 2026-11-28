@@ -59,7 +59,7 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    lead's ruling of 20 November 2026, amending that of 19 November on FR-2's question 11). The
    producer acts in its populations' cells only, and cells.operator.species_regulated_availability@2 reads its
    sources in its elements' cells and refuses an outside-node element (FR-7's U2 world with a
-   releasing compartment, D217). FR-49 (D327; validation/fr49/REGISTRATION.md, Part H) admits two
+   releasing compartment, D217). FR-49 (D327; validation/fr49/REGISTRATION.md, Part H) admits four
    more laws, each with its own check:
    - cells.operator.templated_polymerisation@1, whose own check refuses an export into a compartment's node and
      an outside degradation there (an export into a compartment is a later step, with its books
@@ -67,9 +67,20 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    - cells.operator.neutral_arrival_labels@1, refused here beside membrane state (FR-49's ruling 4, World L's
      scope): today the labels refuse membrane state's admitted writers anyway, and this check
      names the reason and stays fail closed if the labels' list widens. It runs before the
-     membrane-state wall's rule, so its reason is the one given.
-   Site occupancy, the compartment wash and cells.operator.site_occupant_replacement@1 stay off the list until
-   their own FR-49 pieces land.
+     membrane-state wall's rule, so its reason is the one given;
+   - cells.operator.site_occupancy@1 (FR-49's site pairing, after FR-45), whose own check admits
+     on a compartment's bounding patch only a population or shared site set that faces the
+     compartment, and one owned by the compartment's node (rulings 2 and 3), and refuses
+     internalisation from a compartment; FR-45's shared sets compose with this declaration (the
+     site operator's partners);
+   - cells.operator.scheduled_compartment_wash@1 (FR-49's wash narrowing, after FR-44), whose own
+     check refuses a compartment's node among the nodes it washes (ruling 5: a compartment lies
+     behind its owner's membrane, out of the liquid's reach), so it washes other finite nodes only.
+   The two read the compartments' nodes through compartment_nodes. Beside either, the inner
+   model's later options (cells.model.resolved_pump_tissue@3's own one-way records, a block, a
+   voltage shift, the sparse field solver and X2) are refused by name until a world qualifies
+   each (refuse_later_options; D424). cells.operator.site_occupant_replacement@1 stays off the
+   list (FR-49's ruling 7).
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
@@ -149,9 +160,17 @@ TRAFFICKING_LAW = "cells.operator.scheduled_membrane_trafficking@1"
 PRODUCER_LAW = "cells.operator.population_unit_turnover@1"
 # FR-49 (D327): expression, whose own check refuses exports and outside degradations at a
 # compartment's node (templated_polymerisation.check_compartments), and the labels, refused here
-# beside membrane state (refuse_labels_beside_membrane_state).
+# beside membrane state (refuse_labels_beside_membrane_state). Then the site pairing and the wash
+# narrowing, each with its own check: the facing rule (site_occupancy.check_compartments) and the
+# compartment-node refusal (wash_schedule.check_definition).
 EXPRESSION_LAW = "cells.operator.templated_polymerisation@1"
 LABELS_LAW = "cells.operator.neutral_arrival_labels@1"
+SITES_LAW = "cells.operator.site_occupancy@1"
+WASH_LAW = "cells.operator.scheduled_compartment_wash@1"
+# FR-49 (D424): the refusal's name, which its message begins with after the law ID.
+OPTION_BESIDE = (
+    "an inner-model option not admitted beside site occupancy or the wash at a compartment"
+)
 # §4's admitted list (fails closed). @3 itself is the composite's inner model. Membrane state is
 # admitted only together with one of its admitted writers (check_definition).
 ADMITTED = (
@@ -169,6 +188,8 @@ ADMITTED = (
     PRODUCER_LAW,
     EXPRESSION_LAW,
     LABELS_LAW,
+    SITES_LAW,
+    WASH_LAW,
 )
 # Membrane state's fields that its writers write (membrane_state.ACCEPTS_WRITES): the wall's door
 # admits a writer of any of them only if it is one of the admitted writers (check_definition).
@@ -571,6 +592,41 @@ def declaration_to_dict(declaration):
     )
 
 
+def refuse_later_options(spec, entries):
+    """7. FR-49 (D327, D424; its D327 probe, validation/fr49/d327_probe.py): beside a compartment,
+    cells.operator.site_occupancy@1 and cells.operator.scheduled_compartment_wash@1 are qualified
+    without the inner model's later options (World B, C1 and C2 declare none), so each option is
+    refused by name beside either until a world qualifies the pair:
+    cells.model.resolved_pump_tissue@3's own one-way records (FR-50), a blocked channel population
+    (FR-51), a declared voltage shift (FR-64), the sparse field solver (FR-17), and X2, which
+    attaches after the definition's checks and so is refused at binding
+    (CellOwnedCompartments.initial_values). A compartment world with neither law is not read."""
+    laws = [op.LAW_ID for op, _, _ in entries]
+    beside = [law for law in (SITES_LAW, WASH_LAW) if law in laws]
+    if not beside:
+        return
+    from cells.operators.site_occupancy import later_options
+
+    for present, what in later_options(spec):
+        if present:
+            raise ConfigError(
+                f"{LAW_ID}: {OPTION_BESIDE}: {what}, beside {' and '.join(beside)}; refused until "
+                "a world qualifies the pair (D327)"
+            )
+
+
+def compartment_nodes(spec):
+    """{node: Compartment} of the composition's declared compartments, empty without the
+    declaration: what an operator of the admitted list reads to keep a compartment's node out of
+    what it does there (FR-49: the site operator's facing rule and the wash's compartment-node
+    refusal; the identity's storage, so a later storage changes this one place)."""
+    out = {}
+    for op, declaration, _ in composite_spec.entries(spec):
+        if op.LAW_ID == LAW_ID:
+            out |= {c.node: c for c in declaration.compartments}
+    return out
+
+
 def refuse_unwritten_state(entries):
     """7. Membrane state beside a compartment only together with one of its admitted writers, and
     only where every writer of its fields is one of them (the membrane-state wall's door). The
@@ -620,8 +676,9 @@ def refuse_labels_beside_membrane_state(entries):
 
 def check_definition(spec, declaration):
     """7. The admitted list, which fails closed, replacement@1's owners, the labels without
-    membrane state (FR-49), and membrane state only with its admitted writers; then 5. (version
-    1.2), which reads the admitted operators' routes."""
+    membrane state (FR-49), membrane state only with its admitted writers, and the inner model's
+    later options refused beside site occupancy or the wash (FR-49, D424); then 5. (version 1.2),
+    which reads the admitted operators' routes."""
     owners = {c.owner for c in declaration.compartments}
     entries = composite_spec.entries(spec)
     for op, _, schedule in entries:
@@ -647,6 +704,7 @@ def check_definition(spec, declaration):
                 )
     refuse_labels_beside_membrane_state(entries)  # FR-49: before the wall's rule, so its reason.
     refuse_unwritten_state(entries)
+    refuse_later_options(spec, entries)  # FR-49 (D424): X2 again at binding (initial_values).
     # 5., version 1.2: per compartment, in declared order (positional: bypasses in the silence
     # tests and FR-1's plants replace it with a positional-only lambda).
     into = charged_by(spec, declaration, entries)
@@ -707,6 +765,9 @@ class CellOwnedCompartments(Operator):
         check_definition(spec, declaration)
 
     def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
+        # FR-49 (D424): execution.energy_check is attached after the definition's checks, so X2 is
+        # seen here, where every run binds before its first step (refuse_later_options).
+        refuse_later_options(spec, composite_spec.entries(spec))
         return {}, {}
 
     def summary(self, spec, declaration, schedule, history):

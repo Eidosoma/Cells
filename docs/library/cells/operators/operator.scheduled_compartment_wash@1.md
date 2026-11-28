@@ -116,7 +116,8 @@ with $c' = (1 - f)\,c + f\,c_\text{buf}$ and $\varphi(x) = x \ln x - x + 1$.
   - a held bath;
   - a node that a face touches;
   - a node across whose surface any declared path may move an uncharged species;
-  - a compartment's composition (its admitted list);
+  - a compartment's node, whether or not an event names it: a compartment lies behind its owner's
+    membrane, out of the liquid's reach (a wash of another node beside a compartment is admitted);
   - a buffer that misses an uncharged species or names another;
   - ions declared other than the node's own composition.
 

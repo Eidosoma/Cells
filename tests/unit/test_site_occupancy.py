@@ -429,11 +429,8 @@ REFUSALS.update(
             ),  # fmt: skip
             "scheduled bath bath from 0.008 s, below its declared trace",
         ),
-        # D327's compartment case and the labels stay refused beside sets.
-        "FR-45: compartments beside sets": (
-            lambda: cfx.with_compartments(set_world(), [cfx.compartment()]),
-            f"{so.PARTNER_BESIDE_SETS}: cells.operator.cell_owned_compartments@1",
-        ),
+        # D327: the labels stay refused beside sets (the compartments are a partner since FR-49's
+        # site pairing: test_fr45_the_partners_beside_sets_parse).
         "FR-45: labels beside sets": (
             lambda: _labelled(set_world()),
             f"{so.PARTNER_BESIDE_SETS}: cells.operator.neutral_arrival_labels@1",
@@ -1353,12 +1350,14 @@ def test_fr45_the_wash_leaves_every_set_bit_for_bit():
 
 @pytest.mark.parametrize(
     "partner",
-    ["turnover", "exchange", "reactions", "bath", "wash", "replacement"],
+    ["turnover", "exchange", "reactions", "bath", "wash", "replacement", "compartments"],
 )
 def test_fr45_the_partners_beside_sets_parse(partner):
     """D327, the lead's ruling 2: the design note's §15 partners parse beside a site set (their
     runs are checked in test_site_competition_*runs.py); every other operator law is refused by
-    name (the REFUSALS rows)."""
+    name (the REFUSALS rows). The compartments are FR-49's partner (its site pairing, D327): the
+    set faces the compartment on its bounding patch, and the facing rule is their check
+    (test_fr49_sites_beside_a_compartment), with FR-49's C2 the registered one."""
     from validation.tissue import wash_schedule_fixtures as wfx
 
     raw = set_world()
@@ -1384,6 +1383,8 @@ def test_fr45_the_partners_beside_sets_parse(partner):
     elif partner == "wash":
         buffer = {wfx.TRACER: 3e-12, "Q1": sfx.SET_TRACE_mM, "Q2": sfx.SET_TRACE_mM}
         raw = wfx.with_wash(raw, ["ecs_0"], [(0.01, "ecs_0", 0.4, buffer)])
+    elif partner == "compartments":  # contact_0 bounds ecs_0, the compartment the set faces.
+        raw = cfx.with_compartments(raw, [cfx.compartment()])
     else:
         raw = _replaced_set_world(on_slot=False)
     parse_spec(raw)
@@ -1427,3 +1428,245 @@ def test_fr45_the_inner_options_beside_sets_are_refused_by_name(option):
         changed, words = replace(m, channels=(*m.channels, shifted)), "a declared voltage shift"
     with pytest.raises(ConfigError, match=f"{so.OPTION_BESIDE_SETS}: {words}"):
         so.check_set_composition(replace(spec, model=changed), _sets_of(spec))
+
+
+# ------------------------------------------------------------ FR-49: sites beside a compartment
+
+# FR-49's site pairing (D327; validation/fr49/REGISTRATION.md, Part H's Sites row; rulings 2 and 3),
+# on its registered worlds (validation/fr49/worlds_bc.py). Host only: parses and bindings, no
+# compile. Rows: (build, None for admitted, or the refusal's message).
+FR49_SITES = {
+    "World B's population facing the compartment on its bounding patch": (
+        lambda wb: wb.world_b(),
+        None,
+    ),
+    "World B's population owned by the compartment's node (ruling 2)": (
+        lambda wb: wb.world_b(owner="node"),
+        None,
+    ),
+    "C2's shared set facing the compartment": (lambda wb: wb.world_c2(), None),
+    "C2's shared set owned by the compartment's node": (lambda wb: wb.world_c2(owner="node"), None),
+    "an inward population on the bounding patch (ruling 3)": (
+        lambda wb: wb.world_b(face="inside"),
+        f"{so.INWARD_ON_BOUNDING_PATCH}: population lumen_sites faces the cytosol of 'specimen'",
+    ),
+    "an inward shared set on the bounding patch": (
+        lambda wb: wb.world_c2(face="inside"),
+        f"{so.INWARD_ON_BOUNDING_PATCH}: site set lumen_set faces the cytosol of 'specimen'",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(FR49_SITES))
+def test_fr49_sites_beside_a_compartment(name):
+    """The facing rule (site_occupancy.check_compartments): on a compartment's bounding patch a
+    population or shared set that faces the compartment is admitted, and so is one its node owns
+    (FR-28); one facing the owner's cytosol is refused by name, before the internalisation rule
+    (test_internalisation_from_a_compartment_is_refused keeps that one)."""
+    from validation.fr49 import worlds_bc as wb
+
+    build, message = FR49_SITES[name]
+    if message is None:
+        parse_spec(build(wb))
+        return
+    with pytest.raises(ConfigError, match=message):
+        parse_spec(build(wb))
+
+
+def test_fr49_the_facing_rule_names_the_refusal(monkeypatch):
+    """Part H's Sites plant: without the facing rule, the inward population and the inward set
+    both parse, so their refusal comes from the facing rule alone."""
+    from validation.fr49 import worlds_bc as wb
+
+    monkeypatch.setattr(so, "check_compartments", lambda spec, declaration: None)
+    parse_spec(wb.world_b(face="inside"))
+    parse_spec(wb.world_c2(face="inside"))
+
+
+@pytest.mark.parametrize("sites", ["population", "set"])
+def test_fr49_b6_node_owned_sites_have_the_facing_ones_layout(sites):
+    """B6 (REGISTRATION.md §4.2) and Part H's Sites row: World B's population, and C2's set,
+    owned by the compartment's node have every site layout array bitwise the facing one's on the
+    bounding patch (the layout reads the facing pool, never the owner), so the node-owned run is
+    World B's."""
+    from validation.fr49 import worlds_bc as wb
+
+    build = wb.world_b if sites == "population" else wb.world_c2
+    facing, owned = (_bound(build(owner=owner))[2] for owner in ("patch", "node"))
+    fields = [f for f in type(facing)._fields if f.startswith("site_")]
+    assert len(fields) > 10
+    for f in fields:
+        a, b = np.asarray(getattr(facing, f)), np.asarray(getattr(owned, f))
+        assert a.dtype == b.dtype and a.shape == b.shape and a.tobytes() == b.tobytes(), f
+
+
+def _lumen_sites(owner="patch"):
+    """World B's compartment and population, with no wash."""
+    from validation.fr49 import worlds_bc as wb
+
+    raw = wb.set_amount(wb.topology(dt=0.1, end=1.0, every=0.5), wb.LYS, wb.LIGAND, 1e-4)
+    population = wb.lumen_population(owner=owner)
+    return sfx.with_site_occupancy(raw, [population], ligands=[sfx.ligand(trace_mM=wb.B_TRACE_mM)])
+
+
+@pytest.mark.parametrize("owner", ["patch", "node"])
+def test_fr49_coupling_v2_reads_a_lumen_facing_population_as_its_owners(owner):
+    """D424 (FR-49's Q10): cells.operator.species_regulated_availability@2's site source reading a
+    population that faces a compartment. On the bounding patch the population belongs to the
+    owner (the patch's cell, population_cell), so the coupling reads its occupied fraction as the
+    owner's source, as FR-24 reads any patch population's, whichever face it binds from: the pair
+    parses, and its source is that cell's. Owned by the compartment's node, it belongs to no cell,
+    and the coupling's own rule refuses it by name. Host only."""
+    from validation.tissue import regulated_availability_fixtures as rf
+
+    raw = add_turnover_target(_lumen_sites(owner))
+    entry = dict(
+        id="c_lumen",
+        target=dict(operator=fx.TURNOVER, control="turnover_rate", ids=["make_x"],
+                    evaluation="target_half_steps", operating_range=[0.0, 1.0]),
+        source={"site_population": "lumen_sites", "quantity": "occupied_fraction"},
+        law="site_fraction", basal=0.1,
+    )  # fmt: skip
+    raw = rf.with_coupling(raw, species=[], couplings=[entry])
+    next(b for b in raw["model"]["operators"] if b["law"] == rf.LAW)["law"] = (
+        "cells.operator.species_regulated_availability@2"
+    )
+    rank = {so.LAW_ID: 0, "cells.operator.species_regulated_availability@2": 1, fx.TURNOVER: 2}
+    raw["model"]["operators"].sort(key=lambda b: rank.get(b["law"], -1))
+    if owner == "node":
+        with pytest.raises(ConfigError, match="a node's own sites, which belong to no cell"):
+            parse_spec(raw)
+        return
+    spec = parse_spec(raw)
+    lumen = next(p for p in _sets_of(spec).populations if p.id == "lumen_sites")
+    assert so.facing_node(spec.model, lumen) == (so.OUTSIDE, "lys")
+    assert so.population_cell(spec.model, lumen) == "specimen"
+
+
+def test_fr49_sets_at_a_compartment_keep_every_bit_across_a_wash_elsewhere():
+    """D424 (FR-49's Q10): FR-45's shared sets at a compartment beside the wash of another node
+    (C2's world with World B's wash of the well). It parses, and the wash's event map alone
+    (NumPy), at the wash's time, leaves every set's R and every member's B, and every row at the
+    compartment's node, bit for bit, while it applies at the well: B5's claim, on sets."""
+    from cells.operators import wash_schedule as wash
+    from validation.fr49 import worlds_bc as wb
+
+    spec, state, p, control = _bound(wb.world_c2(wash=True), time=300.0)
+    after, ok = wash.apply_events(state, control, p, xp=np)
+    assert bool(ok)
+    for name in ("site_free_increment_fmol", "site_bound_increment_fmol"):
+        assert (
+            np.asarray(getattr(after, name)).tobytes() == np.asarray(getattr(state, name)).tobytes()
+        )
+    nodes = [c.id for c in spec.model.extracellular]
+    lys, well = nodes.index(wb.LYS), nodes.index(wb.WELL)
+    kept = np.asarray(state.extracellular_amount_increment)[:, lys]
+    assert np.asarray(after.extracellular_amount_increment)[:, lys].tobytes() == kept.tobytes()
+    assert int(np.asarray(after.wash_applied)[well]) == 1
+    assert int(np.asarray(after.wash_applied)[lys]) == 0
+
+
+def _fr49_alone(law):
+    """World B's compartment with only its sites (law "sites"), or only the well's wash ("wash")."""
+    from validation.fr49 import worlds_bc as wb
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    raw = wb.set_amount(wb.topology(dt=0.1, end=1.0, every=0.5), wb.LYS, wb.LIGAND, 1e-4)
+    if law == "sites":
+        population = wb.lumen_population()
+        ligand = sfx.ligand(trace_mM=wb.B_TRACE_mM)
+        return sfx.with_site_occupancy(raw, [population], ligands=[ligand])
+    return wfx.with_wash(raw, [wb.WELL], [(0.5, wb.WELL, 0.5, {wb.LIGAND: wb.B_TRACE_mM})])
+
+
+FR49_OPTIONS = {  # name: (the probe's builder's name, the refusal's words, at binding)
+    "X2": ("with_x2", "execution.energy_check \\(X2, D224\\)", True),
+    "the sparse field solver": ("with_sparse", "the field solver", False),
+    "the one-way records (FR-50 phase 2)": ("with_records", "@3's own one_way records", False),
+    "a blocked channel": ("with_leak_blocked", "a blocked channel population \\(FR-51\\)", False),
+    "a gate's voltage shift": ("with_gated", "a declared voltage shift \\(FR-64\\)", False),
+}
+
+
+def _option(name):
+    from validation.fr49 import d327_probe as probe
+
+    builder = FR49_OPTIONS[name][0]
+    if builder == "with_leak_blocked":
+        return lambda raw: probe.with_leak(raw, block=True)
+    return getattr(probe, builder)
+
+
+@pytest.mark.parametrize("law", ["sites", "wash"])
+@pytest.mark.parametrize("option", sorted(FR49_OPTIONS))
+def test_fr49_the_later_options_are_refused_beside_sites_or_the_wash(option, law):
+    """D424 (FR-49's D327 probe, validation/fr49/d327_probe.py): beside a compartment, site
+    occupancy and the wash are qualified without the inner model's later options, so each is
+    refused by name beside either (compartments.refuse_later_options) until a world qualifies the
+    pair; X2, attached after the definition's checks, at binding. Host only."""
+    from cells.operators import compartments as comp
+
+    _, words, at_binding = FR49_OPTIONS[option]
+    raw = _option(option)(_fr49_alone(law))
+    with pytest.raises(ConfigError, match=f"{comp.OPTION_BESIDE}: {words}"):
+        spec = parse_spec(raw)
+        if at_binding:
+            get_model(spec.model).initial_values(spec)
+
+
+def test_fr49_a_compartment_world_with_neither_keeps_the_later_options():
+    """The refusal's control: World B's compartment alone (neither site occupancy nor the wash)
+    still takes X2, which binds, and a gate's voltage shift."""
+    from validation.fr49 import d327_probe as probe
+    from validation.fr49 import worlds_bc as wb
+
+    raw = wb.set_amount(wb.topology(dt=0.1, end=1.0, every=0.5), wb.LYS, wb.LIGAND, 1e-4)
+    spec = parse_spec(probe.with_x2(raw))
+    get_model(spec.model).initial_values(spec)
+    parse_spec(probe.with_gated(raw))
+
+
+def _without_compartment(raw):
+    out = copy.deepcopy(raw)
+    law = "cells.operator.cell_owned_compartments@1"
+    out["model"]["operators"] = [b for b in out["model"]["operators"] if b["law"] != law]
+    return out
+
+
+def _fr49_identity_worlds():
+    from validation.fr49 import d327_probe as probe
+    from validation.fr49 import worlds_bc as wb
+
+    return {
+        "sites facing the well, the well washed": lambda: probe.sites_at_the_well(wb, sfx),
+        "World B with a K leak on the owner's wall": lambda: probe.with_leak(wb.world_b()),
+    }
+
+
+@pytest.mark.parametrize("world", ["sites facing the well, the well washed",
+                                   "World B with a K leak on the owner's wall"])  # fmt: skip
+def test_fr49_beside_sites_elsewhere_or_a_channel_the_compartment_adds_nothing(world):
+    """D424's probe (validation/fr49/d327_probe.py) found these newly parsing: site occupancy in a
+    compartment world but not at the compartment (the review's two populations facing the well,
+    the well washed), and FR-49's World B with a channel population, a gate-free K leak with no
+    later option, on the owner's wall. Each parses, and binds bit for bit as the same world without
+    the compartments' declaration (S5's identity at binding: the declaration owns no state and runs
+    no part), so each is that world, admitted on its own qualification. Host only."""
+    build = _fr49_identity_worlds()[world]
+    declared, without = cfx.bindings(build()), cfx.bindings(_without_compartment(build()))
+    assert cfx.same_bindings(declared, without) == []
+
+
+@pytest.mark.parametrize("world", ["World B, node-owned", "C1", "C2"])
+def test_fr49_a_channel_population_off_the_bounding_patch_parses_and_on_it_is_refused(world):
+    """The same leak on the owner's wall beside FR-49's other worlds parses (the probe's other new
+    rows); on the compartment's bounding patch it is refusal 4's, by name."""
+    from validation.fr49 import d327_probe as probe
+    from validation.fr49 import worlds_bc as wb
+
+    builds = {"World B, node-owned": lambda: wb.world_b(owner="node"), "C1": wb.world_c1,
+              "C2": wb.world_c2}  # fmt: skip
+    parse_spec(probe.with_leak(builds[world]()))
+    refused = "carries an ion route refusal 4 refuses there, probe_leak"
+    with pytest.raises(ConfigError, match=refused):
+        parse_spec(probe.with_leak(wb.world_b(), patch=wb.LYS_FACE))

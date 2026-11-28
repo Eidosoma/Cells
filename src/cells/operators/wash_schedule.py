@@ -66,6 +66,11 @@ of about eps times the anchor.
 
 Refused at the definition (version 1):
 - a held bath, whose composition is the bath schedule's;
+- a compartment's node among its nodes (COMPARTMENT_NODE; FR-49's wash narrowing, D327, ruling 5),
+  whether or not an event names it, since its nodes are what it reads and writes: a node that
+  cells.operator.cell_owned_compartments@1 declares lies behind its owner's membrane, out of the
+  liquid's reach. Checked first, so that the reason named is the compartment, not a crossing of
+  its surface;
 - a node a face touches, until measured (D246 item 5). A wash is a step in the node's
   concentration, and @3's face booking of such a step is FR-10's onset limit, measured for held
   baths only;
@@ -92,7 +97,8 @@ Refused at the definition (version 1):
 It reads its nodes' volumes, anchors and outside mask as declared: fixed reads at its event, scoped
 to its nodes (door S). So water, the lumens and insertion, which change them unscoped, are refused
 by the composite's structure check, and the bath schedule's dose at a held bath is admitted. Beside
-cells.operator.cell_owned_compartments@1 it is refused by that declaration's admitted list, which fails closed.
+cells.operator.cell_owned_compartments@1 it washes other finite nodes only (FR-49's wash
+narrowing; that declaration's admitted list names it, validation/fr49/REGISTRATION.md, Part H).
 """
 
 import math
@@ -159,6 +165,8 @@ REFUSED = {
 }
 IONS_SAME = "same_as_compartment"
 FLOOR_FMOL = 1e-12  # The own ledger's floor (each ion's sample against its supply: exactly 0).
+# FR-49's wash narrowing (D327, ruling 5): the refusal's name, which its message begins with.
+COMPARTMENT_NODE = "a compartment's node among the washed nodes"
 
 STATE_AXES = {
     "wash_collected_fmol": ["species", "extracellular_slot"],  # The samples, cumulative.
@@ -402,10 +410,32 @@ def surface_crossings(spec, declaration):
     return found
 
 
+def refuse_compartment_nodes(spec, declaration):
+    """FR-49's wash narrowing (D327, ruling 5; validation/fr49/REGISTRATION.md, Part H): no node of
+    the declaration's `nodes` is a compartment's (compartments.compartment_nodes), whether or not an
+    event names it, since `nodes` is what the wash reads and writes. A cell-owned compartment lies
+    behind its owner's membrane, out of the liquid's reach, so washing it is no physical operation;
+    a wash of any other finite node beside a compartment is admitted."""
+    from cells.operators import compartments
+
+    nodes = compartments.compartment_nodes(spec)
+    for node in declaration.nodes:
+        if node in nodes:
+            c = nodes[node]
+            raise ConfigError(
+                f"{LAW_ID}: {COMPARTMENT_NODE}: {node!r} is compartment {c.id!r} of {c.owner!r} "
+                f"({compartments.LAW_ID}), which lies behind its owner's membrane, out of the "
+                "liquid's reach; a wash names only finite nodes the liquid reaches, in its nodes "
+                "whether or not an event names them (FR-49's ruling 5)"
+            )
+
+
 def check_definition(spec, declaration):
-    """Version 1's refusals of what the step would book unmeasured: a face at a washed node, and
-    a neutral species crossing a washed node's surface by any declared path
+    """Version 1's refusals of what the step would book unmeasured, after FR-49's compartment
+    nodes (refuse_compartment_nodes, first, so that its reason is the one given): a face at a
+    washed node, and a neutral species crossing a washed node's surface by any declared path
     (surface_crossings)."""
+    refuse_compartment_nodes(spec, declaration)
     m = spec.model
     for face in m.faces:
         touched = {face.sender, face.receiver} & set(declaration.nodes)

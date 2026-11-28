@@ -1166,6 +1166,18 @@ its admitted-operator list fails closed.
   provider whatever FR-3 does. The door it needs, field-input providers beside a compartment node,
   is FR-1's and FR-2's. With one compartment per cell, a 64-node world holds about half as many
   cells (FR-1 §3.6, **S** there).
+- **FR-49's site pairing (D327, after FR-45; validation/fr49/REGISTRATION.md, Part H)** took the
+  door, with the facing rule in `check_compartments`:
+  - on a compartment's bounding patch a population or shared site set that faces the compartment
+    is admitted, and so is one that the compartment's node owns (FR-28; ruling 2), whose layout is
+    the facing one's bit for bit (B6);
+  - one facing the owner's cytosol never reads the compartment and is refused by name,
+    `INWARD_ON_BOUNDING_PATCH` (ruling 3), and internalisation from a compartment stays refused;
+  - the compartments join FR-45's set partners, the facing rule their check;
+  - beside a compartment the inner model's later options (one-way records, a block, a voltage
+    shift, the sparse field solver, X2) are refused by name, from `later_options` (D424).
+  World B (lumen sites with depletion, and a wash elsewhere) and C2 (two ligands on one shared set)
+  are its registered checks.
 
 ## 7. Generality (D144): the consumers, against version 1 and the doors
 

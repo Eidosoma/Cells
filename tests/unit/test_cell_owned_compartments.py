@@ -1459,6 +1459,21 @@ def test_the_admitted_list_fails_closed(monkeypatch):
     assert set(comp.ADMITTED) - set(OPERATORS) == PENDING_ADMITTED, "a pending law registered"
 
 
+def test_fr49_the_site_pairing_and_the_wash_narrowing_are_listed():
+    """FR-49's site pairing and wash narrowing (D327; validation/fr49/REGISTRATION.md, Part H):
+    the list names cells.operator.site_occupancy@1 and cells.operator.scheduled_compartment_wash@1,
+    each with its own check (the facing rule,
+    test_site_occupancy.py::test_fr49_sites_beside_a_compartment; the compartment-node refusal,
+    test_wash_schedule.py); cells.operator.site_occupant_replacement@1 stays off it (ruling 7).
+    compartment_nodes, which both checks read, maps each declared compartment's node to its
+    compartment, and is empty without the declaration. Host only."""
+    assert {comp.SITES_LAW, comp.WASH_LAW} <= set(ADMITTED_AT_IMPORT)
+    assert "cells.operator.site_occupant_replacement@1" not in ADMITTED_AT_IMPORT
+    found = comp.compartment_nodes(parse_spec(w()))
+    assert {node: (c.id, c.owner) for node, c in found.items()} == {cfx.NODE: ("lys_0", cfx.OWNER)}
+    assert comp.compartment_nodes(parse_spec(cfx.without_compartment(end=END))) == {}
+
+
 # ------------------------------------------------------------------ the membrane-state wall's door
 
 STAND_IN = "cells.operator.trafficking_stand_in@1"
