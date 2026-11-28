@@ -274,7 +274,8 @@ def _world_c1(records, refs):
                     O_shares=np.zeros((t.size, 1, 2)), C_shares=np.zeros((t.size, 1, 2)),
                     label_closure_relative=np.full((t.size, 1), 1.4e-16))  # fmt: skip
         rows.update({name: np.zeros((t.size, 1)) for name in judge_bc.c1_physical_names()})
-        _record(records, run_id, quantities=q, arrays=rows, label_closure_relative_max=1.4e-16)
+        _record(records, run_id, quantities=q, arrays=rows, label_closure_relative_max=1.4e-16,
+                c1_entity_slots=judge_bc.c1_expected_slots())  # fmt: skip
 
 
 def _world_c2(records, refs):
@@ -458,7 +459,15 @@ def test_b5_is_gated_on_the_washs_counts(fabricated, tmp_path, name):
     assert criteria["B5"]["passed"] is False and criteria["B5"]["differing"] == []
 
 
-@pytest.mark.parametrize("case", ["a node's electrode charge differs", "an array is missing"])
+@pytest.mark.parametrize(
+    "case",
+    [
+        "a node's electrode charge differs",
+        "an array is missing",
+        "an extra array is saved",
+        "the slots are not world_c1()'s",
+    ],
+)
 def test_c1_1_compares_every_physical_state_field_at_o_and_c(fabricated, tmp_path, case):
     """READING-3: C1-1's physical rows are every physical state field at O and C, here C's
     electrode charge, compared bit for bit; a record without one of them is refused."""
@@ -470,15 +479,31 @@ def test_c1_1_compares_every_physical_state_field_at_o_and_c(fabricated, tmp_pat
     def change(doc, arrays):
         if case == "an array is missing":
             arrays.pop(name)
+        elif case == "an extra array is saved":
+            arrays["P.an_uncompared_field"] = arrays[name].copy()
+        elif case == "the slots are not world_c1()'s":
+            doc["c1_entity_slots"] = dict(doc["c1_entity_slots"], membrane_slot=[1])
         else:
             arrays[name] = arrays[name].copy()
             arrays[name][700, 0] = 1e-30
 
     _rewrite(records, "C1-twin-dt2", change)
     reference = judge_bc.read_reference(refs / "C1.json", "C1")
-    if case == "an array is missing":
-        with pytest.raises(judge_bc.ReaderError, match="C1-1's arrays missing"):
+    words = {
+        "an array is missing": "not exactly C1-1's set",
+        "an extra array is saved": r"not exactly C1-1's set: extra \['P.an_uncompared_field'\]",
+        "the slots are not world_c1()'s": "other entity slots",
+    }
+    if case in words:
+        with pytest.raises(judge_bc.ReaderError, match=words[case]):
             judge_bc.judge_c1(records, reference)
+        if case == "the slots are not world_c1()'s":  # And the driver refuses such a job's slots.
+            from validation.fr49 import worlds_bc as wb
+
+            raw = wb.world_c1()
+            raw["model"]["membranes"] = raw["model"]["membranes"][1:]
+            with pytest.raises(SystemExit, match="are not world_c1"):
+                driver_bc.c1_slots(raw)
     else:
         criteria, _ = judge_bc.judge_c1(records, reference)
         assert criteria["C1-1"]["passed"] is False and criteria["C1-1"]["differing"] == [name]

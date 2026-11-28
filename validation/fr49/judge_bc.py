@@ -566,6 +566,14 @@ def c1_physical_names():
     return tuple(names)
 
 
+@functools.cache
+def c1_expected_slots():
+    """C1's entity slots in a record's JSON form: world_c1()'s, which each C1 record must name."""
+    from validation.fr49 import worlds_bc as wb
+
+    return json.loads(json.dumps(wb.c1_entity_slots(wb.world_c1())))
+
+
 def judge_c1(records, reference):
     v = declared_values("C1")
     # C1-2 reads the well's values only, so the well's own cross-checks decide its inconclusive
@@ -595,10 +603,21 @@ def judge_c1(records, reference):
                        label_closure_relative_max={k: m for k, (_, m) in found.items()},
                        bound=CLOSURE)  # fmt: skip
     a, b = runs["C1-dt2"][3], runs["C1-twin-dt2"][3]
-    names = ("O_rows", "C_rows", "O_shares", "C_shares", *c1_physical_names())
-    missing = [n for n in names if n not in a or n not in b]
+    base = ("O_rows", "C_rows", "O_shares", "C_shares")
+    missing = [n for n in base if n not in a or n not in b]
     if missing:
         raise ReaderError(f"C1-1's arrays missing from C1-dt2's or its twin's record: {missing}")
+    expected = set(c1_physical_names())
+    for run_id, arrays in (("C1-dt2", a), ("C1-twin-dt2", b)):
+        if runs[run_id][0].get("c1_entity_slots") != c1_expected_slots():
+            raise ReaderError(f"record {run_id} names other entity slots than world_c1()'s")
+        saved = {n for n in arrays if n.partition(".")[0] in ("O", "C", "P") and "." in n}
+        if saved != expected:
+            raise ReaderError(
+                f"record {run_id}'s O, C and P arrays are not exactly C1-1's set: extra "
+                f"{sorted(saved - expected)}, missing {sorted(expected - saved)}"
+            )
+    names = (*base, *sorted(expected))
     differing = [n for n in names if not _bitwise(a[n], b[n])]
     out["C1-1"] = dict(passed=not differing, differing=differing, compared=len(names))
 

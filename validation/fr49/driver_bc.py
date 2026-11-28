@@ -143,7 +143,7 @@ def node_index(spec, name):
     return [c.id for c in spec.model.extracellular].index(name)
 
 
-def b_record(spec, result, p):
+def b_record(spec, result, p, slots=None):
     from validation.fr49 import worlds_bc as wb
 
     h = result.history
@@ -166,16 +166,30 @@ def b_record(spec, result, p):
     return quantities, arrays, {}
 
 
-def physical_at(spec, history):
+def c1_slots(raw):
+    """C1's entity slots from the job's own definition `raw` (worlds_bc.c1_entity_slots), refused
+    (SystemExit) unless they equal world_c1()'s, which the judge expects."""
+    from validation.fr49 import worlds_bc as wb
+
+    slots, expected = wb.c1_entity_slots(raw), wb.c1_entity_slots(wb.world_c1())
+    if slots != expected:
+        raise SystemExit(
+            f"C1's entity slots from this job's definition, {slots}, are not world_c1()'s, "
+            f"{expected}, which the judge expects"
+        )
+    return slots
+
+
+def physical_at(spec, history, slots):
     """C1-1's arrays on every row (READING-3): every non-label state field whose entity is O or C,
-    or a patch bounding them but W's, cut by worlds_bc's entity rule (c1_entity_slots, c1_part)
-    and named `<class>.<field>` (O, C or P); label fields (judge_l.LABELS_ONLY) aside."""
+    or a patch bounding them but W's, cut by worlds_bc's entity rule (c1_part) at the job's own
+    slots (c1_slots), and named `<class>.<field>` (O, C or P); label fields (judge_l.LABELS_ONLY)
+    aside."""
     from cells.registry.models import get_model
     from validation.fr49 import worlds_bc as wb
     from validation.fr49.judge_l import LABELS_ONLY
 
     axes = get_model(spec.model).STATE_AXES
-    slots = wb.c1_entity_slots(wb.world_c1())
     out = {}
     for field in type(history)._fields:
         if field in LABELS_ONLY:
@@ -186,7 +200,7 @@ def physical_at(spec, history):
     return out
 
 
-def c1_record(spec, result, p):
+def c1_record(spec, result, p, slots=None):
     from validation.fr49 import worlds
     from validation.fr49 import worlds_bc as wb
 
@@ -216,13 +230,13 @@ def c1_record(spec, result, p):
         O_shares=share[:, :, :, owner],
         C_shares=outside[:, :, :, node],
         label_closure_relative=np.asarray(h.label_closure_relative),  # [row, labelled species]
-        **physical_at(spec, h),
+        **physical_at(spec, h, slots),
     )
     closure = float(np.max(np.asarray(h.label_closure_relative), initial=0.0))
     return quantities, arrays, dict(label_closure_relative_max=closure)
 
 
-def c2_record(spec, result, p):
+def c2_record(spec, result, p, slots=None):
     from validation.fr49 import worlds
     from validation.fr49 import worlds_bc as wb
 
@@ -398,12 +412,16 @@ def run_here(job_path, record_dir, *, judged=False):
     started = time.perf_counter()
     engine_plant = entry["plant"] in plants_bc.ENGINE
     record["plant_kind"] = "engine" if engine_plant else ("definition" if entry["plant"] else None)
+    raw = raw_world(entry)
+    slots = c1_slots(raw) if entry["world"] == "C1" else None  # Refused before the run.
+    if slots is not None:
+        record["c1_entity_slots"] = slots
     try:
         with plants_bc.engine(entry["plant"]):
-            spec = parse_spec(raw_world(entry))
+            spec = parse_spec(raw)
             result = run_spec(spec)  # Its host checks run on every accepted row.
             _, p = get_model(spec.model).initial_values(spec)
-            quantities, arrays, extra = RECORDS[entry["world"]](spec, result, p)
+            quantities, arrays, extra = RECORDS[entry["world"]](spec, result, p, slots)
         record.update(outcome="completed", times=hexes(result.times), quantities=quantities,
                       **extra)  # fmt: skip
         np.savez(out / f"{entry['id']}.npz", **arrays)
