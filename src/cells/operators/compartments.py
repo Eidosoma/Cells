@@ -76,7 +76,9 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    - cells.operator.scheduled_compartment_wash@1 (FR-49's wash narrowing, after FR-44), whose own
      check refuses a compartment's node among the nodes it washes (ruling 5: a compartment lies
      behind its owner's membrane, out of the liquid's reach), so it washes other finite nodes only.
-   The two read the compartments' nodes through compartment_nodes.
+   The two read the compartments' nodes through compartment_nodes. Beside either, the inner
+   model's later options (@3's own one-way records, a block, a voltage shift, the sparse field
+   solver and X2) are refused by name until a world qualifies each (refuse_later_options; D424).
    cells.operator.site_occupant_replacement@1 stays off the list (FR-49's ruling 7).
 The stationary analysis does not admit the composite (its own ID check).
 
@@ -164,6 +166,10 @@ EXPRESSION_LAW = "cells.operator.templated_polymerisation@1"
 LABELS_LAW = "cells.operator.neutral_arrival_labels@1"
 SITES_LAW = "cells.operator.site_occupancy@1"
 WASH_LAW = "cells.operator.scheduled_compartment_wash@1"
+# FR-49 (D424): the refusal's name, which its message begins with after the law ID.
+OPTION_BESIDE = (
+    "an inner-model option not admitted beside site occupancy or the wash at a compartment"
+)
 # §4's admitted list (fails closed). @3 itself is the composite's inner model. Membrane state is
 # admitted only together with one of its admitted writers (check_definition).
 ADMITTED = (
@@ -585,6 +591,29 @@ def declaration_to_dict(declaration):
     )
 
 
+def refuse_later_options(spec, entries):
+    """7. FR-49 (D327, D424; its D327 probe, validation/fr49/d327_probe.py): beside a compartment,
+    cells.operator.site_occupancy@1 and cells.operator.scheduled_compartment_wash@1 are qualified
+    without the inner model's later options (World B, C1 and C2 declare none), so each option is
+    refused by name beside either until a world qualifies the pair: @3's own one-way records
+    (FR-50), a blocked channel population (FR-51), a declared voltage shift (FR-64), the sparse
+    field solver (FR-17), and X2, which attaches after the definition's checks and so is refused at
+    binding (CellOwnedCompartments.initial_values). A compartment world with neither law is not
+    read."""
+    laws = [op.LAW_ID for op, _, _ in entries]
+    beside = [law for law in (SITES_LAW, WASH_LAW) if law in laws]
+    if not beside:
+        return
+    from cells.operators.site_occupancy import later_options
+
+    for present, what in later_options(spec):
+        if present:
+            raise ConfigError(
+                f"{LAW_ID}: {OPTION_BESIDE}: {what}, beside {' and '.join(beside)}; refused until "
+                "a world qualifies the pair (D327)"
+            )
+
+
 def compartment_nodes(spec):
     """{node: Compartment} of the composition's declared compartments, empty without the
     declaration: what an operator of the admitted list reads to keep a compartment's node out of
@@ -646,8 +675,9 @@ def refuse_labels_beside_membrane_state(entries):
 
 def check_definition(spec, declaration):
     """7. The admitted list, which fails closed, replacement@1's owners, the labels without
-    membrane state (FR-49), and membrane state only with its admitted writers; then 5. (version
-    1.2), which reads the admitted operators' routes."""
+    membrane state (FR-49), membrane state only with its admitted writers, and the inner model's
+    later options refused beside site occupancy or the wash (FR-49, D424); then 5. (version 1.2),
+    which reads the admitted operators' routes."""
     owners = {c.owner for c in declaration.compartments}
     entries = composite_spec.entries(spec)
     for op, _, schedule in entries:
@@ -673,6 +703,7 @@ def check_definition(spec, declaration):
                 )
     refuse_labels_beside_membrane_state(entries)  # FR-49: before the wall's rule, so its reason.
     refuse_unwritten_state(entries)
+    refuse_later_options(spec, entries)  # FR-49 (D424): X2 again at binding (initial_values).
     # 5., version 1.2: per compartment, in declared order (positional: bypasses in the silence
     # tests and FR-1's plants replace it with a positional-only lambda).
     into = charged_by(spec, declaration, entries)
@@ -733,6 +764,9 @@ class CellOwnedCompartments(Operator):
         check_definition(spec, declaration)
 
     def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
+        # FR-49 (D424): execution.energy_check is attached after the definition's checks, so X2 is
+        # seen here, where every run binds before its first step (refuse_later_options).
+        refuse_later_options(spec, composite_spec.entries(spec))
         return {}, {}
 
     def summary(self, spec, declaration, schedule, history):

@@ -1742,6 +1742,20 @@ RULES = (
         "registered checks",
     ),
     dict(
+        rule=f"beside a compartment, {SITES} and {WASH} refuse the inner model's later options: "
+        "@3's own one-way records, a block, a voltage shift, the sparse field solver and X2",
+        laws=(COMPARTMENTS, SITES, WASH),
+        level="data",
+        check=OPS + "compartments.py::refuse_later_options",
+        test=TESTS + "test_site_occupancy.py::"
+        "test_fr49_the_later_options_are_refused_beside_sites_or_the_wash",
+        tag=REAL,
+        why="D327's rule, by FR-49's D327 probe (validation/fr49/d327_probe.py, D424): World B, C1 "
+        "and C2 declare none of them, so each is refused by name beside either until a world "
+        "qualifies the pair; X2 at binding, since it attaches after the definition's checks. A "
+        "compartment world with neither law keeps them",
+    ),
+    dict(
         rule="D152 refuses RK4",
         laws=(REACTIONS,),
         level="data",

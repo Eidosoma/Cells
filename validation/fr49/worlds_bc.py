@@ -12,8 +12,8 @@ of which changes a declared value:
   the design note's probe/worlds.py world_b (/mnt/workspaces/Cells/fr49-51-design-20261123/), built
   from secreted_species_fixtures.world so that each node's ions are its own volume's. The ligand is
   the fixtures' S, at n_L(0) at lys and at its trace, 1e-12 mM (1e-6 K_d exactly in binary64), at
-  every other node, the well included. The wash's buffer holds it at that trace, so the honest wash is
-  materially a no-op at the well while its books are written.
+  every other node, the well included. The wash's buffer holds it at that trace, so the honest wash
+  is materially a no-op at the well while its books are written.
 - **C1** is World L, labelled, with a well W of V_W: a copy of the compartment's node at every
   concentration but S's, which is x_W + b_W with the declared shares, joined to cell_0 by a copy of
   the bounding patch, which carries no route. The buffer holds S at its declared concentration and

@@ -1564,3 +1564,63 @@ def test_fr49_sets_at_a_compartment_keep_every_bit_across_a_wash_elsewhere():
     assert np.asarray(after.extracellular_amount_increment)[:, lys].tobytes() == kept.tobytes()
     assert int(np.asarray(after.wash_applied)[well]) == 1
     assert int(np.asarray(after.wash_applied)[lys]) == 0
+
+
+def _fr49_alone(law):
+    """World B's compartment with only its sites (law "sites"), or only the well's wash ("wash")."""
+    from validation.fr49 import worlds_bc as wb
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    raw = wb.set_amount(wb.topology(dt=0.1, end=1.0, every=0.5), wb.LYS, wb.LIGAND, 1e-4)
+    if law == "sites":
+        population = wb.lumen_population()
+        ligand = sfx.ligand(trace_mM=wb.B_TRACE_mM)
+        return sfx.with_site_occupancy(raw, [population], ligands=[ligand])
+    return wfx.with_wash(raw, [wb.WELL], [(0.5, wb.WELL, 0.5, {wb.LIGAND: wb.B_TRACE_mM})])
+
+
+FR49_OPTIONS = {  # name: (the probe's builder's name, the refusal's words, at binding)
+    "X2": ("with_x2", "execution.energy_check \\(X2, D224\\)", True),
+    "the sparse field solver": ("with_sparse", "the field solver", False),
+    "@3's own one-way records": ("with_records", "@3's own one_way records", False),
+    "a blocked channel": ("with_leak_blocked", "a blocked channel population \\(FR-51\\)", False),
+    "a gate's voltage shift": ("with_gated", "a declared voltage shift \\(FR-64\\)", False),
+}
+
+
+def _option(name):
+    from validation.fr49 import d327_probe as probe
+
+    builder = FR49_OPTIONS[name][0]
+    if builder == "with_leak_blocked":
+        return lambda raw: probe.with_leak(raw, block=True)
+    return getattr(probe, builder)
+
+
+@pytest.mark.parametrize("law", ["sites", "wash"])
+@pytest.mark.parametrize("option", sorted(FR49_OPTIONS))
+def test_fr49_the_later_options_are_refused_beside_sites_or_the_wash(option, law):
+    """D424 (FR-49's D327 probe, validation/fr49/d327_probe.py): beside a compartment, site
+    occupancy and the wash are qualified without the inner model's later options, so each is
+    refused by name beside either (compartments.refuse_later_options) until a world qualifies the
+    pair; X2, attached after the definition's checks, at binding. Host only."""
+    from cells.operators import compartments as comp
+
+    _, words, at_binding = FR49_OPTIONS[option]
+    raw = _option(option)(_fr49_alone(law))
+    with pytest.raises(ConfigError, match=f"{comp.OPTION_BESIDE}: {words}"):
+        spec = parse_spec(raw)
+        if at_binding:
+            get_model(spec.model).initial_values(spec)
+
+
+def test_fr49_a_compartment_world_with_neither_keeps_the_later_options():
+    """The refusal's control: World B's compartment alone (neither site occupancy nor the wash)
+    still takes X2, which binds, and a gate's voltage shift."""
+    from validation.fr49 import d327_probe as probe
+    from validation.fr49 import worlds_bc as wb
+
+    raw = wb.set_amount(wb.topology(dt=0.1, end=1.0, every=0.5), wb.LYS, wb.LIGAND, 1e-4)
+    spec = parse_spec(probe.with_x2(raw))
+    get_model(spec.model).initial_values(spec)
+    parse_spec(probe.with_gated(raw))

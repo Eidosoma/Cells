@@ -1031,10 +1031,25 @@ def check_set_composition(spec, declaration):
                 f"{law}; version 1 admits beside site sets only {', '.join(SET_PARTNERS)}, each "
                 "with its own check (D327)",
             )
+    for present, what in later_options(spec):
+        if present:
+            raise refusal(
+                OPTION_BESIDE_SETS,
+                f"{what}; refused beside site sets until a world qualifies the pair (D327)",
+            )
+
+
+def later_options(spec):
+    """((present, what), ...) of the inner model's later options and X2, in a fixed order: @3's own
+    one-way records (FR-50), a blocked channel population (FR-51), a declared voltage shift
+    (FR-64), the sparse field solver (FR-17) and the step-doubled energy check (X2), which is
+    present only once execution.energy_check is attached, after the definition's checks. Read by
+    each refusal of them beside a composition not yet qualified with them (D327): the site sets'
+    here, and the compartments' beside site occupancy or the wash (FR-49, D424)."""
     from cells.numerics.surface_field import SPARSE_SOLVER_ID
 
     m = spec.model
-    options = (
+    return (
         (bool(getattr(m, "one_way_records", ())), "@3's own one_way records (FR-50 phase 2)"),
         (
             any(getattr(c, "block", None) is not None for c in getattr(m, "channels", ())),
@@ -1047,12 +1062,6 @@ def check_set_composition(spec, declaration):
         (spec.execution.field_solver == SPARSE_SOLVER_ID, f"the field solver {SPARSE_SOLVER_ID}"),
         (getattr(spec, "energy_check", None) is not None, "execution.energy_check (X2, D224)"),
     )
-    for present, what in options:
-        if present:
-            raise refusal(
-                OPTION_BESIDE_SETS,
-                f"{what}; refused beside site sets until a world qualifies the pair (D327)",
-            )
 
 
 # ------------------------------------------------------------------ binding
