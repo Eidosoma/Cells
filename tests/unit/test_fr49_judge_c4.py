@@ -12,8 +12,8 @@
   C4-7's minus (binding's own fields only).
 - The driver's first-run rule (amendment 2, A2.7) and its fresh-process rule; the reader check on
   invented samples made here.
-Seconds and reason (D224): about 7 s on one core, no compile; the judge is the registered instrument of
-C4.
+Seconds and reason (D224): about 7 s on one core, no compile; the judge is the registered
+instrument of C4.
 """
 
 import copy
