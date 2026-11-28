@@ -49,8 +49,8 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     - **Liquid routing builds** (D427 to D429): amendment 7 and the reading note are committed (1bba5faf) for the spec
       auditor's re-run and their tag. Builder A's c1 to c3 are on `lr-engine`, and builder B's tooling runs. The
       judge's agent was stopped by a safeguard, and how to continue it is with the user.
-    - **FR-49's C4** (D428, D429): built and reviewed. Plant (e) takes its own horizon by Amendment 3, and the launch
-      waits for the load bounds.
+    - **FR-49's C4 passes and is landed** (D431, 03f217e2): every criterion passes and every plant is caught. The
+      four-way form is admitted.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).

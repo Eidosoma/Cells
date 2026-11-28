@@ -14819,3 +14819,28 @@ adviser's.
    their fetch. The laws' equations are taken from independent sources. No one fetches those papers.
 6. **On record, unchanged:** liquid routing's item 10(b) (a retry's step is no plant place) stands, overrulable by the
    user before the registration tag. FR-49's Amendment 3 has already been applied in C4's passing judged run.
+
+## D431: FR-49's C4 passes its judged run and is landed: the four-way form is admitted
+
+2026-11-28, written at 16:23 UTC.
+
+- **The judged run.** C4's judge is tagged `fr49-compartment-compositions-v1-judge-c4-2026-11-28` (3fa360da), after a
+  non-builder review in four passes and the lead's reader check on the references tag's invented samples (record
+  byte-equal at 08139131 and 3fa360da). The eight jobs, written from a clean frozen snapshot of 3fa360da and byte-equal
+  to the reviewer's, ran detached on lane B, after a rehearsal of the launcher on a development job of the honest world.
+  All eight completed. The lead hashed the records, then ran the tagged judge with the references archived from
+  `fr49-references-2026-11-24`. **Verdict: passed** (verdict.json sha256 e0abe6af…).
+  - C4-1 to C4-8 pass, and none is inconclusive.
+  - Every plant is caught: (a) by C4-6; (c) by C4-6; (d) by C4-1 and C4-5; (c1) by C4-2; (e) by C4-7 and C4-8, at its
+    own 1800 s (Amendment 3, D429).
+- **The landing** (03f217e2, tag `fr49-c4-landed-2026-11-28`). The builder's D148 round, on the landing head against
+  ccb953b7, gave crossrev 11 of 11 sets identical; tiers 1 and 2 on 504 files with no outcome or count changed; G1's
+  113 of 113 worlds equal to c1 bit for bit; FR-49's set passing; and the derivative programs identical. So the
+  qualified worlds' physical values are bit for bit through the lift, and nothing needed renewal. The fold adds
+  `test_fr49_judge_c4.py` to tier 1 (8.29 s) and re-measures `test_neutral_arrival_labels.py` (58.53 s, tier 2). By
+  Amendment 2's A2.7 and D327, the qualified sets' lift lands with the pass.
+- **Disclosed** (as in D429): the lead's first brief barred the declared-inputs file, so the reviewer's first pass ran
+  on an invented stand-in; the reviewer integrated a reduced model of plant (e)'s system outside the engine; every
+  development run of (e) is in Amendment 3's A3.7.
+- **Next:** liquid routing's label path (builder A's c8) now proceeds, and the wash's retirement waits only on liquid
+  routing's arm 7.
