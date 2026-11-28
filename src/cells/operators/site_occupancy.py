@@ -1040,9 +1040,10 @@ def check_set_composition(spec, declaration):
 
 
 def later_options(spec):
-    """((present, what), ...) of the inner model's later options and X2, in a fixed order: @3's own
-    one-way records (FR-50), a blocked channel population (FR-51), a declared voltage shift
-    (FR-64), the sparse field solver (FR-17) and the step-doubled energy check (X2), which is
+    """((present, what), ...) of the inner model's later options and X2, in a fixed order:
+    cells.model.resolved_pump_tissue@3's own one-way records (FR-50), a blocked channel population
+    (FR-51), a declared voltage shift (FR-64), the sparse field solver (FR-17) and the
+    step-doubled energy check (X2), which is
     present only once execution.energy_check is attached, after the definition's checks. Read by
     each refusal of them beside a composition not yet qualified with them (D327): the site sets'
     here, and the compartments' beside site occupancy or the wash (FR-49, D424)."""

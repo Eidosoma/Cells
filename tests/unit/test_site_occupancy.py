@@ -1513,10 +1513,10 @@ def _lumen_sites(owner="patch"):
 def test_fr49_coupling_v2_reads_a_lumen_facing_population_as_its_owners(owner):
     """D424 (FR-49's Q10): cells.operator.species_regulated_availability@2's site source reading a
     population that faces a compartment. On the bounding patch the population belongs to the
-    owner (the patch's cell, population_cell), so @2 reads its occupied fraction as the owner's
-    source, as FR-24 reads any patch population's, whichever face it binds from: the pair parses,
-    and its source is that cell's. Owned by the compartment's node, it belongs to no cell, and
-    @2's own rule refuses it by name. Host only."""
+    owner (the patch's cell, population_cell), so the coupling reads its occupied fraction as the
+    owner's source, as FR-24 reads any patch population's, whichever face it binds from: the pair
+    parses, and its source is that cell's. Owned by the compartment's node, it belongs to no cell,
+    and the coupling's own rule refuses it by name. Host only."""
     from validation.tissue import regulated_availability_fixtures as rf
 
     raw = add_turnover_target(_lumen_sites(owner))
@@ -1582,7 +1582,7 @@ def _fr49_alone(law):
 FR49_OPTIONS = {  # name: (the probe's builder's name, the refusal's words, at binding)
     "X2": ("with_x2", "execution.energy_check \\(X2, D224\\)", True),
     "the sparse field solver": ("with_sparse", "the field solver", False),
-    "@3's own one-way records": ("with_records", "@3's own one_way records", False),
+    "the one-way records (FR-50 phase 2)": ("with_records", "@3's own one_way records", False),
     "a blocked channel": ("with_leak_blocked", "a blocked channel population \\(FR-51\\)", False),
     "a gate's voltage shift": ("with_gated", "a declared voltage shift \\(FR-64\\)", False),
 }
@@ -1624,3 +1624,49 @@ def test_fr49_a_compartment_world_with_neither_keeps_the_later_options():
     spec = parse_spec(probe.with_x2(raw))
     get_model(spec.model).initial_values(spec)
     parse_spec(probe.with_gated(raw))
+
+
+def _without_compartment(raw):
+    out = copy.deepcopy(raw)
+    law = "cells.operator.cell_owned_compartments@1"
+    out["model"]["operators"] = [b for b in out["model"]["operators"] if b["law"] != law]
+    return out
+
+
+def _fr49_identity_worlds():
+    from validation.fr49 import d327_probe as probe
+    from validation.fr49 import worlds_bc as wb
+
+    return {
+        "sites facing the well, the well washed": lambda: probe.sites_at_the_well(wb, sfx),
+        "World B with a K leak on the owner's wall": lambda: probe.with_leak(wb.world_b()),
+    }
+
+
+@pytest.mark.parametrize("world", ["sites facing the well, the well washed",
+                                   "World B with a K leak on the owner's wall"])  # fmt: skip
+def test_fr49_beside_sites_elsewhere_or_a_channel_the_compartment_adds_nothing(world):
+    """D424's probe (validation/fr49/d327_probe.py) found these newly parsing: site occupancy in a
+    compartment world but not at the compartment (the review's two populations facing the well,
+    the well washed), and FR-49's World B with a channel population, a gate-free K leak with no
+    later option, on the owner's wall. Each parses, and binds bit for bit as the same world without
+    the compartments' declaration (S5's identity at binding: the declaration owns no state and runs
+    no part), so each is that world, admitted on its own qualification. Host only."""
+    build = _fr49_identity_worlds()[world]
+    declared, without = cfx.bindings(build()), cfx.bindings(_without_compartment(build()))
+    assert cfx.same_bindings(declared, without) == []
+
+
+@pytest.mark.parametrize("world", ["World B, node-owned", "C1", "C2"])
+def test_fr49_a_channel_population_off_the_bounding_patch_parses_and_on_it_is_refused(world):
+    """The same leak on the owner's wall beside FR-49's other worlds parses (the probe's other new
+    rows); on the compartment's bounding patch it is refusal 4's, by name."""
+    from validation.fr49 import d327_probe as probe
+    from validation.fr49 import worlds_bc as wb
+
+    builds = {"World B, node-owned": lambda: wb.world_b(owner="node"), "C1": wb.world_c1,
+              "C2": wb.world_c2}  # fmt: skip
+    parse_spec(probe.with_leak(builds[world]()))
+    refused = "carries an ion route refusal 4 refuses there, probe_leak"
+    with pytest.raises(ConfigError, match=refused):
+        parse_spec(probe.with_leak(wb.world_b(), patch=wb.LYS_FACE))

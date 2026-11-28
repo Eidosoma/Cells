@@ -1743,7 +1743,8 @@ RULES = (
     ),
     dict(
         rule=f"beside a compartment, {SITES} and {WASH} refuse the inner model's later options: "
-        "@3's own one-way records, a block, a voltage shift, the sparse field solver and X2",
+        "cells.model.resolved_pump_tissue@3's own one-way records, a block, a voltage shift, the "
+        "sparse field solver and X2",
         laws=(COMPARTMENTS, SITES, WASH),
         level="data",
         check=OPS + "compartments.py::refuse_later_options",

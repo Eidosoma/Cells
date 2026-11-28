@@ -77,9 +77,10 @@ Refused at the definition, each with its reason (§1.4, §1.5):
      check refuses a compartment's node among the nodes it washes (ruling 5: a compartment lies
      behind its owner's membrane, out of the liquid's reach), so it washes other finite nodes only.
    The two read the compartments' nodes through compartment_nodes. Beside either, the inner
-   model's later options (@3's own one-way records, a block, a voltage shift, the sparse field
-   solver and X2) are refused by name until a world qualifies each (refuse_later_options; D424).
-   cells.operator.site_occupant_replacement@1 stays off the list (FR-49's ruling 7).
+   model's later options (cells.model.resolved_pump_tissue@3's own one-way records, a block, a
+   voltage shift, the sparse field solver and X2) are refused by name until a world qualifies
+   each (refuse_later_options; D424). cells.operator.site_occupant_replacement@1 stays off the
+   list (FR-49's ruling 7).
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
@@ -595,11 +596,11 @@ def refuse_later_options(spec, entries):
     """7. FR-49 (D327, D424; its D327 probe, validation/fr49/d327_probe.py): beside a compartment,
     cells.operator.site_occupancy@1 and cells.operator.scheduled_compartment_wash@1 are qualified
     without the inner model's later options (World B, C1 and C2 declare none), so each option is
-    refused by name beside either until a world qualifies the pair: @3's own one-way records
-    (FR-50), a blocked channel population (FR-51), a declared voltage shift (FR-64), the sparse
-    field solver (FR-17), and X2, which attaches after the definition's checks and so is refused at
-    binding (CellOwnedCompartments.initial_values). A compartment world with neither law is not
-    read."""
+    refused by name beside either until a world qualifies the pair:
+    cells.model.resolved_pump_tissue@3's own one-way records (FR-50), a blocked channel population
+    (FR-51), a declared voltage shift (FR-64), the sparse field solver (FR-17), and X2, which
+    attaches after the definition's checks and so is refused at binding
+    (CellOwnedCompartments.initial_values). A compartment world with neither law is not read."""
     laws = [op.LAW_ID for op, _, _ in entries]
     beside = [law for law in (SITES_LAW, WASH_LAW) if law in laws]
     if not beside:

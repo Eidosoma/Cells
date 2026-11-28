@@ -15,12 +15,14 @@ a refusal by name). It is run, like FR-64's, on frozen snapshots of a head and i
   engine and the fixtures it reads are the tree's);
 - the design checks: an inward population or set on the bounding patch, the compartment's node in
   the wash's nodes, sets with a wash elsewhere, cells.operator.species_regulated_availability@2
-  reading a lumen-facing population, C4's four-way form and its three-way subset (invented values);
-- each of World B, its node-owned variant, C1 and C2 with each later option: X2
-  (execution.energy_check, bound as well as parsed, since it attaches after the definition's
-  checks), the sparse field solver, @3's own one-way records (FR-50 phase 2), and a gate-free K leak
+  reading a lumen-facing population, sites facing the well beside the compartment, a channel
+  population on the bounding patch, C4's four-way form and its three-way subset (invented values);
+- World L, the control (a compartment world with neither law), and each of World B, its
+  node-owned variant, C1 and C2, with each later option: X2 (execution.energy_check, bound as well
+  as parsed, since it attaches after the definition's checks), the sparse field solver,
+  cells.model.resolved_pump_tissue@3's own one-way records (FR-50 phase 2), and a gate-free K leak
   on the owner's wall patch, alone, blocked (FR-51) and with a declared voltage shift on its block
-  (FR-64);
+  (FR-64), and a gated channel with a gate's shift (FR-64);
 - the compartments' law-level pairs: the marks of the composition matrix's rule for their admitted
   list (validation/tissue/composition_matrix.py), the pairs the declarations admit that the list
   refuses.
@@ -129,20 +131,21 @@ def wall_patch(raw):
 
 
 def with_records(raw):
-    """@3's own one-way records (FR-50 phase 2) on a wall patch's own K route."""
+    """cells.model.resolved_pump_tissue@3's own one-way records (FR-50 phase 2) on a wall patch's
+    own K route."""
     out = copy.deepcopy(raw)
     patch = wall_patch(out)
     out["model"]["one_way_records"] = [dict(entity="membrane", id=patch["id"], species=["K"])]
     return out
 
 
-def with_leak(raw, *, block=False, shift=False):
-    """A gate-free K leak on a wall patch (never a bounding patch), blocked by FR-51's B1, and with
+def with_leak(raw, *, block=False, shift=False, patch=None):
+    """A gate-free K leak on a wall patch (or on `patch`, an ID), blocked by FR-51's B1, and with
     the block's voltage shift on the K reversal (FR-64)."""
     out = copy.deepcopy(raw)
     m, e, x = out["model"], out["experiment"], out["execution"]
-    patch = wall_patch(out)
-    channel = dict(id="probe_leak", membrane_id=patch["id"], kinetic_law=LEAK,
+    patch_id = wall_patch(out)["id"] if patch is None else patch
+    channel = dict(id="probe_leak", membrane_id=patch_id, kinetic_law=LEAK,
                    max_permeability_m_per_s=1e-12, abundance=1.0, initial_gate=[],
                    permeant_ions=[dict(species_id="K", relative_permeability=1.0)])  # fmt: skip
     if block:
@@ -178,7 +181,7 @@ def with_gated(raw):
 OPTIONS = {
     "X2 (execution.energy_check)": (with_x2, True),
     "the sparse field solver": (with_sparse, False),
-    "@3's own one-way records": (with_records, False),
+    "cells.model.resolved_pump_tissue@3's own one-way records": (with_records, False),
     "a gate-free K leak": (with_leak, False),
     "the leak blocked (FR-51)": (lambda raw: with_leak(raw, block=True), False),
     "the leak's block shifted (FR-64)": (lambda raw: with_leak(raw, block=True, shift=True), False),
@@ -203,9 +206,26 @@ def unlabelled_sites(raw, sfx, add_inventory_species, node, patch):
     )
 
 
+def sites_at_the_well(wb, sfx, *, declared=True):
+    """The review's well world's two populations facing the well (60 fmol of S free, 30 and 10
+    fmol bound), the well washed by half at 1 s, beside the compartment lys (declared=False: the
+    same world without the compartments' declaration): site occupancy in a compartment world, not
+    at the compartment."""
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    review = next(b for b in wfx.well()["model"]["operators"] if b["law"] == sfx.LAW)
+    raw = wb.set_amount(wb.topology(dt=0.01, end=2.0, every=1.0), wb.WELL, wb.LIGAND, 60.0)
+    raw = sfx.with_site_occupancy(raw, review["populations"], ligands=review["species"])
+    raw = wfx.with_wash(raw, [wb.WELL], [(1.0, wb.WELL, 0.5, {wb.LIGAND: wfx.TRACE_mM})])
+    if not declared:
+        law = "cells.operator.cell_owned_compartments@1"
+        raw["model"]["operators"] = [b for b in raw["model"]["operators"] if b["law"] != law]
+    return raw
+
+
 def coupling_on_lumen(wb, sfx, fx, rf, owner):
-    """@2 reading World B's lumen population (no wash) as its owner's source, its target the
-    specimen's production of S (D424's Q10 row)."""
+    """cells.operator.species_regulated_availability@2 reading World B's lumen population (no
+    wash) as its owner's source, its target the specimen's production of S (D424's Q10 row)."""
     raw = wb.set_amount(wb.topology(dt=0.1, end=1.0, every=0.5), wb.LYS, wb.LIGAND, 1e-4)
     raw = sfx.with_site_occupancy(raw, [wb.lumen_population(owner=owner)],
                                   ligands=[sfx.ligand(trace_mM=wb.B_TRACE_mM)])  # fmt: skip
@@ -259,8 +279,18 @@ def catalogue(wb):
         "the compartment's node among the wash's nodes": lambda: wb.world_b(nodes=("well", "lys")),
         "the compartment washed": lambda: wb.world_b(nodes=("lys",), event_node="lys"),
         "sets at the compartment, a wash elsewhere": lambda: wb.world_c2(wash=True),
-        "@2 reading the lumen population": lambda: coupling_on_lumen(wb, sfx, fx, rf, "patch"),
-        "@2 reading the node's own sites": lambda: coupling_on_lumen(wb, sfx, fx, rf, "node"),
+        f"{COUPLING_V2} reading the lumen population": lambda: coupling_on_lumen(
+            wb, sfx, fx, rf, "patch"
+        ),
+        f"{COUPLING_V2} reading the node's own sites": lambda: coupling_on_lumen(
+            wb, sfx, fx, rf, "node"
+        ),
+        "sites facing the well beside the compartment, the well washed": lambda: sites_at_the_well(
+            wb, sfx
+        ),
+        "a K leak on the compartment's bounding patch": lambda: with_leak(
+            wb.world_b(), patch=wb.LYS_FACE
+        ),
         "C4's four-way form (C1 with unlabelled sites; invented)": lambda: c4(True),
         "the three-way form (World L with unlabelled sites; invented)": lambda: c4(False),
     }
