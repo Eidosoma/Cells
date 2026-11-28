@@ -1914,21 +1914,27 @@ RULES = (
     dict(
         rule=f"beside {LABELS}, {SITES} is admitted by species: it writes no labelled species, "
         "binds at outside nodes only and internalises nothing, and composes beside both only with "
-        "the wash, D152's reactions, turnover and exchange, and with none of the inner model's "
-        "later options (FR-44 step 3)",
-        laws=(LABELS, SITES, WASH, REACTIONS, TURNOVER, EXCHANGE),
+        "a subset of one qualified set, FR-44 step 3's (the wash, D152's reactions, turnover and "
+        "exchange) or FR-49's C4 (the compartments, expression with its routes in cells only, "
+        "turnover and the wash, where the compartments are declared), and with none of the inner "
+        "model's later options",
+        laws=(LABELS, SITES, WASH, REACTIONS, TURNOVER, EXCHANGE, COMPARTMENTS,
+              "cells.operator.templated_polymerisation@1"),  # fmt: skip
         level="data",
         check=OPS + "species_labels.py::by_species_errors",
         test=TESTS + "test_neutral_arrival_labels.py::"
         "test_a_split_writer_is_admitted_by_species_only_beside_its_partners",
         tag=REAL,
-        why="D327 and D424: a split writer that reports nothing leaves a labelled row's shares "
-        "unfollowed, so it is admitted only where none of its written rows (FR-43 part 3's "
-        "written_rows) is labelled. The site operator writes amounts only at its pools. The four "
-        "partners are qualified together by test_neutral_labels_sites.py's labelled and unlabelled "
-        "twins. Every other operator law is refused by name beside both, the compartments among "
-        "them as FR-49's C4, and so are an internalising population, one facing a cell, and the "
-        "five later options, X2 at binding",
+        why="D327, D424 and fr49-compartment-compositions-v1's amendment 2: a split writer that "
+        "reports nothing leaves a labelled row's shares unfollowed, so it is admitted only where "
+        "none of its written rows (FR-43 part 3's written_rows) is labelled. The site operator "
+        "writes amounts only at its pools. FR-44 step 3's four are qualified together by "
+        "test_neutral_labels_sites.py's labelled and unlabelled twins, and C4's four by FR-49's "
+        "C4. Beside both, a law in no set is refused by name, laws in no one set together by "
+        "NOT_TOGETHER (expression with no compartment among them), expression's exports and "
+        "outside degradations by PARTNER_VARIANT, a channel population beside C4's set by CHANNEL, "
+        "and so are an internalising population, one facing a cell, and the five later options, X2 "
+        "at binding",
     ),
     dict(
         rule=f"beside site_sets, {SITES} admits only the design note's §15 partners: the wash, @2, "

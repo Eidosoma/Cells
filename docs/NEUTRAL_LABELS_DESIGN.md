@@ -601,7 +601,8 @@ twin row checks this on every row.
   `cells.operator.cell_owned_compartments@1`'s list for a wash of other nodes only. FR-49's C1
   world, which is also the inherited three-way composition, now parses as a host row; its
   registered judgement is FR-49's Part C. Beside the labels and the sites together, the
-  compartments stay refused by name as FR-49's C4 (§14).
+  compartments are admitted only within FR-49's C4 qualified set, with expression, turnover and the
+  wash (§14; fr49-compartment-compositions-v1, amendment 2).
 
 **Tests (D224):**
 
@@ -615,7 +616,15 @@ twin row checks this on every row.
 ## 14. Admission by species (FR-44 step 3; D327, D424)
 
 **What it admits:** `cells.operator.site_occupancy@1` beside the label owner where no ligand of its
-populations is labelled, with four partners: the wash, D152's reactions, turnover and exchange.
+populations is labelled, beside a subset of one of two qualified sets (`BY_SPECIES`'s sets), each
+qualified together by its own check:
+- **FR-44 step 3's:** the wash, D152's reactions, turnover and exchange
+  (`test_neutral_labels_sites.py`, D425);
+- **FR-49's C4:** `cells.operator.cell_owned_compartments@1`,
+  `cells.operator.templated_polymerisation@1` with its routes in cells only, turnover and the wash
+  (fr49-compartment-compositions-v1, amendment 2). It is anchored on the compartments: it applies
+  only where they are declared, since C4 qualifies its laws in a compartment world. The lift lands
+  with C4's passing verdict, judged on the wash.
 
 **The rule** (`species_labels.operator_errors`, `BY_SPECIES`).
 - **Before:** every split part that writes species amounts and reports no one-way moves was
@@ -636,11 +645,16 @@ populations is labelled, with four partners: the wash, D152's reactions, turnove
 
 **Refused by name beside an admitted writer** (`by_species_errors`, fail closed), each until a world
 qualifies it:
-- **every operator law but the four partners,** named in one message. Among them:
-  - `cells.operator.cell_owned_compartments@1`, named as FR-49's C4, registered by amendment. This
-    is C4's one home (D424). Its four-way form and its three-way form without a wash stay refused
-    whatever the compartments' own list admits.
-  - `cells.operator.templated_polymerisation@1`, which World L declares;
+- **every operator law in neither set,** named in one message (`NOT_A_PARTNER`, today's words);
+- **laws each in some set but in no one set together** (`NOT_TOGETHER`): the compartments or
+  expression beside the reactions or exchange, and expression with no compartment declared, since
+  C4's set is anchored on the compartments. FR-44's invented compartment world, which loads its
+  compartment by exchange, is among them;
+- **a partner's variant that no set's check qualifies** (`PARTNER_VARIANT`): in version 1, an export
+  or an outside degradation of `cells.operator.templated_polymerisation@1` (amendment T);
+- **a channel population where the admitting set was qualified with none** (`CHANNEL`): in version 1,
+  beside C4's set, whose world declares no channel. No registered world declares one there (the
+  lead's ruling, D327's strict option);
 - **an internalising population,** which no registered world needs, and **a population that binds
   from a cell** (an inward patch face or a contact). The twin qualifies binding at outside nodes
   only, so an admitted writer writes no cell row in version 1;
@@ -659,7 +673,7 @@ qualifies it:
 
 | File | Rows |
 | --- | --- |
-| `test_neutral_arrival_labels.py` (host) | The rule on planted declarations; the refusals by name on parsed worlds, contact and inward populations among them; a declared kind beside the sites, admitted on an unlabelled species and refused as today on a labelled one; the inner model's options; C4's four-way and three-way forms with FR-49's two list entries patched in; the site operator's pools equal to its written rows, with a plant |
+| `test_neutral_arrival_labels.py` (host) | The rule on planted declarations; the refusals by name on parsed worlds, contact and inward populations among them; a declared kind beside the sites, admitted on an unlabelled species and refused as today on a labelled one; the inner model's options; the two qualified sets on planted declarations, with C4's anchor, `NOT_TOGETHER` and `PARTNER_VARIANT`; C4's registered worlds and its set's seven proper subsets that hold the compartments, parsing (FR-49's C4 world builders); FR-44's invented world, loading its compartment by exchange, refused as not together; the site operator's pools equal to its written rows, with a plant |
 | `test_neutral_labels_sites.py` (compiled, new) | FR-44's twin world with the well's sites kept and Cl and Q labelled, beside the four partners. Every physical record is bit for bit the unlabelled twin's; the well's identities at each wash; in the specimen, the base gains exactly exchange's import and the cohort exactly turnover's production |
 
 **No new state:**

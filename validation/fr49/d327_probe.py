@@ -25,7 +25,13 @@ a refusal by name). It is run, like FR-64's, on frozen snapshots of a head and i
   (FR-64), and a gated channel with a gate's shift (FR-64);
 - the compartments' law-level pairs: the marks of the composition matrix's rule for their admitted
   list (validation/tissue/composition_matrix.py), the pairs the declarations admit that the list
-  refuses.
+  refuses;
+- FR-49's C4 (amendment 2), each world named with its class in the plan's D327 listing (Q: judged
+  by C4's runs; Q': a proper subset of C4's qualified set; I: inherited on a named world; N:
+  refused by name): C4's registered runs' worlds (validation/fr49/worlds_c4.py, loaded from this
+  file's own folder like worlds_bc), its set's seven proper subsets that hold the compartments, the
+  placements, expression with no compartment declared, expression with its export, and FR-44's
+  invented world loading its compartment by exchange; and C4 itself with each later option.
 
 Usage, from a checkout that holds this file, against any tree (a checkout or a frozen snapshot):
     python validation/fr49/d327_probe.py <tree> <out.json>
@@ -73,9 +79,10 @@ def identity(tree):
                 dirty=git(tree, "status", "--short").splitlines())  # fmt: skip
 
 
-def load_worlds():
-    """This checkout's worlds_bc, importing the tree's engine, fixtures and World L."""
-    spec = importlib.util.spec_from_file_location("fr49_worlds_bc", HERE / "worlds_bc.py")
+def load_worlds(name="worlds_bc"):
+    """This checkout's worlds_bc (or worlds_c4), importing the tree's engine, fixtures and World
+    L."""
+    spec = importlib.util.spec_from_file_location(f"fr49_{name}", HERE / f"{name}.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -296,12 +303,117 @@ def catalogue(wb):
     }
 
 
+def catalogue_c4(w4):
+    """{name: build} of FR-49's C4 worlds (amendment 2), each named with its D327 class."""
+    import itertools
+
+    from validation import id_table
+    from validation.fr49 import worlds
+    from validation.fr49 import worlds_bc as wb
+    from validation.gene_regulation import worlds as gw
+    from validation.tissue import compartment_fixtures as cfx
+    from validation.tissue import site_occupancy_fixtures as sfx
+
+    def g_labelled():
+        raw = w4.world_c4()
+        owner = next(b for b in raw["model"]["operators"] if b["law"] == LABELS_LAW)
+        owner["species"].append(dict(id=w4.G, labels=["base", "x"], initial=[]))
+        return raw
+
+    def exporting_expression():
+        """The gene regulation lane's R1 world with its export into space_0 and its outside
+        degradation there (no compartment declared), S labelled, and C4's sites binding G."""
+        from cells.registry.inventory_species import add_inventory_species
+
+        raw = id_table.translate(gw.with_export(gw.r1(0.75)))
+        raw = add_inventory_species(raw, worlds.S, trace_mM=1e-12, diffusivity_m2_per_s=worlds.D_S,
+                                    floor_fmol=worlds.FLOOR_FMOL)  # fmt: skip
+        raw["model"]["operators"].append(
+            dict(law=LABELS_LAW, species=[dict(id=worlds.S, labels=["base", "x"], initial=[])])
+        )
+        raw["experiment"]["label_arrivals"] = []
+        return w4.with_g(raw)
+
+    def invented(wash):
+        """FR-44's invented compartment world (exchange loads S into lys_0 at ecs_0), with an
+        outward population on its bounding patch, Cl labelled, and a washed second node or none."""
+        raw = cfx.loaded_compartment()
+        if wash:
+            m, e, x = raw["model"], raw["experiment"], raw["execution"]
+            node = copy.deepcopy(next(n for n in m["extracellular"] if n["id"] == cfx.NODE))
+            node["id"] = "well"
+            m["extracellular"].append(node)
+            x["extracellular_capacity"] = len(m["extracellular"])
+            patch = copy.deepcopy(next(q for q in m["membranes"] if q["id"] == cfx.PATCH))
+            patch.update(id="patch_cell_0_well", outside="well")
+            m["membranes"].append(patch)
+            x["membrane_capacity"] = len(m["membranes"])
+            for c in [c for c in e["membrane_controls"] if c["membrane_id"] == cfx.PATCH]:
+                e["membrane_controls"].append(dict(copy.deepcopy(c), membrane_id=patch["id"]))
+            from validation.tissue import wash_schedule_fixtures as wfx
+
+            raw = wfx.with_wash(raw, ["well"], [(0.01, "well", 0.5, {wfx.TRACER: 1e-9})])
+        raw = sfx.with_site_occupancy(raw, [sfx.population("lumen_sites", patch=cfx.PATCH)])
+        raw["model"]["operators"].append(
+            dict(law=LABELS_LAW, species=[dict(id="Cl", labels=["base", "cohort"], initial=[])])
+        )
+        raw["experiment"]["label_arrivals"] = []
+        return raw
+
+    out = {
+        "C4: the four-way form (Q)": w4.world_c4,
+        "C4: its twin, the triple with the wash declared and no event (Q)": lambda: w4.world_c4(
+            event=False
+        ),
+        "C4: its unlabelled twin's composition (Q)": lambda: w4.world_c4(labelled=False),
+        "C4: its unbound twin (Q)": lambda: w4.world_c4(bound=False),
+        "C4: plant (c)'s definition (Q)": lambda: _kd2(w4.world_c4()),
+    }
+    others = (w4.EXPRESSION, w4.TURNOVER, w4.WASH)
+    for size in (2, 1, 0):
+        for kept in itertools.combinations(others, size):
+            name = "+".join(law.split(".")[2].split("@")[0] for law in kept) or "nothing else"
+            out[f"C4: the compartments with {name} (Q')"] = lambda kept=kept: w4.subset_world(
+                [*kept, w4.COMPARTMENTS]
+            )
+    out.update({
+        "C4: a population owned by C's node (I, FR-28)": lambda: w4.world_c4(
+            placement=dict(patch=None, face=None, node=worlds.NODE)
+        ),
+        "C4: a population at the washed well (I, FR-44's shape F)": lambda: w4.world_c4(
+            placement=dict(patch=wb.W_PATCH)
+        ),
+        "C4: a population inward on the bounding patch (N)": lambda: w4.world_c4(
+            placement=dict(face="inside")
+        ),
+        "C4: G labelled too (N, LABELLED_ROW)": g_labelled,
+        "C4: expression, labels and sites, no compartment declared (N, NOT_TOGETHER)": lambda: (
+            w4.without(w4.world_c4(), w4.COMPARTMENTS)
+        ),
+        "C4: expression with its export, no compartment (N, PARTNER_VARIANT)": exporting_expression,
+        "C4: FR-44's invented world, exchange loading the compartment, washed (N, NOT_TOGETHER)": (
+            lambda: invented(True)
+        ),
+        "C4: FR-44's invented world, no wash (N, NOT_TOGETHER)": lambda: invented(False),
+    })  # fmt: skip
+    return out
+
+
+def _kd2(raw):
+    block = next(
+        b for b in raw["model"]["operators"] if b["law"] == "cells.operator.site_occupancy@1"
+    )
+    block["populations"][0]["dissociation_rate_per_s"] *= 2.0
+    return raw
+
+
 WITH_OPTIONS = (
     "World L (the control: a compartment world with neither law)",
     "World B",
     "World B, node-owned",
     "C1",
     "C2",
+    "C4: the four-way form (Q)",
 )
 
 
@@ -321,9 +433,15 @@ def main(tree, out_path):
     started = time.time()
     wb = load_worlds()
     record = dict(**identity(tree), probe=str(Path(__file__).resolve()), worlds={}, options={})
-    for name, build in catalogue(wb).items():
-        record["worlds"][name] = outcome(build, bind=True)
     builders = catalogue(wb)
+    try:
+        builders.update(catalogue_c4(load_worlds("worlds_c4")))
+    except (
+        Exception
+    ) as error:  # Recorded: a tree whose engine or fixtures C4's builders cannot use.
+        record["c4_catalogue"] = f"{type(error).__name__}: {error}"[:400]
+    for name, build in builders.items():
+        record["worlds"][name] = outcome(build, bind=True)
     for name in WITH_OPTIONS:
         record["options"][name] = {
             option: outcome(lambda add=add, name=name: add(builders[name]()), bind=bind)

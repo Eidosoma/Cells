@@ -130,9 +130,11 @@ Declared test: not yet extracted; the composite's operator contract has no test 
 - **The exchange map** is held to its identity on six cases. Two planted errors must fail: the
   continuous update used for a wash, and the buffer not credited to the base.
 - **A wash and a replacement in one step** commute, in either declared order, bit for bit.
-- **Surface sites beside labels:** every pairing not yet qualified is refused by name. A compiled
-  run of sites with four partners keeps every physical record of its unlabelled twin bit for bit,
-  and its labels follow each partner exactly.
+- **Surface sites beside labels:** they compose only with a subset of one qualified set, FR-44
+  step 3's four or, where the compartments are declared, FR-49's C4 (amendment 2), and every
+  pairing not yet qualified is refused by name. A compiled run of sites with four partners keeps
+  every physical record of its unlabelled twin bit for bit, and its labels follow each partner
+  exactly.
 - **Compiled runs** keep every physical record of their unlabelled twins bit for bit:
   - the dN/dt = −N² reference, a window's cohort against its analytic solution, a replacement's
     record by label, and labels across five washes;
