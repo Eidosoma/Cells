@@ -1702,3 +1702,45 @@ def test_a_written_rows_that_misses_a_pool_is_caught(monkeypatch):
     monkeypatch.setattr(so.SiteOccupancy, "written_rows", facing_only)
     pools, written = _pools_and_rows(_internalising_sites())
     assert pools - written == {("S", "cell_0")}, (sorted(pools), sorted(written))
+
+
+def _site_layout(raw):
+    """The site operator's layout arrays of a definition, bound on the host (no step)."""
+    from cells.registry.models import get_model
+
+    spec = parse_spec(raw)
+    layout = get_model(spec.model).initial_values(spec)[1]
+    return {
+        f: np.asarray(getattr(layout, f)) for f in type(layout)._fields if f.startswith("site_")
+    }
+
+
+@pytest.mark.parametrize(
+    "case", ["a population owned by C's node", "a gate-free K leak on the wall"]
+)
+def test_fr49s_c4_inherited_placements_bind_as_c4s_own_layout(case):
+    """Amendment 2's D327 listing (host only, bound, no step). A population owned by C's node binds
+    to the site layout of C4's patch population facing C, array for array, bit for bit: FR-28's
+    layout identity in C4's world, World B's B6 form. C4 with a gate-free K leak on the owner's wall
+    parses, and its site layout is C4's bit for bit: the leak enters the inner model's channels
+    only.
+    The other later options are refused by name beside C4's composition."""
+    from validation.fr49 import d327_probe
+    from validation.fr49 import worlds as fw
+    from validation.fr49 import worlds_c4 as w4
+
+    facing = _site_layout(w4.world_c4())
+    if case == "a population owned by C's node":
+        variant = w4.world_c4(placement=dict(patch=None, face=None, node=fw.NODE))
+    else:
+        variant = d327_probe.with_leak(w4.world_c4())
+    other = _site_layout(variant)
+    assert len(facing) > 10 and facing.keys() == other.keys()
+    same = {
+        f: facing[f].dtype == other[f].dtype
+        and facing[f].shape == other[f].shape
+        and facing[f].tobytes() == other[f].tobytes()
+        for f in facing
+    }
+    differ = [f for f, equal in same.items() if not equal]
+    assert differ == [], differ
