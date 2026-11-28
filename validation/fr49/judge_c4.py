@@ -1,5 +1,5 @@
 """FR-49's judge for C4, the four-way form (fr49-compartment-compositions-v1, amendment 2, A2.2 to
-A2.6).
+A2.6, with amendment 3's horizon for plant (e)).
 
 It reads the driver's records (validation/fr49/driver_c4.py: one record per registered run, the
 engine's own values, with the definition as built) and the tagged references
@@ -59,6 +59,13 @@ C4-1 counts as a catch for (d) only and C4-7 for (e) only (READING-2's change 3'
 other plants they are reported and not scored. A plant run refused by a named check is reported, and
 is not the catch, so the part fails (READING-2's reading 2).
 
+**Plant (e)'s own horizon** (amendment 3, A3.2 and A3.3): (e) runs to 1800 s, so its "every row" is
+its own dt grid, 0 to 1800 s (3,601 rows). C4-1 and C4-7 compare it with the twin's and the unbound
+twin's rows at t <= 1800 s, whose times must be its own bit for bit (on_rows; the twins'
+observations, where read, at the instants t <= 1800 s). C4-8 reads it at the 31 of L's 61 sample
+times to 1800 s, each e_q's numerator over those 31 and its scale, max |q_ref|, over all 61 of
+L.json's (labelled_species). C4-2, C4-5 and C4-6 read its own rows. No cut touches an honest run.
+
 Usage (from a snapshot's root, PYTHONPATH=src, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr49.judge_c4 --records RECORDS --references REFS --out OUT
   python -B -m validation.fr49.judge_c4 --check-reader SAMPLES --cases CASES [--cases-l CASES_L]
@@ -108,7 +115,7 @@ RUNS = {
     "C4-plant-c-dt0.5": ("C4", 0.5, 3600.0, 60.0, True, True, True, "c"),
     "C4-plant-d-dt0.5": ("C4", 0.5, 3600.0, 60.0, True, True, True, "d"),
     "C4-plant-c1-dt0.5": ("C4", 0.5, 3600.0, 60.0, True, True, True, "c1"),
-    "C4-plant-e-dt0.5": ("C4", 0.5, 3600.0, 60.0, True, True, True, "e"),
+    "C4-plant-e-dt0.5": ("C4", 0.5, 1800.0, 60.0, True, True, True, "e"),  # Its own (A3.2).
 }
 JOB_FIELDS = ("world", "dt", "horizon_s", "every_s", "event", "labelled", "bound", "plant")
 C4, TWIN, UNLABELLED, UNBOUND = (
@@ -138,7 +145,7 @@ def change_of(run_id):
         return "unlabelled"
     if not bound:
         return "unbound"
-    return "plant c" if plant == "c" else None
+    return {"c": "plant c", "e": "plant e"}.get(plant)
 
 
 # ------------------------------------------------------------------ C4's world, as the judge reads
@@ -300,10 +307,40 @@ def washes(arrays):
     return found
 
 
+def on_rows(runs, run_id, other):
+    """`other`'s arrays on `run_id`'s rows (amendment 3, A3.3). A run of a shorter horizon than
+    `other`'s, plant (e)'s, is compared with `other`'s rows at t <= its horizon and with its
+    observations at the instants t <= its horizon; a run of `other`'s horizon, with every row, as
+    registered. Either way `other`'s times on those rows, and its observation instants where both
+    runs saved observations, must be the run's own bit for bit, or the comparison is refused
+    (ReaderError)."""
+    times, theirs = runs[run_id][2], runs[other][2]
+    rows = times.size
+    if theirs.size < rows or theirs[:rows].tobytes() != times.tobytes():
+        raise ReaderError(
+            f"{other}'s times on {run_id}'s rows are not {run_id}'s bit for bit (amendment 3, A3.3)"
+        )
+    arrays = runs[other][3]
+    if theirs.size == rows:
+        return arrays
+    cut = {name: values[:rows] for name, values in arrays.items() if not name.startswith("OBS.")}
+    if "OBS.times" in arrays:
+        keep = arrays["OBS.times"] <= times[-1]
+        cut.update({n: v[keep] for n, v in arrays.items() if n.startswith("OBS.")})
+        own = runs[run_id][3].get("OBS.times")
+        if own is not None and own.tobytes() != cut["OBS.times"].tobytes():
+            raise ReaderError(
+                f"{other}'s observation instants to {run_id}'s horizon are not {run_id}'s bit for "
+                "bit (amendment 3, A3.3)"
+            )
+    return cut
+
+
 def c4_one(runs, run_id):
-    """C4-1's comparison of one run against the twin: (differing names, wash counts)."""
+    """C4-1's comparison of one run against the twin, on the run's rows (on_rows): (differing
+    names, wash counts)."""
     w = world()
-    a, t = runs[run_id][3], runs[TWIN][3]
+    a, t = runs[run_id][3], on_rows(runs, run_id, TWIN)
     differing = [n for n in c4_physical_names() if not _bitwise(a[n], t[n])]
     cuts = {
         "label_share at O": lambda x: x["label_share"][..., w["owner"]],
@@ -314,9 +351,10 @@ def c4_one(runs, run_id):
 
 
 def c4_seven(runs, run_id):
-    """C4-7's comparison of one run against the unbound twin: the names that differ."""
+    """C4-7's comparison of one run against the unbound twin, on the run's rows (on_rows): the
+    names that differ."""
     w = world()
-    a, u = runs[run_id][3], runs[UNBOUND][3]
+    a, u = runs[run_id][3], on_rows(runs, run_id, UNBOUND)
     differing = []
     for name in c4_physical_names():
         if name.startswith(BINDING_PREFIX) or name == BINDING_HEAT:
@@ -365,12 +403,19 @@ def well(runs, run_id, reference):
 
 
 def labelled_species(runs, run_id, l_ref):
-    """C4-8's engine side: L3's zeros before t1, and L5's errors at L's sample times."""
+    """C4-8's engine side: L3's zeros before t1, and L5's errors at L's sample times within the
+    run's horizon: all 61, or plant (e)'s 31 to 1800 s (amendment 3, A3.3). Each e_q's numerator
+    runs over those times, and its scale, max |q_ref|, over all 61 of L.json's (section 1's scale,
+    kept)."""
     t1 = float(declared("L")["pulse_s"]["t1"])
     q, t = runs[run_id][1], runs[run_id][2]
     early = t < t1
     zeros = bool(np.all(q["share_x_O"][early] == 0.0) and np.all(q["share_x_C"][early] == 0.0))
-    index = [int(np.flatnonzero(np.abs(t - s) <= 1e-9 * max(1.0, s))[0]) for s in L_TIMES]
+    within = [i for i, s in enumerate(L_TIMES) if s <= RUNS[run_id][2]]
+    index = [
+        int(np.flatnonzero(np.abs(t - L_TIMES[i]) <= 1e-9 * max(1.0, L_TIMES[i]))[0])
+        for i in within
+    ]
     engine = dict(
         n_O=q["n_O"][index],
         n_C=q["n_C"][index],
@@ -378,11 +423,11 @@ def labelled_species(runs, run_id, l_ref):
         x_C=(q["n_C"] * q["share_x_C"])[index],
     )
     errors = {
-        k: float(np.max(np.abs(engine[k] - np.asarray(l_ref[k], dtype=float)))
+        k: float(np.max(np.abs(engine[k] - np.asarray(l_ref[k], dtype=float)[within]))
                  / np.max(np.abs(np.asarray(l_ref[k], dtype=float))))
         for k in judge_l.QUANTITIES
     }  # fmt: skip
-    return dict(rows_before_t1=int(early.sum()), zeros=zeros, e=errors,
+    return dict(rows_before_t1=int(early.sum()), zeros=zeros, e=errors, samples=len(within),
                 passed=zeros and all(e <= SIZE for e in errors.values()))  # fmt: skip
 
 

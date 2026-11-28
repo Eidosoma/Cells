@@ -1,4 +1,5 @@
-"""FR-49's C4 judge and driver, host only (validation/fr49/judge_c4.py, driver_c4.py; amendment 2).
+"""FR-49's C4 judge and driver, host only (validation/fr49/judge_c4.py, driver_c4.py; amendments 2
+and 3).
 
 - The judge's run table (RUNS) is the driver's (JOBS), field for field.
 - The judge end to end on records fabricated here on the 0.5 s grid, with each run's definition as
@@ -10,10 +11,13 @@
   in which two runs share one process.
 - C4-1's wash gate, C4-3's closure bound, C4-4's extra fields (LABELS_ONLY's and no more), and
   C4-7's minus (binding's own fields only).
-- The driver's first-run rule (amendment 2, A2.7) and its fresh-process rule; the reader check on
-  invented samples made here.
-Seconds and reason (D224): about 7 s on one core, no compile; the judge is the registered
-instrument of C4.
+- Plant (e) at its own 1800 s (amendment 3): its record on its own rows, its definition's end time
+  its registered change, C4-1 and C4-7 on the twins' rows to its horizon only (the times bit for
+  bit, the observations cut at its horizon), and C4-8 at L's 31 times with the scale over L's 61.
+- The driver's first-run rule (amendment 2, A2.7; A3.7 for plant (e)) and its fresh-process rule;
+  the reader check on invented samples made here.
+Seconds and reason (D224): about 11 s on one core (41 rows; amendment 3's eight added about 4 s), no
+compile; the judge is the registered instrument of C4.
 """
 
 import copy
@@ -151,6 +155,17 @@ def _arrays(run_id):
     return out
 
 
+def _rows(run_id):
+    """A run's saved rows: its dt grid to its registered horizon (plant (e)'s 1800 s: 3,601)."""
+    return int(round(judge_c4.RUNS[run_id][2] / 0.5)) + 1
+
+
+def _on_rows(arrays, n):
+    """The fabricated arrays on a run's first n rows, its observations to that row's time."""
+    keep = arrays["OBS.times"] <= T[n - 1] if "OBS.times" in arrays else None
+    return {k: (v[keep] if k.startswith("OBS.") else v[:n]) for k, v in arrays.items()}
+
+
 def _write(records, run_id, *, refused=False, quantities=None, arrays=None, process=None):
     job = driver_c4.job((run_id, *judge_c4.RUNS[run_id]))
     definition = records / f"{run_id}.definition.json"
@@ -164,12 +179,14 @@ def _write(records, run_id, *, refused=False, quantities=None, arrays=None, proc
     if refused:
         doc.update(outcome="refused", refusal=dict(cls="ConfigError", message="planted refusal"))
     else:
+        n = _rows(run_id)
         q = _quantities(run_id) if quantities is None else quantities
-        doc.update(outcome="completed", times=[float(t).hex() for t in T],
-                   quantities={n: [float(x).hex() for x in v] for n, v in q.items()})  # fmt: skip
+        hexed = {k: [float(x).hex() for x in v[:n]] for k, v in q.items()}
+        doc.update(outcome="completed", times=[float(t).hex() for t in T[:n]], quantities=hexed)
         if driver_c4.full(job):
             doc["diagnostics"] = {"max_balance_error_fmol": 1e-18}
-        np.savez(records / f"{run_id}.npz", **(_arrays(run_id) if arrays is None else arrays))
+        a = _arrays(run_id) if arrays is None else arrays
+        np.savez(records / f"{run_id}.npz", **_on_rows(a, n))
     (records / f"{run_id}.json").write_text(json.dumps(doc))
 
 
@@ -261,6 +278,17 @@ def _definition_changed(records):
     return change
 
 
+def _plant_e_at_world_ls_horizon(records):
+    def change(doc, arrays):
+        path = records / "C4-plant-e-dt0.5.definition.json"
+        raw = json.loads(path.read_text())
+        raw["experiment"]["end_time"] = 3600.0
+        path.write_text(json.dumps(raw))
+        doc["definition_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+
+    return change
+
+
 RECORD_REFUSED = {
     "rows off the dt grid": ("C4-twin-dt0.5", lambda r: _grid_off, "rows, not the dt grid's 7201"),
     "observations off their grid": (
@@ -301,6 +329,12 @@ RECORD_REFUSED = {
         _definition_changed,
         "C4-dt0.5 is not judged: its definition fails amendment 2's gates: k_off = B.k_off: "
         "DIFFERS",
+    ),
+    "plant (e)'s definition at world L's horizon, not its own": (
+        "C4-plant-e-dt0.5",
+        _plant_e_at_world_ls_horizon,
+        "C4-plant-e-dt0.5 is not judged: its definition fails amendment 2's gates: end time = "
+        "L.horizon_s: DIFFERS",
     ),
 }
 
@@ -386,6 +420,72 @@ def test_each_criterions_own_rule(fabricated, tmp_path, case):
     assert _criteria(records, refs)[criterion]["passed"] is passes
 
 
+# -------------------------------------------------- plant (e)'s own horizon (amendment 3)
+
+E, UNBOUND, TWIN = "C4-plant-e-dt0.5", "C4-unbound-dt0.5", "C4-twin-dt0.5"
+
+
+@pytest.mark.parametrize("case", [
+    "the twins' rows past (e)'s horizon are not compared with (e)",
+    "C4-8 reads (e) at L's 31 times, its scale over L's 61",
+    "a twin's times off (e)'s rows are refused",
+    "a twin's rows and observations are cut at (e)'s horizon",
+])  # fmt: skip
+def test_plant_e_is_judged_on_its_own_rows(fabricated, tmp_path, case):
+    rows = _rows(E)  # 3,601: 0 to 1800 s.
+    if case == "the twins' rows past (e)'s horizon are not compared with (e)":
+        records, refs = _copy(fabricated, tmp_path)
+
+        def change(d, a):  # One field differs past 1800 s, another at 1800 s, (e)'s last row.
+            a["O.turnover_work_pJ"] = a["O.turnover_work_pJ"].copy()
+            a["O.turnover_work_pJ"][rows:] += 1e-30
+            a["C.wash_applied"] = a["C.wash_applied"].copy()
+            a["C.wash_applied"][rows - 1] += 1e-30
+
+        _rewrite(records, UNBOUND, change)
+        _rewrite(records, TWIN, change)
+        result = judge_c4.judge_c4(records, judge_c4.read_references(refs))
+        report = result["plants"]["e"]["report"]
+        assert "O.turnover_work_pJ" in result["criteria"]["C4-7"]["differing"]  # At full length.
+        for differing in (report["C4-7"], report["C4-1"]["differing"]):
+            assert "O.turnover_work_pJ" not in differing and "C.wash_applied" in differing
+    elif case == "C4-8 reads (e) at L's 31 times, its scale over L's 61":
+        records, refs = _copy(fabricated, tmp_path)
+        doc = json.loads((refs / "L.json").read_text())
+        ref = np.array([float(x) for x in doc["n_C"]])
+        ref[31:] *= 10.0  # Past 1800 s the reference is larger, so the two scales differ.
+        doc["n_C"] = [repr(float(x)) for x in ref]
+        (refs / "L.json").write_text(json.dumps(doc))
+        result = judge_c4.judge_c4(records, judge_c4.read_references(refs))
+        eight = result["plants"]["e"]["report"]["C4-8"]
+        engine = _quantities(E)["n_C"][[int(t / 0.5) for t in judge_c4.L_TIMES[:31]]]
+        error = np.max(np.abs(engine - ref[:31]))
+        assert eight["samples"] == 31 and eight["e"]["n_C"] == float(error / np.max(np.abs(ref)))
+        assert eight["e"]["n_C"] < float(error / np.max(np.abs(ref[:31])))
+        assert result["criteria"]["C4-8"]["samples"] == 61
+    else:
+        arrays = {
+            "C.x": np.arange(ROWS, dtype=float)[:, None],
+            "OBS.times": np.arange(61, dtype=float) * 60.0,
+            "OBS.x": np.arange(61.0),
+        }
+        runs = {E: (None, None, T[:rows], {}), UNBOUND: (None, None, T.copy(), arrays)}
+        if case == "a twin's times off (e)'s rows are refused":
+            off = np.arange(31, dtype=float) * 60.0
+            off[5] = np.nextafter(off[5], np.inf)
+            runs[E] = (None, None, T[:rows], {"OBS.times": off})
+            with pytest.raises(judge_bc.ReaderError, match="observation instants to C4-plant-e"):
+                judge_c4.on_rows(runs, E, UNBOUND)
+            runs[UNBOUND][2][10] = np.nextafter(T[10], np.inf)
+            with pytest.raises(judge_bc.ReaderError, match="times on C4-plant-e-dt0.5's rows"):
+                judge_c4.on_rows(runs, E, UNBOUND)
+        else:
+            cut = judge_c4.on_rows(runs, E, UNBOUND)
+            assert np.array_equal(cut["C.x"], arrays["C.x"][:rows])
+            assert np.array_equal(cut["OBS.times"], np.arange(31) * 60.0)
+            assert np.array_equal(cut["OBS.x"], np.arange(31.0))
+
+
 # -------------------------------------------------- the driver's rules (A2.7)
 
 
@@ -409,6 +509,17 @@ def test_each_criterions_own_rule(fabricated, tmp_path, case):
         ),
         (("dev-C4", "B", 0.5, 1260.0, 60.0, True, True, True, None), False, "is not C4's"),
         (("dev-C4", "C4", 0.5, 1260.0, 60.0, True, True, True, "e"), False, None),
+        (("C4-plant-e-dt0.5", "C4", 0.5, 1800.0, 60.0, True, True, True, "e"), True, None),
+        (
+            ("C4-plant-e-dt0.5", "C4", 0.5, 3600.0, 60.0, True, True, True, "e"),
+            True,
+            "not a registered run",
+        ),
+        (
+            ("dev-C4", "C4", 0.5, 1800.0, 60.0, True, True, True, "e"),
+            False,
+            "not strictly short of its registered run's (1800 s",
+        ),
     ],
     ids=[
         "registered, not judged",
@@ -420,6 +531,9 @@ def test_each_criterions_own_rule(fabricated, tmp_path, case):
         "an unknown plant",
         "a dev job of another world",
         "dev, shortened",
+        "plant (e) at its own horizon, judged",
+        "plant (e) at world L's horizon",
+        "a dev job of plant (e) at its own horizon (A3.7)",
     ],  # fmt: skip
 )
 def test_the_first_run_rule_binds_every_run(row, judged, refused):

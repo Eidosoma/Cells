@@ -23,7 +23,9 @@ removed; `bound=False` the unbound twin, the binding multiplier 0 from t = 0. Pl
 definition is plants_bc.definition's, unchanged. `without` removes one operator law with its
 experiment keys, for the host rows of C4's qualified set's proper subsets (A2.7).
 
-**The step** is 0.5 s (A2.3), to world L's horizon, observed every 60 s.
+**The step** is 0.5 s (A2.3), to world L's horizon, observed every 60 s; plant (e) runs to its own
+1800 s (amendment 3, A3.2), its definition `world_c4(end=1800)`, which the values gate's end-time
+row compares against that horizon as (e)'s registered change.
 """
 
 import copy
@@ -190,7 +192,8 @@ def c4_part(axes, values, slots):
 # ------------------------------------------------------------------ the two gates (A2.2)
 
 # The registered changes by which a twin's or a plant's definition departs from C4's.
-CHANGES = (None, "twin", "unlabelled", "unbound", "plant c")
+CHANGES = (None, "twin", "unlabelled", "unbound", "plant c", "plant e")
+E_HORIZON_S = "1800"  # s: plant (e)'s own horizon (amendment 3, A3.2), its end-time row's value.
 
 
 def _same_decimal(value, text):
@@ -206,7 +209,8 @@ def values_gate(raw, change=None, *, development=False):
     """[(row, outcome)] of amendment 2's values gate (A2.2's table) on a definition: each entry
     against the cases.json value it points at, as decimals or by its formula in binary64, bit for
     bit. outcome is "equal", "absent (registered change)", "shortened (development job)" (the end
-    time of a development job only) or "DIFFERS". `change` is the definition's registered change
+    time of a development job only), "plant (e)'s own 1800 s (amendment 3)" (the end time of plant
+    (e)'s definition only, A3.2) or "DIFFERS". `change` is the definition's registered change
     (CHANGES)."""
     if change not in CHANGES:
         raise ValueError(f"no registered change {change!r}")
@@ -272,8 +276,14 @@ def values_gate(raw, change=None, *, development=False):
             "S's shares at well_w = x/(x+b), b/(x+b)",
             shares == {"x": float(x_w / (x_w + b_w)), "base": float(b_w / (x_w + b_w))},
         )
-    if development and not _same_decimal(e["end_time"], L["horizon_s"]):
+    horizon = E_HORIZON_S if change == "plant e" else L["horizon_s"]
+    if development and not _same_decimal(e["end_time"], horizon):
         rows.append(("end time = L.horizon_s", "shortened (development job)"))
+    elif change == "plant e":  # Compared against (e)'s own horizon, its registered change (A3.2).
+        own = _same_decimal(e["end_time"], E_HORIZON_S)
+        rows.append(
+            ("end time = L.horizon_s", "plant (e)'s own 1800 s (amendment 3)" if own else "DIFFERS")
+        )
     else:
         check("end time = L.horizon_s", _same_decimal(e["end_time"], L["horizon_s"]))
     check("well_w's volume = C1.V_W_pL", _same_decimal(well["volume_pL"], C1["V_W_pL"]))

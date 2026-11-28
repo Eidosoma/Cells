@@ -4,9 +4,10 @@ definition as built. Nothing in a record is formed from a reference; the judge
 (validation/fr49/judge_c4.py, which the lead runs) reads the records and the tagged references. The
 tagged B/C files are imported here and never edited.
 
-**The jobs** (JOBS, A2.3 and A2.6): eight, each at dt 0.5 s to world L's horizon, observed every
-60 s: C4; its twin, the wash declared with no event; its unlabelled twin; its unbound twin; plants
-(c), (d), (c1) and (e). Plant (a) is the judge's own substitution. `jobs OUT_DIR` builds every
+**The jobs** (JOBS, A2.3 and A2.6): eight, each at dt 0.5 s, observed every 60 s, to world L's
+horizon but plant (e), which runs to its own 1800 s (amendment 3, A3.2): C4; its twin, the wash
+declared with no event; its unlabelled twin; its unbound twin; plants (c), (d), (c1) and (e). Plant
+(a) is the judge's own substitution. `jobs OUT_DIR` builds every
 job's definition, runs amendment 2's two gates on each (worlds_c4.gates_refusal: the values gate
 against cases.json and the decoupling gate), and writes the job files and their SHA256SUMS only if
 every definition passes.
@@ -16,8 +17,8 @@ no one runs C4's world, a twin of it or a plant of it to the horizon before the 
 (first_run_refusal):
 - a job whose ID does not begin `dev-` must be exactly one of JOBS's rows, and runs only with
   `--judged`;
-- a `dev-` job is C4's world, at a horizon strictly short of world L's, with a registered plant or
-  none.
+- a `dev-` job is C4's world, at a horizon strictly short of its registered run's (world L's, or
+  plant (e)'s own 1800 s: amendment 3, A3.7), with a registered plant or none.
 
 **A run** (`run JOB RECORD_DIR`) gets a fresh process of its own (A2.7): `run` checks the job, the
 first-run rule and both gates, then starts a new interpreter for it (`run-here`). That process
@@ -68,8 +69,10 @@ PROTOCOL = "fr49-compartment-compositions-v1"
 HORIZON = (
     3600.0  # s: world L's horizon_s (the values gate checks each job's definition against it).
 )
+E_HORIZON = 1800.0  # s: plant (e)'s own horizon (amendment 3, A3.2; the values gate's row for it).
 # (id, world, dt s, horizon s, observed every s, the wash's event, labelled, bound, plant): A2.3's
-# runs and A2.6's plants. The judge holds its own copy (judge_c4.RUNS).
+# runs and A2.6's plants, plant (e) at its own horizon (amendment 3). The judge holds its own copy
+# (judge_c4.RUNS).
 JOBS = (
     ("C4-dt0.5", "C4", 0.5, HORIZON, 60.0, True, True, True, None),
     ("C4-twin-dt0.5", "C4", 0.5, HORIZON, 60.0, False, True, True, None),
@@ -78,7 +81,7 @@ JOBS = (
     ("C4-plant-c-dt0.5", "C4", 0.5, HORIZON, 60.0, True, True, True, "c"),
     ("C4-plant-d-dt0.5", "C4", 0.5, HORIZON, 60.0, True, True, True, "d"),
     ("C4-plant-c1-dt0.5", "C4", 0.5, HORIZON, 60.0, True, True, True, "c1"),
-    ("C4-plant-e-dt0.5", "C4", 0.5, HORIZON, 60.0, True, True, True, "e"),
+    ("C4-plant-e-dt0.5", "C4", 0.5, E_HORIZON, 60.0, True, True, True, "e"),
 )
 FIELDS = ("id", "world", "dt", "horizon_s", "every_s", "event", "labelled", "bound", "plant")
 PLANTS = (None, "c", "d", "c1", "e")
@@ -107,6 +110,7 @@ def change(entry):
             ("unlabelled", not entry["labelled"]),
             ("unbound", not entry["bound"]),
             ("plant c", entry["plant"] == "c"),
+            ("plant e", entry["plant"] == "e"),  # Its own horizon (amendment 3, A3.2).
         )
         if departs
     ]
@@ -169,9 +173,10 @@ def load_job(job_path):
 
 
 def first_run_refusal(entry, judged):
-    """Why the first-run rule (A2.7) refuses a job, or None: a plant not registered; a job without
-    `dev-` that is not exactly a row of JOBS, or not run with `--judged`; a `dev-` job that is not
-    C4's world, or whose horizon is not strictly short of world L's (NaN among them)."""
+    """Why the first-run rule (A2.7, A3.7) refuses a job, or None: a plant not registered; a job
+    without `dev-` that is not exactly a row of JOBS, or not run with `--judged`; a `dev-` job that
+    is not C4's world, or whose horizon is not strictly short of its registered run's (NaN among
+    them): world L's, or plant (e)'s own."""
     name, plant = entry.get("id"), entry.get("plant")
     if plant not in PLANTS:
         return f"{name}: plant {plant!r} is not a registered plant {PLANTS}"
@@ -181,11 +186,12 @@ def first_run_refusal(entry, judged):
         return None if judged else f"{name} is a registered run: it runs only with --judged"
     if entry.get("world") != "C4":
         return f"{name}: world {entry.get('world')!r} is not C4's"
-    if not float(entry["horizon_s"]) < HORIZON:  # NaN is not short of it either.
+    limit = E_HORIZON if plant == "e" else HORIZON
+    if not float(entry["horizon_s"]) < limit:  # NaN is not short of it either.
         return (
             f"{name} is a development job whose horizon ({entry['horizon_s']!r} s) is not strictly "
-            f"short of world L's ({HORIZON:g} s): no one runs C4's world to the horizon before the "
-            "judged runs (A2.7)"
+            f"short of its registered run's ({limit:g} s): no one runs C4's world, a twin or a "
+            "plant to its horizon before the judged runs (A2.7, A3.7)"
         )
     return None
 
