@@ -25,7 +25,7 @@ builds (D327).
 | B | Lumen sites and a wash elsewhere (World B) | The later of FR-49's site pairing (after FR-45) and its wash narrowing (after FR-44) |
 | C1 | A compartment with labels and a wash at a separate node | FR-44 and the wash narrowing: by whichever lands second (D327) |
 | C2 | Competing ligands sharing sites at a compartment | FR-45 and the site pairing: by whichever lands second (D327) |
-| C4 | The four-way form, with unlabelled site occupancy | Registered by amendment once Admission by species lands. Amendment 2: judged on the wash, before the lift lands and before the wash retires |
+| C4 | The four-way form, with unlabelled site occupancy | Registered by amendment once Admission by species lands. Amendment 2: judged on the wash, before the lift lands and before the wash retires. Amendment 3: plant (e) runs to 1800 s |
 
 Each combination is enabled only once its check passes. Until then it is refused by name. The second
 lander lists what newly parses at its merged head.
@@ -516,3 +516,227 @@ named, and the judge reports every criterion each plant fails.
 - **The step** rests on the declared values and on the writer's host check of the first-stage loads (A2.3).
 - **The writer has seen** what the preamble lists, and no reference file.
 - **The expected sizes are not used.** For example, by D331's figures S's errors at 0.5 s lie far below L5's 1e-3.
+
+## Amendment 3 (28 November 2026): plant (e)'s own horizon, 1800 s
+
+**What this amends.** Plant (e)'s run: it runs to 1800 s instead of world L's 3600 s. For (e) alone, that changes:
+- A2.3's runs: (e)'s horizon (A3.2);
+- A2.2's values gate: a registered change in its end-time row (A3.2);
+- A2.4's "every row", and the extent of C4-1, C4-7 and C4-8 (A3.3);
+- §1's e_q for C4-8: the sample times of its numerator (A3.3);
+- A2.7's first-run rule (A3.7).
+
+A2.6's mechanism and scoring for (e), its patch, and the rest of Amendment 2 stand.
+
+**Its route.** A2.7 names two findings in development:
+- one of the bitwise claims of C4-1, C4-4 and C4-7 failing;
+- the builder's repeat of the host check differing.
+
+For these, A2.7 says: "If development shows one of them failing, or the builder's repeat of the host check
+differs, the remedy is a dated further amendment before any registered run, with the failure disclosed, as Amendment
+1 was."
+
+Neither finding occurred: the three claims held in development, and the repeat gave 0.25. This amendment takes the
+same route for a case A2.7 does not name: a plant whose registered run the engine would refuse. It is an amendment,
+not a reading. A2.7 says such a remedy "is never a narrowed reading".
+
+**When and by whom it was written.** It was written on 28 November 2026 by C4's builder, on the lead's ruling among
+the builder's options. It came before the C4 judge's tag and before any registered C4 run. Its writer has read:
+- the non-builder plant review's README and its figures in `out/pass2/` and `out/pass3/`
+  (`/mnt/workspaces/Cells/fr49-c4-plant-review-20261128/`). These give plant-side load figures and times only: no
+  honest figure past 1260 s, and no curve;
+- the builder's own development records;
+- the spec's declared values (`references/spec/cases.json`).
+
+Its writer has read no reference file.
+
+### A3.1 The finding (disclosed)
+
+- **The load under (e).** Plant (e) binds S at C instead of G. The free sites' load in
+  `cells.operator.site_occupancy@1` is then L_R = k_on c_S(C).
+  - S at C rises from n_C(0) = 1e-7 fmol toward its steady state, P / k_d = 1e-3 fmol.
+  - At that steady state h k_on c = 2.5, five times the stage bound θ = 0.5 at C4's step (h = dt/2 = 0.25 s)
+    (`out/pass2/stage-bound.json`).
+- **The reviewer's reduced model** of (e)'s S system with the binding. It is a development aid, integrated outside
+  the engine.
+  - It agrees with the engine's 1260 s records on C4's values: n_C within 2.0e-5, B within 2.2e-5, and the largest
+    load within 1e-6.
+  - It puts h L_R past A2.3's first-stage 0.25 at 1140.5 s, and past θ at 2862 s
+    (`out/pass2/plant-e-load-horizon.json`).
+  - The engine's own 1260 s record reaches 0.2726.
+- **The engine's verdict at constructed states, with no step** (`out/pass2/stage-at-state.json`):
+  - admitted at c_S(C) = 1.99e-3 mM (h max L 0.4975);
+  - refused by "stage condition" at 2.01e-3 mM (h max L 0.5025).
+- **End to end, on an invented world** (world L's P × 4; `out/pass2/records-refusal/`):
+  - the model predicts the crossing at 927.5 s;
+  - the driver's 1260 s development job of (e) ended refused, NumericalError, with
+    `cells.solver.imex_ars222_face_electromigration@1` reporting "domain failure on [927.0, 927.5]; no invalid step
+    accepted";
+  - the honest job on that world completed.
+- **So (e)'s judged run to 3600 s would very likely be refused near 2862 s.**
+  - A refused plant run is not the catch (A2.6; READING-2's reading 2), so (e)'s part would fail.
+  - The defect lies in the registered mechanism at the registered step and horizon. It is not in the physics under
+    test, and not in `plants_c4.py`, which does what A2.6 says.
+
+### A3.2 The change
+
+- **Plant (e) runs at 0.5 s to 1800 s,** observed every 60 s, in a fresh process of its own.
+  - That gives 3,601 rows and 31 observation instants.
+  - Its job is `C4-plant-e-dt0.5`, and its definition is `world_c4(end=1800)`.
+- **Its definition departs from C4's in its end time,** and in what follows from it:
+  - the observation times, which run to 1800 s;
+  - `max_steps`, which is 3,608 instead of 7,208.
+- **The values gate.** A2.2's values gate compares its end-time row ("end time = L.horizon_s") against 1800 s, as
+  (e)'s registered change. In a host-only build on 28 November, the other 24 rows were equal and the 11 decoupling
+  checks held.
+- **Unchanged:**
+  - (e)'s mechanism and its patch, `plants_c4.plant_e` as reviewed at 4b0a8a54 (READING-4 stands);
+  - the other seven runs and their horizons;
+  - the step;
+  - every band, and every criterion except for the extent A3.3 gives it for (e).
+
+### A3.3 How (e) is scored
+
+**A2.6 stands as written.**
+- Plant (e) "must fail at least one of the criteria named": C4-7 and C4-8.
+- C4-5 is reported.
+- C4-7 counts as a catch "for (e) only".
+- The judge reports every criterion (e) fails.
+- A plant run refused by a named check, or one that does not complete, is not the catch (READING-2's reading 2;
+  READING-4).
+
+**What the horizon changes,** registered here:
+- **(e)'s "every row"** is its own dt grid from 0 to 1800 s: 3,601 rows.
+- **C4-7 and C4-1, the cut by time.** They compare (e) with the rows of the unbound twin and of the twin at
+  t ≤ 1800 s.
+  - On those rows, each twin's times must equal (e)'s bit for bit, or the judge refuses the comparison.
+  - The 3,601 rows follow from the times.
+  - Where a comparison reads observation arrays, they are cut the same way, at the instants t ≤ 1800 s.
+- **C4-8 for (e) is read at 31 of L's 61 sample times, 0 to 1800 s.** This is a registered change.
+  - L3's 1,200 rows before t₁ lie within it.
+  - In §1's e_q, the maximum in the numerator runs over those 31 times.
+  - The scale, max_i |q_ref(t_i)|, stays over all 61 of L.json's sample times, as for every other run.
+- **C4-2, C4-5 and C4-6** read (e)'s own rows, as before.
+- **No cut makes (e)'s catch easier.**
+  - Comparing fewer rows can only find fewer differences.
+  - With the scale kept, a maximum over fewer sample times can only be smaller.
+  - No cut touches an honest run.
+
+### A3.4 Why 1800 s
+
+- **It was chosen from the plant's predicted trajectory** (disclosed): after the finding, from the reduced model's
+  figures for (e)'s load.
+- **Its margin, from the reviewer's model** (third pass, `out/pass3/DERIVATIONS.txt` and `bounds.json`):
+  - h L_R = 0.3577 at 1800 s, the largest value up to 1800 s;
+  - that is 0.142 below θ, a factor of 1.40;
+  - the engine's own stage report, at the model's 1800 s state with no step, admits it (h max L 0.3577 over the
+    three stages).
+- **The first-run rule.** 1800 s is strictly longer than every development run of (e) on C4's values. All of them
+  were 1260 s (A3.7).
+- **The grids.** It lies on the 60 s observation grid, and it holds every scheduled event: the label switches at
+  600 s and 1200 s, and the wash at 900 s. C4's world schedules nothing after 1200 s.
+- **Above A2.3's 0.25 from 1140.5 s.**
+  - A2.3's factor of 2 is the rule by which C4's step was chosen, at t = 0 on the honest definition.
+  - The bound the engine enforces at every stage is θ.
+  - No horizon above 1260 s keeps (e) under 0.25.
+- **The alternatives weighed in the builder's draft:**
+  - two other mechanisms are infeasible at C4's values: binding S at O meets the same rising load sooner, and
+    reading G's pool while writing S would take S at C negative;
+  - a reduced on-rate or a binding schedule would be a second change to the reviewed mechanism;
+  - a finer step needs a ninth registered run;
+  - counting a refused plant as caught would make a pass easier, and is rejected.
+
+### A3.5 The other seven runs
+
+The reviewer's third pass bounds the site operator's three stage loads over 0 to 3600 s on every other registered
+run's definition. It is host-only, with no step of any C4 world. The bounds rest on three lemmas
+(`out/pass3/DERIVATIONS.txt`):
+1. the moiety: free and bound sites sum to the capacity;
+2. G at C is conserved except for its binding, by the decoupling gate;
+3. the stages of SSPRK(3,3) stay positive while every h L ≤ 1.
+
+The bounds:
+- **C4, its twin, its unlabelled twin and plant (c1):** h max L ≤ 0.25, half of θ. The maximum is L_R at t = 0;
+  L_n ≤ 0.249, and L_B is 2.5e-4.
+- **Plant (c):** 0.25 (L_B 5e-4).
+- **Plant (d):** 0.25. Its wash at C raises the conserved total by at most 5e-10.
+- **The unbound twin:** 0.
+- The second pass's 1260 s records lie within their bounds.
+
+So no other run needs a change here.
+
+**What the bounds do not cover.** They cover the site operator only. The other operators' step checks rest on:
+- World L's and C1's registered runs, which completed to 3600 s at 2 s and 1 s;
+- the builder's development runs of C4's world to 2400 s (A3.6).
+
+That is context, not a proof. Those runs are of the honest world, not of (e)'s altered S system. Past 1260 s, no
+engine run bears on (e)'s other operators.
+
+### A3.6 The truncation premise, tested
+
+A3.3's cut assumes that a run's rows at t ≤ T do not depend on its horizon beyond T. This was tested by development
+runs, not assumed. The records are in `/mnt/workspaces/Cells/fr49-c4-build-20261128/dev/` and `truncation/`.
+
+- **The honest world, through the driver.** Each record ran in a fresh process from a clean tree, at 6fc94c48 unless
+  named. That engine differs from this amendment's head, 6858da3c, only by acfb3d54's 20 lines in
+  `species_labels.py`, a parse-time admission check.
+  - `dev-C4-1260` (2,521 rows, 22 observation instants) and `dev-C4-2400` (4,801 rows, 41 instants), in
+    `records-cold/`, agree bit for bit on their 2,521 shared rows and 22 shared instants.
+  - All 295 saved arrays agree, 134 of them observation arrays, and so do the 10 per-row quantities.
+  - Three more comparisons agree in the same way:
+    - the first 2400 s run (`records/`) against the cold 1260 s run;
+    - the two 2400 s runs against each other, on every row;
+    - the 1260 s runs at b7c9abfe and at 6fc94c48.
+- **The unbound twin, on C4's values,** at 1200 s and 1230 s.
+  - Each run had its own process and memory scope, on CPUs 22 and 23, from a clean tree at 6858da3c.
+  - Both ran outside the driver: a script called `parse_spec` and `run` as the driver does, without the driver's
+    gates, its process record or its record format.
+  - They agree bit for bit on all 234 arrays (every history field, every observation and the times), on their 2,401
+    shared rows and all 21 observation instants.
+  - **Its limit.** The lead's bound kept this pair under 1260 s. The label switch at 1200 s and the 60 s observation
+    rule then leave only 1200 s to 1230 s. So the pair differs by 60 rows and cuts no observation array. It is a
+    weaker test than (e)'s cut, from 7,201 to 3,601 rows and from 61 to 31 instants. The honest pair is the wider
+    test.
+- **Host-only checks:**
+  - the model's 183 initial-value fields are bit for bit the same at horizons of 1200 s, 1230 s and 3600 s;
+  - `world_c4()` departs from `world_c4(end=1260)` (the reviewer's `out/pass2/world-diff.json`) and from
+    `world_c4(end=1800)` (the builder's check) only in the end time, the observation times and `max_steps`.
+
+No rule was set on which arrays may differ: every array was compared. Run-level scalars, the diagnostics and the
+closure maximum, summarise a whole run; they were listed, not compared.
+
+**What is not tested.** Neither pair is the registered cut itself, a twin's 3600 s run read at t ≤ 1800 s. The
+first-run rule bars that run before the judged runs.
+
+### A3.7 The first-run rule for (e), and every development run of it
+
+For (e), A2.7 now reads: no one runs (e) to 1800 s before its judged run. No further development job of (e) on C4's
+values is made before it.
+
+Every development run of (e) in the builder's and the reviewer's records is shorter than 1800 s or on an invented
+world:
+
+| Who | Values | Horizon | Outcome | Record |
+| --- | --- | --- | --- | --- |
+| The builder | C4's own | 1260 s | Completed, 2,521 rows (6fc94c48, 12:28–12:30 UTC) | build `dev/records/dev-plant-e-1260.*` |
+| The reviewer, first pass | **Invented** (a stand-in for cases.json) | 1260 s | Completed, 2,521 rows | review `out/records/` |
+| The reviewer, first pass | The same invented world, on a copy whose `site_occupancy.py` gains one layout field | 1260 s | Stopped at (e)'s layout check before the parse, with no step ("error", 0.87 s) | review `out/records-drift/` |
+| The reviewer, second pass | C4's own | 1260 s | Completed, 2,521 rows | review `out/pass2/records/` |
+| The reviewer, second pass | **Invented** (world L's P × 4) | 1260 s | Refused at [927.0, 927.5] s, NumericalError | review `out/pass2/records-refusal/` |
+
+The unit tests' (e) records are fabricated, not run.
+
+Outside the engine, the reviewer:
+- integrated the reduced model of (e)'s S system to 3600 s (second pass) and to 1800 s (third pass);
+- evaluated the engine's stage report at constructed and modelled states, with no step.
+
+### A3.8 The code this needs
+
+This is the builder's work, after this amendment's tag:
+- `driver_c4.JOBS` and `judge_c4.RUNS`: `C4-plant-e-dt0.5` at 1800 s.
+- The values gate's end-time row for that job: 1800 s, as its registered change.
+- C4-8 for (e): L's 31 sample times up to 1800 s, with the scale taken over L's 61.
+- C4-1 and C4-7 in the judge, for (e): the twins' row arrays and observation arrays cut by time, with the times
+  bit-equal.
+- A tier-1 row for the cut.
+- A non-builder, host-only pass on that code before the launch.
