@@ -14566,3 +14566,33 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
   - D417's check said arms 5 and 6, and it is arms 1 to 6.
 - **For the router, later:** FR-45's driver will need a delimited message head, not a prefix match, which is what
   misnamed `electrode_work`.
+
+## D425: FR-44 step 3, admission by species, is landed
+
+2026-11-28, written at 01:41 UTC.
+
+- **Landed** at c9ab3207 (tag `fr44-admission-landed-2026-11-28`), from 754ee7ef. The trial passed 98 tests.
+  - Beside the label owner, `cells.operator.site_occupancy@1` is admitted where none of its `written_rows` is a labelled
+    species.
+  - Its partners are the wash, the reactions, turnover and exchange.
+  - **Refused by name:**
+    - every other law, FR-49's C4 included (its one home, D424);
+    - the inner model's five later options;
+    - an internalising population;
+    - a population facing a cell, which goes beyond D424 and is disclosed.
+  - Only `species_labels.py` changes in `src/`.
+- **The D148 round,** on the gated head 03dea4de:
+  - IDs: 31 additions only;
+  - crossrev: 11 of 11 sets identical;
+  - tiers 1+2: 501 files, none changed;
+  - G1: 113 of 113;
+  - FR's set passes.
+
+  The derivative programs were not run, since the change is host-only.
+- **Tiers:**
+  - the compiled twin (`test_neutral_labels_sites.py`) measured 90.14 s, over the cap, so it is in tier 3, gated by the
+    host rows, and its tier-3 record is frozen;
+  - the labels file is in tier 2 at 80.81 s, measured beside the twin's compile; its 30 new rows take about 3 s.
+
+  The landing folded the labels file's row only, since tier-3 files are never folded.
+- **Next:** FR-49 merges main and regenerates the matrix block. C4's four-way form now meets this step's partner rule.

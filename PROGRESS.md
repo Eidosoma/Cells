@@ -42,9 +42,10 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     - Its price goes to the user before any build.
   - The four stale tier rows (D418) are folded, at 107ca515: counts 241, 78, 60 and 13, all in tier 1.
   - D417's check is done: liquid routing needs X2 by amendment, or a reasoned waiver, before its run; FR-49 needs nothing.
-  - **Three plans read together (D424):** FR-44's admission by species (about 0.95 agent-day) and FR-49's pairing and
-    narrowing (3.25 to 4.0) are building, in that order. Liquid routing (15.5 to 21.5) is held for the user's answer on its
-    price and X2.
+  - **Three plans read together (D424):**
+    - **FR-44's admission by species is landed** (D425, c9ab3207).
+    - FR-49's pairing and narrowing (3.25 to 4.0 agent-days) is at its judge's tag, with a non-builder re-check.
+    - Liquid routing (15.5 to 21.5) is held for the user's answer on its price and X2.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).

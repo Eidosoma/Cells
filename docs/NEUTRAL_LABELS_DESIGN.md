@@ -593,8 +593,9 @@ twin row checks this on every row.
 **What stays refused:**
 - **A path that moves a neutral species across a washed node's surface:** the wash's own
   refusals (D263).
-- **Site populations beside labels:** `site_occupancy@1` writes amounts without reporting them.
-  Admission by species (D327's step 3) lifts this for unlabelled rows.
+- **Site populations beside labels:** `cells.operator.site_occupancy@1` writes amounts without
+  reporting them. Admission by species (§14) lifts this where the populations bind unlabelled
+  ligands.
 - **A compartment beside the wash:** the compartments' admitted list refuses it until FR-49's wash
   narrowing. FR-49's C1 world, which is also the inherited three-way composition, is a refusal
   row.
@@ -607,3 +608,59 @@ twin row checks this on every row.
 | `test_wash_schedule.py` (NumPy) | Either order parses; the labelled event's report, in NumPy and compiled; a whole wash after an earlier one, with plant 5 failing on its two cases; a labelled gene-unit export and a labelled exchange route at the washed node refused, each parsing beside a wash of another node; FR-49's C1 world refused |
 | `test_neutral_labels_events.py` (compiled) | The twins: five washes, three of them at 3/7 (D266's condition); every physical record bit for bit; the identities, the records and the books on every row |
 | `test_wash_schedule_resume.py` (compiled) | The resume across a wash, at the wash row through a snapshot and one step after, with the redo and skip plants |
+
+## 14. Admission by species (FR-44 step 3; D327, D424)
+
+**What it admits:** `cells.operator.site_occupancy@1` beside the label owner where no ligand of its
+populations is labelled, with four partners: the wash, D152's reactions, turnover and exchange.
+
+**The rule** (`species_labels.operator_errors`, `BY_SPECIES`).
+- **Before:** every split part that writes species amounts and reports no one-way moves was
+  refused, whatever species it wrote.
+- **Now:** a writer on `BY_SPECIES` is admitted if it declares its rows (the contract's
+  `ROW_MOVES` and `written_rows`, FR-43 part 3's one authority; D327's `written_species` hook
+  became these) and none of its written rows is a labelled species.
+- **The test is by species, not by row.** A labelled species has shares at every cell and
+  finite node, and an unreported change at any one of them would be carried onward by every later
+  transfer.
+- **The list holds the site operator alone.**
+  - Its half-steps write amounts only at its pools, which are exactly its written rows, and they
+    keep every other entry bit for bit.
+  - A host row holds this on patch, node-owned, contact and internalising populations, with a
+    plant.
+  - The other six writers that report nothing keep today's refusal, word for word: the injection,
+    trafficking, the unit producer, both lumens and the integer population.
+
+**Refused by name beside an admitted writer** (`by_species_errors`, fail closed), each until a world
+qualifies it:
+- **every operator law but the four partners,** named in one message. Among them:
+  - `cells.operator.cell_owned_compartments@1`, named as FR-49's C4, registered by amendment. This
+    is C4's one home (D424). Its four-way form and its three-way form without a wash stay refused
+    whatever the compartments' own list admits.
+  - `cells.operator.templated_polymerisation@1`, which World L declares;
+- **an internalising population,** which no registered world needs, and **a population that binds
+  from a cell** (an inward patch face or a contact). The twin qualifies binding at outside nodes
+  only, so an admitted writer writes no cell row in version 1;
+- **the inner model's later options,** FR-45's list beside sets:
+  - `cells.model.resolved_pump_tissue@3`'s own one-way records;
+  - a blocked channel population;
+  - a declared voltage shift;
+  - the sparse field solver;
+  - X2, which is attached after the definition's checks, so the owner's binding refuses it.
+
+**Still refused:**
+- **A labelled ligand.** It waits for sites as label reporters (D327's priced follow-up).
+- **Shared site sets beside labels,** by FR-45's partner rule.
+
+**Tests (D224):**
+
+| File | Rows |
+| --- | --- |
+| `test_neutral_arrival_labels.py` (host) | The rule on planted declarations; the refusals by name on parsed worlds, contact and inward populations among them; a declared kind beside the sites, admitted on an unlabelled species and refused as today on a labelled one; the inner model's options; C4's four-way and three-way forms with FR-49's two list entries patched in; the site operator's pools equal to its written rows, with a plant |
+| `test_neutral_labels_sites.py` (compiled, new) | FR-44's twin world with the well's sites kept and Cl and Q labelled, beside the four partners. Every physical record is bit for bit the unlabelled twin's; the well's identities at each wash; in the specimen, the base gains exactly exchange's import and the cohort exactly turnover's production |
+
+**No new state:**
+- no resume row and no FR-49 judge erratum are needed;
+- `same_physics`'s set is unchanged;
+- D148's criteria hold by construction, since only definition-time and binding-time checks
+  change.
