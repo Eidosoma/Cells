@@ -273,6 +273,7 @@ def _world_c1(records, refs):
         rows = dict(O_rows=np.ones((t.size, 8)), C_rows=np.ones((t.size, 8)),
                     O_shares=np.zeros((t.size, 1, 2)), C_shares=np.zeros((t.size, 1, 2)),
                     label_closure_relative=np.full((t.size, 1), 1.4e-16))  # fmt: skip
+        rows.update({name: np.zeros((t.size, 1)) for name in judge_bc.c1_physical_names()})
         _record(records, run_id, quantities=q, arrays=rows, label_closure_relative_max=1.4e-16)
 
 
@@ -455,6 +456,34 @@ def test_b5_is_gated_on_the_washs_counts(fabricated, tmp_path, name):
     assert criteria["B5"]["passed"] is False and criteria["B5"]["differing"] == []
 
 
+@pytest.mark.parametrize("case", ["a node's electrode charge differs", "an array is missing"])
+def test_c1_1_compares_every_physical_state_field_at_o_and_c(fabricated, tmp_path, case):
+    """READING-3: C1-1's physical rows are every physical state field at O and C, here C's
+    electrode charge, compared bit for bit; a record without one of them is refused."""
+    records, refs = _copy(fabricated, tmp_path)
+    name = "C.electrode_charge_transferred_C"
+    assert (
+        name in judge_bc.c1_physical_names()
+        and "O.amount_increment" in judge_bc.c1_physical_names()
+    )
+
+    def change(doc, arrays):
+        if case == "an array is missing":
+            arrays.pop(name)
+        else:
+            arrays[name] = arrays[name].copy()
+            arrays[name][700, 0] = 1e-30
+
+    _rewrite(records, "C1-twin-dt2", change)
+    reference = judge_bc.read_reference(refs / "C1.json", "C1")
+    if case == "an array is missing":
+        with pytest.raises(judge_bc.ReaderError, match="C1-1's arrays missing"):
+            judge_bc.judge_c1(records, reference)
+    else:
+        criteria, _ = judge_bc.judge_c1(records, reference)
+        assert criteria["C1-1"]["passed"] is False and criteria["C1-1"]["differing"] == [name]
+
+
 @pytest.mark.parametrize("value, passed", [(64 * EPS, True), (65 * EPS, False), (np.nan, False)])
 def test_c1_3_bounds_the_label_owners_closure_on_every_row(fabricated, tmp_path, value, passed):
     """C1-3: the closure diagnostic at most 64 ε on every row of C1 and its twin (reading 5, the
@@ -508,6 +537,9 @@ def test_every_registered_job_builds_and_parses_and_each_definition_plant_change
         (("dev-C1", "C1", 2.0, 3600.0, 60.0, True, None), True, "registered horizon"),
         (("dev-C2", "C2", 0.05, 200.0, 20.0, None, None), False, None),
         (("dev-B", "B", 0.1, 900.0, 5.0, True, None), False, "at or beyond"),
+        (("C1-dt1", "C1", 1.0, 3600.0, 60.0, True, None), True, "not a registered run"),
+        (("dev-B", "B", 0.1, 60.0, 5.0, True, "e"), False, "not a registered plant"),
+        (("dev-D", "D", 0.1, 60.0, 5.0, True, None), False, "not a registered world"),
     ],
     ids=[
         "registered, not judged",
@@ -516,6 +548,9 @@ def test_every_registered_job_builds_and_parses_and_each_definition_plant_change
         "dev at full length, judged",
         "dev, shortened",
         "dev beyond full length",
+        "a registered ID's world at another step",
+        "an unknown plant",
+        "a dev job naming an unknown world",
     ],
 )
 def test_the_first_run_rule(row, judged, refused):
@@ -582,3 +617,18 @@ def test_c1s_plant_is_the_engines_exchange_but_for_its_one_line(monkeypatch):
         with plants_bc.plant_c1():
             pass
     assert label_shares.exchange is exchange
+
+
+@pytest.mark.parametrize("case", ["this tree", "neither git nor a snapshot", "another engine tree"])
+def test_the_identity_names_a_revision_and_the_drivers_own_engine(tmp_path, case):
+    """The driver's identity: a revision from git or SNAPSHOT.json, never none, and the engine
+    loaded from the driver's own tree, or the run is refused."""
+    if case == "this tree":
+        found = driver_bc.identity()
+        assert found["revision"] and found["engine_tree"] == str(driver_bc.Path(
+            driver_bc.__file__).resolve().parents[2])  # fmt: skip
+        return
+    engine = tmp_path if case == "neither git nor a snapshot" else tmp_path / "elsewhere"
+    words = "gives a revision" if case == "neither git nor a snapshot" else "not the driver's tree"
+    with pytest.raises(SystemExit, match=words):
+        driver_bc.identity(here=tmp_path, engine=engine)

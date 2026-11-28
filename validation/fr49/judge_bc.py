@@ -19,7 +19,9 @@ and was checked on the references' invented format samples (`--check-reader`) be
     the twin, and none at lys in any of them;
   - B6: the node-owned variant's site layout arrays bit for bit the facing population's, a host row
     with no compile.
-- **C1** (§5): C1-1, O's and C's physical rows and label shares bit for bit the twin's on every row;
+- **C1** (§5): C1-1, O's and C's physical rows and label shares bit for bit the twin's on every row,
+  the physical rows being every physical state field at O and at C, species rows and books alike,
+  the label fields aside (c1_physical_names, READING-3);
   C1-2, W's x and base amounts just after the wash within 1e-13 relative of LAWS.md §4's; C1-3,
   every host check, so both runs completed, and the label owner's closure diagnostic
   `label_closure_relative` at most 64 ε on every row of both (CLOSURE).
@@ -49,7 +51,7 @@ match); a C1 file with none is refused, not read as all within.
 start time), and a set of records in which two runs share one process is refused.
 
 **The readings this judge embodies,** ruled by the lead after a non-builder review
-(validation/fr49/READING-2-2026-11-28.md):
+(validation/fr49/READING-2-2026-11-28.md; C1-1's physical rows in READING-3-2026-11-28.md):
 1. C1-2's "just after the wash" is the first saved row after the wash time, the 902 s row; "just
    before" is the row at 900 s. W has no route, so its amounts are constant in between.
 2. A plant's catch is a registered criterion's failure. A plant run refused by a named check is
@@ -78,6 +80,7 @@ invented cases file they were made from.
 """
 
 import argparse
+import functools
 import json
 from decimal import Decimal, InvalidOperation, localcontext
 from pathlib import Path
@@ -525,6 +528,28 @@ def judge_b(records, reference):
     return out, plants
 
 
+@functools.cache
+def c1_physical_names():
+    """C1-1's arrays beyond the species rows and shares: every physical state field at O (the cell
+    axis) and at C (the node axis) of C1's world, from the engine's own state axes, the label fields
+    (LABELS_ONLY) aside (READING-3). The driver saves them as `O.<field>` and `C.<field>`."""
+    from cells.definitions.specs import parse_spec
+    from cells.registry.models import get_model
+    from validation.fr49 import worlds_bc as wb
+
+    spec = parse_spec(wb.world_c1())
+    model = get_model(spec.model)
+    state, _ = model.initial_values(spec)
+    names = []
+    for field in type(state)._fields:
+        where = model.STATE_AXES.get(field, ())
+        if field in LABELS_ONLY:
+            continue
+        names += [f"O.{field}"] * ("cell_slot" in where)
+        names += [f"C.{field}"] * ("extracellular_slot" in where)
+    return tuple(names)
+
+
 def judge_c1(records, reference):
     v = declared_values("C1")
     # C1-2 reads the well's values only, so the well's own cross-checks decide its inconclusive
@@ -554,9 +579,12 @@ def judge_c1(records, reference):
                        label_closure_relative_max={k: m for k, (_, m) in found.items()},
                        bound=CLOSURE)  # fmt: skip
     a, b = runs["C1-dt2"][3], runs["C1-twin-dt2"][3]
-    names = ("O_rows", "C_rows", "O_shares", "C_shares")
+    names = ("O_rows", "C_rows", "O_shares", "C_shares", *c1_physical_names())
+    missing = [n for n in names if n not in a or n not in b]
+    if missing:
+        raise ReaderError(f"C1-1's arrays missing from C1-dt2's or its twin's record: {missing}")
     differing = [n for n in names if not _bitwise(a[n], b[n])]
-    out["C1-1"] = dict(passed=not differing, differing=differing)
+    out["C1-1"] = dict(passed=not differing, differing=differing, compared=len(names))
 
     def well(run_id):
         _, q, t, _ = runs[run_id]

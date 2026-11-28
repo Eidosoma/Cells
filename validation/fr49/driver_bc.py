@@ -31,15 +31,23 @@ as exact hexadecimal floats, and RECORD_DIR/<id>.npz, the arrays that the bitwis
 - World B: S at lys (n_L), and the population's B and R, at every row; in the npz, lys's every
   species row and the site increments, and the wash's applied counts.
 - C1: S at the owner O, the compartment C and the well W, and label x's share at each, at every row;
-  in the npz, O's and C's every species row and their label shares, and the label owner's closure
-  diagnostic on every row (`label_closure_relative`, which C1-3 bounds), with its largest value in
-  the record.
+  in the npz, O's and C's every species row and their label shares, every other physical state
+  field at O and at C (`O.<field>`, `C.<field>`: every state field on the cell or node axis, the
+  label fields aside; READING-3), and the label owner's closure diagnostic on every row
+  (`label_closure_relative`, which C1-3 bounds), with its largest value in the record.
 - C2: L1 and L2 at lys, each member's B, and the set's free sites R, at every row.
 
 The first-run rule (FR-45's; the lead, 28 November 2026): a registered world first runs at its
-registered length only in a judged run. A job whose ID does not begin `dev-` runs only with
-`--judged`, and a `dev-` job runs only at a horizon short of its world's registered one
-(first_run_refusal), so that no development run reaches a registered world's full length.
+registered length only in a judged run (first_run_refusal):
+- a job whose ID does not begin `dev-` must be exactly one of JOBS's rows, and runs only with
+  `--judged`;
+- a `dev-` job names a registered world and runs only at a horizon short of its registered one, so
+  that no development run reaches a registered world's full length;
+- every job names a registered plant (PLANTS) or none.
+
+The identity (identity): the record names the tree's revision, from git or SNAPSHOT.json, and the
+tree the engine was loaded from. A run refuses where neither gives a revision, or where the engine
+is not the driver's own tree, so a launch runs from the snapshot root with PYTHONPATH=src.
 
 Usage (PYTHONPATH at a snapshot, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr49.driver_bc jobs OUT_DIR
@@ -80,6 +88,7 @@ JOBS = (
     ("C2-plant-dt0.1", "C2", 0.1, 2000.0, 20.0, None, "c2"),
 )
 FIELDS = ("id", "world", "dt", "horizon_s", "every_s", "event", "plant")
+PLANTS = (None, "b", "c", "d", "c1", "c2")  # The registered plants (JOBS) and none.
 CHILD = (
     "FR49_DRIVER_RUN"  # Set by `run` for the process it starts: [this driver file, the job file].
 )
@@ -154,6 +163,26 @@ def b_record(spec, result, p):
     return quantities, arrays, {}
 
 
+def physical_at(spec, history, owner, node):
+    """Every physical state field at O (cell slot `owner`) and at C (node slot `node`) on every row,
+    the label fields (judge_l.LABELS_ONLY) aside: C1-1's arrays (READING-3)."""
+    from cells.registry.models import get_model
+    from validation.fr49.judge_l import LABELS_ONLY
+
+    axes = get_model(spec.model).STATE_AXES
+    out = {}
+    for field in type(history)._fields:
+        where = list(axes.get(field, ()))
+        if field in LABELS_ONLY:
+            continue
+        values = np.asarray(getattr(history, field))
+        if "cell_slot" in where:
+            out[f"O.{field}"] = np.take(values, owner, axis=1 + where.index("cell_slot"))
+        if "extracellular_slot" in where:
+            out[f"C.{field}"] = np.take(values, node, axis=1 + where.index("extracellular_slot"))
+    return out
+
+
 def c1_record(spec, result, p):
     from validation.fr49 import worlds
     from validation.fr49 import worlds_bc as wb
@@ -184,6 +213,7 @@ def c1_record(spec, result, p):
         O_shares=share[:, :, :, owner],
         C_shares=outside[:, :, :, node],
         label_closure_relative=np.asarray(h.label_closure_relative),  # [row, labelled species]
+        **physical_at(spec, h, owner, node),
     )
     closure = float(np.max(np.asarray(h.label_closure_relative), initial=0.0))
     return quantities, arrays, dict(label_closure_relative_max=closure)
@@ -216,29 +246,56 @@ def c2_record(spec, result, p):
 RECORDS = {"B": b_record, "C1": c1_record, "C2": c2_record}
 
 
-def identity():
-    """The tree's revision and dirty files, or a frozen snapshot's (SNAPSHOT.json)."""
-    here = Path(__file__).resolve().parents[2]
+def identity(here=None, engine=None):
+    """The tree's revision and dirty files, or a frozen snapshot's (SNAPSHOT.json), and the tree the
+    engine (`cells`) was loaded from. It refuses (SystemExit) where neither gives a revision, and
+    where the engine is not the driver's own tree. The defaults are this driver's tree and
+    engine."""
+    here = Path(__file__).resolve().parents[2] if here is None else Path(here)
+    if engine is None:
+        import cells
+
+        engine = Path(cells.__file__).resolve().parents[2]  # <tree>/src/cells/__init__.py
+    if Path(engine) != here:
+        raise SystemExit(
+            f"the engine was loaded from {engine}, not the driver's tree {here}: a run starts in "
+            "its snapshot's root with PYTHONPATH=src"
+        )
     manifest = here / "SNAPSHOT.json"
     if manifest.is_file():
         snapshot = json.loads(manifest.read_text(encoding="utf-8"))
-        return dict(revision=snapshot["git_revision"], snapshot=str(here),
-                    patch_sha256=snapshot["patch_sha256"])  # fmt: skip
-    git = ["git", "-C", str(here)]
-    revision = subprocess.run([*git, "rev-parse", "HEAD"], capture_output=True, text=True)
-    dirty = subprocess.run([*git, "status", "--short"], capture_output=True, text=True)
-    return dict(revision=revision.stdout.strip(), dirty=dirty.stdout.splitlines())
+        found = dict(revision=snapshot.get("git_revision") or "", snapshot=str(here),
+                     patch_sha256=snapshot.get("patch_sha256"))  # fmt: skip
+    else:
+        git = ["git", "-C", str(here)]
+        revision = subprocess.run([*git, "rev-parse", "HEAD"], capture_output=True, text=True)
+        dirty = subprocess.run([*git, "status", "--short"], capture_output=True, text=True)
+        found = dict(revision=revision.stdout.strip() if revision.returncode == 0 else "",
+                     dirty=dirty.stdout.splitlines())  # fmt: skip
+    if not found["revision"]:
+        raise SystemExit(
+            f"{here}: neither git nor SNAPSHOT.json gives a revision; a record names one"
+        )
+    return dict(found, engine_tree=str(engine))
 
 
 REGISTERED_HORIZONS = {row[1]: row[3] for row in JOBS}  # world -> its registered horizon (s).
 
 
 def first_run_refusal(entry, judged):
-    """Why the first-run rule refuses a job (the module docstring), or None: a registered job
-    without `--judged`, or a `dev-` job at or beyond its world's registered horizon."""
-    if not entry["id"].startswith("dev-"):
-        return None if judged else f"{entry['id']} is a registered run: it runs only with --judged"
-    registered = REGISTERED_HORIZONS[entry["world"]]
+    """Why the first-run rule refuses a job (the module docstring), or None: a plant not registered;
+    a job without `dev-` that is not exactly a row of JOBS, or not run with `--judged`; a `dev-` job
+    naming a world not registered, or at or beyond its world's registered horizon."""
+    name, world = entry.get("id"), entry.get("world")
+    if entry.get("plant") not in PLANTS:
+        return f"{name}: plant {entry.get('plant')!r} is not a registered plant {PLANTS}"
+    if not str(name).startswith("dev-"):
+        if tuple(entry.get(k) for k in FIELDS) not in JOBS:
+            return f"{name} is not a registered run: a job without dev- is exactly a row of JOBS"
+        return None if judged else f"{name} is a registered run: it runs only with --judged"
+    if world not in REGISTERED_HORIZONS:
+        return f"{name}: world {world!r} is not a registered world {tuple(REGISTERED_HORIZONS)}"
+    registered = REGISTERED_HORIZONS[world]
     if float(entry["horizon_s"]) >= registered:
         return (
             f"{entry['id']} is a development job at or beyond world {entry['world']}'s registered "
