@@ -25,7 +25,7 @@ builds (D327).
 | B | Lumen sites and a wash elsewhere (World B) | The later of FR-49's site pairing (after FR-45) and its wash narrowing (after FR-44) |
 | C1 | A compartment with labels and a wash at a separate node | FR-44 and the wash narrowing: by whichever lands second (D327) |
 | C2 | Competing ligands sharing sites at a compartment | FR-45 and the site pairing: by whichever lands second (D327) |
-| C4 | The four-way form, with unlabelled site occupancy | Registered by amendment once Admission by species lands |
+| C4 | The four-way form, with unlabelled site occupancy | Registered by amendment once Admission by species lands. Amendment 2: judged on the wash, before the lift lands and before the wash retires |
 
 Each combination is enabled only once its check passes. Until then it is refused by name. The second
 lander lists what newly parses at its merged head.
@@ -178,7 +178,7 @@ no value.
 The inherited composition is C1's world: `cell_owned_compartments@1`, `neutral_arrival_labels@1`, and
 `scheduled_compartment_wash@1` at an external node. Its four-way form adds unlabelled
 `site_occupancy@1`. That form is registered by an amendment of this note once FR-44's Admission by
-species lands, and it is refused by name until then.
+species lands, and it is refused by name until then. (Registered by amendment 2 below.)
 
 ## 6. Evidence that informed the bounds
 
@@ -223,3 +223,296 @@ B*, not the remainder of the relaxation.
 - C2-3's bound, 1e-10 relative at t ≥ 1800 s, was fixed with this headroom in view.
 - The references' own figure stands as they report it.
 - This amendment quotes none of the references' values.
+
+## Amendment 2 (28 November 2026): C4, the four-way form
+
+**What this registers.** §5's C4, now that FR-44's admission by species has landed (D425, tag
+`fr44-admission-landed-2026-11-28`). The shape, the triple and the lift's home are D424's rulings.
+
+**When and by whom it was written.** It was written on 28 November 2026, before any C4 engine code, any C4 run or
+any C4 reference exists. Its writer:
+- read the engine's source: the operators named below, the composite's split step and FR-49's validation files;
+- ran parse-only probes of C4's definitions;
+- bound C4's definition on the host at 0.5 s, 1 s and 2 s to evaluate the site operator's first-stage loads, with no
+  step taken;
+- ran A2.2's gates on its own builds of C4's definitions, at the dict level;
+- has seen the figures that D331 and D426 publish, which are World L's, World B's, C1's and C2's judged gaps and
+  ratios, and the timing fields of their run records;
+- has seen no reference file.
+
+The probe record is `/mnt/workspaces/Cells/fr49-c4-plan-20261128/probe/`. No bound below is set from those figures
+(A2.8).
+
+**The engine** (the models C4 runs):
+- `cells.model.resolved_pump_composite@1` over `cells.model.resolved_pump_tissue@3`;
+- `cells.operator.cell_owned_compartments@1`;
+- `cells.operator.neutral_arrival_labels@1`;
+- `cells.operator.scheduled_compartment_wash@1`, at the well only;
+- `cells.operator.site_occupancy@1`, binding an unlabelled ligand, admitted by species (D425), with
+  `cells.site_binding.langmuir_site_binding@1`;
+- World L's `cells.operator.templated_polymerisation@1` (its routes in the owner's cytosol only),
+  `cells.operator.scheduled_species_turnover@1`, and `cells.kind.passive_routes@1` with
+  `cells.route.passive_neutral_permeation@1`.
+
+### A2.1 The world, by pointer
+
+C4's values are given only by pointing at cases.json's entries for worlds L, C1 and B. No value is restated here,
+and A2.2's gate checks each pointer on every run's definition.
+
+**C4's world is C1's world (§5), unchanged:** World L, labelled (§3.1), with C1's entry's well W, washed by C1's
+entry's event.
+
+**Added to it:**
+- **an unlabelled neutral ligand G:**
+  - at C (`space_0`), at world B's `initial_fmol.n_L`;
+  - at every other cell and node, and in the wash's buffer, at its trace: 1e-6 K_d, with K_d world B's
+    `k_off_per_s` / `k_on_per_mM_per_s` in binary64. This is World B's builder's reading of "at most 1e-6 K_d"
+    (`worlds_bc.B_TRACE_mM`);
+- **world B's site population:**
+  - its `sites`, `k_on_per_mM_per_s`, `k_off_per_s` and `initial_fmol.B`;
+  - on World L's bounding patch (`patch_export_cell_0_space_0`), facing C (`face: outside`), binding G.
+
+**The builder's own values,** which no equation of A2.4 reads:
+- G's ID, `G`;
+- its diffusivity, World L's `worlds.D_S` (no face carries it);
+- its ledger floor, `worlds.FLOOR_FMOL`;
+- the population's ID and unit, World B's `lumen_sites` and `lumen_site`.
+
+**Why it is three known systems.** World L's `V_C_pL` and world B's are equal, so:
+- G's system at C is world B's (LAWS.md §3), equation for equation;
+- S's is world L's (§2);
+- W's is C1's (§4).
+
+The three share no species and no route. A2.2's second gate checks this on every run's definition.
+
+### A2.2 Two gates on every run's definition
+
+Each run's record holds its definition, as built. The judge reads it before any value. **A run whose definition
+fails either gate is not judged.** The gates also run on every job's definition before launch, so that a mapping slip
+is caught before any registered run exists.
+
+**The values gate.** Each entry below is compared with the cases.json value it points at:
+- an entry held as declared is compared as decimals (`judge_bc._equal`'s rule);
+- an entry the world derives is compared by recomputing its formula from cases.json's decimals in binary64, bit for
+  bit.
+
+| Definition entry | cases.json | Compared |
+| --- | --- | --- |
+| `cell_0`'s and `space_0`'s volumes | L `V_O_pL` and `V_C_pL`; B `V_C_pL`, equal to L's | as declared |
+| S at `cell_0` and at `space_0` | L `initial_fmol.n_O` and `n_C` | derived: (n / V) × V, as `add_inventory_species` sets an amount from a concentration |
+| `s_route`'s permeability | L `a_pL_per_s` | derived: a / (1e15 × the patch's `area_m2`) |
+| turnover's `make` and `clear` rates | L `P_fmol_per_s` and `k_d_per_s` | as declared |
+| S's label schedule | L `pulse_s.t1` (to x) and `t2` (to the base) | as declared |
+| S's initial shares | L x_O(0) = x_C(0) = 0 | no shares declared at `cell_0` or `space_0` |
+| the end time | L `horizon_s` | as declared |
+| `well_w`'s volume | C1 `V_W_pL` | as declared |
+| S at `well_w`, and its shares there | C1 `initial_fmol.x_W` and `b_W` | derived: x_W + b_W, x_W / (x_W + b_W) and b_W / (x_W + b_W), in decimal, then binary64 |
+| the wash's event | C1 `wash.time_s`, `wash.fraction` and `wash.buffer_mM.S` | as declared |
+| the population's copies, sites per copy, accessible fraction, rates and initial occupancy | B `sites`, `k_on_per_mM_per_s`, `k_off_per_s` and `initial_fmol.B` | as declared |
+| G at `space_0` | B `initial_fmol.n_L` | as declared |
+| G at every other cell and node, the held bath among them; its declared trace; and G in the wash's buffer | B `k_off_per_s` and `k_on_per_mM_per_s` | derived: 1e-6 × K_d, times V at a node |
+| the population's binding schedule | none: this amendment's | 1 from t = 0 (0 in the unbound twin) |
+
+**A twin's or a plant's definition departs only by its own registered change:**
+- the twin: no wash event, and so no buffer;
+- the unlabelled twin: no label owner, and so no label schedule or shares;
+- the unbound twin: the binding multiplier 0;
+- plant (c): k_off × 2.
+
+A row whose entry that change removes is recorded as absent by it, and is not compared.
+
+**The decoupling gate.** Read from the same definition:
+- G is moved by nothing but its binding:
+  - its permeability is 0 on every patch, where `add_inventory_species` writes it;
+  - it is in no junction, face, passive route, kind, turnover route, D152 reaction, exchange route, or expression's
+    listed species;
+- G is not labelled;
+- S is no site population's ligand;
+- the wash names W alone.
+
+G's other places in a definition are:
+- its species entry;
+- its amounts;
+- the site operator's ligand and population;
+- the wash's buffer;
+- its ledger floor.
+
+**The writer's run of both gates** (`probe/c4_gates.py`, dict-level, on the writer's own builds of C4, its three
+twins and plant (c)'s definition):
+- every one of the 25 rows is equal, or absent by its registered change;
+- every decoupling check holds.
+
+### A2.3 The step and the runs
+
+**The step: dt = 0.5 s,** to world L's `horizon_s`, observed every 60 s.
+- **The rule:** C1's 2 s halved until world B's sites meet the site operator's stage condition (h max L ≤ θ = 0.5
+  at every stage, h = dt/2) with a factor of 2 at the first stage.
+- **The writer's host check,** on C4's bound definition at t = 0 (`site_occupancy.step_report`, with no step):
+  - the largest load is the free sites' (L_R of `lumen_sites`), 1.0 /s;
+  - h max L is 1.0 at 2 s, where the first stage is refused;
+  - it is 0.5 at 1 s, admitted, on the bound;
+  - it is 0.25 at 0.5 s, admitted.
+- **The step is fixed at 0.5 s.** Before any run, the builder repeats this check on the build's own definition and
+  records it. If it does not give h max L = 0.25 at 0.5 s, that is A2.7's further amendment, not a reading.
+- **One step,** as C1 has. Each order that C4's systems carry was judged in its own world: S's by L4 and G's by B3.
+
+**Admission and memory.**
+- **The runner's admission:** it admits a run only where its trace estimate (`cells.execution.resources.trace_bytes`,
+  with the energy check's term) is within the world's `max_trace_bytes`, 2^31 bytes.
+- **The writer's parse-time estimate,** for 7,201 saved rows:
+  - 202.0 MiB for C4, its twin and its unbound twin;
+  - 164.8 MiB for its unlabelled twin;
+  - so 9.9 % of the cap.
+- **For comparison:** C1's registered run of 1,801 rows is 48.9 MiB by the same estimate, and it peaked at 1.48 GB
+  resident. Peaks grow slowly with rows: C2's judged runs peaked at 0.92 GB at 20,001 rows and at 1.04 GB at 40,001.
+- **The judged runs' unit memory** is set from the development pair (A2.7), and is at least C1's 6 GB.
+
+**The runs,** each at 0.5 s to the horizon, each in a fresh process of its own:
+1. **C4:** labelled, with the wash's event, the binding on.
+2. **Its twin:** the wash declared with no event. This is the triple without a wash (D424).
+3. **Its unlabelled twin:** the label owner and its schedule removed, all else C4's.
+   - This composition (the compartments, expression, turnover, the wash at W and the sites, unlabelled) parses on
+     main today. FR-49's landing (D426) did not list it.
+   - This run is its check, and the build gives it a parse row.
+4. **Its unbound twin:** the population's binding multiplier 0 from t = 0, all else C4's.
+
+### A2.4 The criteria
+
+"Every row" is every saved row: a record's rows are the dt grid from 0 to the horizon (READING-2's reading 3). At
+0.5 s that is 7,201 rows.
+
+**The registered criteria at 0.5 s.** Each C4 criterion takes the band of the registered criterion it extends,
+unchanged. Where that criterion's text names a step, or rests on a step count, it is restated here:
+- **L3** names no step. Its "every row" is the 1,200 rows before t₁ (C4-8).
+- **L5** names 1 s, World L's finer step: e_q(1 s) ≤ 1e-3. C4 applies it at its one step, 0.5 s. No step count
+  enters the bound, and a finer step only shrinks the second-order error (C4-8).
+- **C1-2** names no step. READING-2's reading 1 fixed its row at 2 s as 902 s; at 0.5 s it is 900.5 s. Its 1e-13
+  is one event's arithmetic: W has no route, so its amounts hold between events, and no step count enters (C4-2).
+- **B4** names "both steps", World B's two, and C4 has one. Its 550 s is about 35 of World B's relaxation times,
+  which belong to the system, not the step. Its 1e-10 has B2's rounding headroom, restated in C4-5 (C4-6).
+- **B2's** 1e-10 rests on 2.5 ε per step over World B's 12,000 steps. It is restated in C4-5.
+- **C1-3's** 64 ε bounds a per-half-step residual, a maximum and not a sum, so no step count enters.
+
+**The criteria:**
+1. **C4-1, the wash elsewhere** (C1-1, with B5's gate).
+   - O's and C's physical rows and label shares are bit for bit the twin's on every row.
+   - The physical rows are READING-3's entity rule, with the site operator's axes classed P (the populations on a
+     patch bounding O or C, but W's): `site_population` and `site_set`, every slot.
+   - The site operator's heat at cells and at nodes falls on O's and C's slots by their axes. G's row at C is one
+     of C's rows.
+   - **The gate:**
+     - the wash applied exactly once at W in C4, in its unlabelled twin and in its unbound twin;
+     - none in the twin;
+     - none at C in any of the four.
+2. **C4-2, the well** (C1-2).
+   - W's x and base amounts just after the wash are LAWS.md §4's, within 1e-13 relative.
+   - "Just after" is the first saved row after the wash's time, the 900.5 s row at 0.5 s. "Just before" is the row
+     at the wash's time.
+   - The buffer carries the base label although a window is open (D327, FR-44).
+3. **C4-3, the host checks** (C1-3 and B1).
+   - Every host check passes on every row of the four runs.
+   - `label_closure_relative` ≤ 64 ε on every row of the three labelled runs (READING-2's change 2).
+4. **C4-4, labels change no physics** (L2).
+   - Every history field, observation and diagnostic of the unlabelled twin is bit for bit C4's.
+   - C4's extra fields are the label owner's alone: `judge_l.LABELS_ONLY`, as erratum 1 and any later erratum of
+     that list keep it.
+5. **C4-5, G is conserved** (B2).
+   - |n_G + B − L_T| ≤ 1e-10 L_T at C on every row of the four runs, with L_T world B's n_L(0) + B(0).
+   - **The bound's rule is B2's:** the site operator's rounding allowance of 2.5 ε per step, accumulated over the
+     steps that A2.3's rule gives. That is 4.0e-12 over 7,200 steps at 0.5 s, 25 times below the bound. World B's
+     12,000 steps had 15 times.
+6. **C4-6, G's equilibrium** (B4).
+   - |B − B*| ≤ 1e-10 B* on every row of C4 with t ≥ 550 s, to the horizon.
+   - B* is world B's (LAWS.md §3), since the system is world B's.
+7. **C4-7, by species** (new). This is admission by species' own claim: a writer admitted by species changes only
+   its pools and keeps every other entry bit for bit (FR-44 step 3, D425). The label owner's closure cannot see an
+   unreported write to a labelled row; this can.
+   - **Scored:** C4-1's set, minus only what binding legitimately changes, plus every label share, bit for bit the
+     unbound twin's on every row.
+     - **Minus:** G's row at C; the site operator's fields on `site_population` and `site_set`; and its heat at C's
+       slot (`site_outside_dissipated_energy_pJ`).
+     - **Plus:** `label_share` and `label_outside_share` at every cell and outside node, W's included.
+   - In the unbound twin, B is 0 and n_G at C is n_G(0), on every row.
+8. **C4-8, the labelled species** (L3 and L5).
+   - Before t₁, x_O and x_C are exactly 0 on every row.
+   - e_q(0.5 s) ≤ 1e-3 for q in {n_O, n_C, x_O, x_C}, against World L's references at its sample times.
+
+**The inconclusive rule** is the registration's:
+- C4-2 reads the well's own cross-checks (`judge_bc.WELL_METHODS`);
+- C4-6 and plant (a) read B.json's;
+- C4-8 reads L.json's.
+
+### A2.5 The references
+
+C4 reads the tagged `fr49-references-2026-11-24` (35c91d25), through `git archive` of the tag, after its runs are
+frozen and hashed:
+- **L.json,** for C4-8. The lead checked it by structure (28 November): its 61 sample times all lie on the 0.5 s
+  grid, the last at 3600 s;
+- **B.json's** B*, for C4-6 and plant (a);
+- **C1.json's** well, for C4-2.
+
+**Why no new reference is computed:**
+- By A2.1, each quantity C4 judges against a reference is one of those files' values. A2.2's gates check, on every
+  run, that it is.
+- Each file is read by the reader that exists at its judge's tag: `judge_l.read_reference` and
+  `judge_bc.read_reference`.
+- The references' spec (`references/spec/README.md`, "What to compute") lists four items, World L, World B, C1 and
+  C2, and promises no C4 output. C4 reads three of them.
+
+### A2.6 The plants
+
+Each is one run at C4's step in a fresh process of its own, except (a). Each must fail at least one of the criteria
+named, and the judge reports every criterion each plant fails.
+
+| Plant | Its mechanism | Must fail |
+| --- | --- | --- |
+| **(a)** no depletion | B from the free-ligand Langmuir with c₀ = L_T / V_C, formed by the judge from the declared values (World B's (a)) | C4-6 |
+| **(c)** K_d × 2 | The population's k_off doubled in the definition (World B's (c)) | C4-6 |
+| **(d)** the wash at every finite node | In-process, below the wash's compartment-node refusal: the wash's binding marks C washed, with W's events (World B's (d), on C4's well) | C4-1, and C4-5 |
+| **(c1)** the buffer labelled x | C1's plant, unchanged: at a liquid exchange the supplied buffer joins label x, not the base | C4-2 |
+| **(e)** the sites write the labelled species | In-process, below FR-44's by-species check: the population's bound layout binds S at C in place of G. Its declaration and `written_rows` are unchanged | C4-7, and C4-8. C4-5 is reported |
+
+- **Scoring, as READING-2's change 3 scored B5.** C4-1 counts as a catch for (d) only, and C4-7 for (e) only. For
+  the other plants, their differences from the twins are their own physics, so those two criteria are reported and
+  not scored.
+- A plant run refused by a named check is reported, and is not the catch, so its part fails (READING-2's reading 2).
+- Plants (d) and (e) are in-process patches below the checks. Each is reviewed by an agent who is not the builder
+  before the judge's tag (D424). Plant (e) checks, before it patches, that the engine's binding layout is the one it
+  was written against, as C1's plant does.
+- World B's (b) is not re-run. The facing rule is the site pairing's own check, judged by World B's (b) (D426), and
+  C4 adds nothing to it.
+- C4-4 has no plant, as L2 had none.
+
+### A2.7 The rules fixed here
+
+- **The first-run rule.** No one runs C4's world, a twin of it or a plant of it to the horizon before the judged
+  runs: not the builder, not the reviewer and not the lead. A development job is strictly shorter than the horizon,
+  or runs an invented world. A parse is not a run. The development pair (two shortened horizons) measures the time
+  and memory per run.
+- **One process each.** Every record names the fresh process it ran in. A set in which two runs share a process is
+  refused before any value is read (READING-2's amendment 3).
+- **X2 (`cells.execution.step_doubled_energy@1`): none.** No C4 criterion judges an energy readout (D412, D417). X2
+  is also refused by name beside a writer admitted by species, and beside the compartments with the sites or the
+  wash.
+- **What a dated reading may fix before the judge's tag,** as READING-1 to READING-3 did: a plant's patch point, a
+  record's or a row's name, or an axis's class under C4-1's rule. It never changes a band, and it drops no criterion.
+- **C4-1, C4-4 and C4-7 rest on bitwise claims that no run of C4's world has yet shown.** A2.3's step rests on the
+  writer's host check.
+  - If development shows one of them failing, or the builder's repeat of the host check differs, the remedy is a
+    dated further amendment before any registered run, with the failure disclosed, as Amendment 1 was.
+  - It is never a narrowed reading.
+- **The lift lands with the pass.** C4's composition is enabled only once this check passes (D327): the lifting of
+  the partner rule lands with a passing judged verdict.
+- **Each of the seven proper subsets of C4's qualified set** that hold the compartments gets, in the build, a host
+  row (it parses, from C4's world with the other laws removed) or a refusal by name. None is admitted on an
+  argument. C4's qualified set is the laws that the lift admits together beside the label owner and the sites: the
+  compartments, expression, turnover and the wash.
+- **If C4 fails,** the lift does not land. The four-way form and the triple stay refused by name.
+
+### A2.8 What informed the bounds
+
+- **The bands** are §3's, §4's and §5's, fixed on 23 November before any reference value was seen. READING-2's
+  closure bound of 64 ε is the label owner's own tests' bound.
+- **The step** rests on the declared values and on the writer's host check of the first-stage loads (A2.3).
+- **The writer has seen** what the preamble lists, and no reference file.
+- **The expected sizes are not used.** For example, by D331's figures S's errors at 0.5 s lie far below L5's 1e-3.
