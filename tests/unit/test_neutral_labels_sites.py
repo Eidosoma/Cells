@@ -19,7 +19,8 @@ It is an invented world: no registration names it.
 Its reason (D224): the compiled program with the label owner beside a split part that writes
 species amounts and reports nothing is the one place a fusion change could move a physical record
 (D266). Until admission by species no such composition parsed, so none had run compiled. Two
-compiles, about 50 s together on a light CPU (measured cold at landing).
+compiles: 100 s together, cold, on two CPUs shared with other work in development, where FR-44's
+own twins took 70 s; measured cold on the timed lane at landing.
 
 On the compiled runs' own histories, every 10 ms step:
 - every physical field, observation and diagnostic of the labelled run is its unlabelled twin's,
