@@ -44,6 +44,14 @@
    ],
    "note": "the three code-blind reference regenerations, moved from tier 2 to tier 3 by the lead's answer of 26 November 2026 (the test review's 'after landing: nightly' row; their fast integrity checks, test_fr7_references.py and test_xenopus_xc0_references.py, stay in tier 1). Run as tier 3 at c52d0998 (cap 1800 s, CPUs 9-11 with their siblings idle under lane B's lock): every test passes",
    "evidence": "/mnt/workspaces/Cells/tier3-records/slimming-20261126/regen/tier3-run/"
+  },
+  {
+   "decision": "D424",
+   "files": [
+    "tests/unit/test_neutral_labels_sites.py"
+   ],
+   "note": "FR-44 step 3's compiled twin of the site operator beside the label owner and its four partners. It hit the 90 s cap at the D148 round's timed measurement (90.14 s, cold, one file per core on CPUs 4-5 under the timed cores' lock, siblings idle), so it runs weekly in tier 3 and the host rows of test_neutral_arrival_labels.py gate it (the lead's ruling, as FR-64's Q5). Run as tier 3 at 03dea4de (cap 1800 s, CPU 7 in a memory scope): its test passes, in 88.88 s",
+   "evidence": "/mnt/workspaces/Cells/tier3-records/fr44-admission-20261128/tier3-run/"
   }
  ],
  "refrozen": [
@@ -95,7 +103,7 @@
    "evidence": "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run/"
   }
  ],
- "frozen_utc": "2026-11-27T10:54:46+00:00",
+ "frozen_utc": "2026-11-28T00:51:27+00:00",
  "cap_seconds": 1800.0,
  "runs": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc",
@@ -106,7 +114,8 @@
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run",
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-diagnostic",
   "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run",
-  "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run"
+  "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run",
+  "/mnt/workspaces/Cells/tier3-records/fr44-admission-20261128/tier3-run"
  ],
  "collected": [
   "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/collected.json",
@@ -117,7 +126,8 @@
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run/collected.json",
   "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-diagnostic/collected.json",
   "/mnt/workspaces/Cells/tier3-records/fr65-coupling-20261127/tier3-run/collected.json",
-  "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run/collected.json"
+  "/mnt/workspaces/Cells/tier3-records/fr45-engine-20261127/tier3-run/collected.json",
+  "/mnt/workspaces/Cells/tier3-records/fr44-admission-20261128/tier3-run/collected.json"
  ],
  "time": "file wall seconds only: the -q logs carry no per-test times",
  "outcomes": [
@@ -708,6 +718,9 @@
   ]},
   "tests/unit/test_membrane_trafficking_restart.py": {"run": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc", "log": "/mnt/workspaces/Cells/final-gate-20261126/tier3-2e3a0bfc/logs/tests__unit__test_membrane_trafficking_restart.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 1}, "seconds": 126.7, "collected": 1, "reached": 1, "aligned": true, "tests": [
    ["test_restart_across_the_schedule_change_is_bitwise", "passed"]
+  ]},
+  "tests/unit/test_neutral_labels_sites.py": {"run": "/mnt/workspaces/Cells/tier3-records/fr44-admission-20261128/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/fr44-admission-20261128/tier3-run/logs/tests__unit__test_neutral_labels_sites.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 1}, "seconds": 88.88, "collected": 1, "reached": 1, "aligned": true, "tests": [
+   ["test_sites_beside_labels_and_four_partners_keep_the_physics_and_follow_each_label", "passed"]
   ]},
   "tests/unit/test_partition_runs.py": {"run": "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run", "log": "/mnt/workspaces/Cells/tier3-records/fr65-20261126/tier3-run/logs/tests__unit__test_partition_runs.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 16}, "seconds": 493.67, "collected": 16, "reached": 16, "aligned": true, "tests": [
    ["test_a_division_closes_every_check[division_run]", "passed"],

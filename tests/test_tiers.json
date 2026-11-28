@@ -419,7 +419,8 @@
   "/mnt/workspaces/Cells/fr45-build-20261127/round/measure/measured-tiers-1-2.json",
   "/mnt/workspaces/Cells/fr45-tooling-20261127/landing/measure/measured.json",
   "/mnt/workspaces/Cells/fr64-build-20261127/round/measure/measured.json",
-  "/mnt/workspaces/Cells/tier-fold-20261127/measure/measured.json"
+  "/mnt/workspaces/Cells/tier-fold-20261127/measure/measured.json",
+  "/mnt/workspaces/Cells/fr44-admission-build-20261127/round/measure/measured-twin-only.json"
  ],
  "measured_provenance": [
   {
@@ -3588,6 +3589,14 @@
    "root": ".claude/worktrees/tier-fold-20261127",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-27T22:27:47+00:00"
+  },
+  {
+   "git_revision": "03dea4dec4554ffc37573d8632a891542f959fd4",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr44-admission-build-20261127/round/snap-head-03dea4de",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-28T00:42:05+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -7845,6 +7854,12 @@
    {
     "file": "tests/unit/test_membrane_trafficking_restart.py",
     "seconds": 90.12,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_neutral_labels_sites.py",
+    "seconds": 90.14,
     "exit_code": null,
     "counts": {}
    },
