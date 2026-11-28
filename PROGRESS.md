@@ -46,9 +46,11 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
     - **FR-44's admission by species is landed** (D425, c9ab3207).
     - **FR-49's pairing and narrowing is landed** (D426, f2cca425). World B, C1 and C2 pass their registered judgement,
       with every plant caught.
-    - **Liquid routing builds** (D427): the price is accepted, X2 is waived by its reasoned waiver, and there are two
-      builders. The judge's rules come first, by the protocol's order.
-    - FR-49's C4 starts with a plan step (D427).
+    - **Liquid routing builds** (D427 to D429): amendment 7 and the reading note are committed (1bba5faf) for the spec
+      auditor's re-run and their tag. Builder A's c1 to c3 are on `lr-engine`, and builder B's tooling runs. The
+      judge's agent was stopped by a safeguard, and how to continue it is with the user.
+    - **FR-49's C4** (D428, D429): built and reviewed. Plant (e) takes its own horizon by Amendment 3, and the launch
+      waits for the load bounds.
   - FR-45 next: a fresh review of the engine-table contract and the lead's remaining rulings, then the binding tag and the build.
 - **26 November, evening: four landings.**
   - FR-43 part 3's co-writers engine build (D395, 4be34f74).
@@ -103,18 +105,22 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
       only would not make a plant depart.
     - FR-49's World B, C1 and C2 judge no energy readout, so X2 stays optional there.
   - **FR-65** (high, part of FR-43; D365, D375, D398): turnover beside a changing volume, with a lumen. The first build is
-    landed (ae349721). The coupling's step is built (branch `fr65-coupling`, D402); its round follows FR-50 phase 2's landing. The water worlds' run view (§9.2)
-    goes to water's owner.
+    landed (ae349721), and so is the coupling step (00cfbda1, D407). The water worlds' run view (§9.2) goes to water's
+    owner.
   - **FR-64** (normal; D356, D361, D418): **landed** (ff5c5fdc). A declared voltage shift on a channel population.
-  - **FR-63** (normal; D353, D420): a pH shift on it. Its calibration report is landed (03d96f54). The Kv1.5 midpoint gap
-    is with the user (D420).
+  - **FR-63** (normal; D353, D420, D423): a pH shift on it. Its calibration report is landed (03d96f54). The Kv1.5
+    midpoint gap closed as an indication, with nothing built (D423).
   - **FR-53** (normal; D371, D370): a rounding allowance for global ledgers. Note `docs/LEDGER_ROUNDING_DESIGN.md`
-    (774fdcd5); D370 corrects its premise for the pump-tissue family. FR-47's ledger limit: the
-    evidence recommends keeping it, with the user to decide (D379).
-  - **FR-55** (normal; D344, D351): its note recommends no build. **FR-58 to FR-62** (normal; D365) and **FR-66**
-    (medium; D372) have design notes on branches, with questions for the user (D379); so does **FR-56** (172fce4c, D380).
-  - **FR-39, FR-40, FR-41** (high, D286) and the architecture items (D299) are unchanged; no decision of 23 to 24
-    November moves them.
+    (774fdcd5); D370 corrects its premise for the pump-tissue family. Its questions wait for D371's three evidence
+    reads. FR-47's ledger limit is kept (the user, D390); its docs fix is owed.
+  - **FR-55** (normal; D344, D351): no build (the user, D390, D394); its note is still to land. **FR-58 to FR-62**
+    (normal; D365) and **FR-66** (medium; D372) have design notes on branches, with questions for the user (D379); so
+    does **FR-56** (172fce4c, D380). A digest of all their questions is with the user (28 November).
+  - **FR-39** (high, D286): OL6 is finished (D368, D393), so its Phase B is unblocked; its laws sheet and plan are being
+    drafted for discussion (28 November). **FR-40** (high): a metadata-only source search runs. **FR-41** (high) is
+    parked until a study with paired, tabulated data appears (D292's check; the feature index).
+  - **The architecture items (D299):** item 2's two cases have landed (D306, D398, D407); item 3's measurement plan is
+    being drafted (28 November); item 4, the site and sink pair, waits for liquid routing.
 - **Registrations and judged runs still to come:**
   - **FR-51's two-potassium registration has stopped by its own §3** (D391, the user's choice, 26 November): the
     10 mM trace in Panama's Fig. 3E cannot be identified, so neither held-out curve was read or scored. The
@@ -365,7 +371,8 @@ November are listed in the two sections near the top, one line each.
   with explicit cycles, so the implicit block is dropped (D302;
   [evidence](/mnt/workspaces/Cells/mito-step0-20261122/)). The host path's closure re-solve is removed,
   bit-identical (b6da1b60, tag `binding-ledger-reuse-landed-2026-11-22`; 182.5 to 143.6 ms per host
-  step). The half-step energy check is now the cost driver: about 300 CPU-h per 300 s world.
+  step). The half-step energy check is now the cost driver: a 300 s world at 16 µs takes about 100–110
+  core-hours with it, against 38–42 without (D305, which withdrew D302's 300).
 
 - **The near-event snap landed (22 November 2026).** Stage 1 (the clock, D283) and stage 2 (5337db54,
   tag `d283-snap-stage2-landed-2026-11-22`): every operator's grid check asks the clock's one predicate,

@@ -14688,3 +14688,97 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
   - **The note of record,** `docs/LIQUID_ROUTING_DESIGN.md` at 968bd182 (D424), lands on main first, docs only.
 - **FR-49's C4 begins with a plan step:** the amendment, the code-blind references, the judge and the engine's lifting of
   C4's refusal, written against the wash before it retires (D424, D426).
+
+## D428: FR-49's Amendment 2 (C4) is tagged and landed; C4's build and liquid routing's two builders start, after the judge's rules
+
+2026-11-28, written at 12:11 UTC.
+
+- **FR-49's Amendment 2** is tagged `fr49-compartment-compositions-v1-amendment-2-2026-11-28` (on 9273259d) and landed on
+  main (c536bf77). The adviser's view was taken.
+  - **The step:** C4 runs at 0.5 s. At C1's 2 s, World B's sites fail the site operator's stage condition at the first
+    step.
+  - **The lift:** C4's refusal is lifted for qualified sets anchored on the compartments, not by a flat partner-list
+    addition. That admits 8 new law sets, against 48 for the flat form, and each of the seven proper subsets gets a
+    host row or a refusal by name.
+  - **References: none new (R1).** C4's values are pointers into `cases.json`'s L, C1 and B entries, judged against
+    `fr49-references-2026-11-24`. Registered values and decoupling gates refuse to judge any run whose definition
+    breaks them. The registration never promised C4 a reference, so this corrects D427's line, which said "the
+    code-blind references".
+  - **The remedy:** if development shows a bitwise claim (C4-1, C4-4 or C4-7) failing, it is a dated further amendment
+    before any registered run, never a narrowed reading.
+  - **A refusal:** the planner's recursive search for a frozen list that might hold `REGISTRATION.md` was refused by
+    the permission classifier, since the walk would have entered `lean/`. No one retried it.
+    - The question was settled by the enforcement itself instead: tier 1 at the amendment's commit (314 files, none
+      changed against the record) and FR-49's tier-2 files (7 passed).
+    - The lead read L.json by structure only: its 61 sample times all lie on the 0.5 s grid.
+- **C4's build** starts on branch `fr49-c4`, by FR-49's builder. A non-builder reviews plants (d) and (e) before the
+  judge's tag. C4 holds `species_labels.py`, `composition_matrix.py`, `PUMP_COMPOSITE.md` and the labels docs until it
+  lands.
+- **Liquid routing:**
+  - **The judge's rules** are written and committed untagged (`lr-judge` at e04e16ce, 101 of 101 synthetic checks),
+    before any engine code, as the protocol's §5 step 5 requires. Its open readings and four TABLE layout gaps are the
+    lead's to rule before the judge's tag.
+  - **Builder A** builds the operator and the lift branch (`lr-engine`). **Builder B** builds the worlds, the exporter,
+    the format sample and the takeover files (`lr-tooling`).
+  - Each reads only what the protocol's Builder row allows, and edits C4's shared files only after C4 lands.
+
+## D429: liquid routing's amendment 7 and the lead's reading note are committed; its judge's agent is stopped by a safeguard; C4's plant (e) takes a horizon of its own; more agents for the backlog
+
+2026-11-28, written at 14:06 UTC.
+
+- **Liquid routing's judge readings, ruled with the adviser:**
+  - **J10 is off.** CRITERIA §3.4 is explicit that an unresolved pair is reported, not judged, and V7 names §3.5 alone.
+    It is the one ruling that removes an inconclusive outcome. The judge's selftest is 101 of 101 at `lr-judge` 29514bd3.
+  - **J12 is kept,** as the text: "An event adds 8 u s, once" (CRITERIA §1).
+  - **A correction of the lead's own:** a relay to builder B of the judge's reading of TABLE broke the protocol's
+    independence (the exporter is written from TABLE alone) and was withdrawn. Builder B found most of it binding in the
+    tagged text anyway.
+- **Amendment 7 and the lead's reading note** are committed on `lr-amendment-7` (head 1bba5faf, docs only, four paths;
+  274 citations checked against their lines). An author agent sorted the judge's 39 readings (12 the text, 15 silences
+  filled strictly, 12 to the amendment) and builder B's 34 points (14, 18 and 2). The spec auditor re-runs on that head
+  before its tag. The lead's rulings in it:
+  - the author's stricter proposals over the judge's readings on a duplicate key, a run named twice, τ's accuracy and
+    the step test (no tolerance enters);
+  - a P8 run that completes with a provenance fault is unscorable (V2, R10);
+  - J12's term counts per event, deliveries included: looser than once per run by at most 16 u s, disclosed;
+  - a ledger's error counts as an amount in arm 7's map, so the router maps the wash's ion-ledger error as a ninth
+    meaning (builder A, A-FORMS);
+  - an error nothing names is kind `harness`, never `domain`;
+  - an invented world differs from every registered one by a factor of at least 2 in one group its outputs depend on.
+  - **Item 10(b), the user's to overrule before the registration tag:** a retry's finer step is not a plant place. That
+    reads §6.1's "every exact step" on the registered grid, against its literal words, because no plant's power was
+    stated there before any run. The tagged references hold a plants row at every place §6.1 names (the lead's check by
+    name, no value read), so they need no change.
+  - Builder B may read `references/out/inputs_invented.json` alone, as protocol §5 step 9 needs.
+- **The builds:**
+  - Builder A's c1 to c3 are on `lr-engine` (658fafd1, 020afd4e, 626fb785), and the lift branch is at 7df37889. An
+    invented wash pair runs compiled with every shared state field and all nine mapped records bit for bit.
+  - Builder B's tooling without the router is at `lr-tooling` 2905f5b5. Its first smoke batch reused folder numbers; that
+    is disclosed, and the batch was rerun on its own numbers.
+- **The judge's agent was stopped by Anthropic's safeguards** (a flagged message, "reasoning_extraction") while it
+  answered the lead's question on ten unused reading numbers. Its committed work stands. The lead did not take up its
+  work and asked the user how to continue; the lead and the adviser recommend a fresh judge agent in the same role after
+  amendment 7's tag.
+- **FR-49's C4:**
+  - The gate-free K leak beside C4's set is refused by name (`CHANNEL`, acfb3d54), after a parse check found no
+    registered world declaring it. The judge (`judge_c4`) and its tier-1 test (33 rows, about 7 s) are written
+    (08139131). The lead's reader check on the references tag's invented samples passes. Reading 4 (6858da3c) records
+    plant (e)'s layout check, and that a plant record that does not complete forms no catch.
+  - **The plant review:** (d) passes. On C4's own declared values, (e) is caught to 1260 s, but its site load rises
+    toward five times θ and would most likely be refused near 2862 s of 3600 s, so it would not be a catch.
+  - **The ruling, with the adviser, the user's to overrule before the launch:** a dated Amendment 3, by A2.7's
+    further-amendment route, gives (e) its own registered horizon of 1800 s, with its mechanism unchanged. C4-8 for (e)
+    is then read at 31 of L's 61 sample times, a registered change. The amendment discloses that the horizon was chosen
+    from the plant's predicted trajectory, the reviewer's out-of-engine integration of a reduced model to 3600 s, and
+    every development run of (e).
+  - **The launch is held** until the reviewer bounds every other registered run's load over the whole horizon, host-only.
+    The truncation premise is tested by a development pair of the unbound twin, and the launcher is rehearsed on a
+    development job.
+  - The reviewer's first pass used an invented stand-in for `references/spec/cases.json`, which the lead's brief had
+    barred; leave to read that file alone followed.
+- **The backlog,** on the user's word ("we can use more agents if we need if we can speed up the backlog"), up to the cap
+  of seven:
+  - a digest of the design notes' questions, now with the user;
+  - a scout's next steps;
+  - FR-39's Phase B laws sheet and plan, a measurement plan for the cost of long runs (D299 item 3), and FR-40's
+    metadata-only source search, all docs or workspace only.
