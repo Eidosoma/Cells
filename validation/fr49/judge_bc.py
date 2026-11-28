@@ -14,12 +14,15 @@ and was checked on the references' invented format samples (`--check-reader`) be
   - B3: 7.2 ≤ e_B(0.1 s)/e_B(0.05 s) ≤ 8.8; where e_B(0.1 s) < 1e-12 the ratio is not judged, and B
     passes if e_B(0.05 s) < 1e-12;
   - B4: |B − B*| ≤ 1e-10 B* at every sample with t ≥ 550 s, at both steps;
-  - B5: lys's every species row and the population's R and B bit for bit the twin's on every row;
+  - B5: lys's every species row and the population's R and B bit for bit the twin's on every row,
+    gated on the wash's counts: the well's event applied exactly once in each honest run, none in
+    the twin, and none at lys in any of them;
   - B6: the node-owned variant's site layout arrays bit for bit the facing population's, a host row
     with no compile.
 - **C1** (§5): C1-1, O's and C's physical rows and label shares bit for bit the twin's on every row;
   C1-2, W's x and base amounts just after the wash within 1e-13 relative of LAWS.md §4's; C1-3,
-  every host check, the label owner's closure included, so both runs completed.
+  every host check, so both runs completed, and the label owner's closure diagnostic
+  `label_closure_relative` at most 64 ε on every row of both (CLOSURE).
 - **C2** (§5): C2-1, each ligand conserved to 1e-10 of its total on every row; C2-2, B1's and B2's
   order windows with B3's floor rule; C2-3, |B_j − B_j*| ≤ 1e-10 B_j* at every sample with
   t ≥ 1800 s.
@@ -29,25 +32,31 @@ times.
 
 **The plants** (§4.2 and §5): World B's (a), the free-ligand Langmuir B = S c0/(K_d + c0) with
 c0 = L_T/V_C, is this judge's substitution and must fail B4. World B's (b), (c) and (d) are runs and
-must each fail B2, B4 or B5, against the honest twin for B5. C1's must fail C1-2, and C2's C2-3. A
-plant run refused by a named check is reported as such, beside whether it fails a registered
-criterion; only the latter is the registration's catch.
+must each fail B2, B4 or B5, against the honest twin for B5 with its wash-count gate (once at the
+well, none at lys). B5 scores as a catch only for (d),
+whose mechanism is the wash; for (b) and (c) it is reported and not scored, since their differences
+from the twin are their physics and their registered catches are B2 and B4. C1's must fail C1-2,
+and C2's C2-3. A plant run refused by a named check is reported as such, beside whether it fails a
+registered criterion; only the latter is the registration's catch.
 
 **The inconclusive rule** (the registration's preamble): a criterion that reads a reference value is
 inconclusive, not a pass, where that reference reports a cross-check difference above its declared
-accuracy. That is any `within` that is false in its `method`.
+accuracy. That is any `within` that is false in its `method`. C1-2 reads the well's own
+cross-checks (`method.well…`); a C1 file with none is refused, not read as all within.
 
-**The readings this judge embodies,** to be ruled before its tag:
-1. C1-2's "just after the wash" is the first saved row after the wash time, which is the step after
-   900 s; "just before" is the row at 900 s. W has no route, so its amounts are constant in between.
+**The readings this judge embodies,** ruled by the lead after a non-builder review
+(validation/fr49/READING-2-2026-11-28.md):
+1. C1-2's "just after the wash" is the first saved row after the wash time, the 902 s row; "just
+   before" is the row at 900 s. W has no route, so its amounts are constant in between.
 2. A plant's catch is a registered criterion's failure. A plant run refused by a named check is
    reported, and is not the catch, so its part fails.
-3. "Every row" (B2, B5, C1-1 and C2-1) is every saved row. The runner saves every accepted step, so
-   that is every step, not only the observation grid (5 s, 60 s and 20 s).
+3. "Every row" (B2, B5, C1-1, C1-3 and C2-1) is every saved row, and a record's rows must be exactly
+   the dt grid from 0 to the horizon: horizon/dt + 1 rows, the k-th at k·dt, with every quantity
+   and array one entry per row (grid_refusal). A record otherwise is refused (ReaderError).
 4. World B's twin is one run at 0.1 s (the literal reading of "a twin", D424). B5 compares it with
    the honest run at 0.1 s. B1 and B2 are judged on the two honest runs and on the twin.
-5. C1-3's "the label owner's closure included": a run that completes passed the closure's host check
-   on every row; the closure diagnostic's largest value is reported.
+5. C1-3's closure is bounded by 64 ε on every row of C1 and its twin, the bound the label owner's
+   own run tests use; the engine's host check bounds it only as finite and non-negative.
 6. B2's L_T is the declared n_L(0) + B(0), and C2-1's L_T,j the declared totals. B4's and C2-3's
    equilibria, and B3's and C2-2's references, are the references' values. Plant (a)'s B is formed
    here from the declared values, in 50-digit decimal arithmetic.
@@ -98,6 +107,11 @@ FLOOR = 1e-12  # B3's floor rule, and C2-2's.
 EQUILIBRIUM = 1e-10  # B4 and C2-3, relative to the equilibrium.
 B4_FROM, C2_3_FROM = 550.0, 1800.0  # s: about 35 and 36 relaxation times.
 WELL = 1e-13  # C1-2, relative.
+# C1-3: the label owner's closure diagnostic on every row, the bound its own run tests use
+# (test_neutral_labels_kinds.py, test_neutral_labels_transport.py, test_neutral_arrival_labels.py).
+CLOSURE = 64 * float(np.finfo(float).eps)
+B5_SCORED = ("d",)  # The plant whose mechanism is the wash; B5 is reported for (b) and (c).
+B5_ARRAYS = ("lys_rows", "site_free_increment_fmol", "site_bound_increment_fmol")
 SITES_PER_FMOL = Decimal(602214076)
 # The references' layout (the spec README's "What to produce", as the format samples show it).
 QUANTITIES = {
@@ -176,6 +190,11 @@ def cross_checks(method, path="method"):
     return found
 
 
+def well_checks(checks):
+    """C1-2's cross-checks: the well's own (method.well...), not World L's."""
+    return [(path, ok) for path, ok in checks if path.startswith("method.well")]
+
+
 def sample_times(world):
     """The registered sample times of a world, from its horizon and observation interval (RUNS)."""
     _, _, end, every, _, _ = next(r for r in RUNS.values() if r[0] == world)
@@ -201,7 +220,8 @@ def read_reference(path, world, *, cases=SPEC, invented=False):
     - the declared inputs are `cases`'s for the world, compared as decimals, and so are the
       sample-time rule, the wash's time and fraction, and the sites per fmol;
     - `sample_times_s` holds each registered sample time, and each quantity is a list of finite
-      numbers, one per sample time; each once value, and each of C1's well values, is finite.
+      numbers, one per sample time; each once value, and each of C1's well values, is finite;
+    - the method holds a cross-check, and C1's one of the well (C1-2's inconclusive rule).
     Raises ReaderError naming what is wrong, never a value."""
     doc = json.loads(Path(path).read_text())
     if not isinstance(doc, dict):
@@ -262,6 +282,10 @@ def read_reference(path, world, *, cases=SPEC, invented=False):
     checks = cross_checks(doc.get("method"))
     if not checks:
         raise ReaderError("method holds no cross-check")
+    if world == "C1" and not well_checks(checks):
+        raise ReaderError(
+            "method holds no cross-check of the well (method.well...), which C1-2 reads"
+        )
     out["cross_checks"] = checks
     return out
 
@@ -269,9 +293,28 @@ def read_reference(path, world, *, cases=SPEC, invented=False):
 # ------------------------------------------------------------------ reading the records
 
 
+def grid_refusal(times, dt, end):
+    """Why a record's rows are not reading 3's dt grid, or None: exactly round(end/dt) + 1 rows, the
+    k-th at k·dt (the float product, as the runner's grid makes it), the last at the horizon."""
+    count = int(round(end / dt)) + 1
+    grid = np.arange(count, dtype=float) * dt
+    if times.shape != grid.shape:
+        return (
+            f"{times.size} rows, not the dt grid's {count} (0 to {end:g} s at {dt:g} s; reading 3)"
+        )
+    off = np.flatnonzero(times != grid)
+    if off.size:
+        k = int(off[0])
+        return f"row {k} is at {times[k]!r} s, not k·dt = {grid[k]!r} s (reading 3)"
+    if grid[-1] != end:
+        return f"the dt grid's last row is at {grid[-1]!r} s, not the horizon {end!r} s (reading 3)"
+    return None
+
+
 def read_record(records, run_id):
     """(record, {q: float array}, times, npz arrays or None) of one run's record, refused unless its
-    job is the judge's own row for it (RUNS)."""
+    job is the judge's own row for it (RUNS), and, once completed, unless its rows are the dt grid
+    with every quantity and array one entry per row (grid_refusal, reading 3)."""
     path = Path(records) / f"{run_id}.json"
     record = json.loads(path.read_text())
     if record.get("kind") != RECORD_KIND or record.get("protocol") != PROTOCOL:
@@ -285,7 +328,19 @@ def read_record(records, run_id):
         k: np.asarray([float.fromhex(x) for x in v]) for k, v in record["quantities"].items()
     }
     times = np.asarray([float.fromhex(x) for x in record["times"]])
-    arrays = np.load(Path(records) / f"{run_id}.npz")
+    _, dt, end, _, _, _ = RUNS[run_id]
+    refusal = grid_refusal(times, dt, end)
+    if refusal:
+        raise ReaderError(f"{path}: {refusal}")
+    for k, values in quantities.items():
+        if values.shape != times.shape:
+            raise ReaderError(
+                f"{path}: quantity {k} has {values.size} entries for {times.size} rows"
+            )
+    arrays = dict(np.load(Path(records) / f"{run_id}.npz"))
+    for name, values in arrays.items():
+        if values.shape[:1] != times.shape:
+            raise ReaderError(f"{path}: array {name} has {values.shape[:1]} rows for {times.size}")
     return record, quantities, times, arrays
 
 
@@ -371,13 +426,30 @@ def judge_b(records, reference):
     eq = {k: equilibrium(at_samples(k)) for k in ("B-dt0.1", "B-dt0.05")}
     out["B4"] = _criterion(all(x <= EQUILIBRIUM for x in eq.values()), True, cross,
                            relative_gap=eq)  # fmt: skip
-    a, b = runs["B-dt0.1"][3], runs["B-twin-dt0.1"][3]
-    names = ("lys_rows", "site_free_increment_fmol", "site_bound_increment_fmol")
-    differing = [n for n in names if not _bitwise(a[n], b[n])]
-    out["B5"] = dict(passed=not differing, differing=differing,
-                     wash_applied_at_the_well=int(a["wash_applied_well"][-1]),
-                     wash_applied_at_the_well_in_the_twin=int(b["wash_applied_well"][-1]),
-                     wash_applied_at_lys=int(np.max(a["wash_applied_lys"])))  # fmt: skip
+    twin = runs["B-twin-dt0.1"][3]
+
+    def washes(run_id):
+        """{well, lys}: the wash's applied count at each, from its cumulative rows (None where they
+        fall or go negative)."""
+        arrays, found = runs[run_id][3], {}
+        for where in ("well", "lys"):
+            rows = np.asarray(arrays[f"wash_applied_{where}"])
+            steady = rows.ndim == 1 and rows.min() >= 0 and bool(np.all(np.diff(rows) >= 0))
+            found[where] = int(rows[-1]) if steady else None
+        return found
+
+    def b5(run_id, counts):
+        """B5 on a run against the twin: its arrays bit for bit the twin's, and the wash's counts
+        those given."""
+        arrays = runs[run_id][3]
+        differing = [n for n in B5_ARRAYS if not _bitwise(arrays[n], twin[n])]
+        found = {k: washes(k) for k in counts}
+        counted = all(found[k] == want for k, want in counts.items())
+        return dict(passed=not differing and counted, differing=differing, washes=found,
+                    counts_as_registered=counted)  # fmt: skip
+
+    once, none = dict(well=1, lys=0), dict(well=0, lys=0)
+    out["B5"] = b5("B-dt0.1", {"B-dt0.1": once, "B-dt0.05": once, "B-twin-dt0.1": none})
     out["B6"] = b_six()
 
     plants = {}
@@ -392,10 +464,9 @@ def judge_b(records, reference):
     gap = abs(langmuir - b_star) / b_star
     plants["a"] = dict(caught=gap > EQUILIBRIUM, fails=["B4"] if gap > EQUILIBRIUM else [],
                        B4_relative_gap=gap)  # fmt: skip
-    twin = runs["B-twin-dt0.1"][3]
     for name in ("b", "c", "d"):
         run_id = f"B-plant-{name}-dt0.1"
-        record, q, t, arrays = runs[run_id]
+        record, q, _, _ = runs[run_id]
         if q is None:
             plants[name] = dict(caught=False, fails=[], refused=record.get("refusal"))
             continue
@@ -404,10 +475,11 @@ def judge_b(records, reference):
             fails.append("B2")
         if equilibrium(at_samples(run_id)) > EQUILIBRIUM:
             fails.append("B4")
-        if any(not _bitwise(arrays[n], twin[n]) for n in names):
+        planted = dict(b5(run_id, {run_id: once}), scored=name in B5_SCORED)
+        if planted["scored"] and not planted["passed"]:
             fails.append("B5")
         plants[name] = dict(caught=bool(fails), fails=fails, B2_gap=conserved(run_id),
-                            B4_gap=equilibrium(at_samples(run_id)))  # fmt: skip
+                            B4_gap=equilibrium(at_samples(run_id)), B5=planted)  # fmt: skip
     return out, plants
 
 
@@ -415,16 +487,30 @@ def judge_c1(records, reference):
     v = declared_values("C1")
     # C1-2 reads the well's values only, so the well's own cross-checks decide its inconclusive
     # rule (World L's, also in C1.json, are World L's).
-    cross = [(path, ok) for path, ok in reference["cross_checks"] if path.startswith("method.well")]
+    cross = well_checks(reference["cross_checks"])
+    if not cross:  # Never read as all within (READING-2).
+        raise ReaderError("C1.json's method holds no cross-check of the well (method.well...)")
     t_wash = float(v["wash"]["time_s"])
     runs = {k: read_record(records, k) for k in RUNS if RUNS[k][0] == "C1"}
     out = {}
     completed = {k: runs[k][0]["outcome"] for k in ("C1-dt2", "C1-twin-dt2")}
-    closure = {k: runs[k][0].get("label_closure_relative_max") for k in completed}
-    out["C1-3"] = dict(passed=all(o == "completed" for o in completed.values()),
-                       outcomes=completed, label_closure_relative_max=closure)  # fmt: skip
-    if not out["C1-3"]["passed"]:
+    if not all(o == "completed" for o in completed.values()):
+        out["C1-3"] = dict(passed=False, outcomes=completed)
         return out, {}
+
+    def closure(run_id):
+        """The label owner's closure diagnostic on every row of a run (reading 5)."""
+        arrays = runs[run_id][3]
+        if "label_closure_relative" not in arrays:
+            raise ReaderError(f"record {run_id} holds no label_closure_relative rows")
+        values = np.asarray(arrays["label_closure_relative"], dtype=float)
+        within = values.size > 0 and bool(np.all(np.isfinite(values) & (values <= CLOSURE)))
+        return within, float(np.max(values)) if values.size else None
+
+    found = {k: closure(k) for k in completed}
+    out["C1-3"] = dict(passed=all(w for w, _ in found.values()), outcomes=completed,
+                       label_closure_relative_max={k: m for k, (_, m) in found.items()},
+                       bound=CLOSURE)  # fmt: skip
     a, b = runs["C1-dt2"][3], runs["C1-twin-dt2"][3]
     names = ("O_rows", "C_rows", "O_shares", "C_shares")
     differing = [n for n in names if not _bitwise(a[n], b[n])]
@@ -563,6 +649,7 @@ def check_reader(samples, cases):
                 once=sorted(parsed.get("once", {})),
                 well=sorted(parsed.get("well", {})),
                 cross_checks=len(parsed["cross_checks"]),
+                well_cross_checks=len(well_checks(parsed["cross_checks"])),
             )
         except ReaderError as error:
             report[world] = dict(parsed=False, why=str(error))

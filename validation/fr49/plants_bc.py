@@ -23,14 +23,21 @@ World B's, each of which must fail B2, B4 or B5:
   compartment-node refusal passes.
 C1's, which must fail C1-2: the buffer given the window's label x. label_shares.exchange is
 patched so that the supplied buffer joins label x (index 1, the label of the window open at
-900 s) instead of the base, all else as the engine's.
+900 s) instead of the base, all else as the engine's. The copy (c1_exchange) is the engine's
+function but for that one line (C1_CHANGE). c1_drift compares the two at the tree the run uses,
+and any other difference stops the run before the patch (READING-2).
 C2's, which must fail C2-3: L2's association rate doubled in the definition.
 """
 
+import ast
 import contextlib
+import inspect
+import textwrap
 
 import jax.numpy as jnp
 import numpy as np
+
+from cells.numerics.species_sums import entity_sum
 
 LYS_FACE = "lys_face"  # validation/fr49/worlds_bc.py's bounding patch.
 LUMEN_SITES = "lumen_sites"
@@ -105,25 +112,71 @@ def plant_d():
         ws.ScheduledCompartmentWash.control_values = original_controls
 
 
+# The one line in which c1_exchange differs from the engine's label_shares.exchange, as
+# ast.unparse writes it: (the engine's, the plant's).
+C1_CHANGE = (
+    "base = (xp.arange(shares.shape[1]) == 0)[None, :, None]",
+    "base = (xp.arange(shares.shape[1]) == LABEL_X)[None, :, None]",
+)
+
+
+def c1_exchange(shares, n0, removed, supplied, present, *, xp=jnp):
+    """C1's planted exchange: the engine's label_shares.exchange with its one line changed, so that
+    the supplied buffer joins label x (LABEL_X), not the base (C1_CHANGE)."""
+    declared = present if present.ndim == 3 else present[:, :, None]
+    base = (xp.arange(shares.shape[1]) == LABEL_X)[None, :, None]  # The engine's: == 0.
+    kept = (n0 - removed)[:, None, :] * shares
+    x = xp.where(declared, kept + xp.where(base, supplied[:, None, :], 0.0), 0.0)
+    total = entity_sum(x, axis=1, xp=xp)
+    moved = ((removed > 0) | (supplied > 0)) & (total > 0)
+    out = x / xp.where(moved, total, 1.0)[:, None, :]
+    return xp.where(moved[:, None, :], out, shares)
+
+
+def statements(function):
+    """(signature, [statement]) of a function's source as ast.unparse writes them: comments,
+    layout and the docstring dropped."""
+    node = ast.parse(textwrap.dedent(inspect.getsource(function))).body[0]
+    body = node.body
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant):
+        body = body[1:]
+    return ast.unparse(node.args), [ast.unparse(statement) for statement in body]
+
+
+def c1_drift(engine=None):
+    """Where c1_exchange differs from the engine's exchange (label_shares.exchange at this tree,
+    or `engine`) other than by C1_CHANGE, and whether the names it calls are the engine's: [] when
+    the copy is the engine's but for that one line."""
+    from cells.numerics import label_shares
+
+    engine = label_shares.exchange if engine is None else engine
+    (engine_args, theirs), (plant_args, ours) = statements(engine), statements(c1_exchange)
+    drift = [] if engine_args == plant_args else [f"the signature: ({engine_args}) is not ours"]
+    if label_shares.entity_sum is not entity_sum:
+        drift.append("label_shares.entity_sum is not the copy's entity_sum")
+    if len(theirs) != len(ours):
+        return [*drift, f"{len(theirs)} statements, the copy's {len(ours)}"]
+    changed = [(a, b) for a, b in zip(theirs, ours, strict=True) if a != b]
+    drift += [f"{a!r} is the copy's {b!r}" for a, b in changed if (a, b) != C1_CHANGE]
+    if C1_CHANGE not in changed:
+        drift.append("the planted line is not the one changed")
+    return drift
+
+
 @contextlib.contextmanager
 def plant_c1():
-    """C1's: at a liquid exchange the supplied buffer joins label x, not the base."""
+    """C1's: at a liquid exchange the supplied buffer joins label x, not the base. Before it
+    patches, it stops if its copy has drifted from the engine's function (c1_drift)."""
     from cells.numerics import label_shares
-    from cells.numerics.species_sums import entity_sum
 
+    drift = c1_drift()
+    if drift:
+        raise RuntimeError(
+            "C1's plant is not the engine's label_shares.exchange but for its one line: "
+            + "; ".join(drift)
+        )
     original = label_shares.exchange
-
-    def planted(shares, n0, removed, supplied, present, *, xp=jnp):
-        declared = present if present.ndim == 3 else present[:, :, None]
-        into = (xp.arange(shares.shape[1]) == LABEL_X)[None, :, None]  # The engine's: == 0.
-        kept = (n0 - removed)[:, None, :] * shares
-        x = xp.where(declared, kept + xp.where(into, supplied[:, None, :], 0.0), 0.0)
-        total = entity_sum(x, axis=1, xp=xp)
-        moved = ((removed > 0) | (supplied > 0)) & (total > 0)
-        out = x / xp.where(moved, total, 1.0)[:, None, :]
-        return xp.where(moved[:, None, :], out, shares)
-
-    label_shares.exchange = planted
+    label_shares.exchange = c1_exchange
     try:
         yield
     finally:

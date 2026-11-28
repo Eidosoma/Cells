@@ -13,20 +13,25 @@ record of the engine's own values. Nothing in a record is formed from a referenc
 and hash before any run (D424). The worlds are validation/fr49/worlds_bc.py's, the plants
 validation/fr49/plants_bc.py's.
 
-**A run** (`run JOB RECORD_DIR`) enters the job's engine plant, if any, before the world is built,
-so its patch is in place for the parse, the binding and the compile; a definition plant changes the
-built definition instead (plants_bc.definition). The definition is parsed and run by the runner,
-whose host checks run on every accepted row. It writes RECORD_DIR/<id>.json, the outcome, the
-identity and the quantities at every observed row as exact hexadecimal floats, and
-RECORD_DIR/<id>.npz, the arrays that the bitwise criteria compare (B5, C1-1). A refusal is recorded
-with its class and message, not raised.
+**A run** (`run JOB RECORD_DIR`) gets a fresh process of its own, since C1's plant patches code that
+is compiled (READING-2). `run` checks the job and the first-run rule, then starts a new interpreter
+for it (`run-here`), which asserts before it loads the engine that it is fresh: started by `run` for
+this job and this driver file, no job run in it before, and no JAX or engine module loaded
+(fresh_process_refusal). That process enters the job's engine plant, if any, before the world is
+built, so its patch is in place for the parse, the binding and the compile; a definition plant
+changes the built definition instead (plants_bc.definition). The definition is parsed and run by
+the runner, whose host checks run on every accepted row. It writes RECORD_DIR/<id>.json, the
+outcome, the identity and the quantities at every saved row (the dt grid, which the judge requires)
+as exact hexadecimal floats, and RECORD_DIR/<id>.npz, the arrays that the bitwise criteria compare
+(B5, C1-1) and C1-3's closure rows. A refusal is recorded with its class and message, not raised.
 
 **What each world's record holds:**
 - World B: S at lys (n_L), and the population's B and R, at every row; in the npz, lys's every
   species row and the site increments, and the wash's applied counts.
 - C1: S at the owner O, the compartment C and the well W, and label x's share at each, at every row;
-  in the npz, O's and C's every species row and their label shares; the label owner's closure
-  diagnostic, largest over the run.
+  in the npz, O's and C's every species row and their label shares, and the label owner's closure
+  diagnostic on every row (`label_closure_relative`, which C1-3 bounds), with its largest value in
+  the record.
 - C2: L1 and L2 at lys, each member's B, and the set's free sites R, at every row.
 
 The first-run rule (FR-45's; the lead, 28 November 2026): a registered world first runs at its
@@ -37,11 +42,13 @@ registered length only in a judged run. A job whose ID does not begin `dev-` run
 Usage (PYTHONPATH at a snapshot, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr49.driver_bc jobs OUT_DIR
   python -B -m validation.fr49.driver_bc run JOB_JSON RECORD_DIR [--judged]
+(`run-here` is the fresh process that `run` starts; called directly, it refuses.)
 """
 
 import argparse
 import hashlib
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -71,6 +78,11 @@ JOBS = (
     ("C2-plant-dt0.1", "C2", 0.1, 2000.0, 20.0, None, "c2"),
 )
 FIELDS = ("id", "world", "dt", "horizon_s", "every_s", "event", "plant")
+CHILD = (
+    "FR49_DRIVER_RUN"  # Set by `run` for the process it starts: [this driver file, the job file].
+)
+ENGINE_MODULES = ("jax", "jaxlib", "cells")  # None is loaded in a fresh process before its job.
+_RAN = []  # The job this process has run: one at most.
 LABEL_X = 1  # World L's labels: ["base", "x"].
 
 
@@ -169,6 +181,7 @@ def c1_record(spec, result, p):
         C_rows=np.asarray(h.extracellular_amount_increment)[:, :, node],
         O_shares=share[:, :, :, owner],
         C_shares=outside[:, :, :, node],
+        label_closure_relative=np.asarray(h.label_closure_relative),  # [row, labelled species]
     )
     closure = float(np.max(np.asarray(h.label_closure_relative), initial=0.0))
     return quantities, arrays, dict(label_closure_relative_max=closure)
@@ -232,8 +245,59 @@ def first_run_refusal(entry, judged):
     return None
 
 
+def load_job(job_path):
+    entry = json.loads(Path(job_path).read_text(encoding="utf-8"))
+    if entry.get("kind") != JOB_KIND or entry.get("protocol") != PROTOCOL:
+        raise SystemExit(f"{job_path}: not an FR-49 Parts B and C job")
+    return entry
+
+
+def mark(job_path):
+    """CHILD's value for a job: this driver file and the job file, resolved."""
+    return json.dumps([str(Path(__file__).resolve()), str(Path(job_path).resolve())])
+
+
+def fresh_process_refusal(job_path, environ=None, modules=None, ran=None):
+    """Why this process is not a fresh one of its own for the job, or None: `run` started it for
+    this job and this driver file (CHILD), it has run no job before (_RAN), and no JAX or engine
+    module is loaded (ENGINE_MODULES). The defaults are this process's own."""
+    environ = os.environ if environ is None else environ
+    modules = sys.modules if modules is None else modules
+    ran = _RAN if ran is None else ran
+    if environ.get(CHILD) != mark(job_path):
+        return "a run's process is the one `run` starts for that job and driver (a fresh process)"
+    if ran:
+        return f"this process ran {ran[0]} already: one job per fresh process"
+    loaded = sorted(m for m in modules if m.split(".")[0] in ENGINE_MODULES)
+    if loaded:
+        return f"this process loaded {loaded[0]} and {len(loaded) - 1} more before its job"
+    return None
+
+
 def run(job_path, record_dir, *, judged=False):
-    """Run one job in this process and write its record (the module docstring)."""
+    """Run one job in a fresh process of its own (run_here) and return its outcome; the job and the
+    first-run rule are checked here first."""
+    entry = load_job(job_path)
+    refusal = first_run_refusal(entry, judged)
+    if refusal:
+        raise SystemExit(refusal)
+    command = [sys.executable, "-B", "-m", "validation.fr49.driver_bc", "run-here", str(job_path),
+               str(record_dir), *(["--judged"] if judged else [])]  # fmt: skip
+    done = subprocess.run(command, env=dict(os.environ, **{CHILD: mark(job_path)}), check=False)
+    if done.returncode:
+        raise SystemExit(f"{entry['id']}: its process ended with status {done.returncode}")
+    record = json.loads((Path(record_dir) / f"{entry['id']}.json").read_text(encoding="utf-8"))
+    return record["outcome"]
+
+
+def run_here(job_path, record_dir, *, judged=False):
+    """Run one job in this process, which must be the fresh one `run` started for it, and write its
+    record (the module docstring)."""
+    entry = load_job(job_path)
+    refusal = first_run_refusal(entry, judged) or fresh_process_refusal(job_path)
+    if refusal:
+        raise SystemExit(refusal)
+    _RAN.append(entry["id"])
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -243,16 +307,11 @@ def run(job_path, record_dir, *, judged=False):
     from cells.registry.models import get_model
     from validation.fr49 import plants_bc
 
-    entry = json.loads(Path(job_path).read_text(encoding="utf-8"))
-    if entry.get("kind") != JOB_KIND or entry.get("protocol") != PROTOCOL:
-        raise SystemExit(f"{job_path}: not an FR-49 Parts B and C job")
-    refusal = first_run_refusal(entry, judged)
-    if refusal:
-        raise SystemExit(refusal)
     out = Path(record_dir)
     out.mkdir(parents=True, exist_ok=True)
     record = dict(kind=KIND, protocol=PROTOCOL, job=entry, identity=identity(),
-                  python=sys.version.split()[0], platform=platform.platform())  # fmt: skip
+                  python=sys.version.split()[0], platform=platform.platform(),
+                  process=dict(pid=os.getpid(), parent_pid=os.getppid(), fresh=True))  # fmt: skip
     started = time.perf_counter()
     engine_plant = entry["plant"] in plants_bc.ENGINE
     record["plant_kind"] = "engine" if engine_plant else ("definition" if entry["plant"] else None)
@@ -283,15 +342,19 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
     jobs = sub.add_parser("jobs", help="write the registered job files and their SHA256SUMS")
     jobs.add_argument("out_dir")
-    one = sub.add_parser("run", help="run one job in this process and write its record")
-    one.add_argument("job")
-    one.add_argument("record_dir")
-    one.add_argument("--judged", action="store_true", help="the call runs a registered job")
+    one = sub.add_parser("run", help="run one job in a fresh process and write its record")
+    here = sub.add_parser("run-here", help="the fresh process `run` starts (not for direct use)")
+    for command in (one, here):
+        command.add_argument("job")
+        command.add_argument("record_dir")
+        command.add_argument("--judged", action="store_true", help="the call runs a registered job")
     args = parser.parse_args(argv)
     if args.command == "jobs":
         print("\n".join(write_jobs(args.out_dir)))
-    else:
+    elif args.command == "run":
         print(run(args.job, args.record_dir, judged=args.judged))
+    else:
+        run_here(args.job, args.record_dir, judged=args.judged)
 
 
 if __name__ == "__main__":

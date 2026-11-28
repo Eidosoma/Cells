@@ -7,12 +7,18 @@
   The invented format samples are read by `--check-reader` (its record is the tag's evidence).
 - The order rule, the inconclusive rule and a part's verdict, on numbers given here.
 - B6, the host row: the node-owned variant's site layout is the facing population's, bit for bit.
-Seconds and reason (D224): about 2 s, no compile; the judge is the registered instrument of Parts B
+- The judge end to end on records fabricated here on each run's dt grid: honest records pass and
+  each plant fails its registered criterion; a record off its registered rows is refused (reading
+  3); B5 is gated on the wash's counts and scored for plant (d) only; C1-3 bounds the closure on
+  every row (READING-2).
+- The driver's first-run rule and fresh-process rule, and C1's plant against the engine's exchange.
+Seconds and reason (D224): about 4 s, no compile; the judge is the registered instrument of Parts B
 and C.
 """
 
 import copy
 import json
+import shutil
 
 import numpy as np
 import pytest
@@ -45,6 +51,7 @@ def reference(world):
     if world == "C1":
         declared["wash"] = copy.deepcopy(v["wash"])
         doc["well"] = dict.fromkeys(judge_bc.WELL_KEYS, "1e-4")
+        doc["method"]["well_second_route"] = dict(declared_accuracy="1e-20", within=True)
     doc["declared"] = declared
     for q in judge_bc.QUANTITIES[world]:
         doc[q] = ["1e-4"] * len(times)
@@ -65,7 +72,8 @@ def test_the_reader_takes_the_layout(tmp_path, world):
     assert all(
         len(found[q]) == len(judge_bc.sample_times(world)) for q in judge_bc.QUANTITIES[world]
     )
-    assert found["cross_checks"] == [("method.second_route.within", True)]
+    well = [("method.well_second_route.within", True)] if world == "C1" else []
+    assert found["cross_checks"] == [("method.second_route.within", True), *well]
 
 
 def _edit(world, change):
@@ -108,6 +116,11 @@ REFUSED = {
     "a missing once value": ("C2", lambda d: d["once"].pop("B2*"), "once.B2*"),
     "a missing well value": ("C1", lambda d: d["well"].pop("x_W_after"), "well.x_W_after"),
     "no cross-check": ("B", lambda d: d.update(method={}), "no cross-check"),
+    "C1 with no cross-check of the well": (
+        "C1",
+        lambda d: d["method"].pop("well_second_route"),
+        "no cross-check of the well",
+    ),
 }
 
 
@@ -143,6 +156,14 @@ def test_b6_the_node_owned_variants_layout_is_the_facing_ones():
 # -------------------------------------------------- the judge end to end, on numbers given here
 
 B_STAR, B1_STAR, B2_STAR = 9.7e-5, 5.7e-5, 4.0e-5  # Invented: the judge's own arithmetic is tested.
+WASH_B, WASH_C1 = 300.0, 900.0  # s: the spec's wash times.
+EPS = float(np.finfo(float).eps)
+
+
+def _grid(run_id):
+    """A run's rows: its dt grid from 0 to its horizon (reading 3)."""
+    _, dt, end, _, _, _ = judge_bc.RUNS[run_id]
+    return np.arange(int(round(end / dt)) + 1, dtype=float) * dt
 
 
 def _profile(times, end, late_from):
@@ -157,7 +178,7 @@ def _engine(profile, times, dt):
     return profile * (1 + np.where(np.asarray(times) < 100.0, delta, 0.0))
 
 
-def _record(records, run_id, *, times=None, quantities=None, arrays=None, refused=False, **extra):
+def _record(records, run_id, *, quantities=None, arrays=None, refused=False, **extra):
     job = driver_bc.job((run_id, *judge_bc.RUNS[run_id]))
     doc = dict(kind=judge_bc.RECORD_KIND, protocol=judge_bc.PROTOCOL, job=job, **extra)
     if refused:
@@ -165,62 +186,70 @@ def _record(records, run_id, *, times=None, quantities=None, arrays=None, refuse
     else:
         doc.update(
             outcome="completed",
-            times=[float(t).hex() for t in times],
+            times=[float(t).hex() for t in _grid(run_id)],
             quantities={k: [float(x).hex() for x in v] for k, v in quantities.items()},
         )
         np.savez(records / f"{run_id}.npz", **arrays)
     (records / f"{run_id}.json").write_text(json.dumps(doc))
 
 
-def _fabricate(tmp_path, refused=()):
-    records, refs = tmp_path / "records", tmp_path / "refs"
-    records.mkdir()
-    refs.mkdir()
-    # World B: the references' B, and the engine's at both steps, its twin, and plants (b)-(d).
+def _world_b(records, refs):
+    """The references' B, the engine's at both steps and its twin, and plants (b)-(d), whose lys
+    rows differ from the twin's (their physics), (d) washed at lys too."""
     tb = np.asarray(judge_bc.sample_times("B"))
-    b_ref = _profile(tb, B_STAR, judge_bc.B4_FROM)
     doc = reference("B")
-    doc["B"] = [repr(float(x)) for x in b_ref]
+    doc["B"] = [repr(float(x)) for x in _profile(tb, B_STAR, judge_bc.B4_FROM)]
     doc["once"]["B*"] = repr(B_STAR)
     (refs / "B.json").write_text(json.dumps(doc))
     total = 1e-4
-    lys = np.zeros((tb.size, 4))
-    shared = dict(
-        lys_rows=lys,
-        site_free_increment_fmol=np.zeros((tb.size, 1)),
-        site_bound_increment_fmol=np.zeros((tb.size, 1)),
-        wash_applied_well=(tb > 300).astype(int),
-        wash_applied_lys=np.zeros(tb.size),
-    )
-    for run_id, dt in (("B-dt0.1", 0.1), ("B-dt0.05", 0.05), ("B-twin-dt0.1", 0.1)):
-        bound = _engine(b_ref, tb, dt)
-        q = dict(n_L=total - bound, B=bound, R=9.96e-5 - bound)
-        _record(records, run_id, times=tb, quantities=q, arrays=shared, refused=run_id in refused)
-    planted = {
-        "B-plant-b-dt0.1": dict(n_L=np.full(tb.size, total), B=np.full(tb.size, 1e-12)),
-        "B-plant-c-dt0.1": dict(n_L=total - 0.99 * b_ref, B=0.99 * b_ref),
-        "B-plant-d-dt0.1": dict(n_L=total - b_ref - np.where(tb > 300, 2e-6, 0.0), B=b_ref),
-    }
-    for run_id, q in planted.items():
-        arrays = dict(shared, lys_rows=lys + (1e-9 if run_id.endswith("d-dt0.1") else 0.0))
-        _record(records, run_id, times=tb, quantities=dict(q, R=9.96e-5 - q["B"]), arrays=arrays,
-                refused=run_id in refused)  # fmt: skip
-    # C1: the well's values just before and after the wash, the engine's at 900 s and 902 s.
+    for run_id, (world, dt, _, _, event, plant) in judge_bc.RUNS.items():
+        if world != "B":
+            continue
+        t = _grid(run_id)
+        profile = _profile(t, B_STAR, judge_bc.B4_FROM)
+        washed = (t > WASH_B).astype(np.int64) * int(event)
+        arrays = dict(
+            lys_rows=np.zeros((t.size, 4)),
+            site_free_increment_fmol=np.zeros((t.size, 1)),
+            site_bound_increment_fmol=np.zeros((t.size, 1)),
+            wash_applied_well=washed,
+            wash_applied_lys=np.zeros(t.size, dtype=np.int64),
+        )
+        bound = _engine(profile, t, dt)
+        n_l = total - bound
+        if plant == "b":  # Binds from elsewhere: lys keeps its total and B stays at the trace.
+            n_l, bound = np.full(t.size, total), np.full(t.size, 1e-12)
+        elif plant == "c":  # B short of B*.
+            n_l, bound = total - 0.99 * profile, 0.99 * profile
+        elif plant == "d":  # lys loses material at the wash.
+            n_l, bound = total - profile - np.where(t > WASH_B, 2e-6, 0.0), profile
+            arrays["wash_applied_lys"] = washed.copy()
+        if plant:
+            arrays["lys_rows"] = arrays["lys_rows"] + 1e-9
+        q = dict(n_L=n_l, B=bound, R=9.96e-5 - bound)
+        _record(records, run_id, quantities=q, arrays=arrays)
+
+
+def _world_c1(records, refs):
+    """The well's values just before and after the wash, the engine's at 900 s and 902 s."""
     doc = reference("C1")
     well = dict(x_W_before=6e-4, b_W_before=4e-4, x_W_after=3e-4, b_W_after=2.000005e-4)
     doc["well"].update({k: repr(v) for k, v in well.items()})
     (refs / "C1.json").write_text(json.dumps(doc))
-    tc = np.asarray([0.0, 900.0, 902.0, 3600.0])
-    rows = dict(O_rows=np.ones((4, 8)), C_rows=np.ones((4, 8)), O_shares=np.zeros((4, 1, 2)),
-                C_shares=np.zeros((4, 1, 2)))  # fmt: skip
     for run_id, x_after in (("C1-dt2", 3e-4), ("C1-twin-dt2", 3e-4), ("C1-plant-dt2", 3.000005e-4)):
-        n = np.asarray([1e-3, 1e-3, x_after + 2.000005e-4, x_after + 2.000005e-4])
-        x = np.asarray([6e-4, 6e-4, x_after, x_after])
+        t = _grid(run_id)
+        n = np.where(t > WASH_C1, x_after + 2.000005e-4, 1e-3)
+        x = np.where(t > WASH_C1, x_after, 6e-4)
         q = dict(n_O=n, n_C=n, n_W=n, share_x_O=x / n, share_x_C=x / n, share_x_W=x / n,
                  share_base_W=1 - x / n)  # fmt: skip
-        _record(records, run_id, times=tc, quantities=q, arrays=rows, refused=run_id in refused,
-                label_closure_relative_max=0.0)  # fmt: skip
-    # C2: two ligands' B against their references, each conserved; the plant misses B1*.
+        rows = dict(O_rows=np.ones((t.size, 8)), C_rows=np.ones((t.size, 8)),
+                    O_shares=np.zeros((t.size, 1, 2)), C_shares=np.zeros((t.size, 1, 2)),
+                    label_closure_relative=np.full((t.size, 1), 1.4e-16))  # fmt: skip
+        _record(records, run_id, quantities=q, arrays=rows, label_closure_relative_max=1.4e-16)
+
+
+def _world_c2(records, refs):
+    """Two ligands' B against their references, each conserved; the plant misses B1*."""
     t2 = np.asarray(judge_bc.sample_times("C2"))
     refs_c2 = {
         "B1": _profile(t2, B1_STAR, judge_bc.C2_3_FROM),
@@ -231,47 +260,170 @@ def _fabricate(tmp_path, refused=()):
         doc[q_name] = [repr(float(x)) for x in values]
     doc["once"].update({"B1*": repr(B1_STAR), "B2*": repr(B2_STAR)})
     (refs / "C2.json").write_text(json.dumps(doc))
-    for run_id, dt, miss in (
-        ("C2-dt0.1", 0.1, 1.0),
-        ("C2-dt0.05", 0.05, 1.0),
-        ("C2-plant-dt0.1", 0.1, 0.999),
-    ):
-        b1 = _engine(refs_c2["B1"], t2, dt) * miss
-        b2 = _engine(refs_c2["B2"], t2, dt)
+    for run_id, miss in (("C2-dt0.1", 1.0), ("C2-dt0.05", 1.0), ("C2-plant-dt0.1", 0.999)):
+        t, dt = _grid(run_id), judge_bc.RUNS[run_id][1]
+        b1 = _engine(_profile(t, B1_STAR, judge_bc.C2_3_FROM), t, dt) * miss
+        b2 = _engine(_profile(t, B2_STAR, judge_bc.C2_3_FROM), t, dt)
         q = dict(n_L1=6e-5 - b1, B1=b1, n_L2=6e-5 - b2, B2=b2, R=9.96e-5 - b1 - b2)
-        arrays = dict(lys_rows=np.zeros((t2.size, 4)))
-        _record(records, run_id, times=t2, quantities=q, arrays=arrays, refused=run_id in refused)
+        _record(records, run_id, quantities=q, arrays=dict(lys_rows=np.zeros((t.size, 4))))
+
+
+@pytest.fixture(scope="module")
+def fabricated(tmp_path_factory):
+    """The twelve runs' honest records on their dt grids, and the three references, written once."""
+    root = tmp_path_factory.mktemp("fabricated")
+    records, refs = root / "records", root / "refs"
+    records.mkdir()
+    refs.mkdir()
+    for world in (_world_b, _world_c1, _world_c2):
+        world(records, refs)
     return records, refs
 
 
-def test_the_judge_end_to_end_passes_honest_records_and_catches_every_plant(tmp_path):
+def _copy(fabricated, tmp_path):
+    records, refs = tmp_path / "records", tmp_path / "refs"
+    shutil.copytree(fabricated[0], records)
+    shutil.copytree(fabricated[1], refs)
+    return records, refs
+
+
+def _rewrite(records, run_id, change):
+    """One record rewritten through change(doc, arrays)."""
+    path = records / f"{run_id}.json"
+    doc = json.loads(path.read_text())
+    arrays = dict(np.load(records / f"{run_id}.npz"))
+    change(doc, arrays)
+    path.write_text(json.dumps(doc))
+    np.savez(records / f"{run_id}.npz", **arrays)
+
+
+def test_the_judge_end_to_end_passes_honest_records_and_catches_every_plant(fabricated):
     """The criteria's code on numbers given here, under the driver's record names: honest runs pass
-    every criterion of the three parts, and each plant fails its registered criterion."""
-    verdict = judge_bc.judge(*_fabricate(tmp_path))
+    every criterion of the three parts, and each plant fails its registered criterion. B5 is
+    reported for (b) and (c), whose lys rows differ from the twin's, and scored for (d) only."""
+    verdict = judge_bc.judge(*fabricated)
     assert verdict["verdict"] == "passed", json.dumps(verdict, default=str)[:2000]
     plants = {
         w: {k: p["fails"] for k, p in v["plants"].items()} for w, v in verdict["parts"].items()
     }
     assert plants == {"B": {"a": ["B4"], "b": ["B2", "B4"], "c": ["B4"], "d": ["B2", "B5"]},
                       "C1": {"c1": ["C1-2"]}, "C2": {"c2": ["C2-3"]}}  # fmt: skip
-    assert verdict["parts"]["B"]["criteria"]["B3"]["ratio"] == pytest.approx(8.0)
+    b = verdict["parts"]["B"]
+    assert [(b["plants"][k]["B5"]["passed"], b["plants"][k]["B5"]["scored"]) for k in "bcd"] == [
+        (False, False),
+        (False, False),
+        (False, True),
+    ]
+    once, none = dict(well=1, lys=0), dict(well=0, lys=0)
+    assert b["criteria"]["B5"]["washes"] == {
+        "B-dt0.1": once,
+        "B-dt0.05": once,
+        "B-twin-dt0.1": none,
+    }
+    assert b["criteria"]["B3"]["ratio"] == pytest.approx(8.0)
     json.dumps(verdict, default=float)  # The verdict file's write.
 
 
-def test_a_refused_plant_run_is_not_the_registrations_catch(tmp_path):
-    verdict = judge_bc.judge(*_fabricate(tmp_path, refused=("B-plant-c-dt0.1",)))
+def test_a_refused_plant_run_is_not_the_registrations_catch(fabricated, tmp_path):
+    records, refs = _copy(fabricated, tmp_path)
+    _record(records, "B-plant-c-dt0.1", refused=True)
+    verdict = judge_bc.judge(records, refs)
     assert verdict["parts"]["B"]["verdict"] == "failed"
     assert verdict["parts"]["B"]["plants"]["c"]["refused"]["message"] == "planted refusal"
     assert verdict["parts"]["C1"]["verdict"] == verdict["parts"]["C2"]["verdict"] == "passed"
 
 
-def test_a_record_of_another_job_is_refused(tmp_path):
-    records, refs = _fabricate(tmp_path)
-    doc = json.loads((records / "C2-dt0.05.json").read_text())
-    doc["job"]["dt"] = 0.025
-    (records / "C2-dt0.05.json").write_text(json.dumps(doc))
-    with pytest.raises(judge_bc.ReaderError, match="not the registered run C2-dt0.05"):
-        judge_bc.judge(records, refs)
+def _sample_grid(doc, arrays, every):
+    doc["times"] = doc["times"][::every]
+    doc["quantities"] = {k: v[::every] for k, v in doc["quantities"].items()}
+    arrays.update({k: v[::every] for k, v in arrays.items()})
+
+
+RECORD_REFUSED = {
+    "rows on the sample grid": (
+        "B-dt0.1",
+        lambda d, a: _sample_grid(d, a, 50),
+        "121 rows, not the dt grid's 6001",
+    ),
+    "a row off the grid": (
+        "B-dt0.05",
+        lambda d, a: d["times"].__setitem__(7, float(np.nextafter(7 * 0.05, 1.0)).hex()),
+        "row 7 is at",
+    ),
+    "a quantity short of a row": (
+        "C2-dt0.1",
+        lambda d, a: d["quantities"]["B2"].pop(),
+        "quantity B2 has 20000 entries for 20001 rows",
+    ),
+    "an array short of a row": (
+        "C1-dt2",
+        lambda d, a: a.update(O_rows=a["O_rows"][:-1]),
+        "array O_rows has",
+    ),
+    "another job": (
+        "C2-dt0.05",
+        lambda d, a: d["job"].update(dt=0.025),
+        "not the registered run C2-dt0.05",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(RECORD_REFUSED))
+def test_a_record_off_its_registered_rows_is_refused(fabricated, tmp_path, name):
+    """Reading 3, enforced (READING-2): a record's rows are exactly its run's dt grid, every
+    quantity and array one entry per row, and its job the registered row."""
+    run_id, change, words = RECORD_REFUSED[name]
+    for suffix in (".json", ".npz"):
+        shutil.copy(fabricated[0] / f"{run_id}{suffix}", tmp_path / f"{run_id}{suffix}")
+    _rewrite(tmp_path, run_id, change)
+    with pytest.raises(judge_bc.ReaderError, match=words):
+        judge_bc.read_record(tmp_path, run_id)
+
+
+B5_UNCOUNTED = {
+    "the well's event never applied": (
+        "B-dt0.05",
+        lambda d, a: a.update(wash_applied_well=0 * a["wash_applied_well"]),
+    ),
+    "an event applied in the twin": (
+        "B-twin-dt0.1",
+        lambda d, a: a.update(wash_applied_well=(_grid("B-twin-dt0.1") > WASH_B).astype(np.int64)),
+    ),
+    "an event applied at lys": (
+        "B-dt0.1",
+        lambda d, a: a.update(wash_applied_lys=a["wash_applied_well"].copy()),
+    ),
+    "the event applied twice": (
+        "B-dt0.1",
+        lambda d, a: a.update(wash_applied_well=2 * a["wash_applied_well"]),
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(B5_UNCOUNTED))
+def test_b5_is_gated_on_the_washs_counts(fabricated, tmp_path, name):
+    """B5 fails, its arrays bit for bit the twin's, unless the well's event applied exactly once in
+    each honest run, none in the twin, and none at lys (READING-2)."""
+    run_id, change = B5_UNCOUNTED[name]
+    records, refs = _copy(fabricated, tmp_path)
+    _rewrite(records, run_id, change)
+    criteria, _ = judge_bc.judge_b(records, judge_bc.read_reference(refs / "B.json", "B"))
+    assert criteria["B5"]["passed"] is False and criteria["B5"]["differing"] == []
+
+
+@pytest.mark.parametrize("value, passed", [(64 * EPS, True), (65 * EPS, False), (np.nan, False)])
+def test_c1_3_bounds_the_label_owners_closure_on_every_row(fabricated, tmp_path, value, passed):
+    """C1-3: the closure diagnostic at most 64 ε on every row of C1 and its twin (reading 5, the
+    bound of the label owner's own run tests), here one row of the twin's set to `value`."""
+    records, refs = _copy(fabricated, tmp_path)
+
+    def one_row(doc, arrays):
+        arrays["label_closure_relative"] = arrays["label_closure_relative"].copy()
+        arrays["label_closure_relative"][700, 0] = value
+
+    _rewrite(records, "C1-twin-dt2", one_row)
+    criteria, _ = judge_bc.judge_c1(records, judge_bc.read_reference(refs / "C1.json", "C1"))
+    assert criteria["C1-3"]["passed"] is passed
 
 
 def test_every_registered_job_builds_and_parses_and_each_definition_plant_changes_one_rate():
@@ -325,3 +477,61 @@ def test_the_first_run_rule(row, judged, refused):
     its registered length only in a judged run, so a dev- job at that horizon is refused."""
     found = driver_bc.first_run_refusal(driver_bc.job(row), judged)
     assert (found is None) if refused is None else (refused in found)
+
+
+@pytest.mark.parametrize(
+    "case, refused",
+    [
+        ("fresh", None),
+        ("not started by run", "the one `run` starts"),
+        ("another job's mark", "the one `run` starts"),
+        ("a job run before", "ran B-dt0.1 already"),
+        ("the engine loaded", "loaded cells.execution.runner"),
+        ("jax loaded", "loaded jax"),
+    ],
+)
+def test_a_run_gets_a_fresh_process_of_its_own(tmp_path, case, refused):
+    """READING-2: `run` starts a fresh process for each job, and that process refuses unless it is
+    one: started by `run` for its job and driver, no job run before, no JAX or engine module."""
+    job = tmp_path / "dev-B.json"
+    environ, modules, ran = {driver_bc.CHILD: driver_bc.mark(job)}, ["numpy", "json"], []
+    if case == "not started by run":
+        environ = {}
+    elif case == "another job's mark":
+        environ = {driver_bc.CHILD: driver_bc.mark(tmp_path / "dev-C1.json")}
+    elif case == "a job run before":
+        ran = ["B-dt0.1"]
+    elif case == "the engine loaded":
+        modules = [*modules, "cells.execution.runner"]
+    elif case == "jax loaded":
+        modules = [*modules, "jax"]
+    found = driver_bc.fresh_process_refusal(job, environ=environ, modules=modules, ran=ran)
+    assert (found is None) if refused is None else (refused in found)
+
+
+def test_c1s_plant_is_the_engines_exchange_but_for_its_one_line(monkeypatch):
+    """READING-2: C1's plant is a copy of label_shares.exchange; any change of the engine's beyond
+    the planted line stops the plant before it patches."""
+    import jax.numpy as jnp
+
+    from cells.numerics import label_shares
+    from cells.numerics.species_sums import entity_sum
+    from validation.fr49 import plants_bc
+
+    assert plants_bc.c1_drift() == []
+
+    def exchange(shares, n0, removed, supplied, present, *, xp=jnp):
+        declared = present if present.ndim == 3 else present[:, :, None]
+        base = (xp.arange(shares.shape[1]) == 0)[None, :, None]
+        kept = (n0 - removed)[:, None, :] * shares
+        x = xp.where(declared, kept + xp.where(base, supplied[:, None, :], 0.0), 0.0)
+        total = entity_sum(x, axis=1, xp=xp)
+        moved = ((removed > 0) | (supplied >= 0)) & (total > 0)  # Another line changed.
+        out = x / xp.where(moved, total, 1.0)[:, None, :]
+        return xp.where(moved[:, None, :], out, shares)
+
+    monkeypatch.setattr(label_shares, "exchange", exchange)
+    with pytest.raises(RuntimeError, match="supplied >= 0"):
+        with plants_bc.plant_c1():
+            pass
+    assert label_shares.exchange is exchange
