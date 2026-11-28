@@ -29,6 +29,8 @@ import copy
 import math
 from decimal import Decimal
 
+import numpy as np
+
 from cells.registry.inventory_species import add_inventory_species
 from validation import id_table
 from validation.fr49 import worlds
@@ -205,3 +207,76 @@ def world_c1(*, dt=2.0, end=None, every=60.0, event=True):
     buffer[worlds.S] = _f(wash["buffer_mM"][worlds.S])
     events = [(_f(wash["time_s"]), W, _f(wash["fraction"]), buffer)]
     return wfx.with_wash(raw, [W], events if event else [])
+
+
+# C1-1's entity rule (the lead's ruling, validation/fr49/READING-3-2026-11-28.md): C1-1 compares
+# every non-label state field whose entity is O or C, and the books of every patch bounding O or C
+# but one with W on a side (with its routes and faces).
+# Each axis of C1's state is classed: an entity axis (its class: O, C, or P for the patches that
+# bound O or C, W's aside), a sub-axis kept whole, or an axis with no slot in C1's world. An axis
+# outside the three is refused.
+C1_CLASS = {
+    "cell_slot": "O",  # O, C1's only cell.
+    "poly_chain": "O",  # O's polymerisation: its chains, machine pool, holds and degradations.
+    "poly_pool": "O",
+    "poly_release": "O",
+    "poly_degradation": "O",
+    "extracellular_slot": "C",  # C's node; W's and the bath's are not compared.
+    "membrane_slot": "P",  # Every patch bounding O or C, but one with W on a side.
+    "passive_route": "P",  # The routes on those patches.
+    "face_slot": "P",  # Faces on them: C1 declares none, so its one slot is padding.
+}
+C1_SUB_AXES = ("species", "gate", "poly_stage", "poly_class", "poly_fate", "poly_chain_counter",
+               "poly_export_part")  # fmt: skip
+C1_EMPTY_AXES = ("edge_slot", "channel_slot", "poly_export", "poly_transfer", "poly_outside_node",
+                 "poly_outside_degradation", "poly_replaced_slot", "poly_replaced_chain",
+                 "poly_replaced_release", "poly_replaced_degradation", "poly_replaced_transfer",
+                 "poly_replaced_export")  # fmt: skip
+
+
+def c1_entity_slots(raw):
+    """{entity axis: slots, or None for all} of C1's definition `raw` under C1-1's entity rule: O's
+    every slot on O's axes, C's node, every patch bounding O or C but one with W on a side (the
+    O-bath wall and the O-C patch), the passive routes on them, and no face. Raises ValueError where
+    the world is not one the rule classifies (one cell, no face)."""
+    m = raw["model"]
+    cells = [c["id"] for c in m["cells"]]
+    nodes = [n["id"] for n in m["extracellular"]]
+    if cells != [worlds.CELL] or m.get("faces"):
+        raise ValueError("C1-1's entity rule classifies a world of one cell, O, with no face")
+    ends = {worlds.CELL, worlds.NODE}
+    patches = [
+        p["id"]
+        for p in m["membranes"]
+        if {p["inside"], p["outside"]} & ends and W not in {p["inside"], p["outside"]}
+    ]
+    routes = m.get("passive_routes", [])
+    return dict(
+        dict.fromkeys(("poly_chain", "poly_pool", "poly_release", "poly_degradation")),
+        cell_slot=[cells.index(worlds.CELL)],
+        extracellular_slot=[nodes.index(worlds.NODE)],
+        membrane_slot=[k for k, p in enumerate(m["membranes"]) if p["id"] in patches],
+        passive_route=[k for k, r in enumerate(routes) if r.get("patch") in patches],
+        face_slot=[],
+    )
+
+
+def c1_part(axes, values, slots):
+    """(class, rows) of the part of one state field that C1-1 compares, or None where it compares
+    none of it. axes: the field's axes; values: [row, *axes]; slots: c1_entity_slots's. Raises
+    ValueError for an axis the rule does not class, a field with no entity axis or with two, and an
+    empty axis that holds a slot."""
+    entity = [a for a in axes if a not in C1_SUB_AXES]
+    if len(entity) != 1 or not (entity[0] in C1_CLASS or entity[0] in C1_EMPTY_AXES):
+        raise ValueError(f"C1-1's entity rule does not class the axes {tuple(axes)}")
+    (axis,) = entity
+    if axis in C1_EMPTY_AXES:
+        if np.asarray(values).size:
+            raise ValueError(f"axis {axis} holds a slot in C1's world, where the rule has none")
+        return None
+    chosen = slots[axis]
+    if chosen is None:
+        return C1_CLASS[axis], np.asarray(values)
+    if not chosen:
+        return None
+    return C1_CLASS[axis], np.take(values, chosen, axis=1 + list(axes).index(axis))

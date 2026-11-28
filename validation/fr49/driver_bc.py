@@ -31,9 +31,9 @@ as exact hexadecimal floats, and RECORD_DIR/<id>.npz, the arrays that the bitwis
 - World B: S at lys (n_L), and the population's B and R, at every row; in the npz, lys's every
   species row and the site increments, and the wash's applied counts.
 - C1: S at the owner O, the compartment C and the well W, and label x's share at each, at every row;
-  in the npz, O's and C's every species row and their label shares, every other physical state
-  field at O and at C (`O.<field>`, `C.<field>`: every state field on the cell or node axis, the
-  label fields aside; READING-3), and the label owner's closure diagnostic on every row
+  in the npz, O's and C's every species row and their label shares, every non-label state field
+  whose entity is O or C or a patch bounding them but W's (`O.<field>`, `C.<field>`, `P.<field>`,
+  by worlds_bc's entity rule; READING-3), and the label owner's closure diagnostic on every row
   (`label_closure_relative`, which C1-3 bounds), with its largest value in the record.
 - C2: L1 and L2 at lys, each member's B, and the set's free sites R, at every row.
 
@@ -41,13 +41,15 @@ The first-run rule (FR-45's; the lead, 28 November 2026): a registered world fir
 registered length only in a judged run (first_run_refusal):
 - a job whose ID does not begin `dev-` must be exactly one of JOBS's rows, and runs only with
   `--judged`;
-- a `dev-` job names a registered world and runs only at a horizon short of its registered one, so
-  that no development run reaches a registered world's full length;
-- every job names a registered plant (PLANTS) or none.
+- a `dev-` job names a registered world and runs only at a horizon strictly short of its registered
+  one (NaN is refused), so that no development run reaches a registered world's full length;
+- every job names a registered plant (PLANTS) or none, and a plant only on its own world
+  (PLANT_WORLDS: b, c and d on World B, c1 on C1, c2 on C2).
 
 The identity (identity): the record names the tree's revision, from git or SNAPSHOT.json, and the
-tree the engine was loaded from. A run refuses where neither gives a revision, or where the engine
-is not the driver's own tree, so a launch runs from the snapshot root with PYTHONPATH=src.
+tree the engine was loaded from. A run refuses where neither gives a revision, where git's top level
+is not the tree (an enclosing repository's HEAD is never recorded), or where the engine is not the
+driver's own tree, so a launch runs from the snapshot root with PYTHONPATH=src.
 
 Usage (PYTHONPATH at a snapshot, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu):
   python -B -m validation.fr49.driver_bc jobs OUT_DIR
@@ -89,6 +91,7 @@ JOBS = (
 )
 FIELDS = ("id", "world", "dt", "horizon_s", "every_s", "event", "plant")
 PLANTS = (None, "b", "c", "d", "c1", "c2")  # The registered plants (JOBS) and none.
+PLANT_WORLDS = {"b": "B", "c": "B", "d": "B", "c1": "C1", "c2": "C2"}  # Each plant's world.
 CHILD = (
     "FR49_DRIVER_RUN"  # Set by `run` for the process it starts: [this driver file, the job file].
 )
@@ -163,23 +166,23 @@ def b_record(spec, result, p):
     return quantities, arrays, {}
 
 
-def physical_at(spec, history, owner, node):
-    """Every physical state field at O (cell slot `owner`) and at C (node slot `node`) on every row,
-    the label fields (judge_l.LABELS_ONLY) aside: C1-1's arrays (READING-3)."""
+def physical_at(spec, history):
+    """C1-1's arrays on every row (READING-3): every non-label state field whose entity is O or C,
+    or a patch bounding them but W's, cut by worlds_bc's entity rule (c1_entity_slots, c1_part)
+    and named `<class>.<field>` (O, C or P); label fields (judge_l.LABELS_ONLY) aside."""
     from cells.registry.models import get_model
+    from validation.fr49 import worlds_bc as wb
     from validation.fr49.judge_l import LABELS_ONLY
 
     axes = get_model(spec.model).STATE_AXES
+    slots = wb.c1_entity_slots(wb.world_c1())
     out = {}
     for field in type(history)._fields:
-        where = list(axes.get(field, ()))
         if field in LABELS_ONLY:
             continue
-        values = np.asarray(getattr(history, field))
-        if "cell_slot" in where:
-            out[f"O.{field}"] = np.take(values, owner, axis=1 + where.index("cell_slot"))
-        if "extracellular_slot" in where:
-            out[f"C.{field}"] = np.take(values, node, axis=1 + where.index("extracellular_slot"))
+        part = wb.c1_part(tuple(axes.get(field, ())), getattr(history, field), slots)
+        if part is not None:
+            out[f"{part[0]}.{field}"] = np.asarray(part[1])
     return out
 
 
@@ -213,7 +216,7 @@ def c1_record(spec, result, p):
         O_shares=share[:, :, :, owner],
         C_shares=outside[:, :, :, node],
         label_closure_relative=np.asarray(h.label_closure_relative),  # [row, labelled species]
-        **physical_at(spec, h, owner, node),
+        **physical_at(spec, h),
     )
     closure = float(np.max(np.asarray(h.label_closure_relative), initial=0.0))
     return quantities, arrays, dict(label_closure_relative_max=closure)
@@ -268,6 +271,12 @@ def identity(here=None, engine=None):
                      patch_sha256=snapshot.get("patch_sha256"))  # fmt: skip
     else:
         git = ["git", "-C", str(here)]
+        top = subprocess.run([*git, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+        if top.returncode == 0 and Path(top.stdout.strip()).resolve() != here.resolve():
+            raise SystemExit(
+                f"{here}: git's top level is {top.stdout.strip()}, an enclosing repository, whose "
+                "HEAD is not this tree's revision"
+            )
         revision = subprocess.run([*git, "rev-parse", "HEAD"], capture_output=True, text=True)
         dirty = subprocess.run([*git, "status", "--short"], capture_output=True, text=True)
         found = dict(revision=revision.stdout.strip() if revision.returncode == 0 else "",
@@ -283,24 +292,27 @@ REGISTERED_HORIZONS = {row[1]: row[3] for row in JOBS}  # world -> its registere
 
 
 def first_run_refusal(entry, judged):
-    """Why the first-run rule refuses a job (the module docstring), or None: a plant not registered;
-    a job without `dev-` that is not exactly a row of JOBS, or not run with `--judged`; a `dev-` job
-    naming a world not registered, or at or beyond its world's registered horizon."""
-    name, world = entry.get("id"), entry.get("world")
-    if entry.get("plant") not in PLANTS:
-        return f"{name}: plant {entry.get('plant')!r} is not a registered plant {PLANTS}"
+    """Why the first-run rule refuses a job (the module docstring), or None: a plant not registered,
+    or not its world's (PLANT_WORLDS); a job without `dev-` that is not exactly a row of JOBS, or
+    not run with `--judged`; a `dev-` job naming a world not registered, or whose horizon is not
+    strictly short of its world's registered one (NaN among them)."""
+    name, world, plant = entry.get("id"), entry.get("world"), entry.get("plant")
+    if plant not in PLANTS:
+        return f"{name}: plant {plant!r} is not a registered plant {PLANTS}"
     if not str(name).startswith("dev-"):
         if tuple(entry.get(k) for k in FIELDS) not in JOBS:
             return f"{name} is not a registered run: a job without dev- is exactly a row of JOBS"
         return None if judged else f"{name} is a registered run: it runs only with --judged"
     if world not in REGISTERED_HORIZONS:
         return f"{name}: world {world!r} is not a registered world {tuple(REGISTERED_HORIZONS)}"
+    if plant is not None and PLANT_WORLDS[plant] != world:
+        return f"{name}: plant {plant!r} is World {PLANT_WORLDS[plant]}'s, not world {world}'s"
     registered = REGISTERED_HORIZONS[world]
-    if float(entry["horizon_s"]) >= registered:
+    if not float(entry["horizon_s"]) < registered:  # NaN is not short of it either.
         return (
-            f"{entry['id']} is a development job at or beyond world {entry['world']}'s registered "
-            f"horizon ({entry['horizon_s']:g} s, the registered {registered:g} s): a registered "
-            "world first runs at its registered length only in a judged run"
+            f"{name} is a development job whose horizon ({entry['horizon_s']!r} s) is not strictly "
+            f"short of world {world}'s registered horizon ({registered:g} s): a registered world "
+            "first runs at its registered length only in a judged run"
         )
     return None
 

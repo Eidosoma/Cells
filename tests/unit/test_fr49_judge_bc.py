@@ -394,6 +394,7 @@ RECORD_REFUSED = {
         lambda d, a: d["job"].update(dt=0.025),
         "not the registered run C2-dt0.05",
     ),
+    "a missing record file": ("C2-dt0.1", "missing", "record of the registered run C2-dt0.1 is"),
     "no process field": ("B-dt0.1", lambda d, a: d.pop("process"), "no fresh process"),
     "a refused record with no process field": (
         "B-plant-c-dt0.1",
@@ -418,9 +419,10 @@ def test_a_record_off_its_registered_rows_is_refused(fabricated, tmp_path, name)
     """Reading 3, enforced (READING-2): a record's rows are exactly its run's dt grid, every
     quantity and array one entry per row, and its job the registered row."""
     run_id, change, words = RECORD_REFUSED[name]
-    for suffix in (".json", ".npz"):
-        shutil.copy(fabricated[0] / f"{run_id}{suffix}", tmp_path / f"{run_id}{suffix}")
-    _rewrite(tmp_path, run_id, change)
+    if change != "missing":
+        for suffix in (".json", ".npz"):
+            shutil.copy(fabricated[0] / f"{run_id}{suffix}", tmp_path / f"{run_id}{suffix}")
+        _rewrite(tmp_path, run_id, change)
     with pytest.raises(judge_bc.ReaderError, match=words):
         judge_bc.read_record(tmp_path, run_id)
 
@@ -461,11 +463,9 @@ def test_c1_1_compares_every_physical_state_field_at_o_and_c(fabricated, tmp_pat
     """READING-3: C1-1's physical rows are every physical state field at O and C, here C's
     electrode charge, compared bit for bit; a record without one of them is refused."""
     records, refs = _copy(fabricated, tmp_path)
-    name = "C.electrode_charge_transferred_C"
-    assert (
-        name in judge_bc.c1_physical_names()
-        and "O.amount_increment" in judge_bc.c1_physical_names()
-    )
+    name, names = "C.electrode_charge_transferred_C", judge_bc.c1_physical_names()
+    assert {name, "O.amount_increment", "O.poly_complexes_fmol", "P.membrane_transferred",
+            "P.passive_transferred"} <= set(names)  # fmt: skip
 
     def change(doc, arrays):
         if case == "an array is missing":
@@ -536,7 +536,9 @@ def test_every_registered_job_builds_and_parses_and_each_definition_plant_change
         (("dev-C2", "C2", 0.05, 2000.0, 20.0, None, None), False, "registered horizon"),
         (("dev-C1", "C1", 2.0, 3600.0, 60.0, True, None), True, "registered horizon"),
         (("dev-C2", "C2", 0.05, 200.0, 20.0, None, None), False, None),
-        (("dev-B", "B", 0.1, 900.0, 5.0, True, None), False, "at or beyond"),
+        (("dev-B", "B", 0.1, 900.0, 5.0, True, None), False, "not strictly short"),
+        (("dev-B", "B", 0.1, float("nan"), 5.0, True, None), False, "not strictly short"),
+        (("dev-C1", "C1", 2.0, 60.0, 60.0, True, "b"), False, "is World B's, not world C1's"),
         (("C1-dt1", "C1", 1.0, 3600.0, 60.0, True, None), True, "not a registered run"),
         (("dev-B", "B", 0.1, 60.0, 5.0, True, "e"), False, "not a registered plant"),
         (("dev-D", "D", 0.1, 60.0, 5.0, True, None), False, "not a registered world"),
@@ -548,6 +550,8 @@ def test_every_registered_job_builds_and_parses_and_each_definition_plant_change
         "dev at full length, judged",
         "dev, shortened",
         "dev beyond full length",
+        "dev at a NaN horizon",
+        "plant b on C1",
         "a registered ID's world at another step",
         "an unknown plant",
         "a dev job naming an unknown world",
@@ -619,7 +623,10 @@ def test_c1s_plant_is_the_engines_exchange_but_for_its_one_line(monkeypatch):
     assert label_shares.exchange is exchange
 
 
-@pytest.mark.parametrize("case", ["this tree", "neither git nor a snapshot", "another engine tree"])
+@pytest.mark.parametrize(
+    "case",
+    ["this tree", "neither git nor a snapshot", "another engine tree", "an enclosing repository"],
+)
 def test_the_identity_names_a_revision_and_the_drivers_own_engine(tmp_path, case):
     """The driver's identity: a revision from git or SNAPSHOT.json, never none, and the engine
     loaded from the driver's own tree, or the run is refused."""
@@ -628,7 +635,41 @@ def test_the_identity_names_a_revision_and_the_drivers_own_engine(tmp_path, case
         assert found["revision"] and found["engine_tree"] == str(driver_bc.Path(
             driver_bc.__file__).resolve().parents[2])  # fmt: skip
         return
-    engine = tmp_path if case == "neither git nor a snapshot" else tmp_path / "elsewhere"
-    words = "gives a revision" if case == "neither git nor a snapshot" else "not the driver's tree"
+    here, engine = tmp_path, tmp_path / "elsewhere"
+    words = "not the driver's tree"
+    if case == "neither git nor a snapshot":
+        engine, words = tmp_path, "gives a revision"
+    elif case == "an enclosing repository":
+        import subprocess
+
+        subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+        here = engine = tmp_path / "tree"
+        here.mkdir()
+        words = "an enclosing repository"
     with pytest.raises(SystemExit, match=words):
-        driver_bc.identity(here=tmp_path, engine=engine)
+        driver_bc.identity(here=here, engine=engine)
+
+
+@pytest.mark.parametrize(
+    "axes, shape, words",
+    [
+        (("species", "membrane_slot"), (2, 8, 3), None),
+        (("species", "electrode_slot"), (2, 8, 3), "does not class"),
+        (("species",), (2, 8), "does not class"),
+        (("channel_slot",), (2, 1), "holds a slot"),
+    ],
+)
+def test_c1_1s_entity_rule_classes_every_axis_or_refuses(axes, shape, words):
+    """READING-3: worlds_bc's entity rule cuts each entity axis to O's, C's or what lies between
+    them, keeps sub-axes whole, and refuses an axis it does not class, or an empty one with a
+    slot."""
+    from validation.fr49 import worlds_bc as wb
+
+    slots = wb.c1_entity_slots(wb.world_c1())
+    values = np.zeros(shape)
+    if words is None:
+        cls, part = wb.c1_part(axes, values, slots)
+        assert cls == "P" and part.shape == (2, 8, len(slots["membrane_slot"])) == (2, 8, 2)
+    else:
+        with pytest.raises(ValueError, match=words):
+            wb.c1_part(axes, values, slots)

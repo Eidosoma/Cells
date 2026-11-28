@@ -20,8 +20,9 @@ and was checked on the references' invented format samples (`--check-reader`) be
   - B6: the node-owned variant's site layout arrays bit for bit the facing population's, a host row
     with no compile.
 - **C1** (§5): C1-1, O's and C's physical rows and label shares bit for bit the twin's on every row,
-  the physical rows being every physical state field at O and at C, species rows and books alike,
-  the label fields aside (c1_physical_names, READING-3);
+  the physical rows being every non-label state field whose entity is O or C, and the books of
+  every patch bounding O or C but W's, with its routes, by worlds_bc's entity rule
+  (c1_physical_names, READING-3);
   C1-2, W's x and base amounts just after the wash within 1e-13 relative of LAWS.md §4's; C1-3,
   every host check, so both runs completed, and the label owner's closure diagnostic
   `label_closure_relative` at most 64 ε on every row of both (CLOSURE).
@@ -70,7 +71,8 @@ start time), and a set of records in which two runs share one process is refused
 
 **The judge's literals** (RUNS) are its own table of the registered runs. Every record's job must
 equal its row in world, step, horizon, observation interval, event and plant, or the judge refuses
-the record. The lead also checks the table against the job files before any run (D424).
+the record; a missing record file is refused by name. The lead also checks the table against the
+job files before any run (D424).
 
 Usage (PYTHONPATH at a snapshot; the references taken from their tag with `git archive`):
   python -B -m validation.fr49.judge_bc --records RECORDS --references REFS --out OUT
@@ -330,6 +332,13 @@ def grid_refusal(times, dt, end):
     return None
 
 
+def _present(path, run_id):
+    """path, or a ReaderError naming the registered run whose record file is missing."""
+    if not Path(path).is_file():
+        raise ReaderError(f"{path}: the record of the registered run {run_id} is missing")
+    return Path(path)
+
+
 def process_of(record, path):
     """A record's process identity (PROCESS), refused unless the record names the fresh process of
     its own that the driver ran it in."""
@@ -347,7 +356,7 @@ def one_process_each(records):
     """Refuses a set of the registered runs' records in which two runs share one process."""
     seen = {}
     for run_id in RUNS:
-        path = Path(records) / f"{run_id}.json"
+        path = _present(Path(records) / f"{run_id}.json", run_id)
         identity = process_of(json.loads(path.read_text()), path)
         if identity in seen:
             raise ReaderError(f"{run_id} and {seen[identity]} share one process; each has its own")
@@ -360,7 +369,7 @@ def read_record(records, run_id):
     completed, unless its rows are the dt grid with every quantity and array one entry per row
     (grid_refusal, reading 3)."""
     path = Path(records) / f"{run_id}.json"
-    record = json.loads(path.read_text())
+    record = json.loads(_present(path, run_id).read_text())
     if record.get("kind") != RECORD_KIND or record.get("protocol") != PROTOCOL:
         raise ReaderError(f"{path} is not an FR-49 Parts B and C engine record")
     job = record.get("job", {})
@@ -382,7 +391,7 @@ def read_record(records, run_id):
             raise ReaderError(
                 f"{path}: quantity {k} has {values.size} entries for {times.size} rows"
             )
-    arrays = dict(np.load(Path(records) / f"{run_id}.npz"))
+    arrays = dict(np.load(_present(Path(records) / f"{run_id}.npz", run_id)))
     for name, values in arrays.items():
         if values.shape[:1] != times.shape:
             raise ReaderError(f"{path}: array {name} has {values.shape[:1]} rows for {times.size}")
@@ -530,23 +539,30 @@ def judge_b(records, reference):
 
 @functools.cache
 def c1_physical_names():
-    """C1-1's arrays beyond the species rows and shares: every physical state field at O (the cell
-    axis) and at C (the node axis) of C1's world, from the engine's own state axes, the label fields
-    (LABELS_ONLY) aside (READING-3). The driver saves them as `O.<field>` and `C.<field>`."""
+    """C1-1's arrays beyond the species rows and shares (READING-3): every non-label state field of
+    C1's world whose entity is O or C or a patch bounding them but W's, by worlds_bc's entity rule
+    over the engine's own state axes (c1_entity_slots, c1_part), named `<class>.<field>` as the
+    driver saves them. A field the rule cannot class refuses the judgement (ReaderError)."""
     from cells.definitions.specs import parse_spec
     from cells.registry.models import get_model
     from validation.fr49 import worlds_bc as wb
 
-    spec = parse_spec(wb.world_c1())
+    raw = wb.world_c1()
+    spec = parse_spec(raw)
     model = get_model(spec.model)
     state, _ = model.initial_values(spec)
     names = []
-    for field in type(state)._fields:
-        where = model.STATE_AXES.get(field, ())
-        if field in LABELS_ONLY:
-            continue
-        names += [f"O.{field}"] * ("cell_slot" in where)
-        names += [f"C.{field}"] * ("extracellular_slot" in where)
+    try:
+        slots = wb.c1_entity_slots(raw)
+        for field in type(state)._fields:
+            if field in LABELS_ONLY:
+                continue
+            axes = tuple(model.STATE_AXES.get(field, ()))
+            part = wb.c1_part(axes, np.asarray(getattr(state, field))[None], slots)
+            if part is not None:
+                names.append(f"{part[0]}.{field}")
+    except ValueError as error:
+        raise ReaderError(f"C1-1's entity rule: {error}") from error
     return tuple(names)
 
 
