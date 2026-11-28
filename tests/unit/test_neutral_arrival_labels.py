@@ -51,6 +51,7 @@ node. What the hook admits is in tests/unit/test_neutral_labels_kinds.py.
 import contextlib
 import copy
 import math
+import re
 from fractions import Fraction
 
 import numpy as np
@@ -1157,3 +1158,448 @@ def test_a_labelled_definition_is_refused_where_labels_cannot_follow_it(case):
     raw, scope = made if isinstance(made, tuple) else (made, contextlib.nullcontext())
     with scope, pytest.raises(ConfigError, match=message):
         parse_spec(raw)
+
+
+# ------------------------------------------------------------------ admission by species (FR-44)
+#
+# D327 and D424 (operators/species_labels.py, "Admission by species"). Host only: planted
+# declarations, parses and layouts, nothing compiled. The compiled twins of the site operator beside
+# the owner and its four partners are tests/unit/test_neutral_labels_sites.py's.
+
+SITES = "cells.operator.site_occupancy@1"
+WASH = "cells.operator.scheduled_compartment_wash@1"
+COMPARTMENTS = "cells.operator.cell_owned_compartments@1"
+CL_HALF = {"well": {"base": 0.5, "cohort": 0.5}}
+
+
+def _writer(law, written, moves="conversion", populations=()):
+    """A planted split writer of amounts that reports nothing, with its written rows, and its
+    declaration (the populations the site operator's variants read)."""
+    from types import SimpleNamespace
+
+    op = _part(
+        law,
+        SPLIT=True,
+        ROW_MOVES=moves,
+        ENTITY_WRITES={"amount_increment": ("tests_fmol",)},
+        half_step=lambda state, h, control, p, *, xp: None,
+        written_rows=lambda spec, declaration: tuple(written),
+    )
+    return op, SimpleNamespace(populations=tuple(populations))
+
+
+def _owner(*species):
+    from types import SimpleNamespace
+
+    declaration = SimpleNamespace(species=tuple(SimpleNamespace(id=s) for s in species))
+    return _part(LAW, LABEL_OWNER=True), declaration
+
+
+def _internalising_population():
+    from types import SimpleNamespace
+
+    return SimpleNamespace(
+        id="r_int", internalisation_rate=0.1, owner_kind="patch", facing="outside"
+    )
+
+
+def _cell_facing_population():
+    from types import SimpleNamespace
+
+    return SimpleNamespace(id="k0", internalisation_rate=None, owner_kind="contact", facing="first")
+
+
+BY_SPECIES_CASES = {  # (the planted entries besides the owner of S, the refusal's words or None)
+    "a listed writer of unlabelled rows": ([_writer(SITES, [("L", "n")])], None),
+    "a listed writer of a labelled row": (
+        [_writer(SITES, [("S", "n"), ("L", "n")])],
+        "it writes the labelled S: a writer admitted by species writes a labelled row",
+    ),
+    "a listed writer that declares no ROW_MOVES (today's words)": (
+        [_writer(SITES, [("L", "n")], moves=None)],
+        "it writes species amounts without reporting its one-way moves (no FR-42 stage plans it "
+        "yet)",
+    ),
+    "a declared writer not on the list (today's words)": (
+        [_writer("tests.operator.writer@1", [("L", "n")])],
+        "tests.operator.writer@1 beside cells.operator.neutral_arrival_labels@1: it writes species "
+        "amounts without reporting its one-way moves (no FR-42 stage plans it yet)",
+    ),
+    "a partner beside a listed writer": (
+        [
+            _writer(SITES, [("L", "n")]),
+            (_part("cells.operator.scheduled_species_turnover@1"), None),
+        ],
+        None,
+    ),
+    "a non-partner beside a listed writer": (
+        [_writer(SITES, [("L", "n")]), (_part("tests.operator.other@1"), None)],
+        "tests.operator.other@1 beside cells.operator.neutral_arrival_labels@1 and "
+        "cells.operator.site_occupancy@1 admitted by species: an operator not admitted beside "
+        "labels and a writer admitted by species",
+    ),
+    "the compartments beside a listed writer (FR-49's C4)": (
+        [_writer(SITES, [("L", "n")]), (_part(COMPARTMENTS), None)],
+        "cells.operator.cell_owned_compartments@1 is FR-49's C4",
+    ),
+    "a listed writer's internalising population": (
+        [_writer(SITES, [("L", "n")], populations=[_internalising_population()])],
+        "a variant not admitted beside labels: an internalising population (r_int)",
+    ),
+    "a listed writer's population facing a cell": (
+        [_writer(SITES, [("L", "n")], populations=[_cell_facing_population()])],
+        "a variant not admitted beside labels: a population facing a cell (an inward patch face or "
+        "a contact) (k0)",
+    ),
+}
+
+
+@pytest.mark.parametrize("case", sorted(BY_SPECIES_CASES))
+def test_a_split_writer_is_admitted_by_species_only_beside_its_partners(case, monkeypatch):
+    """FR-44 step 3 (D327, D424; planted declarations, no world). A split writer that writes
+    amounts and reports nothing is admitted beside the owner only on BY_SPECIES, with ROW_MOVES
+    declared and no labelled species among its written rows (FR-43 part 3's written_rows). An
+    undeclared writer and one off the list keep today's words. Beside an admitted writer every
+    operator law but its four partners is refused by name, all in one message, the compartments as
+    FR-49's C4, and so are its internalising populations and those facing a cell."""
+    from types import SimpleNamespace
+
+    from cells.operators import species_labels as labels
+
+    planted, words = BY_SPECIES_CASES[case]
+    entries = tuple((op, declaration, None) for op, declaration in [_owner("S"), *planted])
+    monkeypatch.setattr(labels.composite_spec, "entries", lambda spec: entries)
+    spec = SimpleNamespace(model=SimpleNamespace(), execution=SimpleNamespace(field_solver=None))
+    found = labels.operator_errors(spec)
+    if words is None:
+        assert found == [], found
+    else:
+        assert any(words in e for e in found), found
+
+
+def _labelled_well(*species, **well):
+    """The wash fixtures' well with its two site populations (their ligand S), the named species
+    labelled base and cohort, Cl half and half at the well."""
+    initial = {"Cl": CL_HALF}
+    return with_labels(
+        wfx.well(**well), [(name, ["base", "cohort"], initial.get(name, {})) for name in species]
+    )
+
+
+def _replaced_with_w():
+    """FR-26's replaced-slot world: cell_1 replaced at 5 ms, a population on its contact patch reset
+    by W (cells.operator.site_occupant_replacement@1), with Cl labelled."""
+    from validation.tissue import site_occupancy_fixtures as sfx
+
+    raw = sfx.replaced_sites([sfx.population("r1", patch="contact_1")], {"r1": (0.5, 1.0, None)})
+    return with_labels(raw, [("Cl", ["base", "cohort"], {})])
+
+
+def _labelled_sets():
+    """FR-45's development world, two ligands on one shared set, with S labelled (no ligand)."""
+    from validation.tissue import site_occupancy_fixtures as sfx
+
+    raw = sfx.set_world(
+        [sfx.member("p1", ligand="Q1"), sfx.member("p2", ligand="Q2")],
+        [sfx.site_set()],
+        node_mM={"Q1": 1e-3, "Q2": 1e-3},
+    )
+    return with_labels(raw, [("S", ["base", "cohort"], {})])
+
+
+def _internalising_sites():
+    """D150's face-free cell with one outward population on its contact that internalises into
+    cell_0 (no labels)."""
+    from validation.tissue import site_occupancy_fixtures as sfx
+
+    return sfx.face_free_sites([sfx.population("r_int", k_int=0.1)])
+
+
+def _inward_sites():
+    """D150's face-free cell with one population on its contact patch's inward face, binding from
+    cell_0 (no labels)."""
+    from validation.tissue import site_occupancy_fixtures as sfx
+
+    return sfx.face_free_sites([sfx.population("r_in", face="inside")])
+
+
+def _sparse_labelled_well():
+    raw = _labelled_well("Cl")
+    raw["execution"]["field_solver"] = (
+        "cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1"
+    )
+    return raw
+
+
+BY_SPECIES_REFUSED = {
+    "a labelled site ligand": (
+        lambda: _labelled_well(wfx.TRACER, "Cl"),
+        "it writes the labelled S: a writer admitted by species writes a labelled row",
+    ),
+    "an internalising population (D424)": (
+        lambda: with_labels(_internalising_sites(), [("Cl", ["base", "cohort"], {})]),
+        "a variant not admitted beside labels: an internalising population (r_int)",
+    ),
+    "two contact populations, each facing a cell": (
+        lambda: with_labels(_contact_world(), [("Cl", ["base", "cohort"], {})]),
+        "a population facing a cell (an inward patch face or a contact) (k0, k1)",
+    ),
+    "an inward population, facing its patch's cell": (
+        lambda: with_labels(_inward_sites(), [("Cl", ["base", "cohort"], {})]),
+        "a population facing a cell (an inward patch face or a contact) (r_in)",
+    ),
+    "the replacement and its occupant reset, non-partners": (
+        _replaced_with_w,
+        "cells.operator.scheduled_cell_replacement@1, cells.operator.site_occupant_replacement@1 "
+        "beside cells.operator.neutral_arrival_labels@1 and cells.operator.site_occupancy@1 "
+        "admitted by species: an operator not admitted beside labels",
+    ),
+    "the sparse field solver, an inner-model option": (
+        _sparse_labelled_well,
+        "the field solver cells.solver.sparse_capacitive_reduction_gauged_damped_newton@1 beside "
+        "cells.operator.neutral_arrival_labels@1 and cells.operator.site_occupancy@1 admitted by "
+        "species: an inner-model option not admitted",
+    ),
+    "labels beside site sets (FR-45's partner rule, unchanged)": (
+        _labelled_sets,
+        "an operator not admitted beside site sets: cells.operator.neutral_arrival_labels@1",
+    ),
+}
+
+
+@pytest.mark.parametrize("case", sorted(BY_SPECIES_REFUSED))
+def test_beside_labels_a_writer_admitted_by_species_is_refused_by_name_where_unqualified(case):
+    """FR-44 step 3 (D327, D424; parses only). The site operator stays refused beside the owner
+    where it writes a labelled species, and beside an admitted one these are refused by name: an
+    internalising population, a population facing a cell (a contact's, or an inward patch face's),
+    every operator law but the four partners
+    (cells.operator.scheduled_cell_replacement@1 and cells.operator.site_occupant_replacement@1
+    here), and the inner model's later options (the sparse field solver here; the others are
+    test_the_inner_models_later_options_are_refused_by_name). Labels beside shared site sets stay
+    FR-45's refusal."""
+    make, words = BY_SPECIES_REFUSED[case]
+    with pytest.raises(ConfigError, match=re.escape(words)):
+        parse_spec(make())
+
+
+def test_the_site_operator_beside_labels_parses_where_its_ligand_is_unlabelled():
+    """FR-44 step 3 (parses only): the wash fixtures' well with its sites and Cl labelled, its two
+    populations on patches and, with the wall's sites owned by the well (FR-28), one on a node."""
+    parse_spec(_labelled_well("Cl"))
+    parse_spec(_labelled_well("Cl", wall="node"))
+
+
+def _with_kind(raw, entry):
+    from cells.kinds import passive_routes
+
+    out = copy.deepcopy(raw)
+    out["model"].setdefault(passive_routes.MODEL_KEY, []).append(entry)
+    return out
+
+
+KIND_ROWS = {  # A declared kind's route beside the labels and the site operator (D424's call 3).
+    "on an unlabelled species (S, the ligand), admitted": (
+        dict(id="s_route", patch="specimen_face", law="cells.route.passive_neutral_permeation@1",
+             species=wfx.TRACER, permeability_m_per_s=1e-12),
+        ("Cl",),
+    ),
+    "on a labelled species (Na), refused as today": (
+        dict(id="rectifier_Na", patch="wall_specimen",
+             law="cells.route.inward_rectifier_linear_driving_force@1", species="Na",
+             g_ref_S_per_m2=1.0, k_ref_mM=5.0, v_half_V=0.01, slope_V=0.01),
+        ("Na",),
+    ),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("case", sorted(KIND_ROWS))
+def test_a_declared_kind_beside_labels_and_sites_is_read_as_today(case):
+    """FR-44 step 3 (D424's call 3; parses only): declared kinds stay admitted beside the owner and
+    a writer admitted by species, under the owner's existing per-species checks
+    (species_labels.in_step_errors). The well with its sites and a declared kind's route parses
+    where the route moves an unlabelled species. Where it moves a labelled one the refusal is
+    today's: the same message as the same world without the sites (an inward rectifier, whose flux
+    has no one-way form)."""
+    entry, species = KIND_ROWS[case]
+    labelled = [(name, ["base", "cohort"], CL_HALF if name == "Cl" else {}) for name in species]
+    raw = with_labels(_with_kind(wfx.well(), entry), labelled)
+    if species == ("Cl",):
+        parse_spec(raw)
+        return
+    with pytest.raises(ConfigError) as beside_sites:
+        parse_spec(raw)
+    with pytest.raises(ConfigError) as today:
+        parse_spec(with_labels(_with_kind(wfx.well(sites=False), entry), labelled))
+    assert str(beside_sites.value) == str(today.value)
+    assert "rectifier_Na runs cells.route.inward_rectifier_linear_driving_force@1" in str(
+        today.value
+    )
+
+
+@pytest.mark.parametrize(
+    "option", ["one_way_records", "a blocked channel", "a shifted channel", "energy_check"]
+)
+def test_the_inner_models_later_options_are_refused_by_name(option):
+    """FR-44 step 3 (D424): beside the owner and a writer admitted by species, the inner model's
+    later options are refused by name, FR-45's list beside site sets (the sparse field solver is a
+    parse row above). One-way records, a blocked channel and a declared voltage shift are set on
+    the parsed well's model, so the fields read must be the model's own (replace refuses a field it
+    lacks). X2 is attached after the definition's checks have run, so the world parses and its
+    binding refuses it before any step."""
+    from dataclasses import replace
+    from types import SimpleNamespace
+
+    from cells.definitions.energy_check_spec import CHECK_ID
+    from cells.operators import species_labels as labels
+    from cells.registry.models import get_model
+
+    raw = _labelled_well("Cl")
+    if option == "energy_check":
+        raw["execution"]["energy_check"] = {"check": CHECK_ID, "integration_error_cap": 3e-3}
+        spec = parse_spec(raw)
+        with pytest.raises(
+            ConfigError, match=re.escape("execution.energy_check (X2, D224) beside")
+        ):
+            get_model(spec.model).initial_values(spec)
+        return
+    spec = parse_spec(raw)
+    m = spec.model
+    if option == "one_way_records":
+        changed, words = replace(m, one_way_records=(SimpleNamespace(),)), "own one_way records"
+    elif option == "a blocked channel":
+        blocked = SimpleNamespace(id="blocked", block=SimpleNamespace())
+        changed, words = replace(m, channels=(*m.channels, blocked)), "a blocked channel population"
+    else:
+        shifted = SimpleNamespace(id="shifted", block=None, voltage_shift=SimpleNamespace())
+        changed, words = replace(m, channels=(*m.channels, shifted)), "a declared voltage shift"
+    found = labels.by_species_errors(replace(spec, model=changed))
+    assert any(words in e and labels.OPTION in e for e in found), found
+
+
+def _four_way(wash, monkeypatch):
+    """C4's forms on an invented compartment world (validation/tissue/compartment_fixtures.py's
+    loaded compartment: cell_0 loads S into lys_0 at ecs_0 through contact_0), with FR-49's two
+    list entries patched into the compartments' admitted list: an outward population on the
+    bounding patch binding S, unlabelled, with Cl labelled, and with `wash` a second finite node
+    joined to cell_0 and washed (the four-way form) or none (the three-way form)."""
+    from cells.operators import compartments
+    from validation.tissue import compartment_fixtures as cfx
+    from validation.tissue import site_occupancy_fixtures as sfx
+
+    monkeypatch.setattr(compartments, "ADMITTED", (*compartments.ADMITTED, SITES, WASH))
+    raw = cfx.loaded_compartment()
+    if wash:
+        m, e, x = raw["model"], raw["experiment"], raw["execution"]
+        node = copy.deepcopy(next(n for n in m["extracellular"] if n["id"] == cfx.NODE))
+        node["id"] = "well"
+        m["extracellular"].append(node)
+        x["extracellular_capacity"] = len(m["extracellular"])
+        patch = copy.deepcopy(next(p for p in m["membranes"] if p["id"] == cfx.PATCH))
+        patch.update(id="patch_cell_0_well", outside="well")
+        m["membranes"].append(patch)
+        x["membrane_capacity"] = len(m["membranes"])
+        for c in [c for c in e["membrane_controls"] if c["membrane_id"] == cfx.PATCH]:
+            e["membrane_controls"].append(dict(copy.deepcopy(c), membrane_id=patch["id"]))
+        raw = wfx.with_wash(raw, ["well"], [(0.01, "well", 0.5, {wfx.TRACER: 1e-9})])
+    raw = sfx.with_site_occupancy(raw, [sfx.population("lumen_sites", patch=cfx.PATCH)])
+    return with_labels(raw, [("Cl", ["base", "cohort"], {})])
+
+
+@pytest.mark.parametrize("wash", [True, False], ids=["the four-way form", "without a wash"])
+def test_c4_stays_refused_by_name_with_fr49s_two_list_entries(wash, monkeypatch):
+    """D424: C4's one home is the partner rule. FR-49 lands two list entries, the site operator
+    and the wash, in cells.operator.cell_owned_compartments@1's admitted list. With both patched
+    in, the partner rule refuses C4's four-way form (the compartments, the owner, the wash at
+    another node and an unlabelled site population) and its three-way form without a wash, each by
+    name as FR-49's C4, registered by amendment. Parses only, on an invented compartment world."""
+    with pytest.raises(ConfigError) as refused:
+        parse_spec(_four_way(wash, monkeypatch))
+    words = (
+        "cells.operator.cell_owned_compartments@1 beside cells.operator.neutral_arrival_labels@1 "
+        "and cells.operator.site_occupancy@1 admitted by species: an operator not admitted beside "
+        "labels and a writer admitted by species"
+    )
+    message = str(refused.value)
+    assert words in message and "cells.operator.cell_owned_compartments@1 is FR-49's C4" in message
+
+
+def _contact_world():
+    """Two cells joined by the gated junction j0, a population on each side of it (each faces its
+    side's cell), and ecs_0 joined to cell_0."""
+    from validation.tissue import site_occupancy_fixtures as sfx
+
+    raw = fx.world(
+        cells=(("cell_0", 1.0), ("cell_1", 1.0)),
+        nodes=(("ecs_0", 1.0),),
+        contacts=(("contact_0", "cell_0", "ecs_0"),),
+        faces=(),
+        junctions=(("j0", "cell_0", "cell_1"),),
+        end=0.01,
+        trace_mM=sfx.TRACE_mM,
+        concentrations_mM=dict(cell_0=1e-3, cell_1=1e-3, ecs_0=1e-3),
+    )
+    pops = [
+        sfx.population("k0", contact="j0", side="first"),
+        sfx.population("k1", contact="j0", side="second"),
+    ]
+    return sfx.with_site_occupancy(raw, pops)
+
+
+def _pools_and_rows(raw):
+    """The site operator's pools on the host-bound layout, as (species, node) rows, against its
+    written_rows (FR-43 part 3)."""
+    from cells.definitions import pump_composite_spec as cs
+    from cells.operators import site_occupancy as so
+    from cells.registry.models import get_model
+
+    spec = parse_spec(raw)
+    _, p = get_model(spec.model).initial_values(spec)
+    ids = list(spec.model.species_ids)
+    cells = [c.id for c in spec.model.cells]
+    outside = [c.id for c in spec.model.extracellular]
+    pools = {
+        (ids[r], (cells if k == so.CELL else outside)[n])
+        for k, r, n in zip(
+            np.asarray(p.site_pool_kind).tolist(),
+            np.asarray(p.site_pool_row).tolist(),
+            np.asarray(p.site_pool_node).tolist(),
+            strict=True,
+        )
+    }
+    ((op, declaration, _),) = [e for e in cs.entries(spec) if e[0].LAW_ID == SITES]
+    return pools, set(op.written_rows(spec, declaration))
+
+
+COMPLETENESS = {
+    "two patch populations (the well)": lambda: wfx.well(),
+    "a node-owned population (the well's wall, FR-28)": lambda: wfx.well(wall="node"),
+    "two contact populations": _contact_world,
+    "an internalising population": _internalising_sites,
+}
+
+
+@pytest.mark.parametrize("world", sorted(COMPLETENESS))
+def test_the_site_operators_pools_are_its_written_rows(world):
+    """FR-44 step 3's admission reads the site operator's written_rows, so they must be every row
+    its half-steps write. Its half-steps write amounts only at its pools (site_pool_row and
+    site_pool_node; every other entry is kept bit for bit by their select), so on the host-bound
+    layout the pools equal the written rows: patch, node-owned, contact and internalising
+    populations (no labels: the site operator alone)."""
+    pools, written = _pools_and_rows(COMPLETENESS[world]())
+    assert pools == written, (sorted(pools), sorted(written))
+
+
+def test_a_written_rows_that_misses_a_pool_is_caught(monkeypatch):
+    """The comparison's plant: written_rows without an internalising population's receiving cell
+    must differ from the pools."""
+    from cells.operators import site_occupancy as so
+
+    def facing_only(self, spec, declaration):
+        m = spec.model
+        return tuple(
+            dict.fromkeys((p.ligand, so.facing_node(m, p)[1]) for p in declaration.populations)
+        )
+
+    monkeypatch.setattr(so.SiteOccupancy, "written_rows", facing_only)
+    pools, written = _pools_and_rows(_internalising_sites())
+    assert pools - written == {("S", "cell_0")}, (sorted(pools), sorted(written))
