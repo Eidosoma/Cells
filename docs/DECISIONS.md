@@ -14782,3 +14782,40 @@ No entry failed, was unformed, was faulted or was inconclusive, and the judge fo
   - a scout's next steps;
   - FR-39's Phase B laws sheet and plan, a measurement plan for the cost of long runs (D299 item 3), and FR-40's
     metadata-only source search, all docs or workspace only.
+
+## D430: the user's answers of 28 November: a fresh judge for liquid routing, the three small builds first, and the lead's rulings on the rest
+
+2026-11-28, written at 15:41 UTC. The user answered the lead's list: "1. Agreed / 2. All agreed as you see fit /
+3. you decide / 4. as you suggests / 5. as you suggest / 6. sounds good". The recommendations were the lead's and the
+adviser's.
+
+1. **Liquid routing's judge:** a fresh judge agent in the same role (protocol §3) continues from its predecessor's
+   committed code (`lr-judge` 29514bd3), the spec at amendment 7's tag and the reading note. Every self-test outcome it
+   changes traces to a named item of amendment 7. The record discloses that two agents held the role. The question on
+   ten unused reading numbers is dropped: none appears in the committed code or its history (amendment 7's note).
+2. **The three small builds go first,** ahead of FR-61/62 and the high items (a change to D365's and D393's order), as
+   one stack:
+   - **FR-56:** 1a 2a 3a 4a 5a. A preparation's measured (temperature, area) rows are read at parse into the footprint,
+     as an optional key of the bilayer geometry, with no new ID, refused outside the rows, and with no registered
+     comparison. It guards only worlds that declare rows; FR-68's design covers the rest.
+   - **FR-60:** 2a, and the rest as its note recommends. Its price must include an independent acceptance of the
+     work's closed form.
+   - **FR-66:** 1b 2a 3b 4a 5a. Its approval as tooling (AGENTS.md) is the user's, given here.
+   - **A general rule:** a claim that is an identity or a closed form needs no registered comparison, provided an agent
+     who is not the builder evaluates it as an independent acceptance, and a plant shows the check can fail. Where the
+     energy ledger itself becomes an identity (FR-59's case), an outside reference is still needed.
+3. **The lead's rulings, delegated** (with the adviser): FR-59 1a 3a 4a, its Q2 after landing 1. FR-58 1a 3a 4a, with
+   no row fuel now and a fresh price at its plan step. FR-61/62 Q4 (a) and Q6 (a), each deferring part of FR-62's
+   request, and 1a 2a 3a 5a, selecting X2 rather than waiving it, its build decided at the plan's price. FR-53 is parked
+   until a world near 10⁴ cells or a GPU qualification is wanted; its Q5 is answered with D380's GPU question after the
+   cost plan reports. These build after liquid routing.
+4. **The cost of long runs (D299 item 3):** the minimum scope first: P0 (the old 52 ms rerun under the timing lock),
+   the cache-key fix and the core timing table, about 4 to 5 agent-days and 9 timed-core hours. Accuracy is labelled by
+   its class where no independent reference exists. Figures taken while the sibling CPUs were busy are voided. The
+   composite's GPU figures require XLA's deterministic flag. A cheaper X2 gets a note of options after the campaign. The
+   two million-step runs go side by side in one night; D307's grounded allowance already closed D305's charge refusal.
+   The GPU planner and GH200 wait for the CPU table. Builder B moves off CPUs 20-21 before P0.
+5. **FR-39's three citations** of the two comparison papers stay unverified, after the permission system refused
+   their fetch. The laws' equations are taken from independent sources. No one fetches those papers.
+6. **On record, unchanged:** liquid routing's item 10(b) (a retry's step is no plant place) stands, overrulable by the
+   user before the registration tag. FR-49's Amendment 3 has already been applied in C4's passing judged run.
