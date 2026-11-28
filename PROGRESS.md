@@ -103,11 +103,11 @@ Sources: [Decisions](docs/DECISIONS.md) D318 to D386, the [feature index](docs/F
       only would not make a plant depart.
     - FR-49's World B, C1 and C2 judge no energy readout, so X2 stays optional there.
   - **FR-65** (high, part of FR-43; D365, D375, D398): turnover beside a changing volume, with a lumen. The first build is
-    landed (ae349721). The coupling's step is built (branch `fr65-coupling`, D402); its round follows FR-50 phase 2's landing. The water worlds' run view (§9.2)
-    goes to water's owner.
+    landed (ae349721), and so is the coupling step (00cfbda1, D407). The water worlds' run view (§9.2) goes to water's
+    owner.
   - **FR-64** (normal; D356, D361, D418): **landed** (ff5c5fdc). A declared voltage shift on a channel population.
-  - **FR-63** (normal; D353, D420): a pH shift on it. Its calibration report is landed (03d96f54). The Kv1.5 midpoint gap
-    is with the user (D420).
+  - **FR-63** (normal; D353, D420, D423): a pH shift on it. Its calibration report is landed (03d96f54). The Kv1.5
+    midpoint gap closed as an indication, with nothing built (D423).
   - **FR-53** (normal; D371, D370): a rounding allowance for global ledgers. Note `docs/LEDGER_ROUNDING_DESIGN.md`
     (774fdcd5); D370 corrects its premise for the pump-tissue family. FR-47's ledger limit: the
     evidence recommends keeping it, with the user to decide (D379).
