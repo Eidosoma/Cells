@@ -1389,6 +1389,53 @@ def test_the_site_operator_beside_labels_parses_where_its_ligand_is_unlabelled()
     parse_spec(_labelled_well("Cl", wall="node"))
 
 
+def _with_kind(raw, entry):
+    from cells.kinds import passive_routes
+
+    out = copy.deepcopy(raw)
+    out["model"].setdefault(passive_routes.MODEL_KEY, []).append(entry)
+    return out
+
+
+KIND_ROWS = {  # A declared kind's route beside the labels and the site operator (D424's call 3).
+    "on an unlabelled species (S, the ligand), admitted": (
+        dict(id="s_route", patch="specimen_face", law="cells.route.passive_neutral_permeation@1",
+             species=wfx.TRACER, permeability_m_per_s=1e-12),
+        ("Cl",),
+    ),
+    "on a labelled species (Na), refused as today": (
+        dict(id="rectifier_Na", patch="wall_specimen",
+             law="cells.route.inward_rectifier_linear_driving_force@1", species="Na",
+             g_ref_S_per_m2=1.0, k_ref_mM=5.0, v_half_V=0.01, slope_V=0.01),
+        ("Na",),
+    ),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("case", sorted(KIND_ROWS))
+def test_a_declared_kind_beside_labels_and_sites_is_read_as_today(case):
+    """FR-44 step 3 (D424's call 3; parses only): declared kinds stay admitted beside the owner and
+    a writer admitted by species, under the owner's existing per-species checks
+    (species_labels.in_step_errors). The well with its sites and a declared kind's route parses
+    where the route moves an unlabelled species. Where it moves a labelled one the refusal is
+    today's: the same message as the same world without the sites (an inward rectifier, whose flux
+    has no one-way form)."""
+    entry, species = KIND_ROWS[case]
+    labelled = [(name, ["base", "cohort"], CL_HALF if name == "Cl" else {}) for name in species]
+    raw = with_labels(_with_kind(wfx.well(), entry), labelled)
+    if species == ("Cl",):
+        parse_spec(raw)
+        return
+    with pytest.raises(ConfigError) as beside_sites:
+        parse_spec(raw)
+    with pytest.raises(ConfigError) as today:
+        parse_spec(with_labels(_with_kind(wfx.well(sites=False), entry), labelled))
+    assert str(beside_sites.value) == str(today.value)
+    assert "rectifier_Na runs cells.route.inward_rectifier_linear_driving_force@1" in str(
+        today.value
+    )
+
+
 @pytest.mark.parametrize(
     "option", ["one_way_records", "a blocked channel", "a shifted channel", "energy_check"]
 )

@@ -656,7 +656,7 @@ qualifies it:
 
 | File | Rows |
 | --- | --- |
-| `test_neutral_arrival_labels.py` (host) | The rule on planted declarations; the refusals by name on parsed worlds, contact and inward populations among them; the inner model's options; C4's four-way and three-way forms with FR-49's two list entries patched in; the site operator's pools equal to its written rows, with a plant |
+| `test_neutral_arrival_labels.py` (host) | The rule on planted declarations; the refusals by name on parsed worlds, contact and inward populations among them; a declared kind beside the sites, admitted on an unlabelled species and refused as today on a labelled one; the inner model's options; C4's four-way and three-way forms with FR-49's two list entries patched in; the site operator's pools equal to its written rows, with a plant |
 | `test_neutral_labels_sites.py` (compiled, new) | FR-44's twin world with the well's sites kept and Cl and Q labelled, beside the four partners. Every physical record is bit for bit the unlabelled twin's; the well's identities at each wash; in the specimen, the base gains exactly exchange's import and the cohort exactly turnover's production |
 
 **No new state:**
