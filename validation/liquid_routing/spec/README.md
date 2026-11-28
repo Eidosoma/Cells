@@ -48,11 +48,16 @@ the checker read this folder too (the protocol's roles).
 | `AMENDMENT-4-2026-11-25.md` | Arm 7's runs, retry runs, the restart and no-router runs, the spec auditor |
 | `AMENDMENT-5-2026-11-25.md` | The spec audit's findings as ruled, the layouts they give, what the references must do |
 | `AMENDMENT-6-2026-11-25.md` | The scale of `B_def`'s accuracy, `J0`'s `n_U_K`, P16's `heat`, which run a plant reads |
+| `AMENDMENT-7-2026-11-28.md` | The judge's readings that add to the text, the sample's and phase-2 notes' forms, the six pairs' worlds, a ledger's error, what counts as invented, how a refusal is named |
+| `READINGS-2026-11-28.md` | The lead's reading note: the judge's and builder B's readings that the text settles, and the lead's rulings for the build |
+| `FORMAT-SAMPLE-SHA256SUMS-<date>`, `FORMAT-SAMPLE-REGENERATED-SHA256SUMS-<date>` | The lead's notes of the format sample's sha256s, before the judge's tag and at the registration tag (amendment 7, item 9) |
 
 **Files outside this folder that the registration uses:** in `validation/liquid_routing/`, `takeover_map.json`,
 `takeover_map_rehearsal.json` and `takeover_pairs.json` (the builder's), and `registered_strings.json` with its phase-2 and
 rehearsal counterparts (the lead's); in `table-retry/` and `table-arm6-retry/`, `retry_owed.json` (the judge's). Layouts:
-amendment 5.
+amendment 5. Also the format sample, at `validation/liquid_routing/format_sample/` (the builder's), and
+`validation/liquid_routing/phase2_not_judged.json` (the lead's, at phase 2, where a bound is missed): amendment 7, items 9
+and 11.
 
 **What this folder does not test.** A bound species at a node that a link touches is not tested here. `F7` has its
 sites at a node no link touches, and a builder's own row must test a linked one.

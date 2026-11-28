@@ -4,8 +4,8 @@
 Docs and validation only, with no `src/` change. Its author does not write references, build, judge or
 check. Branch `fr54-57-protocol`, from main 0e563668. The dt study of 25 November filled its placements (`spec/SPEC.md`
 §6), through the lead's report only (§11). The study agent's later answers are folded in (§11) and none is
-pending. **Amendments 1 to 6 of 25 November 2026** (`spec/AMENDMENT-<n>-2026-11-25.md`) govern this document and the
-folder where they differ, the latest first.
+pending. **Amendments 1 to 6 of 25 November 2026** (`spec/AMENDMENT-<n>-2026-11-25.md`) and **amendment 7 of 28 November**
+(`spec/AMENDMENT-7-2026-11-28.md`) govern this document and the folder where they differ, the latest first.
 
 **What it registers.** This document and `validation/liquid_routing/spec/`: `README.md`, `SPEC.md`,
 `LAWS.md`, `READOUTS.md`, `CRITERIA.md`, `TABLE.md` and `inputs.json`. With the code-blind references and
@@ -66,7 +66,7 @@ Each is a different agent, and its work goes through the lead.
 | Author (this document's) | This document, the spec folder | – (as the disclosures list) | engine source, tests, run output |
 | dt-study agent | The study's edges, the default heat's declared law, the propagator's re-measured bounds, the arm 7 pairs | Engine source; its own runs on today's engine | the spec folder's answers (`references/`), the judge's code |
 | References agent | `validation/liquid_routing/references/` | `validation/liquid_routing/spec/` only | this document, the design note, engine source, tests, any run output |
-| Builder | The operator, and the lift branch; `validation/liquid_routing/worlds.py`, the exporter, `takeover_map.json` (and its rehearsal pair), `takeover_pairs.json` and its script, the format sample | The design note, the spec folder, its own code | `references/out/`, the judge's code |
+| Builder | The operator, and the lift branch; `validation/liquid_routing/worlds.py`, the exporter, `takeover_map.json` (and its rehearsal pair), `takeover_pairs.json` and its script, the format sample | The design note, the spec folder, its own code, and `references/out/inputs_invented.json` alone of that folder, for the rehearsal (the lead's leave, 28 November) | `references/out/` but that file, the judge's code |
 | Spec auditor (amendment 4) | A reader skeleton, fabricated honest tables, its report | The spec folder only | everything else; its tables are read by no one who references, builds, judges or checks |
 | Judge | Its reader, its synthetic checks, `retry_owed.json`, the verdict | This document, the spec folder, the references (from C0 on), the tables, the format samples, `takeover_map.json`, the strings note | engine source, tests, the builder's code, the design note |
 | Checker | Its own recomputation | The hashed table, the references, the judge's record, `takeover_map.json`, the record files it recomputes from, and the runs' `definition` against their `inputs` | the judge's code until its own is written |
@@ -337,10 +337,13 @@ NumPy and decimal code, no engine, on CPU 6, in
 
 **Not read:** engine source, tests, any run output, any reference file, the judge's code, the builder's code.
 
-**Amendments 1 to 6** are in the spec folder, each with its own disclosures. Amendment 5 follows the lead's rulings on
+**Amendments 1 to 7** are in the spec folder, each with its own disclosures. Amendment 5 follows the lead's rulings on
 the spec audit, its second rulings after the auditor's re-run, and its answers on that text, the last after the
 auditor's third pass. This author did not read the audit, its folder or its numbers; the lead read the references'
 README layout section and printed key names, and no value, to answer this author's questions about forms.
+Amendment 7 (28 November) follows the judge's readings of its rules and builder B's readings of TABLE, as the lead
+ruled them; the lead's reading note of that date (`spec/READINGS-2026-11-28.md`) holds the readings that the text
+already settles. Each discloses what its author read.
 
 **The advisor** answered this author on the plan. It was called three times on the draft, the last after the dt
 study's report was written in, and timed out each time. The lead's own advisor review of the protocol and the
