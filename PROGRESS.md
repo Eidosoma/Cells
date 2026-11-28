@@ -371,7 +371,8 @@ November are listed in the two sections near the top, one line each.
   with explicit cycles, so the implicit block is dropped (D302;
   [evidence](/mnt/workspaces/Cells/mito-step0-20261122/)). The host path's closure re-solve is removed,
   bit-identical (b6da1b60, tag `binding-ledger-reuse-landed-2026-11-22`; 182.5 to 143.6 ms per host
-  step). The half-step energy check is now the cost driver: about 300 CPU-h per 300 s world.
+  step). The half-step energy check is now the cost driver: a 300 s world at 16 µs takes about 100–110
+  core-hours with it, against 38–42 without (D305, which withdrew D302's 300).
 
 - **The near-event snap landed (22 November 2026).** Stage 1 (the clock, D283) and stage 2 (5337db54,
   tag `d283-snap-stage2-landed-2026-11-22`): every operator's grid check asks the clock's one predicate,
